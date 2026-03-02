@@ -1,22 +1,38 @@
-# Open Data consensus spec (Hive v2)
+# Open Data V2 Specification
 
-Specification for object creation, updates, votes, and governance.
+Specification for deterministic indexing plus request-time governance masking.
+
+## Architecture baseline
+
+V2 is a two-service model:
+
+- `Indexer Service` stores canonical neutral state.
+- `Query/Masking Service` applies governance masks per request.
 
 ## Layout
 
-- **schemas/** — JSON Schema for events (object_create, create_committee, update_create, update_vote).
-- **reject_codes.md** — Canonical reject codes for all namespaces.
+- **schemas/** — JSON Schema for blockchain events.
+  - includes draft `object_type_create.json` and `object_type_update.json` for `object_type` registry lifecycle.
+- **reject_codes.md** — Canonical processing and API/query error codes.
 - **object_uniqueness.md** — object_id uniqueness and collision rules.
-- **governance_bootstrap.md** — bootstrap_allowlist and single create_committee.
+- **object_type_entity.md** — governance-controlled `object_type` registry (`name`, `supported_updates`, `supposed_updates`).
 - **vote_semantics.md** — revote = replace, dynamic validity.
-- **acceptance_tests.md** — Acceptance test cases (object uniqueness, revote, reindex determinism, governance).
-- **config_example.yaml** — Example governance bootstrap config.
+- **governance_bootstrap.md** — V2 governance initialization model (bootstrap replacement note).
+- **governance_resolution.md** — role precedence, trust graph traversal, cache invalidation.
+- **services_architecture.md** — indexer/query boundary and contract.
+- **overflow_strategy.md** — Hive baseline publishing and Arweave overflow policy.
+- **acceptance_tests.md** — acceptance test cases across both services.
 
 ## Namespaces
 
-- `od.objects.v1` — object_create
-- `od.governance.v1` — create_committee, grant_role, revoke_role
-- `od.updates.v1` — update_create, update_vote
+- `od.objects.v1` — object writes (`object_create`)
+- `od.updates.v1` — update writes (`update_create`, `update_vote`)
+- Governance declarations are written as objects with `object_type = governance` (no separate governance namespace).
+
+## Core references
+
+- End-to-end summary: `../spec_governance_updates.md`
+- Governance overview: `../GOVERNANCE_RU.md`
 
 ## Running schema checks
 
@@ -25,5 +41,3 @@ From repo root:
 ```bash
 node spec/validate_schemas.js
 ```
-
-Or with Node: `node spec/validate_schemas.js` (validates JSON and required fields).

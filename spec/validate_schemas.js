@@ -46,7 +46,7 @@ function checkSchema(name) {
   }
 }
 
-["object_create", "create_committee", "update_create", "update_vote"].forEach(checkSchema);
+["object_create", "object_type_create", "object_type_update", "create_committee", "update_create", "update_vote"].forEach(checkSchema);
 
 if (failed) {
   process.exit(1);

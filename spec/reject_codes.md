@@ -1,36 +1,59 @@
-# Reject codes
+# Canonical Error Codes (V2)
 
-All event processing rejections use these canonical codes. Indexer MUST persist reject code when an event is not applied.
+V2 separates write-path processing errors from query/masking errors.
 
-## Objects namespace (od.objects.v1)
+## 1) Indexer write-path reject codes
 
-| Code | When |
-|------|------|
-| `OBJECT_ALREADY_EXISTS` | An object with this `object_id` already exists in materialized state. |
-| `CREATOR_MUTED_BY_GOVERNANCE` | `creator` is in the muted list of at least one governance participant at event time. |
-| `INVALID_OBJECT_PAYLOAD` | Payload failed JSON schema or business validation (e.g. missing required field, invalid format). |
+Indexer MUST persist reject code whenever an event is not applied to neutral state.
 
-## Governance namespace (od.governance.v1)
+### Objects namespace (`od.objects.v1`)
 
 | Code | When |
 |------|------|
-| `DUPLICATE_GENESIS` | A valid `create_committee` was already applied; no further create_committee allowed. |
-| `UNAUTHORIZED_GOVERNANCE_OP` | Creator not in bootstrap_allowlist (for create_committee) or insufficient authority for grant/revoke. |
-| `INVALID_GOVERNANCE_PAYLOAD` | Payload failed schema or validation. |
+| `OBJECT_ALREADY_EXISTS` | An object with this `object_id` already exists in neutral/materialized state. |
+| `INVALID_OBJECT_PAYLOAD` | Payload failed schema or business validation. |
 
-## Updates namespace (od.updates.v1)
-
-| Code | When |
-|------|------|
-| `UPDATE_NOT_FOUND` | Referenced `update_id` does not exist. |
-| `OBJECT_NOT_FOUND` | Referenced `object_id` does not exist (e.g. for update_create). |
-| `CREATOR_MUTED_BY_GOVERNANCE` | For `update_create`: `creator` is in the muted list of at least one governance participant at event time. |
-| `ROLE_REQUIRED` | Voter has no valid role at vote event block time. |
-| `INVALID_UPDATE_PAYLOAD` | Payload failed schema or validation. |
-
-## Generic
+### Governance object operations (`object_type = governance`)
 
 | Code | When |
 |------|------|
-| `UNKNOWN_ACTION` | Action string not recognized for the namespace. |
-| `INVALID_PAYLOAD` | Malformed JSON or unknown namespace. |
+| `INVALID_GOVERNANCE_PAYLOAD` | Governance object payload or governance update payload failed schema/business validation. |
+| `UNAUTHORIZED_GOVERNANCE_OP` | Governance object update/vote is authored by an account other than governance object creator, or otherwise violates governance ownership rules. |
+
+### Object type entity operations (`object_type` registry)
+
+| Code | When |
+|------|------|
+| `INVALID_OBJECT_TYPE_PAYLOAD` | `object_type` entity payload failed schema/business validation (for example missing `name` or invalid update lists). |
+| `UNAUTHORIZED_OBJECT_TYPE_OP` | `object_type` create/update is attempted by account other than main governance creator. |
+| `UNSUPPORTED_UPDATE_TYPE` | `update_create.update_type` is not listed in target object's `object_type.supported_updates`. |
+
+### Updates namespace (`od.updates.v1`)
+
+| Code | When |
+|------|------|
+| `OBJECT_NOT_FOUND` | Referenced `object_id` does not exist (for `update_create`). |
+| `UPDATE_NOT_FOUND` | Referenced `update_id` does not exist (for `update_vote`). |
+| `ROLE_REQUIRED` | Voter has no valid role at vote event time. |
+| `INVALID_UPDATE_PAYLOAD` | Update payload failed schema or business validation. |
+
+### Generic write-path codes
+
+| Code | When |
+|------|------|
+| `UNKNOWN_ACTION` | Action is not recognized for the namespace. |
+| `INVALID_PAYLOAD` | Malformed JSON or invalid envelope. |
+
+## 2) Query/masking error codes
+
+Query service MUST return stable machine-readable codes for governance resolution and policy execution.
+
+| Code | When |
+|------|------|
+| `GOVERNANCE_NOT_FOUND` | Requested governance object or profile does not exist. |
+| `INVALID_GOVERNANCE_REFERENCE` | Governance input format is invalid or references unsupported target. |
+| `GOVERNANCE_RESOLUTION_FAILED` | Governance graph cannot be resolved (cycle/depth/consistency violation). |
+| `GLOBAL_POLICY_VIOLATION` | Request attempts to bypass or conflict with mandatory global policy. |
+| `MASK_EVALUATION_TIMEOUT` | Query mask computation exceeded configured timeout budget. |
+| `RATE_LIMIT_EXCEEDED` | Request exceeded configured rate limit. |
+| `QUOTA_EXCEEDED` | Request exceeded subscription quota allocation. |

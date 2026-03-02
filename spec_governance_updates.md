@@ -1,130 +1,175 @@
-# Спецификация проекта: консенсус апдейтов объектов в Hive
+# Project Specification: Open Data V2
 
-## 1. Цель
+## 1. Goal
 
-Детерминированная система для:
+Define a deterministic architecture for:
 
-- создания объектов,
-- обработки конкурирующих апдейтов,
-- governance/ролей и голосования с весом.
+- indexing blockchain object/update events,
+- resolving competing updates with vote semantics,
+- applying governance as request-time masks,
+- supporting overflow publishing (Hive baseline + Arweave emergency path).
 
-## 2. Сущности
+## 2. Service boundary (normative)
 
-- `object`: `object_id`, `transaction_id`, `object_type`, `creator`
-- `update`: `update_id`, `object_id`, `update_type`, `name`, `body`, `locale`, `creator`, `transaction_id`
-- `vote`: голос аккаунта за `update_id`
+### 2.1 Indexer Service
 
-## 3. Создание объектов 
+- Reads blockchain events in canonical order:
+  `(block_num, trx_index, op_index, transaction_id)`.
+- Validates schema/business invariants for write events.
+- Stores neutral materialized state without tenant governance masking.
 
-Namespace: `custom_json.id = "od.objects.v1"`
+### 2.2 Query/Masking Service
 
-### 3.1 Событие `object_create`
+- Accepts read request and governance context.
+- Resolves governance graph and role scopes.
+- Applies global + request governance masks to neutral state.
+- Returns filtered and ranked views.
 
-Обязательные поля payload:
+## 3. Namespaces and core entities
 
-- `v`, `action="object_create"`
-- `object_id`
-- `object_type`
-- `creator`
-- `transaction_id`
+Namespaces:
 
-### 3.2 Правила валидации
+- `od.objects.v1` (`object_create`)
+- `od.updates.v1` (`update_create`, `update_vote`)
+- Governance is represented as normal objects with `object_type = governance`.
+- There is no separate governance namespace in V2.
 
-- `object_id` задается инициатором (`creator`) в payload.
-- Глобальная уникальность `object_id` обязательна.
-- Если объект с таким `object_id` уже существует в materialized state, событие отклоняется.
-- Объект не создается повторно ни при каких условиях.
+Core entities:
 
-Reject-коды:
+- `object`: `object_id`, `object_type`, `creator`, `transaction_id`
+- `update`: `update_id`, `object_id`, `update_type`, payload fields, `creator`, `transaction_id`
+- `vote`: `(update_id, voter) -> effective_vote`
+- `governance declaration`: object with `object_type = governance` that defines roles, trust, and moderation rules
+- `object_type` (new entity): type descriptor with:
+  - `name` (for example `product`, `recipe`)
+  - `supported_updates` (allowed update kinds validated by indexer)
+  - `supposed_updates` (automation-intended update kinds; execution mechanism is out of scope for now)
 
-- `OBJECT_ALREADY_EXISTS`
-- `INVALID_OBJECT_PAYLOAD`
+## 4. Indexer write semantics
 
-### 3.3 Детерминизм при гонке двух `object_create` с одинаковым `object_id`
+### 4.1 Object creation
 
-События применяются в каноническом порядке:
-`(block_num, trx_index, op_index, transaction_id)`.
+- `object_id` is globally unique.
+- First valid `object_create` wins by canonical order.
+- Later `object_create` with same `object_id` are rejected with `OBJECT_ALREADY_EXISTS`.
+- Governance objects are created through `object_create` with `object_type = governance`.
+- Governance object lifecycle is Hive-only (no off-chain direct mutation).
 
-- Первое валидное `object_create` создает объект.
-- Все последующие `object_create` с тем же `object_id` отклоняются как `OBJECT_ALREADY_EXISTS`.
+### 4.2 Update and vote semantics
 
-## 4. Governance и роли (RBAC)
+- `update_create` must match the object type policy:
+  - target object's `object_type` must exist in `object_type` registry,
+  - `update_type` must be listed in that type's `supported_updates`,
+  - otherwise reject with `UNSUPPORTED_UPDATE_TYPE`.
+- `update_create` starts as `weight = 0`, `status = VALID`.
+- One active vote per `(update_id, voter)`.
+- Revote is replace:
+  - `delta = new_effective_vote - old_effective_vote`
+  - `weight += delta`
+- Dynamic status:
+  - `VALID` if `weight >= 0`
+  - `REJECTED` if `weight < 0`
 
-Namespace: `od.governance.v1`
+### 4.3 Governance object ownership rules
 
-- `create_committee` (только один раз)
-- `grant_role`
-- `revoke_role`
+- After a governance object is created, only its `creator` may:
+  - publish updates targeting that governance object,
+  - vote for or against updates targeting that governance object.
+- Any governance update/create/vote action by another account is rejected with `UNAUTHORIZED_GOVERNANCE_OP`.
 
-### 4.1 Участники governance (governance participants)
+### 4.4 LWW rule for single fields
 
-Для правил, зависящих от «участника governance» (в т.ч. проверка muted list при create-операциях), участниками считаются:
+- For single-value fields (winner is exactly one value), if the same account publishes a newer update for the same field:
+  - the previous update from that same account for that field is removed from current state,
+  - the newer update becomes the active contribution from that account for that field.
+- This is deterministic last-write-wins behavior scoped to `(object_id, field_key, creator)`.
 
-- **Члены комитета** — аккаунты из списка `members` единственного применённого `create_committee`.
-- **Держатели governance-ролей** — аккаунты, у которых на момент проверки есть активная роль, выданная через governance (grant_role), в scope, релевантном данной проверке.
+### 4.5 Object type governance rules
 
-Итого: **governance participants = committee members + governance-role holders**.
+- `object_type` entities are created and updated only through Hive events.
+- `object_type` creation is restricted to main governance:
+  - only main governance creator may create new `object_type` entities.
+- `object_type` update is restricted to main governance:
+  - only main governance creator may update existing `object_type` entities.
+- Main governance reference is provided by deployment configuration and must be deterministic across indexer instances in one environment.
 
-Bootstrap:
+### 4.6 supported vs supposed updates
 
-- первый валидный `create_committee` от `bootstrap_allowlist` фиксирует genesis.
-- дальнейшие `create_committee` отклоняются (`DUPLICATE_GENESIS`).
+- `supported_updates` is normative for indexer validation.
+- `supposed_updates` is descriptive metadata for automation opportunities.
+- Indexer does not execute automation from `supposed_updates`; it only stores and exposes this metadata.
 
-## 5. Апдейты и голоса
+## 5. Query-time governance masking
 
-Namespace: `od.updates.v1`
+### 5.1 Mask inputs
 
-- `update_create`: стартует с `weight=0`, `status=VALID`
-- `update_vote`: учитывается только при валидной роли на момент события
+Each response is filtered by two governance layers:
 
-Revote:
+1. Platform/global policy mask (mandatory baseline).
+2. Request governance mask (provided directly or resolved from subscription profile).
 
-- один активный голос на `(update_id, voter)`
-- повторный голос = replace
-- `delta = new_effective_vote - old_effective_vote`
-- `weight += delta`
+### 5.2 Precedence
 
-Статус динамический:
+- Global mask always has higher priority.
+- Request mask may narrow but never override global restrictions.
 
-- `VALID`, если `weight >= 0`
-- `REJECTED`, если `weight < 0`
+### 5.3 Domains
 
-## 6. Резолв чтения
+- Data domain roles: `owner`, `admin`, `trusted`.
+- Social domain role: `moderator`.
+- Domain-specific effects are defined in `spec/governance_resolution.md`.
 
-- `single`-типы: 1 лучший `VALID` (max `weight`, затем tie-break)
-- `multi`-типы: до 10 лучших `VALID` (sort by `weight DESC`, tie-break)
+## 6. Governance resolution and caching
 
-## 7. Модель хранения (логическая)
+- Governance objects are indexed as neutral declarations.
+- Query service computes an effective governance set for each governance input.
+- Effective governance sets are cached.
+- Cache invalidation is required when:
+  - referenced governance objects change,
+  - trust graph edges change,
+  - role assignments relevant to the computed set change.
 
-- `objects_current` (`object_id` PK, `object_type`, `creator`, `created_tx_id`, `created_block`)
+## 7. Overflow publishing strategy
+
+- Default path: publish via Hive.
+- Emergency path: publish via Arweave for:
+  - large initial import,
+  - queue backlog drain.
+- Operational behavior (thresholds, confirmation polling, TTL, retries) is defined in `spec/overflow_strategy.md`.
+
+## 8. Logical storage model
+
+- `events_log` (canonical raw events + apply/reject result)
+- `objects_current`
 - `updates_current`
 - `update_votes_current`
-- `roles_current`
-- `events_log`
-- `governance_state`
+- `governance_objects_current`
+- `governance_resolution_cache` (query layer)
+- `query_policy_profiles` (optional mapping for subscription governance defaults)
 
-## 8. Поток обработки
+## 9. Processing flow
 
 ```mermaid
 flowchart TD
-  ingest[IngestHiveCustomJson] --> order[ApplyCanonicalOrder]
-  order --> route{Namespace}
-  route -->|od.objects.v1| obj[ApplyObjectCreateRules]
-  route -->|od.governance.v1| gov[ApplyGovernanceRules]
-  route -->|od.updates.v1| upd[ApplyUpdateAndVoteRules]
-  obj --> persist[PersistMaterializedState]
-  gov --> persist
-  upd --> persist
-  persist --> read[ResolveSingleAndMultiViews]
+  ingest[IngestBlockchainEvents] --> indexer[IndexerService]
+  indexer --> persist[PersistNeutralState]
+  persist --> query[QueryMaskingService]
+  request[ApiRequestWithGovernance] --> query
+  query --> globalMask[ApplyGlobalMask]
+  globalMask --> requestMask[ApplyRequestMask]
+  requestMask --> resolve[ResolveAndRankView]
+  resolve --> response[ApiResponse]
 ```
 
+## 10. Acceptance criteria (high level)
 
-
-## 9. Acceptance criteria
-
-- Повторный reindex дает идентичный state/hash.
-- При двух `object_create` с одинаковым `object_id` создается только один объект (первый по каноническому порядку).
-- Повторный `object_create` всегда отклоняется с `OBJECT_ALREADY_EXISTS`.
-- Revote корректно делает replace.
-- Динамический статус `VALID/REJECTED` корректно меняется при пересечении нуля.
+- Reindexing same stream produces identical neutral state and reject log.
+- Same neutral state with different governance inputs can produce different masked output.
+- Same neutral state with same governance inputs always produces identical output.
+- Global policy restrictions cannot be bypassed by request governance.
+- Overflow policy switches to Arweave when configured thresholds are exceeded.
+- Governance object updates/votes are accepted only from governance object creator.
+- For single fields, repeated updates by same creator resolve via deterministic LWW.
+- Only main governance can create/update `object_type` entities.
+- `update_create` is accepted only when `update_type` is listed in `supported_updates` for target object type.
 

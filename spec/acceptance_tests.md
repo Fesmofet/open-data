@@ -1,121 +1,126 @@
-# Acceptance test cases
+# Acceptance test cases (V2)
 
-These cases MUST pass for the indexer to be considered correct. Events are applied in canonical order `(block_num, trx_index, op_index, transaction_id)`.
+These cases validate both services:
+
+- Indexer Service (deterministic neutral state)
+- Query/Masking Service (governance mask behavior per request)
+
+Canonical event order is:
+`(block_num, trx_index, op_index, transaction_id)`.
 
 ---
 
-## Object uniqueness
+## A) Indexer Service: object and update semantics
 
-### AC-O1: First object_create wins
+### AC-I1: First object_create wins
 - **Setup**: Empty state.
-- **Events**: Two `object_create` with same `object_id`, different creators; first in canonical order from creator A, second from B.
-- **Expect**: One object created (creator A); second event rejected with `OBJECT_ALREADY_EXISTS`.
+- **Events**: Two `object_create` with same `object_id`, A first then B.
+- **Expect**: A is stored; B rejected with `OBJECT_ALREADY_EXISTS`.
 
-### AC-O2: Same object_id in same block (tie-break by trx_index)
-- **Setup**: Empty state.
-- **Events**: Two `object_create` in same block, same `object_id`; trx_index 0 from A, trx_index 1 from B.
-- **Expect**: Object created by A; event from B rejected with `OBJECT_ALREADY_EXISTS`.
+### AC-I2: object_create retry remains rejected
+- **Setup**: Object already exists.
+- **Events**: Repeat `object_create` for same `object_id`.
+- **Expect**: Rejected with `OBJECT_ALREADY_EXISTS`; no state mutation.
 
-### AC-O3: Retry same creator
-- **Setup**: Object `obj1` already exists (creator A).
-- **Events**: New `object_create` for `obj1` from A (retry).
-- **Expect**: Rejected with `OBJECT_ALREADY_EXISTS`; state unchanged.
+### AC-I3: Revote replaces previous vote
+- **Setup**: Update U exists, voter V has valid role.
+- **Events**: `update_vote` +1, then `update_vote` -1 by same voter.
+- **Expect**: Single active vote for `(U, V)`; weight adjusted by delta only.
 
-### AC-O4: Reindex determinism (object)
-- **Setup**: Apply stream S that contains two `object_create` for same `object_id` (A first, B second). Record final state hash (e.g. hash of objects_current).
-- **Action**: Re-index same stream S from scratch.
-- **Expect**: Same state hash; same single object; same reject for second event.
+### AC-I4: Missing role rejects vote
+- **Setup**: Update U exists, voter has no role.
+- **Events**: `update_vote` by voter.
+- **Expect**: Rejected with `ROLE_REQUIRED`.
 
-### AC-O5: object_create rejected when creator muted by governance participant
-- **Setup**: Governance initialized; committee member or governance-role holder P has creator C in P's Hive muted list at event block time.
-- **Events**: `object_create` with `creator` = C, valid payload, unique `object_id`.
-- **Expect**: Rejected with `CREATOR_MUTED_BY_GOVERNANCE`; no object created.
+### AC-I5: Full reindex determinism
+- **Setup**: Mixed stream with duplicates and revotes.
+- **Action**: Reindex same stream twice from empty state.
+- **Expect**: Same neutral state and same reject log hash.
 
-### AC-O6: object_create accepted when creator not muted
-- **Setup**: Governance initialized; creator C is not muted by any governance participant at event block time.
-- **Events**: `object_create` from C, valid payload, unique `object_id`.
-- **Expect**: Object created; no muted reject.
+### AC-I6: Governance object is creator-owned for updates
+- **Setup**: Governance object G created by account A (`object_type = governance`).
+- **Events**: `update_create` targeting G from account B.
+- **Expect**: Rejected with `UNAUTHORIZED_GOVERNANCE_OP`.
 
----
+### AC-I7: Governance update vote is creator-owned
+- **Setup**: Governance object G created by A; governance update U exists on G.
+- **Events**: `update_vote` on U from B.
+- **Expect**: Rejected with `UNAUTHORIZED_GOVERNANCE_OP`.
 
-## Muted list (update_create)
+### AC-I8: LWW for single field from same creator
+- **Setup**: Object O exists; field `name` is single-value semantics.
+- **Events**: Creator A publishes update U1 for `name`, then newer update U2 for `name`.
+- **Expect**: Current state keeps only U2 as A's active contribution for `name`; U1 is removed from current base view for that key scope.
 
-### AC-M1: update_create rejected when creator muted by governance participant
-- **Setup**: Object O exists; governance participant P has creator C in P's muted list at event block time.
-- **Events**: `update_create` with `creator` = C, valid payload, `object_id` = O.
-- **Expect**: Rejected with `CREATOR_MUTED_BY_GOVERNANCE`; no update created.
+### AC-I9: Only main governance can create object_type
+- **Setup**: Main governance creator is A.
+- **Events**: Account B attempts to create object_type `product`.
+- **Expect**: Rejected with `UNAUTHORIZED_OBJECT_TYPE_OP`.
 
-### AC-M2: Reindex determinism with muted snapshot at event_time
-- **Setup**: At block T1, creator C is muted by participant P; at block T2, C is unmuted. Stream S has `object_create` from C at T1 and same `object_id` from C at T2.
-- **Action**: Index S; then re-index S from scratch with same muted-state snapshots per block.
-- **Expect**: First event rejected with `CREATOR_MUTED_BY_GOVERNANCE`; second event creates object. Reindex yields identical result.
+### AC-I10: Main governance creates valid object_type
+- **Setup**: Main governance creator is A.
+- **Events**: A creates object_type `product` with `supported_updates` and `supposed_updates`.
+- **Expect**: object_type entity is stored and available for subsequent update validation.
 
----
+### AC-I11: Unsupported update type is rejected by indexer
+- **Setup**: Object O has object_type `product`; `supported_updates = [price_update]`.
+- **Events**: `update_create` for O with `update_type = nutrition_update`.
+- **Expect**: Rejected with `UNSUPPORTED_UPDATE_TYPE`.
 
-## Revote = replace
-
-### AC-V1: First vote applies
-- **Setup**: One `update_create` for update U (weight 0, VALID). Voter V has role weight 1.
-- **Events**: `update_vote` U, voter V, vote +1.
-- **Expect**: U.weight = 1, U.status = VALID; one current vote (U, V).
-
-### AC-V2: Revote replaces
-- **Setup**: U has weight 1; current vote (U, V) = +1 (effective +1).
-- **Events**: `update_vote` U, voter V, vote -1.
-- **Expect**: old effective +1 removed, new effective -1 added; U.weight = 0; U.status = VALID; current vote (U, V) = -1.
-
-### AC-V3: Revote same sign (no-op delta)
-- **Setup**: U has weight 1; (U, V) = +1.
-- **Events**: `update_vote` U, voter V, vote +1 again.
-- **Expect**: U.weight = 1 (delta 0); status VALID; current vote still +1.
-
-### AC-V4: No role → reject
-- **Setup**: U exists; voter V has no role.
-- **Events**: `update_vote` U, voter V, vote +1.
-- **Expect**: Rejected with `ROLE_REQUIRED`; U.weight unchanged; no vote stored for (U, V).
+### AC-I12: supposed_updates are metadata only
+- **Setup**: object_type `product` has `supposed_updates = [auto_price_sync]`, but no automation engine configured.
+- **Action**: Index and query normal object/update flow.
+- **Expect**: Indexer behavior is unchanged by `supposed_updates`; values are stored/exposed as metadata only.
 
 ---
 
-## Dynamic validity
+## B) Query/Masking Service: governance behavior
 
-### AC-D1: Weight crosses zero downward
-- **Setup**: U has weight 1, status VALID; (U, V1)=+1.
-- **Events**: `update_vote` U, voter V2 (weight 2), vote -1 → effective -2.
-- **Expect**: U.weight = -1; U.status = REJECTED.
+### AC-Q1: Same indexed state, different governance, different output
+- **Setup**: Indexed neutral state contains entries from multiple creators.
+- **Action**: Query once with governance G1, once with governance G2.
+- **Expect**: Responses differ according to mask policies; indexed state unchanged.
 
-### AC-D2: Weight crosses zero upward
-- **Setup**: U has weight -1, status REJECTED (e.g. one -1 vote).
-- **Events**: `update_vote` U, voter V2, vote +1 (effective +2).
-- **Expect**: U.weight = 1; U.status = VALID.
+### AC-Q2: Same indexed state, same governance, identical output
+- **Setup**: Fixed neutral state and governance input.
+- **Action**: Repeat identical query multiple times.
+- **Expect**: Same response payload/order each run.
+
+### AC-Q3: Global policy precedence
+- **Setup**: Global policy blocks creator C; request governance would allow C.
+- **Action**: Query with that request governance.
+- **Expect**: C remains filtered; no bypass of global policy.
+
+### AC-Q4: Governance reference missing
+- **Setup**: Request references unknown governance id/profile.
+- **Action**: Query.
+- **Expect**: Error code `GOVERNANCE_NOT_FOUND`.
+
+### AC-Q5: Governance resolution cycle/depth protection
+- **Setup**: Governance graph contains cycle or exceeds configured trust depth.
+- **Action**: Query.
+- **Expect**: Error code `GOVERNANCE_RESOLUTION_FAILED`.
+
+### AC-Q6: Cache invalidation on governance update
+- **Setup**: Query result cached for governance G.
+- **Action**: Apply governance event that changes role/trust in G, then query again.
+- **Expect**: Cache invalidated; new response reflects updated governance.
 
 ---
 
-## Reindex determinism (global)
+## C) Overflow behavior (publishing path)
 
-### AC-R1: Full reindex idempotence
-- **Setup**: Stream S with mix of object_create, update_create, update_vote; some duplicates and revotes.
-- **Action**: Index S once → state A. Reset state, index S again → state B.
-- **Expect**: A and B identical (same objects_current, updates_current, update_votes_current, governance_state; same reject log).
+### AC-OF1: Large import triggers overflow path
+- **Setup**: Import size exceeds configured Hive-only threshold.
+- **Action**: Run publisher.
+- **Expect**: Overflow strategy selects Arweave path per policy.
 
-### AC-R2: Order sensitivity
-- **Setup**: Two blocks: block 1 has object_create for `oid` by A; block 2 has object_create for `oid` by B.
-- **Expect**: Object created by A. Swap block order in test (B first, A second): object created by B. Proves canonical order is applied.
+### AC-OF2: Queue backlog triggers overflow drain
+- **Setup**: Queue depth and age exceed overflow thresholds.
+- **Action**: Run publisher scheduling cycle.
+- **Expect**: Backlog batch is offloaded to Arweave according to policy limits.
 
----
-
-## Governance bootstrap
-
-### AC-G1: First valid create_committee applies
-- **Setup**: governance_initialized = false; bootstrap_allowlist = [F1].
-- **Events**: create_committee from F1, valid payload.
-- **Expect**: governance_initialized = true; genesis_tx_id set; committee stored.
-
-### AC-G2: Second create_committee rejected
-- **Setup**: governance_initialized = true (genesis already applied).
-- **Events**: create_committee from F1 or any account.
-- **Expect**: Rejected with `DUPLICATE_GENESIS`; state unchanged.
-
-### AC-G3: create_committee from non-allowlist rejected
-- **Setup**: governance_initialized = false; bootstrap_allowlist = [F1].
-- **Events**: create_committee from account X (not in list).
-- **Expect**: Rejected with `UNAUTHORIZED_GOVERNANCE_OP`; governance_initialized remains false.
+### AC-OF3: Accepted vs finalized tracking
+- **Setup**: Transaction accepted but not yet finalized.
+- **Action**: Poll status until TTL/confirmation boundary.
+- **Expect**: State transitions are deterministic (`accepted` -> `confirmed` or retry/fail branch).

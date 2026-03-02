@@ -1,40 +1,42 @@
-# Governance bootstrap
+## Status of bootstrap model
 
-## Root of trust: bootstrap_allowlist
+- Governance declarations are indexed as regular governance objects/events.
+- Governance is selected and applied in the Query/Masking service.
 
-The indexer MUST have a **fixed** list of accounts allowed to perform the one-time genesis operation. This list is configured at deploy time (e.g. in config or env) and MUST NOT be changed without a coordinated upgrade.
+## Initialization principles
 
-- Config key (example): `governance.bootstrap_allowlist`
-- Type: list of Hive account names (strings).
-- Recommended size: 3–5 accounts.
+### Indexer initialization
 
-Only an account in `bootstrap_allowlist` may emit the **first** valid `create_committee` event.
+- The indexer starts with empty neutral governance state.
+- Governance declarations are accepted based on schema/business validity and canonical ordering.
+- No global one-time lock (`governance_initialized`) is used.
 
-## Single create_committee rule
+### Query service initialization
 
-1. **Before any create_committee is applied**
-   - State: `governance_initialized = false`, `genesis_tx_id = null`.
+- Query service must have a configured global policy baseline.
+- Request governance may be provided per request or via subscription profile mapping.
+- If request governance is absent, service uses configured default profile.
 
-2. **Processing create_committee events (in canonical order)**
-   - Canonical order: `(block_num, trx_index, op_index, transaction_id)`.
-   - For each `create_committee` event in order:
-     - If `governance_initialized` is already `true`: reject with `DUPLICATE_GENESIS`. Do not apply.
-     - If `creator` is **not** in `bootstrap_allowlist`: reject with `UNAUTHORIZED_GOVERNANCE_OP`. Do not apply.
-     - If payload is invalid: reject with `INVALID_GOVERNANCE_PAYLOAD`. Do not apply.
-     - Otherwise: apply the event, set `governance_initialized = true`, set `genesis_tx_id = transaction_id`, persist committee id, threshold, members.
+### Main governance reference
 
-3. **After the first valid create_committee**
-   - Every subsequent `create_committee` (any block, any creator) is rejected with `DUPLICATE_GENESIS`.
-   - No second committee creation is ever accepted.
+- Deployment must define a deterministic main governance reference (for example, `main_governance_object_id`).
+- Main governance creator is the only account allowed to create or update `object_type` entities.
+- All indexer instances in the same environment must use identical main governance reference.
 
-## Validity of the first create_committee
+## Governance declaration lifecycle
 
-The **first** valid `create_committee` is the one that:
-- Has `creator` in `bootstrap_allowlist`,
-- Passes payload validation (schema + business rules),
-- Is the earliest such event when ordered by `(block_num, trx_index, op_index, transaction_id)`.
+1. Governance declaration arrives as an object with `object_type = governance` via Hive events.
+2. Indexer validates payload and persists object/update event.
+3. Governance object updates and governance update votes are allowed only for the governance object `creator`.
+4. Query service may reference this governance in later requests.
+5. Governance resolution cache updates when referenced declarations change.
 
-## Determinism
+## Determinism requirements
 
-- Re-indexing must yield the same genesis: same `genesis_tx_id`, same `governance_initialized = true` after the same event.
-- The bootstrap_allowlist is part of the indexer configuration, not on-chain; it must be identical across indexer instances for the same network.
+- Same indexed event stream must produce same governance declaration set.
+- Same governance inputs and same indexed state must produce same effective mask.
+- Governance cache invalidation must be deterministic and replay-safe.
+
+## Compatibility note
+
+Implementations that still expose legacy bootstrap controls may keep them as deployment-specific guardrails, but they are non-normative for V2 behavior.

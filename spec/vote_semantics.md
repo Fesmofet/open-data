@@ -1,6 +1,7 @@
 # Vote semantics: revote = replace, dynamic validity
 
-**Note:** The muted-list gating rule (creator must not be muted by any governance participant at event time) applies only to **create** operations (`object_create`, `update_create`). It does **not** apply to `update_vote`.
+**Note:** In V2, governance masking is applied by the Query/Masking Service.  
+Vote write semantics below describe Indexer Service behavior for neutral state.
 
 ## One active vote per (update_id, voter)
 
@@ -40,6 +41,14 @@ Status can change multiple times over time (VALID → REJECTED → VALID etc.) a
 ## Initial state for update_create
 
 - On `update_create`: `weight = 0`, `status = VALID` (since 0 >= 0).
+
+## LWW for single-value fields (same creator)
+
+For update types that target a single-value field (winner is exactly one value):
+
+- Key scope: `(object_id, field_key, creator)`.
+- If the same `creator` submits a newer `update_create` for the same `field_key` on the same object, the previous current update for that key scope is replaced by the newer one.
+- This replacement is deterministic and equivalent to last-write-wins (LWW) within that creator scope.
 
 ## Determinism
 

@@ -1,23 +1,11 @@
 # Object uniqueness and collision behavior
 
-## Precondition: muted list (create operations)
+## Scope in V2
 
-Before any business validation for **create** operations (`object_create`, `update_create`):
+This file defines write-path uniqueness rules for the Indexer Service.
 
-- The indexer MUST check whether `creator` is in the **muted list** (Hive muted list) of **any** governance participant at **event time** (block time of the event).
-- **Governance participants** = committee members + governance-role holders (see [spec_governance.md](../spec_governance.md)).
-- If there exists at least one participant such that `creator` is muted by that participant at event time, the event is **rejected** with `CREATOR_MUTED_BY_GOVERNANCE`.
-- This check is performed **before** uniqueness, payload, or referential checks so that the reject reason is unambiguous.
-- Same rule applies to both `object_create` (od.objects.v1) and `update_create` (od.updates.v1). It does **not** apply to `update_vote`.
-
-Determinism: muted state is evaluated at event block time so reindex yields the same accept/reject result.
-
-**Validation order for create events** (object_create and update_create):
-
-1. Canonical order applied.
-2. **Muted check** at event time: if creator muted by any governance participant → reject `CREATOR_MUTED_BY_GOVERNANCE`.
-3. Business validation (payload, uniqueness, object existence for update_create, etc.).
-4. Apply state change.
+- Governance-based creator filtering is a Query/Masking concern in V2.
+- Indexer uniqueness logic is independent of request governance masks.
 
 ## Rule: global uniqueness of object_id
 
