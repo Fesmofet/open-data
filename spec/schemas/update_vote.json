@@ -4,11 +4,15 @@
   "title": "update_vote",
   "description": "Payload schema for ODL envelope action update_vote (events[].payload)",
   "type": "object",
-  "required": ["v", "action", "update_id", "voter", "percent", "transaction_id"],
+  "required": ["v", "action", "update_id", "voter", "vote", "transaction_id"],
   "additionalProperties": true,
   "properties": {
     "update_id": { "type": "string", "minLength": 1, "maxLength": 256 },
     "voter": { "type": "string", "minLength": 1, "maxLength": 32 },
-    "percent": { "type": "integer", "minimum": -10000, "maximum": 10000 }
+    "vote": {
+      "type": "string",
+      "enum": ["for", "against", "remove"],
+      "description": "Validity vote intent: approve, reject, or remove current vote"
+    }
   }
 }

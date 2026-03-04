@@ -8,8 +8,22 @@ All role-based interpretation is resolved in Query/Masking Service using governa
 ### Storage model
 
 - One active raw validity vote per `(update_id, voter)`.
-- Revote replaces previous vote for the same key.
+- `vote = for|against` creates/replaces current vote for the same key.
+- `vote = remove` clears current vote for the same key (idempotent no-op if vote does not exist).
 - Indexer stores raw vote payload and canonical event metadata only.
+
+### Payload contract (logical)
+
+- ODL id: `odl-mainnet` (or `odl-testnet`)
+- Event envelope item:
+  - `action = update_vote`
+  - `v`
+  - `payload` (contains fields below)
+- Required fields:
+  - `update_id`
+  - `voter`
+  - `vote` (`for`, `against`, `remove`)
+  - `transaction_id`
 
 ### Query-time decisive resolution
 
@@ -18,14 +32,16 @@ Validity is derived at query time with tiered hierarchy:
 1. `owner` always wins.
 2. if no owner vote exists, latest `admin` wins (LWAW).
 3. if no owner/admin vote exists, latest `trusted` wins (LWTW).
-4. if no decisive vote exists, fallback is baseline `VALID`.
+4. if no decisive vote exists (including after `remove`), fallback is baseline `VALID`.
 
 `latest` is determined by canonical order:
 `(block_num, trx_index, op_index, transaction_id)`.
 
 ### Output
 
-- Query layer derives `final_status` (`VALID` or `REJECTED`) from decisive validity vote.
+- Query layer derives `final_status` (`VALID` or `REJECTED`) from decisive validity vote:
+  - `for` -> `VALID`
+  - `against` -> `REJECTED`
 - Indexer does not persist authoritative `final_status` from role logic.
 
 ## B) Ranking channel (`rank_vote`)

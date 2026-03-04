@@ -25,8 +25,8 @@ Canonical event order is:
 
 ### AC-I3: Revote replaces previous vote
 - **Setup**: Update U exists, voter V has valid role.
-- **Events**: `update_vote` +1, then `update_vote` -1 by same voter.
-- **Expect**: Single active raw validity vote for `(U, V)` remains (latest value stored).
+- **Events**: `update_vote` with `vote = for`, then `vote = against`, then `vote = remove` by same voter.
+- **Expect**: Last `remove` clears active raw validity vote for `(U, V)`; if sequence ends on `for/against`, single latest value remains.
 
 ### AC-I4: Missing role does not reject raw vote ingestion
 - **Setup**: Update U exists, voter currently has no role in governance context.

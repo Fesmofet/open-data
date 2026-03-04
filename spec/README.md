@@ -16,6 +16,7 @@ V2 is a four-service model:
 - **schemas/** — JSON Schema for blockchain events.
   - includes `odl_event_envelope.json` for unified ODL `custom_json` envelope.
   - includes draft `object_type_create.json` and `object_type_update.json` for `object_type` registry lifecycle.
+  - includes `update_vote.json` for validity votes (`vote = for|against|remove`).
   - includes `rank_vote.json` for ranking channel votes.
 - **reject_codes.md** — Canonical processing and API/query error codes.
 - **object_uniqueness.md** — object_id uniqueness and collision rules.
@@ -60,10 +61,3 @@ Action space in `events[].action`:
 - End-to-end summary: `../spec_governance_updates.md`
 - Governance overview: `../GOVERNANCE_RU.md`
 
-## Running schema checks
-
-From repo root:
-
-```bash
-node spec/validate_schemas.js
-```
