@@ -1,4 +1,4 @@
-# Social and Account Ingestion (V2)
+# Social and Account Ingestion
 
 ## 1) Scope
 

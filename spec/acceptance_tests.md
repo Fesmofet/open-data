@@ -1,4 +1,4 @@
-# Acceptance test cases (V2)
+# Acceptance test cases
 
 These cases validate core services:
 

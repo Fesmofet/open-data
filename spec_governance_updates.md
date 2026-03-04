@@ -1,4 +1,4 @@
-# Project Specification: Open Data V2
+# Project Specification: Open Data 
 
 ## 1. Goal
 

@@ -1,10 +1,10 @@
-# Open Data V2 Specification
+# Open Data Specification
 
 Specification for deterministic indexing plus request-time governance masking.
 
 ## Architecture baseline
 
-V2 is a four-service model:
+ is a four-service model:
 
 - `Indexer Service` stores canonical neutral state.
 - `Query/Masking Service` applies governance masks per request.

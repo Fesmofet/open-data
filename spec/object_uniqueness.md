@@ -1,6 +1,6 @@
 # Object uniqueness and collision behavior
 
-## Scope in V2
+## Scope
 
 This file defines write-path uniqueness rules for the Indexer Service.
 

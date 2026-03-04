@@ -1,4 +1,4 @@
-# Governance Resolution (V2)
+# Governance Resolution 
 
 ## 1) Purpose
 

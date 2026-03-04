@@ -1,4 +1,4 @@
-# Monetization and Plan Entitlements (V1)
+# Monetization and Plan Entitlements 
 
 ## 1) Purpose
 

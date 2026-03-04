@@ -1,4 +1,4 @@
-# Object Type Entity (V2)
+# Object Type Entity 
 
 ## 1) Purpose
 

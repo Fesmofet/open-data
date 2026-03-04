@@ -1,4 +1,4 @@
-# Storage Specification (V1)
+# Storage Specification 
 
 ## 1) Primary write path
 

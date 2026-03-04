@@ -1,8 +1,8 @@
-# Services Architecture (V2)
+# Services Architecture
 
 ## 1) Overview
 
-V2 is split into four deployable services:
+is split into four deployable services:
 
 - `Indexer Service` (write path, blockchain ingestion)
 - `Query/Masking Service` (read path, governance policy application)

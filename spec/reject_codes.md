@@ -1,6 +1,6 @@
-# Canonical Error Codes (V2)
+# Canonical Error Codes 
 
-V2 separates write-path processing errors from query/masking errors.
+separates write-path processing errors from query/masking errors.
 
 ## 1) Indexer write-path reject codes
 
