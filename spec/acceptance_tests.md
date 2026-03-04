@@ -132,6 +132,11 @@ Canonical event order is:
 - **Action**: Compute ordered ranking list.
 - **Expect**: tie-break uses deterministic order: decisive rank vote canonical order, then update canonical order, then `update_id ASC`.
 
+### AC-I25: rank_vote rejected for single-cardinality target
+- **Setup**: Update U targets a field/update type with `single` cardinality.
+- **Action**: Submit `rank_vote` for U.
+- **Expect**: Rejected with `UNSUPPORTED_RANK_TARGET`.
+
 ---
 
 ## B) Query/Masking Service: governance behavior

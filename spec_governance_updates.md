@@ -78,6 +78,8 @@ Core entities:
 - `rank_vote` does not change `VALID/REJECTED` status.
 - `rank_vote` updates ranking channel only.
 - One active raw rank vote per `(update_id, voter, rank_context)`; revote is replace.
+- `rank_vote` is valid only for target updates of `multi` cardinality.
+- For `single` cardinality targets, `rank_vote` must be rejected with `UNSUPPORTED_RANK_TARGET`.
 - Hierarchy for decisive ranking signal (same as approve/reject policy):
   1. `owner` always wins.
   2. if owner absent, latest `admin` wins (LWAW).

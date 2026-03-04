@@ -36,6 +36,7 @@ Indexer MUST persist reject code whenever an event is not applied to neutral sta
 | `UPDATE_NOT_FOUND` | Referenced `update_id` does not exist (for `update_vote`). |
 | `INVALID_UPDATE_PAYLOAD` | Update payload failed schema or business validation. |
 | `INVALID_RANK_PAYLOAD` | `rank_vote` payload failed schema or business validation. |
+| `UNSUPPORTED_RANK_TARGET` | `rank_vote` is applied to an update whose target update type has `single` cardinality. |
 
 ### Hive social/account ingestion
 
