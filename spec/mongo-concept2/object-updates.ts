@@ -17,6 +17,8 @@ export interface ObjectUpdateDocument {
   updateType: string;
   creator: string;
   cardinality: UpdateCardinality;
+  /** BCP 47 language-REGION tag, e.g. "en-US", "fr-FR". Null means language-neutral. */
+  locale: string | null;
   createdAtUnix: number;
   createdPosition: CanonicalPosition;
   value: UpdateValue;

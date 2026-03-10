@@ -18,6 +18,8 @@ export interface ObjectUpdateRow extends CanonicalPositionColumns {
   update_type: string;
   creator: string;
   cardinality: UpdateCardinality;
+  /** BCP 47 language-REGION tag, e.g. "en-US", "fr-FR". Null means language-neutral. */
+  locale: string | null;
   created_at_unix: number;
   value_kind: ValueKind;
   value_text: string | null;
