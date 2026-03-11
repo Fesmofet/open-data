@@ -74,6 +74,12 @@ Details: [architecture.md](architecture.md).
 | [storage.md](storage.md) | Primary write path (Hive), overflow (IPFS), required datasets |
 | [overflow-strategy.md](overflow-strategy.md) | When to use Hive vs IPFS; triggers, lifecycle, Arweave deferred |
 
+### Architecture decisions
+
+| Doc | Description |
+|-----|-------------|
+| [adr-postgres-over-mongo.md](adr-postgres-over-mongo.md) | Why PostgreSQL was chosen over MongoDB: relational data model, combined text+geo, backup/PITR, memory and write-path scaling |
+
 ### Social, platform, validation
 
 | Doc | Description |
