@@ -10,17 +10,23 @@ A governance object is a regular object in `objects_core` with `objectType = 'go
 
 ## 2) Governance update types
 
-All update types are **multi-cardinality** (accumulate, never replace). No length restriction on value lists.
+Most update types are **multi-cardinality** (accumulate, never replace). `objectControl` is **single-cardinality** — only one active value at a time. No length restriction on value lists.
 
-| `updateType`      | Value format                              | Meaning |
-|-------------------|-------------------------------------------|---------|
-| `admin`           | text — Hive account name                 | Account granted admin role in this governance context |
-| `trusted`         | text — Hive account name                 | Account granted trusted role in this governance context |
-| `validityCutoff`  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are treated as untrusted; historical valid work remains |
-| `blacklist`       | text — Hive account name                 | Account flagged for reward eligibility (informational only, not enforced in V2) |
-| `whitelist`       | text — Hive account name                 | Account protected from appearing in the resolved `muted` set regardless of who muted them |
-| `inheritsFrom`    | text — `objectId` of another governance object | Merge `admin` and `trusted` lists from the referenced governance object into this one (one level only) |
-| `authority`       | text — Hive account name                 | When present, restricts object search scope to objects where at least one `authority` account holds an `object_authority` record (see [authority-entity.md](authority-entity.md)) |
+| `updateType`     | Cardinality | Value format | Meaning |
+|------------------|-------------|--------------|---------|
+| `admins`         | multi  | text — Hive account name | Account granted admin role in this governance context |
+| `trusted`        | multi  | text — Hive account name | Account granted trusted role in this governance context |
+| `validityCutoff` | multi  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are untrusted; historical work remains valid |
+| `restricted`      | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
+| `whitelist`      | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
+| `inheritsFrom`   | multi  | JSON — `{ objectId: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
+| `authority`      | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authority` account holds an `object_authority` record |
+| `objectControl`  | single | text — `ObjectControlMode` enum value | Activates global object authority control for this governance context |
+
+```typescript
+// Valid scope field names — any key from the output snapshot except 'objectControl' and 'inheritsFrom'.
+type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authority' | 'muted';
+```
 
 ## 3) Write rules
 
@@ -37,37 +43,40 @@ The resolved governance snapshot is computed at request time in five steps.
 
 For each update type, include only entries where `update.creator == governance.creator`. An entry is valid if the creator voted `for` it (or no vote exists, defaulting to valid); it is excluded if the creator voted `against` it.
 
-- `admin` → resolved set of account strings
+- `admins` → resolved set of account strings
 - `trusted` → resolved set of account strings
 - `validityCutoff` → resolved list of `{ account: string, timestamp: number }`
-- `blacklist` → resolved set of account strings
+- `restricted` → resolved set of account strings
 - `whitelist` → resolved set of account strings
-- `inheritsFrom` → resolved set of governance `objectId` strings
+- `inheritsFrom` → resolved list of `{ objectId: string, scope: GovernanceScope[] }`
 - `authority` → resolved set of account strings
+- `objectControl` → resolved single `ObjectControlMode` string, or `null` if absent / voted against
 
-### Step 2: Resolve inherited admin and trusted
+### Step 2: Resolve inherited fields
 
-For each `objectId` in `inheritsFrom`:
+For each entry in `inheritsFrom`:
 
 - Load the referenced governance object from `objects_core` (must have `objectType = 'governance'`).
-- Resolve **only** its `admin` and `trusted` update lists: include entries where `update.creator == that object's creator`, valid if the creator voted `for` (or no vote, defaulting to valid).
+- Resolve **only** the fields listed in `entry.scope` from that object, using the same creator-vote resolution as Step 1.
 - **Do not** follow `inheritsFrom` entries of the referenced object — one level only.
+- For `muted` in scope: compute the referenced governance's `muted` set (aggregate mutes of its resolved `admins ∪ trusted`, without applying its own `whitelist`).
 
-### Step 3: Merge admin and trusted sets
+### Step 3: Merge by scope
+
+For each field named in any `inheritsFrom` entry's `scope`, union the inherited values into the own set:
 
 ```
-admins  = own admins  ∪ inherited admins  (union, deduplicated)
-trusted = own trusted ∪ inherited trusted (union, deduplicated)
+field = own field ∪ inherited field  (union, deduplicated)
 ```
 
-`validityCutoff`, `blacklist`, `whitelist`, and `muted` are **not** inherited — they come from the root governance object only.
+Fields not listed in any `scope` are not inherited — they come from the root governance object only. `objectControl` and `inheritsFrom` are never merged regardless of scope.
 
 ### Step 4: Aggregate muted accounts
 
 For every account in `admins ∪ trusted` (merged set from step 3):
 
 - Load their active mutes from `social_mutes_current` (`WHERE muter = account`).
-- Union all results into a single `muted` set.
+- Union all results, plus any `muted` values carried in from step 3, into a single `muted` set.
 
 ### Step 5: Apply whitelist filter
 
@@ -78,15 +87,26 @@ Whitelisted accounts are never present in the resolved `muted` set, regardless o
 ### Output snapshot
 
 ```typescript
+// Extensible enum — only 'full' is defined in V2; future modes may be added.
+type ObjectControlMode = 'full';
+
+type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authority' | 'muted';
+
+interface InheritsFromEntry {
+  objectId: string;
+  scope:    GovernanceScope[];
+}
+
 {
-  admins:          string[];
-  trusted:         string[];
-  validityCutoff:  { account: string; timestamp: number }[];
-  blacklist:       string[];
-  whitelist:       string[];
-  inheritsFrom:    string[];
-  authority:       string[];
-  muted:           string[];
+  admins:         string[];
+  trusted:        string[];
+  validityCutoff: { account: string; timestamp: number }[];
+  restricted:      string[];
+  whitelist:      string[];
+  inheritsFrom:   InheritsFromEntry[];
+  authority:      string[];
+  objectControl:  ObjectControlMode | null;  // null = control off
+  muted:          string[];
 }
 ```
 
@@ -114,11 +134,32 @@ When `authority` is empty, no scope restriction is applied — all objects are c
 
 Use case: a governance context scoped to a specific curator's catalogue — only objects that curator has explicitly claimed authority over are visible in search results for that governance.
 
+## 7) objectControl semantics
+
+`objectControl` sets a global authority mode for all objects in the governance context.
+
+### Modes
+
+| Value    | Behaviour |
+|----------|-----------|
+| `null`   | Control off (default). The curator filter from [authority-entity.md](authority-entity.md) applies only to objects that have explicit `object_authority` records. Objects without authority records use normal vote semantics. |
+| `'full'` | All objects behave as if they have active ownership authority. The curator filter applies to **every** object in the context, regardless of whether explicit `object_authority` records exist. Governance `admins` act as the implicit ownership authority across all objects. |
+
+In `'full'` mode the effective curator set for any object is:
+
+```
+C = { governance admins } ∪ { explicit ownership holders from object_authority }
+```
+
+### Future modes
+
+`ObjectControlMode` is an extensible string enum. Additional modes may be defined in future iterations without breaking the snapshot structure. Unrecognised mode values must be treated as `null` (control off) by the query layer.
+
 ## 8) Role domains
 
 Data domain:
 
-- `admin`
+- `admins`
 - `trusted`
 
 Social domain:

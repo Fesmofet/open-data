@@ -209,8 +209,8 @@ Canonical event order is:
 - **Action**: Resolve query snapshot with trust cutoff active.
 - **Expect**: pre-cutoff actions remain valid; post-cutoff actions are excluded from trusted resolution.
 
-### AC-Q14: Whitelist and blacklist updates are applied by precedence
-- **Setup**: Same account appears in both whitelist and blacklist through inherited governance references.
+### AC-Q14: Whitelist and restricted updates are applied by precedence
+- **Setup**: Same account appears in both whitelist and restricted through inherited governance references.
 - **Action**: Resolve query snapshot.
 - **Expect**: Effective allow/deny result follows deterministic precedence rules and is stable across re-runs.
 
