@@ -20,12 +20,12 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 | `restricted`      | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
 | `whitelist`      | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
 | `inheritsFrom`   | multi  | JSON — `{ objectId: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
-| `authority`      | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authority` account holds an `object_authority` record |
+| `authorities`      | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account holds an `object_authority` record |
 | `objectControl`  | single | text — `ObjectControlMode` enum value | Activates global object authority control for this governance context |
 
 ```typescript
 // Valid scope field names — any key from the output snapshot except 'objectControl' and 'inheritsFrom'.
-type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authority' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'muted';
 ```
 
 ## 3) Write rules
@@ -49,7 +49,7 @@ For each update type, include only entries where `update.creator == governance.c
 - `restricted` → resolved set of account strings
 - `whitelist` → resolved set of account strings
 - `inheritsFrom` → resolved list of `{ objectId: string, scope: GovernanceScope[] }`
-- `authority` → resolved set of account strings
+- `authorities` → resolved set of account strings
 - `objectControl` → resolved single `ObjectControlMode` string, or `null` if absent / voted against
 
 ### Step 2: Resolve inherited fields
@@ -90,7 +90,7 @@ Whitelisted accounts are never present in the resolved `muted` set, regardless o
 // Extensible enum — only 'full' is defined in V2; future modes may be added.
 type ObjectControlMode = 'full';
 
-type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authority' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'muted';
 
 interface InheritsFromEntry {
   objectId: string;
@@ -104,7 +104,7 @@ interface InheritsFromEntry {
   restricted:      string[];
   whitelist:      string[];
   inheritsFrom:   InheritsFromEntry[];
-  authority:      string[];
+  authorities:      string[];
   objectControl:  ObjectControlMode | null;  // null = control off
   muted:          string[];
 }
@@ -120,17 +120,17 @@ interface InheritsFromEntry {
 
 Use case: a trusted account was compromised at a known date. The cutoff preserves the historical contribution while discarding post-compromise actions.
 
-## 6) authority filter semantics
+## 6) authorities filter semantics
 
-When the resolved `authority` set is non-empty, it acts as a **search scope restriction** applied before any other query filters.
+When the resolved `authorities` set is non-empty, it acts as a **search scope restriction** applied before any other query filters.
 
-Query execution with a non-empty `authority`:
+Query execution with a non-empty `authorities`:
 
-1. Look up `object_authority` for all entries where `username ∈ authority` (any `authorityType`, any `targetKind = 'object'`).
+1. Look up `object_authority` for all entries where `username ∈ authorities` (any `authorityType`, any `targetKind = 'object'`).
 2. Collect the resulting set of `targetId` values — these are the **eligible object IDs**.
 3. Restrict the object search to only those eligible IDs. Objects not present in the eligible set are excluded from results entirely, regardless of other filters.
 
-When `authority` is empty, no scope restriction is applied — all objects are candidates.
+When `authorities` is empty, no scope restriction is applied — all objects are candidates.
 
 Use case: a governance context scoped to a specific curator's catalogue — only objects that curator has explicitly claimed authority over are visible in search results for that governance.
 
