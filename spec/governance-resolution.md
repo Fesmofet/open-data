@@ -17,13 +17,13 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 | `admins`         | multi  | text — Hive account name | Account responsible for object data curation; highest precedence in vote resolution |
 | `trusted`        | multi  | text — Hive account name | Account responsible for object data curation on objects they have claimed authority over; lower precedence than `admins` |
 | `moderators`     | multi  | text — Hive account name | Account responsible for muting social content; their mutes form the resolved `muted` set |
-| `validityCutoff` | multi  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are untrusted; historical work remains valid |
-| `restricted`     | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
-| `whitelist`      | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
-| `inheritsFrom`   | multi  | JSON — `{ objectId: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
 | `authorities`    | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account holds an `object_authority` record |
+| `restricted`     | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
 | `banned`         | multi  | text — Hive account name | Platform-level ban: triggers deletion of all objects and updates created by this account; at governance level all remaining content from this account is excluded from resolved views |
+| `whitelist`      | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
 | `objectControl`  | single | text — `ObjectControlMode` enum value | Activates global object authority control for this governance context |
+| `inheritsFrom`   | multi  | JSON — `{ objectId: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
+| `validityCutoff` | multi  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are untrusted; historical work remains valid |
 
 ```typescript
 // Valid scope field names — any key from the output snapshot except 'objectControl' and 'inheritsFrom'.
