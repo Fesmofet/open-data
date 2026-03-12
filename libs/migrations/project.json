@@ -1,0 +1,10 @@
+{
+  "name": "migrations",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/migrations/src",
+  "projectType": "library",
+  "tags": [],
+  "implicitDependencies": ["core"],
+  "// targets": "to see all targets run: nx show project migrations --web",
+  "targets": {}
+}

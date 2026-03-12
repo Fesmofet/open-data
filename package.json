@@ -2,7 +2,12 @@
   "name": "@opden-data-layer/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "migrate": "tsx libs/migrations/src/cli.ts latest",
+    "migrate:latest": "tsx libs/migrations/src/cli.ts latest",
+    "migrate:down": "tsx libs/migrations/src/cli.ts down",
+    "migrate:status": "tsx libs/migrations/src/cli.ts status"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -11,6 +16,8 @@
     "@nestjs/schedule": "^6.1.1",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",
+    "kysely": "^0.28.11",
+    "pg": "^8.20.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0"
   },
@@ -32,6 +39,7 @@
     "@swc/helpers": "~0.5.18",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
+    "@types/pg": "^8.18.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "jest": "^30.0.2",
@@ -42,6 +50,7 @@
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
     "webpack-cli": "^5.1.4"

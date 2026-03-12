@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@opden-data-layer/core": ["libs/core/src/index.ts"],
+      "@opden-data-layer/migrations": ["libs/migrations/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
