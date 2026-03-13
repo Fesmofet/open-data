@@ -28,9 +28,8 @@ CREATE TABLE object_updates (
   creator         TEXT NOT NULL,
   cardinality     TEXT NOT NULL CHECK (cardinality IN ('single', 'multi')),
   created_at_unix BIGINT NOT NULL,
-  block_num       BIGINT NOT NULL,
-  trx_index       INT NOT NULL,
-  op_index        INT NOT NULL,
+  -- Packed canonical order: block_num(32)|trx_index(10)|op_index(8)|odl_event_index(8). See event-seq.ts.
+  event_seq       BIGINT NOT NULL,
   transaction_id  TEXT NOT NULL,
   value_kind      TEXT NOT NULL CHECK (value_kind IN ('text', 'geo', 'json')),
   value_text      TEXT,
@@ -79,9 +78,7 @@ CREATE TABLE validity_votes (
   object_id      TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
   voter          TEXT NOT NULL,
   vote           TEXT NOT NULL CHECK (vote IN ('for', 'against')),
-  block_num      BIGINT NOT NULL,
-  trx_index      INT NOT NULL,
-  op_index       INT NOT NULL,
+  event_seq      BIGINT NOT NULL,
   transaction_id TEXT NOT NULL,
   PRIMARY KEY (update_id, voter)
 );
@@ -97,9 +94,7 @@ CREATE TABLE rank_votes (
   voter          TEXT NOT NULL,
   rank           INT NOT NULL CHECK (rank >= 1 AND rank <= 10000),
   rank_context   TEXT NOT NULL,
-  block_num      BIGINT NOT NULL,
-  trx_index      INT NOT NULL,
-  op_index       INT NOT NULL,
+  event_seq      BIGINT NOT NULL,
   transaction_id TEXT NOT NULL,
   PRIMARY KEY (update_id, voter, rank_context)
 );

@@ -17,9 +17,7 @@ It is normative for Indexer Service storage schema and merge behavior.
 
 ## 2) Canonical ordering
 
-All social/account events are applied in canonical order:
-
-`(block_num ASC, trx_index ASC, op_index ASC, transaction_id ASC)`
+All social/account events are applied in canonical order by `event_seq ASC` — a packed BIGINT encoding `(block_num, trx_index, op_index, odl_event_index)`. See `libs/core/src/event-seq.ts`.
 
 All conflict resolution and merge behavior in this document uses this ordering.
 
@@ -65,13 +63,11 @@ Append-only reblog log.
 - `account` (string)
 - `author` (string, original post author)
 - `permlink` (string, original post permlink)
-- `block_num` (int)
-- `trx_index` (int)
-- `op_index` (int)
+- `event_seq` (bigint, packed canonical order)
 - `transaction_id` (string)
 - `event_time_unix` (bigint)
 
-Recommended unique key: `(account, author, permlink, block_num, trx_index, op_index, transaction_id)`
+Recommended unique key: `(account, author, permlink, event_seq, transaction_id)`
 
 ## 3.4 `accounts_current`
 

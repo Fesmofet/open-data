@@ -36,8 +36,7 @@ Validity is derived at query time with tiered hierarchy:
 3. If no decisive admin/trusted vote exists (including after `remove`), apply community vote weight (see [section C](#c-community-vote-weight)).
 4. If no community votes exist either, fallback is baseline `VALID`.
 
-`latest` is determined by canonical order:
-`(block_num, trx_index, op_index, transaction_id)`.
+`latest` is determined by `event_seq DESC` — a packed BIGINT encoding `(block_num, trx_index, op_index, odl_event_index)`. See `libs/core/src/event-seq.ts` for the encoding layout.
 
 ### Output
 
@@ -78,8 +77,7 @@ Ranking uses the same hierarchy:
 1. Latest `admin` wins (LWAW).
 2. If no admins vote exists, latest `trusted` wins but only on objects he has authority update (LWTW).
 
-`latest` is determined by canonical order:
-`(block_num, trx_index, op_index, transaction_id)`.
+`latest` is determined by `event_seq DESC`.
 
 ### Ranking output
 
@@ -91,8 +89,8 @@ Ranking uses the same hierarchy:
 
 For updates with equal `rank_score` in same `rank_context`:
 
-1. latest decisive rank vote by canonical order (`block_num DESC`, `trx_index DESC`, `op_index DESC`, `transaction_id DESC`);
-2. latest update event by canonical order (`block_num DESC`, `trx_index DESC`, `op_index DESC`, `transaction_id DESC`);
+1. latest decisive rank vote by `event_seq DESC`;
+2. latest update event by `event_seq DESC`;
 3. `update_id ASC`.
 
 ## C) Community vote weight

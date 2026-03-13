@@ -14,6 +14,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       object_id   TEXT NOT NULL PRIMARY KEY,
       object_type TEXT NOT NULL,
       creator     TEXT NOT NULL,
+      transaction_id TEXT NOT NULL,
       weight      DOUBLE PRECISION,
       meta_group_id TEXT,
       seq         BIGINT NOT NULL DEFAULT 0
@@ -31,9 +32,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       creator         TEXT NOT NULL,
       cardinality     TEXT NOT NULL CHECK (cardinality IN ('single', 'multi')),
       created_at_unix BIGINT NOT NULL,
-      block_num       BIGINT NOT NULL,
-      trx_index       INT NOT NULL,
-      op_index        INT NOT NULL,
+      event_seq       BIGINT NOT NULL,
       transaction_id  TEXT NOT NULL,
       value_kind      TEXT NOT NULL CHECK (value_kind IN ('text', 'geo', 'json')),
       value_text      TEXT,
@@ -81,9 +80,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       object_id      TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
       voter          TEXT NOT NULL,
       vote           TEXT NOT NULL CHECK (vote IN ('for', 'against')),
-      block_num      BIGINT NOT NULL,
-      trx_index      INT NOT NULL,
-      op_index       INT NOT NULL,
+      event_seq      BIGINT NOT NULL,
       transaction_id TEXT NOT NULL,
       PRIMARY KEY (update_id, voter)
     )
@@ -98,9 +95,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       voter          TEXT NOT NULL,
       rank           INT NOT NULL CHECK (rank >= 1 AND rank <= 10000),
       rank_context   TEXT NOT NULL,
-      block_num      BIGINT NOT NULL,
-      trx_index      INT NOT NULL,
-      op_index       INT NOT NULL,
+      event_seq      BIGINT NOT NULL,
       transaction_id TEXT NOT NULL,
       PRIMARY KEY (update_id, voter, rank_context)
     )

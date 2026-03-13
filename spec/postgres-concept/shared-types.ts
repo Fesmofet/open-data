@@ -9,13 +9,14 @@ export type ValidityVoteValue = 'for' | 'against';
 export type ValueKind = 'text' | 'geo' | 'json';
 
 /**
- * Inlined canonical event position columns.
- * All three child tables (object_updates, validity_votes, rank_votes) extend this.
+ * Canonical event position.
+ * All three child tables (object_updates, validity_votes, rank_votes) store
+ * a packed BIGINT `event_seq` (block_num|trx_index|op_index|odl_event_index)
+ * plus a reference `transaction_id`.
+ * See libs/core/src/event-seq.ts for encoding/decoding.
  */
 export interface CanonicalPositionColumns {
-  block_num: number;
-  trx_index: number;
-  op_index: number;
+  event_seq: bigint;
   transaction_id: string;
 }
 

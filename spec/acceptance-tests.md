@@ -8,8 +8,7 @@ These cases validate core services:
 - Query/Masking Service (governance mask behavior per request)
 - API Gateway/Rate-Limit Service (token and entitlement enforcement)
 
-Canonical event order is:
-`(block_num, trx_index, op_index, transaction_id)`.
+Canonical event order is determined by `event_seq` — a packed BIGINT encoding `(block_num, trx_index, op_index, odl_event_index)`. See `libs/core/src/event-seq.ts`.
 
 ---
 

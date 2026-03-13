@@ -17,15 +17,11 @@ This file defines write-path uniqueness rules for the Indexer Service.
 
 ## Canonical order for race resolution
 
-Events are applied in **canonical order**:
-
-```
-(block_num ASC, trx_index ASC, op_index ASC, transaction_id ASC)
-```
+Events are applied in **canonical order** by `event_seq ASC` — a packed BIGINT encoding `(block_num, trx_index, op_index, odl_event_index)`. See `libs/core/src/event-seq.ts`.
 
 When multiple `object_create` events with the **same** `object_id` exist (e.g. in the same block or across blocks):
 
-1. Sort all such events by the canonical order above.
+1. Sort all such events by `event_seq ASC`.
 2. Apply the **first** valid event (payload valid, creator matches, etc.): create the object and record `created_tx_id`, `created_block`, `creator`.
 3. All **subsequent** events with the same `object_id` are rejected with `OBJECT_ALREADY_EXISTS`, regardless of block or creator.
 
