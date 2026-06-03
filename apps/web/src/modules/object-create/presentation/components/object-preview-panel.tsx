@@ -283,7 +283,7 @@ export function ObjectPreviewPanel({
               </p>
             </div>
 
-            <div className="rounded-btn border border-border-subtle bg-ghost-surface p-3">
+            <div className="rounded-btn border border-border bg-ghost-surface p-3">
               <p className="text-body-sm font-weight-label text-heading">
                 {t('object_create_seo_keywords_title')}
               </p>

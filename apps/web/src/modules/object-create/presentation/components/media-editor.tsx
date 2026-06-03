@@ -166,7 +166,7 @@ export function MediaEditor({
               </p>
 
               {albumEntries.map((entry) => (
-                <div key={entry.entryKey} className="rounded-btn border border-border-subtle bg-surface/40 p-4">
+                <div key={entry.entryKey} className="rounded-btn border border-border bg-surface/40 p-4">
                   <p className="mb-2 text-body-sm font-weight-label text-heading">
                     {labelForUpdateType(UPDATE_TYPES.IMAGE_GALLERY)}
                   </p>
@@ -200,7 +200,7 @@ export function MediaEditor({
                 return (
                   <div
                     key={albumName}
-                    className="rounded-btn border border-border-subtle bg-bg p-4"
+                    className="rounded-btn border border-border bg-bg p-4"
                   >
                     <p className="text-body-sm font-weight-label text-heading">
                       {albumName}

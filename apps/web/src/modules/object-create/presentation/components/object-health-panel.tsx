@@ -36,7 +36,7 @@ const RATING_BADGE_CLASS: Record<SemanticDimensionRating, string> = {
   good: 'border-accent/25 bg-accent/10 text-fg',
   medium: 'border-border bg-ghost-surface text-fg-secondary',
   weak: 'border-border bg-bg text-muted',
-  missing: 'border-border-subtle bg-bg text-muted',
+  missing: 'border-border bg-bg text-muted',
 };
 
 function hintLabel(hint: string, t: (key: string) => string): string {

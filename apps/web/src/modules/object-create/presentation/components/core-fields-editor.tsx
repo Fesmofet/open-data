@@ -113,7 +113,6 @@ export function CoreFieldsEditor({
             allowRemove={
               block.id !== 'identity' && block.id !== 'required'
             }
-            emphasize={block.id === 'required'}
           />
         ))}
       </div>
@@ -140,7 +139,6 @@ function SemanticBlock({
   onRemoveField,
   disabled,
   allowRemove,
-  emphasize = false,
 }: {
   blockId: SemanticBlockId;
   title: string;
@@ -154,20 +152,13 @@ function SemanticBlock({
   onRemoveField: (entryKey: string) => void;
   disabled?: boolean;
   allowRemove: boolean;
-  emphasize?: boolean;
 }) {
   if (types.length === 0) {
     return null;
   }
 
   return (
-    <section
-      className={
-        emphasize
-          ? 'rounded-btn border border-accent/30 bg-accent/5 p-4'
-          : 'rounded-btn border border-border-subtle bg-bg/50 p-4'
-      }
-    >
+    <section className="rounded-btn border border-border bg-bg/50 p-4">
       <h3 className="text-body-sm font-weight-strong uppercase tracking-loose text-heading">
         {title}
       </h3>
@@ -492,7 +483,7 @@ function FieldRow({
       : labelForUpdateType(entry.updateType);
 
   return (
-    <div className="rounded-btn border border-border-subtle bg-bg p-4">
+    <div className="rounded-btn border border-border bg-bg p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="flex items-center gap-2 text-body-sm font-weight-label text-heading">
           {!filled && isRequired ? (
