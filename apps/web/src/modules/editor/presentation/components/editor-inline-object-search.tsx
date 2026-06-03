@@ -212,6 +212,7 @@ export function EditorInlineObjectSearch({
           'outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
         ].join(' ')}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onMouseDown={(e) => e.preventDefault()}
       />
       {dropdown}
     </div>

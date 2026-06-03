@@ -2,6 +2,13 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
+  $getSelection,
+  $isRangeSelection,
+  $setSelection,
+  type BaseSelection,
+  type LexicalEditor,
+} from 'lexical';
+import {
   useCallback,
   useEffect,
   useId,
@@ -280,6 +287,32 @@ function scheduleMeasure(fn: () => void) {
   });
 }
 
+function computeInsertOverlayTop(
+  editor: LexicalEditor,
+  container: HTMLElement,
+): number | null {
+  const root = editor.getRootElement();
+  if (!root) {
+    return null;
+  }
+
+  const range = getRangeForCaret(root);
+  if (!range) {
+    return null;
+  }
+
+  const line = getCaretLineViewportRect(range, root);
+  if (!line) {
+    return null;
+  }
+
+  const containerRect = container.getBoundingClientRect();
+  const centerY = line.top + line.height / 2;
+  const topPx = centerY - containerRect.top - INSERT_BTN_RADIUS;
+  const maxTop = container.clientHeight - INSERT_BTN_SIZE_PX - 8;
+  return Math.max(8, Math.min(maxTop, topPx));
+}
+
 export type EditorInsertCaretOverlayProps = {
   /** Single-line bar (e.g. comment): pin (+) to vertical center instead of caret line. */
   pinInsertCenterVertical?: boolean;
@@ -308,49 +341,59 @@ export function EditorInsertCaretOverlay({
   const [portalReady, setPortalReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
+  const objectSearchRef = useRef<HTMLDivElement>(null);
   const insertButtonRef = useRef<HTMLButtonElement>(null);
   const insertPanelRef = useRef<HTMLDivElement>(null);
   const insertTitleId = useId();
   const insertPanelId = useId();
   const comingSoon = t('app_header_coming_soon');
+  const savedSelectionRef = useRef<BaseSelection | null>(null);
 
   const handleObjectSelect = useCallback(
     (result: SearchObjectResult) => {
+      const saved = savedSelectionRef.current;
+      if (saved) {
+        editor.update(() => {
+          $setSelection(saved);
+        });
+      }
       insertObjectLinkAtSelection(editor, result);
       onObjectLinkedFromEditor?.(result);
+      savedSelectionRef.current = null;
       setObjectSearchOpen(false);
     },
     [editor, onObjectLinkedFromEditor],
   );
 
+  const openObjectSearch = useCallback(() => {
+    editor.getEditorState().read(() => {
+      const sel = $getSelection();
+      savedSelectionRef.current =
+        $isRangeSelection(sel) ? sel.clone() : null;
+    });
+    const container = containerRef.current;
+    if (container && !pinInsertCenterVertical) {
+      const top = computeInsertOverlayTop(editor, container);
+      if (top !== null) {
+        setButtonTop(top);
+      }
+    }
+    setOpen(false);
+    setInsertView('grid');
+    setObjectSearchOpen(true);
+  }, [editor, pinInsertCenterVertical]);
+
   const measurePosition = useCallback(() => {
-    if (pinInsertCenterVertical) {
+    if (pinInsertCenterVertical || objectSearchOpen) {
       return;
     }
     const container = containerRef.current;
-    const root = editor.getRootElement();
-    if (!container || !root) {
+    if (!container) {
       return;
     }
-
-    const range = getRangeForCaret(root);
-    if (!range) {
-      setButtonTop(12);
-      return;
-    }
-
-    const line = getCaretLineViewportRect(range, root);
-    if (!line) {
-      setButtonTop(12);
-      return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const centerY = line.top + line.height / 2;
-    const topPx = centerY - containerRect.top - INSERT_BTN_RADIUS;
-    const maxTop = container.clientHeight - INSERT_BTN_SIZE_PX - 8;
-    setButtonTop(Math.max(8, Math.min(maxTop, topPx)));
-  }, [editor, pinInsertCenterVertical]);
+    const top = computeInsertOverlayTop(editor, container);
+    setButtonTop(top ?? 12);
+  }, [editor, objectSearchOpen, pinInsertCenterVertical]);
 
   useLayoutEffect(() => {
     if (pinInsertCenterVertical) {
@@ -422,16 +465,21 @@ export function EditorInsertCaretOverlay({
       if (!(target instanceof Node)) {
         return;
       }
-      if (shellRef.current?.contains(target)) {
+      if (
+        shellRef.current?.contains(target) ||
+        objectSearchRef.current?.contains(target)
+      ) {
         return;
       }
       if (target instanceof Element && target.closest('[role="listbox"]')) {
         return;
       }
+      savedSelectionRef.current = null;
       setObjectSearchOpen(false);
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
+        savedSelectionRef.current = null;
         setObjectSearchOpen(false);
       }
     }
@@ -457,6 +505,7 @@ export function EditorInsertCaretOverlay({
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         if (objectSearchOpen) {
+          savedSelectionRef.current = null;
           setObjectSearchOpen(false);
         } else {
           setOpen(false);
@@ -488,7 +537,10 @@ export function EditorInsertCaretOverlay({
             type="button"
             aria-label={t('close')}
             title={t('close')}
-            onClick={() => setObjectSearchOpen(false)}
+            onClick={() => {
+              savedSelectionRef.current = null;
+              setObjectSearchOpen(false);
+            }}
             className={[
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
               'bg-bg text-fg-secondary shadow-none',
@@ -528,10 +580,12 @@ export function EditorInsertCaretOverlay({
       </div>
       {objectSearchOpen ? (
         <div
-          className="pointer-events-auto absolute end-4 z-[60] flex items-center"
+          ref={objectSearchRef}
+          className="pointer-events-auto absolute z-[70] flex items-center pe-3"
           style={{
             top: buttonTop,
             left: INSERT_BTN_RADIUS + 12,
+            right: 0,
             height: INSERT_BTN_SIZE_PX,
           }}
         >
@@ -602,11 +656,7 @@ export function EditorInsertCaretOverlay({
                         isPhoto
                           ? () => setInsertView('photo')
                           : isObject
-                            ? () => {
-                                setOpen(false);
-                                setInsertView('grid');
-                                setObjectSearchOpen(true);
-                              }
+                            ? () => openObjectSearch()
                             : undefined
                       }
                     >
