@@ -142,11 +142,13 @@ export function useObjectCreateForm({
   const [idCheckPending, setIdCheckPending] = useState(false);
 
   const skipAutosaveRef = useRef(true);
+  const [draftHydrated, setDraftHydrated] = useState(false);
 
   useEffect(() => {
     skipAutosaveRef.current = true;
     setState(mergeDraft(username, initialObjectIdPrefix));
     setDraftSavedAt(null);
+    setDraftHydrated(true);
   }, [username, initialObjectIdPrefix]);
 
   useEffect(() => {
@@ -492,6 +494,7 @@ export function useObjectCreateForm({
 
   return {
     state,
+    draftHydrated,
     healthScore,
     completeness,
     canPublish,

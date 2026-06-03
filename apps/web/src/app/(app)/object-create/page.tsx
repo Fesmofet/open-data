@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
@@ -25,9 +26,11 @@ export default async function ObjectCreatePage() {
   const initialObjectIdPrefix = generatePrefix();
 
   return (
-    <ObjectCreateClient
-      username={user.username}
-      initialObjectIdPrefix={initialObjectIdPrefix}
-    />
+    <Suspense fallback={null}>
+      <ObjectCreateClient
+        username={user.username}
+        initialObjectIdPrefix={initialObjectIdPrefix}
+      />
+    </Suspense>
   );
 }

@@ -10,6 +10,8 @@ export type ObjectCreateHeaderProps = {
   idExists: boolean | null;
   idCheckPending: boolean;
   onClearAll: () => void;
+  /** When set, title becomes "Create {type}". */
+  typeLabel?: string;
 };
 
 export function ObjectCreateHeader({
@@ -18,6 +20,7 @@ export function ObjectCreateHeader({
   idExists,
   idCheckPending,
   onClearAll,
+  typeLabel,
 }: ObjectCreateHeaderProps) {
   const { t } = useI18n();
 
@@ -39,7 +42,9 @@ export function ObjectCreateHeader({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <h1 className="text-section font-display font-weight-strong text-heading">
-            {t('object_create_title')}
+            {typeLabel
+              ? t('object_create_create_type').replace('{type}', typeLabel)
+              : t('object_create_title')}
           </h1>
           <p className="mt-1 max-w-container-content text-body-sm text-fg-secondary">
             {t('object_create_subtitle')}

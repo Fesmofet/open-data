@@ -115,7 +115,7 @@ export function AddFieldPopover({
             <input
               ref={inputRef}
               type="search"
-              className="w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg placeholder:text-muted"
+              className="w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg placeholder:text-muted outline-none focus:border-border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               placeholder={t('object_create_add_field_search')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
