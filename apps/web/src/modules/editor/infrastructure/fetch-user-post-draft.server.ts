@@ -10,6 +10,7 @@ export type EditorDraftLoadResult = {
   title: string;
   body: string;
   jsonMetadata: unknown;
+  beneficiaries: unknown;
   permlink: string | null;
   lastUpdated: number;
 };
@@ -45,6 +46,7 @@ export async function fetchUserPostDraftForEditor(
       title?: unknown;
       body?: unknown;
       jsonMetadata?: unknown;
+      beneficiaries?: unknown;
       permlink?: unknown;
       lastUpdated?: unknown;
     };
@@ -64,7 +66,17 @@ export async function fetchUserPostDraftForEditor(
       typeof data.lastUpdated === 'number' ? data.lastUpdated : 0;
     const jsonMetadata =
       data.jsonMetadata !== undefined ? data.jsonMetadata : null;
-    return { draftId, title, body, jsonMetadata, permlink, lastUpdated };
+    const beneficiaries =
+      data.beneficiaries !== undefined ? data.beneficiaries : null;
+    return {
+      draftId,
+      title,
+      body,
+      jsonMetadata,
+      beneficiaries,
+      permlink,
+      lastUpdated,
+    };
   } catch {
     return null;
   }

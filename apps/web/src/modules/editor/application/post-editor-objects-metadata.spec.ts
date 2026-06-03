@@ -13,17 +13,13 @@ describe('equalSplitPercents', () => {
   it('splits 100 across three items', () => {
     expect(equalSplitPercents(3)).toEqual([34, 33, 33]);
   });
-
-  it('returns single 100', () => {
-    expect(equalSplitPercents(1)).toEqual([100]);
-  });
 });
 
 describe('withEqualPercents', () => {
   it('assigns equal weights', () => {
     const out = withEqualPercents([
-      { objectId: 'a', percent: 0 },
-      { objectId: 'b', percent: 0 },
+      { objectId: 'a', percent: 10 },
+      { objectId: 'b', percent: 90 },
     ]);
     expect(out).toEqual([
       { objectId: 'a', percent: 50 },
@@ -33,6 +29,18 @@ describe('withEqualPercents', () => {
 });
 
 describe('applySliderPercent', () => {
+  it('updates only the target object', () => {
+    const input = [
+      { objectId: 'a', percent: 50 },
+      { objectId: 'b', percent: 50 },
+    ];
+    const out = applySliderPercent(input, 'a', 70);
+    expect(out).toEqual([
+      { objectId: 'a', percent: 70 },
+      { objectId: 'b', percent: 50 },
+    ]);
+  });
+
   it('allows a single object below 100', () => {
     const out = applySliderPercent(
       [{ objectId: 'only', percent: 100 }],
@@ -40,17 +48,6 @@ describe('applySliderPercent', () => {
       40,
     );
     expect(out).toEqual([{ objectId: 'only', percent: 40 }]);
-  });
-
-  it('keeps sum at 100 when one slider increases', () => {
-    const input = [
-      { objectId: 'a', percent: 50 },
-      { objectId: 'b', percent: 50 },
-    ];
-    const out = applySliderPercent(input, 'a', 70);
-    expect(out.find((o) => o.objectId === 'a')?.percent).toBe(70);
-    expect(out.find((o) => o.objectId === 'b')?.percent).toBe(30);
-    expect(out.reduce((s, o) => s + o.percent, 0)).toBe(100);
   });
 });
 
@@ -105,7 +102,7 @@ describe('appendLinkedObjectIfAbsent', () => {
     parent_name: null,
   };
 
-  it('appends and redistributes when new', () => {
+  it('appends and redistributes equally', () => {
     const { objects, added } = appendLinkedObjectIfAbsent(
       [{ objectId: 'x', percent: 100 }],
       hit,

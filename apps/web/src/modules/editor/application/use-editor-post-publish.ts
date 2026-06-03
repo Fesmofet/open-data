@@ -19,6 +19,14 @@ import {
 } from './editor-body-serialization';
 import { lexicalStateToMarkdown } from './lexical-state-to-markdown';
 import {
+  buildPublishCommentOptions,
+  buildPublishTags,
+  stripEditorOnlyJsonMetadataFields,
+  validateBeneficiaries,
+} from './post-editor-advanced-settings';
+import type { PostEditorBeneficiary } from '../domain/post-editor-advanced-settings';
+import type { PostEditorRewardMode } from '../domain/post-editor-advanced-settings';
+import {
   mergeJsonMetadataWithObjects,
   validateLinkedObjectPercents,
 } from './post-editor-objects-metadata';
@@ -33,6 +41,9 @@ export type UseEditorPostPublishInput = {
   body: string;
   jsonMetadata: unknown;
   linkedObjects: readonly PostEditorLinkedObject[];
+  tags: readonly string[];
+  rewardMode: PostEditorRewardMode;
+  beneficiaries: readonly PostEditorBeneficiary[];
   draftId: string | null;
   legalAccepted: boolean;
   flushSave: () => Promise<void>;
@@ -44,6 +55,9 @@ export function useEditorPostPublish({
   body,
   jsonMetadata,
   linkedObjects,
+  tags,
+  rewardMode,
+  beneficiaries,
   draftId,
   legalAccepted,
   flushSave,
@@ -57,6 +71,7 @@ export function useEditorPostPublish({
   const canPublishContent =
     legalAccepted &&
     validateLinkedObjectPercents(linkedObjects).ok &&
+    validateBeneficiaries(beneficiaries, username).ok &&
     title.trim().length > 0 &&
     hasLexicalDraftBodyContent(body);
 
@@ -88,24 +103,31 @@ export function useEditorPostPublish({
       const defaults = getHiveJsonMetadataDefaults();
       const host =
         typeof window !== 'undefined' ? window.location.host : 'localhost';
+      const publishTags = buildPublishTags(tags, defaults.community);
       const baseMeta = buildHiveJsonMetadata({
         host,
         community: defaults.community,
         app: defaults.app,
-        tags: [defaults.community],
+        tags: publishTags,
       });
       const imageCids = collectImageCidsFromEditorState(body);
       const imageUrls = imageCids.map((cid) =>
         contentBaseUrl ? imageContentUrlForCid(contentBaseUrl, cid) : cid,
       );
-      const merged = mergeJsonMetadataWithObjects(jsonMetadata, linkedObjects);
+      const merged = stripEditorOnlyJsonMetadataFields(
+        mergeJsonMetadataWithObjects(jsonMetadata, linkedObjects) as Record<
+          string,
+          unknown
+        >,
+      );
       const json_metadata = JSON.stringify({
         ...baseMeta,
         ...merged,
+        tags: publishTags,
         ...(imageUrls.length > 0 ? { image: imageUrls } : {}),
       });
 
-      const op = buildCommentOp({
+      const commentOp = buildCommentOp({
         parent_author: '',
         parent_permlink: defaults.community,
         author: username,
@@ -115,8 +137,15 @@ export function useEditorPostPublish({
         json_metadata,
       });
 
+      const optionsOp = buildPublishCommentOptions({
+        author: username,
+        permlink,
+        rewardMode,
+        beneficiaries,
+      });
+
       const { transactionId } = await getWalletFacade().broadcast({
-        operations: [op],
+        operations: [commentOp, optionsOp],
       });
 
       setPhase('confirming');
@@ -143,8 +172,11 @@ export function useEditorPostPublish({
     flushSave,
     jsonMetadata,
     linkedObjects,
+    beneficiaries,
     phase,
+    rewardMode,
     router,
+    tags,
     title,
     username,
   ]);

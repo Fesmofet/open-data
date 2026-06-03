@@ -7,6 +7,7 @@ import {
   EditorScreen,
   type LastDraftSidebarItem,
 } from '@/modules/editor';
+import { getPostEditorDefaultBeneficiary } from '@/config/post-editor-defaults';
 import { fetchUserPostDraftForEditor } from '@/modules/editor/infrastructure/fetch-user-post-draft.server';
 import { fetchUserDraftListServer } from '@/modules/editor/infrastructure/query-api-drafts.server';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
@@ -81,6 +82,8 @@ export default async function EditorPage({
       initialBody={initialDraft?.body ?? ''}
       initialDraftId={initialDraft?.draftId ?? null}
       initialJsonMetadata={initialDraft?.jsonMetadata ?? null}
+      defaultBeneficiary={getPostEditorDefaultBeneficiary()}
+      initialBeneficiaries={initialDraft?.beneficiaries ?? null}
       sidebarDrafts={sidebarDrafts}
     />
   );

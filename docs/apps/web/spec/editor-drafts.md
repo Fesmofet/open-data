@@ -13,7 +13,7 @@
 
 - **query-api** (`/query/v1/users/:author/drafts`): list, create, patch, single delete, and **`POST .../drafts/bulk-delete`** with `{ draftIds: string[] }`. See [user-post-drafts-endpoint.md](../../query-api/spec/user-post-drafts-endpoint.md).
 - **Web** calls the API from **server actions** in `apps/web/src/modules/editor/infrastructure/drafts.actions.ts` using the httpOnly access cookie as `Authorization: Bearer`.
-- **Initial draft load** (SSR): `fetchUserPostDraftForEditor` in `fetch-user-post-draft.server.ts` returns `draftId`, `title`, `body`, `jsonMetadata`, `permlink`, `lastUpdated` when opening by `draftId` or `permlink`.
+- **Initial draft load** (SSR): `fetchUserPostDraftForEditor` in `fetch-user-post-draft.server.ts` returns `draftId`, `title`, `body`, `jsonMetadata`, `beneficiaries`, `permlink`, `lastUpdated` when opening by `draftId` or `permlink`.
 - **Sidebar “Last drafts”**: first paint uses `fetchUserDraftListServer` with `limit: 5` on the editor page; list refreshes after successful save via `router.refresh()`.
 
 ## Hydration
@@ -22,11 +22,12 @@
 
 ## Autosave
 
-- **Debounce:** 3 seconds after the last change to title, body, or **linked objects** (`jsonMetadata.objects`). Post editor body is **Lexical JSON** (`editorState.toJSON()` stringified). Legacy drafts that are plain text still load via paragraph seeding.
-- **`jsonMetadata`:** PATCH replaces the whole JSON object on the server; the client **merges** existing keys and updates only `objects` (see `mergeJsonMetadataWithObjects` in `post-editor-objects-metadata.ts`).
+- **Debounce:** 3 seconds after the last change to title, body, **tags**, **reward mode**, **beneficiaries**, or **linked objects**. Post editor body is **Lexical JSON** (`editorState.toJSON()` stringified). Legacy drafts that are plain text still load via paragraph seeding.
+- **`jsonMetadata`:** PATCH replaces the whole JSON object on the server; the client merges `objects`, `tags`, and `_editorRewardMode` (editor-only; stripped before chain publish).
+- **`beneficiaries`:** separate draft column `[{ account, weight }]` (Hive basis points); default row from `POST_EDITOR_DEFAULT_BENEFICIARY_*` env when starting a new post (see `getPostEditorDefaultBeneficiary`).
 - **Create vs patch:** If there is no `draftId`, the first save that has non-empty title, body, or at least one linked object runs **POST** create, then `router.replace` to `?draftId=…`. Otherwise **PATCH** with `draftId`.
 - **Flush:** On `pagehide`, `visibilitychange` to `hidden`, and component unmount, pending debounced work is cancelled and a final save runs if content differs from the last persisted snapshot.
-- **Publish:** `useEditorPostPublish` flushes autosave, then broadcasts; on success **`deleteUserDraftAction`** for the current `draftId` and redirect to `/@username` (author blog feed).
+- **Publish:** `useEditorPostPublish` flushes autosave, then broadcasts **`comment`** + **`comment_options`** (reward + beneficiaries); on success **`deleteUserDraftAction`** for the current `draftId` and redirect to `/@username` (author blog feed).
 
 ## `/drafts` page
 

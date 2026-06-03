@@ -14,6 +14,15 @@ import { fetchSearchObjectById } from '@/modules/app-header/infrastructure/searc
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { hasLexicalDraftBodyContent } from '../../application/editor-body-serialization';
+import {
+  initialPostEditorTags,
+  mergeRewardModeIntoJsonMetadata,
+  mergeTagsIntoJsonMetadata,
+  parseBeneficiariesFromDraft,
+  parseRewardModeFromJsonMetadata,
+  serializeBeneficiariesForPersist,
+  validateBeneficiaries,
+} from '../../application/post-editor-advanced-settings';
 import { resolveEditorPublishDockStatus } from '../../application/resolve-editor-publish-dock-status';
 import {
   appendLinkedObjectIfAbsent,
@@ -22,12 +31,15 @@ import {
   serializeLinkedObjectsForPersist,
   validateLinkedObjectPercents,
 } from '../../application/post-editor-objects-metadata';
+import type { PostEditorBeneficiary } from '../../domain/post-editor-advanced-settings';
+import type { PostEditorRewardMode } from '../../domain/post-editor-advanced-settings';
 import { useEditorPostPublish } from '../../application/use-editor-post-publish';
 import type { PostEditorLinkedObject } from '../../domain/post-editor-linked-object';
 import {
   createUserDraftAction,
   patchUserDraftAction,
 } from '../../infrastructure/drafts.actions';
+import { EditorAdvancedSettingsPanel } from './editor-advanced-settings-panel';
 import { EditorAttachedObjectsPanel } from './editor-attached-objects-panel';
 import { EditorPostPreviewModal } from './editor-post-preview-modal';
 import { EditorPublishDock } from './editor-publish-dock';
@@ -48,6 +60,9 @@ export type EditorScreenProps = {
   initialDraftId?: string | null;
   /** Draft `jsonMetadata` from query-api (includes `objects`). */
   initialJsonMetadata?: unknown;
+  /** From server env (`getPostEditorDefaultBeneficiary`). */
+  defaultBeneficiary?: PostEditorBeneficiary | null;
+  initialBeneficiaries?: unknown;
   sidebarDrafts: LastDraftSidebarItem[];
 };
 
@@ -57,6 +72,8 @@ export function EditorScreen({
   initialBody = '',
   initialDraftId = null,
   initialJsonMetadata = null,
+  defaultBeneficiary = null,
+  initialBeneficiaries = null,
   sidebarDrafts,
 }: EditorScreenProps) {
   const { t } = useI18n();
@@ -73,14 +90,30 @@ export function EditorScreen({
   >({});
   const [previewOpen, setPreviewOpen] = useState(false);
   const [legalAccepted, setLegalAccepted] = useState(false);
+  const [rewardMode, setRewardMode] = useState<PostEditorRewardMode>(() =>
+    parseRewardModeFromJsonMetadata(initialJsonMetadata),
+  );
+  const [tags, setTags] = useState<string[]>(() =>
+    initialPostEditorTags(initialJsonMetadata, initialDraftId === null),
+  );
+  const [beneficiaries, setBeneficiaries] = useState<PostEditorBeneficiary[]>(
+    () =>
+      parseBeneficiariesFromDraft(initialBeneficiaries, defaultBeneficiary),
+  );
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLinked = parseLinkedObjectsFromJsonMetadata(initialJsonMetadata);
   const lastPersistedRef = useRef({
     title: initialTitle,
     body: initialBody,
     draftId: initialDraftId,
-    linkedObjectsJson: serializeLinkedObjectsForPersist(
-      parseLinkedObjectsFromJsonMetadata(initialJsonMetadata),
+    linkedObjectsJson: serializeLinkedObjectsForPersist(initialLinked),
+    tagsJson: JSON.stringify(
+      initialPostEditorTags(initialJsonMetadata, initialDraftId === null),
+    ),
+    rewardMode: parseRewardModeFromJsonMetadata(initialJsonMetadata),
+    beneficiariesJson: serializeBeneficiariesForPersist(
+      parseBeneficiariesFromDraft(initialBeneficiaries, defaultBeneficiary),
     ),
   });
   const stateRef = useRef({
@@ -89,10 +122,31 @@ export function EditorScreen({
     draftId,
     jsonMetadata,
     linkedObjects,
+    tags,
+    rewardMode,
+    beneficiaries,
   });
   useEffect(() => {
-    stateRef.current = { title, body, draftId, jsonMetadata, linkedObjects };
-  }, [title, body, draftId, jsonMetadata, linkedObjects]);
+    stateRef.current = {
+      title,
+      body,
+      draftId,
+      jsonMetadata,
+      linkedObjects,
+      tags,
+      rewardMode,
+      beneficiaries,
+    };
+  }, [
+    title,
+    body,
+    draftId,
+    jsonMetadata,
+    linkedObjects,
+    tags,
+    rewardMode,
+    beneficiaries,
+  ]);
 
   useEffect(() => {
     const ids = linkedObjects.map((o) => o.objectId);
@@ -119,14 +173,20 @@ export function EditorScreen({
     setSearchResultsById((prev) => ({ ...prev, [result.object_id]: result }));
   }, []);
 
-  const handleLinkedObjectsChange = useCallback(
-    (next: PostEditorLinkedObject[]) => {
-      if (!validateLinkedObjectPercents(next).ok) {
-        return;
-      }
-      setLinkedObjects(next);
-      setJsonMetadata((prev: unknown) => mergeJsonMetadataWithObjects(prev, next));
-    },
+  const buildJsonMetadataPayload = useCallback(
+    (
+      meta0: unknown,
+      linked0: PostEditorLinkedObject[],
+      tags0: string[],
+      reward0: PostEditorRewardMode,
+    ) =>
+      mergeRewardModeIntoJsonMetadata(
+        mergeTagsIntoJsonMetadata(
+          mergeJsonMetadataWithObjects(meta0, linked0),
+          tags0,
+        ),
+        reward0,
+      ),
     [],
   );
 
@@ -137,23 +197,46 @@ export function EditorScreen({
       draftId: id0,
       jsonMetadata: meta0,
       linkedObjects: linked0,
+      tags: tags0,
+      rewardMode: reward0,
+      beneficiaries: ben0,
     } = stateRef.current;
     const linkedJson = serializeLinkedObjectsForPersist(linked0);
+    const tagsJson = JSON.stringify(tags0);
+    const beneficiariesJson = serializeBeneficiariesForPersist(ben0);
     const last = lastPersistedRef.current;
     if (
       t0 === last.title &&
       b0 === last.body &&
       id0 === last.draftId &&
       linkedJson === last.linkedObjectsJson &&
+      tagsJson === last.tagsJson &&
+      reward0 === last.rewardMode &&
+      beneficiariesJson === last.beneficiariesJson &&
       id0 !== null
     ) {
       return;
     }
-    if (!validateLinkedObjectPercents(linked0).ok) {
+    if (
+      !validateLinkedObjectPercents(linked0).ok ||
+      !validateBeneficiaries(ben0, username).ok
+    ) {
       return;
     }
-    const jsonMetadataPayload = mergeJsonMetadataWithObjects(meta0, linked0);
-    if (!id0 && !t0.trim() && !b0.trim() && linked0.length === 0) {
+    const jsonMetadataPayload = buildJsonMetadataPayload(
+      meta0,
+      linked0,
+      tags0,
+      reward0,
+    );
+    if (
+      !id0 &&
+      !t0.trim() &&
+      !b0.trim() &&
+      linked0.length === 0 &&
+      tags0.length === 0 &&
+      ben0.length === 0
+    ) {
       return;
     }
     if (!id0) {
@@ -161,6 +244,7 @@ export function EditorScreen({
         title: t0,
         body: b0,
         jsonMetadata: jsonMetadataPayload,
+        beneficiaries: ben0,
       });
       if (r.ok) {
         const newId = r.value.draftId;
@@ -171,6 +255,9 @@ export function EditorScreen({
           body: b0,
           draftId: newId,
           linkedObjectsJson: linkedJson,
+          tagsJson,
+          rewardMode: reward0,
+          beneficiariesJson,
         };
         router.replace(`/editor?draftId=${encodeURIComponent(newId)}`);
         router.refresh();
@@ -184,6 +271,7 @@ export function EditorScreen({
         title: t0,
         body: b0,
         jsonMetadata: jsonMetadataPayload,
+        beneficiaries: ben0,
       },
     );
     if (r.ok) {
@@ -193,10 +281,13 @@ export function EditorScreen({
         body: b0,
         draftId: id0,
         linkedObjectsJson: linkedJson,
+        tagsJson,
+        rewardMode: reward0,
+        beneficiariesJson,
       };
       router.refresh();
     }
-  }, [username, router]);
+  }, [username, router, buildJsonMetadataPayload]);
 
   const runSaveRef = useRef(runSave);
   useEffect(() => {
@@ -220,6 +311,52 @@ export function EditorScreen({
       void runSaveRef.current();
     }, AUTOSAVE_DEBOUNCE_MS);
   }, []);
+
+  const handleLinkedObjectsChange = useCallback(
+    (next: PostEditorLinkedObject[]) => {
+      if (!validateLinkedObjectPercents(next).ok) {
+        return;
+      }
+      setLinkedObjects(next);
+      setJsonMetadata((prev: unknown) =>
+        buildJsonMetadataPayload(prev, next, tags, rewardMode),
+      );
+    },
+    [buildJsonMetadataPayload, tags, rewardMode],
+  );
+
+  const handleTagsChange = useCallback(
+    (next: string[]) => {
+      setTags(next);
+      setJsonMetadata((prev: unknown) =>
+        buildJsonMetadataPayload(prev, linkedObjects, next, rewardMode),
+      );
+      scheduleSave();
+    },
+    [buildJsonMetadataPayload, linkedObjects, rewardMode, scheduleSave],
+  );
+
+  const handleRewardModeChange = useCallback(
+    (next: PostEditorRewardMode) => {
+      setRewardMode(next);
+      setJsonMetadata((prev: unknown) =>
+        buildJsonMetadataPayload(prev, linkedObjects, tags, next),
+      );
+      scheduleSave();
+    },
+    [buildJsonMetadataPayload, linkedObjects, tags, scheduleSave],
+  );
+
+  const handleBeneficiariesChange = useCallback(
+    (next: PostEditorBeneficiary[]) => {
+      if (!validateBeneficiaries(next, username).ok) {
+        return;
+      }
+      setBeneficiaries(next);
+      scheduleSave();
+    },
+    [username, scheduleSave],
+  );
 
   const handleLinkedObjectsChangeWithSave = useCallback(
     (next: PostEditorLinkedObject[]) => {
@@ -265,8 +402,6 @@ export function EditorScreen({
   const objectValidation = validateLinkedObjectPercents(linkedObjects);
   const hasTitle = title.trim().length > 0;
   const hasBody = hasLexicalDraftBodyContent(body);
-  const isPublishReady =
-    hasTitle && hasBody && objectValidation.ok && legalAccepted;
   const canPreview = hasTitle && hasBody;
 
   const dockStatus = useMemo(() => {
@@ -298,6 +433,9 @@ export function EditorScreen({
     body,
     jsonMetadata,
     linkedObjects,
+    tags,
+    rewardMode,
+    beneficiaries,
     draftId,
     legalAccepted,
     flushSave,
@@ -342,6 +480,16 @@ export function EditorScreen({
               scheduleSave();
             }}
             onObjectLinkedFromEditor={handleObjectLinkedFromEditor}
+          />
+
+          <EditorAdvancedSettingsPanel
+            username={username}
+            rewardMode={rewardMode}
+            onRewardModeChange={handleRewardModeChange}
+            beneficiaries={beneficiaries}
+            onBeneficiariesChange={handleBeneficiariesChange}
+            tags={tags}
+            onTagsChange={handleTagsChange}
           />
 
           <EditorAttachedObjectsPanel

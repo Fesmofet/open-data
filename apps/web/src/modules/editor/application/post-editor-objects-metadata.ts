@@ -84,7 +84,7 @@ export function equalSplitPercents(count: number): number[] {
   });
 }
 
-/** Assigns equal percents to every linked object. */
+/** Equal split across all linked objects (used on add/remove). */
 export function withEqualPercents(
   objects: readonly PostEditorLinkedObject[],
 ): PostEditorLinkedObject[] {
@@ -92,81 +92,18 @@ export function withEqualPercents(
   return objects.map((o, i) => ({ ...o, percent: percents[i] ?? 0 }));
 }
 
-/**
- * Sets one object's percent; reduces others proportionally so the sum stays 100.
- */
+/** Updates one linked object's percent only (0–100); others unchanged. */
 export function applySliderPercent(
   objects: readonly PostEditorLinkedObject[],
   objectId: string,
   newPercent: number,
 ): PostEditorLinkedObject[] {
-  const targetIndex = objects.findIndex((o) => o.objectId === objectId);
-  if (targetIndex < 0) {
-    return [...objects];
-  }
-
-  let clamped = Math.round(
+  const clamped = Math.round(
     Math.max(0, Math.min(POST_EDITOR_OBJECTS_PERCENT_TOTAL, newPercent)),
   );
-  const others = objects.filter((o) => o.objectId !== objectId);
-  if (others.length === 0) {
-    return [{ ...objects[targetIndex], percent: clamped }];
-  }
-
-  let budgetForOthers = POST_EDITOR_OBJECTS_PERCENT_TOTAL - clamped;
-  if (budgetForOthers < 0) {
-    clamped = POST_EDITOR_OBJECTS_PERCENT_TOTAL;
-    budgetForOthers = 0;
-  }
-
-  const otherPercents = distributeProportional(
-    others.map((o) => o.percent),
-    budgetForOthers,
+  return objects.map((o) =>
+    o.objectId === objectId ? { ...o, percent: clamped } : o,
   );
-
-  let otherIdx = 0;
-  return objects.map((o) => {
-    if (o.objectId === objectId) {
-      return { ...o, percent: clamped };
-    }
-    const percent = otherPercents[otherIdx] ?? 0;
-    otherIdx += 1;
-    return { ...o, percent };
-  });
-}
-
-function distributeProportional(weights: readonly number[], targetSum: number): number[] {
-  if (weights.length === 0) {
-    return [];
-  }
-  if (targetSum <= 0) {
-    return weights.map(() => 0);
-  }
-
-  const sumWeights = weights.reduce((s, w) => s + w, 0);
-  if (sumWeights <= 0) {
-    return equalSplitPercents(weights.length).map((p) =>
-      Math.min(p, targetSum),
-    );
-  }
-
-  const raw = weights.map((w) => (w / sumWeights) * targetSum);
-  const floored = raw.map((v) => Math.floor(v));
-  let remainder = targetSum - floored.reduce((s, v) => s + v, 0);
-
-  const order = raw
-    .map((v, i) => ({ i, frac: v - floored[i] }))
-    .sort((a, b) => b.frac - a.frac);
-
-  const out = [...floored];
-  for (const { i } of order) {
-    if (remainder <= 0) {
-      break;
-    }
-    out[i] += 1;
-    remainder -= 1;
-  }
-  return out;
 }
 
 export function sumLinkedObjectPercents(
@@ -222,7 +159,7 @@ export function mergeJsonMetadataWithObjects(
   };
 }
 
-/** Adds a linked object from search when not already present (equal split on add). */
+/** Adds a linked object and redistributes percents equally across all. */
 export function appendLinkedObjectIfAbsent(
   objects: readonly PostEditorLinkedObject[],
   result: SearchObjectResult,
@@ -237,11 +174,10 @@ export function appendLinkedObjectIfAbsent(
   if (objects.length >= MAX_POST_EDITOR_ATTACHED_OBJECTS) {
     return { objects: [...objects], added: false };
   }
-  const next = withEqualPercents([
-    ...objects,
-    { objectId, percent: 0 },
-  ]);
-  return { objects: next, added: true };
+  return {
+    objects: withEqualPercents([...objects, { objectId, percent: 0 }]),
+    added: true,
+  };
 }
 
 /** Stable snapshot for autosave dirty checks. */
