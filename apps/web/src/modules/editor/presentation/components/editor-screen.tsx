@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -12,6 +13,8 @@ import type { SearchObjectResult } from '@/modules/app-header/domain/search-resp
 import { fetchSearchObjectById } from '@/modules/app-header/infrastructure/search.client';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { hasLexicalDraftBodyContent } from '../../application/editor-body-serialization';
+import { resolveEditorPublishDockStatus } from '../../application/resolve-editor-publish-dock-status';
 import {
   appendLinkedObjectIfAbsent,
   mergeJsonMetadataWithObjects,
@@ -19,12 +22,15 @@ import {
   serializeLinkedObjectsForPersist,
   validateLinkedObjectPercents,
 } from '../../application/post-editor-objects-metadata';
+import { useEditorPostPublish } from '../../application/use-editor-post-publish';
 import type { PostEditorLinkedObject } from '../../domain/post-editor-linked-object';
 import {
   createUserDraftAction,
   patchUserDraftAction,
 } from '../../infrastructure/drafts.actions';
 import { EditorAttachedObjectsPanel } from './editor-attached-objects-panel';
+import { EditorPostPreviewModal } from './editor-post-preview-modal';
+import { EditorPublishDock } from './editor-publish-dock';
 import { LexicalPostEditor } from './lexical-editor';
 import {
   LastDraftsSidebar,
@@ -65,6 +71,8 @@ export function EditorScreen({
   const [searchResultsById, setSearchResultsById] = useState<
     Record<string, SearchObjectResult>
   >({});
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [legalAccepted, setLegalAccepted] = useState(false);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPersistedRef = useRef({
@@ -195,6 +203,14 @@ export function EditorScreen({
     runSaveRef.current = runSave;
   }, [runSave]);
 
+  const flushSave = useCallback(async () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    await runSaveRef.current();
+  }, []);
+
   const scheduleSave = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -246,8 +262,49 @@ export function EditorScreen({
     };
   }, []);
 
+  const objectValidation = validateLinkedObjectPercents(linkedObjects);
+  const hasTitle = title.trim().length > 0;
+  const hasBody = hasLexicalDraftBodyContent(body);
+  const isPublishReady =
+    hasTitle && hasBody && objectValidation.ok && legalAccepted;
+  const canPreview = hasTitle && hasBody;
+
+  const dockStatus = useMemo(() => {
+    const { messageKey, warning } = resolveEditorPublishDockStatus({
+      linkedObjectsOk: objectValidation.ok,
+      hasTitle,
+      hasBody,
+      legalAccepted,
+    });
+    return { line: t(messageKey), warning };
+  }, [
+    objectValidation.ok,
+    hasTitle,
+    hasBody,
+    legalAccepted,
+    t,
+  ]);
+
+  const {
+    publish,
+    phase: publishPhase,
+    error: publishError,
+    setError: setPublishError,
+    canPublish,
+    busy: publishBusy,
+  } = useEditorPostPublish({
+    username,
+    title,
+    body,
+    jsonMetadata,
+    linkedObjects,
+    draftId,
+    legalAccepted,
+    flushSave,
+  });
+
   return (
-    <main className="w-full min-w-0">
+    <main className="w-full min-w-0 pb-[calc(var(--shell-header-height,4rem)+0.75rem)]">
       <div
         className={[
           'grid w-full grid-cols-1 items-start gap-y-6',
@@ -299,6 +356,35 @@ export function EditorScreen({
           <LastDraftsSidebar drafts={sidebarDrafts} />
         </div>
       </div>
+
+      <EditorPublishDock
+        statusLine={dockStatus.line}
+        statusWarning={dockStatus.warning}
+        canPreview={canPreview}
+        canPublish={canPublish}
+        legalAccepted={legalAccepted}
+        onLegalAcceptedChange={(next) => {
+          setLegalAccepted(next);
+          if (next) {
+            setPublishError(null);
+          }
+        }}
+        publishPhase={publishPhase}
+        busy={publishBusy}
+        publishError={publishError}
+        onPreview={() => setPreviewOpen(true)}
+        onPublish={() => void publish()}
+      />
+
+      <EditorPostPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        username={username}
+        title={title}
+        bodyLexicalJson={body}
+        linkedObjects={linkedObjects}
+        searchResultsById={searchResultsById}
+      />
     </main>
   );
 }

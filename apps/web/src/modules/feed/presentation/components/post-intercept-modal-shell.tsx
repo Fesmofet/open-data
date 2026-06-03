@@ -7,6 +7,10 @@ import { useDismissPostInterceptForObjectSurface } from '@/shared/presentation/h
 
 type PostInterceptModalShellProps = {
   children: ReactNode;
+  /** When set, used instead of `router.back()` (e.g. editor preview). */
+  onClose?: () => void;
+  /** Hide reblog/share pills (editor preview). Default true. */
+  showShareActions?: boolean;
 };
 
 function IconClose() {
@@ -71,13 +75,21 @@ function ActionPill({
  * The action pills (close, share) float to the right of the card on desktop,
  * or appear inside the card header on mobile.
  */
-export function PostInterceptModalShell({ children }: PostInterceptModalShellProps) {
+export function PostInterceptModalShell({
+  children,
+  onClose: onCloseProp,
+  showShareActions = true,
+}: PostInterceptModalShellProps) {
   const router = useRouter();
   const hideForObjectSurface = useDismissPostInterceptForObjectSurface();
 
   const onClose = useCallback(() => {
+    if (onCloseProp) {
+      onCloseProp();
+      return;
+    }
     router.back();
-  }, [router]);
+  }, [onCloseProp, router]);
 
   useEffect(() => {
     if (hideForObjectSurface) return;
@@ -182,15 +194,19 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
               <ActionPill label="Close" onClick={onClose}>
                 <IconClose />
               </ActionPill>
-              <ActionPill label="Reblog">
-                <IconReblog />
-              </ActionPill>
-              <ActionPill label="Share on X" onClick={openShareX}>
-                <IconShareX />
-              </ActionPill>
-              <ActionPill label="Share on Facebook" onClick={openShareFacebook}>
-                <IconShareFacebook />
-              </ActionPill>
+              {showShareActions ? (
+                <>
+                  <ActionPill label="Reblog">
+                    <IconReblog />
+                  </ActionPill>
+                  <ActionPill label="Share on X" onClick={openShareX}>
+                    <IconShareX />
+                  </ActionPill>
+                  <ActionPill label="Share on Facebook" onClick={openShareFacebook}>
+                    <IconShareFacebook />
+                  </ActionPill>
+                </>
+              ) : null}
             </div>
           </div>
         </div>

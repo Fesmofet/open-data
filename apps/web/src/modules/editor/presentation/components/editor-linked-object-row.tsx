@@ -1,5 +1,7 @@
 'use client';
 
+import type { CSSProperties } from 'react';
+
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -92,7 +94,12 @@ export function EditorLinkedObjectRow({
               max={POST_EDITOR_OBJECTS_PERCENT_TOTAL}
               step={1}
               value={linked.percent}
-              className="w-full accent-accent"
+              className="editor-linked-object-percent-slider w-full"
+              style={
+                {
+                  '--slider-fill': `${linked.percent}%`,
+                } as CSSProperties
+              }
               onChange={(e) => onPercentChange(Number(e.target.value))}
             />
             <span className="text-end text-caption tabular-nums text-fg-secondary">

@@ -106,12 +106,71 @@ export function createRootPostPermlinkFromParents(
   return buildReTimestampedPermlink(parentAuthor, parentPermlink, now);
 }
 
+/** Cyrillic (+ Ukrainian) → Latin for Hive permlink slugs (Hive allows `[a-z0-9-]` only). */
+const CYRILLIC_TRANSLIT_MAP: Record<string, string> = {
+  а: 'a',
+  б: 'b',
+  в: 'v',
+  г: 'g',
+  д: 'd',
+  е: 'e',
+  ё: 'yo',
+  ж: 'zh',
+  з: 'z',
+  и: 'i',
+  й: 'y',
+  к: 'k',
+  л: 'l',
+  м: 'm',
+  н: 'n',
+  о: 'o',
+  п: 'p',
+  р: 'r',
+  с: 's',
+  т: 't',
+  у: 'u',
+  ф: 'f',
+  х: 'kh',
+  ц: 'ts',
+  ч: 'ch',
+  ш: 'sh',
+  щ: 'shch',
+  ъ: '',
+  ы: 'y',
+  ь: '',
+  э: 'e',
+  ю: 'yu',
+  я: 'ya',
+  і: 'i',
+  ї: 'yi',
+  є: 'ye',
+  ґ: 'g',
+};
+
+function transliterateTitleForSlug(title: string): string {
+  const lower = title.normalize('NFKC').trim().toLowerCase();
+  let out = '';
+  for (const char of lower) {
+    const mapped = CYRILLIC_TRANSLIT_MAP[char];
+    if (mapped !== undefined) {
+      out += mapped;
+      continue;
+    }
+    out += char;
+  }
+  return out
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 /**
- * ASCII slug from title: NFKC, `[a-z0-9]` only (other chars become `-`), max {@link HIVE_POST_TITLE_SLUG_MAX}.
+ * ASCII slug from title: transliteration, then `[a-z0-9]` only (other chars become `-`).
+ * Capped at {@link HIVE_POST_TITLE_SLUG_MAX} (128); final permlink also passes
+ * {@link sanitizeHivePermlink} (max {@link HIVE_PERMLINK_MAX_LENGTH} = 255).
  * Returns `''` if nothing usable remains.
  */
 export function titleToPostSlug(title: string): string {
-  const normalized = title.normalize('NFKC').trim().toLowerCase();
+  const normalized = transliterateTitleForSlug(title);
   let out = '';
   for (const char of normalized) {
     if (/[a-z0-9]/.test(char)) {

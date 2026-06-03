@@ -18,19 +18,21 @@ Authenticated screen for composing a post: title field and rich body using **Lex
 
 | Area | Detail |
 |------|--------|
-| Module | [`apps/web/src/modules/editor/`](../../../../apps/web/src/modules/editor/) — `EditorScreen`, `LexicalPostEditor`, insert overlay, format toolbar, **`EditorAttachedObjectsPanel`**; domain `format-actions`, `SpoilerNode`, `post-editor-linked-object`; drafts in infrastructure. |
+| Module | [`apps/web/src/modules/editor/`](../../../../apps/web/src/modules/editor/) — `EditorScreen`, `LexicalPostEditor`, insert overlay, format toolbar, **`EditorAttachedObjectsPanel`**, **`EditorPublishDock`**, **`EditorPostPreviewModal`**; application `lexical-state-to-markdown`, `use-editor-post-publish`; domain `format-actions`, `SpoilerNode`, `post-editor-linked-object`; drafts in infrastructure. |
 | Layout | Main column uses **`max-w-container-content`** (not `container-narrow`). |
 | UI | Design tokens (see [theme.md](theme.md)); body placeholder uses i18n `story_placeholder`; page title from `editor` in `generateMetadata`. |
 | Insert menu | **+** on the left border tracks the caret. Dialog grid: **Photo** (upload panel) and **Object** (inline search at caret: **+** → **✕**, placeholder `objects_auto_complete_placeholder`, dropdown via `/api/search`). Object pick inserts a **Lexical link** (visible name, `href` = `{origin}/object/{id}`) and appends to `jsonMetadata.objects` when id is new (removing the link in the editor does **not** remove metadata). Other grid items remain disabled. i18n: `editor_insert_*`. |
 | Format toolbar | Floating bar (`EditorFormatToolbar`) on **non-compact** editors when the user selects text (hidden on collapsed/zero-width selection). Primary: Bold, Italic, Link, More (…). More menu driven by `MORE_ACTIONS` in `domain/format-actions.ts` (H1–H3, Quote, inline code, Spoiler, Mention stub). Positioned above selection via `createPortal` + `position: fixed`; `onMouseDown` `preventDefault` preserves selection. Link opens inline URL field with editor-state snapshot restore on cancel. i18n: `editor_format_*`. |
-| Images | **Non-compact** editor only: paste image file (`EditorPasteImagePlugin`), drag-drop on editor shell (`EditorImageDropOverlay`), Insert → Photo (`EditorInsertPhotoPanel` + shared `IpfsImageDropZone`). Upload via `uploadImageToIpfs` / `uploadImageFromUrl`; `ImageNode` stores `cid` + `src`. Draft `body` is Lexical JSON. Hive markdown export at publish: follow-up. |
+| Images | **Non-compact** editor only: paste image file (`EditorPasteImagePlugin`), drag-drop on editor shell (`EditorImageDropOverlay`), Insert → Photo (`EditorInsertPhotoPanel` + shared `IpfsImageDropZone`). Upload via `uploadImageToIpfs` / `uploadImageFromUrl`; `ImageNode` stores `cid` + `src`. Draft `body` is Lexical JSON. Publish converts body via `lexical-state-to-markdown.ts`. |
+| Bottom dock | Fixed bar (same chrome as object-create `PendingOpsDock`): status line from `resolveEditorPublishDockStatus` — **ready to publish** or a warning (`editor_post_not_ready_*`, `linked_objects_remaining`). **Preview** / **Publish** require non-empty title and body (Lexical text or image), valid linked-object percents, and legal checkbox. Permlink from title via `titleToPostSlug` (Cyrillic transliteration, max slug 128, Hive `[a-z0-9-]`, max 255). **Publish post** broadcasts Hive `comment` (root post), `awaitTrxConfirmation`, deletes draft, navigates to `/@username`. Legal checkbox: `legal_notice_create_post`. |
 | Linked objects | Below the editor: search (`/api/search` via `fetchObjectSearchResults`), **Create new object** → `/object-create`, cards with toggle (detach) and percent slider. State persisted in draft **`jsonMetadata.objects`** as `[{ object_id, percent }]` (sum **100** across attached rows; equal split on add/remove). See [post-json-metadata-objects.md](../../../spec/data-model/post-json-metadata-objects.md). Autosave: [editor-drafts.md](editor-drafts.md). |
-| i18n | Document title uses locale messages via `getRequestLocale` + `loadMessages`. Keys: `editor_search_elements`, `editor_search_object_by_name`, `editor_linked_objects`, `create_new_object`, `linked_objects_remaining`. |
+| i18n | Document title uses locale messages via `getRequestLocale` + `loadMessages`. Keys: `editor_search_elements`, `editor_search_object_by_name`, `editor_linked_objects`, `create_new_object`, `linked_objects_remaining`, `editor_dock_region`, `editor_publish_post`, `preview`, `ready_to_publish`, `legal_notice_create_post`. |
 
 ## MVP limits
 
-- No publish, preview, or Hive broadcast (`jsonMetadata.objects` is stored on drafts only until publish wires chain metadata).
-- Insert grid items except **Photo** do not insert content yet (placeholders).
+- Publish creates a **new** root post only (no update when opening editor with existing `permlink`).
+- Insert grid items except **Photo** and **Object** do not insert content yet (placeholders).
+- `comment_options` (beneficiaries, payout caps) not sent on publish.
 
 ## Verification
 

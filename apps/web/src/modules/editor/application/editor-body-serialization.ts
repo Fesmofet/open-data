@@ -90,6 +90,54 @@ export function normalizeImageNodeSrcFromCid(
   });
 }
 
+/** True when draft body has non-empty text or at least one image node. */
+export function hasLexicalDraftBodyContent(body: string): boolean {
+  const trimmed = body.trim();
+  if (!trimmed) {
+    return false;
+  }
+  if (!isLexicalDraftJson(trimmed)) {
+    return trimmed.length > 0;
+  }
+  try {
+    const state = JSON.parse(trimmed) as {
+      root?: { children?: unknown[] };
+    };
+    let hasContent = false;
+    const walk = (nodes: unknown[] | undefined) => {
+      if (!nodes || hasContent) {
+        return;
+      }
+      for (const entry of nodes) {
+        if (!entry || typeof entry !== 'object') {
+          continue;
+        }
+        const n = entry as Record<string, unknown>;
+        const nodeType = n.type;
+        if (
+          (nodeType === POST_IMAGE_NODE_TYPE || nodeType === 'image') &&
+          ((typeof n.cid === 'string' && n.cid.trim()) ||
+            (typeof n.src === 'string' && n.src.trim()))
+        ) {
+          hasContent = true;
+          return;
+        }
+        if (nodeType === 'text' && typeof n.text === 'string' && n.text.trim().length > 0) {
+          hasContent = true;
+          return;
+        }
+        if (Array.isArray(n.children)) {
+          walk(n.children);
+        }
+      }
+    };
+    walk(state.root?.children);
+    return hasContent;
+  } catch {
+    return false;
+  }
+}
+
 export function collectImageCidsFromEditorState(json: string): string[] {
   try {
     const state = JSON.parse(json) as {

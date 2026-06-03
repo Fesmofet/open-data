@@ -26,6 +26,7 @@
 - **`jsonMetadata`:** PATCH replaces the whole JSON object on the server; the client **merges** existing keys and updates only `objects` (see `mergeJsonMetadataWithObjects` in `post-editor-objects-metadata.ts`).
 - **Create vs patch:** If there is no `draftId`, the first save that has non-empty title, body, or at least one linked object runs **POST** create, then `router.replace` to `?draftId=…`. Otherwise **PATCH** with `draftId`.
 - **Flush:** On `pagehide`, `visibilitychange` to `hidden`, and component unmount, pending debounced work is cancelled and a final save runs if content differs from the last persisted snapshot.
+- **Publish:** `useEditorPostPublish` flushes autosave, then broadcasts; on success **`deleteUserDraftAction`** for the current `draftId` and redirect to `/@username` (author blog feed).
 
 ## `/drafts` page
 

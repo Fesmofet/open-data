@@ -88,6 +88,7 @@ export function EditorAttachedObjectsPanel({
       <div className="flex justify-end">
         <Link
           href="/object-create"
+          suppressHydrationWarning
           className="text-body-sm text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           {t('create_new_object')}

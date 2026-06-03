@@ -55,6 +55,10 @@ describe('titleToPostSlug', () => {
     expect(hp.titleToPostSlug('你好')).toBe('');
   });
 
+  it('transliterates Cyrillic title to ascii slug', () => {
+    expect(hp.titleToPostSlug('Привет мир')).toBe('privet-mir');
+  });
+
   it('respects max slug length', () => {
     const long = 'x'.repeat(hp.HIVE_POST_TITLE_SLUG_MAX + 50);
     expect(hp.titleToPostSlug(long).length).toBeLessThanOrEqual(hp.HIVE_POST_TITLE_SLUG_MAX);
