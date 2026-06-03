@@ -13,6 +13,7 @@ import { fetchSearchObjectById } from '@/modules/app-header/infrastructure/searc
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
+  appendLinkedObjectIfAbsent,
   mergeJsonMetadataWithObjects,
   parseLinkedObjectsFromJsonMetadata,
   serializeLinkedObjectsForPersist,
@@ -212,6 +213,17 @@ export function EditorScreen({
     [handleLinkedObjectsChange, scheduleSave],
   );
 
+  const handleObjectLinkedFromEditor = useCallback(
+    (result: SearchObjectResult) => {
+      cacheSearchResult(result);
+      const { objects, added } = appendLinkedObjectIfAbsent(linkedObjects, result);
+      if (added) {
+        handleLinkedObjectsChangeWithSave(objects);
+      }
+    },
+    [cacheSearchResult, linkedObjects, handleLinkedObjectsChangeWithSave],
+  );
+
   useEffect(() => {
     const flush = () => {
       void runSaveRef.current();
@@ -272,6 +284,7 @@ export function EditorScreen({
               setBody(serialized);
               scheduleSave();
             }}
+            onObjectLinkedFromEditor={handleObjectLinkedFromEditor}
           />
 
           <EditorAttachedObjectsPanel

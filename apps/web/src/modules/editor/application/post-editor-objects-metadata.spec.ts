@@ -1,4 +1,5 @@
 import {
+  appendLinkedObjectIfAbsent,
   applySliderPercent,
   equalSplitPercents,
   mergeJsonMetadataWithObjects,
@@ -92,6 +93,35 @@ describe('validateLinkedObjectPercents', () => {
         { objectId: 'b', percent: 50 },
       ]),
     ).toEqual({ ok: false, reason: 'sum_over_total' });
+  });
+});
+
+describe('appendLinkedObjectIfAbsent', () => {
+  const hit = {
+    object_id: 'a/b',
+    object_type: 'list',
+    name: 'Test',
+    image_url: null,
+    parent_name: null,
+  };
+
+  it('appends and redistributes when new', () => {
+    const { objects, added } = appendLinkedObjectIfAbsent(
+      [{ objectId: 'x', percent: 100 }],
+      hit,
+    );
+    expect(added).toBe(true);
+    expect(objects).toHaveLength(2);
+    expect(objects.reduce((s, o) => s + o.percent, 0)).toBe(100);
+  });
+
+  it('skips duplicate id', () => {
+    const { added, objects } = appendLinkedObjectIfAbsent(
+      [{ objectId: 'a/b', percent: 100 }],
+      hit,
+    );
+    expect(added).toBe(false);
+    expect(objects).toEqual([{ objectId: 'a/b', percent: 100 }]);
   });
 });
 

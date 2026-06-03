@@ -8,6 +8,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { MAX_POST_EDITOR_ATTACHED_OBJECTS } from '../../domain/post-editor-linked-object';
 
 import {
+  appendLinkedObjectIfAbsent,
   applySliderPercent,
   remainingPercentWeight,
   validateLinkedObjectPercents,
@@ -43,18 +44,11 @@ export function EditorAttachedObjectsPanel({
 
   const handleAdd = useCallback(
     (result: SearchObjectResult) => {
-      if (linkedObjects.some((o) => o.objectId === result.object_id)) {
-        return;
-      }
-      if (linkedObjects.length >= MAX_POST_EDITOR_ATTACHED_OBJECTS) {
-        return;
-      }
       onSearchResultCached(result);
-      const next = withEqualPercents([
-        ...linkedObjects,
-        { objectId: result.object_id, percent: 0 },
-      ]);
-      onLinkedObjectsChange(next);
+      const { objects, added } = appendLinkedObjectIfAbsent(linkedObjects, result);
+      if (added) {
+        onLinkedObjectsChange(objects);
+      }
     },
     [linkedObjects, onLinkedObjectsChange, onSearchResultCached],
   );

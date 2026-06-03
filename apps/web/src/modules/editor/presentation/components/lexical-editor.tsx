@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { imageContentUrlForCid } from '@/config/ipfs-content-url';
+import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 
 import {
   isLexicalDraftJson,
@@ -185,6 +186,7 @@ function EditorInner({
   compactBottomInset,
   showFormatToolbar,
   enableImages,
+  onObjectLinkedFromEditor,
 }: {
   bodyPlaceholder: string;
   initialBody?: string;
@@ -193,6 +195,7 @@ function EditorInner({
   compactBottomInset?: boolean;
   showFormatToolbar?: boolean;
   enableImages?: boolean;
+  onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
 }) {
   const pillChrome = Boolean(compact && compactBottomInset);
 
@@ -250,6 +253,8 @@ export type LexicalEditorProps = {
   initialBody?: string;
   /** Fired when body changes (Lexical JSON for post editor, plain text when `compact`). */
   onBodyChange?: (body: string) => void;
+  /** Insert → Object: add to linked metadata when not already attached. */
+  onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
   /** @deprecated Use `initialBody`. */
   initialPlainText?: string;
   /** @deprecated Use `onBodyChange`. */
@@ -262,6 +267,7 @@ export function LexicalPostEditor({
   bodyPlaceholder,
   initialBody,
   onBodyChange,
+  onObjectLinkedFromEditor,
   initialPlainText,
   onPlainTextChange,
   compact,
@@ -310,9 +316,13 @@ export function LexicalPostEditor({
           compactBottomInset={compactBottomInset}
           showFormatToolbar={enableImages}
           enableImages={enableImages}
+          onObjectLinkedFromEditor={onObjectLinkedFromEditor}
         />
         {enableImages ? <EditorImageDropOverlay /> : null}
-        <EditorInsertCaretOverlay pinInsertCenterVertical={pillChrome} />
+        <EditorInsertCaretOverlay
+          pinInsertCenterVertical={pillChrome}
+          onObjectLinkedFromEditor={onObjectLinkedFromEditor}
+        />
       </div>
     </LexicalComposer>
   );

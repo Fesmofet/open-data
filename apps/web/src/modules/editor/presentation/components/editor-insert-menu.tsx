@@ -12,8 +12,11 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { insertObjectLinkAtSelection } from '../../application/insert-editor-object-link';
+import { EditorInlineObjectSearch } from './editor-inline-object-search';
 import { EditorInsertPhotoPanel } from './editor-insert-photo-panel';
 
 const INSERT_BTN_SIZE_PX = 40;
@@ -127,6 +130,15 @@ function IconPlus({ className }: { className?: string }) {
     <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function IconClose({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   );
 }
@@ -271,6 +283,8 @@ function scheduleMeasure(fn: () => void) {
 export type EditorInsertCaretOverlayProps = {
   /** Single-line bar (e.g. comment): pin (+) to vertical center instead of caret line. */
   pinInsertCenterVertical?: boolean;
+  /** When user picks an object from inline search (Insert → Object). */
+  onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
 };
 
 /**
@@ -279,12 +293,13 @@ export type EditorInsertCaretOverlayProps = {
  */
 export function EditorInsertCaretOverlay({
   pinInsertCenterVertical = false,
+  onObjectLinkedFromEditor,
 }: EditorInsertCaretOverlayProps = {}) {
   const [editor] = useLexicalComposerContext();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [objectSearchOpen, setObjectSearchOpen] = useState(false);
   const [insertView, setInsertView] = useState<'grid' | 'photo'>('grid');
-  const [search, setSearch] = useState('');
   const [buttonTop, setButtonTop] = useState(12);
   const [insertPanelCoords, setInsertPanelCoords] = useState<{
     top: number;
@@ -297,8 +312,16 @@ export function EditorInsertCaretOverlay({
   const insertPanelRef = useRef<HTMLDivElement>(null);
   const insertTitleId = useId();
   const insertPanelId = useId();
-  const searchInputId = useId();
   const comingSoon = t('app_header_coming_soon');
+
+  const handleObjectSelect = useCallback(
+    (result: SearchObjectResult) => {
+      insertObjectLinkAtSelection(editor, result);
+      onObjectLinkedFromEditor?.(result);
+      setObjectSearchOpen(false);
+    },
+    [editor, onObjectLinkedFromEditor],
+  );
 
   const measurePosition = useCallback(() => {
     if (pinInsertCenterVertical) {
@@ -391,19 +414,25 @@ export function EditorInsertCaretOverlay({
   }, [open, updateInsertPanelCoords]);
 
   useEffect(() => {
-    if (!open) {
+    if (!objectSearchOpen) {
       return;
     }
     function onDocMouseDown(e: MouseEvent) {
-      const t = e.target as Node;
-      if (shellRef.current?.contains(t) || insertPanelRef.current?.contains(t)) {
+      const target = e.target;
+      if (!(target instanceof Node)) {
         return;
       }
-      setOpen(false);
+      if (shellRef.current?.contains(target)) {
+        return;
+      }
+      if (target instanceof Element && target.closest('[role="listbox"]')) {
+        return;
+      }
+      setObjectSearchOpen(false);
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        setOpen(false);
+        setObjectSearchOpen(false);
       }
     }
     document.addEventListener('mousedown', onDocMouseDown);
@@ -412,7 +441,35 @@ export function EditorInsertCaretOverlay({
       document.removeEventListener('mousedown', onDocMouseDown);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [open]);
+  }, [objectSearchOpen]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    function onDocMouseDown(e: MouseEvent) {
+      const target = e.target as Node;
+      if (shellRef.current?.contains(target) || insertPanelRef.current?.contains(target)) {
+        return;
+      }
+      setOpen(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        if (objectSearchOpen) {
+          setObjectSearchOpen(false);
+        } else {
+          setOpen(false);
+        }
+      }
+    }
+    document.addEventListener('mousedown', onDocMouseDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onDocMouseDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open, objectSearchOpen]);
 
   return (
     <>
@@ -420,39 +477,67 @@ export function EditorInsertCaretOverlay({
       <div
         ref={shellRef}
         className={[
-          'pointer-events-auto absolute start-0 z-[60] -translate-x-1/2',
+          'pointer-events-auto absolute start-0 z-[70] -translate-x-1/2',
           pinInsertCenterVertical ? 'top-1/2 -translate-y-1/2' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        ].join(' ')}
         style={pinInsertCenterVertical ? undefined : { top: buttonTop }}
       >
-        <button
-          ref={insertButtonRef}
-          type="button"
-          aria-expanded={open}
-          aria-haspopup="dialog"
-          aria-controls={open ? insertPanelId : undefined}
-          aria-label={t('editor_insert_open_aria')}
-          title={t('editor_insert_open_aria')}
-          onClick={() => {
-            setOpen((o) => {
-              if (!o) {
-                setInsertView('grid');
-              }
-              return !o;
-            });
-          }}
-          className={[
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
-            'bg-bg text-fg-secondary shadow-none',
-            'hover:bg-ghost-surface',
-            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-          ].join(' ')}
-        >
-          <IconPlus />
-        </button>
+        {objectSearchOpen ? (
+          <button
+            ref={insertButtonRef}
+            type="button"
+            aria-label={t('close')}
+            title={t('close')}
+            onClick={() => setObjectSearchOpen(false)}
+            className={[
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
+              'bg-bg text-fg-secondary shadow-none',
+              'hover:bg-ghost-surface',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+            ].join(' ')}
+          >
+            <IconClose />
+          </button>
+        ) : (
+          <button
+            ref={insertButtonRef}
+            type="button"
+            aria-expanded={open}
+            aria-haspopup="dialog"
+            aria-controls={open ? insertPanelId : undefined}
+            aria-label={t('editor_insert_open_aria')}
+            title={t('editor_insert_open_aria')}
+            onClick={() => {
+              setOpen((o) => {
+                if (!o) {
+                  setInsertView('grid');
+                }
+                return !o;
+              });
+            }}
+            className={[
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
+              'bg-bg text-fg-secondary shadow-none',
+              'hover:bg-ghost-surface',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+            ].join(' ')}
+          >
+            <IconPlus />
+          </button>
+        )}
       </div>
+      {objectSearchOpen ? (
+        <div
+          className="pointer-events-auto absolute end-4 z-[60] flex items-center"
+          style={{
+            top: buttonTop,
+            left: INSERT_BTN_RADIUS + 12,
+            height: INSERT_BTN_SIZE_PX,
+          }}
+        >
+          <EditorInlineObjectSearch onSelect={handleObjectSelect} />
+        </div>
+      ) : null}
     </div>
     {portalReady &&
     open &&
@@ -499,22 +584,30 @@ export function EditorInsertCaretOverlay({
               <div className="grid grid-cols-2 gap-2">
                 {INSERT_ITEMS.map(({ labelKey, Icon }) => {
                   const isPhoto = labelKey === 'editor_insert_photo';
+                  const isObject = labelKey === 'editor_insert_object';
+                  const enabled = isPhoto || isObject;
                   return (
                     <button
                       key={labelKey}
                       type="button"
-                      disabled={!isPhoto}
-                      title={isPhoto ? undefined : comingSoon}
+                      disabled={!enabled}
+                      title={enabled ? undefined : comingSoon}
                       className={[
                         'flex flex-col items-center gap-1.5 rounded-btn px-2 py-3 text-body-sm',
-                        isPhoto
+                        enabled
                           ? 'bg-secondary text-secondary-fg hover:bg-surface-muted'
                           : 'bg-secondary text-secondary-fg opacity-70',
                       ].join(' ')}
                       onClick={
                         isPhoto
                           ? () => setInsertView('photo')
-                          : undefined
+                          : isObject
+                            ? () => {
+                                setOpen(false);
+                                setInsertView('grid');
+                                setObjectSearchOpen(true);
+                              }
+                            : undefined
                       }
                     >
                       <Icon className="text-fg-secondary" />
@@ -526,27 +619,6 @@ export function EditorInsertCaretOverlay({
                 })}
               </div>
             )}
-
-            {insertView === 'grid' ? (
-            <div className="mt-3 border-t border-border pt-3">
-              <label htmlFor={searchInputId} className="sr-only">
-                {t('editor_search_object_by_name')}
-              </label>
-              <input
-                id={searchInputId}
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('editor_search_object_by_name')}
-                autoComplete="off"
-                className={[
-                  'w-full rounded-btn border border-border bg-surface-control px-3 py-2 text-body-sm text-fg',
-                  'placeholder:text-fg-tertiary outline-none',
-                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-                ].join(' ')}
-              />
-            </div>
-            ) : null}
           </div>,
           document.body,
         )

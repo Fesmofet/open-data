@@ -17,6 +17,8 @@ export function EditorInsertPhotoPanel({ onInserted }: EditorInsertPhotoPanelPro
     <IpfsImageDropZone
       compact
       hideLegend
+      autoFocus
+      listenDocumentPaste
       onUploaded={(result) => {
         insertImageAtSelection(editor, {
           src: result.previewUrl,

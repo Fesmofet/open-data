@@ -1,4 +1,7 @@
+import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
+
 import {
+  MAX_POST_EDITOR_ATTACHED_OBJECTS,
   POST_EDITOR_OBJECTS_PERCENT_TOTAL,
   type PostEditorLinkedObject,
   type PostEditorMetadataObject,
@@ -217,6 +220,28 @@ export function mergeJsonMetadataWithObjects(
     ...base,
     objects: toMetadataObjects(objects),
   };
+}
+
+/** Adds a linked object from search when not already present (equal split on add). */
+export function appendLinkedObjectIfAbsent(
+  objects: readonly PostEditorLinkedObject[],
+  result: SearchObjectResult,
+): { objects: PostEditorLinkedObject[]; added: boolean } {
+  const objectId = result.object_id.trim();
+  if (!objectId) {
+    return { objects: [...objects], added: false };
+  }
+  if (objects.some((o) => o.objectId === objectId)) {
+    return { objects: [...objects], added: false };
+  }
+  if (objects.length >= MAX_POST_EDITOR_ATTACHED_OBJECTS) {
+    return { objects: [...objects], added: false };
+  }
+  const next = withEqualPercents([
+    ...objects,
+    { objectId, percent: 0 },
+  ]);
+  return { objects: next, added: true };
 }
 
 /** Stable snapshot for autosave dirty checks. */

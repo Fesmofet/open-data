@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
@@ -25,6 +25,10 @@ export type IpfsImageDropZoneProps = {
   compact?: boolean;
   legend?: string;
   hideLegend?: boolean;
+  /** Focus the drop zone on mount (e.g. insert-menu photo panel). */
+  autoFocus?: boolean;
+  /** Handle Ctrl+V while the panel is open even without focus on the zone. */
+  listenDocumentPaste?: boolean;
   onPointerEnter?: () => void;
   onFocus?: () => void;
 };
@@ -35,14 +39,55 @@ export function IpfsImageDropZone({
   compact = false,
   legend,
   hideLegend = false,
+  autoFocus = false,
+  listenDocumentPaste = false,
   onPointerEnter,
   onFocus,
 }: IpfsImageDropZoneProps) {
   const { t } = useI18n();
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const zoneButtonRef = useRef<HTMLButtonElement>(null);
   const { uploadFile, importFromUrl, isPending, uploadError } =
     useIpfsImageUpload(onUploaded);
+
+  const handleClipboardData = useCallback(
+    (data: DataTransfer | null): boolean => {
+      const file = imageFileFromClipboard(data);
+      if (file) {
+        uploadFile(file);
+        return true;
+      }
+      const pastedUrl = parseHttpUrlFromPaste(data?.getData('text/plain') ?? '');
+      if (pastedUrl) {
+        importFromUrl(pastedUrl);
+        return true;
+      }
+      return false;
+    },
+    [importFromUrl, uploadFile],
+  );
+
+  useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+    zoneButtonRef.current?.focus();
+  }, [autoFocus]);
+
+  useEffect(() => {
+    if (!listenDocumentPaste) {
+      return;
+    }
+    function onDocumentPaste(e: ClipboardEvent) {
+      if (handleClipboardData(e.clipboardData)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+    document.addEventListener('paste', onDocumentPaste, true);
+    return () => document.removeEventListener('paste', onDocumentPaste, true);
+  }, [handleClipboardData, listenDocumentPaste]);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -82,21 +127,11 @@ export function IpfsImageDropZone({
 
   const onPaste = useCallback(
     (e: React.ClipboardEvent) => {
-      const file = imageFileFromClipboard(e.clipboardData);
-      if (file) {
+      if (handleClipboardData(e.clipboardData)) {
         e.preventDefault();
-        uploadFile(file);
-        return;
-      }
-      const pastedUrl = parseHttpUrlFromPaste(
-        e.clipboardData.getData('text/plain'),
-      );
-      if (pastedUrl) {
-        e.preventDefault();
-        importFromUrl(pastedUrl);
       }
     },
-    [importFromUrl, uploadFile],
+    [handleClipboardData],
   );
 
   const openFilePicker = useCallback(() => {
@@ -129,6 +164,7 @@ export function IpfsImageDropZone({
       />
 
       <button
+        ref={zoneButtonRef}
         type="button"
         aria-label={zoneLegend}
         disabled={disabled || isPending}
