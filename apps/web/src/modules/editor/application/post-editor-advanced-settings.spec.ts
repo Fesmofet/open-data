@@ -6,11 +6,13 @@ import {
 } from '../domain/post-editor-advanced-settings';
 import {
   addPostEditorTag,
+  addPostEditorTagForHashtagObject,
   appendBeneficiaryIfAbsent,
   applyBeneficiaryWeight,
   buildPublishCommentOptions,
   buildPublishTags,
   normalizePostEditorTag,
+  postEditorTagCandidateFromHashtagObject,
   parseBeneficiariesFromDraft,
   parseRewardModeFromJsonMetadata,
   rewardModeToCommentOptionsFields,
@@ -150,6 +152,71 @@ describe('buildPublishCommentOptions', () => {
     expect(op.type).toBe('comment_options');
     expect(op.percent_hbd).toBe(10000);
     expect(op.extensions).toHaveLength(1);
+  });
+});
+
+describe('postEditorTagCandidateFromHashtagObject', () => {
+  it('returns normalized tag from hashtag name', () => {
+    expect(
+      postEditorTagCandidateFromHashtagObject({
+        object_id: 'food',
+        object_type: 'hashtag',
+        name: '#Food',
+        image_url: null,
+        parent_name: null,
+      }),
+    ).toBe('food');
+  });
+
+  it('falls back to last segment of object_id', () => {
+    expect(
+      postEditorTagCandidateFromHashtagObject({
+        object_id: 'waivio/travel',
+        object_type: 'hashtag',
+        name: null,
+        image_url: null,
+        parent_name: null,
+      }),
+    ).toBe('travel');
+  });
+
+  it('returns null for non-hashtag objects', () => {
+    expect(
+      postEditorTagCandidateFromHashtagObject({
+        object_id: 'x',
+        object_type: 'restaurant',
+        name: 'Cafe',
+        image_url: null,
+        parent_name: null,
+      }),
+    ).toBeNull();
+  });
+});
+
+describe('addPostEditorTagForHashtagObject', () => {
+  it('appends tag when hashtag linked and tag is new', () => {
+    expect(
+      addPostEditorTagForHashtagObject(['waivio'], {
+        object_id: 'food',
+        object_type: 'hashtag',
+        name: 'food',
+        image_url: null,
+        parent_name: null,
+      }),
+    ).toEqual(['waivio', 'food']);
+  });
+
+  it('leaves tags unchanged when object is not a hashtag', () => {
+    const tags = ['waivio'];
+    expect(
+      addPostEditorTagForHashtagObject(tags, {
+        object_id: 'cafe',
+        object_type: 'restaurant',
+        name: 'Cafe',
+        image_url: null,
+        parent_name: null,
+      }),
+    ).toEqual(tags);
   });
 });
 

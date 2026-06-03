@@ -7,7 +7,6 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { MAX_POST_EDITOR_ATTACHED_OBJECTS } from '../../domain/post-editor-linked-object';
 
 import {
-  appendLinkedObjectIfAbsent,
   applySliderPercent,
   remainingPercentWeight,
   validateLinkedObjectPercents,
@@ -21,7 +20,7 @@ export type EditorAttachedObjectsPanelProps = {
   linkedObjects: PostEditorLinkedObject[];
   searchResultsById: Readonly<Record<string, SearchObjectResult>>;
   onLinkedObjectsChange: (objects: PostEditorLinkedObject[]) => void;
-  onSearchResultCached: (result: SearchObjectResult) => void;
+  onObjectLinked: (result: SearchObjectResult) => void;
   onNavigateToCreateObject: () => void;
 };
 
@@ -29,7 +28,7 @@ export function EditorAttachedObjectsPanel({
   linkedObjects,
   searchResultsById,
   onLinkedObjectsChange,
-  onSearchResultCached,
+  onObjectLinked,
   onNavigateToCreateObject,
 }: EditorAttachedObjectsPanelProps) {
   const { t } = useI18n();
@@ -45,13 +44,9 @@ export function EditorAttachedObjectsPanel({
 
   const handleAdd = useCallback(
     (result: SearchObjectResult) => {
-      onSearchResultCached(result);
-      const { objects, added } = appendLinkedObjectIfAbsent(linkedObjects, result);
-      if (added) {
-        onLinkedObjectsChange(objects);
-      }
+      onObjectLinked(result);
     },
-    [linkedObjects, onLinkedObjectsChange, onSearchResultCached],
+    [onObjectLinked],
   );
 
   const handleRemove = useCallback(

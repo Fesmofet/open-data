@@ -3,6 +3,13 @@ export { GetSearchCountsEndpoint } from './get-search-counts.endpoint';
 export type { GetSearchCountsInput } from './get-search-counts.endpoint';
 export { GetSearchEndpoint } from './get-search.endpoint';
 export type { GetSearchInput, SearchResultType } from './get-search.endpoint';
+export { GetSearchObjectsByIdsEndpoint } from './get-search-objects-by-ids.endpoint';
+export type { GetSearchObjectsByIdsInput } from './get-search-objects-by-ids.endpoint';
+export { searchObjectsByIdsBodySchema } from './schemas/search-objects-by-ids.schema';
+export type {
+  SearchObjectsByIdsBody,
+  SearchObjectsByIdsResponseDto,
+} from './schemas/search-objects-by-ids.schema';
 export { searchCountsQuerySchema } from './search-counts-query.schema';
 export type { SearchCountsQuery } from './search-counts-query.schema';
 export { searchQuerySchema } from './search-query.schema';

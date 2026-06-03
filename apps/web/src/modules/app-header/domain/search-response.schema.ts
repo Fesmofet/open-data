@@ -21,6 +21,10 @@ export const searchResponseSchema = z.object({
   users: z.array(searchUserResultSchema),
 });
 
+export const searchObjectsByIdsResponseSchema = z.object({
+  objects: z.array(searchObjectResultSchema),
+});
+
 export const searchCountsResponseSchema = z.object({
   type_counts: z.record(z.string(), z.number()),
   total_users: z.number(),
@@ -29,4 +33,7 @@ export const searchCountsResponseSchema = z.object({
 export type SearchResponse = z.infer<typeof searchResponseSchema>;
 export type SearchCountsResponse = z.infer<typeof searchCountsResponseSchema>;
 export type SearchObjectResult = z.infer<typeof searchObjectResultSchema>;
+export type SearchObjectsByIdsResponse = z.infer<
+  typeof searchObjectsByIdsResponseSchema
+>;
 export type SearchUserResult = z.infer<typeof searchUserResultSchema>;

@@ -4,6 +4,8 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 import type { CommentOptionsOp } from '@opden-data-layer/hive-broadcast';
 
+import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
+
 import {
   EDITOR_REWARD_MODE_METADATA_KEY,
   HIVE_BENEFICIARY_WEIGHT_MIN,
@@ -20,6 +22,9 @@ import {
 } from '../domain/post-editor-advanced-settings';
 
 const TAG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** Waivio `objects_core.object_type` for hashtag objects. */
+export const POST_EDITOR_HASHTAG_OBJECT_TYPE = 'hashtag';
 
 export type PostEditorBeneficiariesValidation = {
   ok: boolean;
@@ -293,6 +298,44 @@ export function removePostEditorTag(
 ): string[] {
   const normalized = normalizePostEditorTag(tag) ?? tag;
   return tags.filter((t) => t !== normalized);
+}
+
+export function isPostEditorHashtagObject(
+  result: Pick<SearchObjectResult, 'object_type'>,
+): boolean {
+  return (
+    result.object_type?.trim().toLowerCase() === POST_EDITOR_HASHTAG_OBJECT_TYPE
+  );
+}
+
+/** Tag token for Advanced settings when linking a hashtag object (name, else last segment of object_id). */
+export function postEditorTagCandidateFromHashtagObject(
+  result: Pick<SearchObjectResult, 'object_type' | 'name' | 'object_id'>,
+): string | null {
+  if (!isPostEditorHashtagObject(result)) {
+    return null;
+  }
+  const fromName = result.name?.trim();
+  if (fromName) {
+    const normalized = normalizePostEditorTag(fromName);
+    if (normalized) {
+      return normalized;
+    }
+  }
+  const id = result.object_id.trim();
+  const token = id.includes('/') ? (id.split('/').pop() ?? id) : id;
+  return normalizePostEditorTag(token);
+}
+
+export function addPostEditorTagForHashtagObject(
+  tags: readonly string[],
+  result: Pick<SearchObjectResult, 'object_type' | 'name' | 'object_id'>,
+): string[] {
+  const candidate = postEditorTagCandidateFromHashtagObject(result);
+  if (!candidate) {
+    return [...tags];
+  }
+  return addPostEditorTag(tags, candidate);
 }
 
 export type RewardCommentOptionsFields = {

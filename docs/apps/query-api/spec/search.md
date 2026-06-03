@@ -8,6 +8,7 @@ Predictive search for the web shell header: ranked **objects** and **users**. Gl
 |--------|------|------|
 | `GET` | `/query/v1/search` | Optional `X-Viewer` for follower state on user rows and projection context |
 | `GET` | `/query/v1/search/counts` | None required (counts do not depend on viewer or locale) |
+| `POST` | `/query/v1/search/objects-by-ids` | Optional `X-Viewer`, `X-Governance-Object-Id`, locale headers (same as `GET /search`) |
 
 ### Query parameters — `GET /search`
 
@@ -39,6 +40,24 @@ Predictive search for the web shell header: ranked **objects** and **users**. Gl
 - **`users`**: Array of `SearchUserResult` — `name`, `profile_image`, `reputation` (`object_reputation`), `followers_count`, `is_following`.
 
 No `type_counts` or `total_users` — use `/search/counts` for tab badges.
+
+## Request — `POST /search/objects-by-ids`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `object_ids` | `string[]` | yes | 1–100 trimmed non-empty ids. Duplicates are deduped; response order follows first occurrence in the request. |
+
+## Response — `POST /search/objects-by-ids`
+
+`SearchObjectsByIdsResponseDto`:
+
+- **`objects`**: Array of `SearchObjectResult` (same shape as `GET /search` object hits).
+
+## Query plan — objects by ids (`POST /search/objects-by-ids`)
+
+1. **`loadByObjectIds`** on `objects_core` PK (`status = 'active'`) — no FTS, no `meta_group_id` collapse.
+2. Resolve + `ObjectProjectionService.batchProject` with update types `name`, `image`, `parent` (same as `/search` object cards).
+3. Omit ids that are missing or inactive (no 404 on the batch).
 
 ## Response — `GET /search/counts`
 

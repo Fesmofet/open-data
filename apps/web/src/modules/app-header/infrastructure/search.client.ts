@@ -1,5 +1,6 @@
 import {
   searchCountsResponseSchema,
+  searchObjectsByIdsResponseSchema,
   searchResponseSchema,
   type SearchCountsResponse,
   type SearchObjectResult,
@@ -51,14 +52,7 @@ export function pickSearchObjectById(
     return null;
   }
   const filtered = filterSearchObjectsByAppliesTo([...objects], appliesTo);
-  const exact = filtered.find((o) => o.object_id === id);
-  if (exact) {
-    return exact;
-  }
-  if (filtered.length === 1) {
-    return filtered[0];
-  }
-  return null;
+  return filtered.find((o) => o.object_id === id) ?? null;
 }
 
 async function fetchSearchByType(
@@ -139,7 +133,48 @@ export async function fetchObjectSearchResults(
 }
 
 /**
- * Resolves display fields for a stored object ref via the same search API as the picker.
+ * Batch resolve object card display fields by `object_id` (no FTS; query-api PK load).
+ */
+export async function fetchSearchObjectsByIds(
+  objectIds: readonly string[],
+  init?: { signal?: AbortSignal; appliesTo?: readonly string[] },
+): Promise<SearchObjectResult[] | null> {
+  const ids = objectIds.map((id) => id.trim()).filter((id) => id.length > 0);
+  if (ids.length === 0) {
+    return [];
+  }
+
+  let res: Response;
+  try {
+    res = await fetch('/api/search/objects-by-ids', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ object_ids: ids }),
+      cache: 'no-store',
+      signal: init?.signal,
+    });
+  } catch {
+    return null;
+  }
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const raw: unknown = await res.json();
+  const parsed = searchObjectsByIdsResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    return null;
+  }
+
+  return filterSearchObjectsByAppliesTo(parsed.data.objects, init?.appliesTo);
+}
+
+/**
+ * Resolves display fields for a stored object ref (batch by-id API).
  */
 export async function fetchSearchObjectById(
   objectId: string,
@@ -149,7 +184,7 @@ export async function fetchSearchObjectById(
   if (!id) {
     return null;
   }
-  const objects = await fetchObjectSearchResults(id, init);
+  const objects = await fetchSearchObjectsByIds([id], init);
   if (!objects) {
     return null;
   }

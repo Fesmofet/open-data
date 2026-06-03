@@ -39,6 +39,8 @@ const SEARCH_TIER_FTS = 0;
 const SEARCH_TIER_EXACT_TEXT = 1;
 /** Sort tier: `object_id` substring (id-shaped queries). */
 const SEARCH_TIER_ID_SUBSTRING = 2;
+/** Sort tier: exact `objects_core.object_id` (draft / linked-object hydration). */
+const SEARCH_TIER_EXACT_OBJECT_ID = 3;
 
 @Injectable()
 export class SearchRepository {
@@ -70,11 +72,21 @@ export class SearchRepository {
     try {
       const result = useFastFtsPath
         ? await sql<SearchObjectCandidateRow>`
-            WITH fts_ids AS (
+            WITH exact_object_id AS (
+              SELECT object_id
+              FROM objects_core
+              WHERE status = 'active' AND object_id = ${trimmed}
+            ),
+            fts_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
               WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
                 AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
+            ),
+            candidate_ids AS (
+              SELECT object_id FROM exact_object_id
+              UNION
+              SELECT object_id FROM fts_ids
             )
             SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
               oc.object_id AS object_id,
@@ -82,13 +94,18 @@ export class SearchRepository {
               oc.meta_group_id AS meta_group_id,
               oc.weight AS weight
             FROM objects_core oc
-            INNER JOIN fts_ids c ON c.object_id = oc.object_id
+            INNER JOIN candidate_ids c ON c.object_id = oc.object_id
             WHERE oc.status = 'active'
             ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
             LIMIT ${limit}
           `.execute(this.db)
         : await sql<SearchObjectCandidateRow>`
-            WITH fts_ids AS (
+            WITH exact_object_id AS (
+              SELECT object_id
+              FROM objects_core
+              WHERE status = 'active' AND object_id = ${trimmed}
+            ),
+            fts_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
               WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
@@ -109,6 +126,8 @@ export class SearchRepository {
                 AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
             ),
             candidates AS (
+              SELECT object_id, ${SEARCH_TIER_EXACT_OBJECT_ID}::int AS sort_tier FROM exact_object_id
+              UNION ALL
               SELECT object_id, ${SEARCH_TIER_ID_SUBSTRING}::int AS sort_tier FROM id_hits
               UNION ALL
               SELECT object_id, ${SEARCH_TIER_EXACT_TEXT}::int FROM exact_ids

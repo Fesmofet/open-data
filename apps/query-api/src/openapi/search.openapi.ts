@@ -82,6 +82,54 @@ registry.registerPath({
   },
 });
 
+const searchObjectsByIdsResponseSchema = registry.register(
+  'SearchObjectsByIdsResponseDto',
+  z.object({
+    objects: z.array(searchObjectResultSchema),
+  }),
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/search/objects-by-ids',
+  summary: 'Resolve object card display by ids',
+  description:
+    'Loads active objects by primary key (`object_id`) via `AggregatedObjectRepository.loadByObjectIds`, then projects `name`, `image`, and `parent` like `GET /search`. No FTS or `meta_group_id` dedup. Missing or inactive ids are omitted. Used by the post editor to hydrate linked objects after draft reload.',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            object_ids: z
+              .array(z.string().min(1))
+              .min(1)
+              .max(100)
+              .openapi({ description: 'Hive object ids (max 100).' }),
+          }),
+        },
+      },
+    },
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description: 'Optional Hive account for projection context.',
+      }),
+      'x-governance-object-id': z.string().optional().openapi({
+        description: 'Optional governance merge (same as object resolve).',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Projected object rows for the requested ids (subset when some ids are missing).',
+      content: {
+        'application/json': {
+          schema: searchObjectsByIdsResponseSchema,
+        },
+      },
+    },
+  },
+});
+
 registry.registerPath({
   method: 'get',
   path: '/query/v1/search/counts',

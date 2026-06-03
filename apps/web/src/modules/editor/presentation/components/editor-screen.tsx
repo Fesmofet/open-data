@@ -10,11 +10,15 @@ import {
 } from 'react';
 
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
-import { fetchSearchObjectById } from '@/modules/app-header/infrastructure/search.client';
+import {
+  fetchSearchObjectById,
+  fetchSearchObjectsByIds,
+} from '@/modules/app-header/infrastructure/search.client';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { hasLexicalDraftBodyContent } from '../../application/editor-body-serialization';
 import {
+  addPostEditorTagForHashtagObject,
   initialPostEditorTags,
   mergeRewardModeIntoJsonMetadata,
   mergeTagsIntoJsonMetadata,
@@ -166,18 +170,20 @@ export function EditorScreen({
       return;
     }
     const controller = new AbortController();
-    for (const objectId of ids) {
-      void fetchSearchObjectById(objectId, { signal: controller.signal }).then(
-        (result) => {
-          if (controller.signal.aborted || !result) {
-            return;
+    void fetchSearchObjectsByIds(ids, { signal: controller.signal }).then(
+      (objects) => {
+        if (controller.signal.aborted || !objects) {
+          return;
+        }
+        setSearchResultsById((prev) => {
+          const next = { ...prev };
+          for (const result of objects) {
+            next[result.object_id] = result;
           }
-          setSearchResultsById((prev) =>
-            prev[objectId] ? prev : { ...prev, [objectId]: result },
-          );
-        },
-      );
-    }
+          return next;
+        });
+      },
+    );
     return () => controller.abort();
   }, [linkedObjects]);
 
@@ -389,12 +395,39 @@ export function EditorScreen({
   const handleObjectLinkedFromEditor = useCallback(
     (result: SearchObjectResult) => {
       cacheSearchResult(result);
-      const { objects, added } = appendLinkedObjectIfAbsent(linkedObjects, result);
-      if (added) {
-        handleLinkedObjectsChangeWithSave(objects);
+      const { objects, added: linkedAdded } = appendLinkedObjectIfAbsent(
+        linkedObjects,
+        result,
+      );
+      const nextTags = addPostEditorTagForHashtagObject(tags, result);
+      const tagsChanged = nextTags.length !== tags.length;
+      if (!linkedAdded && !tagsChanged) {
+        return;
       }
+      if (linkedAdded) {
+        setLinkedObjects(objects);
+      }
+      if (tagsChanged) {
+        setTags(nextTags);
+      }
+      setJsonMetadata((prev: unknown) =>
+        buildJsonMetadataPayload(
+          prev,
+          linkedAdded ? objects : linkedObjects,
+          tagsChanged ? nextTags : tags,
+          rewardMode,
+        ),
+      );
+      scheduleSave();
     },
-    [cacheSearchResult, linkedObjects, handleLinkedObjectsChangeWithSave],
+    [
+      cacheSearchResult,
+      linkedObjects,
+      tags,
+      rewardMode,
+      buildJsonMetadataPayload,
+      scheduleSave,
+    ],
   );
 
   const attachReturnedObject = useCallback(
@@ -417,13 +450,23 @@ export function EditorScreen({
       if (!added || !validateLinkedObjectPercents(objects).ok) {
         return;
       }
+      const nextTags = addPostEditorTagForHashtagObject(snap.tags, result);
+      const tagsChanged = nextTags.length !== snap.tags.length;
       setSearchResultsById((prev) => ({
         ...prev,
         [result.object_id]: result,
       }));
       setLinkedObjects(objects);
+      if (tagsChanged) {
+        setTags(nextTags);
+      }
       setJsonMetadata((prev: unknown) =>
-        buildJsonMetadataPayload(prev, objects, snap.tags, snap.rewardMode),
+        buildJsonMetadataPayload(
+          prev,
+          objects,
+          tagsChanged ? nextTags : snap.tags,
+          snap.rewardMode,
+        ),
       );
       await flushSave();
     },
@@ -576,7 +619,7 @@ export function EditorScreen({
             linkedObjects={linkedObjects}
             searchResultsById={searchResultsById}
             onLinkedObjectsChange={handleLinkedObjectsChangeWithSave}
-            onSearchResultCached={cacheSearchResult}
+            onObjectLinked={handleObjectLinkedFromEditor}
             onNavigateToCreateObject={() => void handleNavigateToObjectCreate()}
           />
         </div>
