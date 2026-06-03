@@ -19,6 +19,7 @@ import {
   ObjectPrimaryNav,
   ObjectAuthoritySubNav,
   ObjectRefListFeed,
+  ObjectEditRightRail,
   ObjectViewShell,
 } from '@/modules/object';
 import type { ObjectRefListPageView } from '@/modules/object/infrastructure/object-ref-list.client';
@@ -652,6 +653,13 @@ export function ObjectPageClient({
   const canOpenDescriptionPage =
     Boolean(model.descriptionContent?.trim()) || model.previewGallery.length > 0;
 
+  const rightRail =
+    isEditMode && viewerUsername ? (
+      <ObjectEditRightRail model={model} />
+    ) : (
+      rightRailSlot
+    );
+
   const leftRail = (
     <LeftObjectProfileSidebar>
       <ObjectLeftRailPanel
@@ -728,7 +736,7 @@ export function ObjectPageClient({
           onRequireLogin={openLogin}
         />
       }
-        rightRail={rightRailSlot}
+        rightRail={rightRail}
       />
       {galleryFullView ? (
         <ObjectGalleryViewer

@@ -4,7 +4,10 @@
 
 ## Scope
 
-Right column on the object detail page (`lg+`): preview blocks for Related, Similar, Add-On, and Followers. Full lists live in the **center column** on dedicated primary-tab routes.
+Right column on the object detail page (`lg+`):
+
+- **View mode** (default): Related, Similar, Add-On, and Followers preview blocks. Full lists live in the **center column** on dedicated primary-tab routes.
+- **Edit mode** (logged-in viewer, hero Edit toggle): **Preview** and **Object completeness** only — same panels as [object create](../object-create.md) (`ObjectPreviewPanel`, `ObjectHealthPanel`). Related / Similar / Add-On / Followers are not shown.
 
 Hidden in **Instagram** shell mode (`shell-hide-instagram`), same as profile right rail.
 
@@ -14,7 +17,15 @@ Hidden in **Instagram** shell mode (`shell-hide-instagram`), same as profile rig
 - Width: **18rem** default, **22rem** in Twitter shell mode ([`theme.css`](../../../../apps/web/src/styles/theme.css)); wider than profile `--shell-right-width` for longer mini-card titles.
 - Component: [`ObjectRightSidebar`](../../../../apps/web/src/modules/object/presentation/components/object-right-sidebar.tsx).
 
-## Sections (top → bottom)
+## Edit mode
+
+- Gating: `isEditMode && viewerUsername` in [`object-page-client.tsx`](../../../../apps/web/src/app/(app)/object/[object-id]/object-page-client.tsx) (same as left-rail `editContext`).
+- Component: [`ObjectEditRightRail`](../../../../apps/web/src/modules/object/presentation/components/object-edit-right-rail.tsx).
+- Data: [`objectPageModelToPreviewFields`](../../../../apps/web/src/modules/object/application/mappers/object-page-to-preview-fields.ts) maps `ObjectPageViewModel` → create-workspace `FieldEntry[]`; completeness via `computeSemanticCompleteness` from `@/modules/object-create/domain/semantic-completeness`.
+- Panels refresh after on-chain updates when the page revalidates (no live draft while `AddUpdateModal` is open).
+- SSR still loads view-mode ref/follower rail data on every request; edit mode simply does not render that slot.
+
+## Sections (view mode, top → bottom)
 
 | Section | Visibility | Data source | Preview size | Show more |
 | ------- | ------------ | ----------- | ------------ | --------- |
@@ -75,9 +86,9 @@ Proxy: [`proxy.ts`](../../../../apps/web/src/proxy.ts) rewrites `/object/:id/<ta
 ```
 page.tsx (SSR)
   → ObjectPageClient
-      → ObjectViewShell.rightRail → ObjectRightSidebar
-            related/similar/addOn from ObjectPageViewModel (mergeRightRailIntoModel)
-            rightRailFollowersPage from getObjectFollowersPageQuery
+      → ObjectViewShell.rightRail
+            view: ObjectRightSidebar (SSR slot from ObjectPageRightRailSection)
+            edit: ObjectEditRightRail (client; preview + completeness)
 ```
 
 Registry gate for ref sections: `objectTypeSupportsRefList` in `page.tsx` checks `OBJECT_TYPE_REGISTRY[objectTypeKey].supported_updates`.
