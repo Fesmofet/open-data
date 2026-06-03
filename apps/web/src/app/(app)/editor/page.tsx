@@ -80,6 +80,7 @@ export default async function EditorPage({
       initialTitle={initialDraft?.title ?? ''}
       initialBody={initialDraft?.body ?? ''}
       initialDraftId={initialDraft?.draftId ?? null}
+      initialJsonMetadata={initialDraft?.jsonMetadata ?? null}
       sidebarDrafts={sidebarDrafts}
     />
   );

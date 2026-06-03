@@ -1,7 +1,6 @@
 'use client';
 
-import { AutoLinkNode, LinkNode, createLinkMatcherWithRegExp } from '@lexical/link';
-import { ListItemNode, ListNode } from '@lexical/list';
+import { createLinkMatcherWithRegExp } from '@lexical/link';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
@@ -12,18 +11,29 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import {
   $createParagraphNode,
   $createTextNode,
   $getRoot,
-  LineBreakNode,
-  ParagraphNode,
-  TextNode,
 } from 'lexical';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
+import { imageContentUrlForCid } from '@/config/ipfs-content-url';
+
+import {
+  isLexicalDraftJson,
+  migrateLegacyImageNodeTypes,
+  normalizeImageNodeSrcFromCid,
+  serializeEditorState,
+} from '../../application/editor-body-serialization';
+import { POST_EDITOR_NODES } from '../../domain/editor-lexical-nodes';
+import { EditorFormatToolbar } from './editor-format-toolbar';
+import { EditorImageDropOverlay } from './editor-image-drop-overlay';
 import { EditorInsertCaretOverlay } from './editor-insert-menu';
+import { EditorImageKeyboardPlugin } from './editor-image-keyboard-plugin';
+import { EditorPasteImagePlugin } from './editor-paste-image-plugin';
+import { EditorRegisterImagePlugin } from './editor-register-image-plugin';
 
 const URL_REG_EXP =
   /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
@@ -49,11 +59,15 @@ const lexicalTheme = {
     },
   },
   link: 'text-link underline underline-offset-2 hover:text-accent-alt',
+  image: 'my-2 block w-full overflow-hidden rounded-card',
   text: {
     bold: 'font-weight-strong',
     italic: 'italic',
     underline: 'underline',
     strikethrough: 'line-through',
+    code: 'rounded-btn bg-surface-muted px-0.5 font-mono text-body-sm',
+    spoiler:
+      'cursor-pointer rounded-btn bg-surface-muted px-0.5 text-fg hover:bg-accent/20',
   },
 };
 
@@ -78,31 +92,51 @@ function Placeholder({
   );
 }
 
-function InitialPlainTextPlugin({ text }: { text: string }) {
+function seedPlainTextBody(editor: import('lexical').LexicalEditor, text: string) {
+  editor.update(() => {
+    const root = $getRoot();
+    root.clear();
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const p = $createParagraphNode();
+      p.append($createTextNode(line));
+      root.append(p);
+    }
+  });
+}
+
+function InitialBodyPlugin({ body }: { body?: string }) {
   const [editor] = useLexicalComposerContext();
+  const contentBaseUrl = useIpfsContentBaseUrl();
   const applied = useRef(false);
 
   useEffect(() => {
     if (applied.current) {
       return;
     }
-    const trimmed = text.trim();
+    const trimmed = body?.trim() ?? '';
     if (!trimmed) {
       applied.current = true;
       return;
     }
     applied.current = true;
-    editor.update(() => {
-      const root = $getRoot();
-      root.clear();
-      const lines = trimmed.split('\n');
-      for (const line of lines) {
-        const p = $createParagraphNode();
-        p.append($createTextNode(line));
-        root.append(p);
+
+    if (isLexicalDraftJson(trimmed)) {
+      const migrated = migrateLegacyImageNodeTypes(trimmed);
+      const state = editor.parseEditorState(migrated);
+      editor.setEditorState(state);
+      if (contentBaseUrl) {
+        normalizeImageNodeSrcFromCid(
+          editor,
+          contentBaseUrl,
+          imageContentUrlForCid,
+        );
       }
-    });
-  }, [editor, text]);
+      return;
+    }
+
+    seedPlainTextBody(editor, trimmed);
+  }, [body, contentBaseUrl, editor]);
 
   return null;
 }
@@ -115,18 +149,29 @@ function LexicalAutoLinkConfigured() {
   return <AutoLinkPlugin matchers={matchers} />;
 }
 
-function PlainTextOnChangePlugin({
-  onPlainTextChange,
+function EditorBodyOnChangePlugin({
+  onBodyChange,
+  plainTextOnly,
 }: {
-  onPlainTextChange?: (text: string) => void;
+  onBodyChange?: (body: string) => void;
+  plainTextOnly?: boolean;
 }) {
+  const [editor] = useLexicalComposerContext();
+
   return (
     <OnChangePlugin
       ignoreSelectionChange
       onChange={(editorState) => {
-        editorState.read(() => {
-          onPlainTextChange?.($getRoot().getTextContent());
-        });
+        if (!onBodyChange) {
+          return;
+        }
+        if (plainTextOnly) {
+          editorState.read(() => {
+            onBodyChange($getRoot().getTextContent());
+          });
+          return;
+        }
+        onBodyChange(serializeEditorState(editor));
       }}
     />
   );
@@ -134,17 +179,20 @@ function PlainTextOnChangePlugin({
 
 function EditorInner({
   bodyPlaceholder,
-  initialPlainText,
-  onPlainTextChange,
+  initialBody,
+  onBodyChange,
   compact,
   compactBottomInset,
+  showFormatToolbar,
+  enableImages,
 }: {
   bodyPlaceholder: string;
-  initialPlainText?: string;
-  onPlainTextChange?: (text: string) => void;
+  initialBody?: string;
+  onBodyChange?: (body: string) => void;
   compact?: boolean;
-  /** Extra bottom padding for a control (e.g. send) overlaid in the corner. */
   compactBottomInset?: boolean;
+  showFormatToolbar?: boolean;
+  enableImages?: boolean;
 }) {
   const pillChrome = Boolean(compact && compactBottomInset);
 
@@ -158,8 +206,11 @@ function EditorInner({
 
   return (
     <>
-      {initialPlainText ? <InitialPlainTextPlugin text={initialPlainText} /> : null}
-      <PlainTextOnChangePlugin onPlainTextChange={onPlainTextChange} />
+      {initialBody ? <InitialBodyPlugin body={initialBody} /> : null}
+      <EditorBodyOnChangePlugin
+        onBodyChange={onBodyChange}
+        plainTextOnly={compact}
+      />
       <RichTextPlugin
         contentEditable={
           <ContentEditable
@@ -181,30 +232,45 @@ function EditorInner({
       <ListPlugin />
       <LinkPlugin />
       <LexicalAutoLinkConfigured />
+      {showFormatToolbar ? <EditorFormatToolbar /> : null}
+      {enableImages ? (
+        <>
+          <EditorRegisterImagePlugin />
+          <EditorPasteImagePlugin />
+          <EditorImageKeyboardPlugin />
+        </>
+      ) : null}
     </>
   );
 }
 
 export type LexicalEditorProps = {
   bodyPlaceholder: string;
-  /** One-time plain-text seed (e.g. draft body from query-api). */
+  /** Lexical JSON or legacy plain-text seed (e.g. draft body). */
+  initialBody?: string;
+  /** Fired when body changes (Lexical JSON for post editor, plain text when `compact`). */
+  onBodyChange?: (body: string) => void;
+  /** @deprecated Use `initialBody`. */
   initialPlainText?: string;
-  /** Fired when plain-text content changes (for autosave). */
+  /** @deprecated Use `onBodyChange`. */
   onPlainTextChange?: (text: string) => void;
-  /** Shorter editor chrome (e.g. inline comment under a feed story). */
   compact?: boolean;
-  /** When `compact`, reserve bottom space for an overlaid action (e.g. send). */
   compactBottomInset?: boolean;
 };
 
 export function LexicalPostEditor({
   bodyPlaceholder,
+  initialBody,
+  onBodyChange,
   initialPlainText,
   onPlainTextChange,
   compact,
   compactBottomInset,
 }: LexicalEditorProps) {
   const pillChrome = Boolean(compact && compactBottomInset);
+  const enableImages = !compact;
+  const resolvedInitialBody = initialBody ?? initialPlainText;
+  const resolvedOnBodyChange = onBodyChange ?? onPlainTextChange;
 
   const initialConfig = useMemo(
     () => ({
@@ -218,17 +284,7 @@ export function LexicalPostEditor({
       onError: (error: Error) => {
         console.error(error);
       },
-      nodes: [
-        ParagraphNode,
-        TextNode,
-        LineBreakNode,
-        HeadingNode,
-        QuoteNode,
-        ListNode,
-        ListItemNode,
-        LinkNode,
-        AutoLinkNode,
-      ],
+      nodes: [...POST_EDITOR_NODES],
     }),
     [pillChrome],
   );
@@ -248,11 +304,14 @@ export function LexicalPostEditor({
       >
         <EditorInner
           bodyPlaceholder={bodyPlaceholder}
-          initialPlainText={initialPlainText}
-          onPlainTextChange={onPlainTextChange}
+          initialBody={resolvedInitialBody}
+          onBodyChange={resolvedOnBodyChange}
           compact={compact}
           compactBottomInset={compactBottomInset}
+          showFormatToolbar={enableImages}
+          enableImages={enableImages}
         />
+        {enableImages ? <EditorImageDropOverlay /> : null}
         <EditorInsertCaretOverlay pinInsertCenterVertical={pillChrome} />
       </div>
     </LexicalComposer>

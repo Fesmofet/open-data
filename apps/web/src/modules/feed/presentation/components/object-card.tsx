@@ -117,6 +117,11 @@ export type ObjectCardProps = {
   as?: 'li' | 'div';
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  /** Post editor: hide admin heart and use compact row with trailing controls. */
+  layout?: 'default' | 'editorRow';
+  hideAdministrativeHeart?: boolean;
+  /** Post editor: toggle + slider column on the right. */
+  trailing?: ReactNode;
 };
 
 /**
@@ -129,7 +134,12 @@ export function ObjectCard({
   as: Root = 'li',
   viewerUsername,
   onRequireLogin,
+  layout = 'default',
+  hideAdministrativeHeart = false,
+  trailing,
 }: ObjectCardProps) {
+  const editorRow = layout === 'editorRow';
+  const thumbSize = editorRow ? 72 : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
   const subtitleParts = [typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
@@ -163,17 +173,29 @@ export function ObjectCard({
     .filter(Boolean)
     .join(' ');
 
+  const showHeart = !hideAdministrativeHeart && !editorRow;
+
   return (
     <Root className={rootClassName} aria-busy={navPending || undefined}>
-      <div className="absolute end-3 top-3">
-        <AdministrativeHeartButton
-          objectId={o.object_id}
-          initialActive={o.hasAdministrativeAuthority ?? false}
-          viewerUsername={viewerUsername}
-          onRequireLogin={onRequireLogin}
-        />
-      </div>
-      <div className="flex gap-3 pe-8">
+      {showHeart ? (
+        <div className="absolute end-3 top-3">
+          <AdministrativeHeartButton
+            objectId={o.object_id}
+            initialActive={o.hasAdministrativeAuthority ?? false}
+            viewerUsername={viewerUsername}
+            onRequireLogin={onRequireLogin}
+          />
+        </div>
+      ) : null}
+      <div
+        className={[
+          'flex gap-3',
+          showHeart ? 'pe-8' : '',
+          trailing ? 'items-start' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <CardNavTarget
           href={href}
           linkReplace={linkReplace}
@@ -184,16 +206,16 @@ export function ObjectCard({
         >
           <span
             className="flex items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt"
-            style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
+            style={{ width: thumbSize, height: thumbSize }}
           >
             {thumbUrl ? (
               <Image
                 src={thumbUrl}
                 alt=""
                 className="size-full object-cover"
-                width={THUMB_SIZE}
-                height={THUMB_SIZE}
-                sizes={`${THUMB_SIZE}px`}
+                width={thumbSize}
+                height={thumbSize}
+                sizes={`${thumbSize}px`}
                 loading="lazy"
                 unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
               />
@@ -202,9 +224,9 @@ export function ObjectCard({
                 src={AVATAR_PLACEHOLDER_SRC}
                 alt=""
                 className="size-full object-cover"
-                width={THUMB_SIZE}
-                height={THUMB_SIZE}
-                sizes={`${THUMB_SIZE}px`}
+                width={thumbSize}
+                height={thumbSize}
+                sizes={`${thumbSize}px`}
                 loading="lazy"
               />
             )}
@@ -221,16 +243,21 @@ export function ObjectCard({
             {titleLabel}
           </CardNavTarget>
           {subtitle ? <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p> : null}
-          <RatingsGrid
-            dims={ratingDims}
-            objectId={o.object_id}
-            viewerUsername={viewerUsername}
-            onRequireLogin={onRequireLogin}
-          />
+          {!editorRow ? (
+            <RatingsGrid
+              dims={ratingDims}
+              objectId={o.object_id}
+              viewerUsername={viewerUsername}
+              onRequireLogin={onRequireLogin}
+            />
+          ) : null}
           {description ? (
             <p className="mt-2 text-body-sm leading-body text-fg">{description}</p>
           ) : null}
         </div>
+        {trailing ? (
+          <div className="flex shrink-0 flex-col items-end gap-2">{trailing}</div>
+        ) : null}
       </div>
     </Root>
   );

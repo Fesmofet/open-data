@@ -8,12 +8,22 @@ import {
   useState,
 } from 'react';
 
+import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
+import { fetchSearchObjectById } from '@/modules/app-header/infrastructure/search.client';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import {
+  mergeJsonMetadataWithObjects,
+  parseLinkedObjectsFromJsonMetadata,
+  serializeLinkedObjectsForPersist,
+  validateLinkedObjectPercents,
+} from '../../application/post-editor-objects-metadata';
+import type { PostEditorLinkedObject } from '../../domain/post-editor-linked-object';
 import {
   createUserDraftAction,
   patchUserDraftAction,
 } from '../../infrastructure/drafts.actions';
+import { EditorAttachedObjectsPanel } from './editor-attached-objects-panel';
 import { LexicalPostEditor } from './lexical-editor';
 import {
   LastDraftsSidebar,
@@ -29,6 +39,8 @@ export type EditorScreenProps = {
   initialBody?: string;
   /** Resolved draft id when loading by permlink/draftId on the server. */
   initialDraftId?: string | null;
+  /** Draft `jsonMetadata` from query-api (includes `objects`). */
+  initialJsonMetadata?: unknown;
   sidebarDrafts: LastDraftSidebarItem[];
 };
 
@@ -37,55 +49,119 @@ export function EditorScreen({
   initialTitle = '',
   initialBody = '',
   initialDraftId = null,
+  initialJsonMetadata = null,
   sidebarDrafts,
 }: EditorScreenProps) {
   const { t } = useI18n();
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
-  const [bodyPlain, setBodyPlain] = useState(initialBody);
+  const [body, setBody] = useState(initialBody);
   const [draftId, setDraftId] = useState<string | null>(initialDraftId);
+  const [jsonMetadata, setJsonMetadata] = useState<unknown>(initialJsonMetadata);
+  const [linkedObjects, setLinkedObjects] = useState<PostEditorLinkedObject[]>(() =>
+    parseLinkedObjectsFromJsonMetadata(initialJsonMetadata),
+  );
+  const [searchResultsById, setSearchResultsById] = useState<
+    Record<string, SearchObjectResult>
+  >({});
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPersistedRef = useRef({
     title: initialTitle,
     body: initialBody,
     draftId: initialDraftId,
+    linkedObjectsJson: serializeLinkedObjectsForPersist(
+      parseLinkedObjectsFromJsonMetadata(initialJsonMetadata),
+    ),
   });
   const stateRef = useRef({
     title,
-    bodyPlain,
+    body,
     draftId,
+    jsonMetadata,
+    linkedObjects,
   });
   useEffect(() => {
-    stateRef.current = { title, bodyPlain, draftId };
-  }, [title, bodyPlain, draftId]);
+    stateRef.current = { title, body, draftId, jsonMetadata, linkedObjects };
+  }, [title, body, draftId, jsonMetadata, linkedObjects]);
+
+  useEffect(() => {
+    const ids = linkedObjects.map((o) => o.objectId);
+    if (ids.length === 0) {
+      return;
+    }
+    const controller = new AbortController();
+    for (const objectId of ids) {
+      void fetchSearchObjectById(objectId, { signal: controller.signal }).then(
+        (result) => {
+          if (controller.signal.aborted || !result) {
+            return;
+          }
+          setSearchResultsById((prev) =>
+            prev[objectId] ? prev : { ...prev, [objectId]: result },
+          );
+        },
+      );
+    }
+    return () => controller.abort();
+  }, [linkedObjects]);
+
+  const cacheSearchResult = useCallback((result: SearchObjectResult) => {
+    setSearchResultsById((prev) => ({ ...prev, [result.object_id]: result }));
+  }, []);
+
+  const handleLinkedObjectsChange = useCallback(
+    (next: PostEditorLinkedObject[]) => {
+      if (!validateLinkedObjectPercents(next).ok) {
+        return;
+      }
+      setLinkedObjects(next);
+      setJsonMetadata((prev: unknown) => mergeJsonMetadataWithObjects(prev, next));
+    },
+    [],
+  );
 
   const runSave = useCallback(async () => {
-    const { title: t0, bodyPlain: b0, draftId: id0 } = stateRef.current;
+    const {
+      title: t0,
+      body: b0,
+      draftId: id0,
+      jsonMetadata: meta0,
+      linkedObjects: linked0,
+    } = stateRef.current;
+    const linkedJson = serializeLinkedObjectsForPersist(linked0);
     const last = lastPersistedRef.current;
     if (
       t0 === last.title &&
       b0 === last.body &&
       id0 === last.draftId &&
+      linkedJson === last.linkedObjectsJson &&
       id0 !== null
     ) {
       return;
     }
-    if (!id0 && !t0.trim() && !b0.trim()) {
+    if (!validateLinkedObjectPercents(linked0).ok) {
+      return;
+    }
+    const jsonMetadataPayload = mergeJsonMetadataWithObjects(meta0, linked0);
+    if (!id0 && !t0.trim() && !b0.trim() && linked0.length === 0) {
       return;
     }
     if (!id0) {
       const r = await createUserDraftAction(username, {
         title: t0,
         body: b0,
+        jsonMetadata: jsonMetadataPayload,
       });
       if (r.ok) {
         const newId = r.value.draftId;
         setDraftId(newId);
+        setJsonMetadata(r.value.jsonMetadata);
         lastPersistedRef.current = {
           title: t0,
           body: b0,
           draftId: newId,
+          linkedObjectsJson: linkedJson,
         };
         router.replace(`/editor?draftId=${encodeURIComponent(newId)}`);
         router.refresh();
@@ -95,13 +171,19 @@ export function EditorScreen({
     const r = await patchUserDraftAction(
       username,
       { draftId: id0 },
-      { title: t0, body: b0 },
+      {
+        title: t0,
+        body: b0,
+        jsonMetadata: jsonMetadataPayload,
+      },
     );
     if (r.ok) {
+      setJsonMetadata(r.value.jsonMetadata);
       lastPersistedRef.current = {
         title: t0,
         body: b0,
         draftId: id0,
+        linkedObjectsJson: linkedJson,
       };
       router.refresh();
     }
@@ -121,6 +203,14 @@ export function EditorScreen({
       void runSaveRef.current();
     }, AUTOSAVE_DEBOUNCE_MS);
   }, []);
+
+  const handleLinkedObjectsChangeWithSave = useCallback(
+    (next: PostEditorLinkedObject[]) => {
+      handleLinkedObjectsChange(next);
+      scheduleSave();
+    },
+    [handleLinkedObjectsChange, scheduleSave],
+  );
 
   useEffect(() => {
     const flush = () => {
@@ -177,11 +267,18 @@ export function EditorScreen({
 
           <LexicalPostEditor
             bodyPlaceholder={t('story_placeholder')}
-            initialPlainText={initialBody || undefined}
-            onPlainTextChange={(text) => {
-              setBodyPlain(text);
+            initialBody={initialBody || undefined}
+            onBodyChange={(serialized) => {
+              setBody(serialized);
               scheduleSave();
             }}
+          />
+
+          <EditorAttachedObjectsPanel
+            linkedObjects={linkedObjects}
+            searchResultsById={searchResultsById}
+            onLinkedObjectsChange={handleLinkedObjectsChangeWithSave}
+            onSearchResultCached={cacheSearchResult}
           />
         </div>
 

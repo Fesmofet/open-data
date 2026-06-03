@@ -99,7 +99,7 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
           compact
           compactBottomInset
           bodyPlaceholder="Write your comment…"
-          onPlainTextChange={setBodyPlain}
+          onBodyChange={setBodyPlain}
         />
         <div className="pointer-events-none absolute end-2 top-1/2 z-[65] -translate-y-1/2">
           <button

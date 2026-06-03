@@ -9,6 +9,11 @@
     @apply text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
   }
 
+  /** Lexical post editor: selected block image (see editor-image-keyboard-plugin). */
+  [data-post-image][data-image-selected] {
+    @apply ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+
   .app-header-brand-link {
     @apply inline-flex items-center gap-2 font-display text-body font-weight-label text-heading hover:text-link;
   }

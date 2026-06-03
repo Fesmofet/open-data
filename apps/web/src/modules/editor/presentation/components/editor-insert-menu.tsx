@@ -14,6 +14,8 @@ import { createPortal } from 'react-dom';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { EditorInsertPhotoPanel } from './editor-insert-photo-panel';
+
 const INSERT_BTN_SIZE_PX = 40;
 const INSERT_BTN_RADIUS = INSERT_BTN_SIZE_PX / 2;
 
@@ -281,6 +283,7 @@ export function EditorInsertCaretOverlay({
   const [editor] = useLexicalComposerContext();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [insertView, setInsertView] = useState<'grid' | 'photo'>('grid');
   const [search, setSearch] = useState('');
   const [buttonTop, setButtonTop] = useState(12);
   const [insertPanelCoords, setInsertPanelCoords] = useState<{
@@ -432,7 +435,14 @@ export function EditorInsertCaretOverlay({
           aria-controls={open ? insertPanelId : undefined}
           aria-label={t('editor_insert_open_aria')}
           title={t('editor_insert_open_aria')}
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            setOpen((o) => {
+              if (!o) {
+                setInsertView('grid');
+              }
+              return !o;
+            });
+          }}
           className={[
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
             'bg-bg text-fg-secondary shadow-none',
@@ -461,25 +471,63 @@ export function EditorInsertCaretOverlay({
             aria-modal="true"
             aria-labelledby={insertTitleId}
           >
-            <h2 id={insertTitleId} className="mb-3 font-label text-body-sm text-heading">
-              {t('editor_insert_title')}
-            </h2>
-
-            <div className="grid grid-cols-2 gap-2">
-              {INSERT_ITEMS.map(({ labelKey, Icon }) => (
+            <div className="mb-3 flex items-center gap-2">
+              {insertView === 'photo' ? (
                 <button
-                  key={labelKey}
                   type="button"
-                  disabled
-                  title={comingSoon}
-                  className="flex flex-col items-center gap-1.5 rounded-btn bg-secondary px-2 py-3 text-body-sm text-secondary-fg opacity-70"
+                  className="text-body-sm text-accent hover:underline"
+                  onClick={() => setInsertView('grid')}
                 >
-                  <Icon className="text-fg-secondary" />
-                  <span className="text-center leading-compressed">{t(labelKey)}</span>
+                  {t('go_back')}
                 </button>
-              ))}
+              ) : null}
+              <h2 id={insertTitleId} className="font-label text-body-sm text-heading">
+                {insertView === 'photo'
+                  ? t('editor_insert_photo')
+                  : t('editor_insert_title')}
+              </h2>
             </div>
 
+            {insertView === 'photo' ? (
+              <EditorInsertPhotoPanel
+                onInserted={() => {
+                  setOpen(false);
+                  setInsertView('grid');
+                }}
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {INSERT_ITEMS.map(({ labelKey, Icon }) => {
+                  const isPhoto = labelKey === 'editor_insert_photo';
+                  return (
+                    <button
+                      key={labelKey}
+                      type="button"
+                      disabled={!isPhoto}
+                      title={isPhoto ? undefined : comingSoon}
+                      className={[
+                        'flex flex-col items-center gap-1.5 rounded-btn px-2 py-3 text-body-sm',
+                        isPhoto
+                          ? 'bg-secondary text-secondary-fg hover:bg-surface-muted'
+                          : 'bg-secondary text-secondary-fg opacity-70',
+                      ].join(' ')}
+                      onClick={
+                        isPhoto
+                          ? () => setInsertView('photo')
+                          : undefined
+                      }
+                    >
+                      <Icon className="text-fg-secondary" />
+                      <span className="text-center leading-compressed">
+                        {t(labelKey)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {insertView === 'grid' ? (
             <div className="mt-3 border-t border-border pt-3">
               <label htmlFor={searchInputId} className="sr-only">
                 {t('editor_search_object_by_name')}
@@ -498,6 +546,7 @@ export function EditorInsertCaretOverlay({
                 ].join(' ')}
               />
             </div>
+            ) : null}
           </div>,
           document.body,
         )
