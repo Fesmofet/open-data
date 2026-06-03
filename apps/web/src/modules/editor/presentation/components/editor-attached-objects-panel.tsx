@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useMemo } from 'react';
 
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
@@ -23,6 +22,7 @@ export type EditorAttachedObjectsPanelProps = {
   searchResultsById: Readonly<Record<string, SearchObjectResult>>;
   onLinkedObjectsChange: (objects: PostEditorLinkedObject[]) => void;
   onSearchResultCached: (result: SearchObjectResult) => void;
+  onNavigateToCreateObject: () => void;
 };
 
 export function EditorAttachedObjectsPanel({
@@ -30,6 +30,7 @@ export function EditorAttachedObjectsPanel({
   searchResultsById,
   onLinkedObjectsChange,
   onSearchResultCached,
+  onNavigateToCreateObject,
 }: EditorAttachedObjectsPanelProps) {
   const { t } = useI18n();
 
@@ -86,13 +87,13 @@ export function EditorAttachedObjectsPanel({
       />
 
       <div className="flex justify-end">
-        <Link
-          href="/object-create"
-          suppressHydrationWarning
+        <button
+          type="button"
+          onClick={onNavigateToCreateObject}
           className="text-body-sm text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           {t('create_new_object')}
-        </Link>
+        </button>
       </div>
 
       {linkedObjects.length > 0 ? (

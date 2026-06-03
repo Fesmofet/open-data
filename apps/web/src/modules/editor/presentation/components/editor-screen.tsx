@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   useCallback,
   useEffect,
@@ -36,6 +36,10 @@ import type { PostEditorRewardMode } from '../../domain/post-editor-advanced-set
 import { useEditorPostPublish } from '../../application/use-editor-post-publish';
 import type { PostEditorLinkedObject } from '../../domain/post-editor-linked-object';
 import {
+  EDITOR_ATTACH_OBJECT_QUERY,
+  buildObjectCreateHrefFromEditor,
+} from '../../domain/post-editor-object-create-return';
+import {
   createUserDraftAction,
   patchUserDraftAction,
 } from '../../infrastructure/drafts.actions';
@@ -51,6 +55,11 @@ import {
 
 const POST_TITLE_MAX_LENGTH = 255;
 const AUTOSAVE_DEBOUNCE_MS = 3000;
+
+type RunSaveOptions = {
+  /** When false, skip `router.replace` after creating a draft (avoids remount before leaving editor). */
+  syncDraftUrl?: boolean;
+};
 
 export type EditorScreenProps = {
   username: string;
@@ -78,6 +87,9 @@ export function EditorScreen({
 }: EditorScreenProps) {
   const { t } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const attachHandledRef = useRef(false);
   const [title, setTitle] = useState(initialTitle);
   const [body, setBody] = useState(initialBody);
   const [draftId, setDraftId] = useState<string | null>(initialDraftId);
@@ -190,7 +202,8 @@ export function EditorScreen({
     [],
   );
 
-  const runSave = useCallback(async () => {
+  const runSave = useCallback(async (options?: RunSaveOptions) => {
+    const syncDraftUrl = options?.syncDraftUrl !== false;
     const {
       title: t0,
       body: b0,
@@ -259,8 +272,15 @@ export function EditorScreen({
           rewardMode: reward0,
           beneficiariesJson,
         };
-        router.replace(`/editor?draftId=${encodeURIComponent(newId)}`);
-        router.refresh();
+        stateRef.current = {
+          ...stateRef.current,
+          draftId: newId,
+          jsonMetadata: r.value.jsonMetadata,
+        };
+        if (syncDraftUrl) {
+          router.replace(`/editor?draftId=${encodeURIComponent(newId)}`);
+          router.refresh();
+        }
       }
       return;
     }
@@ -294,12 +314,12 @@ export function EditorScreen({
     runSaveRef.current = runSave;
   }, [runSave]);
 
-  const flushSave = useCallback(async () => {
+  const flushSave = useCallback(async (options?: RunSaveOptions) => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
     }
-    await runSaveRef.current();
+    await runSaveRef.current(options);
   }, []);
 
   const scheduleSave = useCallback(() => {
@@ -376,6 +396,66 @@ export function EditorScreen({
     },
     [cacheSearchResult, linkedObjects, handleLinkedObjectsChangeWithSave],
   );
+
+  const attachReturnedObject = useCallback(
+    async (objectId: string) => {
+      let result = await fetchSearchObjectById(objectId);
+      if (!result) {
+        result = {
+          object_id: objectId,
+          object_type: '',
+          name: objectId,
+          image_url: null,
+          parent_name: null,
+        };
+      }
+      const snap = stateRef.current;
+      const { objects, added } = appendLinkedObjectIfAbsent(
+        snap.linkedObjects,
+        result,
+      );
+      if (!added || !validateLinkedObjectPercents(objects).ok) {
+        return;
+      }
+      setSearchResultsById((prev) => ({
+        ...prev,
+        [result.object_id]: result,
+      }));
+      setLinkedObjects(objects);
+      setJsonMetadata((prev: unknown) =>
+        buildJsonMetadataPayload(prev, objects, snap.tags, snap.rewardMode),
+      );
+      await flushSave();
+    },
+    [buildJsonMetadataPayload, flushSave],
+  );
+
+  const handleNavigateToObjectCreate = useCallback(async () => {
+    await flushSave({ syncDraftUrl: false });
+    const id = stateRef.current.draftId;
+    router.push(buildObjectCreateHrefFromEditor({ draftId: id }));
+  }, [flushSave, router]);
+
+  useEffect(() => {
+    const attachId = searchParams.get(EDITOR_ATTACH_OBJECT_QUERY)?.trim();
+    if (!attachId || attachHandledRef.current) {
+      return;
+    }
+    attachHandledRef.current = true;
+    void (async () => {
+      await attachReturnedObject(attachId);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete(EDITOR_ATTACH_OBJECT_QUERY);
+      const qs = params.toString();
+      const href = qs ? `${pathname}?${qs}` : pathname;
+      router.replace(href, { scroll: false });
+    })();
+  }, [
+    attachReturnedObject,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   useEffect(() => {
     const flush = () => {
@@ -497,6 +577,7 @@ export function EditorScreen({
             searchResultsById={searchResultsById}
             onLinkedObjectsChange={handleLinkedObjectsChangeWithSave}
             onSearchResultCached={cacheSearchResult}
+            onNavigateToCreateObject={() => void handleNavigateToObjectCreate()}
           />
         </div>
 

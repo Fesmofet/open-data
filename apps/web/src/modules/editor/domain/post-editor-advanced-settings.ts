@@ -10,8 +10,8 @@ export const HIVE_BENEFICIARY_WEIGHT_TOTAL = 10000;
 /** Minimum beneficiary weight (1%). */
 export const HIVE_BENEFICIARY_WEIGHT_MIN = 100;
 
-/** Hive `comment_options.percent_hbd` for 50% HBD / 50% HP. */
-export const HIVE_PERCENT_HBD_FIFTY_FIFTY = 5000;
+/** Hive `comment_options.percent_hbd` for UI 50/50 (Waivio-compatible: 10000). */
+export const HIVE_PERCENT_HBD_FIFTY_FIFTY = 10000;
 
 /** Hive `comment_options.percent_hbd` for 100% HP. */
 export const HIVE_PERCENT_HBD_ALL_HP = 0;

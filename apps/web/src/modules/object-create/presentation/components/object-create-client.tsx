@@ -30,17 +30,24 @@ export type ObjectCreateClientProps = {
   username: string;
   /** Server-generated prefix so SSR and hydration match. */
   initialObjectIdPrefix: string;
+  /** Validated `/editor?...` path when opened from post editor. */
+  editorReturnPath?: string | null;
 };
 
 export function ObjectCreateClient({
   username,
   initialObjectIdPrefix,
+  editorReturnPath = null,
 }: ObjectCreateClientProps) {
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const form = useObjectCreateForm({ username, initialObjectIdPrefix });
+  const form = useObjectCreateForm({
+    username,
+    initialObjectIdPrefix,
+    editorReturnPath,
+  });
 
   const urlWantsEdit = objectCreateUrlIndicatesEditStep(searchParams);
   const urlObjectType = readObjectCreateTypeFromUrl(searchParams);

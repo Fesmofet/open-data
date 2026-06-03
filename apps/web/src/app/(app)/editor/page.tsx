@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
@@ -75,16 +76,18 @@ export default async function EditorPage({
     initialDraft?.draftId ?? (permlink ? `p:${permlink}` : 'new');
 
   return (
-    <EditorScreen
-      key={screenKey}
-      username={user.username}
-      initialTitle={initialDraft?.title ?? ''}
-      initialBody={initialDraft?.body ?? ''}
-      initialDraftId={initialDraft?.draftId ?? null}
-      initialJsonMetadata={initialDraft?.jsonMetadata ?? null}
-      defaultBeneficiary={getPostEditorDefaultBeneficiary()}
-      initialBeneficiaries={initialDraft?.beneficiaries ?? null}
-      sidebarDrafts={sidebarDrafts}
-    />
+    <Suspense fallback={null}>
+      <EditorScreen
+        key={screenKey}
+        username={user.username}
+        initialTitle={initialDraft?.title ?? ''}
+        initialBody={initialDraft?.body ?? ''}
+        initialDraftId={initialDraft?.draftId ?? null}
+        initialJsonMetadata={initialDraft?.jsonMetadata ?? null}
+        defaultBeneficiary={getPostEditorDefaultBeneficiary()}
+        initialBeneficiaries={initialDraft?.beneficiaries ?? null}
+        sidebarDrafts={sidebarDrafts}
+      />
+    </Suspense>
   );
 }

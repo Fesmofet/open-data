@@ -47,6 +47,8 @@ import {
   listTagCategoryNamesFromFields,
   seedFieldsForObjectType,
 } from '../domain/supposed-update-seeds';
+import { appendAttachObjectToEditorPath } from '@/modules/editor/domain/post-editor-object-create-return';
+
 import { checkObjectIdExists } from '../infrastructure/actions/check-object-id.action';
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
@@ -118,11 +120,13 @@ function mergeDraft(username: string, defaultPrefix: string): ObjectCreateState 
 export type UseObjectCreateFormOptions = {
   username: string;
   initialObjectIdPrefix: string;
+  editorReturnPath?: string | null;
 };
 
 export function useObjectCreateForm({
   username,
   initialObjectIdPrefix,
+  editorReturnPath = null,
 }: UseObjectCreateFormOptions) {
   useHydrateWalletProvider();
   const router = useRouter();
@@ -476,7 +480,13 @@ export function useObjectCreateForm({
       await refreshAfterBroadcast(router, () =>
         revalidateObjectAfterBroadcast(state.objectId),
       );
-      router.push(`/object/${encodeURIComponent(state.objectId)}`);
+      if (editorReturnPath) {
+        router.push(
+          appendAttachObjectToEditorPath(editorReturnPath, state.objectId),
+        );
+      } else {
+        router.push(`/object/${encodeURIComponent(state.objectId)}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'publish_failed');
       setSubmitting(false);
@@ -490,6 +500,7 @@ export function useObjectCreateForm({
     odlCustomJsonId,
     router,
     broadcastViaIpfs,
+    editorReturnPath,
   ]);
 
   return {

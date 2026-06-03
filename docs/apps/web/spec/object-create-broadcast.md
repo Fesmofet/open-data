@@ -6,6 +6,8 @@
 
 Publishing a new object from `/object-create` sends ODL events (`object_create` + `update_create`) to Hive. Payload size is limited per `custom_json` operation; large forms are split across multiple ops in one transaction, or uploaded via IPFS.
 
+When opened from the post editor, optional query **`return`** (validated `/editor?draftId=…` only) redirects to the editor with **`attachObject`** after successful publish instead of `/object/{objectId}`. Parsed on the server in [`object-create/page.tsx`](../../../../apps/web/src/app/(app)/object-create/page.tsx); redirect in [`use-object-create-form.ts`](../../../../apps/web/src/modules/object-create/application/use-object-create-form.ts).
+
 ## Hive limit
 
 | Constant | Value | Source |

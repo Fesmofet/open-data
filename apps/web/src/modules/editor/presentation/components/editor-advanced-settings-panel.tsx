@@ -69,7 +69,9 @@ export function EditorAdvancedSettingsPanel({
       return;
     }
     if (!canAddPostEditorTag(tags, raw)) {
-      setTagError(t('hashtags_error_invalid_hashtag', { hashtag: raw }));
+      setTagError(
+        t('hashtags_error_invalid_hashtag').replace('{hashtag}', raw),
+      );
       return;
     }
     setTagError(null);

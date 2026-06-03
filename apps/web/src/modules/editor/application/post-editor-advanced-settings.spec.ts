@@ -58,7 +58,7 @@ describe('stripEditorOnlyJsonMetadataFields', () => {
 });
 
 describe('rewardModeToCommentOptionsFields', () => {
-  it('maps fifty_fifty to Hive 5000', () => {
+  it('maps fifty_fifty to percent_hbd 10000', () => {
     expect(rewardModeToCommentOptionsFields('fifty_fifty')).toEqual({
       max_accepted_payout: HIVE_MAX_ACCEPTED_PAYOUT_DEFAULT,
       percent_hbd: HIVE_PERCENT_HBD_FIFTY_FIFTY,
@@ -148,7 +148,7 @@ describe('buildPublishCommentOptions', () => {
       beneficiaries: [{ account: 'waivio', weight: 300 }],
     });
     expect(op.type).toBe('comment_options');
-    expect(op.percent_hbd).toBe(5000);
+    expect(op.percent_hbd).toBe(10000);
     expect(op.extensions).toHaveLength(1);
   });
 });
