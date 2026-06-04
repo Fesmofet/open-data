@@ -246,7 +246,26 @@ Any loader used by **`generateMetadata` and the page body** must be wrapped in *
 
 ## Server actions
 
-- Return types: use **`Result<T, E>`** from `src/shared/domain/result.ts` for expected failures.
+- Return types: use **`Result<T, E>`** from `src/shared/domain/result.ts` for expected failures (or an equivalent discriminated union such as `{ ok: value } | { error: code }`).
+- **Never let infrastructure errors throw to the client.** Server Actions that call `fetch`, wallets, or other IO must catch network failures (`ECONNREFUSED`, timeouts, DNS) and return a typed error — uncaught throws become **500** on the action POST and can surface as **uncaught errors in the browser** (route crash).
+- Use **`safeFetch`** from `src/shared/infrastructure/http/safe-fetch.server.ts` for outbound HTTP in Server Actions and route handlers unless there is a documented reason not to.
+- Map stable **error codes** on the server (`service_unavailable`, `upload_failed`, `unauthorized`); map codes to **`t('…')` messages in Client Components** — do not show raw codes or stack traces.
+- Parse JSON defensively (`try/catch` around `res.json()`); treat malformed bodies as `upload_failed` (or the appropriate domain code), not as thrown exceptions.
+
+## Error handling (UI and Server Actions)
+
+Plan error paths **when adding a feature**, not only after a production failure.
+
+| Layer | Do | Don't |
+|-------|-----|--------|
+| **Server Action / server `fetch`** | Return `{ error: code }`; wrap `fetch` with `safeFetch`; log server-side if needed | `throw` on expected network/API failure |
+| **Client hook calling a Server Action** | `try/catch` around the invocation; `startTransition` async bodies must not leak unhandled rejections | Assume the action always resolves `{ error }` — a 500 can still reject |
+| **Form / modal / control** | Inline message with `role="alert"` (`text-error`); keep loading/submit state recoverable | Let the error bubble to the route segment or an unhandled rejection |
+| **Page-level** | `error.tsx` for unexpected RSC failures; graceful empty/degraded UI when optional data is missing | Rely on error boundaries for routine “service down” cases |
+
+**Reference implementations:** `upload-image.action.ts` + `useIpfsImageUpload` + `IpfsImageDropZone` / `ImageCidOrUrlForm` (IPFS upload unavailable).
+
+**New user-facing i18n keys:** add to **every** `src/i18n/locales/*.json` file (strict UTF-8, no BOM) or provide a deliberate fallback to an existing key in client code.
 
 ## Form Rules
 

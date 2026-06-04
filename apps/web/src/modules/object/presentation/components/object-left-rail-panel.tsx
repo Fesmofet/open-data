@@ -31,6 +31,8 @@ export type ObjectLeftRailEditContext = {
   supportedUpdateTypes: readonly string[];
   /** Existing `tagCategory` names on the object (for `tagCategoryItem` picker). */
   tagCategoryNames: readonly string[];
+  /** Existing gallery album names (for `imageGalleryItem` picker). */
+  galleryAlbumNames: readonly string[];
   /** Per-type update row counts from object resolve. */
   updateTypeCounts: Record<string, number>;
 };
@@ -301,6 +303,7 @@ export function ObjectLeftRailPanel({
           candidateUpdateTypes={addModal.candidateUpdateTypes}
           initialUpdateType={addModal.initialUpdateType}
           tagCategoryNames={editContext.tagCategoryNames}
+          galleryAlbumNames={editContext.galleryAlbumNames}
           updateTypeCounts={editContext.updateTypeCounts}
         />
       ) : null}

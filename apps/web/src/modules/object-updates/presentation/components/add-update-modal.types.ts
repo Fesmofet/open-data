@@ -7,6 +7,8 @@ export type AddUpdateModalBaseProps = {
   objectId: string;
   viewerUsername: string;
   tagCategoryNames?: readonly string[];
+  /** Existing gallery album names (for `imageGalleryItem` album picker). */
+  galleryAlbumNames?: readonly string[];
   /** Per-type update row counts from object resolve (for type picker labels). */
   updateTypeCounts?: Record<string, number>;
 };
@@ -32,8 +34,6 @@ export type AddUpdateModalGenericProps = AddUpdateModalBaseProps & {
   mode: 'generic';
   updateType: string;
   initialValue?: unknown;
-  /** Existing gallery album names (for `imageGalleryItem` album picker). */
-  galleryAlbumNames?: readonly string[];
   /** When true, `imageGalleryItem` album field is read-only. */
   lockGalleryAlbum?: boolean;
 };

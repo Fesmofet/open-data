@@ -1683,6 +1683,7 @@
   "object_create_image_paste_hint": "Paste image or URL anywhere on the page (Ctrl+V)",
   "object_create_image_remove": "Remove",
   "object_create_image_upload_error": "Upload failed, try again",
+  "object_create_image_service_unavailable": "Image service is unavailable. Check that the IPFS gateway is running and IPFS_GATEWAY_SERVER_URL is set in .env.",
   "object_create_image_uploading": "Uploading…",
   "object_create_image_url_copied": "URL copied",
   "object_create_image_zone_title": "Image",

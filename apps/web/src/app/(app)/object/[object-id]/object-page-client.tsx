@@ -641,6 +641,7 @@ export function ObjectPageClient({
           viewerUsername,
           supportedUpdateTypes,
           tagCategoryNames: model.tagCategoryNames,
+          galleryAlbumNames: model.galleryAlbums.map((album) => album.name),
           updateTypeCounts: model.updateTypeCounts,
         }
       : undefined;

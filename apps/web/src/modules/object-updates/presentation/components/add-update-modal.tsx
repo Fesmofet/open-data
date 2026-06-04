@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
@@ -36,6 +36,9 @@ import type { UpdateTypeOption } from './update-filter-bar';
 import { UpdateTypeSelectField } from './update-type-select-field';
 import { UpdateValueForm } from './update-value-form';
 
+/** Stable default — do not use `= []` in props/deps (new reference every render). */
+const EMPTY_STRING_ARRAY: readonly string[] = [];
+
 function buildTypeSelectOptions(
   types: readonly string[],
   counts: Record<string, number> | undefined,
@@ -56,6 +59,7 @@ function resolveInitialUpdateType(
   candidateUpdateTypes: readonly string[],
   initialUpdateType: string | undefined,
   tagCategoryNames: readonly string[],
+  galleryAlbumNames: readonly string[],
 ): string {
   if (
     initialUpdateType &&
@@ -63,7 +67,11 @@ function resolveInitialUpdateType(
   ) {
     return initialUpdateType;
   }
-  return defaultUpdateTypeForCandidates(candidateUpdateTypes, tagCategoryNames);
+  return defaultUpdateTypeForCandidates(
+    candidateUpdateTypes,
+    tagCategoryNames,
+    galleryAlbumNames,
+  );
 }
 
 function resolveInitialLocale(
@@ -86,7 +94,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     onClose,
     objectId,
     viewerUsername,
-    tagCategoryNames = [],
+    tagCategoryNames = EMPTY_STRING_ARRAY,
+    galleryAlbumNames: galleryAlbumNamesProp = EMPTY_STRING_ARRAY,
     updateTypeCounts,
   } = props;
 
@@ -98,8 +107,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const genericUpdateType = props.mode === 'generic' ? props.updateType : '';
   const genericInitialValue =
     props.mode === 'generic' ? props.initialValue : undefined;
-  const galleryAlbumNames =
-    props.mode === 'generic' ? (props.galleryAlbumNames ?? []) : [];
+  const galleryAlbumNames = galleryAlbumNamesProp;
   const lockGalleryAlbum =
     props.mode === 'generic' ? (props.lockGalleryAlbum ?? false) : false;
   const pickerInitialType = typePicker ? props.initialUpdateType : undefined;
@@ -111,6 +119,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
         candidateUpdateTypes,
         pickerInitialType,
         tagCategoryNames,
+        galleryAlbumNames,
       );
     }
     return genericUpdateType;
@@ -149,12 +158,19 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const [likeChecked, setLikeChecked] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const wasOpenRef = useRef(false);
 
   const definition = selectedType ? UPDATE_REGISTRY[selectedType] : undefined;
   const hideUpdateTypeHeading = typePicker;
 
   useEffect(() => {
     if (!open) {
+      wasOpenRef.current = false;
+      return;
+    }
+    const shouldInitialize = !wasOpenRef.current;
+    wasOpenRef.current = true;
+    if (!shouldInitialize) {
       return;
     }
     const type = resolveType();
@@ -176,6 +192,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     lockGalleryAlbum,
     candidateUpdateTypes,
     tagCategoryNames,
+    galleryAlbumNames,
     pickerInitialType,
     feedInitialLocale,
   ]);

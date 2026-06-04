@@ -2,6 +2,7 @@
 
 import { getIpfsGatewayServerBaseUrl } from '@/config/get-ipfs-gateway-server-base-url';
 import { getBearerAccessToken } from '@/shared/infrastructure/auth/get-bearer-access-token.server';
+import { safeFetch } from '@/shared/infrastructure/http/safe-fetch.server';
 
 export type UploadOdlToIpfsResult = { cid: string } | { error: string };
 
@@ -14,7 +15,7 @@ export async function uploadOdlToIpfs(
   }
 
   const uploadBase = getIpfsGatewayServerBaseUrl();
-  const res = await fetch(
+  const fetched = await safeFetch(
     `${uploadBase}/ipfs-gateway/upload/file?filename=odl-batch.json`,
     {
       method: 'POST',
@@ -26,13 +27,24 @@ export async function uploadOdlToIpfs(
       signal: AbortSignal.timeout(60_000),
     },
   );
-  if (!res.ok) {
-    return { error: 'Upload failed' };
+  if (!fetched.ok) {
+    return { error: 'service_unavailable' };
   }
-  const data = (await res.json()) as { cid: string };
+
+  const res = fetched.response;
+  if (!res.ok) {
+    return { error: 'upload_failed' };
+  }
+
+  let data: { cid?: string };
+  try {
+    data = (await res.json()) as { cid?: string };
+  } catch {
+    return { error: 'upload_failed' };
+  }
   const cid = data.cid?.trim();
   if (!cid) {
-    return { error: 'Upload failed' };
+    return { error: 'upload_failed' };
   }
   return { cid };
 }

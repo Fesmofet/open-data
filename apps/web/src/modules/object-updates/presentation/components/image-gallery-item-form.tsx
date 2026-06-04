@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { normalizeImageCidOrUrlFormValue } from '../../application/image-form-value';
 import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 
 export type ImageGalleryItemFormProps = {
@@ -34,21 +35,41 @@ export function ImageGalleryItemForm({
     cid: typeof obj.cid === 'string' ? obj.cid : undefined,
   };
 
-  // Stable ref so handleImageChange always reads the latest obj without re-creating the callback.
   const objRef = useRef(obj);
   objRef.current = obj;
+
+  const patchValue = useCallback(
+    (patch: Record<string, unknown>) => {
+      onChange({ ...objRef.current, ...patch });
+    },
+    [onChange],
+  );
 
   const handleImageChange = useCallback(
     (imgValue: unknown) => {
       const img = asRecord(imgValue);
-      onChange({
-        ...objRef.current,
-        cid: typeof img.cid === 'string' ? img.cid : '',
-        url: typeof img.url === 'string' ? img.url : '',
+      const image = normalizeImageCidOrUrlFormValue({
+        cid: img.cid,
+        url: img.url,
       });
+      const next = { ...objRef.current };
+      delete next.cid;
+      delete next.url;
+      onChange({ ...next, ...image });
     },
     [onChange],
   );
+
+  useEffect(() => {
+    if (lockAlbum || albumNames.length === 0) {
+      return;
+    }
+    const current =
+      typeof objRef.current.album === 'string' ? objRef.current.album.trim() : '';
+    if (!current && albumNames[0]) {
+      patchValue({ album: albumNames[0] });
+    }
+  }, [lockAlbum, albumNames, patchValue]);
 
   if (albumNames.length === 0) {
     return (
@@ -74,9 +95,7 @@ export function ImageGalleryItemForm({
       <select
         className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
         value={album && albumNames.includes(album) ? album : albumNames[0] ?? ''}
-        onChange={(e) =>
-          onChange({ ...obj, album: e.target.value })
-        }
+        onChange={(e) => patchValue({ album: e.target.value })}
       >
         {albumNames.map((name) => (
           <option key={name} value={name}>

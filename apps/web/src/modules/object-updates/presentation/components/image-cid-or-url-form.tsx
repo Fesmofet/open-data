@@ -71,7 +71,8 @@ export function ImageCidOrUrlForm({
     [onChange],
   );
 
-  const { uploadFile, importFromUrl, isPending } = useIpfsImageUpload(onUploaded);
+  const { uploadFile, importFromUrl, isPending, uploadError } =
+    useIpfsImageUpload(onUploaded);
 
   const { markActive } = useGlobalImagePaste({
     uploadFile,
@@ -177,6 +178,12 @@ export function ImageCidOrUrlForm({
           onFocus={markActive}
         />
       )}
+
+      {uploadError ? (
+        <p className="text-caption text-error" role="alert">
+          {uploadError}
+        </p>
+      ) : null}
     </fieldset>
   );
 }

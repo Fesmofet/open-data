@@ -53,6 +53,10 @@ export function ObjectGalleryTabContent({
     () => galleryAlbums.map((album) => album.name),
     [galleryAlbums],
   );
+  const addImageInitialValue = useMemo(
+    () => initialGalleryItemFormValue(activeAlbumName ?? undefined),
+    [activeAlbumName],
+  );
 
   const requireLoginOr = (action: () => void) => {
     if (!viewerUsername?.trim()) {
@@ -132,7 +136,7 @@ export function ObjectGalleryTabContent({
             objectId={objectId}
             viewerUsername={viewerUsername}
             updateType={UPDATE_TYPES.IMAGE_GALLERY_ITEM}
-            initialValue={initialGalleryItemFormValue(activeAlbumName ?? undefined)}
+            initialValue={addImageInitialValue}
             galleryAlbumNames={albumNames}
             lockGalleryAlbum={Boolean(activeAlbumName)}
             updateTypeCounts={updateTypeCounts}
