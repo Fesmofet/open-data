@@ -6,6 +6,18 @@ Specialization for this app. **Shared policy** (monorepo, docs standards, cross-
 
 - **Next.js App Router** (`src/app/`) — not NestJS.
 
+## Verification (before Docker / GH Actions)
+
+Run from repo root **before** pushing a web image build:
+
+| Command | What it checks |
+|---------|----------------|
+| `pnpm verify:web-production-build` | `next build ./apps/web` + TypeScript (same as `apps/web/Dockerfile` builder) |
+| `pnpm verify:web` | Locale JSON UTF-8 (CI `verify.yml`) + production build above |
+| `pnpm nx run web:verify-production-build` | Same production build via Nx |
+
+Does **not** run `docker build`; use that only when you need the full image. On Windows, standalone copy may warn (see `next.config.js`); TypeScript failures are what this catches.
+
 ## Environment variables (runtime, not build)
 
 **Deployment-specific configuration is not baked into the web Docker image at build.** Staging, production, and custom hosts each set their own values in compose `.env` / `env_file` at container start. Operators can substitute URLs, secrets, and feature flags without rebuilding the image.

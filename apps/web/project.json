@@ -15,6 +15,13 @@
         "command": "next dev --webpack"
       }
     },
+    "verify-production-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/verify-web-production-build.cjs",
+        "cwd": "{workspaceRoot}"
+      }
+    },
     "docker-image": {
       "dependsOn": ["build"],
       "executor": "nx:run-commands",

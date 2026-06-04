@@ -1,6 +1,9 @@
 # Production image for Next.js standalone output (not Vercel).
 # Build from repo root: docker build -f apps/web/Dockerfile .
 #
+# Local check before CI (same `next build` step as below):
+#   pnpm verify:web-production-build
+#
 # Requires `output: 'standalone'` in apps/web/next.config.js (see that file).
 
 FROM node:24.12.0-alpine3.23 AS builder

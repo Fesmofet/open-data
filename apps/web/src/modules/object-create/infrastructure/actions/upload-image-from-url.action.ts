@@ -7,18 +7,34 @@ import {
   imageContentUrlForCid,
 } from '@/config/ipfs-content-url';
 
-import { fetchImageForImport } from '../fetch-image-for-import.server';
 import {
+  type FetchImageForImportResult,
+  fetchImageForImport,
+} from '../fetch-image-for-import.server';
+import {
+  type UploadImageToIpfsErrorCode,
   type UploadImageToIpfsResult,
   uploadImageToIpfs,
 } from './upload-image.action';
+
+function mapImportFetchError(
+  code: Extract<FetchImageForImportResult, { error: string }>['error'],
+): UploadImageToIpfsErrorCode {
+  if (code === 'invalid_url') {
+    return 'invalid_url';
+  }
+  if (code === 'fetch_failed') {
+    return 'service_unavailable';
+  }
+  return 'upload_failed';
+}
 
 export async function uploadImageFromUrl(
   url: string,
 ): Promise<UploadImageToIpfsResult> {
   const trimmed = url.trim();
   if (!trimmed) {
-    return { error: 'Invalid URL' };
+    return { error: 'invalid_url' };
   }
 
   const gatewayCid = extractCidFromContentGatewayUrl(trimmed);
@@ -32,7 +48,7 @@ export async function uploadImageFromUrl(
 
   const fetched = await fetchImageForImport(trimmed);
   if ('error' in fetched) {
-    return { error: fetched.error };
+    return { error: mapImportFetchError(fetched.error) };
   }
 
   const formData = new FormData();

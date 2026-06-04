@@ -9,7 +9,8 @@ import { safeFetch } from '@/shared/infrastructure/http/safe-fetch.server';
 export type UploadImageToIpfsErrorCode =
   | 'unauthorized'
   | 'service_unavailable'
-  | 'upload_failed';
+  | 'upload_failed'
+  | 'invalid_url';
 
 export type UploadImageToIpfsResult =
   | { cid: string; previewUrl: string }
