@@ -11,6 +11,8 @@ import {
 
 import type { ObjectUpdatesUrlFilters } from '../../application/parse-object-updates-search-params';
 
+import { UpdateTypeFilterSelect } from './update-type-filter-select';
+
 export type UpdateTypeOption = { value: string; label: string; count?: number };
 
 export type ObjectUpdatesFilterBarProps = {
@@ -39,6 +41,26 @@ const DEFAULT_LOCALE_OPTIONS = [
   'zh-CN',
   'ja-JP',
 ];
+
+function IconAddUpdate() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M7 2.5v9M2.5 7h9"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   const {
@@ -103,20 +125,19 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   );
 
   const onTypeChange = useCallback(
-    (ev: ChangeEvent<HTMLSelectElement>) => {
-      const v = ev.target.value;
+    (updateType: string | undefined) => {
       if (props.mode === 'controlled') {
         props.onFiltersChange({
           ...props.filters,
-          update_type: v === '' ? undefined : v,
+          update_type: updateType,
         });
         return;
       }
       replaceParams((u) => {
-        if (v === '') {
+        if (!updateType) {
           u.delete('update_type');
         } else {
-          u.set('update_type', v);
+          u.set('update_type', updateType);
         }
       });
     },
@@ -145,52 +166,63 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   );
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
-        <label className="flex flex-col gap-1 text-caption text-muted sm:min-w-[10rem]">
-          <span>{t('object_updates_filter_type')}</span>
-          <select
-            className="rounded-btn border border-border bg-surface-control px-2 py-2 text-body-sm text-fg"
-            value={filters.update_type ?? ''}
-            onChange={onTypeChange}
-          >
-            <option value="">{t('object_updates_all_types')}</option>
-            {typeOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2 rounded-btn border border-border p-2 sm:flex-nowrap">
+        <UpdateTypeFilterSelect
+          value={filters.update_type}
+          options={typeOptions}
+          onChange={onTypeChange}
+        />
         {showLocaleFilter ? (
-          <label className="flex flex-col gap-1 text-caption text-muted sm:min-w-[10rem]">
-            <span>{t('object_updates_filter_locale')}</span>
+          <label className="relative min-w-0 flex-1 sm:max-w-[14rem]">
+            <span className="sr-only">{t('object_updates_filter_locale')}</span>
             <select
-              className="rounded-btn border border-border bg-surface-control px-2 py-2 text-body-sm text-fg"
+              className="w-full appearance-none rounded-btn border border-accent bg-surface-control px-3 py-2 pe-8 text-body-sm text-fg"
               value={filters.locale ?? ''}
               onChange={onLocaleChange}
             >
-              <option value="">{t('object_updates_all_locales')}</option>
+              <option value="">{t('object_updates_filter_locale')}</option>
               {localeOptions.map((loc) => (
                 <option key={loc} value={loc}>
                   {loc}
                 </option>
               ))}
             </select>
+            <span
+              className="pointer-events-none absolute inset-y-0 end-2 flex items-center text-fg-secondary"
+              aria-hidden
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M2 4l4 4 4-4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
           </label>
         ) : null}
-      </div>
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         {onAddUpdate ? (
           <button
             type="button"
             onClick={onAddUpdate}
-            className="rounded-btn border border-border bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="inline-flex shrink-0 items-center gap-2 px-1 text-body-sm text-link hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:ms-auto"
           >
-            {t('object_edit_add_update')}
+            <span className="inline-flex size-7 items-center justify-center rounded-pill bg-accent text-accent-fg">
+              <IconAddUpdate />
+            </span>
+            <span className="font-weight-label">{t('object_updates_add')}</span>
           </button>
         ) : null}
-        <SortDropdown value={filters.sort} options={sortOptions} onChange={onSortChange} />
+      </div>
+      <div className="flex justify-end">
+        <SortDropdown
+          value={filters.sort}
+          options={sortOptions}
+          onChange={onSortChange}
+        />
       </div>
     </div>
   );
