@@ -5,12 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
-import { buildDiscoverHref, decodeTagFilter, encodeTagFilter } from '../../domain/discover-url';
+import { buildDiscoverHref, encodeTagFilter } from '../../domain/discover-url';
 import { getTagCategoryNamesForObjectType } from '../../domain/discover-registry';
 import { fetchDiscoverTagCategories } from '../../infrastructure/discover.client';
 import type { DiscoverTagCategoriesResponse } from '../../domain/discover-response.schema';
-import { ChipRemoveIcon } from './discover-chip-icons';
-
 const FILTER_DEBOUNCE_MS = 300;
 const DEFAULT_OPEN_CATEGORIES = 2;
 /** Max height for scrollable item list inside an expanded category (~14 rows). */
@@ -183,14 +181,6 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
     });
   }, []);
 
-  const clearAll = useCallback(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = null;
-    }
-    pushTags([]);
-  }, [pushTags]);
-
   return (
     <aside
       className="relative z-0 min-w-0 w-full self-start overflow-hidden"
@@ -207,44 +197,6 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
         </div>
       ) : (
         <>
-          {tags.length > 0 ? (
-            <div className="mb-4">
-              <div className="mb-1.5 flex items-center justify-between gap-2">
-                <span className="text-caption font-weight-label text-fg-tertiary">
-                  {t('discover_selected_filters')}
-                </span>
-                <button
-                  type="button"
-                  className="shrink-0 text-caption text-accent underline-offset-2 hover:underline"
-                  onClick={clearAll}
-                >
-                  {t('discover_clear_all')}
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex max-w-full items-center gap-1 rounded-pill bg-accent/15 px-2 py-0.5 text-caption text-accent"
-                  >
-                    <span className="truncate">{decodeTagFilter(tag)?.value ?? tag}</span>
-                    <button
-                      type="button"
-                      aria-label={t('discover_remove_filter').replace(
-                        '{tag}',
-                        decodeTagFilter(tag)?.value ?? tag,
-                      )}
-                      className="shrink-0 rounded-circle p-0.5 hover:bg-accent/20"
-                      onClick={() => onToggleTag(tag, false)}
-                    >
-                      <ChipRemoveIcon />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
           <div className="space-y-1">
             {orderedSections.map((section) => {
               const collapsed = collapsedCategories.has(section.category);
