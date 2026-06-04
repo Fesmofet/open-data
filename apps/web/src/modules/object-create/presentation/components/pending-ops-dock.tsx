@@ -38,6 +38,8 @@ export type PendingOpsDockProps = {
   jsonBytes?: number;
   /** Number of `custom_json` ops for direct chain broadcast. */
   opCount?: number;
+  /** `object_create.payload.object_id` from the IPFS batch JSON (must match workspace id). */
+  ipfsObjectId?: string | null;
   onPublish: () => void;
 };
 
@@ -51,6 +53,7 @@ export function PendingOpsDock({
   publishPhase = 'idle',
   jsonBytes,
   opCount,
+  ipfsObjectId = null,
   onPublish,
 }: PendingOpsDockProps) {
   const { t } = useI18n();
@@ -91,6 +94,11 @@ export function PendingOpsDock({
 
   const broadcastSizeNearLimit =
     !broadcastViaIpfs && opCount !== undefined && opCount >= 4;
+
+  const ipfsObjectIdLine =
+    broadcastViaIpfs && ipfsObjectId
+      ? t('object_create_ipfs_object_id').replace('{id}', ipfsObjectId)
+      : null;
 
   const publishLabel = (() => {
     if (!submitting) {
@@ -151,7 +159,12 @@ export function PendingOpsDock({
                 {broadcastSizeLine}
               </p>
             ) : null}
-            {!categorySummary && !broadcastSizeLine ? (
+            {ipfsObjectIdLine ? (
+              <p className="truncate font-mono text-caption text-fg" title={ipfsObjectIdLine}>
+                {ipfsObjectIdLine}
+              </p>
+            ) : null}
+            {!categorySummary && !broadcastSizeLine && !ipfsObjectIdLine ? (
               <span className="sr-only" aria-hidden />
             ) : null}
           </div>

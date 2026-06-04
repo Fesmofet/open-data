@@ -1695,6 +1695,7 @@
   "object_create_broadcast_via_ipfs": "Broadcast via IPFS",
   "object_create_broadcast_size_direct": "{size} · {n} ops",
   "object_create_broadcast_size_ipfs": "{size}",
+  "object_create_ipfs_object_id": "IPFS object_id: {id}",
   "object_create_uploading_to_ipfs": "Uploading to IPFS…",
   "object_create_awaiting_signature": "Confirm in wallet…",
   "object_create_confirming_on_chain": "Confirming on chain…",

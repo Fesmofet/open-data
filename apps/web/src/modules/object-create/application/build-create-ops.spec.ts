@@ -3,6 +3,7 @@ import { HIVE_CUSTOM_OP_DATA_MAX_LENGTH } from '@opden-data-layer/hive-broadcast
 
 import {
   buildCreateOdlJson,
+  parseObjectIdFromCreateOdlJson,
   buildCreateOps,
   OBJECT_CREATE_MAX_OPS_PER_TRX,
 } from './build-create-ops';
@@ -281,6 +282,54 @@ describe('buildCreateOps', () => {
         `maximum is ${OBJECT_CREATE_MAX_OPS_PER_TRX} per transaction`,
       ),
     );
+  });
+});
+
+describe('buildAllCreateEvents object type isolation', () => {
+  it('omits recipe-only updates when publishing a restaurant', () => {
+    const json = buildCreateOdlJson({
+      objectId: 'nbi-my-restaurant',
+      objectType: 'restaurant',
+      creator: 'alice',
+      odlCustomJsonId: 'odl-testnet',
+      language: 'en-US',
+      fields: [
+        { entryKey: 'name', updateType: 'name', value: 'My Restaurant' },
+        {
+          entryKey: 'description',
+          updateType: 'description',
+          value: 'Fine dining',
+        },
+        {
+          entryKey: 'image',
+          updateType: 'image',
+          value: { url: 'https://example.com/rest.jpg' },
+        },
+        { entryKey: 'ingredients', updateType: 'ingredients', value: ['flour', 'eggs'] },
+      ],
+    });
+    const parsed = JSON.parse(json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events[0]?.payload).toMatchObject({
+      object_type: 'restaurant',
+    });
+    const updateTypes = parsed.events
+      .filter((e) => e.action === 'update_create')
+      .map((e) => e.payload.update_type);
+    expect(updateTypes).not.toContain('ingredients');
+    expect(updateTypes).toContain('name');
+  });
+});
+
+describe('parseObjectIdFromCreateOdlJson', () => {
+  it('reads object_id from the first object_create event', () => {
+    const json = buildCreateOdlJson({
+      ...BASE,
+      objectId: 'nbi-flowmaster-test-r1',
+      fields: recipeRequiredFields(),
+    });
+    expect(parseObjectIdFromCreateOdlJson(json)).toBe('nbi-flowmaster-test-r1');
   });
 });
 

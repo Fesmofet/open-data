@@ -4,6 +4,9 @@
     "outDir": "../../dist/out-tsc",
     "module": "commonjs",
     "moduleResolution": "node10",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "plugins": [],
     "types": ["jest", "node", "@testing-library/jest-dom"]
   },
   "include": [

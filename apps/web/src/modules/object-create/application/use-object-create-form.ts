@@ -7,7 +7,6 @@ import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registr
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { buildOdlBatchImportOp } from '@opden-data-layer/hive-broadcast';
 
-import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import {
@@ -20,12 +19,20 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { uploadOdlToIpfs } from '../infrastructure/actions/upload-odl-to-ipfs.action';
-import { buildCreateOdlJson, buildCreateOps } from './build-create-ops';
+import {
+  buildCreateOdlJson,
+  buildCreateOps,
+  parseObjectIdFromCreateOdlJson,
+} from './build-create-ops';
 import {
   clearObjectCreateDraft,
-  loadObjectCreateDraft,
   saveObjectCreateDraft,
 } from './object-create-draft.storage';
+import {
+  emptyObjectCreateState,
+  isEmptyObjectCreateWorkspace,
+  resolveInitialObjectCreateState,
+} from './object-create-initial-state';
 import type { AddFieldOptions } from '../domain/add-field-options';
 import {
   applyContentLocaleToFields,
@@ -52,70 +59,6 @@ import { appendAttachObjectToEditorPath } from '@/modules/editor/domain/post-edi
 import { checkObjectIdExists } from '../infrastructure/actions/check-object-id.action';
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
-
-function normalizeFieldEntries(fields: FieldEntry[]): FieldEntry[] {
-  return fields.map((f, index) => ({
-    ...f,
-    entryKey: f.entryKey ?? `${f.updateType}:${index}`,
-  }));
-}
-
-function nameFromFields(fields: readonly FieldEntry[]): string {
-  const entry = fields.find((f) => f.updateType === UPDATE_TYPES.NAME);
-  if (!entry || typeof entry.value !== 'string') {
-    return '';
-  }
-  return entry.value;
-}
-
-function resolvePrefixFromDraft(
-  draft: Partial<ObjectCreateState> | null,
-  fallback: string,
-): string {
-  if (draft?.objectIdPrefix && /^[a-z]{3}$/.test(draft.objectIdPrefix)) {
-    return draft.objectIdPrefix;
-  }
-  const match = draft?.objectId?.match(/^([a-z]{3})(?:-|$)/);
-  if (match?.[1]) {
-    return match[1];
-  }
-  return fallback;
-}
-
-function emptyObjectCreateState(prefix: string): ObjectCreateState {
-  return {
-    objectIdPrefix: prefix,
-    objectId: prefix,
-    objectType: null,
-    fields: [],
-    language: DEFAULT_LOCALE,
-  };
-}
-
-function isEmptyWorkspace(state: ObjectCreateState): boolean {
-  return !state.objectType && state.fields.length === 0;
-}
-
-function mergeDraft(username: string, defaultPrefix: string): ObjectCreateState {
-  const draft = loadObjectCreateDraft(username);
-  const objectIdPrefix = resolvePrefixFromDraft(draft, defaultPrefix);
-  const language = draft?.language ?? DEFAULT_LOCALE;
-  const rawFields = normalizeFieldEntries(draft?.fields ?? []);
-  const fields = applyContentLocaleToFields(rawFields, language);
-  const name = nameFromFields(fields);
-  const objectId =
-    draft?.objectId && draft.objectId.length > 0
-      ? draft.objectId
-      : buildObjectId(objectIdPrefix, name);
-
-  return {
-    objectIdPrefix,
-    objectId,
-    objectType: draft?.objectType ?? null,
-    fields,
-    language,
-  };
-}
 
 export type UseObjectCreateFormOptions = {
   username: string;
@@ -150,10 +93,16 @@ export function useObjectCreateForm({
 
   useEffect(() => {
     skipAutosaveRef.current = true;
-    setState(mergeDraft(username, initialObjectIdPrefix));
+    setState(
+      resolveInitialObjectCreateState(
+        username,
+        initialObjectIdPrefix,
+        editorReturnPath,
+      ),
+    );
     setDraftSavedAt(null);
     setDraftHydrated(true);
-  }, [username, initialObjectIdPrefix]);
+  }, [username, initialObjectIdPrefix, editorReturnPath]);
 
   useEffect(() => {
     if (skipAutosaveRef.current) {
@@ -162,7 +111,7 @@ export function useObjectCreateForm({
     }
 
     const timer = setTimeout(() => {
-      if (isEmptyWorkspace(state)) {
+      if (isEmptyObjectCreateWorkspace(state)) {
         clearObjectCreateDraft(username);
         setDraftSavedAt(null);
         return;
@@ -225,7 +174,8 @@ export function useObjectCreateForm({
       const odlJson = buildCreateOdlJson(params);
       const bytes = new TextEncoder().encode(odlJson).length;
       const ops = buildCreateOps(params);
-      return { bytes, opCount: ops.length };
+      const ipfsObjectId = parseObjectIdFromCreateOdlJson(odlJson);
+      return { bytes, opCount: ops.length, ipfsObjectId };
     } catch {
       return null;
     }
@@ -260,27 +210,51 @@ export function useObjectCreateForm({
     };
   }, [state.objectId, state.objectIdPrefix]);
 
-  const setObjectType = useCallback((objectType: string) => {
-    if (!OBJECT_TYPE_REGISTRY[objectType]) {
-      return;
-    }
-    const prefix = generatePrefix();
-    setState((prev) => {
-      const fields = applyContentLocaleToFields(
-        seedFieldsForObjectType(objectType, prev.language),
-        prev.language,
-      );
-      return {
-        ...prev,
-        objectType,
-        objectIdPrefix: prefix,
-        objectId: prefix,
-        fields,
-      };
-    });
+  const setObjectType = useCallback(
+    (objectType: string) => {
+      if (!OBJECT_TYPE_REGISTRY[objectType]) {
+        return;
+      }
+      skipAutosaveRef.current = true;
+      clearObjectCreateDraft(username);
+      const prefix = generatePrefix();
+      setState((prev) => {
+        const fields = applyContentLocaleToFields(
+          seedFieldsForObjectType(objectType, prev.language),
+          prev.language,
+        );
+        return {
+          ...prev,
+          objectType,
+          objectIdPrefix: prefix,
+          objectId: prefix,
+          fields,
+        };
+      });
+      setIdExists(null);
+      setError(null);
+      queueMicrotask(() => {
+        skipAutosaveRef.current = false;
+      });
+    },
+    [username],
+  );
+
+  const resetForTypeSelection = useCallback(() => {
+    skipAutosaveRef.current = true;
+    clearObjectCreateDraft(username);
+    setState((prev) => ({
+      ...emptyObjectCreateState(prev.objectIdPrefix),
+      language: prev.language,
+    }));
+    setDraftSavedAt(null);
     setIdExists(null);
+    setIdCheckPending(false);
     setError(null);
-  }, []);
+    queueMicrotask(() => {
+      skipAutosaveRef.current = false;
+    });
+  }, [username]);
 
   const setLanguage = useCallback((language: string) => {
     setState((prev) => ({
@@ -447,7 +421,11 @@ export function useObjectCreateForm({
 
       if (broadcastViaIpfs) {
         const odlJson = buildCreateOdlJson(createParams);
-        const ipfsResult = await uploadOdlToIpfs(odlJson);
+        const ipfsObjectId = parseObjectIdFromCreateOdlJson(odlJson);
+        if (ipfsObjectId !== createParams.objectId) {
+          throw new Error('object_id_mismatch');
+        }
+        const ipfsResult = await uploadOdlToIpfs(odlJson, createParams.objectId);
         if ('error' in ipfsResult) {
           throw new Error(ipfsResult.error);
         }
@@ -517,6 +495,7 @@ export function useObjectCreateForm({
     idExists,
     idCheckPending,
     setObjectType,
+    resetForTypeSelection,
     setLanguage,
     clearAll,
     updateField,

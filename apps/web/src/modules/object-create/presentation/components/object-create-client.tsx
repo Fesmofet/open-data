@@ -16,6 +16,7 @@ import {
   type ObjectCreateStep,
 } from '../../domain/object-create-url';
 import { labelForObjectType } from '../../domain/object-type-display';
+import { planObjectCreateUrlSync } from '../../domain/object-create-url-sync';
 import { CoreFieldsEditor } from './core-fields-editor';
 import { MediaEditor } from './media-editor';
 import { ObjectCreateContentLocalePanel } from './object-create-content-locale-panel';
@@ -77,23 +78,29 @@ export function ObjectCreateClient({
     [pathname, router, searchParams],
   );
 
-  const activeObjectType = useMemo(() => {
-    if (urlObjectTypeValid && urlObjectType) {
-      return urlObjectType;
-    }
-    return form.state.objectType;
-  }, [form.state.objectType, urlObjectType, urlObjectTypeValid]);
+  const activeObjectType =
+    form.state.objectType ?? (urlObjectTypeValid ? urlObjectType : null);
 
   useEffect(() => {
-    if (!form.draftHydrated || !urlWantsEdit) {
-      return;
-    }
-    if (urlObjectTypeValid && urlObjectType !== form.state.objectType) {
-      form.setObjectType(urlObjectType);
-      return;
-    }
-    if (!form.state.objectType && !urlObjectTypeValid) {
-      setStep('select-type', null, { replace: true });
+    const action = planObjectCreateUrlSync({
+      draftHydrated: form.draftHydrated,
+      urlWantsEdit,
+      urlObjectType,
+      urlObjectTypeValid,
+      stateObjectType: form.state.objectType,
+    });
+    switch (action.kind) {
+      case 'sync_url_to_state':
+        setStep('edit-fields', action.objectType, { replace: true });
+        break;
+      case 'apply_url_type':
+        form.setObjectType(action.objectType);
+        break;
+      case 'go_select_type':
+        setStep('select-type', null, { replace: true });
+        break;
+      default:
+        break;
     }
   }, [
     form.draftHydrated,
@@ -176,7 +183,10 @@ export function ObjectCreateClient({
 
         <button
           type="button"
-          onClick={() => setStep('select-type')}
+          onClick={() => {
+            form.resetForTypeSelection();
+            setStep('select-type');
+          }}
           disabled={form.submitting}
           className="mb-4 text-body-sm text-muted hover:text-fg disabled:opacity-50"
         >
@@ -255,6 +265,7 @@ export function ObjectCreateClient({
         publishPhase={form.publishPhase}
         jsonBytes={form.broadcastSize?.bytes}
         opCount={form.broadcastSize?.opCount}
+        ipfsObjectId={form.broadcastSize?.ipfsObjectId ?? null}
         onToggleBroadcastViaIpfs={() => form.setBroadcastViaIpfs((v) => !v)}
         onPublish={() => void form.submit()}
       />

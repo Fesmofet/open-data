@@ -10,16 +10,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx|js|jsx|mts|mjs|cts|cjs|html)$': [
       'ts-jest',
-      {
-        tsconfig: {
-          jsx: 'react-jsx',
-          esModuleInterop: true,
-          allowSyntheticDefaultImports: true,
-          module: 'commonjs',
-          moduleResolution: 'node',
-          strict: true,
-        },
-      },
+      { tsconfig: '<rootDir>/tsconfig.spec.json' },
     ],
   },
 };

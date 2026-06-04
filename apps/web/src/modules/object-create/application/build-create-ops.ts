@@ -1,3 +1,4 @@
+import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import {
   buildCustomJsonOp,
@@ -9,6 +10,7 @@ import {
 import { validateUpdateValue } from '@/modules/object-updates/application/update-value-form.utils';
 
 import { isDuplicateRefValue } from '../domain/duplicate-ref-field-values';
+import { filterFieldsForObjectType } from '../domain/filter-fields-for-object-type';
 import { groupFieldsByPriority } from '../domain/group-fields-by-priority';
 import { isEntryValid } from '../domain/object-health-score';
 import type { FieldEntry } from '../domain/object-create.types';
@@ -76,6 +78,12 @@ function serializeEnvelope(events: readonly OdlCreateEvent[]): string {
  * Builds all ODL create events (`object_create` + `update_create`) for publish.
  */
 export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent[] {
+  if (!OBJECT_TYPE_REGISTRY[input.objectType]) {
+    throw new Error(`Unknown object_type: ${input.objectType}`);
+  }
+
+  const fieldsForType = filterFieldsForObjectType(input.fields, input.objectType);
+
   const events: OdlCreateEvent[] = [
     {
       action: 'object_create',
@@ -89,7 +97,7 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
   ];
 
   const acceptedFields: FieldEntry[] = [];
-  for (const entry of input.fields) {
+  for (const entry of fieldsForType) {
     if (
       isDuplicateRefValue(
         acceptedFields,
@@ -118,7 +126,7 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
 
   const requiredTypes = groupFieldsByPriority(input.objectType).required;
   for (const updateType of requiredTypes) {
-    const hasValidEntry = input.fields.some(
+    const hasValidEntry = fieldsForType.some(
       (e) => e.updateType === updateType && isEntryValid(e),
     );
     const hasEvent = events.some(
@@ -139,6 +147,23 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
  */
 export function buildCreateOdlJson(input: BuildCreateOpsInput): string {
   return serializeEnvelope(buildAllCreateEvents(input));
+}
+
+/** First `object_create.payload.object_id` in an IPFS batch envelope (for pre-publish checks). */
+export function parseObjectIdFromCreateOdlJson(odlJson: string): string | null {
+  try {
+    const parsed = JSON.parse(odlJson) as {
+      events?: Array<{ action?: string; payload?: { object_id?: string } }>;
+    };
+    const first = parsed.events?.[0];
+    if (first?.action !== 'object_create') {
+      return null;
+    }
+    const objectId = first.payload?.object_id?.trim();
+    return objectId && objectId.length > 0 ? objectId : null;
+  } catch {
+    return null;
+  }
 }
 
 function buildCustomJsonOpFromEvents(
