@@ -4,24 +4,15 @@ import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type {
+  GeoJsonPoint,
   ObjectUpdate,
   NewObjectUpdate,
   ObjectUpdateUpdate,
 } from '@opden-data-layer/core';
-
-/**
- * node-postgres sends JS strings as raw SQL text, not JSON-encoded strings.
- * Always cast through `JSON.stringify` + `::jsonb` (see migrate-mongo-to-pg objects flush).
- */
-function valuesWithJsonbCast(row: NewObjectUpdate) {
-  return {
-    ...row,
-    value_json:
-      row.value_json !== null && row.value_json !== undefined
-        ? sql`${JSON.stringify(row.value_json)}::jsonb`
-        : null,
-  };
-}
+import {
+  geoJsonPointToText,
+  objectUpdateInsertValues,
+} from './object-update-insert-values';
 
 @Injectable()
 export class ObjectUpdatesRepository {
@@ -129,7 +120,7 @@ export class ObjectUpdatesRepository {
         .execute();
       return trx
         .insertInto('object_updates')
-        .values(valuesWithJsonbCast(row) as NewObjectUpdate)
+        .values(objectUpdateInsertValues(row) as NewObjectUpdate)
         .returningAll()
         .executeTakeFirstOrThrow();
     });
@@ -154,10 +145,11 @@ export class ObjectUpdatesRepository {
         sql<boolean>`value_json = ${JSON.stringify(value)}::jsonb`,
       );
     } else {
+      const geoText = geoJsonPointToText(value as GeoJsonPoint);
       query = query.where(
         sql<boolean>`ST_Equals(
-          value_geo::geometry,
-          ST_GeomFromGeoJSON(${JSON.stringify(value)}::json)::geometry
+          value_geo,
+          ST_GeomFromGeoJSON(${geoText}::text)::geography
         )`,
       );
     }
@@ -186,7 +178,7 @@ export class ObjectUpdatesRepository {
   async create(row: NewObjectUpdate) {
     return this.db
       .insertInto('object_updates')
-      .values(valuesWithJsonbCast(row) as NewObjectUpdate)
+      .values(objectUpdateInsertValues(row) as NewObjectUpdate)
       .returningAll()
       .executeTakeFirstOrThrow();
   }

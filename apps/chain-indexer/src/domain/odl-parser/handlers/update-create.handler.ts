@@ -15,6 +15,7 @@ import {
   ObjectUpdatesRepository,
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
+import { coerceGeoUpdateRawValue } from '../coerce-geo-update-raw-value';
 import { coerceJsonUpdateRawValue } from '../coerce-json-update-raw-value';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
 import { WriteGuardRunner } from '../guards';
@@ -117,6 +118,8 @@ export class UpdateCreateHandler implements OdlActionHandler {
     let rawValue = payload[valueField];
     if (definition.value_kind === 'json') {
       rawValue = coerceJsonUpdateRawValue(definition, rawValue);
+    } else if (definition.value_kind === 'geo') {
+      rawValue = coerceGeoUpdateRawValue(rawValue);
     }
     const valueResult = definition.schema.safeParse(rawValue);
     if (!valueResult.success) {
