@@ -33,6 +33,14 @@ export class ObjectCreateHandler implements OdlActionHandler {
       return;
     }
 
+    const existing = await this.objectsCoreRepository.findByObjectId(object_id);
+    if (existing) {
+      this.logger.warn(
+        `object_create: object '${object_id}' already exists; skipping`,
+      );
+      return;
+    }
+
     await this.objectsCoreRepository.create({
       object_id,
       object_type,

@@ -9,6 +9,20 @@ import type {
   ObjectUpdateUpdate,
 } from '@opden-data-layer/core';
 
+/**
+ * node-postgres sends JS strings as raw SQL text, not JSON-encoded strings.
+ * Always cast through `JSON.stringify` + `::jsonb` (see migrate-mongo-to-pg objects flush).
+ */
+function valuesWithJsonbCast(row: NewObjectUpdate) {
+  return {
+    ...row,
+    value_json:
+      row.value_json !== null && row.value_json !== undefined
+        ? sql`${JSON.stringify(row.value_json)}::jsonb`
+        : null,
+  };
+}
+
 @Injectable()
 export class ObjectUpdatesRepository {
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
@@ -115,7 +129,7 @@ export class ObjectUpdatesRepository {
         .execute();
       return trx
         .insertInto('object_updates')
-        .values(row)
+        .values(valuesWithJsonbCast(row) as NewObjectUpdate)
         .returningAll()
         .executeTakeFirstOrThrow();
     });
@@ -172,7 +186,7 @@ export class ObjectUpdatesRepository {
   async create(row: NewObjectUpdate) {
     return this.db
       .insertInto('object_updates')
-      .values(row)
+      .values(valuesWithJsonbCast(row) as NewObjectUpdate)
       .returningAll()
       .executeTakeFirstOrThrow();
   }

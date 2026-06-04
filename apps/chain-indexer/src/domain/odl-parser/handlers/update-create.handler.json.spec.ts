@@ -1,46 +1,18 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { ObjectsCore } from '@opden-data-layer/core';
-import type { OdlEventContext } from '../odl-action-handler';
-import { WriteGuardRunner } from '../guards';
-
-jest.mock('@opden-data-layer/core', () => {
-  const actual = jest.requireActual('@opden-data-layer/core') as typeof import('@opden-data-layer/core');
-  const { z } = require('zod') as typeof import('zod');
-  const gov = actual.OBJECT_TYPE_REGISTRY[actual.OBJECT_TYPES.GOVERNANCE];
-  return {
-    ...actual,
-    UPDATE_REGISTRY: {
-      ...actual.UPDATE_REGISTRY,
-      test_non_local: {
-        update_type: 'test_non_local',
-        description: 'test non-localizable',
-        value_kind: 'text' as const,
-        cardinality: 'single' as const,
-        localizable: false,
-        schema: z.string().min(1),
-      },
-    },
-    OBJECT_TYPE_REGISTRY: {
-      ...actual.OBJECT_TYPE_REGISTRY,
-      [actual.OBJECT_TYPES.GOVERNANCE]: {
-        ...gov,
-        supported_updates: [...gov.supported_updates, 'test_non_local'],
-      },
-    },
-  };
-});
-
 import { UpdateCreateHandler } from './update-create.handler';
+import type { OdlEventContext } from '../odl-action-handler';
+import { WriteGuardRunner, GovernanceWriteGuard } from '../guards';
 import {
   defaultUpdateCreateUserRefDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
 
-describe('UpdateCreateHandler localizable', () => {
+describe('UpdateCreateHandler json payloads', () => {
   const baseCtx: OdlEventContext = {
     action: 'update_create',
-    creator: 'owner',
+    creator: 'alice',
     blockNum: 1,
     transactionIndex: 0,
     operationIndex: 0,
@@ -51,10 +23,10 @@ describe('UpdateCreateHandler localizable', () => {
     eventIdIndexMap: new Map(),
   };
 
-  const governanceCore = mockObjectsCore({
-    object_id: 'gov1',
-    object_type: OBJECT_TYPES.GOVERNANCE,
-    creator: 'owner',
+  const recipeCore = mockObjectsCore({
+    object_id: 'pgx-bowl',
+    object_type: OBJECT_TYPES.RECIPE,
+    creator: 'alice',
     weight: null,
     meta_group_id: null,
     canonical: null,
@@ -64,7 +36,7 @@ describe('UpdateCreateHandler localizable', () => {
     seq: 0,
   });
 
-  it('stores locale null when update type is not localizable but payload has locale', async () => {
+  it('persists ingredients when value_json is newline-separated text', async () => {
     const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
       createReplacingIfPresent,
@@ -72,9 +44,9 @@ describe('UpdateCreateHandler localizable', () => {
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
-      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+      findByObjectId: jest.fn().mockResolvedValue(recipeCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
-    const runner = new WriteGuardRunner([]);
+    const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
@@ -89,18 +61,20 @@ describe('UpdateCreateHandler localizable', () => {
 
     await handler.handle(
       {
-        object_id: 'gov1',
-        update_type: 'test_non_local',
-        creator: 'owner',
-        locale: 'fr-FR',
-        value_text: 'value',
+        object_id: 'pgx-bowl',
+        update_type: 'ingredients',
+        creator: 'alice',
+        value_json: 'chicken\nrice\n',
       },
       baseCtx,
     );
 
     expect(createReplacingIfPresent).toHaveBeenCalledWith(
       undefined,
-      expect.objectContaining({ locale: null }),
+      expect.objectContaining({
+        update_type: 'ingredients',
+        value_json: ['chicken', 'rice'],
+      }),
     );
   });
 });

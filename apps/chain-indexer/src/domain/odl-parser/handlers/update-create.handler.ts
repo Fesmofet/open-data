@@ -15,6 +15,7 @@ import {
   ObjectUpdatesRepository,
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
+import { coerceJsonUpdateRawValue } from '../coerce-json-update-raw-value';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
 import { WriteGuardRunner } from '../guards';
 import {
@@ -113,7 +114,10 @@ export class UpdateCreateHandler implements OdlActionHandler {
       definition.value_kind === 'object_ref' || definition.value_kind === 'user_ref'
         ? 'value_text'
         : (`value_${definition.value_kind}` as const);
-    const rawValue = payload[valueField];
+    let rawValue = payload[valueField];
+    if (definition.value_kind === 'json') {
+      rawValue = coerceJsonUpdateRawValue(definition, rawValue);
+    }
     const valueResult = definition.schema.safeParse(rawValue);
     if (!valueResult.success) {
       this.logger.warn(

@@ -2,7 +2,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
-import { defaultUpdateCreateUserRefDeps } from './update-create.handler.spec-helpers';
+import {
+  defaultUpdateCreateUserRefDeps,
+  mockObjectsCore,
+} from './update-create.handler.spec-helpers';
 import type { OdlEventContext } from '../odl-action-handler';
 import { GovernanceWriteGuard, WriteGuardRunner } from '../guards';
 import {
@@ -25,7 +28,7 @@ describe('UpdateCreateHandler write guard', () => {
     eventIdIndexMap: new Map(),
   };
 
-  const governanceCore: ObjectsCore = {
+  const governanceCore = mockObjectsCore({
     object_id: 'gov1',
     object_type: OBJECT_TYPES.GOVERNANCE,
     creator: 'owner',
@@ -36,9 +39,9 @@ describe('UpdateCreateHandler write guard', () => {
     transaction_id: 'tx0',
     status: 'active',
     seq: 0,
-  };
+  });
 
-  const placeCore: ObjectsCore = {
+  const placeCore = mockObjectsCore({
     object_id: 'place1',
     object_type: OBJECT_TYPES.PLACE,
     creator: 'alice',
@@ -49,7 +52,7 @@ describe('UpdateCreateHandler write guard', () => {
     transaction_id: 'tx0',
     status: 'active',
     seq: 0,
-  };
+  });
 
   it('does not persist when governance guard rejects signer', async () => {
     const createReplacingIfPresent = jest.fn();
@@ -265,7 +268,7 @@ describe('UpdateCreateHandler write guard', () => {
     });
 
   it('emits TAG_CATEGORY_ITEM_MUTATED_EVENT after persisting tagCategoryItem', async () => {
-    const restaurantCore: ObjectsCore = {
+    const restaurantCore = mockObjectsCore({
       object_id: 'rest1',
       object_type: OBJECT_TYPES.RESTAURANT,
       creator: 'alice',
@@ -276,7 +279,7 @@ describe('UpdateCreateHandler write guard', () => {
       transaction_id: 'tx0',
       status: 'active',
       seq: 0,
-    };
+    });
     const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
       createReplacingIfPresent,

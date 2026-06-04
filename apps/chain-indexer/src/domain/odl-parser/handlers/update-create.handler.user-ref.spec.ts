@@ -31,6 +31,7 @@ jest.mock('@opden-data-layer/core', () => {
 });
 
 import { UpdateCreateHandler } from './update-create.handler';
+import { mockObjectsCore } from './update-create.handler.spec-helpers';
 
 describe('UpdateCreateHandler user_ref', () => {
   const baseCtx: OdlEventContext = {
@@ -46,7 +47,7 @@ describe('UpdateCreateHandler user_ref', () => {
     eventIdIndexMap: new Map(),
   };
 
-  const governanceCore: ObjectsCore = {
+  const governanceCore = mockObjectsCore({
     object_id: 'gov1',
     object_type: OBJECT_TYPES.GOVERNANCE,
     creator: 'owner',
@@ -57,7 +58,7 @@ describe('UpdateCreateHandler user_ref', () => {
     transaction_id: 'tx0',
     status: 'active',
     seq: 0,
-  };
+  });
 
   it('skips when user not in DB and not found on Hive', async () => {
     const createReplacingIfPresent = jest.fn();

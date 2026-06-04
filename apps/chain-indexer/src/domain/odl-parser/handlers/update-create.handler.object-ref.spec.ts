@@ -32,7 +32,10 @@ jest.mock('@opden-data-layer/core', () => {
 });
 
 import { UpdateCreateHandler } from './update-create.handler';
-import { defaultUpdateCreateUserRefDeps } from './update-create.handler.spec-helpers';
+import {
+  defaultUpdateCreateUserRefDeps,
+  mockObjectsCore,
+} from './update-create.handler.spec-helpers';
 
 describe('UpdateCreateHandler object_ref', () => {
   const baseCtx: OdlEventContext = {
@@ -48,7 +51,7 @@ describe('UpdateCreateHandler object_ref', () => {
     eventIdIndexMap: new Map(),
   };
 
-  const governanceCore: ObjectsCore = {
+  const governanceCore = mockObjectsCore({
     object_id: 'gov1',
     object_type: OBJECT_TYPES.GOVERNANCE,
     creator: 'owner',
@@ -59,7 +62,7 @@ describe('UpdateCreateHandler object_ref', () => {
     transaction_id: 'tx0',
     status: 'active',
     seq: 0,
-  };
+  });
 
   const referencedProduct: ObjectsCore = {
     ...governanceCore,
