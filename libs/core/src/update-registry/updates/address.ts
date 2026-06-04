@@ -16,10 +16,10 @@ export const UPDATE_ADDRESS: UpdateDefinition = {
   cardinality: 'single',
   schema: z.object({
     street: z.string().min(1),
+    suite: z.string().min(1).optional(),
     locality: z.string().min(1),
+    state: z.string().min(1).optional(),
     postal_code: z.string().min(1),
     country: z.string().min(1),
-    state: z.string().min(1).optional(),
-    suite: z.string().min(1).optional(),
   }),
 };

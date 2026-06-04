@@ -37,6 +37,12 @@ describe('Object edit UI i18n keys (en-US)', () => {
       'object_edit_wallet_symbol',
       'object_edit_wallet_address',
       'object_edit_wallet_title',
+      'object_edit_address_line1',
+      'object_edit_address_line2',
+      'location_city',
+      'stateProvince',
+      'postalCode',
+      'location_country',
     ] as const;
 
     for (const key of keys) {

@@ -11,6 +11,10 @@ import { labelForUpdateType } from '@/modules/object/domain/object-update-labels
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
+  labelForJsonFieldKey,
+  orderJsonFieldDescriptors,
+} from '../../application/address-json-field-labels';
+import {
   coerceFormValueForValidation,
   geoFormValueFromRaw,
   getJsonFieldDescriptors,
@@ -234,6 +238,7 @@ function UpdateValueFields({
     return (
       <JsonValueFields
         definition={definition}
+        updateType={updateType}
         label={label}
         value={value}
         onChange={onChange}
@@ -247,25 +252,31 @@ function UpdateValueFields({
 
 function JsonValueFields({
   definition,
+  updateType,
   label,
   value,
   onChange,
   hideLegend = false,
 }: {
   definition: UpdateDefinition;
+  updateType: string;
   label: string | undefined;
   value: unknown;
   onChange: (value: unknown) => void;
   hideLegend?: boolean;
 }) {
+  const { t } = useI18n();
   const rootStringArray = useMemo(
     () => unwrapRootStringArraySchema(definition.schema),
     [definition.schema],
   );
-  const fields = useMemo(
-    () => getJsonFieldDescriptors(definition.schema),
-    [definition.schema],
-  );
+  const fields = useMemo(() => {
+    const descriptors = getJsonFieldDescriptors(definition.schema);
+    if (!descriptors) {
+      return null;
+    }
+    return orderJsonFieldDescriptors(descriptors, updateType);
+  }, [definition.schema, updateType]);
 
   if (rootStringArray) {
     const text = Array.isArray(value)
@@ -337,6 +348,7 @@ function JsonValueFields({
         <JsonShapeField
           key={field.key}
           field={field}
+          fieldLabel={labelForJsonFieldKey(updateType, field.key, t)}
           value={obj[field.key]}
           onFieldChange={(next) => onChange({ ...obj, [field.key]: next })}
         />
@@ -347,14 +359,16 @@ function JsonValueFields({
 
 function JsonShapeField({
   field,
+  fieldLabel,
   value,
   onFieldChange,
 }: {
   field: JsonFieldDescriptor;
+  fieldLabel: string;
   value: unknown;
   onFieldChange: (v: unknown) => void;
 }) {
-  const label = `${field.key}${field.optional ? '' : ' *'}`;
+  const label = `${fieldLabel}${field.optional ? '' : ' *'}`;
 
   if (field.kind === 'boolean') {
     return (

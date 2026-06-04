@@ -15,7 +15,6 @@ import { locales } from '@/i18n/config/locales';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
-import { formatUpdateCountLabel } from '@/modules/object/domain/update-count-label';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
@@ -39,20 +38,11 @@ import { UpdateValueForm } from './update-value-form';
 /** Stable default — do not use `= []` in props/deps (new reference every render). */
 const EMPTY_STRING_ARRAY: readonly string[] = [];
 
-function buildTypeSelectOptions(
-  types: readonly string[],
-  counts: Record<string, number> | undefined,
-  t: (key: string) => string,
-): UpdateTypeOption[] {
-  return types.map((value) => {
-    const count = counts?.[value] ?? 0;
-    const typeLabel = labelForUpdateType(value);
-    return {
-      value,
-      label: `${typeLabel} — ${formatUpdateCountLabel(count, t)}`,
-      count,
-    };
-  });
+function buildTypeSelectOptions(types: readonly string[]): UpdateTypeOption[] {
+  return types.map((value) => ({
+    value,
+    label: labelForUpdateType(value),
+  }));
 }
 
 function resolveInitialUpdateType(
@@ -96,7 +86,6 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     viewerUsername,
     tagCategoryNames = EMPTY_STRING_ARRAY,
     galleryAlbumNames: galleryAlbumNamesProp = EMPTY_STRING_ARRAY,
-    updateTypeCounts,
   } = props;
 
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -272,12 +261,12 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
 
   const typeSelectOptions = leftRail
     ? selectedType && UPDATE_REGISTRY[selectedType]
-      ? buildTypeSelectOptions([selectedType], updateTypeCounts, t)
+      ? buildTypeSelectOptions([selectedType])
       : []
     : feedAdd
-      ? buildTypeSelectOptions(candidateUpdateTypes, updateTypeCounts, t)
+      ? buildTypeSelectOptions(candidateUpdateTypes)
       : genericUpdateType
-        ? buildTypeSelectOptions([genericUpdateType], updateTypeCounts, t)
+        ? buildTypeSelectOptions([genericUpdateType])
         : [];
 
   const showTypeSelect = typeSelectOptions.length > 0;

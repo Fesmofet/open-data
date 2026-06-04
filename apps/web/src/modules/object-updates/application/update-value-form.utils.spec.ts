@@ -20,6 +20,8 @@ import {
   sanitizeMenuItemFormValue,
 } from './menu-item-form-value';
 
+import { orderJsonFieldDescriptors } from './address-json-field-labels';
+
 import {
   coerceFormValueForValidation,
   getJsonFieldDescriptors,
@@ -46,9 +48,28 @@ describe('update-value-form.utils', () => {
 
   it('getJsonFieldDescriptors returns shape fields for address', () => {
     const fields = getJsonFieldDescriptors(UPDATE_ADDRESS.schema);
-    expect(fields?.map((f) => f.key).sort()).toEqual(
-      ['country', 'locality', 'postal_code', 'state', 'street', 'suite'].sort(),
-    );
+    expect(fields?.map((f) => f.key)).toEqual([
+      'street',
+      'suite',
+      'locality',
+      'state',
+      'postal_code',
+      'country',
+    ]);
+  });
+
+  it('orderJsonFieldDescriptors keeps address field order for edit forms', () => {
+    const fields = getJsonFieldDescriptors(UPDATE_ADDRESS.schema);
+    expect(fields).not.toBeNull();
+    const ordered = orderJsonFieldDescriptors(fields!, UPDATE_TYPES.ADDRESS);
+    expect(ordered.map((f) => f.key)).toEqual([
+      'street',
+      'suite',
+      'locality',
+      'state',
+      'postal_code',
+      'country',
+    ]);
   });
 
   it('validateUpdateValue accepts valid name text', () => {
