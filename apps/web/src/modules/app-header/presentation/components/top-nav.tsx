@@ -15,13 +15,7 @@ import {
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
-import type { SearchFilterTab } from '../../domain/search-nav-list';
-import {
-  buildSearchFlatList,
-  HEADER_SEARCH_ALL_TAB,
-  pickSearchFilterTabFromResults,
-  reconcileSearchFilterTabFromCounts,
-} from '../../domain/search-nav-list';
+import { buildSearchFlatList } from '../../domain/search-nav-list';
 import { fetchSearchCounts, fetchSearchResults } from '../../infrastructure/search.client';
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import { HeaderActions } from './header-actions';
@@ -93,7 +87,6 @@ export function TopNav({ user: _user }: TopNavProps) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchCounts, setSearchCounts] = useState<SearchCountsResponse | null>(null);
   const [searchCountsLoading, setSearchCountsLoading] = useState(false);
-  const [filterTab, setFilterTab] = useState<SearchFilterTab>(HEADER_SEARCH_ALL_TAB);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const clearDebounce = useCallback(() => {
@@ -121,7 +114,6 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchLoading(false);
     setSearchCounts(null);
     setSearchCountsLoading(false);
-    setFilterTab(HEADER_SEARCH_ALL_TAB);
     setActiveIndex(0);
   }, [pathname]);
 
@@ -169,10 +161,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchLoading(true);
     setSearchCounts(null);
     setSearchCountsLoading(true);
-    setFilterTab(HEADER_SEARCH_ALL_TAB);
     setActiveIndex(0);
-
-    let latestResults: SearchResponse | null = null;
 
     void (async () => {
       try {
@@ -185,9 +174,7 @@ export function TopNav({ user: _user }: TopNavProps) {
           setActiveIndex(0);
           return;
         }
-        latestResults = data;
         setSearchResults(data);
-        setFilterTab((prev) => pickSearchFilterTabFromResults(data, prev));
         setActiveIndex(0);
       } catch {
         if (!mainAc.signal.aborted) {
@@ -211,14 +198,6 @@ export function TopNav({ user: _user }: TopNavProps) {
           return;
         }
         setSearchCounts(countData);
-        setFilterTab((prev) =>
-          reconcileSearchFilterTabFromCounts(
-            prev,
-            countData.type_counts,
-            countData.total_users,
-            latestResults,
-          ),
-        );
       } catch {
         if (!countsAc.signal.aborted) {
           setSearchCounts(null);
@@ -246,8 +225,8 @@ export function TopNav({ user: _user }: TopNavProps) {
   }, [dropdownOpen]);
 
   const flatList = useMemo(
-    () => (searchResults ? buildSearchFlatList(searchResults, filterTab) : []),
-    [searchResults, filterTab],
+    () => (searchResults ? buildSearchFlatList(searchResults) : []),
+    [searchResults],
   );
 
   useEffect(() => {
@@ -256,7 +235,7 @@ export function TopNav({ user: _user }: TopNavProps) {
       return;
     }
     setActiveIndex((i) => Math.min(i, flatList.length - 1));
-  }, [flatList.length, filterTab, searchResults]);
+  }, [flatList.length, searchResults]);
 
   const activeQuery = debouncedQuery.trim();
   const showDropdown = dropdownOpen && (Boolean(activeQuery) || debouncePending);
@@ -417,11 +396,6 @@ export function TopNav({ user: _user }: TopNavProps) {
                 resultsLoading={panelResultsLoading}
                 counts={searchCounts}
                 countsLoading={panelCountsLoading}
-                filterTab={filterTab}
-                onFilterTabChange={(tab) => {
-                  setFilterTab(tab);
-                  setActiveIndex(0);
-                }}
                 activeIndex={activeIndex}
                 flatList={flatList}
                 onHighlightIndex={setActiveIndex}
@@ -434,8 +408,8 @@ export function TopNav({ user: _user }: TopNavProps) {
                   empty: t('search_empty_state'),
                   loading: t('app_header_search_loading'),
                   tabUsers: t('search_tab_users'),
-                  tabAll: t('search_tab_all'),
                   following: t('search_user_following'),
+                  discoverChipsAria: t('search_discover_chips_aria'),
                 }}
               />
             ) : null}

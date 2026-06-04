@@ -4,14 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
-import type { SearchFilterTab, SearchFlatEntry } from '../../domain/search-nav-list';
-import {
-  buildDiscoverHrefFromSearch,
-  HEADER_SEARCH_ALL_TAB,
-  formatObjectTypeLabel,
-} from '../../domain/search-nav-list';
+import type { SearchFlatEntry } from '../../domain/search-nav-list';
+import { buildDiscoverHrefFromSearch, formatObjectTypeLabel } from '../../domain/search-nav-list';
 
-const TAB_SKELETON_WIDTHS = [56, 72, 64] as const;
+const CHIP_SKELETON_WIDTHS = [56, 72, 64] as const;
 
 const EMPTY_RESULTS: SearchResponse = { objects: [], users: [] };
 
@@ -20,8 +16,6 @@ export type SearchDropdownProps = {
   resultsLoading: boolean;
   counts: SearchCountsResponse | null;
   countsLoading: boolean;
-  filterTab: SearchFilterTab;
-  onFilterTabChange: (tab: SearchFilterTab) => void;
   activeIndex: number;
   flatList: SearchFlatEntry[];
   onHighlightIndex: (index: number) => void;
@@ -33,8 +27,8 @@ export type SearchDropdownProps = {
     empty: string;
     loading: string;
     tabUsers: string;
-    tabAll: string;
     following: string;
+    discoverChipsAria: string;
   };
   onClose: () => void;
 };
@@ -51,16 +45,14 @@ function pickFlatIndexForRow(
   );
 }
 
-function tabPillClass(selected: boolean): string {
+function discoverChipClass(): string {
   return [
-    'rounded-pill border px-2.5 py-1 text-caption transition-colors',
-    selected
-      ? 'border-accent bg-accent/10 text-fg'
-      : 'border-transparent bg-surface-control text-fg-secondary hover:bg-ghost-surface',
+    'rounded-pill border border-transparent bg-surface-control px-2.5 py-1 text-caption text-fg-secondary transition-colors',
+    'hover:bg-ghost-surface hover:text-fg',
   ].join(' ');
 }
 
-function TabCountSuffix({ loading, value }: { loading: boolean; value: number }) {
+function ChipCountSuffix({ loading, value }: { loading: boolean; value: number }) {
   if (loading) {
     return (
       <span
@@ -72,8 +64,8 @@ function TabCountSuffix({ loading, value }: { loading: boolean; value: number })
   return <span className="tabular-nums"> ({value})</span>;
 }
 
-function TypeTabSkeletons() {
-  return TAB_SKELETON_WIDTHS.map((w) => (
+function DiscoverChipSkeletons() {
+  return CHIP_SKELETON_WIDTHS.map((w) => (
     <span
       key={w}
       className="h-7 shrink-0 rounded-circle bg-surface-control animate-pulse"
@@ -88,8 +80,6 @@ export function SearchDropdown({
   resultsLoading,
   counts,
   countsLoading,
-  filterTab,
-  onFilterTabChange,
   activeIndex,
   flatList,
   onHighlightIndex,
@@ -103,15 +93,16 @@ export function SearchDropdown({
   const hasGlobalCounts = counts !== null;
   const countsPending = countsLoading && !hasGlobalCounts;
 
-  const objectTypes = hasGlobalCounts
-    ? Object.keys(counts.type_counts).sort((a, b) => a.localeCompare(b))
-    : [...new Set(results.objects.map((o) => o.object_type))].sort((a, b) => a.localeCompare(b));
+  const objectTypeChips = hasGlobalCounts
+    ? Object.entries(counts.type_counts)
+        .filter(([, n]) => n > 0)
+        .sort(([a], [b]) => a.localeCompare(b))
+    : [...new Set(results.objects.map((o) => o.object_type))]
+        .sort((a, b) => a.localeCompare(b))
+        .map((ot) => [ot, results.objects.filter((o) => o.object_type === ot).length] as const);
 
-  const usersTabCount = hasGlobalCounts ? counts.total_users : results.users.length;
-
-  const allTabCount = hasGlobalCounts
-    ? Object.values(counts.type_counts).reduce((sum, n) => sum + n, 0)
-    : results.objects.length;
+  const usersChipCount = hasGlobalCounts ? counts.total_users : results.users.length;
+  const showUsersChip = usersChipCount > 0;
 
   function navigateEntry(entry: SearchFlatEntry) {
     onClose();
@@ -122,84 +113,50 @@ export function SearchDropdown({
     }
   }
 
-  const hasResults =
-    results.objects.length > 0 || results.users.length > 0;
+  const hasResults = results.objects.length > 0 || results.users.length > 0;
   const showResultsBody = !resultsLoading || hasResults;
 
-  const visibleObjects = filterTab === 'users' ? [] : results.objects;
+  const showObjectsSection = showResultsBody && results.objects.length > 0;
+  const showUsersSection = showResultsBody && results.users.length > 0;
 
-  const visibleUsers = results.users;
-
-  const showObjectsSection =
-    showResultsBody && filterTab !== 'users' && visibleObjects.length > 0;
-  const showUsersSection = showResultsBody && visibleUsers.length > 0;
-
-  const isEmpty =
-    !resultsLoading &&
-    (filterTab === 'users'
-      ? results.users.length === 0
-      : visibleObjects.length === 0 && results.users.length === 0);
+  const isEmpty = !resultsLoading && !hasResults;
 
   return (
     <div className="grid max-h-[min(70vh,28rem)] grid-rows-[auto_minmax(0,1fr)]">
-      <div
+      <nav
         className="shrink-0 border-b border-border bg-surface px-2 py-2"
-        role="tablist"
-        aria-label={messages.tabUsers}
+        aria-label={messages.discoverChipsAria}
       >
         <div className="flex flex-wrap items-center gap-1.5">
           {countsPending ? (
-            <TypeTabSkeletons />
+            <DiscoverChipSkeletons />
           ) : (
             <>
-              <Link
-                href={buildDiscoverHrefFromSearch(HEADER_SEARCH_ALL_TAB, searchQuery)}
-                role="tab"
-                aria-selected={filterTab === HEADER_SEARCH_ALL_TAB}
-                className={tabPillClass(filterTab === HEADER_SEARCH_ALL_TAB)}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => onClose()}
-              >
-                {messages.tabAll}
-                <TabCountSuffix loading={countsPending} value={allTabCount} />
-              </Link>
-              {objectTypes.map((ot) => (
-              <Link
-                key={ot}
-                href={buildDiscoverHrefFromSearch(ot, searchQuery)}
-                role="tab"
-                aria-selected={filterTab === ot}
-                className={tabPillClass(filterTab === ot)}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => onClose()}
-              >
-                {formatObjectTypeLabel(ot)}
-                <TabCountSuffix
-                  loading={countsPending}
-                  value={
-                    hasGlobalCounts && counts
-                      ? (counts.type_counts[ot] ?? 0)
-                      : results.objects.filter((o) => o.object_type === ot).length
-                  }
-                />
-              </Link>
-            ))}
+              {objectTypeChips.map(([ot, count]) => (
+                <Link
+                  key={ot}
+                  href={buildDiscoverHrefFromSearch(ot, searchQuery)}
+                  className={discoverChipClass()}
+                  onClick={() => onClose()}
+                >
+                  {formatObjectTypeLabel(ot)}
+                  <ChipCountSuffix loading={countsPending} value={count} />
+                </Link>
+              ))}
+              {showUsersChip ? (
+                <Link
+                  href={buildDiscoverHrefFromSearch('users', searchQuery)}
+                  className={discoverChipClass()}
+                  onClick={() => onClose()}
+                >
+                  {messages.tabUsers}
+                  <ChipCountSuffix loading={countsPending} value={usersChipCount} />
+                </Link>
+              ) : null}
             </>
           )}
-
-          <Link
-            href={buildDiscoverHrefFromSearch('users', searchQuery)}
-            role="tab"
-            aria-selected={filterTab === 'users'}
-            className={tabPillClass(filterTab === 'users')}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => onClose()}
-          >
-            {messages.tabUsers}
-            <TabCountSuffix loading={countsPending} value={usersTabCount} />
-          </Link>
         </div>
-      </div>
+      </nav>
 
       <div className="min-h-0 overflow-y-auto bg-surface py-1">
         {resultsLoading && !hasResults ? (
@@ -210,13 +167,13 @@ export function SearchDropdown({
           <p className="px-3 py-4 text-body-sm text-fg-secondary">{messages.empty}</p>
         ) : null}
 
-        {showObjectsSection && visibleObjects.length > 0 ? (
+        {showObjectsSection ? (
           <div className="px-2 pt-2">
             <p className="px-1 pb-1 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
               {messages.sectionObjects}
             </p>
             <ul className="divide-y divide-border" role="listbox" id={`${listId}-objects`}>
-              {visibleObjects.map((obj) => {
+              {results.objects.map((obj) => {
                 const flatIdx = pickFlatIndexForRow(flatList, 'object', obj.object_id);
                 const active = flatIdx >= 0 && flatIdx === activeIndex;
                 const title = obj.name?.trim() || obj.object_id;
@@ -276,13 +233,13 @@ export function SearchDropdown({
           </div>
         ) : null}
 
-        {showUsersSection && visibleUsers.length > 0 ? (
+        {showUsersSection ? (
           <div className="px-2 pt-2">
             <p className="px-1 pb-1 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
               {messages.sectionUsers}
             </p>
             <ul className="divide-y divide-border" role="listbox" id={`${listId}-users`}>
-              {visibleUsers.map((u) => {
+              {results.users.map((u) => {
                 const flatIdx = pickFlatIndexForRow(flatList, 'user', u.name);
                 const active = flatIdx >= 0 && flatIdx === activeIndex;
                 return (
