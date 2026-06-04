@@ -12,6 +12,16 @@ export function geographyFromGeoJsonPoint(point: GeoJsonPoint): RawBuilder<unkno
 }
 
 /**
+ * PostGIS has no `ST_Equals(geography, geography)` — compare as GEOMETRY (see query-api feed).
+ */
+export function geoDuplicateMatchSql(geoText: string): RawBuilder<boolean> {
+  return sql<boolean>`ST_Equals(
+    value_geo::geometry,
+    ST_GeomFromGeoJSON(${geoText}::text)::geography::geometry
+  )`;
+}
+
+/**
  * node-postgres sends JS strings as raw SQL text, not JSON-encoded strings.
  * `value_geo` must use ST_GeomFromGeoJSON (see migrate-mongo-to-pg objects flush).
  */

@@ -10,6 +10,7 @@ import type {
   ObjectUpdateUpdate,
 } from '@opden-data-layer/core';
 import {
+  geoDuplicateMatchSql,
   geoJsonPointToText,
   objectUpdateInsertValues,
 } from './object-update-insert-values';
@@ -146,12 +147,7 @@ export class ObjectUpdatesRepository {
       );
     } else {
       const geoText = geoJsonPointToText(value as GeoJsonPoint);
-      query = query.where(
-        sql<boolean>`ST_Equals(
-          value_geo,
-          ST_GeomFromGeoJSON(${geoText}::text)::geography
-        )`,
-      );
+      query = query.where(geoDuplicateMatchSql(geoText));
     }
 
     const row = await query.executeTakeFirst();

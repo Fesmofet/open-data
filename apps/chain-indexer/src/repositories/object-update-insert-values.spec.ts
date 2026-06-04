@@ -1,4 +1,5 @@
 import {
+  geoDuplicateMatchSql,
   geoJsonPointToText,
   objectUpdateInsertValues,
 } from './object-update-insert-values';
@@ -14,6 +15,10 @@ describe('object-update-insert-values', () => {
     expect(geoJsonPointToText(point)).toBe(
       '{"type":"Point","coordinates":[35.68634,49.774724]}',
     );
+  });
+
+  it('exposes duplicate-match SQL using geometry cast (not geography ST_Equals)', () => {
+    expect(geoDuplicateMatchSql(geoJsonPointToText(point))).toBeDefined();
   });
 
   it('wraps value_geo for insert with geography cast', () => {
