@@ -177,6 +177,25 @@ function parsePackedAddressLine(line: string): AddressPayload | null {
   return out;
 }
 
+/** Waivio splits building number (`address`) and road name (`street`); ODL uses one `street`. */
+function buildStreetFromLegacy(o: Record<string, unknown>): string {
+  const line1 = trimStr(o.address);
+  const line2 = trimStr(o.street);
+
+  if (line1.length > 0 && line2.length > 0) {
+    const a = line1.toLowerCase();
+    const b = line2.toLowerCase();
+    if (a === b) {
+      return line1;
+    }
+    if (b.startsWith(a) || a.startsWith(b)) {
+      return line2.length >= line1.length ? line2 : line1;
+    }
+    return `${line1}, ${line2}`;
+  }
+  return line2.length > 0 ? line2 : line1;
+}
+
 function legacyAddressToPayload(o: Record<string, unknown>): AddressPayload | null {
   const rawAddress = trimStr(o.address);
   const city = trimStr(o.city);
@@ -188,7 +207,7 @@ function legacyAddressToPayload(o: Record<string, unknown>): AddressPayload | nu
     city.length > 0 && postalCode.length > 0 && country.length > 0;
 
   if (structured) {
-    const street = rawAddress.length > 0 ? rawAddress : city;
+    const street = buildStreetFromLegacy(o);
     if (!street.length) {
       return null;
     }
