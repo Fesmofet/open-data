@@ -1,5 +1,7 @@
 'use client';
 
+import type { ClipboardEvent } from 'react';
+
 import {
   AppMap,
   AppMarker,
@@ -18,6 +20,7 @@ import {
   GEO_PICKER_ZOOM_EMPTY,
   geoFormValueFromCoordPair,
   parseGeoCoordPair,
+  parsePastedGeoCoordinates,
 } from '../../application/geo-form-value';
 import { geoFormValueFromRaw } from '../../application/update-value-form.utils';
 
@@ -51,6 +54,17 @@ export function GeoUpdateForm({
     onChange({ ...geo, [field]: raw });
   }
 
+  function onCoordPaste(event: ClipboardEvent<HTMLInputElement>) {
+    const parsed = parsePastedGeoCoordinates(
+      event.clipboardData.getData('text/plain'),
+    );
+    if (!parsed) {
+      return;
+    }
+    event.preventDefault();
+    onChange(parsed);
+  }
+
   function onMapClick(position: MapPosition) {
     onChange(geoFormValueFromCoordPair(position[0], position[1]));
   }
@@ -66,27 +80,28 @@ export function GeoUpdateForm({
         <label className="block">
           <span className="text-muted">Latitude</span>
           <input
-            type="number"
-            step="any"
+            type="text"
+            inputMode="decimal"
             className="mt-1 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
             value={geo.latitude}
             onChange={(e) => patchCoord('latitude', e.target.value)}
+            onPaste={onCoordPaste}
           />
         </label>
         <label className="block">
           <span className="text-muted">Longitude</span>
           <input
-            type="number"
-            step="any"
+            type="text"
+            inputMode="decimal"
             className="mt-1 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
             value={geo.longitude}
             onChange={(e) => patchCoord('longitude', e.target.value)}
+            onPaste={onCoordPaste}
           />
         </label>
         <div>
           <p className="mb-2 text-caption text-muted">{t('object_edit_geo_map_hint')}</p>
           <AppMap
-            key={markerPosition ? 'picked' : 'empty'}
             center={mapCenter}
             zoom={mapZoom}
             showBuiltInAttribution={false}

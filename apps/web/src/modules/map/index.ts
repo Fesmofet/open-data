@@ -15,6 +15,13 @@ export { AppMarker } from './components/AppMarker';
 export { AppPopup } from './components/AppPopup';
 export { MapInvalidateSizeOnMount } from './components/MapInvalidateSizeOnMount';
 
+export {
+  LEAFLET_DEFAULT_MAX_Z_INDEX,
+  MAP_EMBED_STACK_CLASS,
+  Z_INDEX_DROPDOWN_ABOVE_MODAL,
+  Z_INDEX_MODAL_ABOVE_MAP,
+} from './constants/map-stack';
+
 export { leafletMapProvider } from './providers/leaflet';
 export {
   MapLibreNotImplementedError,

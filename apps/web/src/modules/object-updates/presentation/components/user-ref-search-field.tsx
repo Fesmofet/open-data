@@ -10,14 +10,14 @@ import {
   fetchUserSearchResults,
 } from '@/modules/app-header/infrastructure/search.client';
 import type { SearchUserResult } from '@/modules/app-header/domain/search-response.schema';
+import { Z_INDEX_DROPDOWN_ABOVE_MODAL } from '@/modules/map';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const DROPDOWN_MAX_HEIGHT_PX = 192;
 const DROPDOWN_MIN_HEIGHT_PX = 80;
 const DROPDOWN_GAP_PX = 4;
-/** Above add-update modal (`z-[100]`). */
-const DROPDOWN_Z_INDEX = 110;
+const DROPDOWN_Z_INDEX = Z_INDEX_DROPDOWN_ABOVE_MODAL;
 
 export type UserRefSearchFieldProps = {
   /** Hive account name stored as update value. */

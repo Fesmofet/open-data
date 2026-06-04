@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import {
   AppMap,
   AppMarker,
+  MAP_EMBED_STACK_CLASS,
   MapInvalidateSizeOnMount,
   MapProvider,
 } from '@/modules/map';
@@ -172,7 +173,7 @@ export function ObjectGeoPreview({ latitude, longitude, label }: ObjectGeoPrevie
   return (
     <MapProvider>
       <div>
-        <div className="relative">
+        <div className={MAP_EMBED_STACK_CLASS}>
           <AppMap
             center={center}
             zoom={OBJECT_MAP_PREVIEW_ZOOM}

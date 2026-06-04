@@ -1753,6 +1753,8 @@
   "object_detail_view": "View",
   "object_edit_address_line1": "Address 1",
   "object_edit_address_line2": "Address 2",
+  "object_edit_link_platform": "Platform",
+  "object_edit_link_profile": "Profile",
   "object_edit_add_update": "Add update",
   "object_edit_cancel": "Cancel",
   "object_edit_delegation_clear_user": "Remove user",

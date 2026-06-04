@@ -12,6 +12,8 @@ import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 
 import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { locales } from '@/i18n/config/locales';
+import { Z_INDEX_MODAL_ABOVE_MAP } from '@/modules/map';
+
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
@@ -273,7 +275,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
 
   const dialog = (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-overlay p-4"
+      className="fixed inset-0 flex items-center justify-center bg-overlay p-4"
+      style={{ zIndex: Z_INDEX_MODAL_ABOVE_MAP }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-update-dialog-title"

@@ -2,6 +2,7 @@ import type { UpdateDefinition } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { z } from 'zod';
 
+import { parseGeoCoordToken } from './geo-form-value';
 import { sanitizeGalleryItemFormValue } from './gallery-form-value';
 import {
   coerceImageCidOrUrlPrefill,
@@ -162,8 +163,12 @@ export function coerceFormValueForValidation(
   if (definition.value_kind === 'geo') {
     const g = geoFormValueFromRaw(raw);
     return {
-      latitude: g.latitude === '' ? NaN : Number(g.latitude),
-      longitude: g.longitude === '' ? NaN : Number(g.longitude),
+      latitude:
+        g.latitude === '' ? NaN : (parseGeoCoordToken(g.latitude) ?? Number.NaN),
+      longitude:
+        g.longitude === ''
+          ? NaN
+          : (parseGeoCoordToken(g.longitude) ?? Number.NaN),
     };
   }
   if (definition.value_kind === 'json') {

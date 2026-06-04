@@ -44,4 +44,16 @@ describe('address-json-field-labels', () => {
   it('labelForJsonFieldKey leaves non-address keys unchanged', () => {
     expect(labelForJsonFieldKey(UPDATE_TYPES.NAME, 'street', t)).toBe('street');
   });
+
+  it('labelForJsonFieldKey maps link schema keys to i18n labels', () => {
+    const linkT = (key: string) =>
+      (
+        {
+          object_edit_link_platform: 'Platform',
+          object_edit_link_profile: 'Profile',
+        } as Record<string, string>
+      )[key] ?? key;
+    expect(labelForJsonFieldKey(UPDATE_TYPES.LINK, 'type', linkT)).toBe('Platform');
+    expect(labelForJsonFieldKey(UPDATE_TYPES.LINK, 'value', linkT)).toBe('Profile');
+  });
 });

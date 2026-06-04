@@ -21,6 +21,11 @@ const ADDRESS_JSON_FIELD_LABEL_KEYS: Record<string, string> = {
   country: 'location_country',
 };
 
+const LINK_JSON_FIELD_LABEL_KEYS: Record<string, string> = {
+  type: 'object_edit_link_platform',
+  value: 'object_edit_link_profile',
+};
+
 export function orderJsonFieldDescriptors(
   fields: JsonFieldDescriptor[],
   updateType: string,
@@ -39,8 +44,14 @@ export function labelForJsonFieldKey(
   fieldKey: string,
   t: (key: string) => string,
 ): string {
-  if (updateType === UPDATE_TYPES.ADDRESS) {
-    const i18nKey = ADDRESS_JSON_FIELD_LABEL_KEYS[fieldKey];
+  const labelKeys =
+    updateType === UPDATE_TYPES.ADDRESS
+      ? ADDRESS_JSON_FIELD_LABEL_KEYS
+      : updateType === UPDATE_TYPES.LINK
+        ? LINK_JSON_FIELD_LABEL_KEYS
+        : null;
+  if (labelKeys) {
+    const i18nKey = labelKeys[fieldKey];
     if (i18nKey) {
       return t(i18nKey);
     }

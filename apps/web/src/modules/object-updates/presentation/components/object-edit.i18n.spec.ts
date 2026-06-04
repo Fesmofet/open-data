@@ -39,6 +39,8 @@ describe('Object edit UI i18n keys (en-US)', () => {
       'object_edit_wallet_title',
       'object_edit_address_line1',
       'object_edit_address_line2',
+      'object_edit_link_platform',
+      'object_edit_link_profile',
       'location_city',
       'stateProvince',
       'postalCode',

@@ -6,6 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
   AppMap,
   AppMarker,
+  MAP_EMBED_STACK_CLASS,
   MapInvalidateSizeOnMount,
   MapProvider,
 } from '@/modules/map';
@@ -76,7 +77,7 @@ export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCar
         </p>
         <MapProvider>
           <div
-            className="overflow-hidden rounded-btn border border-border"
+            className={`${MAP_EMBED_STACK_CLASS} rounded-btn border border-border`}
             style={{ minHeight: OBJECT_MAP_PREVIEW_MIN_HEIGHT_PX }}
             aria-labelledby={mapLabelId}
           >
