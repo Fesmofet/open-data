@@ -9,6 +9,7 @@ import {
   UPDATE_NAME,
   UPDATE_PARENT,
   UPDATE_TAG_CATEGORY_ITEM,
+  UPDATE_TELEPHONE,
   UPDATE_WALLET_ADDRESS,
   WALLET_SYMBOLS,
 } from '@opden-data-layer/core/update-registry';
@@ -185,6 +186,27 @@ describe('update-value-form.utils', () => {
         address: 'x',
       }).success,
     ).toBe(false);
+  });
+
+  it('validateUpdateValue accepts telephone with value and optional title', () => {
+    const result = validateUpdateValue(UPDATE_TELEPHONE, {
+      title: 'Front desk',
+      value: '+1 604-423-3447',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('validateUpdateValue accepts telephone without title after sanitize', () => {
+    const coerced = coerceFormValueForValidation(UPDATE_TELEPHONE, {
+      title: '',
+      value: '+1 604-423-3447',
+    });
+    expect(coerced).toEqual({ value: '+1 604-423-3447' });
+    expect(validateUpdateValue(UPDATE_TELEPHONE, coerced).success).toBe(true);
+  });
+
+  it('validateUpdateValue rejects telephone without value', () => {
+    expect(validateUpdateValue(UPDATE_TELEPHONE, { title: 'x' }).success).toBe(false);
   });
 
   it('validateUpdateValue accepts tagCategoryItem with existing category', () => {

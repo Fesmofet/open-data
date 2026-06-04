@@ -35,6 +35,8 @@ export interface MongoRatingVote {
 export interface MongoWObjectField {
   name?: string;
   body?: string;
+  /** Waivio `phone` field: dialable number (not stored in `body`). */
+  number?: string;
   weight?: number;
   weightWAIV?: number;
   locale?: string;

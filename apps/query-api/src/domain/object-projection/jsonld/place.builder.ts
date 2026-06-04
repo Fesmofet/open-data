@@ -2,6 +2,7 @@ import type { ProjectedObject } from '../projected-object.types';
 import {
   baseJsonLdFields,
   fieldString,
+  fieldTelephone,
   geoCoordinates,
   objectAddress,
   objectGeo,
@@ -15,7 +16,7 @@ export function buildPlaceJsonLd(
 ): Record<string, unknown> {
   const address = objectAddress(obj.fields);
   const geo = objectGeo(obj.fields);
-  const telephone = fieldString(obj.fields, 'telephone');
+  const telephone = fieldTelephone(obj.fields);
   const email = fieldString(obj.fields, 'email');
   const website = fieldString(obj.fields, 'website') ?? fieldString(obj.fields, 'link');
 

@@ -56,7 +56,7 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
     case 'link':
       return { kind: 'link', headingLabel, items: [] };
     case 'phones':
-      return { kind: 'phones', headingLabel, numbers: [] };
+      return { kind: 'phones', headingLabel, entries: [] };
     case 'email':
       return { kind: 'email', headingLabel, address: '' };
     case 'walletAddress':

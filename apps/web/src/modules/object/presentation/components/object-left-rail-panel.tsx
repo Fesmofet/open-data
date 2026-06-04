@@ -22,6 +22,7 @@ import type { ObjectLeftRailBlock, ProjectedGalleryAlbumView } from '../../domai
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
+import { LeftRailTelephonesContent } from './left-rail-telephone-row';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
 import { StarRating } from './star-rating';
 
@@ -645,11 +646,9 @@ export function ObjectLeftRailPanel({
                   addLabel={addLabel}
                   count={railBlockCount('phones')}
                 />
-                <ul className="mt-2 space-y-1 tabular-nums">
-                  {block.numbers.map((n) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
+                <div className="mt-2">
+                  <LeftRailTelephonesContent entries={block.entries} />
+                </div>
               </aside>
             );
           case 'email':

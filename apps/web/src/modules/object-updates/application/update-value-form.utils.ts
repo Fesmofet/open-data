@@ -10,6 +10,7 @@ import {
   sanitizeImageCidOrUrlFormValue,
 } from './image-form-value';
 import { sanitizeMenuItemFormValue } from './menu-item-form-value';
+import { sanitizeTelephoneFormValue } from './telephone-form-value';
 import { sanitizeWalletAddressFormValue } from './wallet-address-form-value';
 
 export type GeoFormValue = { latitude: string; longitude: string };
@@ -193,6 +194,9 @@ export function coerceFormValueForValidation(
       }
       if (definition.update_type === UPDATE_TYPES.WALLET_ADDRESS) {
         return sanitizeWalletAddressFormValue(raw as Record<string, unknown>);
+      }
+      if (definition.update_type === UPDATE_TYPES.TELEPHONE) {
+        return sanitizeTelephoneFormValue(raw as Record<string, unknown>);
       }
       if (definition.update_type === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
         return sanitizeGalleryItemFormValue(raw as Record<string, unknown>);

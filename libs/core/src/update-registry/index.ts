@@ -97,7 +97,7 @@ export { UPDATE_FORM } from './updates/form';
 export { UPDATE_NEWS_FILTER } from './updates/news-filter';
 export { UPDATE_WORK_HOURS } from './updates/work-hours';
 export { UPDATE_BUTTON } from './updates/button';
-export { UPDATE_TELEPHONE } from './updates/telephone';
+export { UPDATE_TELEPHONE, UPDATE_TELEPHONE_SCHEMA } from './updates/telephone';
 export { LINK_TYPES, type LinkType, UPDATE_LINK } from './updates/link';
 export { UPDATE_EMAIL } from './updates/email';
 export { UPDATE_PAGE_CONTENT } from './updates/page-content';

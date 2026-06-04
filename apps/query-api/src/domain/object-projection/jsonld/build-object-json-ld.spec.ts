@@ -47,6 +47,22 @@ describe('buildObjectJsonLd', () => {
     expect(json.recipeIngredient).toEqual(['water', 'salt']);
   });
 
+  it('includes telephone from JSON rows in Place JSON-LD', () => {
+    const json = buildObjectJsonLd(
+      {
+        ...base,
+        object_type: OBJECT_TYPES.RESTAURANT,
+        fields: {
+          name: 'Cafe',
+          telephone: [{ value: '+1 604-423-3447', title: 'Phone' }],
+        },
+      },
+      'https://site.com/object/obj-1',
+    );
+    expect(json['@type']).toBe('Restaurant');
+    expect(json.telephone).toBe('+1 604-423-3447');
+  });
+
   it('falls back to Thing for unknown types', () => {
     const json = buildObjectJsonLd(
       { ...base, object_type: OBJECT_TYPES.WIDGET },

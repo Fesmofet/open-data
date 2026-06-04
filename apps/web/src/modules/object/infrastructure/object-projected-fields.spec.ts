@@ -12,6 +12,7 @@ import {
   projectedMenuItems,
   projectedSortCustom,
   projectedTagCategorySections,
+  projectedTelephoneEntries,
   projectedWalletAddressRows,
   projectedObjectLinkRows,
   projectedParentRow,
@@ -496,5 +497,39 @@ describe('object-projected-fields', () => {
       name: 'Root wins',
       imageUrl: 'https://a',
     });
+  });
+
+  it('parses telephone JSON entries with title and value', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        telephone: [
+          { value: '+1 604-423-3447', title: 'Телефон' },
+          { value: '+971-65315252' },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedTelephoneEntries(v)).toEqual([
+      { value: '+1 604-423-3447', title: 'Телефон' },
+      { value: '+971-65315252' },
+    ]);
+  });
+
+  it('parses legacy telephone string', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: { telephone: '+58 212-555-0100' },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedTelephoneEntries(v)).toEqual([{ value: '+58 212-555-0100' }]);
   });
 });

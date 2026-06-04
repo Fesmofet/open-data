@@ -128,7 +128,7 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
       { type: 'twitter', value: '@tolon_shop' },
       { type: 'hive', value: 'tolon' },
     ],
-    telephone: '+58 212-555-0100',
+    telephone: [{ value: '+58 212-555-0100', title: 'Phone' }],
     email: 'hello@example.com',
     walletAddress: [
       { symbol: 'Bitcoin (BTC)', address: 'bc1qexample0123456789' },

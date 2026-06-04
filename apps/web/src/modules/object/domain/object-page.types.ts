@@ -162,7 +162,7 @@ export type ObjectLeftRailBlock =
   | {
       kind: 'phones';
       headingLabel: string;
-      numbers: string[];
+      entries: { value: string; title?: string }[];
     }
   | {
       kind: 'email';

@@ -50,6 +50,7 @@ import {
   transformJsonBodyMulti,
   transformPromotionSaleFromField,
   transformTagCategoryItemFromField,
+  transformTelephoneFromField,
 } from './value-strategies';
 
 const BATCH_SIZE = 5000;
@@ -551,6 +552,7 @@ class MongoToPgMigrator {
       }
       value_geo = sql`ST_GeomFromGeoJSON(${parsed.geoJsonText}::text)::geography`;
     } else {
+      const telephone = transformTelephoneFromField(updateType, field);
       const promoSale = transformPromotionSaleFromField(updateType, field);
       const tagCategoryItem = transformTagCategoryItemFromField(updateType, field);
       const imageGalleryItem = transformImageGalleryItemFromField(
@@ -558,7 +560,13 @@ class MongoToPgMigrator {
         field,
         galleryAlbumIdToName,
       );
-      if (promoSale !== null) {
+      if (telephone !== null) {
+        if (!telephone.ok) {
+          this.stats.fieldsSkippedBadPayload += 1;
+          return;
+        }
+        value_json = telephone.value;
+      } else if (promoSale !== null) {
         if (!promoSale.ok) {
           this.stats.fieldsSkippedBadPayload += 1;
           return;

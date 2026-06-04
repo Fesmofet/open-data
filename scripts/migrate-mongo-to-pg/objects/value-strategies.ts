@@ -564,6 +564,38 @@ function normalizeLegacyEpoch(n: number): number {
  * Legacy `categoryItem`: `body` holds the tag value, `tagCategory` holds the category name.
  * Produces ODL `tagCategoryItem` JSON `{ value, category }`.
  */
+/**
+ * Legacy `phone`: `number` → ODL `value`, non-empty `body` → optional `title`.
+ */
+export function transformTelephoneFromField(
+  updateType: string,
+  field: MongoWObjectField,
+): JsonTransformResult | null {
+  if (updateType !== 'telephone') {
+    return null;
+  }
+  const number = typeof field.number === 'string' ? field.number.trim() : '';
+  const body = typeof field.body === 'string' ? field.body.trim() : '';
+
+  let value = number;
+  let title: string | undefined;
+  if (value.length > 0) {
+    if (body.length > 0) {
+      title = body;
+    }
+  } else if (body.length > 0) {
+    value = body;
+  } else {
+    return { ok: false, reason: 'telephone: missing number and body' };
+  }
+
+  const out: Record<string, JsonValue> = { value };
+  if (title && title.length > 0) {
+    out.title = title;
+  }
+  return { ok: true, value: out as JsonValue };
+}
+
 export function transformTagCategoryItemFromField(
   updateType: string,
   field: MongoWObjectField,

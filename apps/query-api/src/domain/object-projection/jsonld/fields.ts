@@ -99,6 +99,40 @@ export function geoCoordinates(
   };
 }
 
+function readTelephoneValue(item: unknown): string | undefined {
+  if (typeof item === 'string') {
+    const trimmed = item.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  if (!item || typeof item !== 'object' || Array.isArray(item)) {
+    return undefined;
+  }
+  const value = (item as Record<string, unknown>).value;
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+/** First dialable `telephone` from projected field (JSON rows or legacy string). */
+export function fieldTelephone(fields: Record<string, unknown>): string | undefined {
+  const raw = fields.telephone;
+  if (typeof raw === 'string') {
+    return readTelephoneValue(raw);
+  }
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  for (const item of raw) {
+    const v = readTelephoneValue(item);
+    if (v) {
+      return v;
+    }
+  }
+  return undefined;
+}
+
 export function stringArrayField(
   fields: Record<string, unknown>,
   key: string,

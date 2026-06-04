@@ -32,6 +32,7 @@ import { MenuItemForm } from './menu-item-form';
 import { ObjectRefSearchField } from './object-ref-search-field';
 import { TagCategoryItemForm } from './tag-category-item-form';
 import { UserRefSearchField } from './user-ref-search-field';
+import { TelephoneForm } from './telephone-form';
 import { WalletAddressForm } from './wallet-address-form';
 
 export type UpdateValueFormProps = {
@@ -224,6 +225,9 @@ function UpdateValueFields({
     }
     if (updateType === UPDATE_TYPES.WALLET_ADDRESS) {
       return <WalletAddressForm value={value} onChange={onChange} />;
+    }
+    if (updateType === UPDATE_TYPES.TELEPHONE) {
+      return <TelephoneForm value={value} onChange={onChange} />;
     }
     if (updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
       return (

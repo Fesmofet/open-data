@@ -110,10 +110,16 @@ function appendLeftRailBlock(
       }
       break;
     case 'phones':
-      for (const number of block.numbers) {
-        const trimmed = number.trim();
-        if (trimmed.length > 0) {
-          pushEntry(fields, counters, UPDATE_TYPES.TELEPHONE, trimmed);
+      for (const entry of block.entries) {
+        const value = entry.value.trim();
+        if (value.length > 0) {
+          const title = entry.title?.trim();
+          pushEntry(
+            fields,
+            counters,
+            UPDATE_TYPES.TELEPHONE,
+            title && title.length > 0 ? { value, title } : { value },
+          );
         }
       }
       break;

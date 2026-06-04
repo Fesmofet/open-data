@@ -44,7 +44,7 @@ import {
   projectedSortCustom,
   projectedTagCategoryNames,
   projectedTagCategorySections,
-  projectedTelephones,
+  projectedTelephoneEntries,
   projectedWebsiteEntries,
   projectedWalletAddressRows,
   projectedWorkHours,
@@ -353,12 +353,12 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         break;
       }
       case 'phones': {
-        const numbers = projectedTelephones(viewLike);
-        if (numbers.length > 0) {
+        const entries = projectedTelephoneEntries(viewLike);
+        if (entries.length > 0) {
           blocks.push({
             kind: 'phones',
             headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.phones,
-            numbers,
+            entries,
           });
         }
         break;

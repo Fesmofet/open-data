@@ -697,18 +697,52 @@ export function projectedWebsiteEntries(
   return out;
 }
 
-/** Telephone values (`telephone` update — single string or multi-array from projection). */
-export function projectedTelephones(o: ProjectedObjectView): string[] {
+export type ProjectedTelephoneEntry = {
+  value: string;
+  title?: string;
+};
+
+/** Telephone rows (`telephone` update — JSON `{ value, title? }[]` or legacy strings). */
+export function projectedTelephoneEntries(o: ProjectedObjectView): ProjectedTelephoneEntry[] {
   const raw = o.fields.telephone;
-  if (typeof raw === 'string' && raw.trim().length > 0) {
-    return [raw.trim()];
+  const out: ProjectedTelephoneEntry[] = [];
+
+  const pushEntry = (value: string, title?: string) => {
+    const v = value.trim();
+    if (v.length === 0) {
+      return;
+    }
+    const entry: ProjectedTelephoneEntry = { value: v };
+    const t = title?.trim();
+    if (t && t.length > 0) {
+      entry.title = t;
+    }
+    out.push(entry);
+  };
+
+  if (typeof raw === 'string') {
+    pushEntry(raw);
+    return out;
   }
   if (!Array.isArray(raw)) {
     return [];
   }
-  return raw
-    .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
-    .map((x) => x.trim());
+  for (const item of raw) {
+    if (typeof item === 'string') {
+      pushEntry(item);
+      continue;
+    }
+    if (!isRecord(item)) {
+      continue;
+    }
+    const value = readString(item.value);
+    if (!value) {
+      continue;
+    }
+    const title = item.title != null ? readString(item.title) : undefined;
+    pushEntry(value, title);
+  }
+  return out;
 }
 
 export function projectedEmail(o: ProjectedObjectView): string | null {
