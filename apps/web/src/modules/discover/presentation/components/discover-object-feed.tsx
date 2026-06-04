@@ -76,7 +76,7 @@ export function DiscoverObjectFeed({
     return () => {
       ac.abort();
     };
-  }, [loadPage]);
+  }, [loadPage, objectType, q, tags, sort]);
 
   return (
     <section>

@@ -9,6 +9,11 @@ export interface MongoOid {
 
 export type MongoId = string | MongoOid;
 
+/** Mongo extended JSON date (`mongoexport` / mongoose). */
+export interface MongoDate {
+  $date: string | number;
+}
+
 export interface MongoActiveVote {
   voter?: string;
   weight?: number;
@@ -68,6 +73,6 @@ export interface MongoWObject {
   };
   metaGroupId?: string;
   _id?: MongoId;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
+  createdAt?: string | Date | MongoDate;
+  updatedAt?: string | Date | MongoDate;
 }

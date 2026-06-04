@@ -26,6 +26,8 @@ pnpm migrate:mongo-objects <path-to-wobjects.json> [--skip-indexes]
 
 `--skip-indexes` drops `object_updates` indexes and the search-vector trigger before bulk insert, then recreates them. Use for large files.
 
+Re-running the same export is safe: child rows still use `ON CONFLICT DO NOTHING`, but existing `objects_core` rows get `created_at` updated from Mongo `createdAt` when present (no truncate required for that column).
+
 ### Posts
 
 ```bash

@@ -92,6 +92,11 @@ export interface ObjectsCoreTable {
   status: ColumnType<ObjectStatus, ObjectStatus | undefined, ObjectStatus>;
   /** DEFAULT 0; optional on insert. */
   seq: ColumnType<number, number | undefined, number>;
+  /**
+   * Timestamp of object creation. DEFAULT NOW() on the DB level.
+   * On insert from blockchain: pass ctx.timestamp. On legacy insert: optional (defaults to NOW()).
+   */
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type ObjectsCore = Selectable<ObjectsCoreTable>;

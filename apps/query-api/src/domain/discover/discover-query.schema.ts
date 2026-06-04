@@ -47,6 +47,7 @@ export type DiscoverUsersQuery = z.infer<typeof discoverUsersQuerySchema>;
 
 export const discoverTagCategoriesQuerySchema = z.object({
   object_type: z.string().min(1),
+  q: z.string().max(100).optional(),
   tags: z
     .union([z.string(), z.array(z.string())])
     .optional()

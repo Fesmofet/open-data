@@ -38,6 +38,7 @@ export class ObjectCreateHandler implements OdlActionHandler {
       object_type,
       creator,
       transaction_id: ctx.transactionId,
+      created_at: new Date(ctx.timestamp),
     });
     this.eventEmitter.emit(
       USER_OBJECT_POWERS_CREATE_EVENT,

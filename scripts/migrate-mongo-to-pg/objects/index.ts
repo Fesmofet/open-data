@@ -7,6 +7,10 @@
  *                 objects_core, object_updates, validity_votes, rank_votes,
  *                 object_authority before bulk insert; recreate after.
  *                 Dramatically faster for large files.
+ *
+ * Re-runs: inserts use ON CONFLICT DO NOTHING for child tables; objects_core
+ * updates `created_at` when the export includes `createdAt` (COALESCE keeps
+ * existing value when the row omits `created_at`).
  */
 
 import * as fs from 'fs';
@@ -15,6 +19,7 @@ import { pipeline as streamPipeline } from 'node:stream/promises';
 import { Writable } from 'node:stream';
 
 import { resolveConnectionString } from '../../../libs/migrations/src/connection';
+import { dateFromMongoObjectIdHex } from '../mongo-object-id-date';
 
 import type {
   NewObjectAuthority,
@@ -36,7 +41,7 @@ import {
   resolveUpdateType,
 } from './field-name-map';
 import type { MongoRatingVote, MongoWObject, MongoWObjectField } from './types';
-import { createdAtUnixFromObjectId, mongoIdToString } from './utils';
+import { createdAtUnixFromObjectId, mongoIdToString, parseMongoCreatedAt } from './utils';
 import {
   buildLegacyGalleryAlbumIdToNameMap,
   migrateObjectRefBodyToText,
@@ -271,7 +276,11 @@ class MongoToPgMigrator {
     await this.db
       .insertInto('objects_core')
       .values(chunk)
-      .onConflict((oc) => oc.column('object_id').doNothing())
+      .onConflict((oc) =>
+        oc.column('object_id').doUpdateSet((eb) => ({
+          created_at: sql`CASE WHEN ${eb.ref('excluded.created_at')} IS NOT NULL THEN ${eb.ref('excluded.created_at')} ELSE ${eb.ref('objects_core.created_at')} END`,
+        })),
+      )
       .execute();
   }
 
@@ -449,6 +458,10 @@ class MongoToPgMigrator {
       weight: doc.weight ?? null,
       meta_group_id: doc.metaGroupId?.trim() ?? null,
       transaction_id: objectTxId,
+      created_at:
+        parseMongoCreatedAt(doc.createdAt) ??
+        dateFromMongoObjectIdHex(mongoIdToString(doc._id)) ??
+        undefined,
     });
 
     const fields = doc.fields ?? [];
@@ -819,6 +832,8 @@ async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void
     await dropObjectUpdatesIndexes(migrator.db);
   }
 
+  let importError: unknown = null;
+
   try {
     const sink = new Writable({
       objectMode: true,
@@ -849,11 +864,27 @@ async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void
     );
 
     await migrator.flushAll();
+  } catch (err) {
+    importError = err;
+    console.error('Object import failed:', err);
+    console.error('Partial stats:', migrator.stats);
   } finally {
     if (skipIndexes) {
-      await recreateObjectUpdatesIndexes(migrator.db);
+      try {
+        await recreateObjectUpdatesIndexes(migrator.db);
+      } catch (recreateErr) {
+        console.error('Index recreation failed:', recreateErr);
+        importError = importError ?? recreateErr;
+      }
     }
     await migrator.destroy();
+  }
+
+  if (importError instanceof Error) {
+    throw importError;
+  }
+  if (importError != null) {
+    fail(String(importError));
   }
 
   console.log('Migration finished. Stats:', migrator.stats);

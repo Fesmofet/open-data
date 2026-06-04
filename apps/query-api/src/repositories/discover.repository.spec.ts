@@ -46,4 +46,22 @@ describe('DiscoverRepository', () => {
     expect(redisGet).not.toHaveBeenCalled();
     expect(redisSet).not.toHaveBeenCalled();
   });
+
+  it('getTagCategories with q skips redis cache', async () => {
+    const redisGet = jest.fn();
+    const redisSet = jest.fn();
+    const redisFactory = {
+      getClient: () => ({ get: redisGet, set: redisSet }),
+    } as unknown as RedisClientFactory;
+
+    const execute = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createMockDb(execute);
+    const repo = new DiscoverRepository(db as never, redisFactory);
+
+    const rows = await repo.getTagCategories('product', [], 'burger');
+
+    expect(rows).toEqual([]);
+    expect(redisGet).not.toHaveBeenCalled();
+    expect(redisSet).not.toHaveBeenCalled();
+  });
 });

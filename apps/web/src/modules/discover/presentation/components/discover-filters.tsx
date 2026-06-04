@@ -113,6 +113,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
     void (async () => {
       const res = await fetchDiscoverTagCategories(objectType, {
         tags,
+        q: q.trim() || undefined,
         signal: ac.signal,
       });
       if (!ac.signal.aborted) {
@@ -126,7 +127,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
       }
     })();
     return () => ac.abort();
-  }, [objectType, tags, registryOrder]);
+  }, [objectType, tags, q, registryOrder]);
 
   useEffect(() => {
     if (tags.length === 0 || !data?.categories) {

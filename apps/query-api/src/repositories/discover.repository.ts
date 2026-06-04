@@ -27,8 +27,13 @@ const FTS_TEXT_UPDATE_TYPES = [
 
 export interface DiscoverObjectCandidateRow {
   object_id: string;
-  seq: number;
+  created_at: Date;
   weight: number | null;
+}
+
+function createdAtToIso(value: Date | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  return d.toISOString();
 }
 
 export interface DiscoverTagCategoryRow {
@@ -107,27 +112,34 @@ export class DiscoverRepository {
         )`,
       );
 
+      const cursorCreatedAt =
+        cursor && (params.sort === 'newest' || params.sort === 'oldest')
+          ? new Date(cursor.created_at)
+          : null;
+
       const cursorFilter =
         cursor && cursor.sort === params.sort
-          ? params.sort === 'newest'
-            ? sql`AND oc.seq < ${cursor.seq}`
-            : params.sort === 'oldest'
-              ? sql`AND oc.seq > ${cursor.seq}`
-              : sql`AND (
+          ? params.sort === 'newest' && cursorCreatedAt
+            ? sql`AND oc.created_at < ${cursorCreatedAt}`
+            : params.sort === 'oldest' && cursorCreatedAt
+              ? sql`AND oc.created_at > ${cursorCreatedAt}`
+              : params.sort === 'rank'
+                ? sql`AND (
                   COALESCE(oc.weight, -1) < COALESCE(${cursor.weight}, -1)
                   OR (
                     COALESCE(oc.weight, -1) = COALESCE(${cursor.weight}, -1)
                     AND oc.object_id < ${cursor.object_id}
                   )
                 )`
+                : sql``
           : sql``;
 
       const orderClause =
         params.sort === 'oldest'
-          ? sql`ORDER BY oc.seq ASC, oc.object_id ASC`
+          ? sql`ORDER BY oc.created_at ASC, oc.object_id ASC`
           : params.sort === 'rank'
             ? sql`ORDER BY oc.weight DESC NULLS LAST, oc.object_id ASC`
-            : sql`ORDER BY oc.seq DESC, oc.object_id ASC`;
+            : sql`ORDER BY oc.created_at DESC, oc.object_id ASC`;
 
       const ftsFilter =
         tsQuery != null
@@ -162,7 +174,7 @@ export class DiscoverRepository {
           : sql``;
 
       const result = await sql<DiscoverObjectCandidateRow>`
-        SELECT oc.object_id AS object_id, oc.seq AS seq, oc.weight AS weight
+        SELECT oc.object_id AS object_id, oc.created_at AS created_at, oc.weight AS weight
         FROM objects_core oc
         WHERE oc.status = 'active'
           ${objectTypeFilter}
@@ -187,7 +199,7 @@ export class DiscoverRepository {
   buildObjectCursor(row: DiscoverObjectCandidateRow, sort: DiscoverSort): string {
     return encodeDiscoverObjectCursor({
       sort,
-      seq: row.seq,
+      created_at: createdAtToIso(row.created_at),
       weight: row.weight,
       object_id: row.object_id,
     });
@@ -196,10 +208,16 @@ export class DiscoverRepository {
   async getTagCategories(
     objectType: string,
     activeTags: DiscoverTagFilter[] = [],
+    q?: string,
   ): Promise<DiscoverTagCategoryRow[]> {
     const trimmed = objectType.trim();
     if (!trimmed) {
       return [];
+    }
+
+    const qTrimmed = q?.trim() ?? '';
+    if (qTrimmed.length > 0) {
+      return this.getTagCategoriesWithTextQuery(trimmed, activeTags, qTrimmed);
     }
 
     const useCache = activeTags.length === 0;
@@ -286,6 +304,98 @@ export class DiscoverRepository {
     } catch (error) {
       this.logger.error(
         `getTagCategories failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return [];
+    }
+  }
+
+  private async getTagCategoriesWithTextQuery(
+    objectType: string,
+    activeTags: DiscoverTagFilter[],
+    qTrimmed: string,
+  ): Promise<DiscoverTagCategoryRow[]> {
+    const tsQueryCheck = buildAutocompleteTsQuery(qTrimmed);
+    if (tsQueryCheck === null && !shouldSearchObjectIdSubstring(qTrimmed)) {
+      return [];
+    }
+
+    const tsQuery = buildAutocompleteTsQuery(qTrimmed);
+    const includeIdSubstring = shouldSearchObjectIdSubstring(qTrimmed);
+    const idSubstringPattern = `%${escapeIlikePattern(qTrimmed)}%`;
+
+    const tagExistsFragments = activeTags.map(
+      ({ category, value }) => sql`EXISTS (
+        SELECT 1 FROM object_tag_category_items tci_tag
+        WHERE tci_tag.object_id = oc.object_id
+          AND tci_tag.category = ${category}
+          AND tci_tag.value = ${value}
+          AND tci_tag.object_type = ${objectType}
+      )`,
+    );
+
+    const ftsFilter =
+      tsQuery != null
+        ? sql`AND EXISTS (
+            SELECT 1 FROM object_updates ou_fts
+            WHERE ou_fts.object_id = oc.object_id
+              AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+              AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
+          )`
+        : sql``;
+
+    const textFilter =
+      includeIdSubstring && idSubstringPattern
+        ? sql`AND (
+            oc.object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
+            OR EXISTS (
+              SELECT 1 FROM object_updates ou_fts
+              WHERE ou_fts.object_id = oc.object_id
+                AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+                AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
+            )
+          )`
+        : ftsFilter;
+
+    const tagFilter =
+      tagExistsFragments.length > 0
+        ? sql`AND ${sql.join(tagExistsFragments, sql` AND `)}`
+        : sql``;
+
+    try {
+      const result = await sql<{
+        category: string;
+        tag_value: string;
+        object_count: number | string;
+      }>`
+        SELECT
+          tci.category AS category,
+          tci.value AS tag_value,
+          COUNT(*)::int AS object_count
+        FROM object_tag_category_items tci
+        WHERE tci.object_type = ${objectType}
+          AND tci.object_id IN (
+            SELECT oc.object_id
+            FROM objects_core oc
+            WHERE oc.status = 'active'
+              AND oc.object_type = ${objectType}
+              ${textFilter}
+              ${tagFilter}
+          )
+        GROUP BY 1, 2
+        ORDER BY 1 ASC, 3 DESC, 2 ASC
+      `.execute(this.db);
+
+      return result.rows.map((r) => ({
+        category: r.category,
+        tag_value: r.tag_value,
+        object_count:
+          typeof r.object_count === 'number'
+            ? r.object_count
+            : Math.trunc(Number(r.object_count)),
+      }));
+    } catch (error) {
+      this.logger.error(
+        `getTagCategoriesWithTextQuery failed: ${error instanceof Error ? error.message : String(error)}`,
       );
       return [];
     }

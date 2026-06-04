@@ -14,4 +14,14 @@ describe('buildDiscoverTagCategoriesSearchParams', () => {
     const sp = buildDiscoverTagCategoriesSearchParams('product', ['  ', '']);
     expect(sp.getAll('tags')).toEqual([]);
   });
+
+  it('includes q when non-empty', () => {
+    const sp = buildDiscoverTagCategoriesSearchParams('product', [], 'burger');
+    expect(sp.get('q')).toBe('burger');
+  });
+
+  it('omits blank q', () => {
+    const sp = buildDiscoverTagCategoriesSearchParams('product', [], '   ');
+    expect(sp.get('q')).toBeNull();
+  });
 });

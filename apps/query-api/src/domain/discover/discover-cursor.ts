@@ -2,7 +2,8 @@ import type { DiscoverSort } from './discover-query.schema';
 
 export type DiscoverObjectCursorPayload = {
   sort: DiscoverSort;
-  seq: number;
+  /** ISO-8601 timestamp for newest/oldest pagination. */
+  created_at: string;
   weight: number | null;
   object_id: string;
 };
@@ -23,7 +24,9 @@ export function decodeDiscoverObjectCursor(raw: string): DiscoverObjectCursorPay
       typeof parsed !== 'object' ||
       parsed === null ||
       typeof parsed.object_id !== 'string' ||
-      typeof parsed.seq !== 'number' ||
+      typeof parsed.created_at !== 'string' ||
+      parsed.created_at.length === 0 ||
+      Number.isNaN(Date.parse(parsed.created_at)) ||
       (parsed.sort !== 'newest' && parsed.sort !== 'oldest' && parsed.sort !== 'rank')
     ) {
       return null;

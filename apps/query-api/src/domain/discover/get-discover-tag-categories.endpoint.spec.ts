@@ -27,8 +27,22 @@ describe('GetDiscoverTagCategoriesEndpoint', () => {
       query: { object_type: 'restaurant', tags: ['Cuisine:Asian'] },
     });
 
-    expect(getTagCategories).toHaveBeenCalledWith('restaurant', [
-      { category: 'Cuisine', value: 'Asian' },
-    ]);
+    expect(getTagCategories).toHaveBeenCalledWith(
+      'restaurant',
+      [{ category: 'Cuisine', value: 'Asian' }],
+      undefined,
+    );
+  });
+
+  it('passes trimmed q to repository', async () => {
+    const getTagCategories = jest.fn().mockResolvedValue([]);
+    const discoverRepo = { getTagCategories } as unknown as DiscoverRepository;
+
+    const endpoint = new GetDiscoverTagCategoriesEndpoint(discoverRepo);
+    await endpoint.execute({
+      query: { object_type: 'product', tags: [], q: '  burger  ' },
+    });
+
+    expect(getTagCategories).toHaveBeenCalledWith('product', [], 'burger');
   });
 });

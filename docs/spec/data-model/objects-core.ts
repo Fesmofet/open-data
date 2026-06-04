@@ -19,4 +19,6 @@ export interface ObjectCoreRow {
   /** Hive account of the winning `description` update author (`en-US`); used with `site_registry` bulk updates. */
   canonical_creator: string | null;
   seq: number;
+  /** Object creation time (blockchain timestamp or legacy Mongo `createdAt`). */
+  created_at: Date;
 }

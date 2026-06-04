@@ -17,7 +17,8 @@ export class GetDiscoverTagCategoriesEndpoint {
   async execute(input: GetDiscoverTagCategoriesInput): Promise<DiscoverTagCategoriesResponseDto> {
     const objectType = input.query.object_type.trim();
     const activeTags = parseTagFilters(input.query.tags ?? []);
-    const rows = await this.discoverRepo.getTagCategories(objectType, activeTags);
+    const q = input.query.q?.trim() || undefined;
+    const rows = await this.discoverRepo.getTagCategories(objectType, activeTags, q);
     const order = getTagCategoryOrderForObjectType(objectType);
     return groupDiscoverTagCategories(rows, order);
   }

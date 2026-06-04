@@ -33,9 +33,7 @@ export async function fetchDiscoverObjects(
       sp.append('tags', t);
     }
   }
-  if (params.sort) {
-    sp.set('sort', params.sort);
-  }
+  sp.set('sort', params.sort ?? 'newest');
   if (params.cursor?.trim()) {
     sp.set('cursor', params.cursor.trim());
   }
@@ -103,8 +101,13 @@ export async function fetchDiscoverUsers(
 export function buildDiscoverTagCategoriesSearchParams(
   objectType: string,
   tags: readonly string[] = [],
+  q?: string,
 ): URLSearchParams {
   const sp = new URLSearchParams({ object_type: objectType.trim() });
+  const qTrimmed = q?.trim();
+  if (qTrimmed) {
+    sp.set('q', qTrimmed);
+  }
   for (const tag of tags) {
     const trimmed = tag.trim();
     if (trimmed) {
@@ -116,11 +119,12 @@ export function buildDiscoverTagCategoriesSearchParams(
 
 export async function fetchDiscoverTagCategories(
   objectType: string,
-  init?: { tags?: readonly string[]; signal?: AbortSignal },
+  init?: { tags?: readonly string[]; q?: string; signal?: AbortSignal },
 ): Promise<DiscoverTagCategoriesResponse | null> {
   const sp = buildDiscoverTagCategoriesSearchParams(
     objectType,
     init?.tags ?? [],
+    init?.q,
   );
   try {
     const res = await fetch(`/api/discover/tag-categories?${sp.toString()}`, {

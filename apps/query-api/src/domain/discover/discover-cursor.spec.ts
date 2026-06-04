@@ -7,14 +7,14 @@ describe('discover object cursor', () => {
   it('round-trips encode/decode', () => {
     const encoded = encodeDiscoverObjectCursor({
       sort: 'newest',
-      seq: 42,
+      created_at: '2019-04-11T13:33:22.034Z',
       weight: 1.5,
       object_id: 'obj-1',
     });
     const decoded = decodeDiscoverObjectCursor(encoded);
     expect(decoded).toEqual({
       sort: 'newest',
-      seq: 42,
+      created_at: '2019-04-11T13:33:22.034Z',
       weight: 1.5,
       object_id: 'obj-1',
     });
@@ -22,5 +22,13 @@ describe('discover object cursor', () => {
 
   it('returns null for invalid cursor', () => {
     expect(decodeDiscoverObjectCursor('not-valid')).toBeNull();
+  });
+
+  it('returns null when created_at is missing', () => {
+    const legacy = Buffer.from(
+      JSON.stringify({ sort: 'newest', seq: 42, weight: null, object_id: 'x' }),
+      'utf8',
+    ).toString('base64url');
+    expect(decodeDiscoverObjectCursor(legacy)).toBeNull();
   });
 });

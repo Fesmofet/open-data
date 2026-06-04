@@ -1,25 +1,26 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
+
 import { useLoginModal } from '@/modules/auth';
 
-import type { DiscoverPageState } from '../../domain/discover-url';
+import { parseDiscoverPageState } from '../../domain/discover-url';
 import { objectTypeHasTagCategoryFilters } from '../../domain/discover-registry';
 import { DiscoverFeed } from './discover-feed';
 import { DiscoverFilters } from './discover-filters';
 import { DiscoverSidebar } from './discover-sidebar';
 
-export type DiscoverPageClientProps = DiscoverPageState & {
+export type DiscoverPageClientProps = {
   viewerUsername?: string | null;
 };
 
-export function DiscoverPageClient({
-  usersMode,
-  objectType,
-  q,
-  tags,
-  sort,
-  viewerUsername = null,
-}: DiscoverPageClientProps) {
+export function DiscoverPageClient({ viewerUsername = null }: DiscoverPageClientProps) {
+  const searchParams = useSearchParams();
+  const { usersMode, objectType, q, tags, sort } = useMemo(
+    () => parseDiscoverPageState(searchParams),
+    [searchParams],
+  );
   const { openLogin } = useLoginModal();
 
   const showFilters =

@@ -14,6 +14,7 @@ import * as m00013 from './00013_discover_indexes';
 import * as m00014 from './00014_object_tag_categories';
 import * as m00015 from './00015_object_tag_category_items_object_type';
 import * as m00016 from './00016_waiv_power_history';
+import * as m00017 from './00017_objects_core_created_at';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -37,4 +38,5 @@ export const MIGRATIONS: Record<string, Migration> = {
     down: m00015.down,
   },
   '00016_waiv_power_history': { up: m00016.up, down: m00016.down },
+  '00017_objects_core_created_at': { up: m00017.up, down: m00017.down },
 };
