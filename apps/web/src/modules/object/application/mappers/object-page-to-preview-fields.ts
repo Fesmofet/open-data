@@ -138,6 +138,27 @@ function appendLeftRailBlock(
     case 'rating':
     case 'link':
     case 'walletAddress':
+    case 'image':
+    case 'imageBackground':
+    case 'button':
+    case 'brand':
+    case 'manufacturer':
+    case 'merchant':
+    case 'author':
+    case 'publisher':
+    case 'status':
+    case 'compareAtPrice':
+    case 'saleEvent':
+    case 'size':
+    case 'featureList':
+    case 'category':
+    case 'calories':
+    case 'cookTime':
+    case 'ingredients':
+    case 'nutrition':
+    case 'datePublished':
+    case 'inLanguage':
+    case 'typicalAgeRange':
       break;
     default: {
       const _exhaustive: never = block;

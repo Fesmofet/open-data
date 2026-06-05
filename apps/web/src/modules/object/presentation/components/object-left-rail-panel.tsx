@@ -775,9 +775,9 @@ export function ObjectLeftRailPanel({
                 />
                 <ul className="list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
-                    <li key={`${row.lineText}-${rowIndex}`} className="flex gap-2">
+                    <li key={`${row.lineText}-${rowIndex}`} className="flex items-center gap-2">
                       <div
-                        className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
+                        className="flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
                         aria-hidden
                       >
                         <img
