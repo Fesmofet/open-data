@@ -37,6 +37,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       };
     case 'description':
       return { kind: 'description', headingLabel, text: '' };
+    case 'button':
+      return { kind: 'button', headingLabel, items: [] };
     case 'rating':
       return { kind: 'rating', headingLabel, aspects: [] };
     case 'tags':

@@ -2720,5 +2720,7 @@
   "your_vote": "Ваш голос",
   "your_vote_placeholder": "Ваш голос (необов'язково)",
   "zoom": "Збільшити",
-  "СЃommunity_actions": "Дії спільноти"
+  "СЃommunity_actions": "Дії спільноти",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

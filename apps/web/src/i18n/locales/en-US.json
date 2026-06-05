@@ -3059,5 +3059,7 @@
   "object_right_similar": "Similar",
   "object_right_add_on": "Add-On",
   "object_right_show_more": "Show more",
-  "object_ref_list_empty": "No objects to show."
+  "object_ref_list_empty": "No objects to show.",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

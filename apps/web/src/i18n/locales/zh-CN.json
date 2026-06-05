@@ -2701,5 +2701,7 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

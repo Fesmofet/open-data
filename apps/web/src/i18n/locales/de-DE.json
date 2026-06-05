@@ -2720,5 +2720,7 @@
   "your_reward_new": "deine Belohnung",
   "your_vote": "Ihr Vote",
   "your_vote_placeholder": "Ihr Vote (optional)",
-  "zoom": "Zoom"
+  "zoom": "Zoom",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

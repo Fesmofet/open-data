@@ -2720,5 +2720,7 @@
   "your_vote": "Votre vote",
   "your_vote_placeholder": "Votre vote (facultatif)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Actions communautaires"
+  "СЃommunity_actions": "Actions communautaires",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

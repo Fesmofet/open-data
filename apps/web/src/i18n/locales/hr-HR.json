@@ -1982,5 +1982,7 @@
   "your_reward": "Vaša nagrada",
   "your_vote": "Vaš glas",
   "your_vote_placeholder": "Vaš glas (neobavezno)",
-  "СЃommunity_actions": "Akcije zajednice"
+  "СЃommunity_actions": "Akcije zajednice",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

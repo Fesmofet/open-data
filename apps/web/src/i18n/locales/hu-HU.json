@@ -1983,5 +1983,7 @@
   "your_reward": "Jutalmad",
   "your_vote": "A szavazatod",
   "your_vote_placeholder": "Az Ön szavazata (nem kötelező)",
-  "СЃommunity_actions": "Közösségi fellépések"
+  "СЃommunity_actions": "Közösségi fellépések",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

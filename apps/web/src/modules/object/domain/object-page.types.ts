@@ -106,6 +106,11 @@ export type ObjectLeftRailBlock =
       text: string;
     }
   | {
+      kind: 'button';
+      headingLabel: string;
+      items: { title: string; href: string }[];
+    }
+  | {
       kind: 'rating';
       headingLabel: string;
       aspects: {
@@ -156,8 +161,7 @@ export type ObjectLeftRailBlock =
   | {
       kind: 'link';
       headingLabel: string;
-      /** Icon + visible platform label (inactive; URLs not shown until actions land). */
-      items: { iconSrc: string; label: string }[];
+      items: { iconSrc: string; label: string; href: string }[];
     }
   | {
       kind: 'phones';

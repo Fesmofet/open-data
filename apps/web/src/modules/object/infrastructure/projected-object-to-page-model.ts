@@ -26,6 +26,7 @@ import type { ProjectedObjectWithCountsView } from './object-resolve.types';
 import {
   applySortCustomToListItems,
   projectedAddressDisplayLine,
+  projectedButtonItems,
   projectedEmail,
   projectedGalleryAlbums,
   projectedPreviewGallery,
@@ -180,6 +181,15 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
       kind: MENU_BLOCK_ID,
       headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.menuItems,
       items: menuOrdered,
+    });
+  }
+
+  const buttonItems = projectedButtonItems(viewLike);
+  if (buttonItems.length > 0) {
+    blocks.push({
+      kind: 'button',
+      headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.button,
+      items: buttonItems,
     });
   }
 

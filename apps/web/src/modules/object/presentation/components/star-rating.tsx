@@ -296,54 +296,56 @@ export function StarRating({
 
   return (
     <div className="min-w-0">
-      <div
-        className={`inline-flex items-center gap-1 ${interactive ? '' : 'pointer-events-none'}`}
-        role="img"
-        aria-label={ariaLabel}
-        onMouseLeave={() => setHoverSlot(null)}
-      >
-        {Array.from({ length: 5 }, (_, starIndex) => {
-          const leftSlot = starIndex * 2;
-          const rightSlot = leftSlot + 1;
-          const clipId = `${baseId}-s${starIndex}`;
+      <div className="flex items-center gap-2">
+        <div
+          className={`inline-flex items-center gap-1 ${interactive ? '' : 'pointer-events-none'}`}
+          role="img"
+          aria-label={ariaLabel}
+          onMouseLeave={() => setHoverSlot(null)}
+        >
+          {Array.from({ length: 5 }, (_, starIndex) => {
+            const leftSlot = starIndex * 2;
+            const rightSlot = leftSlot + 1;
+            const clipId = `${baseId}-s${starIndex}`;
 
-          return (
-            <StarUnit
-              key={starIndex}
-              sizePx={sizePx}
-              clipId={clipId}
-              interactive={interactive}
-              leftSlot={leftSlot}
-              rightSlot={rightSlot}
-              ariaLabel={ariaLabel}
-              leftFill={halfFillForSlot(
-                leftSlot,
-                avgSlots,
-                userSlots,
-                hoverSlot,
-                interactive,
-              )}
-              rightFill={halfFillForSlot(
-                rightSlot,
-                avgSlots,
-                userSlots,
-                hoverSlot,
-                interactive,
-              )}
-              onHoverSlot={(slot) => setHoverSlot(slot >= 0 ? slot : null)}
-              onVote={(slot) => void onVote(slot)}
-            />
-          );
-        })}
-      </div>
-      {showNumeric ? (
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-caption text-muted">
-          {displayStars != null ? (
-            <span className="tabular-nums text-fg-secondary">{displayStars.toFixed(1)}</span>
-          ) : null}
-          <span className="tabular-nums">({totalVoters})</span>
+            return (
+              <StarUnit
+                key={starIndex}
+                sizePx={sizePx}
+                clipId={clipId}
+                interactive={interactive}
+                leftSlot={leftSlot}
+                rightSlot={rightSlot}
+                ariaLabel={ariaLabel}
+                leftFill={halfFillForSlot(
+                  leftSlot,
+                  avgSlots,
+                  userSlots,
+                  hoverSlot,
+                  interactive,
+                )}
+                rightFill={halfFillForSlot(
+                  rightSlot,
+                  avgSlots,
+                  userSlots,
+                  hoverSlot,
+                  interactive,
+                )}
+                onHoverSlot={(slot) => setHoverSlot(slot >= 0 ? slot : null)}
+                onVote={(slot) => void onVote(slot)}
+              />
+            );
+          })}
         </div>
-      ) : null}
+        {showNumeric ? (
+          <div className="flex items-center gap-1.5 text-caption text-muted">
+            {displayStars != null ? (
+              <span className="tabular-nums text-fg-secondary">{displayStars.toFixed(1)}</span>
+            ) : null}
+            <span className="tabular-nums">({totalVoters})</span>
+          </div>
+        ) : null}
+      </div>
       {error ? (
         <p className="mt-1 text-caption text-accent" role="alert">
           {error}

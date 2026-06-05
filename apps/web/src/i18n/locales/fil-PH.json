@@ -1982,5 +1982,7 @@
   "your_reward": "Ang Iyong Gantimpala",
   "your_vote": "Ang iyong boto",
   "your_vote_placeholder": "Ang iyong boto (opsyonal)",
-  "СЃommunity_actions": "Mga aksyon sa pamayanan"
+  "СЃommunity_actions": "Mga aksyon sa pamayanan",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

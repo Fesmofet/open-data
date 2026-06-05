@@ -2720,5 +2720,7 @@
   "your_vote": "Váš hlas",
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
-  "СЃommunity_actions": "Akce komunity"
+  "СЃommunity_actions": "Akce komunity",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

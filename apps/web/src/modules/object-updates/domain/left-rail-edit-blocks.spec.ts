@@ -8,11 +8,13 @@ describe('mergeLeftRailBlocksForEditMode', () => {
   const supported = [
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
+    UPDATE_TYPES.MENU_ITEM,
     UPDATE_TYPES.DESCRIPTION,
+    UPDATE_TYPES.BUTTON,
     UPDATE_TYPES.WEBSITE,
   ];
 
-  it('places name and title before description and includes empty website slot', () => {
+  it('places button after menu and includes empty website slot', () => {
     const viewBlocks: ObjectLeftRailBlock[] = [
       {
         kind: 'description',
@@ -25,8 +27,16 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     const kinds = merged.map((b) => b.kind);
 
     expect(kinds.indexOf('name')).toBeLessThan(kinds.indexOf('title'));
-    expect(kinds.indexOf('title')).toBeLessThan(kinds.indexOf('description'));
+    expect(kinds.indexOf('title')).toBeLessThan(kinds.indexOf('menuItems'));
+    expect(kinds.indexOf('menuItems')).toBeLessThan(kinds.indexOf('button'));
+    expect(kinds.indexOf('button')).toBeLessThan(kinds.indexOf('description'));
     expect(kinds).toContain('websites');
+
+    const button = merged.find((b) => b.kind === 'button');
+    expect(button?.kind).toBe('button');
+    if (button?.kind === 'button') {
+      expect(button.items).toEqual([]);
+    }
 
     const website = merged.find((b) => b.kind === 'websites');
     expect(website?.kind).toBe('websites');

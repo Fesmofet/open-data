@@ -37,10 +37,16 @@ export type AboutSectionBlockId = (typeof ABOUT_SECTION_BLOCK_ORDER)[number];
  */
 export const MENU_BLOCK_ID = 'menuItems' as const;
 
+/** Legacy menu cluster: CTA buttons immediately after menu rows (not in about stack). */
+export const MENU_CLUSTER_BLOCK_ORDER = ['button'] as const;
+
+export type MenuClusterBlockId = (typeof MENU_CLUSTER_BLOCK_ORDER)[number];
+
 /** Full left-rail order in edit mode (empty slots included when supported). */
 export const EDIT_MODE_LEFT_RAIL_BLOCK_ORDER = [
   ...HEADER_BLOCK_ORDER,
   MENU_BLOCK_ID,
+  ...MENU_CLUSTER_BLOCK_ORDER,
   ...ABOUT_SECTION_BLOCK_ORDER,
 ] as const;
 

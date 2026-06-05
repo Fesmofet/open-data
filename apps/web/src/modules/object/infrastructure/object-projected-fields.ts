@@ -754,6 +754,29 @@ export function projectedWebsiteEntries(
   return out;
 }
 
+export type ProjectedButtonItem = {
+  title: string;
+  href: string;
+};
+
+/** CTA buttons from projected `button` (multi JSON `{ title, link }`). */
+export function projectedButtonItems(o: ProjectedObjectView): ProjectedButtonItem[] {
+  const raw = o.fields.button;
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  const out: ProjectedButtonItem[] = [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const title = readString(row.title);
+    const link = readString(row.link);
+    if (title && link) {
+      out.push({ title, href: link });
+    }
+  }
+  return out;
+}
+
 export type ProjectedTelephoneEntry = {
   value: string;
   title?: string;
@@ -936,15 +959,53 @@ export function linkKindDisplayLabel(kind: ProjectedObjectLinkKind | string): st
   }
 }
 
+/** External profile URL for a social link (mirrors legacy `socialTransformers`). */
+export function buildLinkHref(kind: ProjectedObjectLinkKind | string, value: string): string {
+  const v = encodeURIComponent(value);
+  switch (kind) {
+    case 'facebook':
+      return `https://www.facebook.com/${v}`;
+    case 'twitter':
+      return `https://x.com/${v}`;
+    case 'youtube':
+      return `https://www.youtube.com/@${v}`;
+    case 'tiktok':
+      return `https://www.tiktok.com/@${v}`;
+    case 'reddit':
+      return `https://www.reddit.com/user/${v}`;
+    case 'linkedin':
+      return `https://www.linkedin.com/in/${v}`;
+    case 'telegram':
+      return `https://t.me/${v}`;
+    case 'whatsapp':
+      return `https://wa.me/${v}`;
+    case 'pinterest':
+      return `https://www.pinterest.com/${v}`;
+    case 'twitch':
+      return `https://www.twitch.tv/${v}`;
+    case 'snapchat':
+      return `https://www.snapchat.com/add/${v}`;
+    case 'instagram':
+      return `https://instagram.com/${v}`;
+    case 'github':
+      return `https://github.com/${v}`;
+    case 'hive':
+      return `https://peakd.com/@${v}`;
+    default:
+      return `https://${v}`;
+  }
+}
+
 export type ProjectedObjectLinkRow = {
   iconSrc: string;
   label: string;
+  href: string;
 };
 
 /**
  * Rows from projected `fields.link` (multi JSON `LINK` update).
  * @see libs/core/src/update-registry/updates/link.ts
- * Preserves API order; shows icon + channel label only (URLs deferred until actions exist).
+ * Preserves API order; each row is an external clickable link.
  */
 export function projectedObjectLinkRows(o: ProjectedObjectView): ProjectedObjectLinkRow[] {
   const raw = o.fields.link;
@@ -966,12 +1027,14 @@ export function projectedObjectLinkRows(o: ProjectedObjectView): ProjectedObject
       rows.push({
         iconSrc: '/images/icons/link-icon.svg',
         label: linkKindDisplayLabel(typeNorm),
+        href: buildLinkHref(typeNorm, valueRaw),
       });
       continue;
     }
     rows.push({
       iconSrc: linkKindPublicIconSrc(typeNorm),
       label: linkKindDisplayLabel(typeNorm),
+      href: buildLinkHref(typeNorm, valueRaw),
     });
   }
   return rows;

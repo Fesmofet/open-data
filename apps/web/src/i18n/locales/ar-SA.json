@@ -1981,5 +1981,7 @@
   "your_reward": "مكافأتك",
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
-  "СЃommunity_actions": "إجراءات المجتمع"
+  "СЃommunity_actions": "إجراءات المجتمع",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

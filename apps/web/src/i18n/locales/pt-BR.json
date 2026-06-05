@@ -1981,5 +1981,7 @@
   "your_reward": "Your Reward",
   "your_vote": "Seu voto",
   "your_vote_placeholder": "Seu voto (opcional)",
-  "СЃommunity_actions": "Ações comunitárias"
+  "СЃommunity_actions": "Ações comunitárias",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

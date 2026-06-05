@@ -106,10 +106,10 @@
   }
 
   .hero-on-photo-chip {
-    color: color-mix(in srgb, var(--color-accent-fg) 90%, transparent);
-    text-shadow: 0 1px 2px color-mix(in srgb, var(--color-overlay) 80%, transparent);
+    color: var(--color-nav-fg);
     border-radius: var(--radius-btn);
     background-color: var(--color-ghost-surface);
+    backdrop-filter: blur(4px);
   }
 
   .hero-on-photo-avatar {
@@ -117,16 +117,16 @@
   }
 
   .hero-on-photo-btn {
-    @apply rounded-btn border border-ghost-border bg-ghost-surface text-accent-fg;
-    text-shadow: 0 1px 2px color-mix(in srgb, var(--color-overlay) 75%, transparent);
+    @apply rounded-btn border border-ghost-border bg-ghost-surface text-nav-fg backdrop-blur-sm;
   }
 
   .hero-on-photo-btn:hover {
-    background-color: color-mix(in srgb, var(--color-ghost-surface) 85%, var(--color-accent-fg));
+    @apply border-accent text-accent;
+    background-color: color-mix(in srgb, var(--color-ghost-surface) 85%, var(--color-nav-fg));
   }
 
   .hero-on-photo-btn-destructive:hover {
-    @apply border-error text-accent-fg;
+    @apply border-error text-error;
     background-color: color-mix(in srgb, var(--color-error) 25%, transparent);
   }
 

@@ -2720,5 +2720,7 @@
   "your_vote": "あなたの投票",
   "your_vote_placeholder": "あなたの投票（オプション）",
   "zoom": "ズーム",
-  "СЃommunity_actions": "コミュニティのアクション"
+  "СЃommunity_actions": "コミュニティのアクション",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

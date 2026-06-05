@@ -1982,5 +1982,7 @@
   "your_reward": "Sinu preemia",
   "your_vote": "Teie hääl",
   "your_vote_placeholder": "Teie hääl (valikuline)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

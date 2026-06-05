@@ -15,6 +15,7 @@ import {
   projectedTelephoneEntries,
   projectedWalletAddressRows,
   projectedObjectLinkRows,
+  projectedButtonItems,
   projectedParentRow,
   linkKindPublicIconSrc,
   linkKindDisplayLabel,
@@ -442,6 +443,27 @@ describe('object-projected-fields', () => {
     expect(walletSymbolIconSrc('WAIV')).toContain('waiv.png');
   });
 
+  it('maps button rows to CTA title and href', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        button: [
+          { title: 'Book now', link: 'https://example.com/book' },
+          { title: 'Menu', link: 'https://example.com/menu' },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedButtonItems(v)).toEqual([
+      { title: 'Book now', href: 'https://example.com/book' },
+      { title: 'Menu', href: 'https://example.com/menu' },
+    ]);
+  });
+
   it('maps link rows to Waivio-style icons and labels', () => {
     const v: ProjectedObjectView = {
       object_id: 'x',
@@ -459,9 +481,9 @@ describe('object-projected-fields', () => {
       hasOwnershipAuthority: false,
     };
     expect(projectedObjectLinkRows(v)).toEqual([
-      { iconSrc: '/images/icons/twitter-x.svg', label: 'X' },
-      { iconSrc: '/images/icons/social/youtube.svg', label: 'YouTube' },
-      { iconSrc: '/images/icons/cryptocurrencies/hive.png', label: 'Hive' },
+      { iconSrc: '/images/icons/twitter-x.svg', label: 'X', href: 'https://x.com/x' },
+      { iconSrc: '/images/icons/social/youtube.svg', label: 'YouTube', href: 'https://www.youtube.com/@ch' },
+      { iconSrc: '/images/icons/cryptocurrencies/hive.png', label: 'Hive', href: 'https://peakd.com/@acc' },
     ]);
     expect(linkKindDisplayLabel('linkedin')).toBe('LinkedIn');
     expect(linkKindPublicIconSrc('linkedin')).toContain('social/linkedin.svg');

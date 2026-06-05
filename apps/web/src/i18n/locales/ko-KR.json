@@ -1982,5 +1982,7 @@
   "your_reward": "귀하의 보상",
   "your_vote": "귀하의 투표는",
   "your_vote_placeholder": "투표 (선택 사항)",
-  "СЃommunity_actions": "커뮤니티 활동"
+  "СЃommunity_actions": "커뮤니티 활동",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

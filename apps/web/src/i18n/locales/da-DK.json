@@ -1982,5 +1982,7 @@
   "your_reward": "Din belønning",
   "your_vote": "Din stemme",
   "your_vote_placeholder": "Din stemme (valgfri)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

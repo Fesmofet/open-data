@@ -19,6 +19,7 @@ import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { ObjectLeftRailBlock, ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 
+import { ExternalLinkButton } from './external-link-modal';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
@@ -148,45 +149,46 @@ function LeftRailAddUpdateButton({
   );
 }
 
-function LeftRailBlockHeading({
-  label,
+const LEFT_RAIL_SECTION_CLASS =
+  'flex min-w-0 flex-col gap-2 py-card-padding first:pt-0 text-body-sm text-muted';
+
+function LeftRailEditToolbar({
   onAdd,
   addLabel,
+  label,
   count,
 }: {
-  label: string;
   onAdd?: () => void;
   addLabel: string;
+  label?: string;
   /** Existing update rows for this block (edit mode only). */
   count?: number;
 }) {
   if (!onAdd) {
-    return <p className="font-weight-label text-fg">{label}</p>;
+    return null;
   }
   return (
-    <div className="flex items-start justify-between gap-2">
+    <div className="flex items-start gap-2">
+      <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} />
       <div className="min-w-0 flex-1">
-        <p className="font-weight-label text-fg">{label}</p>
+        {label ? <p className="font-weight-label text-fg">{label}</p> : null}
         {count != null ? (
           <div className="mt-1">
             <LeftRailUpdateCountBadge count={count} />
           </div>
         ) : null}
       </div>
-      <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} />
     </div>
   );
 }
 
 function LeftRailIdentifierSection({
-  cardClass,
   headingLabel,
   rows,
   onAdd,
   addLabel,
   count,
 }: {
-  cardClass: string;
   headingLabel: string;
   rows: { type: string; value: string }[];
   onAdd?: () => void;
@@ -195,36 +197,45 @@ function LeftRailIdentifierSection({
 }) {
   const [open, setOpen] = useState(false);
   const contentId = useId();
+  const hasRows = rows.length > 0;
 
   return (
-    <aside className={cardClass}>
-      <div className="flex w-full min-w-0 items-start justify-between gap-2">
-        <div className="min-w-0 flex-1 space-y-1">
-          <button
-            type="button"
-            className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-body-sm font-weight-label text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-btn"
-            aria-expanded={open}
-            aria-controls={contentId}
-            onClick={() => setOpen((v) => !v)}
-          >
-            <span className="min-w-0 truncate">{headingLabel}</span>
-            <ChevronAccordion expanded={open} />
-          </button>
-          {onAdd && count != null ? <LeftRailUpdateCountBadge count={count} /> : null}
+    <div className={LEFT_RAIL_SECTION_CLASS}>
+      {hasRows || onAdd ? (
+        <div className="flex w-full min-w-0 items-start gap-2">
+          {onAdd ? <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} /> : null}
+          <div className="min-w-0 flex-1 space-y-1">
+            {hasRows ? (
+              <button
+                type="button"
+                className="flex w-full min-w-0 items-center justify-between gap-2 rounded-btn text-left text-body-sm font-weight-label text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                aria-expanded={open}
+                aria-controls={contentId}
+                onClick={() => setOpen((v) => !v)}
+              >
+                <span className="min-w-0 truncate text-fg">{headingLabel}</span>
+                <ChevronAccordion expanded={open} />
+              </button>
+            ) : (
+              <p className="font-weight-label text-fg">{headingLabel}</p>
+            )}
+            {onAdd && count != null ? <LeftRailUpdateCountBadge count={count} /> : null}
+          </div>
         </div>
-        {onAdd ? <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} /> : null}
-      </div>
-      {open ? (
-        <div id={contentId} className="mt-3 space-y-4">
+      ) : null}
+      {open && hasRows ? (
+        <div id={contentId} className="space-y-4">
           {rows.map((row, i) => (
             <div key={`${row.type}-${row.value}-${i}`}>
-              <p className="text-body-sm font-weight-label uppercase tracking-loose text-fg">{row.type}</p>
+              <p className="text-body-sm font-weight-label uppercase tracking-loose text-fg">
+                {row.type}
+              </p>
               <p className="mt-1 tabular-nums text-body-sm leading-body text-fg">{row.value}</p>
             </div>
           ))}
         </div>
       ) : null}
-    </aside>
+    </div>
   );
 }
 
@@ -293,7 +304,7 @@ export function ObjectLeftRailPanel({
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-card-padding">
+    <div className="flex min-w-0 flex-col divide-y divide-border">
       {editContext && addModal ? (
         <AddUpdateModal
           open
@@ -309,63 +320,56 @@ export function ObjectLeftRailPanel({
         />
       ) : null}
       {displayBlocks.map((block, index) => {
-        const cardClass =
-          'rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted';
-
         switch (block.kind) {
           case 'menuItems':
             return (
-              <aside key={`menu-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`menu-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('menuItems')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('menuItems')}
                 />
-                <div className="mt-3">
-                  <ObjectMenuItemsStatic
-                    items={block.items}
-                    hostObjectId={objectId}
-                    defaultNestedTargetId={defaultNestedTargetId}
-                  />
-                </div>
-              </aside>
+                <ObjectMenuItemsStatic
+                  items={block.items}
+                  hostObjectId={objectId}
+                  defaultNestedTargetId={defaultNestedTargetId}
+                />
+              </div>
             );
           case 'name':
             return (
-              <aside key={`name-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`name-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('name')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('name')}
                 />
                 {block.text.trim() ? (
-                  <p className="mt-2 font-weight-label text-fg">{block.text}</p>
+                  <p className="font-weight-label text-fg">{block.text}</p>
                 ) : null}
-              </aside>
+              </div>
             );
           case 'title':
             return (
-              <aside key={`title-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`title-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('title')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('title')}
                 />
-                {block.text.trim() ? (
-                  <p className="mt-2 text-fg">{block.text}</p>
-                ) : null}
-              </aside>
+                {block.text.trim() ? <p className="text-fg">{block.text}</p> : null}
+              </div>
             );
           case 'parent':
             return (
-              <aside key={`parent-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`parent-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('parent')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('parent')}
                 />
                 {block.objectId.trim() ? (
@@ -373,7 +377,7 @@ export function ObjectLeftRailPanel({
                     href={`/object/${encodeURIComponent(block.objectId)}`}
                     prefetch={false}
                     suppressHydrationWarning
-                    className="mt-3 -mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    className="-mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
                     <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
                       {block.imageUrl ? (
@@ -397,56 +401,79 @@ export function ObjectLeftRailPanel({
                     <span className="min-w-0 break-words text-accent">{block.name}</span>
                   </Link>
                 ) : null}
-              </aside>
+              </div>
             );
           case 'description': {
             const intro = truncateIntroForPreview(block.text);
+            // Show button when: text is truncated (>250 chars), OR short text but has gallery photos,
+            // OR no text but description page exists (gallery only).
+            // Matches legacy: show when description > 300 chars OR (description ≤ 300 AND galleryItem.length > 1).
+            const showDescriptionBtn =
+              intro.isTruncated || (canOpenDescriptionPage && !intro.display) || (intro.display && canOpenDescriptionPage && galleryPhotosAlbum != null && (galleryPhotosAlbum.items.length > 1));
             return (
-              <aside key={`desc-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`desc-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('description')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('description')}
                 />
                 {intro.display ? (
                   <p
-                    className="mt-2 leading-editorial text-fg"
+                    className="leading-editorial text-fg"
                     title={intro.isTruncated ? block.text.trim() : undefined}
                   >
                     {intro.display}
                   </p>
                 ) : null}
-                {intro.display ? (
+                {showDescriptionBtn ? (
                   <Link
                     href={`/object/${encodeURIComponent(objectId)}/description`}
-                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    suppressHydrationWarning
-                  >
-                    {t('object_detail_description_button')}
-                  </Link>
-                ) : canOpenDescriptionPage ? (
-                  <Link
-                    href={`/object/${encodeURIComponent(objectId)}/description`}
-                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    className="inline-block rounded-btn border border-border px-3 py-2 text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     suppressHydrationWarning
                   >
                     {t('object_detail_description_button')}
                   </Link>
                 ) : null}
-              </aside>
+              </div>
+            );
+          }
+          case 'button': {
+            return (
+              <div key={`btn-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  onAdd={makeOnAdd('button')}
+                  addLabel={addLabel}
+                  label={block.headingLabel}
+                  count={railBlockCount('button')}
+                />
+                {block.items.length > 0 ? (
+                  <ul className="list-none space-y-2 p-0">
+                    {block.items.map((item, itemIndex) => (
+                      <li key={`${item.title}-${itemIndex}`}>
+                        <ExternalLinkButton
+                          href={item.href}
+                          className="block w-full rounded-btn bg-accent px-4 py-2 text-center text-body-sm font-weight-label text-accent-fg transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        >
+                          {item.title}
+                        </ExternalLinkButton>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             );
           }
           case 'rating': {
             return (
-              <aside key={`rating-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`rating-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('rating')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('rating')}
                 />
-                <ul className="mt-3 list-none space-y-4 p-0">
+                <ul className="list-none space-y-2 p-0">
                   {block.aspects.map((aspect, aspectIndex) => (
                     <li key={`${aspect.update_id}-${aspectIndex}`} className="min-w-0">
                       <p
@@ -455,7 +482,7 @@ export function ObjectLeftRailPanel({
                       >
                         {aspect.dimension}
                       </p>
-                      <div className="mt-1.5">
+                      <div className="mt-1">
                         <StarRating
                           averageRating01To5={aspect.averageRating01To5}
                           userRating01To5={aspect.viewerRating01To5}
@@ -465,24 +492,25 @@ export function ObjectLeftRailPanel({
                           objectId={objectId}
                           viewerUsername={viewerUsername}
                           onRequireLogin={onRequireLogin}
+                          size="md"
                         />
                       </div>
                     </li>
                   ))}
                 </ul>
-              </aside>
+              </div>
             );
           }
           case 'tags':
             return (
-              <aside key={`tags-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`tags-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('tags')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('tags')}
                 />
-                <div className="mt-3 space-y-4">
+                <div className="space-y-4">
                   {block.sections.map((section) => (
                     <div key={section.categoryTitle}>
                       <p className="text-fg text-body-sm font-weight-body">
@@ -510,15 +538,15 @@ export function ObjectLeftRailPanel({
                     </div>
                   ))}
                 </div>
-              </aside>
+              </div>
             );
           case 'gallery':
             return (
-              <aside key={`gallery-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`gallery-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('gallery')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('gallery')}
                 />
                 <ObjectGalleryCarousel
@@ -539,52 +567,52 @@ export function ObjectLeftRailPanel({
                       : undefined
                   }
                 />
-              </aside>
+              </div>
             );
           case 'price':
             return (
-              <aside key={`price-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`price-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('price')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('price')}
                 />
-                <div className="mt-2 flex items-center gap-1">
+                <div className="flex items-center gap-1">
                   <span className="text-muted" aria-hidden>
                     $
                   </span>
                   <span className="font-weight-strong tabular-nums text-fg">{block.text}</span>
                 </div>
-              </aside>
+              </div>
             );
           case 'workHours':
             return (
-              <aside key={`hours-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`hours-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('workHours')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('workHours')}
                 />
-                <ul className="mt-2 space-y-1">
+                <ul className="space-y-1">
                   {block.lines.map((line, lineIndex) => (
                     <li key={`${index}-${lineIndex}`}>{line}</li>
                   ))}
                 </ul>
-              </aside>
+              </div>
             );
           case 'address':
             return (
-              <aside key={`addr-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`addr-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('address')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('address')}
                 />
-                <p className="mt-2 whitespace-pre-line leading-editorial">{block.text}</p>
-              </aside>
+                <p className="whitespace-pre-line leading-editorial">{block.text}</p>
+              </div>
             );
           case 'geo': {
             const hasCoords =
@@ -592,87 +620,96 @@ export function ObjectLeftRailPanel({
               block.longitude != null &&
               Number.isFinite(block.latitude) &&
               Number.isFinite(block.longitude);
+            const geoLabel = objectName.trim() || block.headingLabel;
             return (
-              <aside key={`geo-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`geo-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('geo')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('geo')}
                 />
                 {hasCoords ? (
-                  <div className="mt-3 overflow-hidden rounded-btn">
+                  <div className="overflow-hidden rounded-btn">
                     <ObjectGeoPreview
                       latitude={block.latitude!}
                       longitude={block.longitude!}
-                      label={block.headingLabel}
+                      label={geoLabel}
                     />
                   </div>
                 ) : null}
-              </aside>
+              </div>
             );
           }
           case 'websites':
             return (
-              <aside key={`web-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`web-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('websites')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('websites')}
                 />
-                <ul className="mt-2 space-y-2">
+                <ul className="space-y-2">
                   {block.entries.map((entry) => (
-                    <li key={`${entry.link}-${entry.title}`} className="flex items-start gap-2">
-                      <img
-                        src="/images/icons/link-icon.svg"
-                        alt=""
-                        width={16}
-                        height={16}
-                        className="mt-0.5 shrink-0 opacity-80"
-                      />
-                      <span className="break-all text-fg">{entry.title}</span>
+                    <li key={`${entry.link}-${entry.title}`}>
+                      <ExternalLinkButton
+                        href={entry.link}
+                        className="flex w-full items-start gap-2 rounded-btn text-left transition-opacity hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        <img
+                          src="/images/icons/link-icon.svg"
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="mt-0.5 shrink-0 opacity-80"
+                        />
+                        <span className="break-all text-accent">{entry.title}</span>
+                      </ExternalLinkButton>
                     </li>
                   ))}
                 </ul>
-              </aside>
+              </div>
             );
           case 'phones':
             return (
-              <aside key={`phones-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`phones-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('phones')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('phones')}
                 />
-                <div className="mt-2">
-                  <LeftRailTelephonesContent entries={block.entries} />
-                </div>
-              </aside>
+                <LeftRailTelephonesContent entries={block.entries} />
+              </div>
             );
           case 'email':
             return (
-              <aside key={`email-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`email-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('email')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('email')}
                 />
-                <p className="mt-2 break-all">{block.address}</p>
-              </aside>
+                <a
+                  href={`mailto:${block.address}`}
+                  className="block break-all text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                >
+                  {block.address}
+                </a>
+              </div>
             );
           case 'walletAddress':
             return (
-              <aside key={`wallet-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`wallet-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('walletAddress')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('walletAddress')}
                 />
-                <ul className="mt-3 list-none space-y-2 p-0">
+                <ul className="list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
                     <li key={`${row.lineText}-${rowIndex}`} className="flex gap-2">
                       <div
@@ -693,13 +730,12 @@ export function ObjectLeftRailPanel({
                     </li>
                   ))}
                 </ul>
-              </aside>
+              </div>
             );
           case 'identifier':
             return (
               <LeftRailIdentifierSection
                 key={`identifier-${index}`}
-                cardClass={cardClass}
                 headingLabel={block.headingLabel}
                 rows={block.rows}
                 onAdd={makeOnAdd('identifier')}
@@ -709,33 +745,38 @@ export function ObjectLeftRailPanel({
             );
           case 'link':
             return (
-              <aside key={`link-${index}`} className={cardClass}>
-                <LeftRailBlockHeading
-                  label={block.headingLabel}
+              <div key={`link-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
                   onAdd={makeOnAdd('link')}
                   addLabel={addLabel}
+                  label={block.headingLabel}
                   count={railBlockCount('link')}
                 />
-                <ul className="mt-3 list-none space-y-2 p-0">
+                <ul className="list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
-                    <li key={`${row.label}-${rowIndex}`} className="flex items-center gap-2">
-                      <div
-                        className="flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
-                        aria-hidden
+                    <li key={`${row.label}-${rowIndex}`}>
+                      <ExternalLinkButton
+                        href={row.href}
+                        className="flex w-full items-center gap-2 rounded-btn text-left transition-opacity hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                       >
-                        <img
-                          src={row.iconSrc}
-                          alt=""
-                          width={22}
-                          height={22}
-                          className="size-[22px] object-contain"
-                        />
-                      </div>
-                      <span className="text-accent">{row.label}</span>
+                        <div
+                          className="flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
+                          aria-hidden
+                        >
+                          <img
+                            src={row.iconSrc}
+                            alt=""
+                            width={22}
+                            height={22}
+                            className="size-[22px] object-contain"
+                          />
+                        </div>
+                        <span className="text-accent">{row.label}</span>
+                      </ExternalLinkButton>
                     </li>
                   ))}
                 </ul>
-              </aside>
+              </div>
             );
           default: {
             const _never: never = block;

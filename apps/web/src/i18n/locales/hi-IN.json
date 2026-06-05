@@ -2720,5 +2720,7 @@
   "your_vote": "आपका वोट",
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
-  "СЃommunity_actions": "समुदाय क्रियाएँ"
+  "СЃommunity_actions": "समुदाय क्रियाएँ",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

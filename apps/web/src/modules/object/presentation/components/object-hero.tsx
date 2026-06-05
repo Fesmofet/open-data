@@ -125,15 +125,15 @@ export function ObjectHero({
             />
 
             <div className="min-w-0 flex-1 pb-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1
-                  className={[
-                    'truncate text-section font-weight-strong font-display',
-                    hasCoverPhoto ? 'hero-on-photo-title' : '',
-                  ].join(' ')}
-                >
-                  {title}
-                </h1>
+              <h1
+                className={[
+                  'truncate text-section font-weight-strong font-display',
+                  hasCoverPhoto ? 'hero-on-photo-title' : '',
+                ].join(' ')}
+              >
+                {title}
+              </h1>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span
                   className={[
                     'rounded-btn px-2 py-0.5 text-caption font-weight-label',
@@ -165,16 +165,6 @@ export function ObjectHero({
                   ].join(' ')}
                 >
                   {subtitleTitle}
-                </p>
-              ) : null}
-              {tagline ? (
-                <p
-                  className={[
-                    'mt-2 line-clamp-2 text-body-sm',
-                    hasCoverPhoto ? 'hero-on-photo-muted' : 'opacity-90',
-                  ].join(' ')}
-                >
-                  {tagline}
                 </p>
               ) : null}
             </div>
@@ -209,7 +199,7 @@ export function ObjectHero({
                     'rounded-btn p-2',
                     hasCoverPhoto
                       ? 'hero-on-photo-btn'
-                      : 'border border-border bg-bg text-fg hover:bg-muted',
+                      : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
                   ].join(' ')}
                   aria-pressed={isBell}
                   title={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
@@ -225,7 +215,7 @@ export function ObjectHero({
                   'rounded-btn px-4 py-2 text-body-sm font-weight-label',
                   hasCoverPhoto
                     ? 'hero-on-photo-btn'
-                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:bg-ghost-surface',
+                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
                 ].join(' ')}
               >
                 {isEditMode ? t('object_detail_view') : t('object_detail_edit')}
@@ -237,7 +227,7 @@ export function ObjectHero({
                   'rounded-btn p-2',
                   hasCoverPhoto
                     ? 'hero-on-photo-btn'
-                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:bg-ghost-surface',
+                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
                 ].join(' ')}
                 aria-pressed={isFavorite}
                 title={

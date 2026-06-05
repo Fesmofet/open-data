@@ -2829,5 +2829,7 @@
   "your_vote": "Ваш голос ",
   "your_vote_placeholder": "Ваш голос (необязательно)",
   "zoom": "Увеличить",
-  "СЃommunity_actions": "Действия сообщества"
+  "СЃommunity_actions": "Действия сообщества",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }

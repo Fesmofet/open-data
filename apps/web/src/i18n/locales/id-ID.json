@@ -2720,5 +2720,7 @@
   "your_vote": "Suara Anda",
   "your_vote_placeholder": "Suara Anda (opsional)",
   "zoom": "Perbesar",
-  "СЃommunity_actions": "Tindakan Komunitas"
+  "СЃommunity_actions": "Tindakan Komunitas",
+  "external_link_modal_body": "You're about to leave this platform. Do you want to proceed to the external site?",
+  "external_link_modal_title": "External link"
 }
