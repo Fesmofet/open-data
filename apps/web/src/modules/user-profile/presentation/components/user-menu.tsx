@@ -3,6 +3,10 @@
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import {
+  profileSectionTabClass,
+  profileSectionVerticalLinkClass,
+} from '@/shared/presentation';
 import { getVisibleMenuKeys, useShellMode } from '@/shell-mode';
 
 import { getSegmentsAfterAccount } from './profile-path';
@@ -68,36 +72,16 @@ function isActive(
 
 function navLinkClass(active: boolean, vertical: boolean) {
   if (vertical) {
-    return [
-      'flex w-full items-center rounded-btn px-3 py-2.5 text-body-sm font-weight-label transition-colors',
-      active
-        ? 'bg-surface text-fg'
-        : 'text-muted hover:bg-surface/80 hover:text-fg',
-    ].join(' ');
+    return profileSectionVerticalLinkClass(active, false);
   }
-  return [
-    'inline-flex items-center rounded-btn px-3 py-2 text-body-sm font-weight-label transition-colors',
-    active
-      ? 'bg-surface text-fg'
-      : 'text-muted hover:bg-surface/80 hover:text-fg',
-  ].join(' ');
+  return profileSectionTabClass(active, 'primary');
 }
 
 function subNavLinkClass(active: boolean, vertical: boolean) {
   if (vertical) {
-    return [
-      'flex w-full items-center rounded-btn px-3 py-2 text-caption font-weight-label transition-colors pl-5',
-      active
-        ? 'bg-tertiary text-tertiary-fg'
-        : 'text-muted hover:bg-surface/80 hover:text-fg',
-    ].join(' ');
+    return profileSectionVerticalLinkClass(active, true);
   }
-  return [
-    'inline-flex items-center rounded-btn px-2.5 py-1.5 text-caption font-weight-label transition-colors',
-    active
-      ? 'bg-tertiary text-tertiary-fg'
-      : 'text-muted hover:bg-surface/80 hover:text-fg',
-  ].join(' ');
+  return profileSectionTabClass(active, 'sub');
 }
 
 function SocialSubmenuLinkLabel({
@@ -277,7 +261,10 @@ export function UserMenu({
   return (
     <div className="border-t border-border pt-3">
       <div className="mx-auto w-fit">
-        <nav className="flex flex-wrap gap-1" aria-label={t('user_profile_nav_aria')}>
+        <nav
+          className="flex flex-wrap gap-x-1 gap-y-1 border-b border-border"
+          aria-label={t('user_profile_nav_aria')}
+        >
           {primaryItems.map((item) => (
             <Link
               key={item.key}
@@ -296,7 +283,10 @@ export function UserMenu({
         </nav>
 
         {submenuVariant === 'feed' && visibleMenuKeys == null ? (
-          <nav className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2" aria-label={t('user_profile_submenu_feed_aria')}>
+          <nav
+            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
+            aria-label={t('user_profile_submenu_feed_aria')}
+          >
             <Link href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), false)} prefetch={false}>{t('posts')}</Link>
             <Link href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), false)} prefetch={false}>{t('threads')}</Link>
             <Link href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), false)} prefetch={false}>{t('comments')}</Link>
@@ -306,7 +296,10 @@ export function UserMenu({
         ) : null}
 
         {submenuVariant === 'wallet' ? (
-          <nav className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2" aria-label={t('user_profile_submenu_wallet_aria')}>
+          <nav
+            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
+            aria-label={t('user_profile_submenu_wallet_aria')}
+          >
             {WALLET_TYPES.map((type) => {
               const href = type === 'rebalancing' ? `${base}/transfers?type=rebalancing` : `${base}/transfers?type=${type}`;
               return (
@@ -319,7 +312,10 @@ export function UserMenu({
         ) : null}
 
         {submenuVariant === 'followers' ? (
-          <nav className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2" aria-label={t('user_profile_submenu_followers_aria')}>
+          <nav
+            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
+            aria-label={t('user_profile_submenu_followers_aria')}
+          >
             <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)} prefetch={false}>
               <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
             </Link>
@@ -333,7 +329,10 @@ export function UserMenu({
         ) : null}
 
         {submenuVariant === 'expertise' ? (
-          <nav className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2" aria-label={t('user_profile_submenu_expertise_aria')}>
+          <nav
+            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
+            aria-label={t('user_profile_submenu_expertise_aria')}
+          >
             <Link href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)} prefetch={false}>{t('hashtags')}</Link>
             <Link href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)} prefetch={false}>{t('objects')}</Link>
           </nav>

@@ -17,26 +17,26 @@ export function UserMenuSkeleton() {
     <div className="border-t border-border pt-3">
       <div className="mx-auto w-fit">
         <nav
-          className="flex flex-wrap gap-1"
+          className="flex flex-wrap gap-x-1 gap-y-1 border-b border-border"
           aria-label={t('user_profile_nav_aria')}
           aria-busy="true"
         >
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className="inline-flex h-9 min-w-[4.5rem] animate-pulse rounded-btn bg-surface px-3 py-2"
+              className="inline-flex h-10 min-w-[4.5rem] animate-pulse border-b-2 border-transparent px-3 py-2.5"
             />
           ))}
         </nav>
         {showSubRow ? (
           <nav
-            className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2"
+            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
             aria-hidden="true"
           >
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="inline-flex h-7 min-w-[3.5rem] animate-pulse rounded-btn bg-surface/90 px-2.5 py-1.5"
+                className="inline-flex h-8 min-w-[3.5rem] animate-pulse border-b-2 border-transparent px-2 py-2"
               />
             ))}
           </nav>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { profileSectionTabClass } from '@/shared/presentation';
 
 import type { ObjectPrimaryTabView } from '../../domain/object-page.types';
 
@@ -31,12 +32,7 @@ export function ObjectPrimaryNav({
           <button
             key={tab.segment}
             type="button"
-            className={[
-              '-mb-px inline-flex items-center border-b-2 px-3 py-2.5 text-body-sm font-weight-label transition-colors',
-              active
-                ? 'border-accent text-fg'
-                : 'border-transparent text-muted hover:border-border hover:text-fg',
-            ].join(' ')}
+            className={profileSectionTabClass(active, 'primary')}
             onClick={() => onSelect(tab.segment)}
           >
             {label}

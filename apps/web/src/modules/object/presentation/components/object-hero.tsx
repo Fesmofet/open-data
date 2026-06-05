@@ -258,8 +258,17 @@ export function ObjectHero({
         </div>
       </div>
 
-      <div className="border-t border-border bg-bg px-gutter pb-3 pt-0 sm:px-gutter-sm">
-        {primaryNav}
+      <div className="border-t border-border bg-bg pb-3 pt-0">
+        <div
+          className={[
+            'shell-profile-grid shell-object-page-grid grid grid-cols-1 gap-card-padding',
+            'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
+          ].join(' ')}
+        >
+          <div className="shell-hide-instagram hidden lg:block" aria-hidden />
+          <div className="min-w-0">{primaryNav}</div>
+          <div className="shell-hide-instagram hidden lg:block" aria-hidden />
+        </div>
       </div>
     </header>
   );

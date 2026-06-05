@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { profileSectionTabClass } from '@/shared/presentation';
 
 import type { AuthoritySubType } from '../../domain/object-page.types';
 
@@ -44,12 +45,7 @@ export function ObjectAuthoritySubNav({
           <button
             key={sub}
             type="button"
-            className={[
-              '-mb-px inline-flex border-b-2 px-2 py-2 text-caption font-weight-label transition-colors',
-              active
-                ? 'border-accent text-fg'
-                : 'border-transparent text-muted hover:text-fg',
-            ].join(' ')}
+            className={profileSectionTabClass(active, 'sub')}
             onClick={() => onSelect(sub)}
           >
             {mkLabel(sub, count)}

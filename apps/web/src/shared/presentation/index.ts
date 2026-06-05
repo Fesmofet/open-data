@@ -19,6 +19,11 @@ export type { IpfsImageDropZoneProps } from './components/ipfs-image-drop-zone';
 export { HydrationSafeAnchor } from './components/hydration-safe-anchor';
 export { NavMenu } from './components/nav-menu';
 export type { NavMenuItem, NavMenuProps } from './components/nav-menu';
+export {
+  profileSectionTabClass,
+  profileSectionVerticalLinkClass,
+} from './components/profile-section-tab-classes';
+export type { ProfileSectionTabSize } from './components/profile-section-tab-classes';
 export { PlaceholderSlot } from './components/placeholder-slot';
 export { ShellModeSwitcher } from './components/shell-mode-switcher';
 export { ThemeSwitcher } from './components/theme-switcher';
