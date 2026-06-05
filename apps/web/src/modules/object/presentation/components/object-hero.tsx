@@ -1,12 +1,20 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 import Image from 'next/image';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 import { shouldHideHero, useShellMode } from '@/shell-mode';
+
+export type ObjectHeroEditContext = {
+  objectId: string;
+  viewerUsername: string;
+  supportedUpdateTypes: readonly string[];
+};
 
 export type ObjectHeroProps = {
   title: string;
@@ -25,6 +33,7 @@ export type ObjectHeroProps = {
   onBellToggle: () => void;
   onFavoriteToggle: () => void;
   primaryNav: ReactNode;
+  editContext?: ObjectHeroEditContext;
 };
 
 function IconBell({ filled }: { filled: boolean }) {
@@ -62,6 +71,8 @@ function IconHeartFavorite({ filled }: { filled: boolean }) {
   );
 }
 
+type HeroModalTarget = 'avatar-background' | 'name' | 'title';
+
 export function ObjectHero({
   title,
   subtitleTitle,
@@ -79,15 +90,37 @@ export function ObjectHero({
   onBellToggle,
   onFavoriteToggle,
   primaryNav,
+  editContext,
 }: ObjectHeroProps) {
   const { t } = useI18n();
   const { resolvedMode } = useShellMode();
+  const [modalTarget, setModalTarget] = useState<HeroModalTarget | null>(null);
 
   if (shouldHideHero(resolvedMode)) {
     return null;
   }
 
   const hasCoverPhoto = Boolean(coverImageUrl?.trim());
+
+  const canEditAvatar =
+    isEditMode && editContext?.supportedUpdateTypes.includes('image');
+  const canEditBackground =
+    isEditMode && editContext?.supportedUpdateTypes.includes('imageBackground');
+  const canEditName =
+    isEditMode && editContext?.supportedUpdateTypes.includes('name');
+  const canEditTitle =
+    isEditMode && editContext?.supportedUpdateTypes.includes('title');
+
+  function modalCandidates(target: HeroModalTarget): string[] {
+    if (target === 'avatar-background') {
+      return ['image', 'imageBackground'].filter((type) =>
+        editContext?.supportedUpdateTypes.includes(type),
+      );
+    }
+    if (target === 'name') return ['name'];
+    if (target === 'title') return ['title'];
+    return [];
+  }
 
   return (
     <header className="overflow-hidden rounded-card border border-border bg-bg shadow-card">
@@ -107,6 +140,22 @@ export function ObjectHero({
             <div className="absolute inset-0 bg-nav-bg/65" aria-hidden />
           </>
         ) : null}
+        {canEditBackground ? (
+          <button
+            type="button"
+            onClick={() => setModalTarget('avatar-background')}
+            className={[
+              'absolute right-3 top-3 z-20 flex items-center gap-1 rounded-btn px-3 py-1.5 text-caption font-weight-label transition-colors',
+              hasCoverPhoto
+                ? 'border border-white/30 bg-black/30 text-white/90 backdrop-blur-sm hover:border-white/60 hover:bg-black/50 hover:text-white'
+                : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
+            ].join(' ')}
+            aria-label={t('object_detail_edit_background')}
+          >
+            <span className="text-base leading-none">+</span>
+            {t('object_detail_edit_background')}
+          </button>
+        ) : null}
 
         <div
           className={[
@@ -115,24 +164,66 @@ export function ObjectHero({
           ].join(' ')}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <UserAvatar
-              username=""
-              avatarUrl={avatarUrl}
-              displayName={title}
-              size={96}
-              isSquare
-              className={hasCoverPhoto ? 'hero-on-photo-avatar' : undefined}
-            />
+            <div className="relative shrink-0 self-start sm:self-end">
+              <UserAvatar
+                username=""
+                avatarUrl={avatarUrl}
+                displayName={title}
+                size={96}
+                isSquare
+                className={hasCoverPhoto ? 'hero-on-photo-avatar' : undefined}
+              />
+              {(canEditAvatar || canEditBackground) ? (
+                <button
+                  type="button"
+                  onClick={() => setModalTarget('avatar-background')}
+                  className="absolute inset-0 flex items-center justify-center rounded-card bg-black/30 opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+                  aria-label={t('object_detail_edit_avatar_background')}
+                >
+                  <span className="text-2xl font-light text-white/90">+</span>
+                </button>
+              ) : null}
+            </div>
 
             <div className="min-w-0 flex-1 pb-1">
-              <h1
-                className={[
-                  'truncate text-section font-weight-strong font-display',
-                  hasCoverPhoto ? 'hero-on-photo-title' : '',
-                ].join(' ')}
-              >
-                {title}
-              </h1>
+              {canEditName ? (
+                <button
+                  type="button"
+                  onClick={() => setModalTarget('name')}
+                  className={[
+                    'group/name relative -mx-1 -my-0.5 block w-full rounded-md px-1 py-0.5 text-left transition-colors',
+                    hasCoverPhoto ? 'hover:bg-white/10' : 'hover:bg-black/5',
+                  ].join(' ')}
+                  aria-label={t('object_detail_edit_name')}
+                >
+                  <h1
+                    className={[
+                      'break-words text-section font-weight-strong font-display',
+                      hasCoverPhoto ? 'hero-on-photo-title' : '',
+                    ].join(' ')}
+                  >
+                    {title}
+                  </h1>
+                  <span
+                    className={[
+                      'absolute right-1.5 top-1/2 -translate-y-1/2 text-xl font-light opacity-0 transition-opacity group-hover/name:opacity-100',
+                      hasCoverPhoto ? 'text-white/80' : 'text-accent',
+                    ].join(' ')}
+                    aria-hidden
+                  >
+                    +
+                  </span>
+                </button>
+              ) : (
+                <h1
+                  className={[
+                    'break-words text-section font-weight-strong font-display',
+                    hasCoverPhoto ? 'hero-on-photo-title' : '',
+                  ].join(' ')}
+                >
+                  {title}
+                </h1>
+              )}
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span
                   className={[
@@ -157,15 +248,56 @@ export function ObjectHero({
                   </span>
                 ) : null}
               </div>
-              {subtitleTitle ? (
-                <p
-                  className={[
-                    'mt-1 line-clamp-2 text-body-sm font-weight-body',
-                    hasCoverPhoto ? 'hero-on-photo-muted' : 'opacity-90',
-                  ].join(' ')}
-                >
-                  {subtitleTitle}
-                </p>
+              {subtitleTitle != null || canEditTitle ? (
+                canEditTitle ? (
+                  <button
+                    type="button"
+                    onClick={() => setModalTarget('title')}
+                    className={[
+                      'group/title relative -mx-1 mt-1 block w-full rounded-md px-1 py-0.5 text-left transition-colors',
+                      hasCoverPhoto ? 'hover:bg-white/10' : 'hover:bg-black/5',
+                    ].join(' ')}
+                    aria-label={t('object_detail_edit_title')}
+                  >
+                    {subtitleTitle ? (
+                      <p
+                        className={[
+                          'line-clamp-2 text-body-sm font-weight-body',
+                          hasCoverPhoto ? 'hero-on-photo-muted' : 'opacity-90',
+                        ].join(' ')}
+                      >
+                        {subtitleTitle}
+                      </p>
+                    ) : (
+                      <span
+                        className={[
+                          'text-body-sm',
+                          hasCoverPhoto ? 'text-white/40' : 'text-muted/50',
+                        ].join(' ')}
+                      >
+                        {t('object_detail_add_title_placeholder')}
+                      </span>
+                    )}
+                    <span
+                      className={[
+                        'absolute right-1.5 top-1/2 -translate-y-1/2 text-xl font-light opacity-0 transition-opacity group-hover/title:opacity-100',
+                        hasCoverPhoto ? 'text-white/80' : 'text-accent',
+                      ].join(' ')}
+                      aria-hidden
+                    >
+                      +
+                    </span>
+                  </button>
+                ) : subtitleTitle ? (
+                  <p
+                    className={[
+                      'mt-1 line-clamp-2 text-body-sm font-weight-body',
+                      hasCoverPhoto ? 'hero-on-photo-muted' : 'opacity-90',
+                    ].join(' ')}
+                  >
+                    {subtitleTitle}
+                  </p>
+                ) : null
               ) : null}
             </div>
 
@@ -260,6 +392,17 @@ export function ObjectHero({
           <div className="shell-hide-instagram hidden lg:block" aria-hidden />
         </div>
       </div>
+
+      {editContext && modalTarget ? (
+        <AddUpdateModal
+          open
+          mode="leftRail"
+          onClose={() => setModalTarget(null)}
+          objectId={editContext.objectId}
+          viewerUsername={editContext.viewerUsername}
+          candidateUpdateTypes={modalCandidates(modalTarget)}
+        />
+      ) : null}
     </header>
   );
 }

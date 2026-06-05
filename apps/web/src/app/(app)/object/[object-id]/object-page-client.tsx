@@ -704,6 +704,15 @@ export function ObjectPageClient({
           onBellToggle={onBellToggle}
           onFavoriteToggle={onFavoriteToggle}
           primaryNav={primaryNav}
+          editContext={
+            isEditMode && viewerUsername
+              ? {
+                  objectId: model.objectId,
+                  viewerUsername,
+                  supportedUpdateTypes,
+                }
+              : undefined
+          }
         />
       }
       leftRail={leftRail}
