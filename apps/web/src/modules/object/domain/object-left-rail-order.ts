@@ -13,6 +13,8 @@ export type HeaderBlockId = (typeof HEADER_BLOCK_ORDER)[number];
 
 /** Main about stack for non-special object types (subset implemented in ODL UI). */
 export const ABOUT_SECTION_BLOCK_ORDER = [
+  'image',
+  'imageBackground',
   'parent',
   'description',
   'rating',

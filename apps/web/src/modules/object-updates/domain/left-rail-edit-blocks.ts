@@ -27,6 +27,10 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'title', headingLabel, text: '' };
     case 'menuItems':
       return { kind: 'menuItems', headingLabel, items: [] };
+    case 'image':
+      return { kind: 'image', headingLabel, url: null };
+    case 'imageBackground':
+      return { kind: 'imageBackground', headingLabel, url: null };
     case 'parent':
       return {
         kind: 'parent',

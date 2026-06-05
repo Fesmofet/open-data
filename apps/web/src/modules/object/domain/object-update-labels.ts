@@ -10,6 +10,8 @@
 const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
   name: 'Name',
   title: 'Title',
+  image: 'Avatar',
+  imageBackground: 'Background',
   description: 'Description',
   button: 'Buttons',
   aggregateRating: 'Ratings',
@@ -35,6 +37,8 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
 export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   name: 'Name',
   title: 'Title',
+  image: 'Avatar',
+  imageBackground: 'Background',
   menuItems: 'Menu',
   description: 'Description',
   button: 'Buttons',

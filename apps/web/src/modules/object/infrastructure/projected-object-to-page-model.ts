@@ -219,6 +219,10 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
 
   for (const step of ABOUT_SECTION_BLOCK_ORDER) {
     switch (step) {
+      case 'image':
+      case 'imageBackground':
+        // Shown only in edit mode via mergeLeftRailBlocksForEditMode — skip in view mode.
+        break;
       case 'parent': {
         const row = projectedParentRow(viewLike);
         if (row) {

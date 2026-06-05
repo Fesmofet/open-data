@@ -363,6 +363,28 @@ export function ObjectLeftRailPanel({
                 {block.text.trim() ? <p className="text-fg">{block.text}</p> : null}
               </div>
             );
+          case 'image':
+            return (
+              <div key={`image-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  onAdd={makeOnAdd('image')}
+                  addLabel={addLabel}
+                  label={block.headingLabel}
+                  count={railBlockCount('image')}
+                />
+              </div>
+            );
+          case 'imageBackground':
+            return (
+              <div key={`imageBackground-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  onAdd={makeOnAdd('imageBackground')}
+                  addLabel={addLabel}
+                  label={block.headingLabel}
+                  count={railBlockCount('imageBackground')}
+                />
+              </div>
+            );
           case 'parent':
             return (
               <div key={`parent-${index}`} className={LEFT_RAIL_SECTION_CLASS}>

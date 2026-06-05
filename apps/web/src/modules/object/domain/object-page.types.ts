@@ -183,6 +183,18 @@ export type ObjectLeftRailBlock =
       headingLabel: string;
       /** From projected `identifier` update (`type` + `value`). */
       rows: { type: string; value: string }[];
+    }
+  | {
+      kind: 'image';
+      headingLabel: string;
+      /** Current avatar URL, or null when not set. */
+      url: string | null;
+    }
+  | {
+      kind: 'imageBackground';
+      headingLabel: string;
+      /** Current background/cover URL, or null when not set. */
+      url: string | null;
     };
 
 export type ObjectPageSeoView = {

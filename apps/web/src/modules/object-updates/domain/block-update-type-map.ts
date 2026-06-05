@@ -11,6 +11,8 @@ export type ObjectLeftRailBlockKind = ObjectLeftRailBlock['kind'];
 export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonly string[]> = {
   name: [UPDATE_TYPES.NAME],
   title: [UPDATE_TYPES.TITLE],
+  image: [UPDATE_TYPES.IMAGE],
+  imageBackground: [UPDATE_TYPES.IMAGE_BACKGROUND],
   menuItems: [UPDATE_TYPES.MENU_ITEM],
   parent: [UPDATE_TYPES.PARENT],
   description: [UPDATE_TYPES.DESCRIPTION],
