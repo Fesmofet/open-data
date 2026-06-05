@@ -76,6 +76,13 @@ export type ProjectedGalleryAlbumView = {
   items: ProjectedGalleryPhotoView[];
 };
 
+/** Object reference card used in brand/manufacturer/merchant/author/publisher blocks. */
+export type ObjectRefItem = {
+  objectId: string;
+  name: string;
+  imageUrl: string | null;
+};
+
 /** Ordered blocks for the left rail (legacy `ObjectInfo` stack). */
 export type ObjectLeftRailBlock =
   | {
@@ -195,7 +202,45 @@ export type ObjectLeftRailBlock =
       headingLabel: string;
       /** Current background/cover URL, or null when not set. */
       url: string | null;
-    };
+    }
+  | { kind: 'status'; headingLabel: string }
+  | { kind: 'compareAtPrice'; headingLabel: string }
+  | { kind: 'saleEvent'; headingLabel: string }
+  | { kind: 'size'; headingLabel: string }
+  | {
+      kind: 'brand';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
+  | {
+      kind: 'manufacturer';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
+  | {
+      kind: 'merchant';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
+  | { kind: 'featureList'; headingLabel: string }
+  | { kind: 'category'; headingLabel: string }
+  | { kind: 'calories'; headingLabel: string }
+  | { kind: 'cookTime'; headingLabel: string }
+  | { kind: 'ingredients'; headingLabel: string }
+  | { kind: 'nutrition'; headingLabel: string }
+  | {
+      kind: 'author';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
+  | {
+      kind: 'publisher';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
+  | { kind: 'datePublished'; headingLabel: string }
+  | { kind: 'inLanguage'; headingLabel: string }
+  | { kind: 'typicalAgeRange'; headingLabel: string };
 
 export type ObjectPageSeoView = {
   title: string | null;

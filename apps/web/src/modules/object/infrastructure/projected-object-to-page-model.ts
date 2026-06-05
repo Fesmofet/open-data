@@ -38,6 +38,7 @@ import {
   projectedMenuItems,
   projectedObjectLinkRows,
   projectedDescriptionContent,
+  projectedObjectRefItems,
   projectedPageContent,
   projectedParentRow,
   resolveMenuItemsForView,
@@ -221,8 +222,56 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
     switch (step) {
       case 'image':
       case 'imageBackground':
-        // Shown only in edit mode via mergeLeftRailBlocksForEditMode — skip in view mode.
+      case 'status':
+      case 'compareAtPrice':
+      case 'saleEvent':
+      case 'size':
+      case 'featureList':
+      case 'category':
+      case 'calories':
+      case 'cookTime':
+      case 'ingredients':
+      case 'nutrition':
+      case 'datePublished':
+      case 'inLanguage':
+      case 'typicalAgeRange':
+        // Edit-mode only — shown via mergeLeftRailBlocksForEditMode, skip in view mode.
         break;
+      case 'brand': {
+        const items = projectedObjectRefItems(viewLike, 'brand');
+        if (items.length > 0) {
+          blocks.push({ kind: 'brand', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.brand, items });
+        }
+        break;
+      }
+      case 'manufacturer': {
+        const items = projectedObjectRefItems(viewLike, 'manufacturer');
+        if (items.length > 0) {
+          blocks.push({ kind: 'manufacturer', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.manufacturer, items });
+        }
+        break;
+      }
+      case 'merchant': {
+        const items = projectedObjectRefItems(viewLike, 'merchant');
+        if (items.length > 0) {
+          blocks.push({ kind: 'merchant', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.merchant, items });
+        }
+        break;
+      }
+      case 'author': {
+        const items = projectedObjectRefItems(viewLike, 'author');
+        if (items.length > 0) {
+          blocks.push({ kind: 'author', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.author, items });
+        }
+        break;
+      }
+      case 'publisher': {
+        const items = projectedObjectRefItems(viewLike, 'publisher');
+        if (items.length > 0) {
+          blocks.push({ kind: 'publisher', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.publisher, items });
+        }
+        break;
+      }
       case 'parent': {
         const row = projectedParentRow(viewLike);
         if (row) {

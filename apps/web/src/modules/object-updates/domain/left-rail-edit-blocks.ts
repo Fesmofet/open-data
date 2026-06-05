@@ -69,6 +69,42 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'walletAddress', headingLabel, items: [] };
     case 'identifier':
       return { kind: 'identifier', headingLabel, rows: [] };
+    case 'status':
+      return { kind: 'status', headingLabel };
+    case 'compareAtPrice':
+      return { kind: 'compareAtPrice', headingLabel };
+    case 'saleEvent':
+      return { kind: 'saleEvent', headingLabel };
+    case 'size':
+      return { kind: 'size', headingLabel };
+    case 'brand':
+      return { kind: 'brand', headingLabel, items: [] };
+    case 'manufacturer':
+      return { kind: 'manufacturer', headingLabel, items: [] };
+    case 'merchant':
+      return { kind: 'merchant', headingLabel, items: [] };
+    case 'featureList':
+      return { kind: 'featureList', headingLabel };
+    case 'category':
+      return { kind: 'category', headingLabel };
+    case 'calories':
+      return { kind: 'calories', headingLabel };
+    case 'cookTime':
+      return { kind: 'cookTime', headingLabel };
+    case 'ingredients':
+      return { kind: 'ingredients', headingLabel };
+    case 'nutrition':
+      return { kind: 'nutrition', headingLabel };
+    case 'author':
+      return { kind: 'author', headingLabel, items: [] };
+    case 'publisher':
+      return { kind: 'publisher', headingLabel, items: [] };
+    case 'datePublished':
+      return { kind: 'datePublished', headingLabel };
+    case 'inLanguage':
+      return { kind: 'inLanguage', headingLabel };
+    case 'typicalAgeRange':
+      return { kind: 'typicalAgeRange', headingLabel };
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;

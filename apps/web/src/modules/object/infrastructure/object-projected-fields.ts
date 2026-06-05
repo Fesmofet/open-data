@@ -726,6 +726,42 @@ export function applySortCustomToMenuItems(
   return picked;
 }
 
+export type ProjectedObjectRefItem = {
+  objectId: string;
+  name: string;
+  imageUrl: string | null;
+};
+
+/**
+ * Projects one or more `object_ref` values from a field (single or multi-cardinality).
+ * Each ref is expected to be `{ object_id, fields: { name, image? } }`.
+ */
+export function projectedObjectRefItems(
+  o: ProjectedObjectView,
+  fieldKey: string,
+): ProjectedObjectRefItem[] {
+  const raw = o.fields[fieldKey];
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  const out: ProjectedObjectRefItem[] = [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const objectId = readString(row.object_id);
+    if (!objectId) {
+      continue;
+    }
+    const fields = isRecord(row.fields) ? row.fields : {};
+    const name = readString(fields.name) ?? objectId;
+    const imageUrl =
+      typeof fields.image === 'string' && fields.image.trim().length > 0
+        ? fields.image.trim()
+        : null;
+    out.push({ objectId, name, imageUrl });
+  }
+  return out;
+}
+
 export function projectedWorkHours(o: ProjectedObjectView): string | null {
   return readString(o.fields.workHours) ?? null;
 }

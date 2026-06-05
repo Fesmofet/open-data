@@ -17,7 +17,11 @@ import {
 import { mergeLeftRailBlocksForEditMode } from '@/modules/object-updates/domain/left-rail-edit-blocks';
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
-import type { ObjectLeftRailBlock, ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import type {
+  ObjectLeftRailBlock,
+  ObjectRefItem,
+  ProjectedGalleryAlbumView,
+} from '../../domain/object-page.types';
 
 import { ExternalLinkButton } from './external-link-modal';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
@@ -236,6 +240,44 @@ function LeftRailIdentifierSection({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function ObjectRefItemsList({ items }: { items: ObjectRefItem[] }) {
+  return (
+    <ul className="list-none space-y-1 p-0">
+      {items.map((item) => (
+        <li key={item.objectId}>
+          <Link
+            href={`/object/${encodeURIComponent(item.objectId)}`}
+            prefetch={false}
+            suppressHydrationWarning
+            className="-mx-1 -my-0.5 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            <div className="relative size-8 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+              {item.imageUrl ? (
+                <Image
+                  src={item.imageUrl}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="32px"
+                  unoptimized={shouldUnoptimizeRemoteImage(item.imageUrl)}
+                />
+              ) : (
+                <div
+                  className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
+                  aria-hidden
+                >
+                  —
+                </div>
+              )}
+            </div>
+            <span className="min-w-0 break-words text-accent">{item.name}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -798,6 +840,47 @@ export function ObjectLeftRailPanel({
                     </li>
                   ))}
                 </ul>
+              </div>
+            );
+          case 'brand':
+          case 'manufacturer':
+          case 'merchant':
+          case 'author':
+          case 'publisher':
+            return (
+              <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  onAdd={makeOnAdd(block.kind)}
+                  addLabel={addLabel}
+                  label={block.headingLabel}
+                  count={railBlockCount(block.kind)}
+                />
+                {block.items.length > 0 ? (
+                  <ObjectRefItemsList items={block.items} />
+                ) : null}
+              </div>
+            );
+          case 'status':
+          case 'compareAtPrice':
+          case 'saleEvent':
+          case 'size':
+          case 'featureList':
+          case 'category':
+          case 'calories':
+          case 'cookTime':
+          case 'ingredients':
+          case 'nutrition':
+          case 'datePublished':
+          case 'inLanguage':
+          case 'typicalAgeRange':
+            return (
+              <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  onAdd={makeOnAdd(block.kind)}
+                  addLabel={addLabel}
+                  label={block.headingLabel}
+                  count={railBlockCount(block.kind)}
+                />
               </div>
             );
           default: {
