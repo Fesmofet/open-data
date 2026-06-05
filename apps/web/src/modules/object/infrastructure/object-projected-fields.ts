@@ -426,22 +426,38 @@ function sortListItemsByCatalogType(
   return copy;
 }
 
+function dedupeListItemsByObjectId(items: ProjectedListItem[]): ProjectedListItem[] {
+  const seen = new Set<string>();
+  const out: ProjectedListItem[] = [];
+  for (const item of items) {
+    if (seen.has(item.objectId)) {
+      continue;
+    }
+    seen.add(item.objectId);
+    out.push(item);
+  }
+  return out;
+}
+
 function applySortCustomIncludeOrder(
   items: ProjectedListItem[],
   sort: ProjectedSortCustom,
 ): ProjectedListItem[] {
   const picked: ProjectedListItem[] = [];
-  const used = new Set<ProjectedListItem>();
+  const usedIds = new Set<string>();
   for (const key of sort.include) {
-    const found = items.find((item) => !used.has(item) && listItemMatchesKey(item, key));
+    const found = items.find(
+      (item) => !usedIds.has(item.objectId) && listItemMatchesKey(item, key),
+    );
     if (found) {
       picked.push(found);
-      used.add(found);
+      usedIds.add(found.objectId);
     }
   }
   for (const item of items) {
-    if (!used.has(item)) {
+    if (!usedIds.has(item.objectId)) {
       picked.push(item);
+      usedIds.add(item.objectId);
     }
   }
   return picked;
@@ -469,7 +485,8 @@ export function applySortCustomToListItems(
   items: ProjectedListItem[],
   sort: ProjectedSortCustom | null,
 ): ProjectedListItem[] {
-  const base = sort ? items.filter((item) => !listItemExcluded(item, sort.exclude)) : items;
+  const unique = dedupeListItemsByObjectId(items);
+  const base = sort ? unique.filter((item) => !listItemExcluded(item, sort.exclude)) : unique;
   const sortMode = resolveListItemCatalogSortType(sort);
   const ordered =
     sortMode === 'custom' && sort
@@ -543,11 +560,24 @@ export function resolveMenuItemsForView(
   return projectedMenuItemsFromListItems(listOrdered);
 }
 
+function menuItemLinkKey(item: ProjectedMenuItem): string | null {
+  const objectLink = item.link_to_object?.trim();
+  if (objectLink) {
+    return `object:${objectLink}`;
+  }
+  const webLink = item.link_to_web?.trim();
+  if (webLink) {
+    return `web:${webLink}`;
+  }
+  return null;
+}
+
 export function projectedMenuItems(o: ProjectedObjectView): ProjectedMenuItem[] {
   const raw = o.fields.menuItem;
   if (!Array.isArray(raw)) {
     return [];
   }
+  const seenLinks = new Set<string>();
   const out: ProjectedMenuItem[] = [];
   for (const row of raw) {
     if (!isRecord(row)) {
@@ -580,6 +610,19 @@ export function projectedMenuItems(o: ProjectedObjectView): ProjectedMenuItem[] 
     const image = readString(row.image);
     const object_type = readString(row.object_type);
     const embedded = embeddedMenuTarget(row);
+
+    const linkKey = menuItemLinkKey({
+      displayTitle,
+      style,
+      ...(link_to_object ? { link_to_object } : {}),
+      ...(link_to_web ? { link_to_web } : {}),
+    });
+    if (linkKey && seenLinks.has(linkKey)) {
+      continue;
+    }
+    if (linkKey) {
+      seenLinks.add(linkKey);
+    }
 
     out.push({
       displayTitle,
@@ -653,18 +696,32 @@ export function applySortCustomToMenuItems(
     return base;
   }
   const picked: ProjectedMenuItem[] = [];
-  const used = new Set<ProjectedMenuItem>();
+  const usedKeys = new Set<string>();
   for (const key of sort.include) {
-    const found = base.find((item) => !used.has(item) && menuItemMatchesKey(item, key));
+    const found = base.find((item) => {
+      const linkKey = menuItemLinkKey(item);
+      if (linkKey && usedKeys.has(linkKey)) {
+        return false;
+      }
+      return menuItemMatchesKey(item, key);
+    });
     if (found) {
       picked.push(found);
-      used.add(found);
+      const linkKey = menuItemLinkKey(found);
+      if (linkKey) {
+        usedKeys.add(linkKey);
+      }
     }
   }
   for (const item of base) {
-    if (!used.has(item)) {
-      picked.push(item);
+    const linkKey = menuItemLinkKey(item);
+    if (linkKey && usedKeys.has(linkKey)) {
+      continue;
     }
+    if (linkKey) {
+      usedKeys.add(linkKey);
+    }
+    picked.push(item);
   }
   return picked;
 }

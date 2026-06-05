@@ -651,6 +651,8 @@ export function ObjectPageClient({
       ? model.defaultLanding.targetObjectId
       : null;
 
+  const menuRootName = defaultNestedContent?.name ?? null;
+
   const canOpenDescriptionPage =
     Boolean(model.descriptionContent?.trim()) || model.previewGallery.length > 0;
 
@@ -717,6 +719,7 @@ export function ObjectPageClient({
           listItemsSortCustom={model.listItemsSortCustom}
           initialNestedStack={initialNestedStack}
           defaultNestedContent={defaultNestedContent}
+          menuRootName={menuRootName}
           onFeedSubSelect={setActiveFeedSubSegment}
           objectUpdatesFeed={updatesFeedSlot}
           objectFollowersFeed={objectFollowersFeed}

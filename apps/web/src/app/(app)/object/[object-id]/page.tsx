@@ -283,7 +283,7 @@ export default async function ObjectDetailPage({
     pathIds.length > 0
       ? resolveNestedObjectPath(pathIds, nestedResolveInit)
       : Promise.resolve([]),
-    pathIds.length === 0 && model.defaultLanding.kind === 'nestedInHost'
+    model.defaultLanding.kind === 'nestedInHost'
       ? resolveNestedObjectContent(model.defaultLanding.targetObjectId, nestedResolveInit)
       : Promise.resolve(null),
   ]);

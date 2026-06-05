@@ -151,6 +151,28 @@ describe('object-projected-fields', () => {
     expect(sorted.map((i) => i.objectId)).toEqual(['l1', 'p1']);
   });
 
+  it('applySortCustomToListItems dedupes duplicate objectIds before custom include ordering', () => {
+    const dinner = {
+      objectId: 'dqu-dinner',
+      objectType: 'list',
+      name: 'Dinner',
+      imageUrl: null,
+      weight: 10,
+      listItemsCount: 44,
+    } as const;
+    const items = [
+      dinner,
+      { objectId: 'dqu-desserts', objectType: 'list', name: 'Desserts', imageUrl: null, weight: 9, listItemsCount: 8 },
+      { ...dinner },
+      { objectId: 'dqu-kids', objectType: 'list', name: 'Kids', imageUrl: null, weight: 8, listItemsCount: 9 },
+    ];
+    const sorted = applySortCustomToListItems(items, {
+      include: ['dqu-desserts', 'dqu-dinner', 'dqu-kids', 'dqu-dinner'],
+      exclude: [],
+    });
+    expect(sorted.map((i) => i.objectId)).toEqual(['dqu-desserts', 'dqu-dinner', 'dqu-kids']);
+  });
+
   it('projectedListItems deduplicates rows with the same objectId', () => {
     const v: ProjectedObjectView = {
       object_id: 'parent-list',

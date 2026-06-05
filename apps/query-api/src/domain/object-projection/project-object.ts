@@ -118,13 +118,15 @@ function projectObjectRefField(
     return u ? { ...s, addedAtUnix: u.created_at_unix } : s;
   }
   const summaries: RefSummary[] = [];
+  const seenIds = new Set<string>();
   for (const u of valid) {
     const id = u.value_text?.trim();
-    if (!id) {
+    if (!id || seenIds.has(id)) {
       continue;
     }
     const s = refSummariesById.get(id);
     if (s) {
+      seenIds.add(id);
       summaries.push({
         ...s,
         addedAtUnix: u.created_at_unix,

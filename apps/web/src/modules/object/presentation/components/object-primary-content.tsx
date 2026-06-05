@@ -136,6 +136,8 @@ export type ObjectPrimaryContentProps = {
   initialNestedStack?: ObjectNestedViewResolved[];
   /** SSR-resolved first menu item when URL has no `?path=` (business-like objects). */
   defaultNestedContent?: ObjectNestedViewResolved | null;
+  /** Name of the root menu list object for breadcrumb display. Resolved from `model.listItems`. */
+  menuRootName?: string | null;
   /** Injected feed (client) when the Updates tab is active. */
   objectUpdatesFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
@@ -172,6 +174,7 @@ export function ObjectPrimaryContent({
   onFeedSubSelect,
   initialNestedStack = [],
   defaultNestedContent = null,
+  menuRootName = null,
   objectUpdatesFeed,
   objectFollowersFeed,
   objectAuthorityFeed,
@@ -622,9 +625,10 @@ export function ObjectPrimaryContent({
 
   return (
     <FeedColumn>
-      {isMenuLanding && nestedStack.length > 0 ? (
+      {isMenuLanding && menuRootName && defaultNestedContent ? (
         <ObjectCenterBreadcrumbs
-          rootName={title}
+          rootObjectId={defaultNestedContent.objectId}
+          rootName={menuRootName}
           stack={nestedStack.map((e) => ({ objectId: e.objectId, name: e.name }))}
           onNavigateTo={navigateToDepth}
         />

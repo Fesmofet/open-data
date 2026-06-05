@@ -132,11 +132,11 @@ export function ObjectListContent({
           Loading…
         </div>
       ) : null}
-      {items.map((item, index) => {
+      {items.map((item) => {
         if (item.objectType === 'list') {
           return (
             <ListCatalogRow
-              key={`${item.objectId}-${index}`}
+              key={`${item.objectId}`}
               item={item}
               inColumn={IN_COLUMN_TYPES.has(item.objectType)}
               onNavigateInColumn={onNavigateInColumn}
@@ -147,7 +147,7 @@ export function ObjectListContent({
         const inColumn = IN_COLUMN_TYPES.has(item.objectType);
         return (
           <ObjectCard
-            key={`${item.objectId}-${index}`}
+            key={item.objectId}
             as="div"
             object={projectedListItemToObjectView(item)}
             viewerUsername={viewerUsername}

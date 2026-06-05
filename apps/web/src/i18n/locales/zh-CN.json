@@ -1540,6 +1540,7 @@
   "object_detail_hours_heading": "Hours",
   "object_detail_overall_rating": "Overall",
   "object_detail_primary_nav_aria": "Object sections",
+  "object_detail_breadcrumb_aria": "Object path",
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",

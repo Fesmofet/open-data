@@ -204,6 +204,50 @@ describe('projectObjectCore listItem', () => {
     expect(listItem.map((s) => s.object_id)).toEqual(['child-a', 'child-b']);
     expect(listItem.map((s) => s.addedAtUnix)).toEqual([100, 200]);
   });
+
+  it('deduplicates multi listItem refs to the same target id (first wins)', () => {
+    const refMap = new Map<string, RefSummary>([
+      [
+        'child-a',
+        {
+          object_id: 'child-a',
+          object_type: 'list',
+          fields: { name: 'Dinner' },
+          weight: 1,
+        },
+      ],
+    ]);
+
+    const view = baseView({
+      listItem: {
+        update_type: UPDATE_TYPES.LIST_ITEM,
+        cardinality: 'multi',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.LIST_ITEM,
+            value_text: 'child-a',
+            created_at_unix: 100,
+          }),
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.LIST_ITEM,
+            value_text: 'child-a',
+            created_at_unix: 200,
+          }),
+        ],
+      },
+    });
+
+    const core = projectObjectCore({
+      view,
+      contentBaseUrl: 'https://example.com',
+      refSummariesById: refMap,
+      rankVoteProjection: emptyRankVoteProjection(),
+    });
+
+    const listItem = core.fields.listItem as RefSummary[];
+    expect(listItem.map((s) => s.object_id)).toEqual(['child-a']);
+    expect(listItem[0]?.addedAtUnix).toBe(100);
+  });
 });
 
 describe('projectObjectCore avatar fallback', () => {

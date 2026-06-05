@@ -147,9 +147,10 @@ When `syncPathToUrl` fires a `router.push/replace`, `skipUrlSyncRef.current` is 
 Component: `apps/web/src/modules/object/presentation/components/object-center-breadcrumbs.tsx`
 
 - Rendered **only** on menu landing (`activePrimarySegment === ''`) when `nestedStack.length > 0`.
-- Segments: root object (depth `-1`) + each stack entry (depth `0..N-1`).
-- Clicking a segment calls `navigateToDepth(depth)` → `router.push` with truncated `?path=` → adds history entry.
-- Clicking the current (last) segment is not rendered as a button.
+- Segments: **host object name** (depth `-1`, replaces legacy “Menu” label) + each stack entry (depth `0..N-1`), separated by `/`.
+- Typography matches primary section tabs (`text-body`, `font-weight-strong`); ancestors are orange links; the current (last) segment is plain `text-fg`.
+- **Open-object control:** orange icon after the trail links to `/object/:lastStackObjectId` (standalone page for the deepest nested object).
+- Clicking an ancestor segment calls `navigateToDepth(depth)` → `router.push` with truncated `?path=` → adds history entry.
 
 ---
 
