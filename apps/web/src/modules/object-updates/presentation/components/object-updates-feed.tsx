@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useLoginModal } from '@/modules/auth';
-import { useSyncedPaginatedList } from '@/shared/presentation';
+import { useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
 import type { ObjectUpdatesUrlFilters } from '../../application/parse-object-updates-search-params';
@@ -86,6 +86,34 @@ export function ObjectUpdatesFeed({
 
   const localizable = new Set(localizableTypes);
 
+  const onLoadMore = useCallback(() => {
+    if (!hasMore || pending || cursor == null) {
+      return;
+    }
+    startTransition(async () => {
+      const next = await loadMoreAction(objectId, filters, cursor);
+      setItems((prev) => mergeUniqueByUpdateId(prev, next.items));
+      setCursor(next.cursor);
+      setHasMore(next.hasMore);
+    });
+  }, [
+    cursor,
+    filters,
+    hasMore,
+    loadMoreAction,
+    objectId,
+    pending,
+    setCursor,
+    setHasMore,
+    setItems,
+  ]);
+
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    isLoading: pending,
+    onLoadMore,
+  });
+
   const onFiltersChange = (next: ObjectUpdatesUrlFilters) => {
     setLocalFilters(next);
     startTransition(async () => {
@@ -157,25 +185,21 @@ export function ObjectUpdatesFeed({
             ))}
           </ul>
           {hasMore ? (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <div ref={sentinelRef} aria-hidden className="h-px w-full" />
               <button
                 type="button"
+                className="sr-only"
                 disabled={pending}
-                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
-                onClick={() => {
-                  if (cursor == null) {
-                    return;
-                  }
-                  startTransition(async () => {
-                    const next = await loadMoreAction(objectId, filters, cursor);
-                    setItems((prev) => mergeUniqueByUpdateId(prev, next.items));
-                    setCursor(next.cursor);
-                    setHasMore(next.hasMore);
-                  });
-                }}
+                onClick={onLoadMore}
               >
-                {pending ? t('drafts_loading') : t('drafts_load_more')}
+                {t('drafts_load_more')}
               </button>
+              {pending ? (
+                <p className="text-body-sm text-muted" aria-live="polite">
+                  {t('drafts_loading')}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </>

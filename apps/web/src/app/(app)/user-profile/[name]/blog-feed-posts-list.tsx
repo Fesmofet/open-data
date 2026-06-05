@@ -1,11 +1,11 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useCallback, useTransition } from 'react';
 
 import type { UserBlogFeedPage } from '@/modules/feed/application/dto/user-blog-feed-page.dto';
 import type { FeedTab } from '@/modules/feed/domain/feed-tab';
 import { FeedList, FeedPostGrid } from '@/modules/feed/presentation';
-import { useSyncedPaginatedList } from '@/shared/presentation';
+import { useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 import { shouldUsePostGrid, useShellMode } from '@/shell-mode';
 
@@ -34,6 +34,39 @@ export function BlogFeedPostsList({
   const useInstagramGrid =
     shouldUsePostGrid(resolvedMode) && feedTab === 'posts';
 
+  const onLoadMore = useCallback(() => {
+    if (!cursor || pending) {
+      return;
+    }
+    startTransition(async () => {
+      const next =
+        feedTab === 'threads'
+          ? await loadMoreUserThreadsFeedAction(accountName, cursor)
+          : feedTab === 'comments'
+            ? await loadMoreUserCommentsFeedAction(accountName, cursor)
+            : feedTab === 'mentions'
+              ? await loadMoreUserMentionsFeedAction(accountName, cursor)
+              : await loadMoreUserBlogFeedAction(accountName, cursor);
+      setItems((prev) => [...prev, ...next.items]);
+      setCursor(next.cursor);
+      setHasMore(next.hasMore);
+    });
+  }, [
+    accountName,
+    cursor,
+    feedTab,
+    pending,
+    setCursor,
+    setHasMore,
+    setItems,
+  ]);
+
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    isLoading: pending,
+    onLoadMore,
+  });
+
   if (items.length === 0) {
     return (
       <section
@@ -56,32 +89,21 @@ export function BlogFeedPostsList({
         <FeedList items={items} feedTab={feedTab} currentUsername={currentUsername} />
       )}
       {hasMore ? (
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-2 py-2">
+          <div ref={sentinelRef} aria-hidden className="h-px w-full" />
           <button
             type="button"
-            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
+            className="sr-only"
             disabled={pending || !cursor}
-            onClick={() => {
-              if (!cursor) {
-                return;
-              }
-              startTransition(async () => {
-                const next =
-                  feedTab === 'threads'
-                    ? await loadMoreUserThreadsFeedAction(accountName, cursor)
-                    : feedTab === 'comments'
-                      ? await loadMoreUserCommentsFeedAction(accountName, cursor)
-                      : feedTab === 'mentions'
-                        ? await loadMoreUserMentionsFeedAction(accountName, cursor)
-                        : await loadMoreUserBlogFeedAction(accountName, cursor);
-                setItems((prev) => [...prev, ...next.items]);
-                setCursor(next.cursor);
-                setHasMore(next.hasMore);
-              });
-            }}
+            onClick={onLoadMore}
           >
-            {pending ? 'Loading…' : 'Load more'}
+            Load more
           </button>
+          {pending ? (
+            <p className="text-body-sm text-muted" aria-live="polite">
+              Loading…
+            </p>
+          ) : null}
         </div>
       ) : null}
     </FeedColumn>

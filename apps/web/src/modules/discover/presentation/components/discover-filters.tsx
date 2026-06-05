@@ -183,7 +183,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
 
   return (
     <aside
-      className="relative z-0 min-w-0 w-full self-start overflow-hidden"
+      className="relative z-0 min-w-0 w-full self-start overflow-hidden lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto"
       aria-busy={loading}
     >
       <h2 className="mb-3 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">

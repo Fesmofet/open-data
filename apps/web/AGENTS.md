@@ -329,6 +329,19 @@ Use **`router.refresh()`** from `next/navigation` when server-rendered data shou
 
 Primary pattern elsewhere in the app: **`awaitTrxConfirmation(trxId)` → `refreshAfterBroadcast(router, revalidate*)`**. Always refresh even on trx timeout so the UI eventually matches chain/indexer state.
 
+## Infinite scroll on feeds
+
+All central feed components that support cursor or offset pagination must use **`useInfiniteScroll`** from `@/shared/presentation` with a sentinel element at the list bottom. Scrolling to the end auto-triggers the next page fetch.
+
+| Do | Don't |
+|----|--------|
+| Use `useInfiniteScroll({ hasMore, isLoading, onLoadMore })` + a sentinel `<div ref={sentinelRef} aria-hidden />` | Add visible "Load more" / "Show more" buttons on feeds |
+| Keep an **`sr-only`** button wired to the same `onLoadMore` handler (keyboard fallback) | Rely on scroll alone without an accessible control |
+| Pass **`isLoading`** / `pending` to prevent double-triggers while a page is in flight | Fire load-more when `isLoading` is true or `hasMore` is false |
+| Pair with **`useSyncedPaginatedList`** when the list is RSC-seeded (`initialPage` / `initialItems`) | Reset list state with a `key` bump on every refresh — drops scroll position |
+
+Reference implementations: `blog-feed-posts-list.tsx`, `user-social-account-list.tsx`, `object-updates-feed.tsx`, `object-ref-list-feed.tsx`, `discover-object-feed.tsx`, `discover-user-feed.tsx`.
+
 ## Hydration warnings — browser extensions (Keychain, password managers)
 
 Browser extensions (primarily **Keychain Hive** and password managers) inject attributes or classes on `<a>` elements *after* SSR HTML is sent but *before* React hydrates. This produces a `className` mismatch warning that **cannot be reproduced without the extension** and is safe to suppress.

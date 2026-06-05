@@ -1,9 +1,9 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useCallback, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { useSyncedPaginatedList } from '@/shared/presentation';
+import { useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
 
 import type {
   PaginatedUserFollowListView,
@@ -43,6 +43,32 @@ export function UserSocialAccountList({
   const { t } = useI18n();
   const { items, setItems, hasMore, setHasMore } = useSyncedPaginatedList(initialPage);
   const [pending, startTransition] = useTransition();
+
+  const onLoadMore = useCallback(() => {
+    if (!hasMore || pending) {
+      return;
+    }
+    startTransition(async () => {
+      const next = await loadMoreAction(profileAccountName, sort, items.length);
+      setItems((prev) => [...prev, ...next.items]);
+      setHasMore(next.hasMore);
+    });
+  }, [
+    hasMore,
+    pending,
+    loadMoreAction,
+    profileAccountName,
+    sort,
+    items.length,
+    setHasMore,
+    setItems,
+  ]);
+
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    isLoading: pending,
+    onLoadMore,
+  });
 
   const emptyKey =
     listKind === 'followers'
@@ -89,21 +115,21 @@ export function UserSocialAccountList({
             ))}
           </ul>
           {hasMore ? (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <div ref={sentinelRef} aria-hidden className="h-px w-full" />
               <button
                 type="button"
+                className="sr-only"
                 disabled={pending}
-                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
-                onClick={() => {
-                  startTransition(async () => {
-                    const next = await loadMoreAction(profileAccountName, sort, items.length);
-                    setItems((prev) => [...prev, ...next.items]);
-                    setHasMore(next.hasMore);
-                  });
-                }}
+                onClick={onLoadMore}
               >
-                {pending ? t('drafts_loading') : t('drafts_load_more')}
+                {t('drafts_load_more')}
               </button>
+              {pending ? (
+                <p className="text-body-sm text-muted" aria-live="polite">
+                  {t('drafts_loading')}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </>

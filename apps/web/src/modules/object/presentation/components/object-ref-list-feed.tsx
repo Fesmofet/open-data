@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useTransition } from 'react';
+import { useCallback, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
@@ -10,6 +10,7 @@ import { ObjectCard } from '@/modules/feed/presentation/components/object-card';
 import {
   AVATAR_PLACEHOLDER_SRC,
   shouldUnoptimizeRemoteImage,
+  useInfiniteScroll,
   useSyncedPaginatedList,
 } from '@/shared/presentation';
 
@@ -91,7 +92,7 @@ export function ObjectRefListFeed({
     cursor: initialCursor,
   });
 
-  const onLoadMore = () => {
+  const onLoadMore = useCallback(() => {
     if (!hasMore || pending) {
       return;
     }
@@ -101,7 +102,23 @@ export function ObjectRefListFeed({
       setHasMore(page.hasMore);
       setCursor(page.cursor);
     });
-  };
+  }, [
+    cursor,
+    hasMore,
+    loadMoreAction,
+    objectId,
+    pending,
+    relation,
+    setCursor,
+    setHasMore,
+    setItems,
+  ]);
+
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    isLoading: pending,
+    onLoadMore,
+  });
 
   if (items.length === 0) {
     return (
@@ -124,15 +141,21 @@ export function ObjectRefListFeed({
         ))}
       </ul>
       {hasMore ? (
-        <div className="mt-4 flex justify-center">
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <div ref={sentinelRef} aria-hidden className="h-px w-full" />
           <button
             type="button"
-            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover disabled:opacity-50"
+            className="sr-only"
             disabled={pending}
             onClick={onLoadMore}
           >
-            {pending ? t('drafts_loading') : t('object_right_show_more')}
+            {t('object_right_show_more')}
           </button>
+          {pending ? (
+            <p className="text-body-sm text-muted" aria-live="polite">
+              {t('drafts_loading')}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </section>

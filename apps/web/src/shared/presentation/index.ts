@@ -3,6 +3,10 @@ export {
   type SyncedPaginatedInitial,
   type SyncedPaginatedListState,
 } from './hooks/use-synced-paginated-list';
+export {
+  useInfiniteScroll,
+  type UseInfiniteScrollOptions,
+} from './hooks/use-infinite-scroll';
 export { useLockBodyScroll } from './hooks/use-lock-body-scroll';
 export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
 export {

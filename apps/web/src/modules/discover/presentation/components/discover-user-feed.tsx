@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage, useInfiniteScroll } from '@/shared/presentation';
 
 import { fetchDiscoverUsers } from '../../infrastructure/discover.client';
 import type { DiscoverUsersPage } from '../../domain/discover-response.schema';
@@ -64,6 +64,22 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
 
   const { items, cursor, hasMore } = page;
 
+  const onLoadMore = useCallback(() => {
+    if (!hasMore || pending || loading) {
+      return;
+    }
+    startTransition(async () => {
+      const ac = new AbortController();
+      await loadPage(cursor, false, ac.signal);
+    });
+  }, [cursor, hasMore, loadPage, loading, pending]);
+
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore: hasMore && !loading,
+    isLoading: pending,
+    onLoadMore,
+  });
+
   return (
     <section>
       {loading ? (
@@ -121,20 +137,21 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
             ))}
           </ul>
           {hasMore ? (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <div ref={sentinelRef} aria-hidden className="h-px w-full" />
               <button
                 type="button"
+                className="sr-only"
                 disabled={pending}
-                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg disabled:opacity-50"
-                onClick={() => {
-                  startTransition(async () => {
-                    const ac = new AbortController();
-                    await loadPage(cursor, false, ac.signal);
-                  });
-                }}
+                onClick={onLoadMore}
               >
-                {pending ? t('discover_loading') : t('discover_show_more')}
+                {t('discover_show_more')}
               </button>
+              {pending ? (
+                <p className="text-body-sm text-muted" aria-live="polite">
+                  {t('discover_loading')}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </>
