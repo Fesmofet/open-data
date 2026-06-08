@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useTransition } from 'react';
+import { useCallback, useMemo, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
@@ -86,11 +86,16 @@ export function ObjectRefListFeed({
 }: ObjectRefListFeedProps) {
   const { t } = useI18n();
   const [pending, startTransition] = useTransition();
-  const { items, hasMore, cursor, setItems, setHasMore, setCursor } = useSyncedPaginatedList({
-    items: initialItems,
-    hasMore: initialHasMore,
-    cursor: initialCursor,
-  });
+  const initialPage = useMemo(
+    () => ({
+      items: initialItems,
+      hasMore: initialHasMore,
+      cursor: initialCursor,
+    }),
+    [initialItems, initialHasMore, initialCursor],
+  );
+  const { items, hasMore, cursor, setItems, setHasMore, setCursor } =
+    useSyncedPaginatedList(initialPage);
 
   const onLoadMore = useCallback(() => {
     if (!hasMore || pending) {

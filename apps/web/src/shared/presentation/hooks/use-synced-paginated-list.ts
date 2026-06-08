@@ -35,7 +35,7 @@ export function useSyncedPaginatedList<TItem>(
     if (initial.cursor !== undefined) {
       setCursor(initial.cursor);
     }
-  }, [initial]);
+  }, [initial.cursor, initial.hasMore, initial.items]);
 
   return {
     items,
