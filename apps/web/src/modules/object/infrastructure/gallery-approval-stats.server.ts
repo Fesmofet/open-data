@@ -91,6 +91,9 @@ async function mergeUpdateTypeIntoIndex(
         approvePercent: item.approve_percent,
         forCount: item.for_vote_count,
         againstCount: item.against_vote_count,
+        viewer_vote: item.viewer_vote,
+        updateId: item.update_id,
+        creator: item.creator,
       };
       indexGalleryApprovalStat(
         byUpdateId,

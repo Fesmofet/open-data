@@ -7,13 +7,14 @@ import {
 describe('resolveGalleryPhotoApprovalStat', () => {
   const index: GalleryApprovalStatsIndex = {
     byUpdateId: {
-      'upd-1': { approvePercent: 80, forCount: 4, againstCount: 1 },
+      'upd-1': { approvePercent: 80, forCount: 4, againstCount: 1, viewer_vote: null },
     },
     byUrl: {
       'https://example.com/photo.jpg': {
         approvePercent: 50,
         forCount: 2,
         againstCount: 2,
+        viewer_vote: null,
       },
     },
   };
@@ -24,7 +25,7 @@ describe('resolveGalleryPhotoApprovalStat', () => {
         { update_id: 'upd-1', url: 'https://example.com/other.jpg' },
         index,
       ),
-    ).toEqual({ approvePercent: 80, forCount: 4, againstCount: 1 });
+    ).toEqual({ approvePercent: 80, forCount: 4, againstCount: 1, viewer_vote: null });
   });
 
   it('falls back to url lookup when update_id is missing', () => {
@@ -38,11 +39,12 @@ describe('resolveGalleryPhotoApprovalStat', () => {
               approvePercent: 50,
               forCount: 2,
               againstCount: 2,
+              viewer_vote: null,
             },
           },
         },
       ),
-    ).toEqual({ approvePercent: 50, forCount: 2, againstCount: 2 });
+    ).toEqual({ approvePercent: 50, forCount: 2, againstCount: 2, viewer_vote: null });
   });
 
   it('matches urls after normalization', () => {
@@ -56,11 +58,12 @@ describe('resolveGalleryPhotoApprovalStat', () => {
               approvePercent: 75,
               forCount: 3,
               againstCount: 1,
+              viewer_vote: null,
             },
           },
         },
       ),
-    ).toEqual({ approvePercent: 75, forCount: 3, againstCount: 1 });
+    ).toEqual({ approvePercent: 75, forCount: 3, againstCount: 1, viewer_vote: null });
   });
 
   it('returns empty stat when nothing matches', () => {
@@ -80,10 +83,20 @@ describe('resolveGalleryPhotoApprovalStat', () => {
               approvePercent: 100,
               forCount: 1,
               againstCount: 0,
+              viewer_vote: null,
+              updateId: 'img-upd-1',
+              creator: 'alice',
             },
           },
         },
       ),
-    ).toEqual({ approvePercent: 100, forCount: 1, againstCount: 0 });
+    ).toEqual({
+      approvePercent: 100,
+      forCount: 1,
+      againstCount: 0,
+      viewer_vote: null,
+      updateId: 'img-upd-1',
+      creator: 'alice',
+    });
   });
 });

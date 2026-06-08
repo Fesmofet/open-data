@@ -2,6 +2,11 @@ export type GalleryApprovalStat = {
   approvePercent: number;
   forCount: number;
   againstCount: number;
+  viewer_vote: 'for' | 'against' | null;
+  /** Feed update id (present when stat comes from the updates index). */
+  updateId?: string;
+  /** Update creator username (present when stat comes from the updates index). */
+  creator?: string;
 };
 
 export type GalleryApprovalStatsIndex = {
@@ -13,6 +18,7 @@ export const EMPTY_GALLERY_APPROVAL_STAT: GalleryApprovalStat = {
   approvePercent: 0,
   forCount: 0,
   againstCount: 0,
+  viewer_vote: null,
 };
 
 export type GalleryPhotoApprovalSource = {
@@ -62,6 +68,7 @@ export function resolveGalleryPhotoApprovalStat(
       approvePercent: photo.approvePercent,
       forCount: 0,
       againstCount: 0,
+      viewer_vote: null,
     };
   }
 

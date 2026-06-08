@@ -148,34 +148,152 @@
     );
   }
 
-  /** Full-screen gallery viewer chrome on dark scrim. */
+  /** Full-screen gallery viewer chrome on near-black scrim (theme-independent). */
   .gallery-scrim {
-    background-color: color-mix(in srgb, var(--color-overlay) 90%, transparent);
+    background-color: rgb(10 10 10 / 0.92);
   }
 
   .gallery-chrome-text {
-    @apply text-accent-fg;
+    color: rgb(255 255 255 / 0.92);
   }
 
   .gallery-chrome-text-muted {
-    color: color-mix(in srgb, var(--color-accent-fg) 70%, transparent);
+    color: rgb(255 255 255 / 0.55);
   }
 
   .gallery-chrome-border {
-    @apply border-ghost-border;
+    border-color: rgb(255 255 255 / 0.12);
   }
 
   .gallery-chrome-control {
-    @apply rounded-btn border border-ghost-border text-accent-fg hover:bg-ghost-surface;
+    color: rgb(255 255 255 / 0.85);
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: var(--radius-btn);
+  }
+
+  .gallery-chrome-control:hover:not(:disabled) {
+    background-color: rgb(255 255 255 / 0.08);
+  }
+
+  .gallery-chrome-control:disabled {
+    opacity: 0.35;
+  }
+
+  .gallery-chrome-icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  .gallery-chrome-icon-btn--zoom-in::before,
+  .gallery-chrome-icon-btn--zoom-in::after,
+  .gallery-chrome-icon-btn--zoom-out::before,
+  .gallery-chrome-icon-btn--close::before,
+  .gallery-chrome-icon-btn--close::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: currentColor;
+    border-radius: 1px;
+  }
+
+  .gallery-chrome-icon-btn--zoom-in::before,
+  .gallery-chrome-icon-btn--zoom-out::before {
+    width: 12px;
+    height: 2px;
+  }
+
+  .gallery-chrome-icon-btn--zoom-in::after {
+    width: 2px;
+    height: 12px;
+  }
+
+  .gallery-chrome-icon-btn--close::before,
+  .gallery-chrome-icon-btn--close::after {
+    width: 14px;
+    height: 2px;
+  }
+
+  .gallery-chrome-icon-btn--close::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .gallery-chrome-icon-btn--close::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .gallery-nav-arrow {
+    color: rgb(255 255 255 / 0.45);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .gallery-nav-arrow:hover {
+    color: rgb(255 255 255 / 0.95);
+  }
+
+  .gallery-nav-arrow:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.5);
+    outline-offset: 2px;
+    border-radius: var(--radius-btn);
   }
 
   .gallery-chrome-footer {
-    @apply border-t border-ghost-border text-body-sm;
-    color: color-mix(in srgb, var(--color-accent-fg) 90%, transparent);
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+    color: rgb(255 255 255 / 0.75);
+    font-size: var(--font-size-body-sm);
   }
 
   .gallery-chrome-divider {
-    color: color-mix(in srgb, var(--color-accent-fg) 40%, transparent);
+    color: rgb(255 255 255 / 0.3);
+  }
+
+  .gallery-vote-btn {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-btn);
+    border: 1px solid rgb(255 255 255 / 0.2);
+    color: rgb(255 255 255 / 0.75);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-label);
+    cursor: pointer;
+  }
+
+  .gallery-vote-btn:hover:not(:disabled) {
+    background-color: rgb(255 255 255 / 0.08);
+  }
+
+  .gallery-vote-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .gallery-vote-btn--active-for {
+    color: rgb(134 239 172);
+    background-color: rgb(134 239 172 / 0.1);
+    border-color: rgb(134 239 172 / 0.3);
+  }
+
+  .gallery-vote-btn--active-against {
+    color: rgb(252 165 165);
+    background-color: rgb(252 165 165 / 0.1);
+    border-color: rgb(252 165 165 / 0.3);
+  }
+
+  .gallery-approval-percent {
+    color: rgb(251 146 60);
+  }
+
+  .gallery-vote-error {
+    color: rgb(248 113 113);
   }
 
   .gallery-failed-scrim {

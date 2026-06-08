@@ -1,16 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState, type SVGProps } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 
+import { buildOdlUpdateVoteOp } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
-import { useLockBodyScroll } from '@/shared/presentation';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import { useLockBodyScroll, UserAvatar } from '@/shared/presentation';
 
 import type { GalleryApprovalStatsIndex } from '@/modules/object/domain/gallery-approval-stats';
-import { resolveGalleryPhotoApprovalStat } from '@/modules/object/domain/gallery-approval-stats';
+import {
+  EMPTY_GALLERY_APPROVAL_STAT,
+  resolveGalleryPhotoApprovalStat,
+} from '@/modules/object/domain/gallery-approval-stats';
 import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/gallery/gallery-approval.actions';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
@@ -19,6 +30,47 @@ import { GalleryImage } from './gallery-image';
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
 const ZOOM_STEP = 0.25;
+
+const hiveAvatarUrl = (creator: string): string =>
+  `https://images.hive.blog/u/${encodeURIComponent(creator)}/avatar`;
+
+function IconChevronLeft(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="30"
+      height="48"
+      viewBox="0 0 20 32"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <polyline points="14 4 6 16 14 28" />
+    </svg>
+  );
+}
+
+function IconChevronRight(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="30"
+      height="48"
+      viewBox="0 0 20 32"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <polyline points="6 4 14 16 6 28" />
+    </svg>
+  );
+}
 
 export type ObjectGalleryViewerProps = {
   objectId: string;
@@ -43,6 +95,9 @@ export function ObjectGalleryViewer({
   supportedUpdateTypes,
   updateTypeCounts,
 }: ObjectGalleryViewerProps) {
+  useHydrateWalletProvider();
+  const odlCustomJsonId = useOdlCustomJsonId();
+  const router = useRouter();
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
@@ -52,6 +107,12 @@ export function ObjectGalleryViewer({
     byUpdateId: {},
     byUrl: {},
   });
+  const [optimisticVotes, setOptimisticVotes] = useState<
+    Record<string, 'for' | 'against' | null>
+  >({});
+  const [votePending, setVotePending] = useState(false);
+  const [voteConfirming, setVoteConfirming] = useState(false);
+  const [voteError, setVoteError] = useState<string | null>(null);
   const albumDropdownRef = useRef<HTMLDivElement>(null);
 
   const photos = album.items;
@@ -59,6 +120,17 @@ export function ObjectGalleryViewer({
   const currentPhoto = photos[activeIndex];
   const displayName = objectName.trim() || objectId;
   const canSetAvatar = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
+
+  const currentStat = currentPhoto
+    ? resolveGalleryPhotoApprovalStat(currentPhoto, approvalStats)
+    : EMPTY_GALLERY_APPROVAL_STAT;
+
+  const votableUpdateId =
+    currentPhoto?.update_id ?? currentStat.updateId ?? '';
+  const effectiveVote = votableUpdateId
+    ? (optimisticVotes[votableUpdateId] ?? currentStat.viewer_vote)
+    : null;
+  const voteDisabled = votePending || voteConfirming;
 
   useLockBodyScroll(true);
 
@@ -78,6 +150,10 @@ export function ObjectGalleryViewer({
       cancelled = true;
     };
   }, [objectId]);
+
+  useEffect(() => {
+    setVoteError(null);
+  }, [activeIndex]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -141,11 +217,76 @@ export function ObjectGalleryViewer({
     setAvatarModalOpen(true);
   }, [onRequireLogin, viewerUsername]);
 
+  const onVote = useCallback(
+    async (vote: 'for' | 'against') => {
+      const voter = viewerUsername?.trim();
+      if (!voter) {
+        onRequireLogin();
+        return;
+      }
+      if (votePending || voteConfirming) {
+        return;
+      }
+      const updateId =
+        currentPhoto?.update_id ?? currentStat.updateId;
+      if (!updateId) {
+        return;
+      }
+      const currentVote = optimisticVotes[updateId] ?? currentStat.viewer_vote;
+      if (currentVote === vote) {
+        return;
+      }
+      setVoteError(null);
+      setVotePending(true);
+      try {
+        const op = buildOdlUpdateVoteOp({
+          id: odlCustomJsonId,
+          updateId,
+          objectId,
+          voter,
+          vote,
+          required_posting_auths: [voter],
+        });
+        const { transactionId } = await getWalletFacade().broadcast({
+          operations: [op],
+        });
+        setOptimisticVotes((prev) => ({ ...prev, [updateId]: vote }));
+        setVotePending(false);
+        setVoteConfirming(true);
+        void awaitTrxConfirmation(transactionId).finally(() => {
+          void refreshAfterBroadcast(router, () =>
+            revalidateObjectAfterBroadcast(objectId),
+          ).finally(() => {
+            void fetchGalleryApprovalStatsAction(objectId).then(setApprovalStats);
+            setVoteConfirming(false);
+          });
+        });
+      } catch (err) {
+        setVoteError(
+          err instanceof Error ? err.message : t('object_edit_validation_error'),
+        );
+        setVotePending(false);
+      }
+    },
+    [
+      currentPhoto?.update_id,
+      currentStat.updateId,
+      currentStat.viewer_vote,
+      objectId,
+      odlCustomJsonId,
+      onRequireLogin,
+      optimisticVotes,
+      router,
+      t,
+      viewerUsername,
+      voteConfirming,
+      votePending,
+    ],
+  );
+
   if (!currentPhoto) {
     return null;
   }
-
-  const currentStat = resolveGalleryPhotoApprovalStat(currentPhoto, approvalStats);
 
   const overlay = (
     <div
@@ -155,7 +296,32 @@ export function ObjectGalleryViewer({
       aria-label={t('gallery')}
     >
       <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
-        <div aria-hidden />
+        <div className="flex min-w-0 items-center justify-start gap-2">
+          {currentStat.creator ? (
+            <>
+              <Link
+                href={`/@${encodeURIComponent(currentStat.creator)}`}
+                className="inline-flex shrink-0 rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                aria-label={`View profile: ${currentStat.creator}`}
+                suppressHydrationWarning
+              >
+                <UserAvatar
+                  username={currentStat.creator}
+                  avatarUrl={hiveAvatarUrl(currentStat.creator)}
+                  size={32}
+                  displayName={currentStat.creator}
+                />
+              </Link>
+              <Link
+                href={`/@${encodeURIComponent(currentStat.creator)}`}
+                className="gallery-chrome-text truncate text-body-sm font-weight-label hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                suppressHydrationWarning
+              >
+                {currentStat.creator}
+              </Link>
+            </>
+          ) : null}
+        </div>
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-body-sm">
           <span className="gallery-chrome-text truncate font-weight-label">
             <span className="gallery-chrome-text-muted">{t('object_gallery_viewer_related_object')}</span>{' '}
@@ -195,30 +361,24 @@ export function ObjectGalleryViewer({
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
-            className="gallery-chrome-control inline-flex size-8 items-center justify-center"
+            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
             aria-label={t('object_gallery_zoom_out')}
             onClick={zoomOut}
             disabled={zoom <= MIN_ZOOM}
-          >
-            −
-          </button>
+          />
           <button
             type="button"
-            className="gallery-chrome-control inline-flex size-8 items-center justify-center"
+            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
             aria-label={t('object_gallery_zoom_in')}
             onClick={zoomIn}
             disabled={zoom >= MAX_ZOOM}
-          >
-            +
-          </button>
+          />
           <button
             type="button"
-            className="gallery-chrome-control inline-flex size-8 items-center justify-center text-body-lg"
+            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
             aria-label={t('close')}
             onClick={onClose}
-          >
-            ×
-          </button>
+          />
         </div>
       </header>
 
@@ -226,11 +386,11 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="gallery-chrome-control absolute left-2 z-10 inline-flex size-10 shrink-0 items-center justify-center text-display md:left-4"
+            className="gallery-nav-arrow absolute left-4 z-10 inline-flex shrink-0 items-center justify-center p-2 md:left-6"
             aria-label={t('object_detail_gallery_prev')}
             onClick={goPrev}
           >
-            ‹
+            <IconChevronLeft />
           </button>
         ) : null}
         <div className="relative h-full w-full max-w-container-page overflow-hidden">
@@ -252,31 +412,47 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="gallery-chrome-control absolute right-2 z-10 inline-flex size-10 shrink-0 items-center justify-center text-display md:right-4"
+            className="gallery-nav-arrow absolute right-4 z-10 inline-flex shrink-0 items-center justify-center p-2 md:right-6"
             aria-label={t('object_detail_gallery_next')}
             onClick={goNext}
           >
-            ›
+            <IconChevronRight />
           </button>
         ) : null}
       </div>
 
       <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={voteDisabled || !votableUpdateId}
+            aria-pressed={effectiveVote === 'for'}
+            onClick={() => void onVote('for')}
+            className={`gallery-vote-btn ${effectiveVote === 'for' ? 'gallery-vote-btn--active-for' : ''}`}
+          >
             {t('object_updates_approve')} {currentStat.forCount}
-          </span>
-          <span className="gallery-chrome-divider">|</span>
-          <span>
+          </button>
+          <button
+            type="button"
+            disabled={voteDisabled || !votableUpdateId}
+            aria-pressed={effectiveVote === 'against'}
+            onClick={() => void onVote('against')}
+            className={`gallery-vote-btn ${effectiveVote === 'against' ? 'gallery-vote-btn--active-against' : ''}`}
+          >
             {t('object_updates_reject')} {currentStat.againstCount}
-          </span>
+          </button>
         </div>
         <span>
           {t('object_updates_approval')}{' '}
-          <span className="font-weight-label text-accent">
+          <span className="gallery-approval-percent font-weight-label">
             {currentStat.approvePercent.toFixed(2)}%
           </span>
         </span>
+        {voteError ? (
+          <p className="gallery-vote-error w-full text-caption" role="alert">
+            {voteError}
+          </p>
+        ) : null}
       </footer>
 
       {canSetAvatar && viewerUsername ? (
