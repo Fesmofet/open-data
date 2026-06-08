@@ -2,6 +2,7 @@ export type {
   AppMapProps,
   AppMapZoomUi,
   AppMarkerProps,
+  AppMarkerVariant,
   AppPopupProps,
   MapPosition,
   MapProviderPort,

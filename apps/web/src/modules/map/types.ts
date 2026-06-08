@@ -48,9 +48,17 @@ export interface AppMapProps {
   onMapClick?: (position: MapPosition) => void;
 }
 
+/** `default` — standard pin; `user-location` — round dot for the viewer's position. */
+export type AppMarkerVariant = 'default' | 'user-location';
+
 export interface AppMarkerProps {
   position: MapPosition;
   children?: ReactNode;
+  /**
+   * Leaflet: `default` uses the standard pin; `user-location` uses a round accent dot.
+   * @default 'default'
+   */
+  variant?: AppMarkerVariant;
 }
 
 export interface AppPopupProps {

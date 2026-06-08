@@ -222,7 +222,7 @@ function GeoMapMarkers({
         <span className="sr-only">{label}</span>
       </AppMarker>
       {userLocation ? (
-        <AppMarker position={userLocation}>
+        <AppMarker position={userLocation} variant="user-location">
           <span className="sr-only">Your location</span>
         </AppMarker>
       ) : null}

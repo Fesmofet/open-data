@@ -4,6 +4,7 @@ import { Fragment, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { telephoneHref } from '@/modules/object-updates/application/telephone-display.utils';
+import { HydrationSafeAnchor } from '@/shared/presentation';
 
 import type { ProjectedTelephoneEntry } from '../../infrastructure/object-projected-fields';
 
@@ -33,12 +34,12 @@ function PhoneHandsetIcon({ className }: { className?: string }) {
 
 function TelephoneLink({ number }: { number: string }) {
   return (
-    <a
+    <HydrationSafeAnchor
       href={telephoneHref(number)}
       className="font-weight-label text-accent tabular-nums hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       {number}
-    </a>
+    </HydrationSafeAnchor>
   );
 }
 
