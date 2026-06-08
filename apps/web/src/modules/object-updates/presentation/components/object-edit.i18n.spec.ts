@@ -54,3 +54,20 @@ describe('Object edit UI i18n keys (en-US)', () => {
     }
   });
 });
+
+describe('Update card decisive vote i18n keys (en-US)', () => {
+  it('defines privileged vote label keys used by UpdateCard', () => {
+    const keys = [
+      'object_updates_approved_by_admin',
+      'object_updates_rejected_by_admin',
+      'object_updates_approved_by_trusted',
+      'object_updates_rejected_by_trusted',
+    ] as const;
+
+    for (const key of keys) {
+      const value = enUS[key];
+      expect(typeof value).toBe('string');
+      expect((value as string).length).toBeGreaterThan(0);
+    }
+  });
+});

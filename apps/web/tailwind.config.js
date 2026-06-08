@@ -52,6 +52,8 @@ module.exports = {
         'tertiary-fg': 'var(--color-tertiary-fg)',
         error: 'var(--color-error)',
         'error-fg': 'var(--color-error-fg)',
+        'validity-approved': 'var(--color-validity-approved)',
+        'validity-rejected': 'var(--color-validity-rejected)',
         focus: 'var(--color-focus)',
         overlay: 'var(--color-overlay)',
         'ghost-surface': 'var(--color-ghost-surface)',

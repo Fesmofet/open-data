@@ -10,6 +10,12 @@ export const objectUpdatesFeedQuerySchema = z.object({
 
 export type ObjectUpdatesFeedQuery = z.infer<typeof objectUpdatesFeedQuerySchema>;
 
+export type DecisivePrivilegedVoteDto = {
+  tier: 'admin' | 'trusted';
+  vote: 'for' | 'against';
+  voter: string;
+};
+
 export type ObjectUpdateFeedItemDto = {
   update_id: string;
   object_id: string;
@@ -27,6 +33,8 @@ export type ObjectUpdateFeedItemDto = {
   for_vote_count: number;
   against_vote_count: number;
   viewer_vote: 'for' | 'against' | null;
+  /** Decisive admin/trusted validity vote (LWAW/LWTW); null when curator filter or lower tiers apply. */
+  decisive_privileged_vote: DecisivePrivilegedVoteDto | null;
 };
 
 export type ObjectUpdatesFeedResponseDto = {

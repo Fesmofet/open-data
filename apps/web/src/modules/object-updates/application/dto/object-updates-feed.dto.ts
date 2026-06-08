@@ -8,6 +8,12 @@ const valueGeoSchema = z.object({
   longitude: num(),
 });
 
+const decisivePrivilegedVoteSchema = z.object({
+  tier: z.enum(['admin', 'trusted']),
+  vote: z.enum(['for', 'against']),
+  voter: z.string(),
+});
+
 export const objectUpdateFeedItemDtoSchema = z.object({
   update_id: z.string(),
   object_id: z.string(),
@@ -24,6 +30,7 @@ export const objectUpdateFeedItemDtoSchema = z.object({
   for_vote_count: num().pipe(z.number().int()),
   against_vote_count: num().pipe(z.number().int()),
   viewer_vote: z.enum(['for', 'against']).nullable(),
+  decisive_privileged_vote: decisivePrivilegedVoteSchema.nullable().default(null),
 });
 
 export const objectUpdatesFeedResponseSchema = z.object({

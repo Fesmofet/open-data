@@ -25,6 +25,13 @@ const objectUpdateFeedItemSchema = registry.register(
     for_vote_count: z.number().int(),
     against_vote_count: z.number().int(),
     viewer_vote: z.enum(['for', 'against']).nullable(),
+    decisive_privileged_vote: z
+      .object({
+        tier: z.enum(['admin', 'trusted']),
+        vote: z.enum(['for', 'against']),
+        voter: z.string(),
+      })
+      .nullable(),
   }),
 );
 

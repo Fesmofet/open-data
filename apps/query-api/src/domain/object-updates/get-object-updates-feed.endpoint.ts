@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { ObjectAuthority, ValidityVote } from '@opden-data-layer/core';
-import type { VoterWaivPowerMap } from '@opden-data-layer/objects-domain';
-import { computeApprovePercent } from '@opden-data-layer/objects-domain';
+import type { GovernanceSnapshot, VoterWaivPowerMap } from '@opden-data-layer/objects-domain';
+import {
+  computeApprovePercent,
+  computeCuratorSet,
+  resolveUpdateValidity,
+} from '@opden-data-layer/objects-domain';
 import { ObjectAuthorityRepository, ObjectsCoreRepository, UpdatesFeedRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { feedItemImagePreviewUrls } from '../object-projection/image-display-url';
@@ -13,6 +17,7 @@ import {
   type UpdatesRecencyCursorPayload,
 } from './updates-cursor';
 import type {
+  DecisivePrivilegedVoteDto,
   ObjectUpdateFeedItemDto,
   ObjectUpdatesFeedQuery,
   ObjectUpdatesFeedResponseDto,
@@ -157,11 +162,16 @@ export class GetObjectUpdatesFeedEndpoint {
     const hasMore = slice.length > limit;
     const pageSlice = hasMore ? slice.slice(0, limit) : slice;
 
+    const curatorSet = computeCuratorSet(authorities, governance);
     const items: ObjectUpdateFeedItemDto[] = pageSlice.map((p) =>
       this.toDto(
         p.jr,
         p.approve_percent,
         votes,
+        governance,
+        authorities,
+        curatorSet,
+        voterWaivPowers,
         input.viewerAccount,
       ),
     );
@@ -192,12 +202,17 @@ export class GetObjectUpdatesFeedEndpoint {
     const voterNames = [...new Set(votes.map((v) => v.voter))];
     const powersMap = await this.updatesFeedRepo.findWaivPowersByAccounts(voterNames);
     const voterWaivPowers: VoterWaivPowerMap = powersMap;
+    const curatorSet = computeCuratorSet(authorities, governance);
 
     return pageRows.map((jr) =>
       this.toDto(
         jr,
         computeApprovePercent(jr.row, votes, governance, voterWaivPowers, authorities),
         votes,
+        governance,
+        authorities,
+        curatorSet,
+        voterWaivPowers,
         viewerAccount,
       ),
     );
@@ -212,6 +227,10 @@ export class GetObjectUpdatesFeedEndpoint {
     },
     approvePercent: number,
     allVotes: ValidityVote[],
+    governance: GovernanceSnapshot,
+    authorities: ObjectAuthority[],
+    curatorSet: Set<string>,
+    voterWaivPowers: VoterWaivPowerMap,
     viewerAccount: string | undefined,
   ): ObjectUpdateFeedItemDto {
     const updateVotes = allVotes.filter((v) => v.update_id === jr.row.update_id);
@@ -249,6 +268,16 @@ export class GetObjectUpdatesFeedEndpoint {
       gateway,
     );
 
+    const validity = resolveUpdateValidity(
+      jr.row,
+      allVotes,
+      curatorSet,
+      governance,
+      voterWaivPowers,
+      authorities,
+    );
+    const decisive_privileged_vote = this.mapDecisivePrivilegedVote(validity);
+
     return {
       update_id: jr.row.update_id,
       object_id: jr.row.object_id,
@@ -265,6 +294,24 @@ export class GetObjectUpdatesFeedEndpoint {
       for_vote_count: forC,
       against_vote_count: againstC,
       viewer_vote: viewerVote,
+      decisive_privileged_vote,
     };
+  }
+
+  private mapDecisivePrivilegedVote(
+    validity: ReturnType<typeof resolveUpdateValidity>,
+  ): DecisivePrivilegedVoteDto | null {
+    if (
+      (validity.validity_tier === 'admin' || validity.validity_tier === 'trusted') &&
+      validity.decisive_voter != null &&
+      validity.decisive_vote != null
+    ) {
+      return {
+        tier: validity.validity_tier,
+        vote: validity.decisive_vote,
+        voter: validity.decisive_voter,
+      };
+    }
+    return null;
   }
 }

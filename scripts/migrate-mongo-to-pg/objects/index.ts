@@ -41,7 +41,12 @@ import {
   resolveUpdateType,
 } from './field-name-map';
 import type { MongoRatingVote, MongoWObject, MongoWObjectField } from './types';
-import { createdAtUnixFromObjectId, mongoIdToString, parseMongoCreatedAt } from './utils';
+import {
+  createdAtUnixFromObjectId,
+  legacyEventSeqFromObjectIdHex,
+  mongoIdToString,
+  parseMongoCreatedAt,
+} from './utils';
 import {
   buildLegacyGalleryAlbumIdToNameMap,
   migrateObjectRefBodyToText,
@@ -54,7 +59,6 @@ import {
 } from './value-strategies';
 
 const BATCH_SIZE = 5000;
-const LEGACY_EVENT_SEQ = BigInt(0);
 /** ODL default rank context (see rankVotePayloadSchema). */
 const LEGACY_RANK_CONTEXT = 'default';
 
@@ -171,20 +175,29 @@ function buildFieldLegacyTransactionId(fieldAuthor: string, permlink: string): s
   return `legacy_${fieldAuthor}_${permlink}`;
 }
 
+/**
+ * Vote transaction_id starts with the vote's own MongoDB ObjectId hex so that
+ * lexicographic sort on transaction_id yields chronological vote order.
+ * Falls back to a placeholder when the vote has no _id (older exports).
+ */
 function buildVoteLegacyTransactionId(
+  voteOidHex: string | null,
   fieldAuthor: string,
   permlink: string,
   voter: string,
 ): string {
-  return `legacy_${fieldAuthor}_${permlink}_${voter}`;
+  const prefix = voteOidHex ?? '000000000000000000000000';
+  return `legacy_${prefix}_${fieldAuthor}_${permlink}_${voter}`;
 }
 
 function buildRankVoteLegacyTransactionId(
+  voteOidHex: string | null,
   fieldAuthor: string,
   permlink: string,
   voter: string,
 ): string {
-  return `legacy_rank_${fieldAuthor}_${permlink}_${voter}`;
+  const prefix = voteOidHex ?? '000000000000000000000000';
+  return `legacy_rank_${prefix}_${fieldAuthor}_${permlink}_${voter}`;
 }
 
 /** Typed as `rating_votes?[]` in MongoWObjectField; `unknown` accepts a lone object in bad exports. */
@@ -603,7 +616,7 @@ class MongoToPgMigrator {
               creator: fieldCreator,
               locale,
               created_at_unix: createdAt,
-              event_seq: LEGACY_EVENT_SEQ,
+              event_seq: legacyEventSeqFromObjectIdHex(fieldId),
               transaction_id: fieldTxId,
               value_text: null,
               value_json: value,
@@ -636,7 +649,7 @@ class MongoToPgMigrator {
       creator: fieldCreator,
       locale,
       created_at_unix: createdAt,
-      event_seq: LEGACY_EVENT_SEQ,
+      event_seq: legacyEventSeqFromObjectIdHex(fieldId),
       transaction_id: fieldTxId,
       value_text,
       value_json,
@@ -705,13 +718,14 @@ class MongoToPgMigrator {
         continue;
       }
       const voteValue: 'for' | 'against' = percent > 0 ? 'for' : 'against';
+      const voteOidHex = mongoIdToString(vote._id);
       this.pushVote({
         update_id: updateId,
         object_id: objectId,
         voter,
         vote: voteValue,
-        event_seq: LEGACY_EVENT_SEQ,
-        transaction_id: buildVoteLegacyTransactionId(fieldAuthor, permlink, voter),
+        event_seq: legacyEventSeqFromObjectIdHex(voteOidHex),
+        transaction_id: buildVoteLegacyTransactionId(voteOidHex, fieldAuthor, permlink, voter),
       });
     }
   }
@@ -746,14 +760,16 @@ class MongoToPgMigrator {
         continue;
       }
       odlRankValues.push(odlRank);
+      const rankVoteOidHex = mongoIdToString(rv._id);
       this.pushRankVote({
         update_id: updateId,
         object_id: objectId,
         voter,
         rank: odlRank,
         rank_context: LEGACY_RANK_CONTEXT,
-        event_seq: LEGACY_EVENT_SEQ,
+        event_seq: legacyEventSeqFromObjectIdHex(rankVoteOidHex),
         transaction_id: buildRankVoteLegacyTransactionId(
+          rankVoteOidHex,
           fieldAuthor,
           permlink,
           voter,

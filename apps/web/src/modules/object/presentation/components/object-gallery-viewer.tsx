@@ -12,6 +12,7 @@ import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '@/modules/object-updates/constants';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
@@ -131,6 +132,8 @@ export function ObjectGalleryViewer({
     ? (optimisticVotes[votableUpdateId] ?? currentStat.viewer_vote)
     : null;
   const voteDisabled = votePending || voteConfirming;
+  const meetsApprovalThreshold =
+    currentStat.approvePercent > OBJECT_UPDATES_MIN_APPROVAL_PERCENT;
 
   useLockBodyScroll(true);
 
@@ -444,7 +447,13 @@ export function ObjectGalleryViewer({
         </div>
         <span>
           {t('object_updates_approval')}{' '}
-          <span className="gallery-approval-percent font-weight-label">
+          <span
+            className={`font-weight-label ${
+              meetsApprovalThreshold
+                ? 'gallery-approval-percent--approved'
+                : 'gallery-approval-percent--rejected'
+            }`}
+          >
             {currentStat.approvePercent.toFixed(2)}%
           </span>
         </span>

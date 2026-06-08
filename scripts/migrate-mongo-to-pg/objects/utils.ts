@@ -1,4 +1,12 @@
+import { encodeEventSeq } from '../../../libs/core/src/utils/event-seq';
+
 import type { MongoDate, MongoId } from './types';
+
+/** Unix time of 2015-01-01; legacy Waivio data fits in block-0 trx_index buckets after this. */
+const LEGACY_EVENT_SEQ_ORIGIN_UNIX = 1_420_070_400;
+
+/** Seconds per 30-day bucket used to map legacy timestamps into trx_index (max 1023). */
+const LEGACY_TRX_INDEX_BUCKET_SEC = 86400 * 30;
 
 /** Extract hex string from Mongo extended JSON or plain string id. */
 export function mongoIdToString(id: MongoId | undefined): string | null {
@@ -61,6 +69,46 @@ export function createdAtUnixFromObjectId(oidHex: string): number {
   const secondsHex = oidHex.slice(0, 8);
   const parsed = Number.parseInt(secondsHex, 16);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/** Lexicographic compare of Mongo ObjectId hex strings (chronological for legacy data). */
+export function compareMongoObjectIdHex(
+  a: MongoId | undefined,
+  b: MongoId | undefined,
+): number {
+  const aHex = mongoIdToString(a) ?? '';
+  const bHex = mongoIdToString(b) ?? '';
+  return aHex.localeCompare(bHex);
+}
+
+/**
+ * Maps a MongoDB ObjectId hex into block-0 legacy event_seq (< first real Hive block).
+ * Real ODL events use block_num >= 1 (event_seq >= 67_108_864), so legacy values never win
+ * against on-chain data while preserving ObjectId chronological order.
+ */
+export function legacyEventSeqFromObjectIdHex(oidHex: string | null): bigint {
+  if (!oidHex || oidHex.length < 24) {
+    return 1n;
+  }
+  const ts = Number.parseInt(oidHex.slice(0, 8), 16);
+  const machinePid = Number.parseInt(oidHex.slice(8, 14), 16);
+  const random = Number.parseInt(oidHex.slice(14, 18), 16);
+  const counter = Number.parseInt(oidHex.slice(18, 24), 16);
+
+  const elapsedSec = Math.max(0, ts - LEGACY_EVENT_SEQ_ORIGIN_UNIX);
+  const trxIndex = Math.min(
+    1023,
+    Math.floor(elapsedSec / LEGACY_TRX_INDEX_BUCKET_SEC),
+  );
+  const opIndex = (machinePid ^ random) & 255;
+  const odlEventIndex = counter & 255;
+
+  return encodeEventSeq({
+    blockNum: 0,
+    trxIndex,
+    opIndex,
+    odlEventIndex,
+  });
 }
 
 /** Convert a camelCase identifier to snake_case (ASCII). */

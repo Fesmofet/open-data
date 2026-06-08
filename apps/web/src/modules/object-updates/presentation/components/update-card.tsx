@@ -48,6 +48,30 @@ function unixToIsoSeconds(sec: number): string {
   return new Date(sec * 1000).toISOString();
 }
 
+function profileHrefForUsername(username: string): string {
+  return `/@${encodeURIComponent(username)}`;
+}
+
+function decisivePrivilegedVoteLabelKey(
+  tier: 'admin' | 'trusted',
+  vote: 'for' | 'against',
+): string {
+  if (tier === 'admin') {
+    return vote === 'for'
+      ? 'object_updates_approved_by_admin'
+      : 'object_updates_rejected_by_admin';
+  }
+  return vote === 'for'
+    ? 'object_updates_approved_by_trusted'
+    : 'object_updates_rejected_by_trusted';
+}
+
+function approvalStatusBadgeClass(positive: boolean): string {
+  return `rounded-pill border border-border px-2 py-0.5 text-caption font-weight-label tabular-nums ${
+    positive ? 'text-validity-approved' : 'text-validity-rejected'
+  }`;
+}
+
 export function UpdateCard({
   item,
   showLocaleBadge,
@@ -81,11 +105,11 @@ export function UpdateCard({
 
   const forActive =
     optimisticVote === 'for'
-      ? 'text-success bg-success/10 border-success/30'
+      ? 'text-validity-approved bg-validity-approved/10 border-validity-approved/30'
       : 'text-fg-secondary border-border bg-surface-control hover:bg-surface-control-hover';
   const againstActive =
     optimisticVote === 'against'
-      ? 'text-destructive bg-destructive/10 border-destructive/30'
+      ? 'text-validity-rejected bg-validity-rejected/10 border-validity-rejected/30'
       : 'text-fg-secondary border-border bg-surface-control hover:bg-surface-control-hover';
 
   const minLine = t('object_updates_min_required').replace(
@@ -93,7 +117,8 @@ export function UpdateCard({
     String(OBJECT_UPDATES_MIN_APPROVAL_PERCENT),
   );
 
-  const creatorProfileHref = `/@${encodeURIComponent(item.creator)}`;
+  const creatorProfileHref = profileHrefForUsername(item.creator);
+  const privilegedVote = item.decisive_privileged_vote;
 
   const voteDisabled = pending || confirming;
 
@@ -236,12 +261,34 @@ export function UpdateCard({
       </div>
 
       <div className="mt-3 border-t border-border pt-3">
-        <p
-          className={`text-body-sm font-weight-label ${meetsThreshold ? 'text-success' : 'text-warning'}`}
-        >
-          {t('object_updates_approval')} {approvePercentLabel}%
-        </p>
-        <p className="mt-0.5 text-caption text-muted">{minLine}</p>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-body-sm text-fg">{t('object_updates_approval')}</span>
+            <span className={approvalStatusBadgeClass(meetsThreshold)}>
+              {approvePercentLabel}%
+            </span>
+          </div>
+          {privilegedVote ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={approvalStatusBadgeClass(privilegedVote.vote === 'for')}
+              >
+                {privilegedVote.vote === 'for' ? t('approved') : t('rejected')}
+              </span>
+              <span className="text-body-sm text-fg">
+                {t(decisivePrivilegedVoteLabelKey(privilegedVote.tier, privilegedVote.vote))}{' '}
+                <Link
+                  href={profileHrefForUsername(privilegedVote.voter)}
+                  className="text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  suppressHydrationWarning
+                >
+                  @{privilegedVote.voter}
+                </Link>
+              </span>
+            </div>
+          ) : null}
+        </div>
+        <p className="mt-2 text-caption text-muted">{minLine}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"

@@ -30,6 +30,8 @@
   --color-tertiary-fg: #333333;
   --color-error: #f44336;
   --color-error-fg: #ffffff;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #f87007;
   --color-overlay: rgb(0 0 0 / 0.45);
   --color-modal-scrim: rgb(0 0 0 / 0.7);
@@ -149,6 +151,8 @@
   --color-tertiary-fg: #e8e8e8;
   --color-error: #ef5350;
   --color-error-fg: #ffffff;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #f87007;
   --color-overlay: rgb(0 0 0 / 0.65);
   --color-modal-scrim: rgb(0 0 0 / 0.7);
@@ -265,6 +269,8 @@
   --color-tertiary-fg: #ffffff;
   --color-error: #dc2626;
   --color-error-fg: #ffffff;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #2563eb;
   --color-overlay: rgb(0 0 0 / 0.5);
   --color-modal-scrim: rgb(0 0 0 / 0.7);
@@ -384,6 +390,8 @@
   --color-tertiary-fg: #0a0a0a;
   --color-error: #f87171;
   --color-error-fg: #0a0a0a;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #93c5fd;
   --color-overlay: rgb(0 0 0 / 0.65);
   --color-modal-scrim: rgb(0 0 0 / 0.7);
@@ -502,6 +510,8 @@
   --color-tertiary-fg: #fffef8;
   --color-error: #b91c1c;
   --color-error-fg: #fffef8;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #8b6914;
   --color-overlay: rgb(67 52 34 / 0.5);
   --color-modal-scrim: rgb(67 52 34 / 0.72);
@@ -617,6 +627,8 @@
   --color-tertiary-fg: #ffffff;
   --color-error: #ff3b30;
   --color-error-fg: #ffffff;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #0071e3;
   --color-overlay: rgb(0 0 0 / 0.5);
   --color-modal-scrim: rgb(0 0 0 / 0.7);
@@ -726,6 +738,8 @@
   --color-tertiary-fg: #222222;
   --color-error: #c13515;
   --color-error-fg: #ffffff;
+  --color-validity-approved: #54d2a0;
+  --color-validity-rejected: #d9534f;
   --color-focus: #222222;
   --color-overlay: rgb(0 0 0 / 0.5);
   --color-modal-scrim: rgb(0 0 0 / 0.7);

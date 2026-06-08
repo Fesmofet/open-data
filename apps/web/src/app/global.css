@@ -277,19 +277,23 @@
   }
 
   .gallery-vote-btn--active-for {
-    color: rgb(134 239 172);
-    background-color: rgb(134 239 172 / 0.1);
-    border-color: rgb(134 239 172 / 0.3);
+    color: var(--color-validity-approved);
+    background-color: color-mix(in srgb, var(--color-validity-approved) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-validity-approved) 30%, transparent);
   }
 
   .gallery-vote-btn--active-against {
-    color: rgb(252 165 165);
-    background-color: rgb(252 165 165 / 0.1);
-    border-color: rgb(252 165 165 / 0.3);
+    color: var(--color-validity-rejected);
+    background-color: color-mix(in srgb, var(--color-validity-rejected) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-validity-rejected) 30%, transparent);
   }
 
-  .gallery-approval-percent {
-    color: rgb(251 146 60);
+  .gallery-approval-percent--approved {
+    color: var(--color-validity-approved);
+  }
+
+  .gallery-approval-percent--rejected {
+    color: var(--color-validity-rejected);
   }
 
   .gallery-vote-error {

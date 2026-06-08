@@ -86,6 +86,8 @@ Each `[data-theme='…']` block in `apps/web/src/styles/theme.css` sets the same
 | `--color-tertiary-fg` | `text-tertiary-fg` | Text on tertiary fill |
 | `--color-error` | `bg-error`, `text-error`, `border-error` | Destructive actions, validation errors |
 | `--color-error-fg` | `text-error-fg` | Text on error fill |
+| `--color-validity-approved` | `text-validity-approved`, `bg-validity-approved`, `border-validity-approved` | Object-update approval status (approved / above threshold) |
+| `--color-validity-rejected` | `text-validity-rejected`, `bg-validity-rejected`, `border-validity-rejected` | Object-update approval status (rejected / below threshold) |
 | `--color-focus` | `outline-focus`, `ring-focus` | Keyboard focus ring (see note below) |
 | `--color-overlay` | `bg-overlay` | Dark scrim over background imagery for text legibility (use with opacity or layered `::before`) |
 | `--color-ghost-surface` | `bg-ghost-surface` | Ultra-low-opacity surface for ghost buttons over photography |

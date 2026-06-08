@@ -11,6 +11,10 @@ export type ResolveUpdateValidityResult = {
   approve_percent: number;
   validity_tier: ValidityTier | null;
   decisive_vote_event_seq: bigint | null;
+  /** Voter of the decisive admin/trusted validity vote when applicable. */
+  decisive_voter: string | null;
+  /** Vote value of the decisive admin/trusted validity vote when applicable. */
+  decisive_vote: 'for' | 'against' | null;
 };
 
 /**
@@ -153,6 +157,8 @@ export function resolveUpdateValidity(
       approve_percent,
       validity_tier: null,
       decisive_vote_event_seq: null,
+      decisive_voter: null,
+      decisive_vote: null,
     };
   }
 
@@ -199,6 +205,8 @@ function resolveHierarchy(
       approve_percent,
       validity_tier: 'admin',
       decisive_vote_event_seq: latest.event_seq,
+      decisive_voter: latest.voter,
+      decisive_vote: latest.vote,
     };
   }
 
@@ -213,6 +221,8 @@ function resolveHierarchy(
       approve_percent,
       validity_tier: 'trusted',
       decisive_vote_event_seq: latest.event_seq,
+      decisive_voter: latest.voter,
+      decisive_vote: latest.vote,
     };
   }
 
@@ -228,6 +238,8 @@ function resolveHierarchy(
       approve_percent,
       validity_tier: 'baseline',
       decisive_vote_event_seq: null,
+      decisive_voter: null,
+      decisive_vote: null,
     };
   }
 
@@ -243,6 +255,8 @@ function resolveHierarchy(
     approve_percent,
     validity_tier: 'community',
     decisive_vote_event_seq: null,
+    decisive_voter: null,
+    decisive_vote: null,
   };
 }
 

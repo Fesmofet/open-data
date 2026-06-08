@@ -1,4 +1,8 @@
-import { parseMongoCreatedAt } from './utils';
+import {
+  compareMongoObjectIdHex,
+  legacyEventSeqFromObjectIdHex,
+  parseMongoCreatedAt,
+} from './utils';
 
 describe('parseMongoCreatedAt', () => {
   it('parses ISO string', () => {
@@ -19,5 +23,27 @@ describe('parseMongoCreatedAt', () => {
   it('returns undefined for invalid values', () => {
     expect(parseMongoCreatedAt({ $date: 'not-a-date' })).toBeUndefined();
     expect(parseMongoCreatedAt('')).toBeUndefined();
+  });
+});
+
+describe('legacyEventSeqFromObjectIdHex', () => {
+  it('returns block-0 values below first real Hive block', () => {
+    const seq = legacyEventSeqFromObjectIdHex('622e6c74e48e7448ee3a54f2');
+    expect(seq).toBeGreaterThan(0n);
+    expect(seq).toBeLessThan(67_108_864n);
+  });
+
+  it('orders later legacy votes after earlier ones (versentry then dataoperator)', () => {
+    const versentryVote = legacyEventSeqFromObjectIdHex('622e6c7ab8407648f662d73c');
+    const dataoperatorVote = legacyEventSeqFromObjectIdHex('631a58254aea5014d452dd2a');
+    expect(dataoperatorVote).toBeGreaterThan(versentryVote);
+  });
+});
+
+describe('compareMongoObjectIdHex', () => {
+  it('sorts vote ObjectIds chronologically', () => {
+    expect(
+      compareMongoObjectIdHex('622e6c7ab8407648f662d73c', '631a58254aea5014d452dd2a'),
+    ).toBeLessThan(0);
   });
 });

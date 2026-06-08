@@ -113,6 +113,8 @@ describe('resolveUpdateValidity — curator filter', () => {
     expect(result.approve_percent).toBe(100);
     expect(result.validity_tier).toBeNull();
     expect(result.decisive_vote_event_seq).toBeNull();
+    expect(result.decisive_voter).toBeNull();
+    expect(result.decisive_vote).toBeNull();
   });
 
   it('is VALID when a curator member voted for', () => {
@@ -147,6 +149,8 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
     expect(result.approve_percent).toBe(100);
     expect(result.validity_tier).toBe('admin');
     expect(result.decisive_vote_event_seq).toBe(BigInt(10));
+    expect(result.decisive_voter).toBe('admin1');
+    expect(result.decisive_vote).toBe('for');
   });
 
   it('REJECTED when admin voted against', () => {
@@ -156,6 +160,8 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
     expect(result.approve_percent).toBe(0);
     expect(result.validity_tier).toBe('admin');
     expect(result.decisive_vote_event_seq).toBe(BigInt(10));
+    expect(result.decisive_voter).toBe('admin1');
+    expect(result.decisive_vote).toBe('against');
   });
 
   it('latest admin vote wins (LWAW)', () => {
@@ -168,6 +174,28 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
     expect(result.approve_percent).toBe(0);
     expect(result.validity_tier).toBe('admin');
     expect(result.decisive_vote_event_seq).toBe(BigInt(10));
+    expect(result.decisive_voter).toBe('admin1');
+    expect(result.decisive_vote).toBe('against');
+  });
+
+  it('later admin among multiple admins wins by event_seq', () => {
+    const governanceMulti = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const votes = [
+      makeVote('admin1', 'for', BigInt(5)),
+      makeVote('admin2', 'against', BigInt(20)),
+    ];
+    const result = resolveUpdateValidity(
+      BASE_UPDATE,
+      votes,
+      emptySet,
+      governanceMulti,
+      voterReputations,
+      authorities,
+    );
+    expect(result.validity_tier).toBe('admin');
+    expect(result.decisive_voter).toBe('admin2');
+    expect(result.decisive_vote).toBe('against');
+    expect(result.status).toBe('REJECTED');
   });
 });
 
@@ -184,6 +212,8 @@ describe('resolveUpdateValidity — trusted decisive (LWTW)', () => {
     expect(result.approve_percent).toBe(100);
     expect(result.validity_tier).toBe('trusted');
     expect(result.decisive_vote_event_seq).toBe(BigInt(10));
+    expect(result.decisive_voter).toBe('trusted1');
+    expect(result.decisive_vote).toBe('for');
   });
 
   it('falls through to community when trusted has no authority on object', () => {

@@ -15,6 +15,7 @@ export interface MongoDate {
 }
 
 export interface MongoActiveVote {
+  _id?: MongoId;
   voter?: string;
   weight?: number;
   percent?: number;
@@ -25,8 +26,9 @@ export interface MongoActiveVote {
 
 /** Legacy Waivio rank vote (field `rating` / aggregate rating); Mongo scale 0–10. */
 export interface MongoRatingVote {
+  _id?: MongoId;
   voter?: string;
-  /** Some exports use `rank` instead of Waivio’s `rate`. Same 0–10 star tier semantics. */
+  /** Some exports use `rank` instead of Waivio's `rate`. Same 0–10 star tier semantics. */
   rank?: number;
   /** Waivio default Mongo key for the star tier (`rate: 10` etc.). */
   rate?: number;
