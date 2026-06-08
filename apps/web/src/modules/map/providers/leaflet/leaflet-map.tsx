@@ -80,6 +80,8 @@ export function LeafletAppMap({
         attribution={attributionForLayer}
         url={tileLayerUrl}
         noWrap={tileNoWrap}
+        maxNativeZoom={maxZoom}
+        maxZoom={maxZoom}
       />
       {customZoom ? <ZoomControl position={zoomUi.position} /> : null}
       <LeafletMapCenterSync center={center} />

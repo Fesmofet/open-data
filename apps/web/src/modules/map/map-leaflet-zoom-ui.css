@@ -8,10 +8,55 @@
 }
 
 .leaflet-container.map-zoom-ui-compact .leaflet-control-zoom a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 28px;
   height: 28px;
-  line-height: 28px;
-  font-size: var(--font-size-body);
+  line-height: 0;
+  font-size: 0;
+  color: var(--color-fg-secondary);
+  text-indent: 0;
+}
+
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-in,
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-out {
+  font: inherit;
+  text-indent: 0;
+}
+
+.leaflet-container.map-zoom-ui-compact.leaflet-touch .leaflet-control-zoom-in,
+.leaflet-container.map-zoom-ui-compact.leaflet-touch .leaflet-control-zoom-out {
+  font-size: 0;
+  line-height: 0;
+}
+
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-in::before,
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-in::after,
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-out::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: currentColor;
+  border-radius: 1px;
+}
+
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-in::before {
+  width: 12px;
+  height: 2px;
+}
+
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-in::after {
+  width: 2px;
+  height: 12px;
+}
+
+.leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-out::before {
+  width: 12px;
+  height: 2px;
 }
 
 .leaflet-container.map-zoom-ui-compact .leaflet-control-zoom-in {

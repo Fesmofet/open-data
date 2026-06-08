@@ -13,6 +13,8 @@ export type { MapProviderProps } from './providers/map-provider.context';
 export { AppMap } from './components/AppMap';
 export { AppMarker } from './components/AppMarker';
 export { AppPopup } from './components/AppPopup';
+export { MapFitBounds } from './components/MapFitBounds';
+export type { MapFitBoundsProps } from './components/MapFitBounds';
 export { MapInvalidateSizeOnMount } from './components/MapInvalidateSizeOnMount';
 
 export {
