@@ -12,6 +12,7 @@ import { ObjectProjectionService } from '../object-projection';
 import { decodeFeedCursor, encodeFeedCursor } from './feed-cursor';
 import { buildFeedStoryItemsFromPostPage } from './build-feed-story-items-from-post-page';
 import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
+import { PostRewardService } from './post-reward.service';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
 @Injectable()
@@ -24,6 +25,7 @@ export class GetUserMentionsFeedEndpoint {
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
     private readonly objectProjection: ObjectProjectionService,
+    private readonly postRewardService: PostRewardService,
   ) {}
 
   async execute(
@@ -81,11 +83,13 @@ export class GetUserMentionsFeedEndpoint {
         objectViewService: this.objectViewService,
         governanceResolver: this.governanceResolver,
         objectProjection: this.objectProjection,
+        postRewardService: this.postRewardService,
       },
       pageRows,
       locale,
       governanceObjectIdFromHeader,
       viewerAccount,
+      body.currency,
     );
 
     let nextCursor: string | null = null;

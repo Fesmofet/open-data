@@ -7,11 +7,8 @@ import { UserAvatar } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 
-import {
-  formatPayoutDisplay,
-  formatRelativeFeedTime,
-  formatReputation,
-} from './story-utils';
+import { formatRelativeFeedTime, formatReputation } from './story-utils';
+import { StoryRewardBadge } from './story-reward-badge';
 import { useLoginModal } from '@/modules/auth';
 
 import { LinkedObjectsSection } from './linked-objects-section';
@@ -90,7 +87,6 @@ export function BlogPostScreen({
   const displayTimeIso = story.feedAt ?? story.createdAt;
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
   const repLabel = formatReputation(story.authorReputation, locale);
-  const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
   const { openLogin } = useLoginModal();
   const taggedObjects = story.objects ?? [];
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
@@ -254,9 +250,11 @@ export function BlogPostScreen({
             />
           ) : null}
         </div>
-        {payoutLabel ? (
-          <span className="text-body-sm font-weight-strong tabular-nums text-accent">{payoutLabel}</span>
-        ) : null}
+        <StoryRewardBadge
+          reward={story.reward}
+          waivRewardEligible={story.waivRewardEligible ?? false}
+          postAuthor={story.authorName}
+        />
       </footer>
       {commentsExpanded ? (
         <>

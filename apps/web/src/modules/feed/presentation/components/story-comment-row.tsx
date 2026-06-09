@@ -12,6 +12,7 @@ import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { PostDiscussionView } from '../../application/dto/post-discussion.dto';
 
 import { StoryCommentEditor } from './story-comment-editor';
+import { StoryRewardBadge } from './story-reward-badge';
 import { formatRelativeFeedTime } from './story-utils';
 import { StoryVoteButton } from './story-vote-button';
 
@@ -76,14 +77,15 @@ export function StoryCommentRow({
             />
           </div>
         </header>
-        <footer className="mt-2 flex flex-wrap items-center gap-2">
-          <StoryVoteButton
-            authorName={comment.authorName}
-            permlink={comment.permlink}
-            votes={comment.votes}
-            currentUsername={currentUsername}
-          />
-          {currentUsername ? (
+        <footer className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <StoryVoteButton
+              authorName={comment.authorName}
+              permlink={comment.permlink}
+              votes={comment.votes}
+              currentUsername={currentUsername}
+            />
+            {currentUsername ? (
             <button
               type="button"
               className="rounded-btn px-2 py-0.5 text-caption text-muted hover:bg-surface-control hover:text-fg-secondary"
@@ -91,7 +93,13 @@ export function StoryCommentRow({
             >
               Reply
             </button>
-          ) : null}
+            ) : null}
+          </div>
+          <StoryRewardBadge
+            reward={comment.reward}
+            waivRewardEligible={comment.waivRewardEligible ?? false}
+            postAuthor={comment.authorName}
+          />
         </footer>
         {replyOpen && currentUsername ? (
           <div className="mt-3 border-t border-border pt-3">

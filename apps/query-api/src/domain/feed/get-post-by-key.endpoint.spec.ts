@@ -9,6 +9,8 @@ import { GovernanceResolverService } from '../governance';
 import type { ObjectProjectionService } from '../object-projection/object-projection.service';
 import { emptyRankVoteProjection } from '../object-projection/projected-object.types';
 import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
+import { createPassthroughPostRewardServiceMock } from './post-reward.service.mock';
+import type { PostRewardService } from './post-reward.service';
 
 function postRow(overrides: Partial<Post> = {}): Post {
   return {
@@ -129,6 +131,7 @@ describe('GetPostByKeyEndpoint', () => {
       governanceResolver as unknown as GovernanceResolverService,
       objectProjection as unknown as ObjectProjectionService,
       hiveClient as unknown as HiveClient,
+      createPassthroughPostRewardServiceMock() as unknown as PostRewardService,
     );
   });
 
@@ -280,6 +283,7 @@ describe('GetPostByKeyEndpoint', () => {
             transaction_id: 't',
             status: 'active',
             seq: 0,
+            created_at: new Date('2024-01-01T00:00:00.000Z'),
           },
           updates: [],
           validity_votes: [],
@@ -334,6 +338,7 @@ describe('GetPostByKeyEndpoint', () => {
             transaction_id: 't',
             status: 'active',
             seq: 0,
+            created_at: new Date('2024-01-01T00:00:00.000Z'),
           },
           updates: [],
           validity_votes: [],

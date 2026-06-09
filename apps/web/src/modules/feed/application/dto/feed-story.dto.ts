@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { FEED_TABS } from '../../domain/feed-tab';
 
+import { postRewardSchema } from './post-reward.dto';
+
 /** Matches query-api `ProjectedObject` JSON shape. */
 export const projectedObjectViewSchema = z.object({
   object_id: z.string(),
@@ -80,6 +82,8 @@ export const feedStoryViewSchema = z.object({
   netRshares: z.string().optional(),
   objects: z.array(projectedObjectViewSchema).optional(),
   votes: feedVoteSummarySchema.optional(),
+  reward: postRewardSchema.nullable().optional(),
+  waivRewardEligible: z.boolean().optional().default(false),
 });
 
 export type FeedStoryView = z.infer<typeof feedStoryViewSchema>;

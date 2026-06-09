@@ -14,6 +14,8 @@
 |--------|------|
 | `X-Viewer` | Per-comment `votes.voted` and root `rebloggedByViewer` |
 
+Query `currency` (optional, default `USD`) — see [post reward](post-reward.md).
+
 ## Response: `PostDiscussionResponse`
 
 | Field | Description |

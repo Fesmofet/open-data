@@ -13,7 +13,11 @@ import { GovernanceResolverService } from '../governance';
 import { buildFeedObjectChips } from './feed-object-summaries';
 import { ObjectProjectionService, emptyRankVoteProjection } from '../object-projection';
 import { FEED_OBJECT_UPDATE_TYPES, FEED_TAGGED_OBJECT_DISPLAY_LIMIT } from './feed.constants';
+import type { SupportedCurrency } from '@opden-data-layer/core';
+
+import { buildPostRewardInputFromPostRow } from './build-post-reward-input';
 import type { FeedStoryItemDto } from './feed-story-dtos';
+import type { PostRewardService } from './post-reward.service';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
@@ -27,6 +31,7 @@ export type BuildFeedStoryItemsFromPostPageDeps = {
   objectViewService: ObjectViewService;
   governanceResolver: GovernanceResolverService;
   objectProjection: ObjectProjectionService;
+  postRewardService: PostRewardService;
 };
 
 /**
@@ -38,6 +43,7 @@ export async function buildFeedStoryItemsFromPostPage(
   locale: string,
   governanceObjectIdFromHeader: string | undefined,
   viewerAccount: string | undefined,
+  currency: SupportedCurrency,
 ): Promise<FeedStoryItemDto[]> {
   const {
     postsRepo,
@@ -46,6 +52,7 @@ export async function buildFeedStoryItemsFromPostPage(
     objectViewService,
     governanceResolver,
     objectProjection,
+    postRewardService,
   } = deps;
 
   const keys = pageRows.map((r) => ({ author: r.author, permlink: r.permlink }));
@@ -96,6 +103,7 @@ export async function buildFeedStoryItemsFromPostPage(
   }
 
   const items: FeedStoryItemDto[] = [];
+  const rewardInputs: ReturnType<typeof buildPostRewardInputFromPostRow>[] = [];
   for (const row of pageRows) {
     const pk = `${row.author}\0${row.permlink}`;
     const post = postByKey.get(pk);
@@ -153,6 +161,8 @@ export async function buildFeedStoryItemsFromPostPage(
       children: post.children,
       pendingPayout: post.pending_payout_value ?? '',
       totalPayout: post.total_payout_value ?? '',
+      reward: null,
+      waivRewardEligible: false,
       netRshares: String(post.net_rshares),
       thumbnailUrl: extractThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
       videoThumbnailUrl: extractVideoThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
@@ -168,7 +178,8 @@ export async function buildFeedStoryItemsFromPostPage(
         voted: votes.voted,
       },
     });
+    rewardInputs.push(buildPostRewardInputFromPostRow(post));
   }
 
-  return items;
+  return postRewardService.enrichFeedItems(items, rewardInputs, currency);
 }

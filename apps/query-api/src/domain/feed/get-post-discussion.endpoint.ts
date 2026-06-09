@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HiveClient } from '@opden-data-layer/clients';
 import type { HiveContentType } from '@opden-data-layer/clients';
+import type { SupportedCurrency } from '@opden-data-layer/core';
 
 import { AccountsCurrentRepository, PostsRepository } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
@@ -16,6 +17,8 @@ import {
   postDiscussionKey,
   rebloggedUsersFromHiveContent,
 } from './build-post-discussion-tree';
+import { enrichDiscussionCommentsRewards } from './enrich-discussion-comments-rewards';
+import { PostRewardService } from './post-reward.service';
 import { viewerHasReblogged } from './viewer-reblog-state';
 
 @Injectable()
@@ -24,12 +27,14 @@ export class GetPostDiscussionEndpoint {
     private readonly hiveClient: HiveClient,
     private readonly accounts: AccountsCurrentRepository,
     private readonly postsRepo: PostsRepository,
+    private readonly postRewardService: PostRewardService,
   ) {}
 
   async execute(
     author: string,
     permlink: string,
     viewerAccount?: string,
+    currency: SupportedCurrency = 'USD',
   ): Promise<PostDiscussionResponseDto | null> {
     const state = await this.hiveClient.getState(author, permlink);
     const content = state.content ?? {};
@@ -123,6 +128,23 @@ export class GetPostDiscussionEndpoint {
       );
     }
 
+    const commentKeys = tree.commentKeys.map((id) => {
+      const node = this.findNodeById(content, id);
+      return node
+        ? { author: node.author, permlink: node.permlink }
+        : null;
+    }).filter((k): k is { author: string; permlink: string } => k != null);
+    const postRows = await this.postsRepo.findPostsByKeys(commentKeys);
+
+    const enrichedComments = await enrichDiscussionCommentsRewards(
+      this.postRewardService,
+      comments,
+      content,
+      postRows,
+      currency,
+      (id) => this.findNodeById(content, id),
+    );
+
     return {
       rootAuthor: author,
       rootPermlink: permlink,
@@ -130,7 +152,7 @@ export class GetPostDiscussionEndpoint {
       rebloggedByViewer,
       rootCommentIds: tree.rootCommentIds,
       childrenById: tree.childrenById,
-      comments,
+      comments: enrichedComments,
     };
   }
 

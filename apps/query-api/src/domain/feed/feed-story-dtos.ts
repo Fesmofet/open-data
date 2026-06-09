@@ -1,4 +1,41 @@
+import type { SupportedCurrency } from '@opden-data-layer/core';
+
 import type { ProjectedObject } from '../object-projection';
+
+export interface MoneyLineDto {
+  amount: number;
+  currency: string;
+  label: string;
+}
+
+export interface PostRewardBeneficiaryDto {
+  account: string;
+  percent: number;
+  payout?: MoneyLineDto;
+}
+
+export interface PostRewardBreakdownDto {
+  waiv: MoneyLineDto;
+  hive: MoneyLineDto;
+  hbd: MoneyLineDto;
+  total: MoneyLineDto;
+  authorPayout?: MoneyLineDto;
+  curatorPayout?: MoneyLineDto;
+}
+
+export interface PostRewardDto {
+  amount: number;
+  currency: SupportedCurrency;
+  label: string;
+  phase: 'potential' | 'paid';
+  breakdown: PostRewardBreakdownDto;
+  beneficiaries?: PostRewardBeneficiaryDto[];
+  cashoutAt?: string;
+  isPayoutDeclined?: boolean;
+  payoutLimitHit?: boolean;
+  promotionCost?: MoneyLineDto;
+  rewardPowerOnly?: boolean;
+}
 
 export interface FeedVoteSummaryDto {
   totalCount: number;
@@ -23,6 +60,9 @@ export interface FeedStoryItemDto {
   children: number;
   pendingPayout: string;
   totalPayout: string;
+  /** Server-computed display reward in requested currency. */
+  reward: PostRewardDto | null;
+  waivRewardEligible: boolean;
   netRshares: string;
   thumbnailUrl: string | null;
   /** Poster URL when post embeds video (json_metadata.video or video links in body). */

@@ -3,6 +3,8 @@ import 'server-only';
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
 import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
+import { DEFAULT_FEED_CURRENCY } from '../../domain/feed-currency';
+
 export interface UserBlogFeedResponse {
   items: unknown[];
   cursor: string | null;
@@ -22,7 +24,7 @@ export async function fetchUserBlogFeed(
   return queryApiFetch<UserBlogFeedResponse>(path, {
     method: 'POST',
     headers,
-    body: JSON.stringify(body ?? {}),
+    body: JSON.stringify({ ...body, currency: DEFAULT_FEED_CURRENCY }),
     cacheTags: [queryApiCacheTags.userBlogFeed(accountName)],
   });
 }

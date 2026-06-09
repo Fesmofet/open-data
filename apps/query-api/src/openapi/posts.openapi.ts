@@ -1,6 +1,7 @@
+import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core';
 import { z } from 'zod';
 
-import { feedStoryItemSchema } from './feed.openapi';
+import { feedStoryItemSchema, postRewardSchema } from './feed.openapi';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 
@@ -44,8 +45,24 @@ const singlePostViewSchema = registry.register(
       previewVoters: z.array(z.string()),
       voted: z.boolean(),
     }),
+    reward: postRewardSchema.nullable(),
+    waivRewardEligible: z.boolean(),
   }),
 );
+
+const currencyQueryParam = z
+  .enum(SUPPORTED_CURRENCIES)
+  .optional()
+  .default('USD')
+  .openapi({
+    param: {
+      name: 'currency',
+      in: 'query',
+      required: false,
+    },
+    description: 'Fiat currency for `reward` labels (default USD).',
+    example: 'USD',
+  });
 
 const authorParam = z
   .string()
@@ -84,6 +101,7 @@ registry.registerPath({
     'Full post body plus tagged objects (resolved fields for linked-object cards when available) and active vote summary. Optional `X-Viewer` sets administrative heart state per object. Not found when the post row is missing.',
   request: {
     params: z.object({ author: authorParam, permlink: permlinkParam }),
+    query: z.object({ currency: currencyQueryParam }),
     headers: z.object({
       'accept-language': z.string().optional(),
       'x-locale': z.string().optional(),
@@ -141,6 +159,7 @@ registry.registerPath({
     'Full comment tree for a post via `bridge.get_discussion`. No ODL DB merge for comment bodies in v1.',
   request: {
     params: z.object({ author: authorParam, permlink: permlinkParam }),
+    query: z.object({ currency: currencyQueryParam }),
     headers: z.object({
       'x-viewer': z.string().optional().openapi({
         description: 'Viewer account for per-comment `votes.voted` and `rebloggedByViewer` on root.',

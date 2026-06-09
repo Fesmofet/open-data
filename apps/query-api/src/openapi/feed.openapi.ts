@@ -1,3 +1,4 @@
+import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core';
 import { z } from 'zod';
 
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
@@ -28,6 +29,53 @@ const authorProfileSnippetSchema = registry.register(
   }),
 );
 
+const moneyLineSchema = registry.register(
+  'MoneyLine',
+  z.object({
+    amount: z.number(),
+    currency: z.string(),
+    label: z.string(),
+  }),
+);
+
+const postRewardBeneficiarySchema = registry.register(
+  'PostRewardBeneficiary',
+  z.object({
+    account: z.string(),
+    percent: z.number(),
+    payout: moneyLineSchema.optional(),
+  }),
+);
+
+const postRewardBreakdownSchema = registry.register(
+  'PostRewardBreakdown',
+  z.object({
+    waiv: moneyLineSchema,
+    hive: moneyLineSchema,
+    hbd: moneyLineSchema,
+    total: moneyLineSchema,
+    authorPayout: moneyLineSchema.optional(),
+    curatorPayout: moneyLineSchema.optional(),
+  }),
+);
+
+export const postRewardSchema = registry.register(
+  'PostReward',
+  z.object({
+    amount: z.number(),
+    currency: z.string(),
+    label: z.string(),
+    phase: z.enum(['potential', 'paid']),
+    breakdown: postRewardBreakdownSchema,
+    beneficiaries: z.array(postRewardBeneficiarySchema).optional(),
+    cashoutAt: z.string().datetime({ offset: true }).optional(),
+    isPayoutDeclined: z.boolean().optional(),
+    payoutLimitHit: z.boolean().optional(),
+    promotionCost: moneyLineSchema.optional(),
+    rewardPowerOnly: z.boolean().optional(),
+  }),
+);
+
 export const feedStoryItemSchema = registry.register(
   'FeedStoryItem',
   z.object({
@@ -52,6 +100,8 @@ export const feedStoryItemSchema = registry.register(
     authorProfile: authorProfileSnippetSchema,
     objects: z.array(projectedObjectOpenApiSchema),
     votes: feedVoteSummarySchema,
+    reward: postRewardSchema.nullable(),
+    waivRewardEligible: z.boolean(),
   }),
 );
 
@@ -64,11 +114,20 @@ const userBlogFeedResponseSchema = registry.register(
   }),
 );
 
+const feedCurrencyBodyField = z
+  .enum(SUPPORTED_CURRENCIES)
+  .optional()
+  .openapi({
+    description: 'Fiat currency for `reward` labels (default USD).',
+    example: 'USD',
+  });
+
 const userBlogFeedBodySchema = registry.register(
   'UserBlogFeedBody',
   z.object({
     limit: z.number().int().min(1).max(50).optional(),
     cursor: z.string().optional(),
+    currency: feedCurrencyBodyField,
   }),
 );
 
@@ -78,6 +137,7 @@ const userThreadsFeedBodySchema = registry.register(
     limit: z.number().int().min(1).max(50).optional(),
     cursor: z.string().optional(),
     sort: z.enum(['latest', 'oldest']).optional(),
+    currency: feedCurrencyBodyField,
   }),
 );
 

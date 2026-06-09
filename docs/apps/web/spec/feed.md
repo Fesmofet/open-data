@@ -6,6 +6,16 @@
 
 Feed rows render `Story` (via `StoryContainer`) with stats, overflow menu, and optional media.
 
+## Post reward badge
+
+Reward display uses server-computed `reward` from query-api (Plan A). The web app does not calculate payouts locally.
+
+- **`StoryRewardBadge`** — footer label (`reward.label`), accent when `waivRewardEligible`, WAIV logo tooltip (`eligible_for_waiv`), optional 100% HP flashlight hint (`rewardPowerOnly`).
+- **Hover** — `StoryRewardTooltip` + `StoryRewardDetail` (`variant="tooltip"`): currency breakdown, beneficiaries (percent), cashout / author/curator lines.
+- **Click** — opens `StoryRewardModal` with full breakdown, beneficiary payout amounts, and curators row in potential phase.
+- Used on feed **`Story`**, **`BlogPostScreen`**, and discussion **`StoryCommentRow`** when `comment.reward` is set.
+- Feed/post clients pass `currency=USD` until user settings supply a preference.
+
 ## Linked object cards
 
 Post bodies and discover use shared **`ObjectCard`** — see [object-card.md](object-card.md) (rating grid, administrative heart, description).

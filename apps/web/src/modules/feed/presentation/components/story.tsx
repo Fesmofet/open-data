@@ -20,10 +20,10 @@ import type { FeedTab } from '../../domain/feed-tab';
 import {
   FEED_STORY_PORTRAIT_PREVIEW_MAX_PX,
   FEED_STORY_TAGGED_OBJECT_MAX,
-  formatPayoutDisplay,
   formatRelativeFeedTime,
   formatReputation,
 } from './story-utils';
+import { StoryRewardBadge } from './story-reward-badge';
 import { ObjectPageLink } from './object-page-link';
 import { StoryCommentEditor } from './story-comment-editor';
 import { StoryCommentsSection } from './story-comments-section';
@@ -118,7 +118,6 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
   const displayTimeIso = story.feedAt ?? story.createdAt;
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
   const repLabel = formatReputation(story.authorReputation, locale);
-  const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
   const taggedObjects =
     story.objects && story.objects.length > 0
       ? story.objects.slice(0, FEED_STORY_TAGGED_OBJECT_MAX)
@@ -428,9 +427,11 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             isOwnPost={isOwnPost}
           />
         </div>
-        {payoutLabel ? (
-          <span className="text-body-sm font-weight-strong tabular-nums text-accent">{payoutLabel}</span>
-        ) : null}
+        <StoryRewardBadge
+          reward={story.reward}
+          waivRewardEligible={story.waivRewardEligible ?? false}
+          postAuthor={story.authorName}
+        />
       </footer>
       {commentsExpanded ? (
         <>

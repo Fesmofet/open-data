@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HiveClient } from '@opden-data-layer/clients';
 import { POST_LINKED_OBJECT_UPDATE_TYPES } from '@opden-data-layer/core';
-import type { Post } from '@opden-data-layer/core';
+import type { Post, SupportedCurrency } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
@@ -16,7 +16,9 @@ import { GovernanceResolverService } from '../governance';
 import { buildLinkedObjectSummaries } from './feed-object-summaries';
 import { mapHiveContentToSinglePostView } from './map-hive-content-to-single-post.dto';
 import { ObjectProjectionService, emptyRankVoteProjection } from '../object-projection';
+import { buildPostRewardInputFromPostRow, buildPostRewardInputFromHiveContent } from './build-post-reward-input';
 import type { SinglePostViewDto } from './feed-story-dtos';
+import { PostRewardService } from './post-reward.service';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
@@ -32,6 +34,7 @@ export class GetPostByKeyEndpoint {
     private readonly governanceResolver: GovernanceResolverService,
     private readonly objectProjection: ObjectProjectionService,
     private readonly hiveClient: HiveClient,
+    private readonly postRewardService: PostRewardService,
   ) {}
 
   async execute(
@@ -40,6 +43,7 @@ export class GetPostByKeyEndpoint {
     locale: string,
     governanceObjectIdFromHeader?: string,
     viewerAccount?: string,
+    currency: SupportedCurrency = 'USD',
   ): Promise<SinglePostViewDto | null> {
     const key = { author, permlink };
     const viewerTrimmed = viewerAccount?.trim() ?? '';
@@ -70,15 +74,22 @@ export class GetPostByKeyEndpoint {
       }
       const authorProfile = await this.resolveAuthorProfileForHiveFallback(author);
       const rebloggedInDb = viewerReblogKeys.has(`${author}\0${permlink}`);
-      return mapHiveContentToSinglePostView(
+      const view = mapHiveContentToSinglePostView(
         hiveContent,
         authorProfile,
         viewerAccount,
         rebloggedInDb,
       );
+      const input = buildPostRewardInputFromHiveContent(hiveContent);
+      const [enriched] = await this.postRewardService.enrichFeedItems(
+        [view],
+        [input],
+        currency,
+      );
+      return { ...enriched, body: view.body };
     }
 
-    return this.mapPostToSingleView(
+    const view = await this.mapPostToSingleView(
       post,
       postObjects,
       voteMap,
@@ -87,6 +98,13 @@ export class GetPostByKeyEndpoint {
       viewerAccount,
       viewerReblogKeys.has(`${post.author}\0${post.permlink}`),
     );
+    const input = buildPostRewardInputFromPostRow(post);
+    const [enriched] = await this.postRewardService.enrichFeedItems(
+      [view],
+      [input],
+      currency,
+    );
+    return { ...enriched, body: view.body };
   }
 
   private async resolveAuthorProfileForHiveFallback(
@@ -215,6 +233,8 @@ export class GetPostByKeyEndpoint {
       children: post.children,
       pendingPayout: post.pending_payout_value ?? '',
       totalPayout: post.total_payout_value ?? '',
+      reward: null,
+      waivRewardEligible: false,
       netRshares: String(post.net_rshares),
       thumbnailUrl: extractThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
       videoThumbnailUrl: extractVideoThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),

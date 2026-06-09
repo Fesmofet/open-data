@@ -133,6 +133,8 @@ export class GetUserThreadsFeedEndpoint {
         children: thread.children,
         pendingPayout: '',
         totalPayout: '',
+        reward: null,
+        waivRewardEligible: false,
         netRshares: '',
         thumbnailUrl,
         videoThumbnailUrl: extractVideoThumbnailUrl('', bodyText),

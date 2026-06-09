@@ -3,6 +3,8 @@ import type { HiveContentType } from '@opden-data-layer/clients';
 
 import { AccountsCurrentRepository, PostsRepository } from '../../repositories';
 import { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
+import { createPassthroughPostRewardServiceMock } from './post-reward.service.mock';
+import type { PostRewardService } from './post-reward.service';
 
 describe('GetPostDiscussionEndpoint', () => {
   const authorProfile = {
@@ -14,7 +16,10 @@ describe('GetPostDiscussionEndpoint', () => {
 
   let hiveClient: jest.Mocked<Pick<HiveClient, 'getState' | 'getAccounts'>>;
   let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByNames'>>;
-  let postsRepo: jest.Mocked<Pick<PostsRepository, 'findViewerRebloggedKeys'>>;
+  let postsRepo: jest.Mocked<
+    Pick<PostsRepository, 'findViewerRebloggedKeys' | 'findPostsByKeys'>
+  >;
+  const postRewardService = createPassthroughPostRewardServiceMock();
 
   beforeEach(() => {
     hiveClient = {
@@ -26,17 +31,22 @@ describe('GetPostDiscussionEndpoint', () => {
     };
     postsRepo = {
       findViewerRebloggedKeys: jest.fn().mockResolvedValue(new Set()),
+      findPostsByKeys: jest.fn().mockResolvedValue([]),
     };
   });
 
-  it('returns null when root post is missing from discussion', async () => {
-    hiveClient.getState.mockResolvedValue({ content: {} });
-    const endpoint = new GetPostDiscussionEndpoint(
+  function createEndpoint(): GetPostDiscussionEndpoint {
+    return new GetPostDiscussionEndpoint(
       hiveClient as unknown as HiveClient,
       accounts as unknown as AccountsCurrentRepository,
       postsRepo as unknown as PostsRepository,
+      postRewardService as unknown as PostRewardService,
     );
-    expect(await endpoint.execute('alice', 'post')).toBeNull();
+  }
+
+  it('returns null when root post is missing from discussion', async () => {
+    hiveClient.getState.mockResolvedValue({ content: {} });
+    expect(await createEndpoint().execute('alice', 'post')).toBeNull();
   });
 
   it('maps depth-1 comments and rebloggedByViewer', async () => {
@@ -61,12 +71,7 @@ describe('GetPostDiscussionEndpoint', () => {
     hiveClient.getState.mockResolvedValue({ content });
     accounts.findByNames.mockResolvedValue([]);
 
-    const endpoint = new GetPostDiscussionEndpoint(
-      hiveClient as unknown as HiveClient,
-      accounts as unknown as AccountsCurrentRepository,
-      postsRepo as unknown as PostsRepository,
-    );
-    const result = await endpoint.execute('alice', 'post', 'viewer');
+    const result = await createEndpoint().execute('alice', 'post', 'viewer');
     expect(result?.rootCommentIds).toEqual(['bob/c1']);
     expect(result?.comments['bob/c1']?.author).toBe('bob');
     expect(result?.rebloggedByViewer).toBe(true);
@@ -95,12 +100,7 @@ describe('GetPostDiscussionEndpoint', () => {
     };
     hiveClient.getState.mockResolvedValue({ content });
 
-    const endpoint = new GetPostDiscussionEndpoint(
-      hiveClient as unknown as HiveClient,
-      accounts as unknown as AccountsCurrentRepository,
-      postsRepo as unknown as PostsRepository,
-    );
-    const comment = await endpoint.execute('alice', 'post');
+    const comment = await createEndpoint().execute('alice', 'post');
     expect(comment?.comments['bob/c1']?.body).toBe(longBody);
     expect(comment?.comments['bob/c1']?.excerpt.length).toBeLessThan(longBody.length);
   });

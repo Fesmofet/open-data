@@ -5,6 +5,7 @@ import { ObjectProjectionModule } from '../object-projection';
 import { RepositoriesModule } from '../../repositories';
 import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 import { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
+import { PostRewardService } from './post-reward.service';
 import { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
@@ -19,6 +20,7 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
     GetUserMentionsFeedEndpoint,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
+    PostRewardService,
   ],
   exports: [
     GetUserBlogFeedEndpoint,
@@ -27,6 +29,7 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
     GetUserMentionsFeedEndpoint,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
+    PostRewardService,
   ],
 })
 export class FeedModule {}

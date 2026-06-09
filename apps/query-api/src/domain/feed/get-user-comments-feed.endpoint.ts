@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { HiveClient } from '@opden-data-layer/clients';
 import type { HiveContentType } from '@opden-data-layer/clients';
 
-import { AccountsCurrentRepository } from '../../repositories';
+import { AccountsCurrentRepository, PostsRepository } from '../../repositories';
+import { buildPostRewardInputFromSources } from './build-post-reward-input';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { decodeFeedCursor, encodeFeedCursor } from './feed-cursor';
 import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
 import { mapHiveContentToFeedStoryItemDto } from './map-hive-content-to-feed-story-item.dto';
+import { PostRewardService } from './post-reward.service';
 import type { UserThreadsFeedBody } from './schemas/user-threads-feed.schema';
 
 /** Same as legacy Waivio: skip Leo Threads app comments, keep paging Hive until the page is filled. */
@@ -36,6 +38,8 @@ export class GetUserCommentsFeedEndpoint {
   constructor(
     private readonly accounts: AccountsCurrentRepository,
     private readonly hiveClient: HiveClient,
+    private readonly postsRepo: PostsRepository,
+    private readonly postRewardService: PostRewardService,
   ) {}
 
   async execute(
@@ -132,6 +136,24 @@ export class GetUserCommentsFeedEndpoint {
       mapHiveContentToFeedStoryItemDto(c, authorProfile, viewerAccount),
     );
 
+    const postRows = await this.postsRepo.findPostsByKeys(
+      pageRows.map((c) => ({ author: c.author, permlink: c.permlink })),
+    );
+    const postByKey = new Map(
+      postRows.map((p) => [`${p.author}\0${p.permlink}`, p]),
+    );
+    const rewardInputs = pageRows.map((c) =>
+      buildPostRewardInputFromSources(
+        c,
+        postByKey.get(`${c.author}\0${c.permlink}`),
+      ),
+    );
+    const enrichedItems = await this.postRewardService.enrichFeedItems(
+      items,
+      rewardInputs,
+      body.currency,
+    );
+
     let nextCursor: string | null = null;
     if (hasMore && pageRows.length > 0) {
       const last = pageRows[pageRows.length - 1];
@@ -146,7 +168,7 @@ export class GetUserCommentsFeedEndpoint {
     }
 
     return {
-      items,
+      items: enrichedItems,
       cursor: nextCursor,
       hasMore,
     };

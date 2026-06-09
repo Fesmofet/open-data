@@ -92,6 +92,8 @@ export function mapHiveContentToSinglePostView(
     children: typeof content.children === 'number' ? content.children : Number(content.children) || 0,
     pendingPayout: content.pending_payout_value ?? '',
     totalPayout: content.total_payout_value ?? '',
+    reward: null,
+    waivRewardEligible: false,
     netRshares: String(content.net_rshares ?? 0),
     thumbnailUrl: extractThumbnailUrl(jsonMetadata, body),
     videoThumbnailUrl: extractVideoThumbnailUrl(jsonMetadata, body),

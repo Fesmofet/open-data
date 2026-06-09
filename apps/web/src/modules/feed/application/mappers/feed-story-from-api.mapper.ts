@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { FeedStoryView } from '../dto/feed-story.dto';
+import { postRewardSchema } from '../dto/post-reward.dto';
 
 const projectedObjectApiSchema = z.object({
   object_id: z.string(),
@@ -43,6 +44,8 @@ export const feedStoryItemApiSchema = z.object({
     previewVoters: z.array(z.string()),
     voted: z.boolean().optional().default(false),
   }),
+  reward: postRewardSchema.nullable().optional(),
+  waivRewardEligible: z.boolean().optional().default(false),
 });
 
 /** Single-post endpoint: same as feed item plus full `body`. */
@@ -94,6 +97,8 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     netRshares: item.netRshares,
     objects: item.objects,
     votes: item.votes,
+    reward: item.reward ?? null,
+    waivRewardEligible: item.waivRewardEligible ?? false,
   };
 }
 

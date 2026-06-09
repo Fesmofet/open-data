@@ -1,3 +1,4 @@
+import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core';
 import { z } from 'zod';
 
 export const userThreadsFeedBodySchema = z.preprocess(
@@ -6,6 +7,7 @@ export const userThreadsFeedBodySchema = z.preprocess(
     limit: z.number().int().min(1).max(50).optional().default(20),
     cursor: z.string().optional(),
     sort: z.enum(['latest', 'oldest']).optional().default('latest'),
+    currency: z.enum(SUPPORTED_CURRENCIES).optional().default('USD'),
   }),
 );
 
