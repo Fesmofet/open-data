@@ -1,6 +1,8 @@
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
+import { linkifyBareImageUrls, linkifyHiveMentions } from './social-content-html';
+
 /**
  * If the body already contains typical Hive/HTML markup, skip markdown and only sanitize.
  */
@@ -136,8 +138,12 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 
 /** Markdown or HTML post body → safe HTML for display. Client and server safe. */
 export function sanitizePostBodyHtml(raw: string): string {
-  const intermediate = embedYouTubeUrls(
-    convertMarkdownImages(postBodyToIntermediateHtml(raw)),
+  const parsed = postBodyToIntermediateHtml(raw);
+  const withImages = POST_BODY_LOOKS_LIKE_HTML.test(raw)
+    ? parsed
+    : linkifyBareImageUrls(parsed);
+  const intermediate = linkifyHiveMentions(
+    embedYouTubeUrls(convertMarkdownImages(withImages)),
   );
   return sanitizeHtml(intermediate, POST_BODY_SANITIZE_OPTIONS);
 }

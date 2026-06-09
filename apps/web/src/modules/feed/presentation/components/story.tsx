@@ -383,7 +383,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
 
           <div
             suppressHydrationWarning
-            className="feed-story-excerpt pointer-events-none min-h-[1.5em] text-body text-fg line-clamp-6 [&_a]:pointer-events-auto [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_p]:m-0 [&_p]:text-fg [&_p+p]:mt-2"
+            className="feed-story-excerpt pointer-events-none min-h-[1.5em] text-body text-fg line-clamp-6 [&_a]:pointer-events-auto [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_img]:pointer-events-auto [&_img]:my-2 [&_img]:h-auto [&_img]:max-w-full [&_p]:m-0 [&_p]:text-fg [&_p+p]:mt-2"
             dangerouslySetInnerHTML={{ __html: feedExcerptToSafeHtml(story.excerpt) }}
           />
           {story.isNsfw ? (

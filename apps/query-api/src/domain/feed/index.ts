@@ -9,6 +9,7 @@ export type {
   FeedStoryItemDto,
   FeedVoteSummaryDto,
   SinglePostViewDto,
+  DiscussionCommentDto,
   UserBlogFeedResponse,
   PostDiscussionResponseDto,
 } from './feed-story-dtos';

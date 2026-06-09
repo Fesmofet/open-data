@@ -5,13 +5,17 @@ import type { HiveContentType } from '@opden-data-layer/clients';
 import { AccountsCurrentRepository, PostsRepository } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { parsePostingMetadata } from '../users/parse-posting-metadata';
-import type { PostDiscussionResponseDto, FeedStoryItemDto } from './feed-story-dtos';
+import type {
+  DiscussionCommentDto,
+  FeedStoryItemDto,
+  PostDiscussionResponseDto,
+} from './feed-story-dtos';
+import { mapHiveContentToDiscussionCommentDto } from './map-hive-content-to-discussion-comment.dto';
 import {
   buildPostDiscussionTree,
   postDiscussionKey,
   rebloggedUsersFromHiveContent,
 } from './build-post-discussion-tree';
-import { mapHiveContentToFeedStoryItemDto } from './map-hive-content-to-feed-story-item.dto';
 import { viewerHasReblogged } from './viewer-reblog-state';
 
 @Injectable()
@@ -98,7 +102,7 @@ export class GetPostDiscussionEndpoint {
       }
     }
 
-    const comments: Record<string, FeedStoryItemDto> = {};
+    const comments: Record<string, DiscussionCommentDto> = {};
     for (const id of tree.commentKeys) {
       const node = this.findNodeById(content, id);
       if (!node) {
@@ -112,11 +116,10 @@ export class GetPostDiscussionEndpoint {
         avatarUrl: null,
         reputation: Number(node.author_reputation ?? 0),
       };
-      comments[id] = mapHiveContentToFeedStoryItemDto(
+      comments[id] = mapHiveContentToDiscussionCommentDto(
         node,
         authorProfile,
         viewerAccount,
-        false,
       );
     }
 

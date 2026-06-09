@@ -1,4 +1,4 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { Controller, Get, Header, NotFoundException, Param } from '@nestjs/common';
 import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetPostByKeyEndpoint,
@@ -38,6 +38,7 @@ export class PostsController {
   }
 
   @Get(':author/:permlink/discussion')
+  @Header('Cache-Control', 'no-store')
   async getDiscussion(
     @Param('author') author: string,
     @Param('permlink') permlink: string,

@@ -115,6 +115,11 @@ registry.registerPath({
   },
 });
 
+const discussionCommentSchema = registry.register(
+  'DiscussionComment',
+  feedStoryItemSchema.extend({ body: z.string() }),
+);
+
 const postDiscussionResponseSchema = registry.register(
   'PostDiscussionResponse',
   z.object({
@@ -124,7 +129,7 @@ const postDiscussionResponseSchema = registry.register(
     rebloggedByViewer: z.boolean(),
     rootCommentIds: z.array(z.string()),
     childrenById: z.record(z.string(), z.array(z.string())),
-    comments: z.record(z.string(), feedStoryItemSchema),
+    comments: z.record(z.string(), discussionCommentSchema),
   }),
 );
 

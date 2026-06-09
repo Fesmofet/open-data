@@ -50,6 +50,13 @@ export const singlePostApiSchema = feedStoryItemApiSchema.extend({
   body: z.string(),
 });
 
+/** Discussion comment: feed card fields plus full Hive `body`. */
+export const discussionCommentApiSchema = feedStoryItemApiSchema.extend({
+  body: z.string(),
+});
+
+export type DiscussionCommentApi = z.infer<typeof discussionCommentApiSchema>;
+
 export const userBlogFeedResponseSchema = z.object({
   items: z.array(feedStoryItemApiSchema),
   cursor: z.string().nullable(),
@@ -57,6 +64,8 @@ export const userBlogFeedResponseSchema = z.object({
 });
 
 export type FeedStoryItemApi = z.infer<typeof feedStoryItemApiSchema>;
+
+export type DiscussionCommentView = FeedStoryView & { body: string };
 
 export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView {
   return {
@@ -85,5 +94,14 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     netRshares: item.netRshares,
     objects: item.objects,
     votes: item.votes,
+  };
+}
+
+export function mapDiscussionCommentApiToView(
+  item: DiscussionCommentApi,
+): DiscussionCommentView {
+  return {
+    ...mapFeedStoryItemApiToView(item),
+    body: item.body,
   };
 }

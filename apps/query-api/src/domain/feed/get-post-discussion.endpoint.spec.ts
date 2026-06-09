@@ -72,4 +72,36 @@ describe('GetPostDiscussionEndpoint', () => {
     expect(result?.rebloggedByViewer).toBe(true);
     expect(result?.rebloggedUsers).toEqual(['viewer']);
   });
+
+  it('keeps full comment body (not feed excerpt truncation)', async () => {
+    const longBody = 'x'.repeat(500);
+    const content: Record<string, HiveContentType> = {
+      'alice/post': {
+        author: 'alice',
+        permlink: 'post',
+        depth: '0',
+        reblogged_users: [],
+        replies: ['bob/c1'],
+      } as HiveContentType,
+      'bob/c1': {
+        author: 'bob',
+        permlink: 'c1',
+        depth: '1',
+        body: longBody,
+        created: '2024-01-01T00:00:00',
+        reblogged_users: [],
+        active_votes: [],
+      } as HiveContentType,
+    };
+    hiveClient.getState.mockResolvedValue({ content });
+
+    const endpoint = new GetPostDiscussionEndpoint(
+      hiveClient as unknown as HiveClient,
+      accounts as unknown as AccountsCurrentRepository,
+      postsRepo as unknown as PostsRepository,
+    );
+    const comment = await endpoint.execute('alice', 'post');
+    expect(comment?.comments['bob/c1']?.body).toBe(longBody);
+    expect(comment?.comments['bob/c1']?.excerpt.length).toBeLessThan(longBody.length);
+  });
 });

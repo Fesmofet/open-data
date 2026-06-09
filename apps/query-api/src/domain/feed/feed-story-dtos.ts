@@ -50,6 +50,11 @@ export interface SinglePostViewDto extends FeedStoryItemDto {
   body: string;
 }
 
+/** Discussion comment row: feed card fields plus full Hive `body`. */
+export interface DiscussionCommentDto extends FeedStoryItemDto {
+  body: string;
+}
+
 export interface PostDiscussionResponseDto {
   rootAuthor: string;
   rootPermlink: string;
@@ -57,5 +62,5 @@ export interface PostDiscussionResponseDto {
   rebloggedByViewer: boolean;
   rootCommentIds: string[];
   childrenById: Record<string, string[]>;
-  comments: Record<string, FeedStoryItemDto>;
+  comments: Record<string, DiscussionCommentDto>;
 }

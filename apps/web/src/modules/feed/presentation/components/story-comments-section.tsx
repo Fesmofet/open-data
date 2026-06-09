@@ -15,7 +15,9 @@ import {
 import { DiscussionCommentSortDropdown } from './discussion-comment-sort-dropdown';
 import { StoryCommentRow } from './story-comment-row';
 
-const ROOT_COMMENTS_PAGE_INCREMENT = 10;
+const QUICK_INITIAL_COMMENTS = 3;
+const QUICK_COMMENTS_PAGE_INCREMENT = 10;
+const FULL_ROOT_COMMENTS_PAGE_INCREMENT = 10;
 
 export type StoryCommentsLayout = 'quick' | 'full';
 
@@ -27,6 +29,42 @@ type StoryCommentsSectionProps = {
   layout?: StoryCommentsLayout;
 };
 
+function ShowMoreCommentsButton({
+  label,
+  onClick,
+  chevronUp,
+}: {
+  label: string;
+  onClick: () => void;
+  chevronUp?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center justify-center gap-1 rounded-btn py-2 text-body-sm text-accent hover:underline"
+      onClick={onClick}
+    >
+      <span>{label}</span>
+      <svg
+        aria-hidden="true"
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="none"
+        className={chevronUp ? 'shrink-0' : 'shrink-0 rotate-180'}
+      >
+        <path
+          d="M2 4l4 4 4-4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
 export function StoryCommentsSection({
   story,
   currentUsername,
@@ -35,11 +73,18 @@ export function StoryCommentsSection({
 }: StoryCommentsSectionProps) {
   const { t } = useI18n();
   const isFullLayout = layout === 'full';
+  const pageIncrement = isFullLayout
+    ? FULL_ROOT_COMMENTS_PAGE_INCREMENT
+    : QUICK_COMMENTS_PAGE_INCREMENT;
+  const initialVisibleCount = isFullLayout
+    ? FULL_ROOT_COMMENTS_PAGE_INCREMENT
+    : QUICK_INITIAL_COMMENTS;
+
   const [discussion, setDiscussion] = useState<PostDiscussionView | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<DiscussionCommentSort>(isFullLayout ? 'BEST' : 'NEWEST');
-  const [visibleCount, setVisibleCount] = useState(ROOT_COMMENTS_PAGE_INCREMENT);
+  const [sort, setSort] = useState<DiscussionCommentSort>('BEST');
+  const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
 
   const loadDiscussion = useCallback(async () => {
     if (!expanded) {
@@ -70,9 +115,9 @@ export function StoryCommentsSection({
 
   useEffect(() => {
     if (!expanded) {
-      setVisibleCount(ROOT_COMMENTS_PAGE_INCREMENT);
+      setVisibleCount(initialVisibleCount);
     }
-  }, [expanded]);
+  }, [expanded, initialVisibleCount]);
 
   if (!expanded) {
     return null;
@@ -90,6 +135,7 @@ export function StoryCommentsSection({
 
   const visibleRoots = rootComments.slice(0, visibleCount);
   const hasMoreRoots = rootComments.length > visibleCount;
+  const showMoreLabel = t('show_more_comments');
 
   return (
     <section className="mt-3 border-t border-border pt-3" aria-label="Comments">
@@ -111,6 +157,14 @@ export function StoryCommentsSection({
         <p className="text-body-sm text-muted">No comments yet.</p>
       ) : null}
 
+      {!isFullLayout && hasMoreRoots ? (
+        <ShowMoreCommentsButton
+          label={showMoreLabel}
+          chevronUp
+          onClick={() => setVisibleCount((n) => n + pageIncrement)}
+        />
+      ) : null}
+
       {discussion ? (
         <ul className="flex flex-col gap-3">
           {visibleRoots.map((comment) => (
@@ -126,14 +180,11 @@ export function StoryCommentsSection({
         </ul>
       ) : null}
 
-      {hasMoreRoots ? (
-        <button
-          type="button"
-          className="mt-3 rounded-btn px-2 py-1 text-body-sm text-accent hover:underline"
-          onClick={() => setVisibleCount((n) => n + ROOT_COMMENTS_PAGE_INCREMENT)}
-        >
-          Show more comments
-        </button>
+      {isFullLayout && hasMoreRoots ? (
+        <ShowMoreCommentsButton
+          label={showMoreLabel}
+          onClick={() => setVisibleCount((n) => n + pageIncrement)}
+        />
       ) : null}
     </section>
   );

@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html';
+import { sanitizePostBodyHtml } from '@/shared/infrastructure/post-body-html-pipeline';
 import { UserAvatar } from '@/shared/presentation';
 
+import type { DiscussionCommentView } from '../../application/mappers/feed-story-from-api.mapper';
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { PostDiscussionView } from '../../application/dto/post-discussion.dto';
 
@@ -15,7 +16,7 @@ import { formatRelativeFeedTime } from './story-utils';
 import { StoryVoteButton } from './story-vote-button';
 
 type StoryCommentRowProps = {
-  comment: FeedStoryView;
+  comment: DiscussionCommentView;
   discussion: PostDiscussionView;
   rootStory: FeedStoryView;
   currentUsername: string | null;
@@ -41,7 +42,7 @@ export function StoryCommentRow({
     <li className="list-none">
       <article
         className="rounded-btn border border-border bg-surface-control/60 p-3"
-        style={{ marginLeft: depth > 0 ? `${Math.min(depth, 4) * 0.75}rem` : undefined }}
+        style={{ marginLeft: depth > 0 ? `${Math.min(depth, 6) * 1.25}rem` : undefined }}
       >
         <header className="flex gap-2">
           <Link
@@ -70,8 +71,8 @@ export function StoryCommentRow({
               </time>
             </div>
             <div
-              className="mt-1 text-body-sm text-fg [&_a]:text-accent [&_a]:underline [&_p]:m-0"
-              dangerouslySetInnerHTML={{ __html: feedExcerptToSafeHtml(comment.excerpt) }}
+              className="mt-1 text-body-sm text-fg [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_img]:my-2 [&_img]:h-auto [&_img]:max-w-full [&_p]:m-0"
+              dangerouslySetInnerHTML={{ __html: sanitizePostBodyHtml(comment.body) }}
             />
           </div>
         </header>

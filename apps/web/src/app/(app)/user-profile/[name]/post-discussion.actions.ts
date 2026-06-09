@@ -1,5 +1,7 @@
 'use server';
 
+import { unstable_noStore as noStore } from 'next/cache';
+
 import type { PostDiscussionView } from '@/modules/feed/application/dto/post-discussion.dto';
 import { mapPostDiscussionApiToView } from '@/modules/feed/application/mappers/post-discussion-from-api.mapper';
 import { fetchPostDiscussion } from '@/modules/feed/infrastructure/clients/post-discussion.client';
@@ -9,6 +11,7 @@ export async function loadPostDiscussionAction(
   author: string,
   permlink: string,
 ): Promise<PostDiscussionView | null> {
+  noStore();
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
   const viewer = user?.username ?? null;

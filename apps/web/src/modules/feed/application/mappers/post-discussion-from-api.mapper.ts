@@ -1,13 +1,13 @@
 import type { PostDiscussionApi, PostDiscussionView } from '../dto/post-discussion.dto';
 import { postDiscussionApiSchema } from '../dto/post-discussion.dto';
 
-import { mapFeedStoryItemApiToView } from './feed-story-from-api.mapper';
+import { mapDiscussionCommentApiToView } from './feed-story-from-api.mapper';
 
 export function mapPostDiscussionApiToView(raw: PostDiscussionApi): PostDiscussionView {
   const parsed = postDiscussionApiSchema.parse(raw);
   const comments: PostDiscussionView['comments'] = {};
   for (const [key, item] of Object.entries(parsed.comments)) {
-    comments[key] = mapFeedStoryItemApiToView(item);
+    comments[key] = mapDiscussionCommentApiToView(item);
   }
   return {
     rootAuthor: parsed.rootAuthor,
