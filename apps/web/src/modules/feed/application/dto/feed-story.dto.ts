@@ -16,6 +16,7 @@ export const projectedObjectViewSchema = z.object({
     .array(
       z.object({
         url: z.string(),
+        cid: z.string().optional(),
         rankScore: z.number().nullable(),
         isAvatar: z.boolean(),
         update_id: z.string().optional(),
@@ -29,6 +30,7 @@ export const projectedObjectViewSchema = z.object({
         items: z.array(
           z.object({
             url: z.string(),
+            cid: z.string().optional(),
             rankScore: z.number().nullable(),
             isAvatar: z.boolean(),
             update_id: z.string().optional(),
