@@ -1276,6 +1276,7 @@ function readPreviewGalleryFromApi(o: ProjectedObjectView): ProjectedGalleryPhot
     if (!url) {
       continue;
     }
+    const cid = readString(row.cid) ?? undefined;
     const rankScore =
       typeof row.rankScore === 'number' && Number.isFinite(row.rankScore)
         ? row.rankScore
@@ -1285,6 +1286,7 @@ function readPreviewGalleryFromApi(o: ProjectedObjectView): ProjectedGalleryPhot
       url,
       rankScore,
       isAvatar: row.isAvatar === true,
+      ...(cid ? { cid } : {}),
       ...(updateId ? { update_id: updateId } : {}),
     });
   }
@@ -1316,6 +1318,7 @@ function readGalleryAlbumsFromApi(o: ProjectedObjectView): ProjectedGalleryAlbum
         if (!url) {
           continue;
         }
+        const cid = readString(item.cid) ?? undefined;
         const rankScore =
           typeof item.rankScore === 'number' && Number.isFinite(item.rankScore)
             ? item.rankScore
@@ -1325,6 +1328,7 @@ function readGalleryAlbumsFromApi(o: ProjectedObjectView): ProjectedGalleryAlbum
           url,
           rankScore,
           isAvatar: item.isAvatar === true,
+          ...(cid ? { cid } : {}),
           ...(updateId ? { update_id: updateId } : {}),
         });
       }

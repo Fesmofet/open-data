@@ -64,7 +64,10 @@ export type ObjectNestedViewResolved = Omit<ObjectNestedViewEntry, 'pending'>;
 
 /** Resolved gallery photo for carousel and description page. */
 export type ProjectedGalleryPhotoView = {
+  /** Display URL (resolved from cid when the source update is IPFS-only). */
   url: string;
+  /** Canonical IPFS CID when the source update stored cid (omitted for url-only items). */
+  cid?: string;
   rankScore: number | null;
   isAvatar: boolean;
   update_id?: string;

@@ -77,6 +77,30 @@ describe('buildGalleryAlbums', () => {
     expect(result.previewGallery[0]?.isAvatar).toBe(true);
   });
 
+  it('preserves cid on gallery items for broadcast round-trip', () => {
+    const result = buildGalleryAlbums({
+      imageGallery: ['Photos'],
+      imageGalleryItem: [
+        {
+          album: 'Photos',
+          cid: 'bafyTest',
+          url: 'https://example.com/ipfs-gateway/content/image/bafyTest',
+          rank_score: 100,
+          update_id: 'g-cid',
+        },
+      ],
+      avatarUrl: null,
+    });
+
+    expect(result.previewGallery[0]).toEqual({
+      url: 'https://example.com/ipfs-gateway/content/image/bafyTest',
+      cid: 'bafyTest',
+      rankScore: 100,
+      isAvatar: false,
+      update_id: 'g-cid',
+    });
+  });
+
   it('returns empty preview when no photos', () => {
     const result = buildGalleryAlbums({
       imageGallery: [],

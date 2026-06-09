@@ -33,6 +33,10 @@ import {
   EMPTY_GALLERY_APPROVAL_STAT,
   resolveGalleryPhotoApprovalStat,
 } from '@/modules/object/domain/gallery-approval-stats';
+import {
+  galleryPhotoToGalleryItemValue,
+  galleryPhotoToImageCidOrUrlValue,
+} from '@/modules/object/domain/gallery-photo-update-value';
 import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/gallery/gallery-approval.actions';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
@@ -260,7 +264,7 @@ export function ObjectGalleryViewer({
           updateType: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
           creator,
           valueKind: 'json',
-          value: { album: targetAlbumName, url: currentPhoto.url },
+          value: galleryPhotoToGalleryItemValue(targetAlbumName, currentPhoto),
           required_posting_auths: [creator],
         });
         const { transactionId } = await getWalletFacade().broadcast({
@@ -611,7 +615,7 @@ export function ObjectGalleryViewer({
           objectId={objectId}
           viewerUsername={viewerUsername}
           updateType={UPDATE_TYPES.IMAGE}
-          initialValue={{ url: currentPhoto.url }}
+          initialValue={galleryPhotoToImageCidOrUrlValue(currentPhoto)}
           updateTypeCounts={updateTypeCounts}
         />
       ) : null}

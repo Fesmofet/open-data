@@ -61,6 +61,7 @@ function readAlbumNames(imageGallery: unknown): string[] {
 type RawGalleryItem = {
   album: string;
   url: string;
+  cid?: string;
   rankScore: number | null;
   updateId?: string;
 };
@@ -79,11 +80,13 @@ function readGalleryItems(imageGalleryItem: unknown): RawGalleryItem[] {
     if (!album || !url) {
       continue;
     }
+    const cid = readString(row.cid) ?? undefined;
     const updateId = readString(row.update_id) ?? undefined;
     items.push({
       album,
       url,
       rankScore: readRankScore(row.rank_score),
+      ...(cid ? { cid } : {}),
       updateId,
     });
   }
@@ -95,11 +98,13 @@ function toPhoto(
   rankScore: number | null,
   isAvatar = false,
   updateId?: string,
+  cid?: string,
 ): ProjectedGalleryPhoto {
   return {
     url,
     rankScore,
     isAvatar,
+    ...(cid ? { cid } : {}),
     ...(updateId ? { update_id: updateId } : {}),
   };
 }
@@ -153,7 +158,13 @@ export function buildGalleryAlbums(input: BuildGalleryAlbumsInput): BuildGallery
   const orphans: ProjectedGalleryPhoto[] = [];
 
   for (const item of rawItems) {
-    const photo = toPhoto(item.url, item.rankScore, false, item.updateId);
+    const photo = toPhoto(
+      item.url,
+      item.rankScore,
+      false,
+      item.updateId,
+      item.cid,
+    );
     if (albumNameSet.has(item.album)) {
       albumsByName.get(item.album)!.push(photo);
       continue;

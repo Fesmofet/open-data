@@ -76,6 +76,8 @@ export interface ProjectedObject {
 /** One resolved gallery image with vote rank for sort order. */
 export interface ProjectedGalleryPhoto {
   url: string;
+  /** Canonical IPFS CID when the source update stored cid (omitted for url-only items). */
+  cid?: string;
   rankScore: number | null;
   isAvatar: boolean;
   /** Source `imageGalleryItem` update id (omitted for synthetic avatar row). */
