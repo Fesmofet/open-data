@@ -756,6 +756,7 @@ export function ObjectPageClient({
           objectId={model.objectId}
           objectName={model.title}
           album={galleryFullView.album}
+          allAlbumNames={model.galleryAlbums.map((a) => a.name)}
           initialIndex={galleryFullView.initialIndex}
           onClose={onCloseGalleryFullView}
           viewerUsername={viewerUsername}

@@ -44,7 +44,7 @@ export function UserAvatar({
 
   const frameClass = isSquare
     ? 'self-start shrink-0 object-contain shadow-card'
-    : 'self-start shrink-0 border-4 border-bg object-cover shadow-card';
+    : 'self-start shrink-0 object-cover shadow-card';
 
   /** Locks the box in flex layouts: default `align-items: stretch` would vertically stretch the avatar row. */
   const dimensionStyle = {

@@ -1,11 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState, type SVGProps } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type SVGProps,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
-import { buildOdlUpdateVoteOp } from '@opden-data-layer/hive-broadcast';
+import {
+  buildOdlUpdateCreateOp,
+  buildOdlUpdateVoteOp,
+} from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
@@ -77,6 +87,8 @@ export type ObjectGalleryViewerProps = {
   objectId: string;
   objectName: string;
   album: ProjectedGalleryAlbumView;
+  /** Real gallery album names on the object (excludes virtual albums like Related). */
+  allAlbumNames: readonly string[];
   initialIndex: number;
   onClose: () => void;
   viewerUsername: string | null;
@@ -89,6 +101,7 @@ export function ObjectGalleryViewer({
   objectId,
   objectName,
   album,
+  allAlbumNames,
   initialIndex,
   onClose,
   viewerUsername,
@@ -114,6 +127,8 @@ export function ObjectGalleryViewer({
   const [votePending, setVotePending] = useState(false);
   const [voteConfirming, setVoteConfirming] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
+  const [addAlbumPending, setAddAlbumPending] = useState<string | null>(null);
+  const [addAlbumError, setAddAlbumError] = useState<string | null>(null);
   const albumDropdownRef = useRef<HTMLDivElement>(null);
 
   const photos = album.items;
@@ -121,6 +136,12 @@ export function ObjectGalleryViewer({
   const currentPhoto = photos[activeIndex];
   const displayName = objectName.trim() || objectId;
   const canSetAvatar = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
+  const canAddToAlbum = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
+  const otherAlbumNames = useMemo(
+    () => allAlbumNames.filter((name) => name !== album.name),
+    [allAlbumNames, album.name],
+  );
+  const isCurrentPhotoAvatar = currentPhoto?.isAvatar === true;
 
   const currentStat = currentPhoto
     ? resolveGalleryPhotoApprovalStat(currentPhoto, approvalStats)
@@ -219,6 +240,58 @@ export function ObjectGalleryViewer({
     }
     setAvatarModalOpen(true);
   }, [onRequireLogin, viewerUsername]);
+
+  const onAddToAlbum = useCallback(
+    async (targetAlbumName: string) => {
+      const creator = viewerUsername?.trim();
+      if (!creator) {
+        onRequireLogin();
+        return;
+      }
+      if (!canAddToAlbum || addAlbumPending || !currentPhoto) {
+        return;
+      }
+      setAddAlbumPending(targetAlbumName);
+      setAddAlbumError(null);
+      try {
+        const op = buildOdlUpdateCreateOp({
+          id: odlCustomJsonId,
+          objectId,
+          updateType: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
+          creator,
+          valueKind: 'json',
+          value: { album: targetAlbumName, url: currentPhoto.url },
+          required_posting_auths: [creator],
+        });
+        const { transactionId } = await getWalletFacade().broadcast({
+          operations: [op],
+        });
+        setAddAlbumPending(null);
+        setAlbumDropdownOpen(false);
+        void awaitTrxConfirmation(transactionId).finally(() => {
+          void refreshAfterBroadcast(router, () =>
+            revalidateObjectAfterBroadcast(objectId),
+          );
+        });
+      } catch (err) {
+        setAddAlbumError(
+          err instanceof Error ? err.message : t('object_edit_validation_error'),
+        );
+        setAddAlbumPending(null);
+      }
+    },
+    [
+      addAlbumPending,
+      canAddToAlbum,
+      currentPhoto,
+      objectId,
+      odlCustomJsonId,
+      onRequireLogin,
+      router,
+      t,
+      viewerUsername,
+    ],
+  );
 
   const onVote = useCallback(
     async (vote: 'for' | 'against') => {
@@ -326,7 +399,10 @@ export function ObjectGalleryViewer({
           ) : null}
         </div>
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-body-sm">
-          <span className="gallery-chrome-text truncate font-weight-label">
+          <span
+            className="gallery-chrome-text max-w-[16rem] truncate font-weight-label"
+            title={displayName}
+          >
             <span className="gallery-chrome-text-muted">{t('object_gallery_viewer_related_object')}</span>{' '}
             {displayName}
           </span>
@@ -335,6 +411,7 @@ export function ObjectGalleryViewer({
               type="button"
               className="gallery-chrome-control inline-flex items-center gap-1 px-2 py-1"
               aria-expanded={albumDropdownOpen}
+              aria-haspopup="listbox"
               onClick={() => setAlbumDropdownOpen((open) => !open)}
             >
               <span className="gallery-chrome-text-muted">{t('album')}:</span>
@@ -344,18 +421,80 @@ export function ObjectGalleryViewer({
               </span>
             </button>
             {albumDropdownOpen ? (
-              <div className="absolute left-0 top-full z-10 mt-1 min-w-[12rem] overflow-hidden rounded-btn border border-border bg-surface shadow-card-float">
-                <div className="border-b border-border px-3 py-2 text-body-sm text-fg">
-                  {album.name}
+              <div
+                className="absolute left-0 top-full z-10 mt-1 min-w-[12rem] overflow-hidden rounded-btn border border-border bg-surface shadow-card-float"
+                role="listbox"
+                aria-label={t('album')}
+              >
+                <div className="border-b border-border px-3 py-2 text-body-sm font-weight-label text-fg">
+                  {t('album')}
                 </div>
-                {canSetAvatar ? (
+                <label className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70">
+                  <input
+                    type="checkbox"
+                    checked
+                    disabled
+                    readOnly
+                    className="size-4 shrink-0 accent-accent"
+                    aria-label={album.name}
+                  />
+                  <span>{album.name}</span>
+                </label>
+                {otherAlbumNames.map((name) => (
                   <button
+                    key={name}
                     type="button"
-                    className="block w-full px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface"
-                    onClick={onSetAsAvatar}
+                    role="option"
+                    disabled={!canAddToAlbum || addAlbumPending !== null}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => void onAddToAlbum(name)}
                   >
-                    {t('object_gallery_set_as_avatar')}
+                    <span
+                      className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
+                      aria-hidden
+                    />
+                    <span className="min-w-0 flex-1 truncate">{name}</span>
+                    {addAlbumPending === name ? (
+                      <span className="text-caption" aria-hidden>
+                        …
+                      </span>
+                    ) : null}
                   </button>
+                ))}
+                {canSetAvatar ? (
+                  <>
+                    <div className="border-t border-border" role="separator" />
+                    {isCurrentPhotoAvatar ? (
+                      <label className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70">
+                        <input
+                          type="checkbox"
+                          checked
+                          disabled
+                          readOnly
+                          className="size-4 shrink-0 accent-accent"
+                          aria-label={t('object_gallery_set_as_avatar')}
+                        />
+                        <span>{t('object_gallery_set_as_avatar')}</span>
+                      </label>
+                    ) : (
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface"
+                        onClick={onSetAsAvatar}
+                      >
+                        <span
+                          className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
+                          aria-hidden
+                        />
+                        <span>{t('object_gallery_set_as_avatar')}</span>
+                      </button>
+                    )}
+                  </>
+                ) : null}
+                {addAlbumError ? (
+                  <p className="border-t border-border px-3 py-2 text-caption text-error" role="alert">
+                    {addAlbumError}
+                  </p>
                 ) : null}
               </div>
             ) : null}
@@ -385,7 +524,7 @@ export function ObjectGalleryViewer({
         </div>
       </header>
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center px-2 py-4">
+      <div className="relative flex min-h-0 flex-1 px-2">
         {count > 1 ? (
           <button
             type="button"
@@ -396,9 +535,9 @@ export function ObjectGalleryViewer({
             <IconChevronLeft />
           </button>
         ) : null}
-        <div className="relative h-full w-full max-w-container-page overflow-hidden">
+        <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
           <div
-            className="relative mx-auto h-full w-full max-h-[calc(100vh-8rem)]"
+            className="relative size-full"
             style={{
               transform: `scale(${zoom})`,
               transition: 'transform 0.15s ease',
@@ -407,7 +546,7 @@ export function ObjectGalleryViewer({
             <GalleryImage
               src={currentPhoto.url}
               className="object-contain"
-              sizes="(max-width: 1024px) 100vw, 1024px"
+              sizes="100vw"
               priority
             />
           </div>
