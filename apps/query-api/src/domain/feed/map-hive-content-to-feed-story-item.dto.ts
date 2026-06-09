@@ -32,6 +32,7 @@ export function mapHiveContentToFeedStoryItemDto(
   content: HiveContentType,
   authorProfile: FeedStoryItemDto['authorProfile'],
   viewerAccount: string | undefined,
+  rebloggedByViewer = false,
 ): FeedStoryItemDto {
   const jsonMetadata = normalizeHiveContentJsonMetadata(content.json_metadata);
   const body = content.body ?? '';
@@ -53,6 +54,7 @@ export function mapHiveContentToFeedStoryItemDto(
     createdAt,
     feedAt: createdAt,
     rebloggedBy: rebloggedByFromHive(content),
+    rebloggedByViewer,
     isNsfw: isNsfwPost(jsonMetadata, content.category ?? null),
     category: content.category ?? null,
     children: typeof content.children === 'number' ? content.children : Number(content.children) || 0,

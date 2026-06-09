@@ -19,6 +19,7 @@ Read-path API — governance masking, object resolution (via shared domain libra
 | [User comments feed endpoint](spec/user-comments-feed-endpoint.md) | `POST /query/v1/users/:name/comments` (Hive) |
 | [User mentions feed endpoint](spec/user-mentions-feed-endpoint.md) | `POST /query/v1/users/:name/mentions` (`post_mentions`) |
 | [Single post endpoint](spec/single-post-endpoint.md) | `GET /query/v1/posts/:author/:permlink` |
+| [Post discussion endpoint](spec/post-discussion-endpoint.md) | `GET /query/v1/posts/:author/:permlink/discussion` (Hive `bridge.get_discussion`) |
 | [User post drafts](spec/user-post-drafts-endpoint.md) | `GET|POST|PATCH|PUT|DELETE /query/v1/users/:author/drafts` (Bearer JWT, same `JWT_SECRET` as auth-api) |
 | [Search](spec/search.md) | `GET /query/v1/search`, `GET /query/v1/search/counts` (global tab counts) |
 | [Objects resolve — aggregateRating](spec/objects-resolve.md) | `POST /query/v1/objects/resolve` (`fields.aggregateRating` array semantics) |

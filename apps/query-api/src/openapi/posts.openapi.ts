@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { feedStoryItemSchema } from './feed.openapi';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 
@@ -21,6 +22,7 @@ const singlePostViewSchema = registry.register(
     createdAt: z.string().datetime({ offset: true }),
     feedAt: z.string().datetime({ offset: true }),
     rebloggedBy: z.string().nullable(),
+    rebloggedByViewer: z.boolean(),
     isNsfw: z.boolean(),
     category: z.string().nullable(),
     children: z.number().int(),
@@ -104,6 +106,53 @@ registry.registerPath({
     },
     404: {
       description: 'No `posts` row for this author/permlink.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+const postDiscussionResponseSchema = registry.register(
+  'PostDiscussionResponse',
+  z.object({
+    rootAuthor: z.string(),
+    rootPermlink: z.string(),
+    rebloggedUsers: z.array(z.string()),
+    rebloggedByViewer: z.boolean(),
+    rootCommentIds: z.array(z.string()),
+    childrenById: z.record(z.string(), z.array(z.string())),
+    comments: z.record(z.string(), feedStoryItemSchema),
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/posts/{author}/{permlink}/discussion',
+  summary: 'Post discussion thread (Hive bridge)',
+  description:
+    'Full comment tree for a post via `bridge.get_discussion`. No ODL DB merge for comment bodies in v1.',
+  request: {
+    params: z.object({ author: authorParam, permlink: permlinkParam }),
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description: 'Viewer account for per-comment `votes.voted` and `rebloggedByViewer` on root.',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Discussion tree.',
+      content: {
+        'application/json': {
+          schema: postDiscussionResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Discussion not found on Hive.',
       content: {
         'application/json': {
           schema: notFoundSchema,

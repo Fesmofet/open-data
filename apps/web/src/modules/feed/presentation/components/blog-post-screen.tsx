@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { UserAvatar } from '@/shared/presentation';
@@ -15,8 +15,12 @@ import {
 import { useLoginModal } from '@/modules/auth';
 
 import { LinkedObjectsSection } from './linked-objects-section';
+import { StoryCommentsSection } from './story-comments-section';
 import { StoryOverflowMenu } from './story-overflow-menu';
+import { StoryReblogButton } from './story-reblog-button';
+import { StoryStatButton } from './story-stat-button';
 import { StoryVoteButton } from './story-vote-button';
+import { StoryCommentEditor } from './story-comment-editor';
 
 export type BlogPostScreenVariant = 'page' | 'modal';
 
@@ -68,44 +72,6 @@ function IconReblog({ className }: { className?: string }) {
   );
 }
 
-type StatButtonProps = {
-  icon: ReactNode;
-  count: number | undefined;
-  label: string;
-  title?: string | null;
-  iconActive?: boolean;
-  countAccent?: boolean;
-  ariaPressed?: boolean;
-};
-
-function StatButton({
-  icon,
-  count,
-  label,
-  title,
-  iconActive,
-  countAccent,
-  ariaPressed,
-}: StatButtonProps) {
-  const showCount = count != null;
-  const iconToneClass = iconActive === false ? 'text-muted' : 'text-accent';
-  const countClass =
-    countAccent === true ? 'font-weight-label tabular-nums text-accent' : 'font-weight-label tabular-nums text-fg-secondary';
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1.5 rounded-btn px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-      disabled
-      aria-label={label}
-      title={title ?? undefined}
-      aria-pressed={ariaPressed}
-    >
-      <span className={iconToneClass}>{icon}</span>
-      {showCount ? <span className={countClass}>{count}</span> : null}
-    </button>
-  );
-}
-
 function viewerIsAuthor(viewer: string | null, author: string): boolean {
   if (viewer == null || viewer === '') {
     return false;
@@ -135,6 +101,7 @@ export function BlogPostScreen({
   const editHref = `/editor?${editorSearch.toString()}`;
 
   const isModal = variant === 'modal';
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
 
   const shellClass = isModal
     ? 'border-0 bg-transparent p-0 shadow-none'
@@ -261,12 +228,23 @@ export function BlogPostScreen({
             votes={story.votes}
             currentUsername={currentUsername}
           />
-          <StatButton
+          <StoryStatButton
             icon={<IconComment />}
-            count={story.children ?? 0}
+            count={
+              (story.children ?? 0) > 0 ? story.children : undefined
+            }
             label="Comments"
+            iconHoverAccent
+            ariaPressed={commentsExpanded}
+            onClick={() => setCommentsExpanded((v) => !v)}
           />
-          <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
+          <StoryReblogButton
+            authorName={story.authorName}
+            permlink={story.permlink}
+            rebloggedByViewer={story.rebloggedByViewer ?? false}
+            currentUsername={currentUsername}
+            isOwnPost={isOwnPost}
+          />
           {isModal ? (
             <StoryOverflowMenu
               authorName={story.authorName}
@@ -280,6 +258,19 @@ export function BlogPostScreen({
           <span className="text-body-sm font-weight-strong tabular-nums text-accent">{payoutLabel}</span>
         ) : null}
       </footer>
+      {commentsExpanded ? (
+        <>
+          <StoryCommentsSection
+            story={story}
+            currentUsername={currentUsername}
+            expanded
+            layout="full"
+          />
+          {currentUsername ? (
+            <StoryCommentEditor story={story} currentUsername={currentUsername} />
+          ) : null}
+        </>
+      ) : null}
     </article>
   );
 }

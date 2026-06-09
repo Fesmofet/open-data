@@ -2,9 +2,10 @@ import type {
   CommentOp,
   CommentOptionsOp,
   CustomJsonOp,
-  ReblogOp,
   VoteOp,
 } from './hive-operations';
+
+const HIVE_REBLOG_CUSTOM_JSON_ID = 'follow';
 
 /** Extension id 0: comment payout beneficiaries (Hive `comment_payout_beneficiaries`). */
 export type CommentOptionsBeneficiary = {
@@ -84,8 +85,25 @@ export function buildCustomJsonOp(input: {
   };
 }
 
-export function buildReblogOp(account: string, author: string, permlink: string): ReblogOp {
-  return { type: 'reblog', account, author, permlink };
+/**
+ * Hive reblog via `custom_json` id `follow` and JSON `["reblog", { account, author, permlink }]`.
+ * @see https://developers.hive.io/tutorials-javascript/reblogging_post.html
+ */
+export function buildReblogOp(
+  account: string,
+  author: string,
+  permlink: string,
+): CustomJsonOp {
+  const json = JSON.stringify([
+    'reblog',
+    { account, author, permlink },
+  ]);
+  return buildCustomJsonOp({
+    required_auths: [],
+    required_posting_auths: [account],
+    id: HIVE_REBLOG_CUSTOM_JSON_ID,
+    json,
+  });
 }
 
 const HIVE_FOLLOW_CUSTOM_JSON_ID = 'follow';

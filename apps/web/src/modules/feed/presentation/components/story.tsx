@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html';
@@ -18,6 +18,7 @@ import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
 
 import {
+  FEED_STORY_PORTRAIT_PREVIEW_MAX_PX,
   FEED_STORY_TAGGED_OBJECT_MAX,
   formatPayoutDisplay,
   formatRelativeFeedTime,
@@ -25,7 +26,10 @@ import {
 } from './story-utils';
 import { ObjectPageLink } from './object-page-link';
 import { StoryCommentEditor } from './story-comment-editor';
+import { StoryCommentsSection } from './story-comments-section';
 import { StoryOverflowMenu } from './story-overflow-menu';
+import { StoryReblogButton } from './story-reblog-button';
+import { StoryStatButton } from './story-stat-button';
 import { StoryVoteButton } from './story-vote-button';
 
 type StoryProps = {
@@ -94,47 +98,6 @@ function IconPlay() {
   );
 }
 
-type StatButtonProps = {
-  icon: ReactNode;
-  count: number | undefined;
-  label: string;
-  title?: string | null;
-  /** When `false`, icon uses muted tone (e.g. vote not cast). Omit or `true` for accent. */
-  iconActive?: boolean;
-  /** When `true`, vote count uses accent (e.g. viewer has voted). */
-  countAccent?: boolean;
-  /** Optional `aria-pressed` for vote state. */
-  ariaPressed?: boolean;
-};
-
-function StatButton({
-  icon,
-  count,
-  label,
-  title,
-  iconActive,
-  countAccent,
-  ariaPressed,
-}: StatButtonProps) {
-  const showCount = count != null;
-  const iconToneClass = iconActive === false ? 'text-muted' : 'text-accent';
-  const countClass =
-    countAccent === true ? 'font-weight-label tabular-nums text-accent' : 'font-weight-label tabular-nums text-fg-secondary';
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1.5 rounded-btn px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-      disabled
-      aria-label={label}
-      title={title ?? undefined}
-      aria-pressed={ariaPressed}
-    >
-      <span className={iconToneClass}>{icon}</span>
-      {showCount ? <span className={countClass}>{count}</span> : null}
-    </button>
-  );
-}
-
 function viewerIsAuthor(
   viewer: string | null,
   author: string,
@@ -148,6 +111,8 @@ function viewerIsAuthor(
 export function Story({ story, feedTab, currentUsername }: StoryProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [previewMediaFailed, setPreviewMediaFailed] = useState(false);
+  const [previewMediaLandscape, setPreviewMediaLandscape] = useState(true);
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
   const { locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
@@ -163,7 +128,9 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
 
   useEffect(() => {
     setPreviewMediaFailed(false);
+    setPreviewMediaLandscape(true);
   }, [previewMediaUrl]);
+
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
   const editorSearch = new URLSearchParams({
     author: story.authorName,
@@ -334,7 +301,18 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           )}
 
           {previewMediaUrl ? (
-            <div className="relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-btn border border-border bg-surface-control">
+            <div
+              className={
+                videoPlaying && story.videoEmbedUrl
+                  ? 'relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-btn border border-border bg-surface-control'
+                  : [
+                      'rounded-btn border border-border bg-surface-control',
+                      previewMediaLandscape
+                        ? 'relative w-full'
+                        : 'relative flex w-full items-center justify-center',
+                    ].join(' ')
+              }
+            >
               {videoPlaying && story.videoEmbedUrl ? (
                 <>
                   <iframe
@@ -352,26 +330,38 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                     Close
                   </button>
                 </>
+              ) : previewMediaFailed ? (
+                <div
+                  className="flex min-h-[180px] w-full items-center justify-center text-caption text-muted"
+                  role="status"
+                >
+                  Preview unavailable
+                </div>
               ) : (
-                <>
-                  {previewMediaFailed ? (
-                    <div
-                      className="flex h-full min-h-[180px] w-full items-center justify-center bg-surface-control text-caption text-muted"
-                      role="status"
-                    >
-                      Preview unavailable
-                    </div>
-                  ) : (
-                    <Image
-                      src={previewMediaUrl}
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover"
-                      unoptimized={shouldUnoptimizeRemoteImage(previewMediaUrl)}
-                      onError={() => setPreviewMediaFailed(true)}
-                    />
-                  )}
+                <div className={previewMediaLandscape ? 'relative w-full' : 'relative'}>
+                  <Image
+                    src={previewMediaUrl}
+                    alt=""
+                    width={1200}
+                    height={800}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className={
+                      previewMediaLandscape
+                        ? 'block h-auto w-full object-contain'
+                        : 'block h-auto w-auto max-w-full object-contain'
+                    }
+                    style={
+                      previewMediaLandscape
+                        ? undefined
+                        : { maxHeight: FEED_STORY_PORTRAIT_PREVIEW_MAX_PX }
+                    }
+                    unoptimized={shouldUnoptimizeRemoteImage(previewMediaUrl)}
+                    onLoad={(event) => {
+                      const img = event.currentTarget;
+                      setPreviewMediaLandscape(img.naturalWidth >= img.naturalHeight);
+                    }}
+                    onError={() => setPreviewMediaFailed(true)}
+                  />
                   {canPlayInline ? (
                     <button
                       type="button"
@@ -386,7 +376,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                       <IconPlay />
                     </button>
                   ) : null}
-                </>
+                </div>
               )}
             </div>
           ) : null}
@@ -412,13 +402,24 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             votes={story.votes}
             currentUsername={currentUsername}
           />
-          <StatButton
+          <StoryStatButton
             icon={<IconComment />}
-            count={story.children ?? 0}
+            count={
+              (story.children ?? 0) > 0 ? story.children : undefined
+            }
             label="Comments"
+            iconHoverAccent
+            ariaPressed={commentsExpanded}
+            onClick={() => setCommentsExpanded((v) => !v)}
           />
           {feedTab !== 'threads' && feedTab !== 'comments' ? (
-            <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
+            <StoryReblogButton
+              authorName={story.authorName}
+              permlink={story.permlink}
+              rebloggedByViewer={story.rebloggedByViewer ?? false}
+              currentUsername={currentUsername}
+              isOwnPost={isOwnPost}
+            />
           ) : null}
           <StoryOverflowMenu
             authorName={story.authorName}
@@ -431,8 +432,17 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           <span className="text-body-sm font-weight-strong tabular-nums text-accent">{payoutLabel}</span>
         ) : null}
       </footer>
-      {currentUsername ? (
-        <StoryCommentEditor story={story} currentUsername={currentUsername} />
+      {commentsExpanded ? (
+        <>
+          <StoryCommentsSection
+            story={story}
+            currentUsername={currentUsername}
+            expanded
+          />
+          {currentUsername ? (
+            <StoryCommentEditor story={story} currentUsername={currentUsername} />
+          ) : null}
+        </>
       ) : null}
     </article>
   );

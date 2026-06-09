@@ -6,6 +6,8 @@ import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
+import { rebloggedUsersFromHiveContent } from './build-post-discussion-tree';
+import { viewerHasReblogged } from './viewer-reblog-state';
 
 export type SinglePostAuthorProfileSlice = SinglePostViewDto['authorProfile'];
 
@@ -57,6 +59,7 @@ export function mapHiveContentToSinglePostView(
   content: HiveContentType,
   authorProfile: SinglePostAuthorProfileSlice,
   viewerAccount: string | undefined,
+  rebloggedInDb = false,
 ): SinglePostViewDto {
   const jsonMetadata = normalizeHiveContentJsonMetadata(content.json_metadata);
   const body = content.body ?? '';
@@ -79,6 +82,11 @@ export function mapHiveContentToSinglePostView(
     createdAt,
     feedAt: createdAt,
     rebloggedBy: rebloggedByFromHive(content),
+    rebloggedByViewer: viewerHasReblogged(
+      rebloggedUsersFromHiveContent(content),
+      viewerAccount,
+      rebloggedInDb,
+    ),
     isNsfw: isNsfwPost(jsonMetadata, content.category ?? null),
     category: content.category ?? null,
     children: typeof content.children === 'number' ? content.children : Number(content.children) || 0,

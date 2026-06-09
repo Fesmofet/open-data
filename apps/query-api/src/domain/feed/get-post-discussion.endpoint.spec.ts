@@ -1,0 +1,75 @@
+import { HiveClient } from '@opden-data-layer/clients';
+import type { HiveContentType } from '@opden-data-layer/clients';
+
+import { AccountsCurrentRepository, PostsRepository } from '../../repositories';
+import { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
+
+describe('GetPostDiscussionEndpoint', () => {
+  const authorProfile = {
+    name: 'bob',
+    displayName: null,
+    avatarUrl: null,
+    reputation: 25,
+  };
+
+  let hiveClient: jest.Mocked<Pick<HiveClient, 'getState' | 'getAccounts'>>;
+  let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByNames'>>;
+  let postsRepo: jest.Mocked<Pick<PostsRepository, 'findViewerRebloggedKeys'>>;
+
+  beforeEach(() => {
+    hiveClient = {
+      getState: jest.fn(),
+      getAccounts: jest.fn().mockResolvedValue([]),
+    };
+    accounts = {
+      findByNames: jest.fn().mockResolvedValue([]),
+    };
+    postsRepo = {
+      findViewerRebloggedKeys: jest.fn().mockResolvedValue(new Set()),
+    };
+  });
+
+  it('returns null when root post is missing from discussion', async () => {
+    hiveClient.getState.mockResolvedValue({ content: {} });
+    const endpoint = new GetPostDiscussionEndpoint(
+      hiveClient as unknown as HiveClient,
+      accounts as unknown as AccountsCurrentRepository,
+      postsRepo as unknown as PostsRepository,
+    );
+    expect(await endpoint.execute('alice', 'post')).toBeNull();
+  });
+
+  it('maps depth-1 comments and rebloggedByViewer', async () => {
+    const content: Record<string, HiveContentType> = {
+      'alice/post': {
+        author: 'alice',
+        permlink: 'post',
+        depth: '0',
+        reblogged_users: ['viewer'],
+        replies: ['bob/c1'],
+      } as HiveContentType,
+      'bob/c1': {
+        author: 'bob',
+        permlink: 'c1',
+        depth: '1',
+        body: 'hello',
+        created: '2024-01-01T00:00:00',
+        reblogged_users: [],
+        active_votes: [],
+      } as HiveContentType,
+    };
+    hiveClient.getState.mockResolvedValue({ content });
+    accounts.findByNames.mockResolvedValue([]);
+
+    const endpoint = new GetPostDiscussionEndpoint(
+      hiveClient as unknown as HiveClient,
+      accounts as unknown as AccountsCurrentRepository,
+      postsRepo as unknown as PostsRepository,
+    );
+    const result = await endpoint.execute('alice', 'post', 'viewer');
+    expect(result?.rootCommentIds).toEqual(['bob/c1']);
+    expect(result?.comments['bob/c1']?.author).toBe('bob');
+    expect(result?.rebloggedByViewer).toBe(true);
+    expect(result?.rebloggedUsers).toEqual(['viewer']);
+  });
+});

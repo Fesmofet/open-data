@@ -127,6 +127,7 @@ export class GetUserThreadsFeedEndpoint {
         createdAt: createdAtFromChain,
         feedAt,
         rebloggedBy: null,
+        rebloggedByViewer: false,
         isNsfw: false,
         category: thread.type,
         children: thread.children,

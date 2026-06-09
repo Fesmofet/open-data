@@ -4,6 +4,9 @@ export { formatRelativeFeedTime } from '@/shared/utils/format-relative-time';
 /** Match query-api `FEED_TAGGED_OBJECT_DISPLAY_LIMIT` (feed.constants.ts). */
 export const FEED_STORY_TAGGED_OBJECT_MAX = 4;
 
+/** Max rendered height for portrait feed preview images (pillarbox at card width). */
+export const FEED_STORY_PORTRAIT_PREVIEW_MAX_PX = 260;
+
 export function formatVoteSummary(totalCount: number, previewVoters: string[]): string | null {
   if (totalCount <= 0) {
     return null;

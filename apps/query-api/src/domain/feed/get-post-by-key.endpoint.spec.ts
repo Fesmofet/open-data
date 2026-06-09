@@ -67,7 +67,10 @@ describe('GetPostByKeyEndpoint', () => {
   let postsRepo: jest.Mocked<
     Pick<
       PostsRepository,
-      'findPostsByKeys' | 'findPostObjectsByKeys' | 'findActiveVoteSummaries'
+      | 'findPostsByKeys'
+      | 'findPostObjectsByKeys'
+      | 'findActiveVoteSummaries'
+      | 'findViewerRebloggedKeys'
     >
   >;
   let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByName'>>;
@@ -87,6 +90,7 @@ describe('GetPostByKeyEndpoint', () => {
       findPostsByKeys: jest.fn(),
       findPostObjectsByKeys: jest.fn(),
       findActiveVoteSummaries: jest.fn(),
+      findViewerRebloggedKeys: jest.fn().mockResolvedValue(new Set()),
     };
     accounts = {
       findByName: jest.fn(),

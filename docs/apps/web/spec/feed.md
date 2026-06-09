@@ -10,9 +10,18 @@ Feed rows render `Story` (via `StoryContainer`) with stats, overflow menu, and o
 
 Post bodies and discover use shared **`ObjectCard`** — see [object-card.md](object-card.md) (rating grid, administrative heart, description).
 
+## Comment thread (feed rows)
+
+- Comment icon toggles thread + editor (collapsed by default, including when `children === 0`).
+- When expanded and the post has replies, the web app loads **`GET /query/v1/posts/{author}/{permlink}/discussion`** (Hive `bridge.get_discussion` via query-api).
+- Feed cards (`layout="quick"`): comment list without sort UI (legacy `isQuickComments`; default sort **NEWEST**).
+- Full post / modal (`BlogPostScreen`, `layout="full"`): **Comments** heading + legacy-style **Sort by** dropdown (**BEST**, **NEWEST**, **OLDEST**, **AUTHOR_REPUTATION**).
+- Nested replies, per-comment **`StoryVoteButton`**, and reply editors in both layouts.
+- Reblog uses **`StoryReblogButton`** (`buildReblogOp`); accent state follows `rebloggedByViewer` from the blog feed or discussion payload.
+
 ## Comment editor (logged-in)
 
-When the viewer is logged in (`currentUsername` set), each story card shows **`StoryCommentEditor`** below the footer (`apps/web/src/modules/feed/presentation/components/story-comment-editor.tsx`).
+When the viewer is logged in (`currentUsername` set), each story card shows **`StoryCommentEditor`** below the comment thread (`apps/web/src/modules/feed/presentation/components/story-comment-editor.tsx`).
 
 - Uses **`LexicalPostEditor`** from `@/modules/editor` (compact layout) — same Lexical surface as the main post editor, without title or draft autosave.
 - Submit builds a Hive **`comment`** operation (`buildCommentOp`) and broadcasts via **`getWalletFacade().broadcast`** (`@/modules/auth`).

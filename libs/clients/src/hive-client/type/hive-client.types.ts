@@ -75,6 +75,8 @@ export type HiveContentType = {
   beneficiaries: BeneficiariesType[];
   blocked_for_apps: string[];
   reblogged_users: string[];
+  /** Child comment keys (`author/permlink`) from `bridge.get_discussion`. */
+  replies?: string[];
   active_votes: ActiveVotesType[];
 };
 

@@ -42,10 +42,14 @@ export class GetPostByKeyEndpoint {
     viewerAccount?: string,
   ): Promise<SinglePostViewDto | null> {
     const key = { author, permlink };
-    const [postRows, postObjects, voteMap] = await Promise.all([
+    const viewerTrimmed = viewerAccount?.trim() ?? '';
+    const [postRows, postObjects, voteMap, viewerReblogKeys] = await Promise.all([
       this.postsRepo.findPostsByKeys([key]),
       this.postsRepo.findPostObjectsByKeys([key]),
       this.postsRepo.findActiveVoteSummaries([key], viewerAccount),
+      viewerTrimmed !== ''
+        ? this.postsRepo.findViewerRebloggedKeys([key], viewerTrimmed)
+        : Promise.resolve(new Set<string>()),
     ]);
 
     const post = postRows[0];
@@ -65,7 +69,13 @@ export class GetPostByKeyEndpoint {
         return null;
       }
       const authorProfile = await this.resolveAuthorProfileForHiveFallback(author);
-      return mapHiveContentToSinglePostView(hiveContent, authorProfile, viewerAccount);
+      const rebloggedInDb = viewerReblogKeys.has(`${author}\0${permlink}`);
+      return mapHiveContentToSinglePostView(
+        hiveContent,
+        authorProfile,
+        viewerAccount,
+        rebloggedInDb,
+      );
     }
 
     return this.mapPostToSingleView(
@@ -75,6 +85,7 @@ export class GetPostByKeyEndpoint {
       locale,
       governanceObjectIdFromHeader,
       viewerAccount,
+      viewerReblogKeys.has(`${post.author}\0${post.permlink}`),
     );
   }
 
@@ -121,6 +132,7 @@ export class GetPostByKeyEndpoint {
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
     viewerAccount: string | undefined,
+    rebloggedByViewer = false,
   ): Promise<SinglePostViewDto> {
     const pk = `${post.author}\0${post.permlink}`;
     const accountRow = await this.accounts.findByName(post.author);
@@ -197,6 +209,7 @@ export class GetPostByKeyEndpoint {
       createdAt,
       feedAt: createdAt,
       rebloggedBy: null,
+      rebloggedByViewer,
       isNsfw: isNsfwPost(post.json_metadata ?? '', post.category),
       category: post.category,
       children: post.children,

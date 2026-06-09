@@ -26,17 +26,29 @@ export function UserAvatar({
   isSquare = false,
 }: UserAvatarProps) {
   const [imageFailed, setImageFailed] = useState(false);
+  const [useDefaultAvatar, setUseDefaultAvatar] = useState(false);
 
-  const src = resolveAvatarUrl({ username, avatarUrl, size });
+  const explicitAvatarUrl = avatarUrl?.trim() ?? '';
+  const hasDefaultAvatar = username.trim() !== '';
+  const src = resolveAvatarUrl({
+    username,
+    avatarUrl: useDefaultAvatar ? null : avatarUrl,
+    size,
+  });
   const label = displayName?.trim() || username;
 
   useEffect(() => {
     setImageFailed(false);
+    setUseDefaultAvatar(false);
   }, [username, avatarUrl, size]);
 
   const onError = useCallback(() => {
+    if (!useDefaultAvatar && explicitAvatarUrl !== '' && hasDefaultAvatar) {
+      setUseDefaultAvatar(true);
+      return;
+    }
     setImageFailed(true);
-  }, []);
+  }, [explicitAvatarUrl, hasDefaultAvatar, useDefaultAvatar]);
 
   const showFallback = imageFailed || !src;
 

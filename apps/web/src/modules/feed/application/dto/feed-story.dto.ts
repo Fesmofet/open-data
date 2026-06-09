@@ -73,6 +73,7 @@ export const feedStoryViewSchema = z.object({
   category: z.string().nullable().optional(),
   permalinkPath: z.string().optional(),
   rebloggedBy: z.string().nullable().optional(),
+  rebloggedByViewer: z.boolean().optional().default(false),
   children: z.number().optional(),
   pendingPayout: z.string().optional(),
   totalPayout: z.string().optional(),

@@ -21,6 +21,7 @@ export const feedStoryItemApiSchema = z.object({
   createdAt: z.string(),
   feedAt: z.string(),
   rebloggedBy: z.string().nullable(),
+  rebloggedByViewer: z.boolean().optional().default(false),
   isNsfw: z.boolean(),
   category: z.string().nullable(),
   children: z.number(),
@@ -77,6 +78,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     /** Public URL `/@author/permlink` (rewritten to `user-profile/.../post/permlink`); see `proxy.ts`. */
     permalinkPath: `/@${encodeURIComponent(item.author)}/${encodeURIComponent(item.permlink)}`,
     rebloggedBy: item.rebloggedBy,
+    rebloggedByViewer: item.rebloggedByViewer,
     children: item.children,
     pendingPayout: item.pendingPayout,
     totalPayout: item.totalPayout,

@@ -49,8 +49,9 @@ Validated with `feedStoryViewSchema`. Core fields: `id`, `authorName`, optional 
 ## Layout (v1)
 
 - Header: [`UserAvatar`](avatar.md); when `rebloggedBy` is set, a **reblog line** (“Reblogged by @account”); display name, `@author`, formatted timestamp (`feedAt` when present, else `createdAt`).
-- Body: optional linked title, excerpt; **object chips** (name + optional avatar; up to four) when `objects` is non-empty; optional NSFW line.
-- Footer: comment count and **vote summary** (e.g. `@a, @b and N more liked this`) when data is present; disabled placeholders for like / reblog / bookmark (interactions to be wired later).
+- Body: optional linked title, excerpt; **preview image** when `thumbnailUrl` / `videoThumbnailUrl` is set — landscape/wide images scale to **full card width** (`w-full`, no max-height cap); portrait images cap height (`FEED_STORY_PORTRAIT_PREVIEW_MAX_PX`) with `w-auto` pillarboxing; inline video playback uses a fixed `aspect-video` embed; **object chips** (name + optional avatar; up to four) when `objects` is non-empty; optional NSFW line.
+- Footer: **`StoryVoteButton`**, comment toggle (**`StoryStatButton`** — muted until expanded), **`StoryReblogButton`** (hidden on own posts), overflow menu; payout when present.
+- Below footer when expanded: **`StoryCommentsSection`** (`layout="quick"` — no sort dropdown), then **`StoryCommentEditor`** when logged in. Sort UI is only on **`BlogPostScreen`** / post modal (`layout="full"`).
 
 ## Out of scope (later)
 

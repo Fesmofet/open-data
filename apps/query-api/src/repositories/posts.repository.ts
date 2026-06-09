@@ -297,6 +297,36 @@ export class PostsRepository {
 
     return result;
   }
+
+  /** Posts the viewer account has reblogged (`post_reblogged_users`). */
+  async findViewerRebloggedKeys(
+    keys: { author: string; permlink: string }[],
+    viewerAccount: string,
+  ): Promise<Set<string>> {
+    const viewer = viewerAccount.trim();
+    if (keys.length === 0 || viewer === '') {
+      return new Set();
+    }
+
+    const rows = await this.db
+      .selectFrom('post_reblogged_users')
+      .select(['author', 'permlink'])
+      .where('account', '=', viewer)
+      .where((eb) =>
+        eb.or(
+          keys.map((k) =>
+            eb.and([eb('author', '=', k.author), eb('permlink', '=', k.permlink)]),
+          ),
+        ),
+      )
+      .execute();
+
+    const out = new Set<string>();
+    for (const row of rows) {
+      out.add(`${row.author}\0${row.permlink}`);
+    }
+    return out;
+  }
 }
 
 function mergeFeedBranches(

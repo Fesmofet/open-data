@@ -5,7 +5,28 @@ import {
   buildCommentOp,
   buildHiveFollowOp,
   buildHiveUnfollowOp,
+  buildReblogOp,
 } from './operation-builders';
+
+describe('buildReblogOp', () => {
+  it('uses custom_json id follow with reblog payload', () => {
+    const op = buildReblogOp('alice', 'bob', 'hello-world');
+    expect(op.type).toBe('custom_json');
+    expect(op.id).toBe('follow');
+    expect(op.required_posting_auths).toEqual(['alice']);
+    expect(op.required_auths).toEqual([]);
+    const inner = JSON.parse(op.json) as [
+      string,
+      { account: string; author: string; permlink: string },
+    ];
+    expect(inner[0]).toBe('reblog');
+    expect(inner[1]).toEqual({
+      account: 'alice',
+      author: 'bob',
+      permlink: 'hello-world',
+    });
+  });
+});
 
 describe('buildHiveFollowOp', () => {
   it('uses id follow with blog what', () => {

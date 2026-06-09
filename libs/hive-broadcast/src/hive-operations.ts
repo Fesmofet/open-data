@@ -43,15 +43,7 @@ export type CustomJsonOp = {
   readonly json: string;
 };
 
-/** Native chain reblog (not expressed as custom_json). */
-export type ReblogOp = {
-  readonly type: 'reblog';
-  readonly account: string;
-  readonly author: string;
-  readonly permlink: string;
-};
-
-export type HiveOperation = VoteOp | CommentOp | CommentOptionsOp | CustomJsonOp | ReblogOp;
+export type HiveOperation = VoteOp | CommentOp | CommentOptionsOp | CustomJsonOp;
 
 export type HiveOperationPayload = {
   readonly operations: readonly HiveOperation[];

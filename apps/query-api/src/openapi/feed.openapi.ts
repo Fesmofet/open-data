@@ -28,7 +28,7 @@ const authorProfileSnippetSchema = registry.register(
   }),
 );
 
-const feedStoryItemSchema = registry.register(
+export const feedStoryItemSchema = registry.register(
   'FeedStoryItem',
   z.object({
     id: z.string(),
@@ -39,6 +39,7 @@ const feedStoryItemSchema = registry.register(
     createdAt: z.string().datetime({ offset: true }),
     feedAt: z.string().datetime({ offset: true }),
     rebloggedBy: z.string().nullable(),
+    rebloggedByViewer: z.boolean(),
     isNsfw: z.boolean(),
     category: z.string().nullable(),
     children: z.number().int(),

@@ -44,6 +44,7 @@ export function buildEditorPreviewPayload(
       title: title || undefined,
       excerpt,
       category: null,
+      rebloggedByViewer: false,
       children: 0,
       objects: linkedObjectsToProjectedViews(
         input.linkedObjects,

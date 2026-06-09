@@ -66,15 +66,6 @@ function toWireOperation(op: HiveOperation): WireOperation {
           json: op.json,
         },
       ];
-    case 'reblog':
-      return [
-        'reblog',
-        {
-          account: op.account,
-          author: op.author,
-          permlink: op.permlink,
-        },
-      ];
   }
   return assertNeverForHiveOp(op);
 }

@@ -58,6 +58,7 @@ describe('GetUserMentionsFeedEndpoint', () => {
         createdAt: new Date(0).toISOString(),
         feedAt: new Date(0).toISOString(),
         rebloggedBy: null,
+        rebloggedByViewer: false,
         isNsfw: false,
         category: null,
         children: 0,

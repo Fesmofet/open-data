@@ -16,6 +16,9 @@ import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 export type StoryCommentEditorProps = {
   story: FeedStoryView;
   currentUsername: string;
+  parentAuthor?: string;
+  parentPermlink?: string;
+  onSubmitted?: () => void;
 };
 
 /** Matches insert (+) control styling in `EditorInsertCaretOverlay` — soft circular control. */
@@ -38,7 +41,13 @@ function IconSendChevron({ className }: { className?: string }) {
   );
 }
 
-export function StoryCommentEditor({ story, currentUsername }: StoryCommentEditorProps) {
+export function StoryCommentEditor({
+  story,
+  currentUsername,
+  parentAuthor,
+  parentPermlink,
+  onSubmitted,
+}: StoryCommentEditorProps) {
   useHydrateWalletProvider();
   const router = useRouter();
   const [bodyPlain, setBodyPlain] = useState('');
@@ -60,11 +69,13 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
         host: window.location.host,
         ...defaults,
       });
+      const replyParentAuthor = parentAuthor ?? story.authorName;
+      const replyParentPermlink = parentPermlink ?? story.permlink;
       const op = buildCommentOp({
-        parent_author: story.authorName,
-        parent_permlink: story.permlink,
+        parent_author: replyParentAuthor,
+        parent_permlink: replyParentPermlink,
         author: currentUsername,
-        permlink: createCommentPermlink(story.authorName, story.permlink),
+        permlink: createCommentPermlink(replyParentAuthor, replyParentPermlink),
         title: '',
         body,
         json_metadata,
@@ -81,13 +92,24 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
           revalidateUserFeedAfterBroadcast(story.authorName),
         ).finally(() => {
           setConfirming(false);
+          onSubmitted?.();
         });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Comment failed');
       setPending(false);
     }
-  }, [bodyPlain, currentUsername, pending, router, story.authorName, story.permlink]);
+  }, [
+    bodyPlain,
+    currentUsername,
+    onSubmitted,
+    parentAuthor,
+    parentPermlink,
+    pending,
+    router,
+    story.authorName,
+    story.permlink,
+  ]);
 
   const canSubmit = bodyPlain.trim().length > 0 && !pending;
 

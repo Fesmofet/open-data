@@ -29,6 +29,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           excerpt:
             'Sample body preview for the posts tab. Replace with API-backed feed when wired.',
           permalinkPath: '/user-profile/demo',
+          rebloggedByViewer: false,
           isNsfw: false,
         },
         {
@@ -40,6 +41,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           title: 'Second mock row (another author)',
           excerpt: 'Demonstrates a multi-author list in the same feed.',
           permalinkPath: '/user-profile/alice',
+          rebloggedByViewer: false,
         },
       ];
     case 'threads':
@@ -52,6 +54,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           title: 'Mock thread root',
           excerpt: 'Threads tab mock — conversation preview text goes here.',
           permalinkPath: '/user-profile/demo/threads',
+          rebloggedByViewer: false,
         },
       ];
     case 'comments':
@@ -64,6 +67,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           title: 'Re: Mock thread root',
           excerpt: 'Comments tab mock — excerpt of the reply body.',
           permalinkPath: '/user-profile/demo/comments',
+          rebloggedByViewer: false,
         },
       ];
     case 'mentions':
@@ -77,6 +81,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           title: 'Post mentioning @demo',
           excerpt: 'Mentions tab mock — @demo appears in this preview.',
           permalinkPath: '/user-profile/demo/mentions',
+          rebloggedByViewer: false,
         },
       ];
     case 'activity':
@@ -89,6 +94,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           title: 'Vote on a post',
           excerpt: 'Activity tab mock — e.g. vote, follow, or transfer event summary.',
           permalinkPath: '/user-profile/demo/activity',
+          rebloggedByViewer: false,
         },
         {
           id: 'mock-activity-2',
@@ -97,6 +103,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           createdAt: t1,
           title: 'Started following @alice',
           excerpt: 'Second activity row for layout check.',
+          rebloggedByViewer: false,
         },
       ];
     default: {

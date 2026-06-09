@@ -1,12 +1,20 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { ReqLocale } from '@opden-data-layer/core';
-import { GetPostByKeyEndpoint, type SinglePostViewDto } from '../domain/feed';
+import {
+  GetPostByKeyEndpoint,
+  GetPostDiscussionEndpoint,
+  type PostDiscussionResponseDto,
+  type SinglePostViewDto,
+} from '../domain/feed';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 
 @Controller({ path: 'posts', version: '1' })
 export class PostsController {
-  constructor(private readonly getPostByKey: GetPostByKeyEndpoint) {}
+  constructor(
+    private readonly getPostByKey: GetPostByKeyEndpoint,
+    private readonly getPostDiscussion: GetPostDiscussionEndpoint,
+  ) {}
 
   @Get(':author/:permlink')
   async getPost(
@@ -25,6 +33,19 @@ export class PostsController {
     );
     if (!result) {
       throw new NotFoundException(`Post not found: ${author}/${permlink}`);
+    }
+    return result;
+  }
+
+  @Get(':author/:permlink/discussion')
+  async getDiscussion(
+    @Param('author') author: string,
+    @Param('permlink') permlink: string,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PostDiscussionResponseDto> {
+    const result = await this.getPostDiscussion.execute(author, permlink, viewer);
+    if (!result) {
+      throw new NotFoundException(`Discussion not found: ${author}/${permlink}`);
     }
     return result;
   }

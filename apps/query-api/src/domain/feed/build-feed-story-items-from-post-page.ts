@@ -18,6 +18,7 @@ import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
+import { viewerHasReblogged } from './viewer-reblog-state';
 
 export type BuildFeedStoryItemsFromPostPageDeps = {
   postsRepo: PostsRepository;
@@ -48,10 +49,14 @@ export async function buildFeedStoryItemsFromPostPage(
   } = deps;
 
   const keys = pageRows.map((r) => ({ author: r.author, permlink: r.permlink }));
-  const [postRows, postObjects, voteMap] = await Promise.all([
+  const viewerTrimmed = viewerAccount?.trim() ?? '';
+  const [postRows, postObjects, voteMap, viewerReblogKeys] = await Promise.all([
     postsRepo.findPostsByKeys(keys),
     postsRepo.findPostObjectsByKeys(keys),
     postsRepo.findActiveVoteSummaries(keys, viewerAccount),
+    viewerTrimmed !== ''
+      ? postsRepo.findViewerRebloggedKeys(keys, viewerTrimmed)
+      : Promise.resolve(new Set<string>()),
   ]);
 
   const postByKey = new Map<string, Post>();
@@ -142,6 +147,7 @@ export async function buildFeedStoryItemsFromPostPage(
       createdAt: new Date(post.created_unix * 1000).toISOString(),
       feedAt: new Date(row.feed_at * 1000).toISOString(),
       rebloggedBy: row.reblogged_by,
+      rebloggedByViewer: viewerHasReblogged([], viewerAccount, viewerReblogKeys.has(pk)),
       isNsfw: isNsfwPost(post.json_metadata ?? '', post.category),
       category: post.category,
       children: post.children,

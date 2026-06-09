@@ -33,9 +33,6 @@ function resolveSigningAccount(operations: readonly HiveOperation[]): string {
         accounts.add(primary);
         break;
       }
-      case 'reblog':
-        accounts.add(op.account);
-        break;
     }
   }
   if (accounts.size !== 1) {
@@ -87,15 +84,6 @@ function toWireOperation(op: HiveOperation): KeychainWireOperation {
           required_posting_auths: [...op.required_posting_auths],
           id: op.id,
           json: op.json,
-        },
-      ];
-    case 'reblog':
-      return [
-        'reblog',
-        {
-          account: op.account,
-          author: op.author,
-          permlink: op.permlink,
         },
       ];
   }

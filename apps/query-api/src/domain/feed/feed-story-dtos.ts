@@ -16,6 +16,8 @@ export interface FeedStoryItemDto {
   createdAt: string;
   feedAt: string;
   rebloggedBy: string | null;
+  /** True when `X-Viewer` appears in `reblogged_users` (Hive) or `post_reblogged_users` (DB). */
+  rebloggedByViewer: boolean;
   isNsfw: boolean;
   category: string | null;
   children: number;
@@ -46,4 +48,14 @@ export interface UserBlogFeedResponse {
 /** Single post by author/permlink; includes full body and all tagged objects (same resolution as feed). */
 export interface SinglePostViewDto extends FeedStoryItemDto {
   body: string;
+}
+
+export interface PostDiscussionResponseDto {
+  rootAuthor: string;
+  rootPermlink: string;
+  rebloggedUsers: string[];
+  rebloggedByViewer: boolean;
+  rootCommentIds: string[];
+  childrenById: Record<string, string[]>;
+  comments: Record<string, FeedStoryItemDto>;
 }
