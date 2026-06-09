@@ -45,6 +45,8 @@ export function buildEditorPreviewPayload(
       excerpt,
       category: null,
       rebloggedByViewer: false,
+      waivRewardEligible: false,
+      reward: null,
       children: 0,
       objects: linkedObjectsToProjectedViews(
         input.linkedObjects,

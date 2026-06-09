@@ -103,9 +103,10 @@ export function StoryRewardDetail({
 
       {variant === 'tooltip' && reward.phase === 'potential' && reward.cashoutAt ? (
         <p className="border-t border-border/60 pt-2 text-caption text-fg-tertiary">
-          {t('payout_will_release_in_time', {
-            time: formatRelativeFeedTime(reward.cashoutAt, locale),
-          })}
+          {t('payout_will_release_in_time').replace(
+            '{time}',
+            formatRelativeFeedTime(reward.cashoutAt, locale),
+          )}
         </p>
       ) : null}
 

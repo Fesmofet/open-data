@@ -13,6 +13,10 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
 
   const t1 = '2026-04-01T14:30:00.000Z';
   const t2 = '2026-04-02T09:15:00.000Z';
+  const mockRewardDefaults = {
+    waivRewardEligible: false,
+    reward: null,
+  } as const;
 
   switch (tab) {
     case 'posts':
@@ -31,6 +35,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           permalinkPath: '/user-profile/demo',
           rebloggedByViewer: false,
           isNsfw: false,
+          ...mockRewardDefaults,
         },
         {
           id: 'mock-post-2',
@@ -42,6 +47,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           excerpt: 'Demonstrates a multi-author list in the same feed.',
           permalinkPath: '/user-profile/alice',
           rebloggedByViewer: false,
+          ...mockRewardDefaults,
         },
       ];
     case 'threads':
@@ -55,6 +61,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           excerpt: 'Threads tab mock — conversation preview text goes here.',
           permalinkPath: '/user-profile/demo/threads',
           rebloggedByViewer: false,
+          ...mockRewardDefaults,
         },
       ];
     case 'comments':
@@ -68,6 +75,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           excerpt: 'Comments tab mock — excerpt of the reply body.',
           permalinkPath: '/user-profile/demo/comments',
           rebloggedByViewer: false,
+          ...mockRewardDefaults,
         },
       ];
     case 'mentions':
@@ -82,6 +90,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           excerpt: 'Mentions tab mock — @demo appears in this preview.',
           permalinkPath: '/user-profile/demo/mentions',
           rebloggedByViewer: false,
+          ...mockRewardDefaults,
         },
       ];
     case 'activity':
@@ -95,6 +104,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           excerpt: 'Activity tab mock — e.g. vote, follow, or transfer event summary.',
           permalinkPath: '/user-profile/demo/activity',
           rebloggedByViewer: false,
+          ...mockRewardDefaults,
         },
         {
           id: 'mock-activity-2',
@@ -104,6 +114,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           title: 'Started following @alice',
           excerpt: 'Second activity row for layout check.',
           rebloggedByViewer: false,
+          ...mockRewardDefaults,
         },
       ];
     default: {

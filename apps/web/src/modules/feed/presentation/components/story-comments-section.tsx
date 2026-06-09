@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { PostDiscussionView } from '../../application/dto/post-discussion.dto';
+import type { DiscussionCommentView } from '../../application/mappers/feed-story-from-api.mapper';
 import {
   type DiscussionCommentSort,
   sortDiscussionComments,
@@ -129,7 +130,7 @@ export function StoryCommentsSection({
       : sortDiscussionComments(
           discussion.rootCommentIds
             .map((id) => discussion.comments[id])
-            .filter((c): c is FeedStoryView => c != null),
+            .filter((c): c is DiscussionCommentView => c != null),
           sort,
         );
 

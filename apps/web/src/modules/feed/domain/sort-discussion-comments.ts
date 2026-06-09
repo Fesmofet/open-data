@@ -24,10 +24,10 @@ function payoutValue(story: FeedStoryView): number {
   return (Number.isFinite(pending) ? pending : 0) + (Number.isFinite(total) ? total : 0);
 }
 
-export function sortDiscussionComments(
-  comments: FeedStoryView[],
+export function sortDiscussionComments<T extends FeedStoryView>(
+  comments: T[],
   sort: DiscussionCommentSort,
-): FeedStoryView[] {
+): T[] {
   const sorted = [...comments];
   switch (sort) {
     case 'BEST':
