@@ -1,6 +1,7 @@
 import { normalizeImageCidOrUrlFormValue } from '@/modules/object-updates/application/image-form-value';
 
-import type { ProjectedGalleryPhotoView } from './object-page.types';
+import { normalizeGalleryImageUrl } from './gallery-approval-stats';
+import type { ProjectedGalleryAlbumView } from './object-page.types';
 
 export type GalleryPhotoImageSource = Pick<ProjectedGalleryPhotoView, 'url' | 'cid'>;
 
@@ -30,4 +31,27 @@ export function galleryPhotoToGalleryItemValue(
   photo: GalleryPhotoImageSource,
 ): Record<string, string> {
   return { album, ...galleryPhotoToImageCidOrUrlValue(photo) };
+}
+
+/** Stable identity for matching the same image across albums (cid-first, else normalized url). */
+export function galleryPhotoIdentity(photo: GalleryPhotoImageSource): string {
+  const value = galleryPhotoToImageCidOrUrlValue(photo);
+  if ('cid' in value) {
+    return `cid:${value.cid}`;
+  }
+  return `url:${normalizeGalleryImageUrl(value.url)}`;
+}
+
+export function galleryPhotosMatch(
+  a: GalleryPhotoImageSource,
+  b: GalleryPhotoImageSource,
+): boolean {
+  return galleryPhotoIdentity(a) === galleryPhotoIdentity(b);
+}
+
+export function albumContainsPhoto(
+  album: Pick<ProjectedGalleryAlbumView, 'items'>,
+  photo: GalleryPhotoImageSource,
+): boolean {
+  return album.items.some((item) => galleryPhotosMatch(item, photo));
 }

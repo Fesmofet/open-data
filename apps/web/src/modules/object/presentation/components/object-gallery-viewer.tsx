@@ -34,12 +34,15 @@ import {
   resolveGalleryPhotoApprovalStat,
 } from '@/modules/object/domain/gallery-approval-stats';
 import {
+  albumContainsPhoto,
   galleryPhotoToGalleryItemValue,
   galleryPhotoToImageCidOrUrlValue,
 } from '@/modules/object/domain/gallery-photo-update-value';
 import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/gallery/gallery-approval.actions';
 
-import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import type {
+  ProjectedGalleryAlbumView,
+} from '../../domain/object-page.types';
 import { GalleryImage } from './gallery-image';
 
 const MIN_ZOOM = 0.5;
@@ -91,8 +94,8 @@ export type ObjectGalleryViewerProps = {
   objectId: string;
   objectName: string;
   album: ProjectedGalleryAlbumView;
-  /** Real gallery album names on the object (excludes virtual albums like Related). */
-  allAlbumNames: readonly string[];
+  /** Real gallery albums on the object (excludes virtual albums like Related). */
+  allGalleryAlbums: readonly ProjectedGalleryAlbumView[];
   initialIndex: number;
   onClose: () => void;
   viewerUsername: string | null;
@@ -105,7 +108,7 @@ export function ObjectGalleryViewer({
   objectId,
   objectName,
   album,
-  allAlbumNames,
+  allGalleryAlbums,
   initialIndex,
   onClose,
   viewerUsername,
@@ -133,6 +136,9 @@ export function ObjectGalleryViewer({
   const [voteError, setVoteError] = useState<string | null>(null);
   const [addAlbumPending, setAddAlbumPending] = useState<string | null>(null);
   const [addAlbumError, setAddAlbumError] = useState<string | null>(null);
+  const [optimisticAlbumAdds, setOptimisticAlbumAdds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
   const albumDropdownRef = useRef<HTMLDivElement>(null);
 
   const photos = album.items;
@@ -141,9 +147,21 @@ export function ObjectGalleryViewer({
   const displayName = objectName.trim() || objectId;
   const canSetAvatar = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
   const canAddToAlbum = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
-  const otherAlbumNames = useMemo(
-    () => allAlbumNames.filter((name) => name !== album.name),
-    [allAlbumNames, album.name],
+  const otherGalleryAlbums = useMemo(
+    () => allGalleryAlbums.filter((entry) => entry.name !== album.name),
+    [allGalleryAlbums, album.name],
+  );
+  const photoIsInAlbum = useCallback(
+    (targetAlbum: ProjectedGalleryAlbumView): boolean => {
+      if (!currentPhoto) {
+        return false;
+      }
+      return (
+        optimisticAlbumAdds.has(targetAlbum.name) ||
+        albumContainsPhoto(targetAlbum, currentPhoto)
+      );
+    },
+    [currentPhoto, optimisticAlbumAdds],
   );
   const isCurrentPhotoAvatar = currentPhoto?.isAvatar === true;
 
@@ -166,6 +184,10 @@ export function ObjectGalleryViewer({
     setActiveIndex(initialIndex);
     setZoom(1);
   }, [initialIndex, album.name]);
+
+  useEffect(() => {
+    setOptimisticAlbumAdds(new Set());
+  }, [activeIndex, currentPhoto?.url, currentPhoto?.cid]);
 
   useEffect(() => {
     let cancelled = false;
@@ -271,6 +293,7 @@ export function ObjectGalleryViewer({
           operations: [op],
         });
         setAddAlbumPending(null);
+        setOptimisticAlbumAdds((prev) => new Set([...prev, targetAlbumName]));
         setAlbumDropdownOpen(false);
         void awaitTrxConfirmation(transactionId).finally(() => {
           void refreshAfterBroadcast(router, () =>
@@ -444,27 +467,48 @@ export function ObjectGalleryViewer({
                   />
                   <span>{album.name}</span>
                 </label>
-                {otherAlbumNames.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    role="option"
-                    disabled={!canAddToAlbum || addAlbumPending !== null}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={() => void onAddToAlbum(name)}
-                  >
-                    <span
-                      className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
-                      aria-hidden
-                    />
-                    <span className="min-w-0 flex-1 truncate">{name}</span>
-                    {addAlbumPending === name ? (
-                      <span className="text-caption" aria-hidden>
-                        …
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
+                {otherGalleryAlbums.map((targetAlbum) => {
+                  const alreadyInAlbum = photoIsInAlbum(targetAlbum);
+                  if (alreadyInAlbum) {
+                    return (
+                      <label
+                        key={targetAlbum.name}
+                        className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70"
+                      >
+                        <input
+                          type="checkbox"
+                          checked
+                          disabled
+                          readOnly
+                          className="size-4 shrink-0 accent-accent"
+                          aria-label={targetAlbum.name}
+                        />
+                        <span className="min-w-0 flex-1 truncate">{targetAlbum.name}</span>
+                      </label>
+                    );
+                  }
+                  return (
+                    <button
+                      key={targetAlbum.name}
+                      type="button"
+                      role="option"
+                      disabled={!canAddToAlbum || addAlbumPending !== null}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => void onAddToAlbum(targetAlbum.name)}
+                    >
+                      <span
+                        className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
+                        aria-hidden
+                      />
+                      <span className="min-w-0 flex-1 truncate">{targetAlbum.name}</span>
+                      {addAlbumPending === targetAlbum.name ? (
+                        <span className="text-caption" aria-hidden>
+                          …
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
                 {canSetAvatar ? (
                   <>
                     <div className="border-t border-border" role="separator" />
