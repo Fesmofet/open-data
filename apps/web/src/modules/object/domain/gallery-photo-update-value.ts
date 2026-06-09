@@ -1,7 +1,10 @@
 import { normalizeImageCidOrUrlFormValue } from '@/modules/object-updates/application/image-form-value';
 
 import { normalizeGalleryImageUrl } from './gallery-approval-stats';
-import type { ProjectedGalleryAlbumView } from './object-page.types';
+import type {
+  ProjectedGalleryAlbumView,
+  ProjectedGalleryPhotoView,
+} from './object-page.types';
 
 export type GalleryPhotoImageSource = Pick<ProjectedGalleryPhotoView, 'url' | 'cid'>;
 
