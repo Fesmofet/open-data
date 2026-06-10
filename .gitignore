@@ -61,3 +61,4 @@ nginx/.htpasswd
 # Keep: *.conf.template, 00-acme.conf (static). Ignore: generated default.conf and .nokey files.
 nginx/conf.d/default.conf
 nginx/conf.d/*.nokey
+.husky/

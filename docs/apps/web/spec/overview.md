@@ -54,7 +54,10 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm nx dev web` | Local dev server (Turbopack) |
+| `pnpm nx dev web` | Local dev server (Turbopack) — **does not typecheck** |
 | `pnpm dev:web:webpack` | Dev with **webpack** — use if `next dev` hits **JavaScript heap out of memory** (often after long sessions / Turbopack+HMR growth). Optionally set `NODE_OPTIONS=--max-old-space-size=8192` (or higher) before the command; delete `apps/web/.next` and restart |
+| husky `pre-push` | When `apps/web/**` or `libs/**` change in pushed commits, runs `pnpm typecheck:web` |
+| `pnpm typecheck:web` | `tsc --noEmit` for `apps/web` (also CI `verify.yml`) |
 | `pnpm nx build web` | Production build |
+| `pnpm nx run web:verify-production-build` | Full `next build` smoke before Docker image |
 | `pnpm nx test web` | Unit tests |

@@ -16,7 +16,7 @@ export function useStoryPreviewMediaUrl(
   videoEmbedUrl: string | null | undefined,
   videoThumbnailUrl: string | null | undefined,
   thumbnailUrl: string | null | undefined,
-): string | null | undefined {
+): string | null {
   const staticVideoThumb =
     videoThumbnailUrl && !isBrokenThreeSpeakStaticThumbnail(videoThumbnailUrl)
       ? videoThumbnailUrl

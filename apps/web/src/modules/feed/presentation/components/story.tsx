@@ -352,7 +352,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                 >
                   Preview unavailable
                 </div>
-              ) : (
+              ) : previewMediaUrl ? (
                 <div className={previewMediaLandscape ? 'relative w-full' : 'relative'}>
                   <Image
                     src={previewMediaUrl}
@@ -391,6 +391,13 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                       <IconPlay />
                     </button>
                   ) : null}
+                </div>
+              ) : (
+                <div
+                  className="flex min-h-[180px] w-full items-center justify-center text-caption text-muted"
+                  role="status"
+                >
+                  Preview unavailable
                 </div>
               )}
             </div>

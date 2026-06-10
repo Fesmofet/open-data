@@ -10,18 +10,27 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  web-locale-json-utf8:
-    name: Web i18n — locale JSON strict UTF-8
+  web-verify:
+    name: Web — locale JSON UTF-8 + TypeScript
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Verify apps/web locale catalogs (strict UTF-8, no BOM, valid JSON)
         run: node scripts/verify-web-locale-json-utf8.cjs
+
+      - name: Typecheck apps/web (tsc --noEmit)
+        run: pnpm nx run web:typecheck
 
   osv-scan-pr:
     name: OSV vulnerability scan (PR — new vulns only)

@@ -15,6 +15,13 @@
         "command": "next dev --webpack"
       }
     },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.json",
+        "cwd": "apps/web"
+      }
+    },
     "verify-production-build": {
       "executor": "nx:run-commands",
       "options": {

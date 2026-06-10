@@ -12,17 +12,16 @@ Specialization for this app. **Shared policy** (monorepo, docs standards, cross-
 
 - **Next.js App Router** (`src/app/`) — not NestJS.
 
-## Verification (before Docker / GH Actions)
-
-Run from repo root **before** pushing a web image build:
+## Verification (before push / Docker)
 
 | Command | What it checks |
 |---------|----------------|
-| `pnpm verify:web-production-build` | `next build ./apps/web` + TypeScript (same as `apps/web/Dockerfile` builder) |
-| `pnpm verify:web` | Locale JSON UTF-8 (CI `verify.yml`) + production build above |
-| `pnpm nx run web:verify-production-build` | Same production build via Nx |
+| **husky `pre-push`** | When pushed commits touch `apps/web/**` or `libs/**`, runs `pnpm typecheck:web` automatically (bypass: `git push --no-verify`; CI still enforces) |
+| `pnpm typecheck:web` / `pnpm nx run web:typecheck` | `tsc --noEmit` (fast; same class of TS errors as prod build; CI `verify.yml`) |
+| `pnpm check:web-i18n-utf8` | Locale JSON strict UTF-8 (CI `verify.yml`) |
+| `pnpm nx run web:verify-production-build` | Full `next build ./apps/web` — manual smoke before Docker image (same as `apps/web/Dockerfile` builder) |
 
-Does **not** run `docker build`; use that only when you need the full image. On Windows, standalone copy may warn (see `next.config.js`); TypeScript failures are what this catches.
+`next dev` does **not** typecheck — do not rely on dev alone. Does **not** run `docker build`; use that only when you need the full image. On Windows, standalone copy may warn (see `next.config.js`); TypeScript failures are what typecheck and production build catch.
 
 ## Environment variables (runtime, not build)
 

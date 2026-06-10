@@ -5,7 +5,6 @@
  * build as `apps/web/Dockerfile` builder stage (`pnpm exec next build ./apps/web`).
  *
  * Usage (repo root):
- *   pnpm verify:web-production-build
  *   pnpm nx run web:verify-production-build
  */
 
