@@ -1,0 +1,61 @@
+import type { CurrencyQueryService } from '@opden-data-layer/currency';
+import type { GetDiscoverObjectsEndpoint } from '../domain/discover/get-discover-objects.endpoint';
+import type { GetDiscoverTagCategoriesEndpoint } from '../domain/discover/get-discover-tag-categories.endpoint';
+import type { GetDiscoverUsersEndpoint } from '../domain/discover/get-discover-users.endpoint';
+import type {
+  GetPostByKeyEndpoint,
+  GetUserBlogFeedEndpoint,
+  GetUserCommentsFeedEndpoint,
+  GetUserMentionsFeedEndpoint,
+  GetUserThreadsFeedEndpoint,
+} from '../domain/feed';
+import type { GetObjectUpdatesFeedEndpoint } from '../domain/object-updates/get-object-updates-feed.endpoint';
+import type {
+  CheckObjectExistsEndpoint,
+  GetObjectAuthorityEndpoint,
+  GetObjectByIdEndpoint,
+  GetObjectFollowersEndpoint,
+  GetObjectRefListEndpoint,
+  GetNestedObjectsEndpoint,
+} from '../domain/objects';
+import type { GetSearchCountsEndpoint } from '../domain/search/get-search-counts.endpoint';
+import type { GetSearchEndpoint } from '../domain/search/get-search.endpoint';
+import type { GetUserCategoriesEndpoint } from '../domain/categories/get-user-categories.endpoint';
+import type {
+  GetUserShopObjectsEndpoint,
+  GetUserShopSectionsEndpoint,
+} from '../domain/shop';
+import type {
+  GetUserFollowersEndpoint,
+  GetUserFollowingEndpoint,
+  GetUserFollowingObjectsEndpoint,
+} from '../domain/social';
+import type { GetUserProfileEndpoint } from '../domain/users';
+
+export interface McpToolDeps {
+  search: GetSearchEndpoint;
+  searchCounts: GetSearchCountsEndpoint;
+  discoverObjects: GetDiscoverObjectsEndpoint;
+  discoverUsers: GetDiscoverUsersEndpoint;
+  discoverTagCategories: GetDiscoverTagCategoriesEndpoint;
+  getObjectById: GetObjectByIdEndpoint;
+  getNestedObjects: GetNestedObjectsEndpoint;
+  checkObjectExists: CheckObjectExistsEndpoint;
+  getObjectRefList: GetObjectRefListEndpoint;
+  getObjectFollowers: GetObjectFollowersEndpoint;
+  getObjectAuthority: GetObjectAuthorityEndpoint;
+  getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint;
+  getUserProfile: GetUserProfileEndpoint;
+  getUserBlogFeed: GetUserBlogFeedEndpoint;
+  getUserMentionsFeed: GetUserMentionsFeedEndpoint;
+  getUserThreadsFeed: GetUserThreadsFeedEndpoint;
+  getUserCommentsFeed: GetUserCommentsFeedEndpoint;
+  getUserFollowers: GetUserFollowersEndpoint;
+  getUserFollowing: GetUserFollowingEndpoint;
+  getUserFollowingObjects: GetUserFollowingObjectsEndpoint;
+  getUserCategories: GetUserCategoriesEndpoint;
+  getUserShopObjects: GetUserShopObjectsEndpoint;
+  getUserShopSections: GetUserShopSectionsEndpoint;
+  getPostByKey: GetPostByKeyEndpoint;
+  currencyQueries: CurrencyQueryService;
+}

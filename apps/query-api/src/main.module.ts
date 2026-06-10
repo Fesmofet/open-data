@@ -11,6 +11,7 @@ import {
 import { CurrencyModule } from '@opden-data-layer/currency';
 import queryApiConfig from './config/query-api.config';
 import { ControllersModule } from './controllers';
+import { McpModule } from './mcp';
 import { DatabaseModule, KYSELY } from './database';
 import { GovernanceModule } from './domain/governance';
 import { ObjectProjectionModule } from './domain/object-projection';
@@ -60,6 +61,7 @@ import { RepositoriesModule } from './repositories';
     GovernanceModule,
     ObjectProjectionModule,
     ControllersModule,
+    McpModule,
   ],
 })
 export class MainModule {}

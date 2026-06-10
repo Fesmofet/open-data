@@ -24,6 +24,7 @@ src/
   http/            request decorators (viewer header, governance object id)
   pipes/           ZodBodyPipe, ZodQueryPipe
   openapi/         per-resource spec fragments + registry + generate script
+  mcp/             MCP Streamable HTTP (`POST /query/mcp`) + tool registrations
   domain/          feature modules: governance/, objects/, users/, feed/, drafts/, categories/
 ```
 
@@ -48,6 +49,19 @@ src/
 
 - Every public HTTP surface should have a corresponding fragment under `openapi/` and registration in the registry.
 - Prefer **spec-first fragments** over decorating controllers with Swagger decorators unless the project already standardizes otherwise.
+
+## MCP
+
+- **Endpoint:** `POST /query/mcp` (Streamable HTTP, stateless, no URI version).
+- Every new HTTP controller **must** be mirrored as MCP tools in `src/mcp/tools/<resource>.tools.ts` and registered via `register-all-tools.ts`.
+- **Exception:** `UserPostDraftsController` (JWT-authenticated writes) — do **not** expose via MCP.
+- MCP tools must **not** contain business logic — delegate to the same `*Endpoint.execute()` methods used by HTTP controllers.
+- Register context params as optional tool arguments where HTTP routes use headers:
+  - `locale` (default `en-US`) — replaces `Accept-Language` / `X-Locale`
+  - `viewer` — replaces `X-Viewer`
+  - `governance_object_id` — replaces `X-Governance-Object-Id`
+- Reuse domain Zod schemas for tool `inputSchema` (extend with context fields via `withMcpLocaleContext` in `mcp-tool.helpers.ts`).
+- MCP is not REST — do **not** add OpenAPI fragments for `/query/mcp`.
 
 ## Modules
 

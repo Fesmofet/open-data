@@ -31,6 +31,7 @@ async function bootstrap() {
   Logger.log(
     `OpenAPI docs: http://localhost:${port}/${globalPrefix}/v1/docs`,
   );
+  Logger.log(`MCP endpoint: http://localhost:${port}/${globalPrefix}/mcp`);
 }
 
 bootstrap();
