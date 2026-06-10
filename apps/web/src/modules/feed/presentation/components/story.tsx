@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html';
+import { isThreeSpeakEmbedUrl } from '@/shared/infrastructure/three-speak-preview';
 import {
   AVATAR_PLACEHOLDER_SRC,
   shouldUnoptimizeRemoteImage,
@@ -17,6 +18,7 @@ import { objectFields } from '../../application/dto/object-fields';
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
 
+import { useStoryPreviewMediaUrl } from '../hooks/use-story-preview-media-url';
 import {
   FEED_STORY_PORTRAIT_PREVIEW_MAX_PX,
   FEED_STORY_TAGGED_OBJECT_MAX,
@@ -122,8 +124,20 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
     story.objects && story.objects.length > 0
       ? story.objects.slice(0, FEED_STORY_TAGGED_OBJECT_MAX)
       : [];
-  const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
-  const canPlayInline = Boolean(story.videoEmbedUrl);
+  const isThreeSpeakVideo = isThreeSpeakEmbedUrl(story.videoEmbedUrl);
+  const previewMediaUrl = useStoryPreviewMediaUrl(
+    story.videoEmbedUrl,
+    story.videoThumbnailUrl,
+    story.thumbnailUrl,
+  );
+  const showPreviewBlock = isThreeSpeakVideo
+    ? Boolean(story.videoEmbedUrl)
+    : Boolean(previewMediaUrl);
+  const showInlineVideo = Boolean(
+    story.videoEmbedUrl && (isThreeSpeakVideo || videoPlaying),
+  );
+  const canPlayInline = Boolean(story.videoEmbedUrl) && !isThreeSpeakVideo;
+  const isPostVideoActive = isThreeSpeakVideo || videoPlaying;
 
   useEffect(() => {
     setPreviewMediaFailed(false);
@@ -239,7 +253,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       </header>
 
       <div className="relative mt-3 min-w-0">
-        {story.permalinkPath != null && !videoPlaying ? (
+        {story.permalinkPath != null && !isPostVideoActive ? (
           <Link
             href={story.permalinkPath}
             suppressHydrationWarning
@@ -259,7 +273,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
         <div
           className={[
             'relative z-10 space-y-3',
-            story.permalinkPath != null && !videoPlaying ? 'pointer-events-none' : '',
+            story.permalinkPath != null && !isPostVideoActive ? 'pointer-events-none' : '',
           ]
             .filter(Boolean)
             .join(' ')}
@@ -299,10 +313,10 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             </h2>
           )}
 
-          {previewMediaUrl ? (
+          {showPreviewBlock ? (
             <div
               className={
-                videoPlaying && story.videoEmbedUrl
+                showInlineVideo
                   ? 'relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-btn border border-border bg-surface-control'
                   : [
                       'rounded-btn border border-border bg-surface-control',
@@ -312,7 +326,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                     ].join(' ')
               }
             >
-              {videoPlaying && story.videoEmbedUrl ? (
+              {showInlineVideo && story.videoEmbedUrl ? (
                 <>
                   <iframe
                     title={story.title ? `${story.title} — video` : 'Embedded video'}
@@ -321,13 +335,15 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
-                  <button
-                    type="button"
-                    className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                    onClick={() => setVideoPlaying(false)}
-                  >
-                    Close
-                  </button>
+                  {!isThreeSpeakVideo ? (
+                    <button
+                      type="button"
+                      className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      onClick={() => setVideoPlaying(false)}
+                    >
+                      Close
+                    </button>
+                  ) : null}
                 </>
               ) : previewMediaFailed ? (
                 <div
@@ -383,7 +399,20 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           <div
             suppressHydrationWarning
             className="feed-story-excerpt pointer-events-none min-h-[1.5em] text-body text-fg line-clamp-6 [&_a]:pointer-events-auto [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_img]:pointer-events-auto [&_img]:my-2 [&_img]:h-auto [&_img]:max-w-full [&_p]:m-0 [&_p]:text-fg [&_p+p]:mt-2"
-            dangerouslySetInnerHTML={{ __html: feedExcerptToSafeHtml(story.excerpt) }}
+            dangerouslySetInnerHTML={{
+              __html: feedExcerptToSafeHtml(story.excerpt, isThreeSpeakVideo
+                ? {
+                    omitImageUrls: [
+                      previewMediaUrl,
+                      story.thumbnailUrl,
+                      story.videoThumbnailUrl,
+                    ],
+                    stripThreeSpeakLinks: true,
+                  }
+                : {
+                    omitImageUrl: previewMediaUrl,
+                  }),
+            }}
           />
           {story.isNsfw ? (
             <p className="text-caption text-muted" role="status">

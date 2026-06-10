@@ -74,6 +74,7 @@ export function StoryRewardDetail({
                 <Link
                   href={`/@${encodeURIComponent(b.account)}`}
                   className="truncate text-accent hover:underline"
+                  suppressHydrationWarning
                 >
                   @{b.account}
                 </Link>

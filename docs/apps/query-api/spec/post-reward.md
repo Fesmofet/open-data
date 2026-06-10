@@ -39,7 +39,14 @@ On `FeedStoryItem` (blog, mentions, comments, threads placeholder, single post, 
 
 Supported values: `SUPPORTED_CURRENCIES` in `@opden-data-layer/core`. Invalid values fall back to `USD`.
 
-Rates: WAIV/USD from `CurrencyQueryService.engineCurrent()`; fiat crosses from `legacyRateLatest('USD', …)`.
+Rates: one snapshot per `enrichFeedItems` / `buildReward` call via `PostRewardRatesCache` (Redis):
+
+| Snapshot | Source | Redis TTL |
+|----------|--------|-----------|
+| WAIV + Hive/USD (`waivUsdRate`) | `CurrencyQueryService.engineCurrent()` | 10 min |
+| Fiat crosses (`fiatRates`) | `legacyRateLatest('USD', …)` | 6 h |
+
+Keys: `query-api:cache:post-reward:waiv-hive-usd`, `query-api:cache:post-reward:fiat:USD`. On Redis miss or error, rates are fetched live and written with TTL; corrupt cache entries are ignored.
 
 ## Data sources
 
@@ -55,6 +62,7 @@ Threads feed items without Hive payout fields keep `reward: null`.
 ## Implementation
 
 - `PostRewardService` — `apps/query-api/src/domain/feed/post-reward.service.ts`
+- `PostRewardRatesCache` — `apps/query-api/src/domain/feed/post-reward-rates.cache.ts`
 - USD math — `calculate-post-reward-usd.ts` (legacy `calculatePayout` port)
 - Discussion batch — `enrich-discussion-comments-rewards.ts`
 

@@ -22,4 +22,8 @@ export const redisKey = {
       viewerSegment,
       refIdsSegment,
     ),
+  postRewardWaivHiveRate: () =>
+    buildRedisKey(APP, 'cache', 'post-reward', 'waiv-hive-usd'),
+  postRewardFiatRates: (base: string) =>
+    buildRedisKey(APP, 'cache', 'post-reward', 'fiat', base),
 } as const;

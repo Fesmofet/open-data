@@ -15,3 +15,9 @@ export const LIST_COUNT_BFS_BATCH_SIZE = 64;
 
 /** Redis TTL for expanded object ref summaries per parent object (seconds). */
 export const OBJECT_REF_EXPANSION_CACHE_TTL_SEC = 30;
+
+/** Redis TTL for WAIV/Hive USD rate used in post reward enrichment (seconds). */
+export const POST_REWARD_WAIV_HIVE_RATE_CACHE_TTL_SEC = 600;
+
+/** Redis TTL for fiat crosses (USD base) in post reward enrichment (seconds). */
+export const POST_REWARD_FIAT_RATES_CACHE_TTL_SEC = 21_600;

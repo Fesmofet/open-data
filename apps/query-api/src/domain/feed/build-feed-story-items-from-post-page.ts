@@ -10,7 +10,10 @@ import {
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import type { UserProfileView } from '../users/user-profile.types';
 import { GovernanceResolverService } from '../governance';
-import { buildFeedObjectChips } from './feed-object-summaries';
+import {
+  assembleFeedObjectChipsForPost,
+  groupPostObjectsByPostKey,
+} from './feed-object-summaries';
 import { ObjectProjectionService, emptyRankVoteProjection } from '../object-projection';
 import { FEED_OBJECT_UPDATE_TYPES, FEED_TAGGED_OBJECT_DISPLAY_LIMIT } from './feed.constants';
 import type { SupportedCurrency } from '@opden-data-layer/core';
@@ -102,6 +105,25 @@ export async function buildFeedStoryItemsFromPostPage(
     viewsByObjectId = new Map(views.map((v, i) => [objects[i].core.object_id, v]));
   }
 
+  const batchProjectOptions = {
+    locale,
+    governanceObjectIdFromHeader,
+    viewerAccount,
+    rankVoteProjection,
+    governance,
+  };
+  const projectedById = new Map(
+    objectIds.length > 0
+      ? (
+          await objectProjection.batchProject(
+            [...viewsByObjectId.values()],
+            batchProjectOptions,
+          )
+        ).map((p) => [p.object_id, p] as const)
+      : [],
+  );
+  const postObjectsByKey = groupPostObjectsByPostKey(postObjects);
+
   const items: FeedStoryItemDto[] = [];
   const rewardInputs: ReturnType<typeof buildPostRewardInputFromPostRow>[] = [];
   for (const row of pageRows) {
@@ -129,20 +151,11 @@ export async function buildFeedStoryItemsFromPostPage(
     const excerpt = truncateExcerpt(stripHtmlForExcerpt(post.body ?? ''));
     const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [], voted: false };
 
-    const objectsForPost = postObjects.filter(
-      (o) => o.author === row.author && o.permlink === row.permlink,
-    );
-    const objects = await buildFeedObjectChips(
+    const objectsForPost = postObjectsByKey.get(pk) ?? [];
+    const objects = assembleFeedObjectChipsForPost(
       objectsForPost,
-      viewsByObjectId,
+      projectedById,
       weightByObjectId,
-      objectProjection,
-      {
-        locale,
-        governanceObjectIdFromHeader,
-        viewerAccount,
-        rankVoteProjection,
-      },
       FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
     );
 

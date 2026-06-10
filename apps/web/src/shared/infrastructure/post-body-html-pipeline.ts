@@ -53,6 +53,59 @@ function youtubeIframeHtml(videoId: string): string {
   return `<div class="blog-post-youtube-embed"><iframe src="${src}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>`;
 }
 
+function threeSpeakIframeHtml(videoIdRaw: string): string {
+  let videoId = videoIdRaw;
+  try {
+    videoId = decodeURIComponent(videoIdRaw.replace(/\+/g, ' '));
+  } catch {
+    videoId = videoIdRaw;
+  }
+  if (videoId.includes('..')) {
+    return '';
+  }
+  const src = `https://play.3speak.tv/watch?v=${encodeURIComponent(videoId)}&mode=iframe&layout=desktop`;
+  return `<div class="blog-post-3speak-embed"><iframe src="${src}" title="3Speak video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>`;
+}
+
+/** Legacy Waivio `Body.js` — linked poster images become iframe; drop duplicate posters when embedded. */
+export function embedThreeSpeakInBody(html: string): string {
+  if (!html.includes('3speak')) {
+    return html;
+  }
+
+  let out = html;
+
+  out = out.replace(
+    /<a\s+[^>]*(?:href|data-href)=["']https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?[^"']*\bv=([^"&]+)[^"']*["'][^>]*>\s*<img[^>]*>\s*<\/a>/gi,
+    (_match, videoId: string) => threeSpeakIframeHtml(videoId),
+  );
+
+  out = out.replace(
+    /<img[^>]*data-linked-url=["']https?:\/\/3speak\.(?:tv|online)\/[^"']*\bv=([^"&]+)[^"']*["'][^>]*>/gi,
+    (_match, videoId: string) => threeSpeakIframeHtml(videoId),
+  );
+
+  if (!/play\.3speak\.tv/i.test(out)) {
+    out = out.replace(
+      /https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?(?:[^"'\s]*&)*v=([^&\s<>"']+)/gi,
+      (_match, videoId: string) => threeSpeakIframeHtml(videoId),
+    );
+  }
+
+  if (/play\.3speak\.tv/i.test(out)) {
+    out = out.replace(
+      /<a\s+[^>]*href=["']https?:\/\/3speak\.(?:tv|online)\/[^"']+["'][^>]*>\s*<img[^>]*>\s*<\/a>/gi,
+      '',
+    );
+    out = out.replace(
+      /<img[^>]*data-linked-url=["']https?:\/\/3speak\.[^"']+["'][^>]*>/gi,
+      '',
+    );
+  }
+
+  return out;
+}
+
 export function embedYouTubeUrls(html: string): string {
   if (!html.includes('youtube') && !html.includes('youtu.be')) {
     return html;
@@ -131,6 +184,7 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     'www.youtube-nocookie.com',
     'player.vimeo.com',
     '3speak.tv',
+    'play.3speak.tv',
     'www.dailymotion.com',
     'embed.twitch.tv',
   ],
@@ -143,7 +197,7 @@ export function sanitizePostBodyHtml(raw: string): string {
     ? parsed
     : linkifyBareImageUrls(parsed);
   const intermediate = linkifyHiveMentions(
-    embedYouTubeUrls(convertMarkdownImages(withImages)),
+    embedYouTubeUrls(embedThreeSpeakInBody(convertMarkdownImages(withImages))),
   );
   return sanitizeHtml(intermediate, POST_BODY_SANITIZE_OPTIONS);
 }

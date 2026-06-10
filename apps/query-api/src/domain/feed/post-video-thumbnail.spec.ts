@@ -32,13 +32,13 @@ describe('extractVideoThumbnailUrl', () => {
     );
   });
 
-  it('returns 3Speak poster from watch URL', () => {
+  it('returns null for 3Speak watch URL (poster resolved client-side via play API)', () => {
     expect(
       extractVideoThumbnailUrl(
         '',
         'https://3speak.tv/watch?v=author%2Fmy-post-permlink',
       ),
-    ).toBe('https://img.3speakcontent.co/author/my-post-permlink/post.png');
+    ).toBeNull();
   });
 
   it('returns DTube snaphash from json_metadata.video via Hive image proxy', () => {
@@ -129,7 +129,15 @@ describe('extractVideoEmbedUrl', () => {
         'https://3speak.tv/watch?v=author%2Fmy-post-permlink',
         ctx,
       ),
-    ).toBe('https://3speak.tv/embed?v=author%2Fmy-post-permlink');
+    ).toBe(
+      'https://play.3speak.tv/watch?v=author%2Fmy-post-permlink&mode=iframe&layout=desktop',
+    );
+  });
+
+  it('returns 3Speak embed from 3speak.online URL', () => {
+    expect(
+      extractVideoEmbedUrl('', 'https://3speak.online/watch?v=author%2Fmy-post', ctx),
+    ).toBe('https://play.3speak.tv/watch?v=author%2Fmy-post&mode=iframe&layout=desktop');
   });
 
   it('returns emb.d.tube from json_metadata snaphash', () => {
@@ -150,7 +158,7 @@ describe('extractVideoEmbedUrl', () => {
       },
     });
     expect(extractVideoEmbedUrl(meta, '', ctx)).toBe(
-      'https://3speak.tv/embed?v=u%2Fp',
+      'https://play.3speak.tv/watch?v=u%2Fp&mode=iframe&layout=desktop',
     );
   });
 

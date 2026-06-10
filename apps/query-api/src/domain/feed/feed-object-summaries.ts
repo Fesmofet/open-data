@@ -65,6 +65,44 @@ function applyLinkedDescriptionExcerpt(projected: ProjectedObject): ProjectedObj
   };
 }
 
+function rowsForPostObjects(
+  objectsForPost: PostObject[],
+  projectedById: Map<string, ProjectedObject>,
+  weightByObjectId: Map<string, number | null>,
+): Array<{ projected: ProjectedObject; weight: number | null }> {
+  return objectsForPost.map((o) => ({
+    projected: projectedById.get(o.object_id) ?? placeholderProjectedObject(o),
+    weight: weightByObjectId.get(o.object_id) ?? null,
+  }));
+}
+
+/** Sync assembly after a single page-level `batchProject`. */
+export function assembleFeedObjectChipsForPost(
+  objectsForPost: PostObject[],
+  projectedById: Map<string, ProjectedObject>,
+  weightByObjectId: Map<string, number | null>,
+  limit: number,
+): ProjectedObject[] {
+  const rows = rowsForPostObjects(objectsForPost, projectedById, weightByObjectId);
+  return sortProjectedObjectsForDisplay(rows).slice(0, limit);
+}
+
+export function groupPostObjectsByPostKey(
+  postObjects: PostObject[],
+): Map<string, PostObject[]> {
+  const byKey = new Map<string, PostObject[]>();
+  for (const o of postObjects) {
+    const key = `${o.author}\0${o.permlink}`;
+    const list = byKey.get(key);
+    if (list) {
+      list.push(o);
+    } else {
+      byKey.set(key, [o]);
+    }
+  }
+  return byKey;
+}
+
 async function projectObjectsForPost(
   objectsForPost: PostObject[],
   viewsByObjectId: Map<string, ResolvedObjectView>,
@@ -81,10 +119,7 @@ async function projectObjectsForPost(
     viewsToProject.length > 0 ? await projection.batchProject(viewsToProject, options) : [];
   const projectedById = new Map(projectedBatch.map((p) => [p.object_id, p]));
 
-  return objectsForPost.map((o) => ({
-    projected: projectedById.get(o.object_id) ?? placeholderProjectedObject(o),
-    weight: weightByObjectId.get(o.object_id) ?? null,
-  }));
+  return rowsForPostObjects(objectsForPost, projectedById, weightByObjectId);
 }
 
 export async function buildFeedObjectChips(

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
+import { useStoryPreviewMediaUrl } from '../hooks/use-story-preview-media-url';
 
 function IconPlaySmall({ className }: { className?: string }) {
   return (
@@ -42,7 +43,11 @@ function tileLabel(story: FeedStoryView): string {
  * Square image-only preview for dense profile grids (e.g. Instagram shell mode).
  */
 export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
-  const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
+  const previewMediaUrl = useStoryPreviewMediaUrl(
+    story.videoEmbedUrl,
+    story.videoThumbnailUrl,
+    story.thumbnailUrl,
+  );
   const showVideoBadge = Boolean(story.videoEmbedUrl ?? story.videoThumbnailUrl);
   const label = tileLabel(story);
   const [previewFailed, setPreviewFailed] = useState(false);

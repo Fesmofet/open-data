@@ -15,8 +15,8 @@ const YOUTUBE_ID_PATTERNS: RegExp[] = [
 
 const VIMEO_ID_PATTERN = /(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/;
 
-const THREE_SPEAK_WATCH_PATTERN =
-  /(?:https?:\/\/)?(?:www\.)?3speak\.tv\/watch\?v=([^&\s<>"']+)/i;
+const THREE_SPEAK_BODY_PATTERN =
+  /(?:https?:\/\/)?(?:www\.)?3speak\.(?:tv|online)\/(?:watch|embed)\?[^"'\s]*\bv=([^&\s<>"']+)/i;
 
 function tryParseJson(s: string): unknown | null {
   try {
@@ -124,22 +124,36 @@ function extractVimeoThumbnail(body: string): string | null {
   return `https://vumbnail.com/${m[1]}.jpg`;
 }
 
-function extractThreeSpeakThumbnail(body: string): string | null {
-  const m = body.match(THREE_SPEAK_WATCH_PATTERN);
-  if (!m?.[1]) {
-    return null;
-  }
+function decodeThreeSpeakVideoId(raw: string): string | null {
   let path: string;
   try {
-    path = decodeURIComponent(m[1].replace(/\+/g, ' '));
+    path = decodeURIComponent(raw.replace(/\+/g, ' '));
   } catch {
-    path = m[1];
+    path = raw;
   }
   const trimmed = path.trim();
   if (trimmed === '' || trimmed.includes('..')) {
     return null;
   }
-  return `https://img.3speakcontent.co/${trimmed}/post.png`;
+  return trimmed;
+}
+
+function extractThreeSpeakVideoIdFromBody(body: string): string | null {
+  const m = body.match(THREE_SPEAK_BODY_PATTERN);
+  if (!m?.[1]) {
+    return null;
+  }
+  return decodeThreeSpeakVideoId(m[1]);
+}
+
+/** Legacy Waivio iframe player URL (`embedMedia.js` / `videoHelper.js`). */
+export function buildThreeSpeakEmbedUrl(videoId: string): string {
+  return `https://play.3speak.tv/watch?v=${encodeURIComponent(videoId)}&mode=iframe&layout=desktop`;
+}
+
+/** 3Speak posters are fetched client-side from `play.3speak.tv/api/watch` (see legacy FeedItem). */
+function extractThreeSpeakThumbnail(_body: string): string | null {
+  return null;
 }
 
 function videoThumbFromBody(body: string): string | null {
@@ -215,7 +229,7 @@ function embedFromJsonMetadataVideo(
     }
     const platform = info.platform;
     if (typeof platform === 'string' && platform.toLowerCase().includes('3speak')) {
-      return `https://3speak.tv/embed?v=${encodeURIComponent(`${author}/${permlink}`)}`;
+      return buildThreeSpeakEmbedUrl(`${author}/${permlink}`);
     }
   }
 
@@ -245,21 +259,11 @@ function embedFromBody(body: string): string | null {
   if (vm) {
     return `https://player.vimeo.com/video/${vm}?autoplay=1`;
   }
-  const m = body.match(THREE_SPEAK_WATCH_PATTERN);
-  if (!m?.[1]) {
+  const videoId = extractThreeSpeakVideoIdFromBody(body);
+  if (!videoId) {
     return null;
   }
-  let path: string;
-  try {
-    path = decodeURIComponent(m[1].replace(/\+/g, ' '));
-  } catch {
-    path = m[1];
-  }
-  const trimmed = path.trim();
-  if (trimmed === '' || trimmed.includes('..')) {
-    return null;
-  }
-  return `https://3speak.tv/embed?v=${encodeURIComponent(trimmed)}`;
+  return buildThreeSpeakEmbedUrl(videoId);
 }
 
 /**

@@ -69,7 +69,7 @@ Each item links a post to ODL objects via `post_objects`. The API returns **at m
 1. **Image first** — rows where projected `fields.image` (resolved `image` update) is non-empty rank above rows without.
 2. **Then by `objects_core.weight` descending** — higher object weight first; `NULL` weight sorts last within the same avatar tier.
 
-Resolution uses `ObjectProjectionService.batchProject` with feed-local update types (`name` / `image` only for list cards). Each `objects[]` element is a **`ProjectedObject`** (`object_id`, `object_type`, `semantic_type`, `fields`, authority flags). Sort/limit: `buildFeedObjectChips` + `sortProjectedObjectsForDisplay` in `feed-object-summaries.ts`.
+Resolution uses **one** `ObjectProjectionService.batchProject` per feed page (all tagged object views on the page), then per-post sync assembly via `assembleFeedObjectChipsForPost` in `feed-object-summaries.ts`. Feed-local update types: `name` / `image` only for list cards. Each `objects[]` element is a **`ProjectedObject`** (`object_id`, `object_type`, `semantic_type`, `fields`, authority flags). Sort/limit: `sortProjectedObjectsForDisplay` + display cap (`FEED_TAGGED_OBJECT_DISPLAY_LIMIT`).
 
 ## Cursor format
 

@@ -3,13 +3,12 @@ import {
   SUPPORTED_CURRENCIES,
   type SupportedCurrency,
 } from '@opden-data-layer/core';
-import {
-  CurrencyQueryService,
-  moneyLineFromUsd,
-} from '@opden-data-layer/currency';
+import { moneyLineFromUsd } from '@opden-data-layer/currency';
 
 import { calculatePostRewardUsd } from './calculate-post-reward-usd';
 import { isWaivRewardEligible } from './post-reward-eligibility';
+import type { PostRewardRatesSnapshot } from './post-reward-rates.cache';
+import { PostRewardRatesCache } from './post-reward-rates.cache';
 import type {
   MoneyLineDto,
   PostRewardDto,
@@ -23,7 +22,7 @@ function isSupportedCurrency(value: string): value is SupportedCurrency {
 
 @Injectable()
 export class PostRewardService {
-  constructor(private readonly currencyQuery: CurrencyQueryService) {}
+  constructor(private readonly ratesCache: PostRewardRatesCache) {}
 
   async resolveCurrency(raw: string | undefined): Promise<SupportedCurrency> {
     const upper = (raw ?? 'USD').trim().toUpperCase();
@@ -33,21 +32,14 @@ export class PostRewardService {
   async buildReward(
     input: PostRewardInput,
     currency: SupportedCurrency,
-    waivUsdRate?: number,
+    snapshot?: PostRewardRatesSnapshot,
   ): Promise<PostRewardDto | null> {
-    const waivRate =
-      waivUsdRate ??
-      (await this.currencyQuery.engineCurrent()).USD ??
-      0;
-    const usd = calculatePostRewardUsd(input, waivRate);
+    const rates = snapshot ?? (await this.ratesCache.getSnapshot());
+    const usd = calculatePostRewardUsd(input, rates.waivUsdRate);
     if (!usd) {
       return null;
     }
-    const fiatRates = await this.currencyQuery.legacyRateLatest(
-      'USD',
-      SUPPORTED_CURRENCIES.join(','),
-    );
-    return this.mapUsdToDto(usd, currency, fiatRates);
+    return this.mapUsdToDto(usd, currency, rates.fiatRates);
   }
 
   async enrichFeedItems<T extends object>(
@@ -55,17 +47,12 @@ export class PostRewardService {
     inputs: PostRewardInput[],
     currency: SupportedCurrency,
   ): Promise<Array<T & { reward: PostRewardDto | null; waivRewardEligible: boolean }>> {
-    const waivRates = await this.currencyQuery.engineCurrent();
-    const waivUsdRate = waivRates?.USD ?? 0;
-    const fiatRates = await this.currencyQuery.legacyRateLatest(
-      'USD',
-      SUPPORTED_CURRENCIES.join(','),
-    );
+    const rates = await this.ratesCache.getSnapshot();
 
     return items.map((item, index) => {
       const input = inputs[index];
-      const usd = calculatePostRewardUsd(input, waivUsdRate);
-      const reward = usd ? this.mapUsdToDto(usd, currency, fiatRates) : null;
+      const usd = calculatePostRewardUsd(input, rates.waivUsdRate);
+      const reward = usd ? this.mapUsdToDto(usd, currency, rates.fiatRates) : null;
       return {
         ...item,
         reward,

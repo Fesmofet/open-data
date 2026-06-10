@@ -360,6 +360,14 @@
     @apply absolute inset-0 h-full w-full border-0;
   }
 
+  .blog-post-3speak-embed {
+    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden rounded-btn border border-border bg-black;
+  }
+
+  .blog-post-3speak-embed iframe {
+    @apply absolute inset-0 h-full w-full border-0;
+  }
+
   /**
    * Object `pageContent` — legacy Waivio table rows (logo | brand + link | description).
    * @see apps/web/src/modules/object/presentation/object-page-content-body.class.ts
