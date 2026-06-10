@@ -101,22 +101,87 @@ Build a short ranked list with one-line reason each.
 - Hive usernames: **3–16 characters**, lowercase, rules per provider UI.
 - **Confirm spelling with user before final submit** — names cannot be renamed later.
 
-### 4. Guide through official provider UI only
+### 4. Choose interaction mode
 
-- Open the provider link from signup.hive.io (or provider's official signup URL linked from there).
-- User completes signup in browser/wallet; agent does **not** impersonate the user on third-party sites unless explicitly asked to automate browser steps.
+| Mode | User can save keys in browser? | Agent must |
+|------|----------------------------------|------------|
+| **Browser** (Cursor browser, user at keyboard) | Yes | Automate only with **gates** — never click past key/password screens until user confirms save |
+| **Messenger / chat-only** (Telegram, Slack, no shared browser) | No | **Deliver keys in chat** in a structured block; user copies to a password manager / offline file |
 
-### 5. Key export and storage
+Detect mode before starting the provider flow. If unclear, ask.
+
+### 5. Provider UI — browser mode (mandatory gates)
+
+Open the provider link from signup.hive.io. User may be at the keyboard; agent may assist via browser automation **only** with these rules:
+
+**Forbidden:** clicking Next / Continue / Pay / Finish on any screen that shows **master password**, **seed phrase**, or **private keys** without an explicit user confirmation that they saved the material.
+
+#### Gate A — Master password (or equivalent seed)
+
+When the UI shows the master password / recovery phrase:
+
+1. **Stop automation.** Do not click away or advance.
+2. Tell the user: *“Copy the master password (or seed) to your password manager or an offline file now. I will wait.”*
+3. Optionally highlight the field or scroll it into view; do **not** submit the form.
+4. Proceed **only** after the user replies with an explicit confirmation, e.g. *“saved”*, *“copied”*, *“done”* — not silence, not “continue” alone.
+5. If the user cannot save right now → **pause signup**; do not go to payment or account creation.
+
+#### Gate B — Active and posting keys (and owner / memo if shown)
+
+When the UI shows **active**, **posting**, and any other keys:
+
+1. **Stop automation** again before any Next / download / payment step.
+2. For each key type visible, ask the user to copy or download:
+   - **Posting** — daily use, ODL writes
+   - **Active** — transfers, power-ups
+   - **Owner** — account recovery (most sensitive)
+   - **Memo** — encrypted memos (if shown)
+3. Prefer **Download keys** / export file if the provider offers it; otherwise copy field-by-field.
+4. Proceed **only** after explicit user confirmation that **all displayed keys are saved** (same bar as Gate A).
+5. **Never** skip to payment or “create account” until Gate A **and** Gate B are confirmed.
+
+#### Gate C — Username (before irreversible submit)
+
+- Confirm spelling with the user one more time immediately before the final create / pay action.
+
+#### After gates pass
+
+- Payment or free submit may proceed.
+- Re-check: user still has the key export file or password manager entry before closing the tab.
+
+### 6. Provider flow — messenger / chat-only mode
+
+User cannot interact with a browser to save secrets. The agent **must** pass credentials in the chat.
+
+1. Walk the user through provider steps via instructions **or** run browser on agent side and **read back** what appears on screen.
+2. When master password / keys are generated, send them in one structured message:
+
+```text
+=== HIVE ACCOUNT CREDENTIALS — SAVE OFFLINE NOW ===
+Username: alice
+Master password: <value>
+Posting private key: <value>
+Active private key: <value>
+Owner private key: <value>   (if shown)
+Memo private key: <value>    (if shown)
+=== END — delete this chat message after saving ===
+```
+
+3. Warn: messenger logs are **not** secure long-term storage; user must copy to a password manager or encrypted offline file, then delete the chat message.
+4. Wait for explicit *“saved”* before continuing to payment or declaring signup complete.
+5. **Never** store these values in agent memory, repo, or `.env` after the session.
+
+### 7. Key export and storage (both modes)
 
 After creation, ensure user:
 
-- Downloads or records **owner**, **active**, **posting**, and **memo** keys (or seed) from the provider/wallet flow.
+- Has **owner**, **active**, **posting**, and **memo** keys (or seed) saved locally — not only in chat history.
 - Understands there is **no** “forgot password”.
-- Does **not** store keys in chat logs, email, Google Docs, or agent memory.
+- Does **not** rely on the agent or messenger as permanent key storage.
 
 Point to signup.hive.io **What's next?** (wallet choice) when appropriate.
 
-### 6. Key custody for later broadcasts
+### 8. Key custody for later broadcasts
 
 Before any on-chain write, the user must choose how **signing** works for follow-up tasks (see [Hive blockchain broadcast](hive-blockchain-broadcast.md)):
 
@@ -126,15 +191,20 @@ Before any on-chain write, the user must choose how **signing** works for follow
 | **Payload only** | Agent prints ops/envelope; user signs with their own tool |
 | **Session posting key** | User pastes posting key for one automation session (discouraged unless explicitly requested) |
 
-Ask this **after** keys are exported, not during signup UI. Do not assume the user wants the agent to store keys.
+Ask this **after** Gate A/B (or messenger key delivery) is confirmed — not during signup UI. Do not assume the user wants the agent to store keys.
+
+Also ask which **ODL network** they will write to (**mainnet** vs **testnet**) before the first on-chain ODL tx — see [broadcast skill § ODL network](hive-blockchain-broadcast.md#odl-network-mainnet-vs-testnet). Record the choice for the rest of the session.
 
 ## Key handling rules (mandatory)
 
+- **Browser automation:** **never** auto-advance past master password or private-key screens; require explicit user *“saved”* at [Gate A and Gate B](#5-provider-ui--browser-mode-mandatory-gates).
+- **Messenger / chat-only:** **must** deliver keys in a structured chat block; user must confirm save before payment or completion.
 - **Never** store Hive owner/active/posting/memo keys in repo, `.env`, tickets, or agent long-term memory **unless** the user explicitly chose [session posting key mode](hive-blockchain-broadcast.md#key-custody-decide-with-the-user-first) for a bounded task — then clear after use.
-- **Never** send keys to third parties except what the **selected official signup flow** requires in-browser.
+- **Never** send keys to unrelated third parties; only the user and the official signup UI.
 - Prefer flows where the user **downloads keys locally** (file or wallet export).
 - **Warn:** accounts cannot be renamed; keys cannot be reset by Hive.
 - **Confirm username** before irreversible creation step.
+- **Payment is last:** do not open payment until key custody is confirmed.
 
 ## Verification
 

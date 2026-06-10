@@ -48,6 +48,7 @@ Rules:
 - **Default:** wallet or payload-only; do not ask for keys proactively.
 - ODL writes almost always need **posting** authority (`required_posting_auths: [account]`).
 - Link back to [signup key rules](hive-account-signup.md#key-handling-rules-mandatory): no password reset, confirm username.
+- **Also pick ODL network** (`mainnet` / `testnet`) once per conversation — [§ ODL network](#odl-network-mainnet-vs-testnet).
 
 ## Architecture map
 
@@ -82,14 +83,47 @@ flowchart LR
 | Web signing | `getWalletFacade().broadcast()` | Browser wallets |
 | Standalone signing | `@hiveio/dhive` | `Client` + `PrivateKey` (posting) |
 
-## ODL network id
+## ODL network (mainnet vs testnet)
 
-| Env / network | `custom_json.id` |
-|---------------|------------------|
-| Mainnet (default) | `odl-mainnet` |
-| Testnet | `odl-testnet` |
+ODL does **not** use a separate Hive blockchain. Mainnet and testnet are **namespaces** on the same chain: the Hive `custom_json.id` field separates production ODL state from dev/sandbox state.
 
-Match `ODL_NETWORK` / [`useOdlCustomJsonId`](../../../apps/web/src/modules/auth/infrastructure/odl-custom-json.ts) in app code. Agents: confirm with user or deployment config.
+| `ODL_NETWORK` (env) | Hive `custom_json.id` | Typical use |
+|---------------------|------------------------|-------------|
+| `mainnet` (default) | `odl-mainnet` | Production Waivio/ODL apps, public data |
+| `testnet` | `odl-testnet` | Local dev, staging experiments, agent smoke tests |
+
+**Must stay consistent across a deployment:**
+
+| Component | Config |
+|-----------|--------|
+| **web** broadcasts | `ODL_NETWORK` → [`useOdlCustomJsonId()`](../../../apps/web/src/config/odl-network-provider.tsx) |
+| **chain-indexer** ingestion | same `ODL_NETWORK` — only txs with matching `custom_json.id` are indexed |
+| **query-api** reads | Postgres reflects whichever network the indexer ingested |
+
+A tx on `odl-testnet` is valid on Hive but **invisible** to a mainnet-indexed site (and vice versa). Never mix ids in one workflow or transaction batch.
+
+Resolver (same mapping as web): [`resolveOdlCustomJsonId`](../../../apps/web/src/config/odl-network.ts).
+
+### Agent rule — ask once, remember for the session
+
+Before the **first** ODL broadcast in a conversation (right after key custody, or together with it):
+
+1. **Ask explicitly:** *“Which ODL network — **mainnet** (production) or **testnet** (dev/sandbox)?”*
+2. **Infer only when obvious** — e.g. user says “local docker”, “staging `.env` has `ODL_NETWORK=testnet`”, or “write to production Waivio” → state the inference and confirm in one line.
+3. **Record in session** (conversation context, not repo files):
+   - `odlNetwork`: `mainnet` | `testnet`
+   - `odlCustomJsonId`: `odl-mainnet` | `odl-testnet`
+4. **Reuse on every later broadcast** in the same chat — pass `id: odlCustomJsonId` to all `buildOdl*` ops and `object_create` envelopes. Do **not** re-ask unless the user switches networks.
+5. **Switch only on user request** — if they change network mid-session, update both variables and say so before the next tx.
+
+Defaults when the user does not care:
+
+| Context | Default |
+|---------|---------|
+| Production / public app / “real” objects | `mainnet` → `odl-mainnet` |
+| Local repo, CI smoke, throwaway test objects | `testnet` → `odl-testnet` |
+
+Scripts with session posting key: read `process.env.ODL_NETWORK` (or ask user) — same value as root `.env` / compose for that stack.
 
 Envelope shape (normative): [`docs/spec/README.md`](../spec/README.md) § ODL event ids.
 
@@ -167,8 +201,10 @@ Example — single field update after object exists:
 ```ts
 import { buildOdlUpdateCreateOp } from '@opden-data-layer/hive-broadcast';
 
+const odlCustomJsonId = 'odl-mainnet'; // session choice — see § ODL network
+
 const op = buildOdlUpdateCreateOp({
-  id: 'odl-mainnet',
+  id: odlCustomJsonId,
   objectId: 'product-abc123',
   updateType: 'title',
   creator: 'alice',
@@ -199,11 +235,13 @@ import { Client, PrivateKey } from '@hiveio/dhive';
 import { buildOdlUpdateCreateOp } from '@opden-data-layer/hive-broadcast';
 
 const account = 'alice';
+const odlCustomJsonId =
+  process.env.ODL_NETWORK === 'testnet' ? 'odl-testnet' : 'odl-mainnet';
 const postingKey = PrivateKey.fromString(process.env.HIVE_POSTING_KEY!); // session only — never commit
 const client = new Client(['https://api.hive.blog']);
 
 const op = buildOdlUpdateCreateOp({
-  id: 'odl-mainnet',
+  id: odlCustomJsonId,
   objectId: 'product-abc123',
   updateType: 'title',
   creator: account,
@@ -240,7 +278,7 @@ Map other `HiveOperation` types the same way as [`keychain-signer.ts`](../../../
 
 ## Agent workflow checklist
 
-1. Confirm account exists; agree **key custody mode** with user.
+1. Confirm account exists; agree **key custody mode** and **ODL network** (`mainnet` / `testnet`) with user — **remember both for all broadcasts in this conversation**.
 2. `get_object_type` / `get_update_schema` for the task.
 3. Build `HiveOperation[]` with `@opden-data-layer/hive-broadcast` (+ `build-create-ops` pattern if creating objects).
 4. Validate JSON size ≤ 8192 bytes per op (or plan IPFS batch).

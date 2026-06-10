@@ -9,6 +9,7 @@
     "start:notifications": "pnpm nx serve notifications",
     "start:ipfs-gateway": "pnpm nx serve ipfs-gateway",
     "start:scheduler": "pnpm nx serve scheduler",
+    "start:knowledge-api": "pnpm nx serve knowledge-api",
     "dev:web": "pnpm nx dev web",
     "dev:web:webpack": "pnpm nx run web:dev-webpack",
     "gen:object-updates": "tsx scripts/gen-object-updates-spec.ts",
