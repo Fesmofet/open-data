@@ -1,3 +1,16 @@
+---
+id: docs-architecture-overview
+title: Services Architecture
+type: overview
+status: active
+scope: platform
+tags: [platform, overview, architecture]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+  - docs/README.md
+---
+
 # Services Architecture
 
 **Back:** [Spec index](../spec/README.md) · **Related:** [governance-resolution](../spec/governance-resolution.md), [storage](../spec/storage.md), [acceptance-tests](../spec/acceptance-tests.md)

@@ -1,3 +1,16 @@
+---
+id: docs-apps-notifications-overview
+title: notifications
+type: overview
+status: active
+scope: notifications
+tags: [notifications, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/notifications/spec/transport.md
+---
+
 # notifications
 
 ## Purpose

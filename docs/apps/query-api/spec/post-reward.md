@@ -1,3 +1,16 @@
+---
+id: docs-apps-query-api-spec-post-reward
+title: Post reward
+type: spec
+status: active
+scope: query-api
+tags: [query-api, post-reward]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # Post reward (Plan A)
 
 Server-computed post rewards on all post-shaped feed payloads. Clients display `reward.label` and optional WAIV eligibility styling — no client-side payout math.

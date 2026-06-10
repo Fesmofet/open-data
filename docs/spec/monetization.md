@@ -1,3 +1,15 @@
+---
+id: docs-spec-monetization
+title: Monetization and Plan Entitlements
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Monetization and Plan Entitlements
 
 **Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [governance-resolution](governance-resolution.md), [reject-codes](reject-codes.md)

@@ -1,3 +1,15 @@
+---
+id: docs-operations-migrations
+title: Migrations Guide
+type: spec
+status: active
+scope: platform
+tags: [platform, ops]
+updated_at: 2026-06-10
+related:
+  - docs/getting-started.md
+---
+
 # Migrations Guide
 
 Operational guide for the `@opden-data-layer/migrations` library: running migrations, adding new ones, and snapshot/restore.

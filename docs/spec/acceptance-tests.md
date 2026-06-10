@@ -1,3 +1,15 @@
+---
+id: docs-spec-acceptance-tests
+title: Acceptance test cases
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Acceptance test cases
 
 **Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [governance-resolution](governance-resolution.md), [overflow-strategy](overflow-strategy.md)

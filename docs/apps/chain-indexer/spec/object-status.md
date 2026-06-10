@@ -1,3 +1,18 @@
+---
+id: docs-apps-chain-indexer-spec-object-status
+title: Object status
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, object-status]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/query-api/spec/objects-resolve.md
+  - docs/spec/governance-resolution.md
+  - docs/README.md
+---
+
 # Object status (`objects_core.status`)
 
 ## Purpose

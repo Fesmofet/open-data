@@ -1,6 +1,19 @@
+---
+id: docs-apps-query-api-spec-user-threads-feed-endpoint
+title: User profile threads feed
+type: spec
+status: active
+scope: query-api
+tags: [query-api, user-threads-feed-endpoint]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # User profile threads feed (read)
 
-**Back:** [query-api README](../README.md)
+**Back:** [query-api overview](overview.md)
 
 ## HTTP
 

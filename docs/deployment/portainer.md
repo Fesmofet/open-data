@@ -1,3 +1,15 @@
+---
+id: docs-deployment-portainer
+title: Portainer CE on the VPS
+type: spec
+status: active
+scope: platform
+tags: [platform, deployment]
+updated_at: 2026-06-10
+related:
+  - docs/getting-started.md
+---
+
 # Portainer CE on the VPS
 
 Portainer provides a Docker UI for operators. GHCR image updates for the **`apps`** stack can be handled automatically by the **`stack-watchdog`** sidecar (see [stack-watchdog spec](../apps/stack-watchdog/spec/overview.md)), or manually (`docker compose pull && docker compose up`) or via Portainer when you choose to update images.

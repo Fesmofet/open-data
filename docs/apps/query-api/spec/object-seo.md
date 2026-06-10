@@ -1,3 +1,16 @@
+---
+id: docs-apps-query-api-spec-object-seo
+title: query-api — object SEO projection
+type: spec
+status: active
+scope: query-api
+tags: [query-api, object-seo]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # query-api — object SEO projection
 
 **Back:** [overview](../overview.md)

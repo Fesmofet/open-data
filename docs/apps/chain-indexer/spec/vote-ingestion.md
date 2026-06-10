@@ -1,3 +1,19 @@
+---
+id: docs-apps-chain-indexer-spec-vote-ingestion
+title: Vote ingestion and Hive sync queue
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, vote-ingestion]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/chain-indexer/spec/hive-ingestion.md
+  - docs/apps/chain-indexer/spec/social-parsers.md
+  - docs/spec/data-model/posts.md
+  - docs/README.md
+---
+
 # Vote ingestion and Hive sync queue
 
 **Related:** [Hive ingestion](hive-ingestion.md), [Data model posts](../../../spec/data-model/posts.md), [`post_sync_queue`](../../../spec/data-model/schema.sql)

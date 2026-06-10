@@ -1,3 +1,15 @@
+---
+id: docs-spec-resolved-view-waivio-legacy
+title: processWobjects — Conceptual Flow
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # processWobjects — Conceptual Flow
 
 `processWobjects` is the main pipeline that takes **raw wobjects** (decentralized knowledge objects from the Hive/Waivio network) and transforms them into **clean, display-ready objects**. Think of it as a "resolve + filter + merge" pipeline.

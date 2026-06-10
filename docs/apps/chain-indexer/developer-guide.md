@@ -1,3 +1,16 @@
+---
+id: docs-apps-chain-indexer-developer-guide
+title: chain-indexer
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, developer-guide]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/chain-indexer/spec/overview.md
+---
+
 # chain-indexer
 
 **Back:** [Documentation](../../README.md) · **Related:** [Spec overview](spec/overview.md), [Architecture — Indexer](../../architecture/overview.md), [Getting started](../../getting-started.md)

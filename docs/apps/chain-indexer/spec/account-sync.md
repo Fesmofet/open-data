@@ -1,3 +1,18 @@
+---
+id: docs-apps-chain-indexer-spec-account-sync
+title: Account sync
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, account-sync]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/chain-indexer/spec/social-parsers.md
+  - docs/spec/data-model/users.md
+  - docs/README.md
+---
+
 # Account sync (Hive recovery queue)
 
 ## Purpose

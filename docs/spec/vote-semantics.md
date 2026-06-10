@@ -1,3 +1,15 @@
+---
+id: docs-spec-vote-semantics
+title: Vote semantics: query-time validity and rank resolution
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Vote semantics: query-time validity and rank resolution
 
 **Back:** [Spec index](README.md) · **Related:** [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md), [reject-codes](reject-codes.md), [waiv-power](waiv-power.md)

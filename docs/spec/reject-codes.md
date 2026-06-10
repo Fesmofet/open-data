@@ -1,3 +1,15 @@
+---
+id: docs-spec-reject-codes
+title: Canonical Error Codes
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Canonical Error Codes
 
 **Back:** [Spec index](README.md) · **Related:** [object-uniqueness](object-uniqueness.md), [object-type-entity](object-type-entity.md), [governance-resolution](governance-resolution.md)

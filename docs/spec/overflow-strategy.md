@@ -1,3 +1,15 @@
+---
+id: docs-spec-overflow-strategy
+title: Overflow Strategy
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Overflow Strategy (Hive + IPFS, Arweave deferred)
 
 **Back:** [Spec index](README.md) · **Related:** [storage](storage.md), [architecture](../architecture/overview.md)

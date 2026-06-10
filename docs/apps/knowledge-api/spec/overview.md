@@ -1,3 +1,15 @@
+---
+id: docs-apps-knowledge-api-spec-overview
+title: knowledge-api
+type: overview
+status: active
+scope: knowledge-api
+tags: [knowledge-api, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+---
+
 # knowledge-api
 
 MCP HTTP service for agent access to project documentation, skills, lessons, and ODL object/update registries.

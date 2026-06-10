@@ -1,3 +1,15 @@
+---
+id: docs-spec-storage
+title: Storage Specification
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Storage Specification
 
 **Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [overflow-strategy](overflow-strategy.md)

@@ -1,3 +1,15 @@
+---
+id: docs-architecture-adr-postgres-over-mongo
+title: ADR: PostgreSQL over MongoDB for the ODL indexer storage layer
+type: adr
+status: active
+scope: platform
+tags: [platform, adr]
+updated_at: 2026-06-10
+related:
+  - docs/architecture/overview.md
+---
+
 # ADR: PostgreSQL over MongoDB for the ODL indexer storage layer
 
 **Status:** Accepted  

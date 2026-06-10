@@ -1,3 +1,16 @@
+---
+id: docs-apps-query-api-spec-shop-feed-endpoints
+title: Shop / recipe object feeds
+type: spec
+status: active
+scope: query-api
+tags: [query-api, shop-feed-endpoints]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # Shop / recipe object feeds
 
 **Endpoints:**

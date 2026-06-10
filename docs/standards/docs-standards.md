@@ -1,3 +1,16 @@
+---
+id: docs-standards-docs-standards
+title: Documentation standards
+type: spec
+status: active
+scope: platform
+tags: [platform, standards]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/getting-started.md
+---
+
 # Documentation standards
 
 How we structure and maintain documentation in this repository.
@@ -125,25 +138,27 @@ A typical feature spec file should use these sections (skip what does not apply)
 
 ## Frontmatter (YAML)
 
-Indexed Markdown (`docs/**`, `docs/skills/**`, `tasks/lessons.md`, `**/AGENTS.md`) may include an optional YAML block at the top. When frontmatter is omitted, metadata is inferred from the file path at reindex time.
+Indexed Markdown (`docs/**`, `docs/skills/**`, `tasks/lessons.md`, `**/AGENTS.md`) may include an optional YAML block at the top. Prefer explicit frontmatter for `tags` and `related`; when frontmatter is omitted, metadata is inferred from the file path at reindex time.
 
 ```yaml
 ---
-id: chain-indexer-sync
-title: Block sync
+id: docs-apps-chain-indexer-spec-hive-ingestion
+title: Hive ingestion
 type: spec
 status: active
 scope: chain-indexer
-tags: [indexer, hive]
-owner: platform
+tags: [chain-indexer, hive-ingestion]
 updated_at: 2026-06-10
-related: [docs/apps/chain-indexer/spec/overview.md]
+related:
+  - docs/apps/chain-indexer/spec/overview.md
 ---
 ```
 
+**`id` convention:** slug from repo-relative path (lowercase, `/` → `-`), e.g. `docs/apps/chain-indexer/spec/hive-ingestion.md` → `docs-apps-chain-indexer-spec-hive-ingestion`. Omit `id` to use the same default at reindex time.
+
 | Field | Required | Values / notes |
 |-------|----------|----------------|
-| `id` | no | Defaults to slug from relative path |
+| `id` | no | Slug from relative path (see example above); used for MCP `get_file` and dedup |
 | `title` | no | Defaults to first `#` heading or path slug |
 | `type` | no | `spec`, `skill`, `overview`, `adr`, `lesson`, `agents`, `registry` |
 | `status` | no | `active` (default), `draft`, `deprecated` |
@@ -157,6 +172,16 @@ related: [docs/apps/chain-indexer/spec/overview.md]
 
 | Path pattern | `type` | `scope` |
 |--------------|--------|---------|
+| `docs/README.md` | `overview` | `platform` |
+| `docs/getting-started.md` | `overview` | `platform` |
+| `docs/architecture/overview.md` | `overview` | `platform` |
+| `docs/standards/docs-standards.md` | `spec` | `platform` |
+| `docs/spec/*` | `spec` | `platform` |
+| `docs/operations/*` | `spec` | `platform` |
+| `docs/deployment/*` | `spec` | `platform` |
+| `docs/apps/<app>/overview.md` | `overview` | `<app>` |
+| `docs/apps/<app>/README.md` | `overview` | `<app>` |
+| `docs/apps/<app>/developer-guide.md` | `spec` | `<app>` |
 | `docs/apps/<app>/spec/overview.md` | `overview` | `<app>` |
 | `docs/apps/<app>/spec/*` | `spec` | `<app>` |
 | `docs/architecture/adr/*` | `adr` | `platform` |

@@ -1,3 +1,17 @@
+---
+id: docs-apps-chain-indexer-spec-hive-ingestion
+title: Hive ingestion
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, hive-ingestion]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/chain-indexer/spec/odl-pipeline.md
+  - docs/README.md
+---
+
 # Hive ingestion
 
 **Back:** [chain-indexer overview](overview.md) · **Related:** [ODL pipeline](odl-pipeline.md), [architecture — Indexer service](../../../architecture/overview.md)

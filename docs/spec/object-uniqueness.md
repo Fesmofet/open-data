@@ -1,3 +1,15 @@
+---
+id: docs-spec-object-uniqueness
+title: Object uniqueness and collision behavior
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Object uniqueness and collision behavior
 
 **Back:** [Spec index](README.md) · **Related:** [object-type-entity](object-type-entity.md), [reject-codes](reject-codes.md), [acceptance-tests](acceptance-tests.md)

@@ -1,3 +1,18 @@
+---
+id: docs-apps-query-api-spec-objects-resolve
+title: Objects resolve
+type: spec
+status: active
+scope: query-api
+tags: [query-api, objects-resolve]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/spec/objects-domain.md
+  - docs/spec/governance-resolution.md
+  - docs/README.md
+---
+
 # Objects resolve (`POST /query/v1/objects/resolve`)
 
 ## `fields.aggregateRating`

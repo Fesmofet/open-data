@@ -1,3 +1,16 @@
+---
+id: docs-apps-chain-indexer-readme
+title: chain-indexer
+type: overview
+status: active
+scope: chain-indexer
+tags: [chain-indexer, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/chain-indexer/spec/overview.md
+---
+
 # chain-indexer
 
 Hive blockchain indexer — write path, neutral state, Postgres persistence.

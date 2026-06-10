@@ -1,6 +1,19 @@
+---
+id: docs-apps-query-api-spec-user-post-drafts-endpoint
+title: User post drafts
+type: spec
+status: active
+scope: query-api
+tags: [query-api, user-post-drafts-endpoint]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # User post drafts (authenticated)
 
-**Back:** [query-api README](../README.md)
+**Back:** [query-api overview](overview.md)
 
 Editor drafts stored in PostgreSQL table `user_post_drafts` (see [schema.sql](../../../spec/data-model/schema.sql)). Payload fields align with the legacy Mongo `UserDraftSchema` plus **`beneficiaries`** (JSON, same role as `posts.beneficiaries`).
 

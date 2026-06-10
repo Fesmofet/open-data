@@ -1,3 +1,15 @@
+---
+id: docs-spec-waiv-power
+title: WAIV power
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # WAIV power (`user_object_powers`)
 
 **Back:** [Spec index](README.md) · **Related:** [vote-semantics](vote-semantics.md)

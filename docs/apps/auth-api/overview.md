@@ -1,3 +1,16 @@
+---
+id: docs-apps-auth-api-overview
+title: auth-api
+type: overview
+status: active
+scope: auth-api
+tags: [auth-api, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/auth-api/spec/challenge-flow.md
+---
+
 # auth-api
 
 **Back:** [docs README](../../README.md)

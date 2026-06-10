@@ -1,31 +1,30 @@
+---
+id: docs-apps-query-api-readme
+title: query-api
+type: overview
+status: active
+scope: query-api
+tags: [query-api, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/query-api/spec/overview.md
+---
+
 # query-api
 
-Read-path API — governance masking, object resolution (via shared domain libraries).
+Read-path API — governance masking, object resolution.
 
 ## Links
 
 | Doc | Description |
 |-----|-------------|
-| [Getting started](../../getting-started.md) | Local setup |
+| [Spec overview](spec/overview.md) | Normative API behavior and feature specs |
+| [Getting started](../../getting-started.md) | Local setup, migrations |
 | [Specification index](../../spec/README.md) | Governance, vote semantics |
 | [Objects domain](../../spec/objects-domain.md) | ResolvedView assembly |
 | [Governance resolution](../../spec/governance-resolution.md) | Masks and snapshots |
-| [User profile endpoint](spec/users-profile-endpoint.md) | `GET /query/v1/users/:name/profile` |
-| [User social lists](spec/user-social-lists.md) | `GET .../:name/followers`, `/following`, `/following-objects` |
-| [Shop categories](spec/categories.md) | `GET /query/v1/users/:name/categories` |
-| [Shop / recipe object feeds](spec/shop-feed-endpoints.md) | `GET .../shop-objects`, `GET .../shop-sections` |
-| [User blog feed endpoint](spec/user-blog-feed-endpoint.md) | `POST /query/v1/users/:name/blog` |
-| [User threads feed endpoint](spec/user-threads-feed-endpoint.md) | `POST /query/v1/users/:name/threads` |
-| [User comments feed endpoint](spec/user-comments-feed-endpoint.md) | `POST /query/v1/users/:name/comments` (Hive) |
-| [User mentions feed endpoint](spec/user-mentions-feed-endpoint.md) | `POST /query/v1/users/:name/mentions` (`post_mentions`) |
-| [Single post endpoint](spec/single-post-endpoint.md) | `GET /query/v1/posts/:author/:permlink` |
-| [Post discussion endpoint](spec/post-discussion-endpoint.md) | `GET /query/v1/posts/:author/:permlink/discussion` (Hive `bridge.get_discussion`) |
-| [Post reward](spec/post-reward.md) | `reward` + `waivRewardEligible` on post payloads; optional `currency` (default USD) |
-| [User post drafts](spec/user-post-drafts-endpoint.md) | `GET|POST|PATCH|PUT|DELETE /query/v1/users/:author/drafts` (Bearer JWT, same `JWT_SECRET` as auth-api) |
-| [Search](spec/search.md) | `GET /query/v1/search`, `GET /query/v1/search/counts` (global tab counts) |
-| [Objects resolve — aggregateRating](spec/objects-resolve.md) | `POST /query/v1/objects/resolve` (`fields.aggregateRating` array semantics) |
-| [Object avatar fallback to parent](spec/object-avatar-fallback.md) | `fields.image` from parent when child has no `image` |
-| [Object ref lists](spec/object-ref-list-endpoints.md) | `GET /query/v1/objects/:id/related`, `/similar`, `/add-on` (RefSummary pagination) |
+| [Architecture](../../architecture/overview.md) | Four-service model |
 
 ## App code
 

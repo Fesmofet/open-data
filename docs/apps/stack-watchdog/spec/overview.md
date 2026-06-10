@@ -1,3 +1,15 @@
+---
+id: docs-apps-stack-watchdog-spec-overview
+title: stack-watchdog
+type: overview
+status: active
+scope: stack-watchdog
+tags: [stack-watchdog, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+---
+
 # stack-watchdog
 
 NestJS sidecar for the VPS **`apps`** Compose stack. Every **5 minutes** it runs **`docker compose pull`** on configured services (long-running app containers plus **`migrator`** and **`stack-watchdog`** itself), then **`docker compose up -d --remove-orphans`** on **long-running services only** — so new GHCR digests roll out without pulling Komodo/Portainer automation.

@@ -1,3 +1,15 @@
+---
+id: docs-apps-ipfs-gateway-spec-overview
+title: IPFS Gateway
+type: overview
+status: active
+scope: ipfs-gateway
+tags: [ipfs-gateway, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+---
+
 # IPFS Gateway
 
 **Developer guide:** [developer guide](../developer-guide.md) (local setup, Docker, commands).

@@ -1,6 +1,19 @@
+---
+id: docs-apps-query-api-spec-user-blog-feed-endpoint
+title: User blog feed
+type: spec
+status: active
+scope: query-api
+tags: [query-api, user-blog-feed-endpoint]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # User blog feed (read)
 
-**Back:** [query-api README](../README.md)
+**Back:** [query-api overview](overview.md)
 
 ## HTTP
 

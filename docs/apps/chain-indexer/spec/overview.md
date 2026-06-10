@@ -1,3 +1,18 @@
+---
+id: docs-apps-chain-indexer-spec-overview
+title: chain-indexer
+type: overview
+status: active
+scope: chain-indexer
+tags: [chain-indexer, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/chain-indexer/developer-guide.md
+  - docs/spec/data-model/flow.md
+  - docs/apps/query-api/spec/overview.md
+---
+
 # chain-indexer
 
 **Developer guide:** [developer guide](../developer-guide.md) (local setup, env, operations).

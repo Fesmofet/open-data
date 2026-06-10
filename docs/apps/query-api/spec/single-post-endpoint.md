@@ -1,10 +1,23 @@
+---
+id: docs-apps-query-api-spec-single-post-endpoint
+title: Single post endpoint
+type: spec
+status: active
+scope: query-api
+tags: [query-api, single-post-endpoint]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # Single post endpoint
 
 ## Route
 
 `GET /query/v1/posts/{author}/{permlink}`
 
-Global prefix: `query`; version: URI `v1` (see [query-api README](../README.md)).
+Global prefix: `query`; version: URI `v1` (see [query-api overview](overview.md)).
 
 ## Purpose
 

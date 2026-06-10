@@ -1,3 +1,17 @@
+---
+id: docs-apps-web-readme
+title: web
+type: overview
+status: active
+scope: web
+tags: [web, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/pages/index.md
+---
+
 # web
 
 Next.js App Router frontend.
@@ -13,8 +27,7 @@ Next.js App Router frontend.
 | [i18n spec](spec/i18n.md) | Locale resolution, messages, cookies, SSR, RTL |
 | [Maps spec](spec/maps.md) | `AppMap` / provider port, Leaflet, SSR notes |
 | [Getting started](../../getting-started.md) | Local setup |
-| [Specification index](../../spec/README.md) | Domain specs |
 
 ## App code
 
-`apps/web/`
+`apps/web/` — see also [`apps/web/AGENTS.md`](../../../apps/web/AGENTS.md).

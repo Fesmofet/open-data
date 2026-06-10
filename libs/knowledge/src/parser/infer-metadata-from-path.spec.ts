@@ -26,6 +26,43 @@ describe('inferMetadataFromPath', () => {
       tags: ['object-type', 'product'],
     });
   });
+
+  it('maps platform entry and ops paths', () => {
+    expect(inferMetadataFromPath('docs/README.md')).toMatchObject({
+      type: 'overview',
+      scope: 'platform',
+      title: 'Documentation',
+    });
+    expect(inferMetadataFromPath('docs/getting-started.md')).toMatchObject({
+      type: 'overview',
+      scope: 'platform',
+    });
+    expect(inferMetadataFromPath('docs/operations/migrations.md')).toMatchObject({
+      type: 'spec',
+      scope: 'platform',
+      title: 'migrations',
+    });
+    expect(inferMetadataFromPath('docs/deployment/portainer.md')).toMatchObject({
+      type: 'spec',
+      scope: 'platform',
+    });
+  });
+
+  it('maps app developer guides and overviews outside spec/', () => {
+    expect(inferMetadataFromPath('docs/apps/chain-indexer/developer-guide.md')).toMatchObject({
+      type: 'spec',
+      scope: 'chain-indexer',
+      title: 'chain-indexer developer guide',
+    });
+    expect(inferMetadataFromPath('docs/apps/auth-api/overview.md')).toMatchObject({
+      type: 'overview',
+      scope: 'auth-api',
+    });
+    expect(inferMetadataFromPath('docs/apps/query-api/README.md')).toMatchObject({
+      type: 'overview',
+      scope: 'query-api',
+    });
+  });
 });
 
 describe('slugFromPath', () => {

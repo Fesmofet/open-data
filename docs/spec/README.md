@@ -1,3 +1,18 @@
+---
+id: docs-spec-readme
+title: Open Data Layer specification — start here
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/spec/objects-domain.md
+  - docs/apps/query-api/spec/overview.md
+  - docs/apps/chain-indexer/spec/overview.md
+---
+
 # Open Data Layer specification — start here
 
 Single entry point for normative domain documentation. **Developer onboarding** (install, run): [docs/README.md](../README.md).
@@ -107,6 +122,13 @@ Details: [architecture overview](../architecture/overview.md).
 | Doc | Description |
 |-----|-------------|
 | [objects-domain.md](objects-domain.md) | ResolvedView assembly for consumers |
+
+### App specs (HTTP / services)
+
+| Doc | Description |
+|-----|-------------|
+| [query-api overview](../apps/query-api/spec/overview.md) | Read path: governance masking, object resolve, feeds, search |
+| [chain-indexer overview](../apps/chain-indexer/spec/overview.md) | Write path: Hive ingestion, ODL pipeline |
 
 ---
 

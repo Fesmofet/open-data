@@ -1,3 +1,15 @@
+---
+id: docs-getting-started
+title: Local Development Environment
+type: overview
+status: active
+scope: platform
+tags: [platform, onboarding]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+---
+
 # Local Development Environment
 
 End-to-end guide: start infrastructure, run migrations, start the app.

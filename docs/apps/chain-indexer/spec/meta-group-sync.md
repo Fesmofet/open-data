@@ -1,3 +1,18 @@
+---
+id: docs-apps-chain-indexer-spec-meta-group-sync
+title: Meta group sync
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, meta-group-sync]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/chain-indexer/spec/odl-pipeline.md
+  - docs/spec/governance-resolution.md
+  - docs/README.md
+---
+
 # Meta group sync (`meta_group_id`)
 
 **Back:** [chain-indexer overview](overview.md) · **Related:** [Data model flow](../../../spec/data-model/flow.md), [ODL pipeline](odl-pipeline.md)

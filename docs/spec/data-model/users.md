@@ -1,3 +1,16 @@
+---
+id: docs-spec-data-model-users
+title: PostgreSQL: Waivio users
+type: spec
+status: active
+scope: platform
+tags: [platform, domain, data-model]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+  - docs/spec/data-model/flow.md
+---
+
 # PostgreSQL: Waivio users (legacy Mongo normalization)
 
 Normative DDL lives in [schema.sql](schema.sql). Kysely row types: `@opden-data-layer/core` (`OdlDatabase`, `AccountsCurrentTable`, `UserMetadataTable`, etc.).

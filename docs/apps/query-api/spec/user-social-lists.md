@@ -1,3 +1,16 @@
+---
+id: docs-apps-query-api-spec-user-social-lists
+title: User social lists
+type: spec
+status: active
+scope: query-api
+tags: [query-api, user-social-lists]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # User social lists (`followers`, `following`, `following-objects`, object followers, object authority)
 
 Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows`, and `object_authority`.

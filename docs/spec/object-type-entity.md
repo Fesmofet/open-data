@@ -1,3 +1,15 @@
+---
+id: docs-spec-object-type-entity
+title: Object Type
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Object Type
 
 **Back:** [Spec index](README.md) · **Related:** [generated registry docs](README.md#6-generated-reference-docs-not-committed), [vote-semantics](vote-semantics.md), [reject-codes](reject-codes.md)

@@ -1,3 +1,15 @@
+---
+id: docs-spec-social-account-ingestion
+title: Social and Account Ingestion
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Social and Account Ingestion
 
 **Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [reject-codes](reject-codes.md), [acceptance-tests](acceptance-tests.md), [vote-semantics](vote-semantics.md), [authority-entity](authority-entity.md)

@@ -1,3 +1,16 @@
+---
+id: docs-apps-query-api-spec-categories
+title: Categories
+type: spec
+status: active
+scope: query-api
+tags: [query-api, categories]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # Categories (`GET /users/:name/categories`)
 
 **Back:** [Query API overview](../overview.md) · **Related:** [chain-indexer object-categories](../../chain-indexer/spec/object-categories.md)

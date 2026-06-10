@@ -1,3 +1,15 @@
+---
+id: docs-apps-scheduler-spec-overview
+title: Scheduler app
+type: overview
+status: active
+scope: scheduler
+tags: [scheduler, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+---
+
 # Scheduler app (`apps/scheduler`)
 
 Background Nest process with **no HTTP server**: it registers **cron** schedules, acquires a short **Redis lock** to enqueue work once across replicas, stores **run metadata** and a **Postgres job queue**, and a **worker** loop claims rows with `FOR UPDATE SKIP LOCKED` and runs job handlers (timeouts, retries, overlap policy).

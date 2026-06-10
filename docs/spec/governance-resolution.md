@@ -1,3 +1,18 @@
+---
+id: docs-spec-governance-resolution
+title: Governance Resolution
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+  - docs/spec/objects-domain.md
+  - docs/apps/query-api/spec/overview.md
+  - docs/apps/chain-indexer/spec/meta-group-sync.md
+---
+
 # Governance Resolution
 
 **Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [governance-bootstrap](governance-bootstrap.md), [vote-semantics](vote-semantics.md), [authority-entity](authority-entity.md), [social-account-ingestion](social-account-ingestion.md)

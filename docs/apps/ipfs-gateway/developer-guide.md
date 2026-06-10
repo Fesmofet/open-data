@@ -1,3 +1,16 @@
+---
+id: docs-apps-ipfs-gateway-developer-guide
+title: IPFS Gateway
+type: spec
+status: active
+scope: ipfs-gateway
+tags: [ipfs-gateway, developer-guide]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/ipfs-gateway/spec/overview.md
+---
+
 # IPFS Gateway
 
 **Back:** [Documentation](../../README.md) · **Related:** [storage](../../spec/storage.md), [overflow-strategy](../../spec/overflow-strategy.md), [architecture](../../architecture/overview.md)

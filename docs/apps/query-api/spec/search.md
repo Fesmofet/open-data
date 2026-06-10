@@ -1,3 +1,16 @@
+---
+id: docs-apps-query-api-spec-search
+title: Search endpoints
+type: spec
+status: active
+scope: query-api
+tags: [query-api, search]
+updated_at: 2026-06-10
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/README.md
+---
+
 # Search endpoints
 
 Predictive search for the web shell header: ranked **objects** and **users**. Global tab counts are loaded separately for performance.

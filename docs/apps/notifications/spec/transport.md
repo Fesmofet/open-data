@@ -1,3 +1,16 @@
+---
+id: docs-apps-notifications-spec-transport
+title: Notifications transport
+type: spec
+status: active
+scope: notifications
+tags: [notifications, transport]
+updated_at: 2026-06-10
+related:
+  - docs/apps/notifications/overview.md
+  - docs/README.md
+---
+
 # Notifications transport
 
 Cross-service events flow from **chain-indexer** to **notifications** via a Redis Stream. The JSON contract is defined in `@opden-data-layer/notifications-contract`.

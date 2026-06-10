@@ -1,3 +1,15 @@
+---
+id: docs-spec-governance-bootstrap
+title: Governance Bootstrap
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Governance Bootstrap
 
 **Back:** [Spec index](README.md) · **Related:** [governance-resolution](governance-resolution.md), [architecture](../architecture/overview.md)

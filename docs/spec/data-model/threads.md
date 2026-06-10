@@ -1,3 +1,16 @@
+---
+id: docs-spec-data-model-threads
+title: PostgreSQL: Hive threads
+type: spec
+status: active
+scope: platform
+tags: [platform, domain, data-model]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+  - docs/spec/data-model/flow.md
+---
+
 # PostgreSQL: Hive threads (Leo / Ecency)
 
 Normative DDL lives in [schema.sql](schema.sql). Kysely row types: `@opden-data-layer/core` (`ThreadsTable`, `ThreadActiveVotesTable`).

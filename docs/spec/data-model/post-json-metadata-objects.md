@@ -1,3 +1,16 @@
+---
+id: docs-spec-data-model-post-json-metadata-objects
+title: Post `json_metadata`: linked objects
+type: spec
+status: active
+scope: platform
+tags: [platform, domain, data-model]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+  - docs/spec/data-model/flow.md
+---
+
 # Post `json_metadata`: linked objects (`post_objects`)
 
 Normative for **chain-indexer** when indexing Hive `comment` operations for **root posts** (`parent_author === ''`). Parsed metadata is the JSON object inside `comment.json_metadata` (see [`json-metadata.util.ts`](../../../libs/core/src/hive-thread/json-metadata.util.ts) in `@opden-data-layer/core`).

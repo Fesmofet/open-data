@@ -1,3 +1,18 @@
+---
+id: docs-apps-chain-indexer-spec-object-categories
+title: Object categories
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, object-categories]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/chain-indexer/spec/odl-pipeline.md
+  - docs/apps/query-api/spec/shop-feed-endpoints.md
+  - docs/README.md
+---
+
 # Object categories (`object_categories`, `object_categories_related`)
 
 **Back:** [chain-indexer overview](overview.md) · **Related:** [meta-group-sync](meta-group-sync.md), [Data model flow](../../../spec/data-model/flow.md)

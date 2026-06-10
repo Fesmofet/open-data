@@ -1,3 +1,16 @@
+---
+id: docs-apps-ipfs-gateway-readme
+title: ipfs-gateway
+type: overview
+status: active
+scope: ipfs-gateway
+tags: [ipfs-gateway, overview]
+updated_at: 2026-06-10
+related:
+  - docs/README.md
+  - docs/apps/ipfs-gateway/spec/overview.md
+---
+
 # ipfs-gateway
 
 NestJS HTTP layer in front of Kubo — uploads, MFS namespaces, optional peer pin sync.

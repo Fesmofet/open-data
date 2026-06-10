@@ -1,3 +1,16 @@
+---
+id: docs-apps-auth-api-spec-challenge-flow
+title: auth-api — challenge and login flows
+type: spec
+status: active
+scope: auth-api
+tags: [auth-api, challenge-flow]
+updated_at: 2026-06-10
+related:
+  - docs/apps/auth-api/overview.md
+  - docs/README.md
+---
+
 # auth-api — challenge and login flows
 
 **Back:** [overview](../overview.md)

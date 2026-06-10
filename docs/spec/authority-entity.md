@@ -1,3 +1,15 @@
+---
+id: docs-spec-authority-entity
+title: Object Authority Entity
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-06-10
+related:
+  - docs/spec/README.md
+---
+
 # Object Authority Entity
 
 **Back:** [Spec index](README.md) · **Related:** [vote-semantics](vote-semantics.md), [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md), [social-account-ingestion](social-account-ingestion.md)

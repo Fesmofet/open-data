@@ -8,6 +8,8 @@ updated_at: 2026-06-10
 related:
   - docs/README.md
   - docs/getting-started.md
+  - docs/skills/hive-account-signup.md
+  - docs/skills/hive-blockchain-broadcast.md
   - docs/apps/knowledge-api/spec/overview.md
   - docs/standards/docs-standards.md
 ---
@@ -31,7 +33,8 @@ related:
 | Item | Value |
 |------|--------|
 | URL | https://github.com/Waiviogit/open-data-layer |
-| Default branch | `master` (production CI base); `staging` for pre-production work |
+| Default branch | **`development`** — use for agent work and spec↔code alignment until further notice |
+| Other branches | `staging` (pre-production deploy), `master` (production CI base) |
 | Layout | Nx monorepo; app code under `apps/`, libs under `libs/`, docs under `docs/` |
 
 ## Path contract
@@ -63,17 +66,22 @@ git --version
 
 ### 2. Clone
 
+Default — **`development`** branch:
+
+```bash
+git clone --branch development https://github.com/Waiviogit/open-data-layer.git
+cd open-data-layer
+```
+
+Or clone then checkout:
+
 ```bash
 git clone https://github.com/Waiviogit/open-data-layer.git
 cd open-data-layer
+git checkout development
 ```
 
-For staging-aligned work:
-
-```bash
-git clone --branch staging https://github.com/Waiviogit/open-data-layer.git
-cd open-data-layer
-```
+For deploy-aligned work only: `staging` or `master` (see [getting-started.md](../getting-started.md) CI notes).
 
 ### 3. Optional — run stack locally
 
@@ -98,20 +106,20 @@ Specs remain the source of truth for behavior; source files implement it.
 
 ## GitHub fetch fallback (no clone)
 
-When the agent **cannot** clone but **can** HTTP-fetch URLs, resolve any repo-root path `<path>` and branch `<ref>` (usually `master`):
+When the agent **cannot** clone but **can** HTTP-fetch URLs, resolve any repo-root path `<path>` with branch **`development`** (unless the task specifies another ref):
 
 | Purpose | URL pattern |
 |---------|-------------|
-| Browse (human/agent UI) | `https://github.com/Waiviogit/open-data-layer/blob/<ref>/<path>` |
-| Raw file content | `https://raw.githubusercontent.com/Waiviogit/open-data-layer/<ref>/<path>` |
+| Browse (human/agent UI) | `https://github.com/Waiviogit/open-data-layer/blob/development/<path>` |
+| Raw file content | `https://raw.githubusercontent.com/Waiviogit/open-data-layer/development/<path>` |
 
 Examples:
 
 - `apps/web/src/modules/user-profile/presentation/components/user-menu.tsx`
-  - Blob: https://github.com/Waiviogit/open-data-layer/blob/master/apps/web/src/modules/user-profile/presentation/components/user-menu.tsx
-  - Raw: https://raw.githubusercontent.com/Waiviogit/open-data-layer/master/apps/web/src/modules/user-profile/presentation/components/user-menu.tsx
+  - Blob: https://github.com/Waiviogit/open-data-layer/blob/development/apps/web/src/modules/user-profile/presentation/components/user-menu.tsx
+  - Raw: https://raw.githubusercontent.com/Waiviogit/open-data-layer/development/apps/web/src/modules/user-profile/presentation/components/user-menu.tsx
 
-Use the **same branch** as the spec revision you are implementing (`master` vs `staging`).
+Use the **same branch** as your checkout or spec revision (`development` by default).
 
 ## Verification
 
@@ -119,6 +127,7 @@ Use the **same branch** as the spec revision you are implementing (`master` vs `
 
 ```bash
 git rev-parse --show-toplevel
+git branch --show-current   # expect: development
 test -f apps/web/src/app/layout.tsx && echo OK
 ```
 

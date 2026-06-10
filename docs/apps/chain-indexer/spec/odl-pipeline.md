@@ -1,3 +1,18 @@
+---
+id: docs-apps-chain-indexer-spec-odl-pipeline
+title: ODL pipeline
+type: spec
+status: active
+scope: chain-indexer
+tags: [chain-indexer, odl-pipeline]
+updated_at: 2026-06-10
+related:
+  - docs/apps/chain-indexer/spec/overview.md
+  - docs/apps/chain-indexer/spec/hive-ingestion.md
+  - docs/spec/data-model/flow.md
+  - docs/README.md
+---
+
 # ODL pipeline
 
 **Back:** [chain-indexer overview](overview.md) · **Related:** [Hive ingestion](hive-ingestion.md), [objects domain](../../../spec/objects-domain.md), [Data model flow](../../../spec/data-model/flow.md)
