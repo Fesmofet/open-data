@@ -2,7 +2,10 @@ import { HiveClient } from '@opden-data-layer/clients';
 import type { HiveContentType } from '@opden-data-layer/clients';
 import type { AccountCurrent } from '@opden-data-layer/core';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
+import { PostsRepository } from '../../repositories/posts.repository';
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
+import { createPassthroughPostRewardServiceMock } from './post-reward.service.mock';
+import type { PostRewardService } from './post-reward.service';
 
 function minimalAccount(name: string): AccountCurrent {
   return {
@@ -20,6 +23,7 @@ function minimalAccount(name: string): AccountCurrent {
 describe('GetUserCommentsFeedEndpoint', () => {
   let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByName'>>;
   let hiveClient: jest.Mocked<Pick<HiveClient, 'getDiscussionsByComments'>>;
+  let postsRepo: jest.Mocked<Pick<PostsRepository, 'findPostsByKeys'>>;
   let endpoint: GetUserCommentsFeedEndpoint;
 
   beforeEach(() => {
@@ -29,15 +33,20 @@ describe('GetUserCommentsFeedEndpoint', () => {
     hiveClient = {
       getDiscussionsByComments: jest.fn().mockResolvedValue([]),
     };
+    postsRepo = {
+      findPostsByKeys: jest.fn().mockResolvedValue([]),
+    };
     endpoint = new GetUserCommentsFeedEndpoint(
       accounts as unknown as AccountsCurrentRepository,
       hiveClient as unknown as HiveClient,
+      postsRepo as unknown as PostsRepository,
+      createPassthroughPostRewardServiceMock() as unknown as PostRewardService,
     );
   });
 
   it('returns null when account is missing', async () => {
     accounts.findByName.mockResolvedValue(null);
-    const r = await endpoint.execute('alice', { limit: 20, sort: 'latest' }, undefined);
+    const r = await endpoint.execute('alice', { limit: 20, sort: 'latest', currency: 'USD' }, undefined);
     expect(r).toBeNull();
     expect(hiveClient.getDiscussionsByComments).not.toHaveBeenCalled();
   });
@@ -84,7 +93,7 @@ describe('GetUserCommentsFeedEndpoint', () => {
 
     hiveClient.getDiscussionsByComments.mockResolvedValue([c1, c2]);
 
-    const r = await endpoint.execute('alice', { limit: 1, sort: 'latest' }, undefined);
+    const r = await endpoint.execute('alice', { limit: 1, sort: 'latest', currency: 'USD' }, undefined);
     expect(r).not.toBeNull();
     if (r == null) {
       throw new Error('expected result');
@@ -183,7 +192,7 @@ describe('GetUserCommentsFeedEndpoint', () => {
       return [];
     });
 
-    const r = await endpoint.execute('alice', { limit: 20, sort: 'latest' }, undefined);
+    const r = await endpoint.execute('alice', { limit: 20, sort: 'latest', currency: 'USD' }, undefined);
     expect(call).toBe(3);
     expect(r?.items).toHaveLength(1);
     expect(r?.items[0].permlink).toBe('ok');
@@ -219,7 +228,7 @@ describe('GetUserCommentsFeedEndpoint', () => {
       return [];
     });
 
-    const r = await endpoint.execute('alice', { limit: 5, sort: 'latest' }, undefined);
+    const r = await endpoint.execute('alice', { limit: 5, sort: 'latest', currency: 'USD' }, undefined);
     expect(r?.items).toHaveLength(0);
     expect(r?.hasMore).toBe(false);
     expect(call).toBeGreaterThanOrEqual(3);

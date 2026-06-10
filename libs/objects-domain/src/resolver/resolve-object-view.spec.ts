@@ -17,6 +17,7 @@ function makeCore(objectId: string, creator = 'alice', canonical: string | null 
     transaction_id: 'tx1',
     status: 'active',
     seq: 1,
+    created_at: new Date('2024-01-01T00:00:00.000Z'),
   };
 }
 

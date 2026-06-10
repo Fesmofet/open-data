@@ -61,6 +61,7 @@ describe('GetUserFollowingObjectsEndpoint', () => {
       transaction_id: 'tx',
       status: 'active',
       seq: 0,
+      created_at: new Date('2024-01-01T00:00:00.000Z'),
     };
 
     const aggregatedObjectRepo = {

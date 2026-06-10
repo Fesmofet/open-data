@@ -4,6 +4,8 @@ import { PostsRepository, type FeedBranchRow } from '../../repositories/posts.re
 import { UserAccountMutesRepository } from '../../repositories/user-account-mutes.repository';
 import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import type { FeedStoryItemDto } from './feed-story-dtos';
+import { createPassthroughPostRewardServiceMock } from './post-reward.service.mock';
+import type { PostRewardService } from './post-reward.service';
 
 jest.mock('./build-feed-story-items-from-post-page', () => ({
   buildFeedStoryItemsFromPostPage: jest.fn(),
@@ -76,6 +78,8 @@ describe('GetUserMentionsFeedEndpoint', () => {
         },
         objects: [],
         votes: { totalCount: 0, previewVoters: [], voted: false },
+        reward: null,
+        waivRewardEligible: false,
       } satisfies FeedStoryItemDto,
     ]);
 
@@ -87,12 +91,13 @@ describe('GetUserMentionsFeedEndpoint', () => {
       noopObjectView,
       noopGovernance,
       noopProjection,
+      createPassthroughPostRewardServiceMock() as unknown as PostRewardService,
     );
   });
 
   it('returns null when profile account is missing', async () => {
     accounts.findByName.mockResolvedValue(null);
-    const r = await endpoint.execute('alice', { limit: 20 }, 'en', undefined, undefined);
+    const r = await endpoint.execute('alice', { limit: 20, currency: 'USD' }, 'en', undefined, undefined);
     expect(r).toBeNull();
     expect(postsRepo.findMentionsFeed).not.toHaveBeenCalled();
   });
@@ -108,7 +113,7 @@ describe('GetUserMentionsFeedEndpoint', () => {
     };
     postsRepo.findMentionsFeed.mockResolvedValue([row]);
 
-    const r = await endpoint.execute('alice', { limit: 20 }, 'en', undefined, 'viewer1');
+    const r = await endpoint.execute('alice', { limit: 20, currency: 'USD' }, 'en', undefined, 'viewer1');
     expect(r).not.toBeNull();
     expect(mutesRepo.listMutedForMuters).toHaveBeenCalledWith(['viewer1']);
     expect(postsRepo.findMentionsFeed).toHaveBeenCalledWith(
@@ -125,7 +130,7 @@ describe('GetUserMentionsFeedEndpoint', () => {
     accounts.findByName.mockResolvedValue(minimalAccount('alice'));
     postsRepo.findMentionsFeed.mockResolvedValue([]);
 
-    await endpoint.execute('alice', { limit: 20 }, 'en', undefined, undefined);
+    await endpoint.execute('alice', { limit: 20, currency: 'USD' }, 'en', undefined, undefined);
     expect(mutesRepo.listMutedForMuters).not.toHaveBeenCalled();
     expect(postsRepo.findMentionsFeed).toHaveBeenCalledWith('alice', [], null, 21);
   });
