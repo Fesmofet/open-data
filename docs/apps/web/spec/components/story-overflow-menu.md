@@ -1,3 +1,16 @@
+---
+id: web-components-story-overflow-menu
+title: Story overflow menu
+type: spec
+status: active
+scope: web
+tags: [web, components]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/architecture.md
+---
+
 # Story overflow menu (⋯)
 
 **Back:** [web overview](../overview.md)

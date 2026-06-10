@@ -1,3 +1,16 @@
+---
+id: web-components-avatar
+title: UserAvatar
+type: spec
+status: active
+scope: web
+tags: [web, components]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/architecture.md
+---
+
 # UserAvatar (shared)
 
 **Back:** [web overview](../overview.md) · **Related:** [architecture](../architecture.md), [web conventions](../web-conventions.md)

@@ -1,3 +1,16 @@
+---
+id: web-auth
+title: web — authentication
+type: spec
+status: active
+scope: web
+tags: [web, auth]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/web-conventions.md
+---
+
 # web — authentication
 
 **Back:** [web spec overview](overview.md) · **Related:** [architecture](architecture.md), [web-conventions](web-conventions.md)

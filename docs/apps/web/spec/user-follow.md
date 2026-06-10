@@ -1,3 +1,16 @@
+---
+id: web-user-follow
+title: User follow
+type: spec
+status: active
+scope: web
+tags: [web, user-profile, social]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/pages/user-profile/routes/social-graph.md
+---
+
 # User follow (profile hero & social lists)
 
 **Back:** [web overview](overview.md) · **Related:** [object-follow.md](object-follow.md), [chain-indexer ODL pipeline](../../chain-indexer/spec/odl-pipeline.md), [chain-indexer social parsers](../../chain-indexer/spec/social-parsers.md)

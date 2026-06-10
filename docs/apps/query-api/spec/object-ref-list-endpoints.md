@@ -136,4 +136,4 @@ Live docs when query-api is running: `/query/v1/docs` (JSON: `/query/v1/docs-jso
 
 ## Client (web)
 
-See [object right rail](../../web/spec/object/right-rail.md) and center-column feeds under the same paths (`/object/:id/related`, `/similar`, `/add-on`).
+See [object right rail](../../web/spec/pages/object/routes/right-rail.md) and [ref feeds](../../web/spec/pages/object/routes/ref-feeds.md) for center-column tabs (`/object/:id/related`, `/similar`, `/add-on`).

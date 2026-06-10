@@ -1,3 +1,15 @@
+---
+id: web-shell-mode
+title: Shell mode — `data-shell-mode` + structural tokens
+type: spec
+status: active
+scope: web
+tags: [web, layout, shell-mode]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Shell mode — `data-shell-mode` + structural tokens
 
 **Back:** [web overview](overview.md) · **Related:** [layout system](layout-system.md), [theme](theme.md)

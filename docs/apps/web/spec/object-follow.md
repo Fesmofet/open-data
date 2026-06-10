@@ -1,6 +1,18 @@
+---
+id: web-object-follow
+title: Object follow
+type: spec
+status: active
+scope: web
+tags: [web, object-page, social]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Object follow (hero)
 
-**Back:** [web overview](overview.md) · **Related:** [object-updates-feed.md](object-updates-feed.md), [chain-indexer ODL pipeline](../../chain-indexer/spec/odl-pipeline.md)
+**Back:** [web overview](overview.md) · **Related:** [pages/object/routes/updates.md](pages/object/routes/updates.md), [chain-indexer ODL pipeline](../../chain-indexer/spec/odl-pipeline.md)
 
 ## Route context
 

@@ -5,6 +5,7 @@ export const DEFAULT_RUNTIME_SERVICE_NAMES = [
   'chain-indexer',
   'ipfs-gateway',
   'query-api',
+  'knowledge-api',
   'auth-api',
   'notifications',
   'scheduler',

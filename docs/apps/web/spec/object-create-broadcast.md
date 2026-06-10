@@ -1,6 +1,18 @@
+---
+id: web-object-create-broadcast
+title: Object create broadcast
+type: spec
+status: active
+scope: web
+tags: [web, object-create, broadcast]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Object create broadcast
 
-**Back:** [web overview](overview.md) · **Related:** [object-edit.md](object-edit.md), [images.md](images.md)
+**Back:** [web overview](overview.md) · **Related:** [pages/object/routes/edit-mode.md](pages/object/routes/edit-mode.md), [images.md](images.md)
 
 ## Purpose
 

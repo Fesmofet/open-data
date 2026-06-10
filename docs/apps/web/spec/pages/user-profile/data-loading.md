@@ -1,18 +1,31 @@
+---
+id: web-pages-user-profile-data-loading
+title: User profile — data loading
+type: spec
+status: active
+scope: web
+tags: [web, page, user-profile, data-loading]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/pages/user-profile/profile-shell.md
+  - docs/apps/web/spec/pages/index.md
+---
+
 # User profile — data loading
 
-**Back:** [page-spec.md](page-spec.md) · [web overview](../../overview.md)
+**Back:** [profile-shell.md](profile-shell.md) · [web overview](../../overview.md)
 
 ## Scope
 
-This document covers loading **shell profile** data (hero / header counts and display fields). Feed tabs and post lists are out of scope here.
+This document covers loading **shell profile** data (hero / header counts and display fields). Feed tabs and post lists are out of scope here — see [routes/feed.md](routes/feed.md).
 
 ## When data loads
 
 | Location | When |
 |----------|------|
-| `apps/web/src/app/user-profile/[name]/layout.tsx` | Server Component `await getUserProfileQuery(decoded)` after validating `name` with the account regex. |
-
-If the query returns `null`, the layout calls `notFound()` (HTTP 404).
+| `apps/web/src/app/(app)/user-profile/[name]/layout.tsx` | Validates `name` regex; `await getUserProfileQuery(decoded)` — `notFound()` if null |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/layout.tsx` | Re-fetches profile with viewer + locale; loads following-objects count head for hero badges |
 
 ## Upstream API
 

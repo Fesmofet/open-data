@@ -7,6 +7,7 @@ Next.js App Router frontend.
 | Doc | Description |
 |-----|-------------|
 | [Spec overview](spec/overview.md) | What the app does, feature index |
+| [Page specs site map](spec/pages/index.md) | Route areas, hubs, and child tab specs |
 | [Architecture](spec/architecture.md) | Layers, modules, ports/adapters |
 | [Web conventions](spec/web-conventions.md) | Development rules for `apps/web` |
 | [i18n spec](spec/i18n.md) | Locale resolution, messages, cookies, SSR, RTL |

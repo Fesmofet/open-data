@@ -1,0 +1,84 @@
+import type { KnowledgeFrontmatter, KnowledgeType } from './knowledge-frontmatter.schema';
+
+const POSIX = (p: string): string => p.replace(/\\/g, '/');
+
+export function slugFromPath(relativePath: string): string {
+  const base = POSIX(relativePath).replace(/\.md$/i, '');
+  return base
+    .split('/')
+    .filter(Boolean)
+    .join('-')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase();
+}
+
+export function inferMetadataFromPath(relativePath: string): Partial<KnowledgeFrontmatter> {
+  const p = POSIX(relativePath);
+
+  if (p === 'tasks/lessons.md') {
+    return { type: 'lesson', scope: 'platform', title: 'Lessons learned' };
+  }
+
+  if (p.endsWith('/AGENTS.md') || p === 'AGENTS.md') {
+    const scope = p.startsWith('apps/')
+      ? p.split('/')[1]
+      : p.includes('apps/web')
+        ? 'web'
+        : 'platform';
+    return { type: 'agents', scope, title: `AGENTS — ${scope}` };
+  }
+
+  if (p.startsWith('docs/skills/')) {
+    const name = p.slice('docs/skills/'.length).replace(/\.md$/i, '');
+    return {
+      type: 'skill',
+      scope: 'platform',
+      title: name.split('/').pop()?.replace(/-/g, ' ') ?? name,
+    };
+  }
+
+  if (p.startsWith('docs/architecture/adr/')) {
+    const name = p.slice('docs/architecture/adr/'.length).replace(/\.md$/i, '');
+    return { type: 'adr', scope: 'platform', title: name };
+  }
+
+  const appSpecMatch = /^docs\/apps\/([^/]+)\/spec\/(.+)\.md$/i.exec(p);
+  if (appSpecMatch) {
+    const [, app, rest] = appSpecMatch;
+    const isOverview = rest === 'overview';
+    return {
+      type: (isOverview ? 'overview' : 'spec') as KnowledgeType,
+      scope: app,
+      title: isOverview ? `${app} overview` : rest.replace(/-/g, ' '),
+    };
+  }
+
+  if (p.startsWith('docs/spec/')) {
+    const name = p.slice('docs/spec/'.length).replace(/\.md$/i, '');
+    return { type: 'spec', scope: 'platform', title: name.replace(/-/g, ' ') };
+  }
+
+  if (p.startsWith('registry/object-type/')) {
+    const objectType = p.slice('registry/object-type/'.length).replace(/\.md$/i, '');
+    return {
+      type: 'registry',
+      scope: 'core',
+      title: `Object type: ${objectType}`,
+      tags: ['object-type', objectType],
+    };
+  }
+
+  if (p.startsWith('registry/update-type/')) {
+    const updateType = p.slice('registry/update-type/'.length).replace(/\.md$/i, '');
+    return {
+      type: 'registry',
+      scope: 'core',
+      title: `Update type: ${updateType}`,
+      tags: ['update-type', updateType],
+    };
+  }
+
+  return { type: 'spec', scope: 'platform' };
+}

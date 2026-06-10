@@ -1,3 +1,15 @@
+---
+id: web-theme
+title: Theme — `data-theme` + design tokens
+type: spec
+status: active
+scope: web
+tags: [web, theme]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Theme — `data-theme` + design tokens
 
 **Back:** [web overview](overview.md) · **Related:** [i18n](i18n.md)

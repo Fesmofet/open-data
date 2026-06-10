@@ -37,7 +37,8 @@
       "@opden-data-layer/currency": ["libs/currency/src/index.ts"],
       "@opden-data-layer/notifications-contract": [
         "libs/notifications-contract/src/index.ts"
-      ]
+      ],
+      "@opden-data-layer/knowledge": ["libs/knowledge/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

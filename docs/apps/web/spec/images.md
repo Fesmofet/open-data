@@ -1,3 +1,15 @@
+---
+id: web-images
+title: web — images and `next/image`
+type: spec
+status: active
+scope: web
+tags: [web, images]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # web — images and `next/image`
 
 **Back:** [web overview](overview.md) · **Related:** [web conventions](web-conventions.md), [architecture](architecture.md)

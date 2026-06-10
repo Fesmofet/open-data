@@ -1,3 +1,15 @@
+---
+id: web-feed
+title: Feed
+type: spec
+status: active
+scope: web
+tags: [web, feed]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Feed (story list)
 
 **Related:** [Story container](components/story-container.md), [auth](auth.md), [architecture](architecture.md).
@@ -39,7 +51,7 @@ When the viewer is logged in (`currentUsername` set), each story card shows **`S
 
 ## Likes (Hive vote)
 
-The like control is **`StoryVoteButton`** (`story-vote-button.tsx`), used on feed **`Story`** rows and on full post **`BlogPostScreen`** (see [post-article.md](post-article.md)).
+The like control is **`StoryVoteButton`** (`story-vote-button.tsx`), used on feed **`Story`** rows and on full post **`BlogPostScreen`** (see [post-article.md](pages/user-profile/routes/post-article.md) in the profile route specs).
 
 - **Broadcast:** `buildVoteOp` + **`getWalletFacade().broadcast`**, with **`useHydrateWalletProvider`** (same wallet session pattern as comments).
 - **Default weights:** `HIVE_VOTE_WEIGHT_FULL` (10000) vs `HIVE_VOTE_WEIGHT_CLEAR` (0) via **`defaultResolveVoteWeight`** in [`domain/vote-weight.ts`](../../../../apps/web/src/modules/feed/domain/vote-weight.ts). Extend behavior with **`VoteWeightContext`** and an optional **`resolveVoteWeight`** prop on `StoryVoteButton` (e.g. future slider / custom %).

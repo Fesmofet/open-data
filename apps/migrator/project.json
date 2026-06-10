@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/migrator",
   "projectType": "application",
-  "implicitDependencies": ["migrations", "core", "scripts"],
+  "implicitDependencies": ["migrations", "core", "scripts", "knowledge"],
   "targets": {
     "docker-image": {
       "executor": "nx:run-commands",

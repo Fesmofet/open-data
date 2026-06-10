@@ -74,6 +74,25 @@ services:
     restart: unless-stopped
     logging: *default-logging
 
+  knowledge-api:
+    image: ghcr.io/waiviogit/knowledge-api:staging
+    pull_policy: always
+    env_file:
+      - .env
+    environment:
+      PORT: ${KNOWLEDGE_API_PORT:-7400}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE:-odl}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX:-10}
+      KNOWLEDGE_ALLOW_REINDEX: ${KNOWLEDGE_ALLOW_REINDEX:-false}
+    networks:
+      - opden-data-layer-net
+    restart: unless-stopped
+    logging: *default-logging
+
   auth-api:
     image: ghcr.io/waiviogit/auth-api:staging
     pull_policy: always

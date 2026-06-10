@@ -1,3 +1,16 @@
+---
+id: web-layout-system
+title: Layout system
+type: spec
+status: active
+scope: web
+tags: [web, layout]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/shell-mode.md
+---
+
 # Layout system
 
 **Back:** [web overview](overview.md) · **Related:** [architecture](architecture.md), [theme](theme.md)

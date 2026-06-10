@@ -1,6 +1,18 @@
+---
+id: web-object-card
+title: Object card
+type: spec
+status: active
+scope: web
+tags: [web, object-page, components]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Object card (`ObjectCard`)
 
-**Related:** [feed.md](feed.md), [discover.md](discover.md), [object-edit.md](object-edit.md).
+**Related:** [feed.md](feed.md), [pages/discover/page.md](pages/discover/page.md), [pages/object/routes/edit-mode.md](pages/object/routes/edit-mode.md).
 
 ## Where used
 

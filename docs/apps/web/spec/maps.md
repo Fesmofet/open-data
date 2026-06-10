@@ -1,3 +1,15 @@
+---
+id: web-maps
+title: Maps
+type: spec
+status: active
+scope: web
+tags: [web, maps]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # Maps (web)
 
 **Back:** [web overview](overview.md)
@@ -83,4 +95,4 @@ Use **semantic** Tailwind tokens (`border-border`, `bg-surface-alt`, etc.) for c
 
 ## Related
 
-- User profile map route stub: [`pages/user-profile/routes/map/page-spec.md`](pages/user-profile/routes/map/page-spec.md)
+- User profile map route: [`pages/user-profile/routes/map.md`](pages/user-profile/routes/map.md)

@@ -1,3 +1,15 @@
+---
+id: web-web-conventions
+title: web — development conventions
+type: spec
+status: active
+scope: web
+tags: [web, cross-cutting, conventions]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # web — development conventions
 
 **Back:** [web overview](overview.md) · **Related:** [architecture](architecture.md), [images](images.md)

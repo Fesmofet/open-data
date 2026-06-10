@@ -1,0 +1,8 @@
+{
+  "name": "@opden-data-layer/knowledge-api",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.20.0"
+  }
+}

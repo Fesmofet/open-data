@@ -1,104 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { z, toJSONSchema } from 'zod';
 
-import {
-  UPDATE_REGISTRY,
-  type UpdateDefinition,
-} from '../libs/core/src/update-registry';
+import { UPDATE_REGISTRY } from '../libs/core/src/update-registry';
+import { serializeUpdateType } from '../libs/knowledge/src/registry/update-type-serializer';
 
 const ROOT = path.resolve(__dirname, '..');
 const SPEC_DIR = path.join(ROOT, 'generated/object-updates');
-
-function payloadField(kind: UpdateDefinition['value_kind']): string {
-  if (kind === 'text' || kind === 'object_ref' || kind === 'user_ref') {
-    return 'value_text';
-  }
-  if (kind === 'geo') return 'value_geo';
-  return 'value_json';
-}
-
-function examplePayload(
-  valueKind: UpdateDefinition['value_kind'],
-  updateType: string,
-): string {
-  const field = payloadField(valueKind);
-  const valueExample =
-    valueKind === 'text' || valueKind === 'object_ref' || valueKind === 'user_ref'
-      ? valueKind === 'object_ref'
-        ? '"<object_id>"'
-        : valueKind === 'user_ref'
-          ? '"<account_name>"'
-          : '"<string>"'
-      : valueKind === 'geo'
-        ? '{ "latitude": <number>, "longitude": <number> }'
-        : '{}  // or [] — valid JSON per schema';
-
-  return `{
-  object_id,
-  update_type: '${updateType}',
-  locale: 'en-US',
-  ${field}: ${valueExample}
-}`;
-}
-
-function schemaToMarkdown(def: UpdateDefinition): string {
-  if (!def.schema || !(def.schema instanceof z.ZodType)) {
-    return '// schema not available';
-  }
-
-  try {
-    const jsonSchema = toJSONSchema(def.schema, { reused: 'inline' });
-    return JSON.stringify(jsonSchema, null, 2);
-  } catch {
-    return '// schema not serializable to JSON Schema';
-  }
-}
-
-function mdDoc(
-  updateType: string,
-  def: UpdateDefinition,
-  schemaBlock: string,
-): string {
-  const card = def.cardinality === 'multi' ? 'multi' : 'single';
-  const kind = def.value_kind;
-  const purposeLine = def.description || '(none)';
-
-  return `# ${updateType}
-
-- **Update type:** \`${updateType}\`
-- **Update description:** ${purposeLine}
-- **Cardinality:** ${card}
-- **Payload kind:** ${kind}
-- **Payload validation requirements (JSON Schema derived from Zod):**
-
-\`\`\`json
-${schemaBlock || '// schema not available'}
-\`\`\`
-
-- **Example payload for broadcast:**
-
-\`\`\`js
-[
-  'custom_json',
-  {
-    required_auths: [],
-    required_posting_auths: [account],
-    id: 'odl-mainnet',
-    json: JSON.stringify({
-      events: [
-        {
-          action: 'object_update',
-          v: 1,
-          payload: ${examplePayload(kind, updateType).replace(/\n/g, '\n          ')}
-        }
-      ]
-    }),
-  },
-]
-\`\`\`
-`;
-}
 
 function main() {
   if (!fs.existsSync(SPEC_DIR)) {
@@ -107,18 +14,16 @@ function main() {
 
   const entries: { updateType: string; file: string }[] = [];
 
-  // UPDATE_REGISTRY keys are the concrete update type strings, e.g. 'address'.
   for (const [updateType, def] of Object.entries(UPDATE_REGISTRY)) {
-    const schemaBlock = schemaToMarkdown(def);
     const mdPath = path.join(SPEC_DIR, `${updateType}.md`);
-    const content = mdDoc(updateType, def, schemaBlock);
-    fs.writeFileSync(mdPath, content, 'utf8');
+    const mdContent = serializeUpdateType(updateType, def);
+    fs.writeFileSync(mdPath, mdContent, 'utf8');
     entries.push({ updateType, file: `${updateType}.md` });
   }
 
   const readme = `# Object updates
 
-Specification for each ODL object update type (payload shape, validation, broadcast example).
+Specification for each ODL update type (cardinality, payload kind, JSON Schema, example).
 
 | Update type | Spec |
 |-------------|------|
@@ -133,9 +38,8 @@ ${entries
   console.log(
     'Generated',
     entries.length,
-    'spec files + README.md in generated/object-updates/',
+    'update-type spec files + README.md in generated/object-updates/',
   );
 }
 
 main();
-

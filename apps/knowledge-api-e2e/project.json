@@ -1,0 +1,17 @@
+{
+  "name": "knowledge-api-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["knowledge-api"],
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "options": {
+        "jestConfig": "apps/knowledge-api-e2e/jest.config.cts",
+        "passWithNoTests": true
+      },
+      "dependsOn": ["knowledge-api:build", "knowledge-api:serve"]
+    }
+  }
+}

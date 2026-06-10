@@ -33,12 +33,20 @@ docs/
     README.md                            spec index
     <topic>.md                           cross-cutting domain specs
     data-model/                          PostgreSQL schema, flows, row types
+  skills/                                agent procedural playbooks (indexed by knowledge-api)
   apps/<app>/
     README.md                            app entry point + links
     developer-guide.md                   run, env, operations (when needed)
     spec/
       overview.md                        slim: what the app does + feature index
-      <feature>.md                       one file per feature
+      <feature>.md                       cross-cutting feature (not tied to one URL tree)
+      pages/
+        index.md                         site map: all route areas
+        <area>/
+          page.md | page-shell.md        hub: layout, URLs, data loading, regions
+          data-loading.md                optional: fetch/resolve for the area
+          routes/<segment>.md            tab or child route (even when one page.tsx)
+      components/                        shared UI specs (optional)
   operations/
     migrations.md                        Kysely migrations, CLI, snapshots
 ```
@@ -72,6 +80,36 @@ docs/
 7. Clear separation of **what**, **why**, and **how**.
 8. Do not bury important constraints in prose.
 
+## Page specs vs feature specs (web and similar frontends)
+
+Use **two layers** under `docs/apps/<app>/spec/` so agents can rebuild UI from MCP search:
+
+| Layer | Location | When to use |
+|-------|----------|-------------|
+| **Page specs** | `pages/` | One **URL tree** (route area): layout shell, tabs, page-specific data loading |
+| **Feature specs** | `spec/*.md` (root) | Cross-cutting behavior shared across pages (auth, SEO, feed, shared components) |
+| **Component specs** | `components/` | Reusable UI not owned by a single route area |
+
+**Page area layout:**
+
+- `pages/index.md` — site map table (Route → hub spec → module).
+- `pages/<area>/page-shell.md` or `page.md` — public URLs, App Router layouts, persistent regions.
+- `pages/<area>/data-loading.md` — optional; server fetch / resolve for the shell.
+- `pages/<area>/routes/<segment>.md` — one tab or child segment (even if code uses a single `page.tsx` + query).
+
+**Do not** put route-specific docs only in the spec root (e.g. `discover.md` next to `auth.md`) when the area has a `pages/<area>/` hub — the hub is canonical.
+
+**Frontmatter for pages:**
+
+- Hub: `tags: [<app>, page, <area>]`; `related` includes `pages/index.md`.
+- Route file: `related` includes the area hub + `pages/index.md`.
+- On move: leave a **stub** at the old path (`status: deprecated`, `related` → canonical path, one-line pointer).
+
+**Agent expectations (pages):**
+
+- Adding a new top-level route → row in `pages/index.md` + hub or route spec under `pages/`.
+- `overview.md` stays slim: link `pages/index.md` for routes; list cross-cutting features only.
+
 ## Spec file structure (recommended sections)
 
 A typical feature spec file should use these sections (skip what does not apply):
@@ -85,8 +123,93 @@ A typical feature spec file should use these sections (skip what does not apply)
 7. **Architecture diagram** — mermaid when helpful.
 8. **Related code paths** — table of files and roles.
 
+## Frontmatter (YAML)
+
+Indexed Markdown (`docs/**`, `docs/skills/**`, `tasks/lessons.md`, `**/AGENTS.md`) may include an optional YAML block at the top. When frontmatter is omitted, metadata is inferred from the file path at reindex time.
+
+```yaml
+---
+id: chain-indexer-sync
+title: Block sync
+type: spec
+status: active
+scope: chain-indexer
+tags: [indexer, hive]
+owner: platform
+updated_at: 2026-06-10
+related: [docs/apps/chain-indexer/spec/overview.md]
+---
+```
+
+| Field | Required | Values / notes |
+|-------|----------|----------------|
+| `id` | no | Defaults to slug from relative path |
+| `title` | no | Defaults to first `#` heading or path slug |
+| `type` | no | `spec`, `skill`, `overview`, `adr`, `lesson`, `agents`, `registry` |
+| `status` | no | `active` (default), `draft`, `deprecated` |
+| `scope` | no | App name (`chain-indexer`, `web`, …) or `platform` |
+| `tags` | no | String array for FTS boosts |
+| `owner` | no | Team or individual |
+| `updated_at` | no | ISO date |
+| `related` | no | Paths to related docs |
+
+**Path inference** (when frontmatter is empty):
+
+| Path pattern | `type` | `scope` |
+|--------------|--------|---------|
+| `docs/apps/<app>/spec/overview.md` | `overview` | `<app>` |
+| `docs/apps/<app>/spec/*` | `spec` | `<app>` |
+| `docs/architecture/adr/*` | `adr` | `platform` |
+| `docs/skills/*` | `skill` | `platform` |
+| `tasks/lessons.md` | `lesson` | `platform` |
+| `**/AGENTS.md` | `agents` | app or `platform` |
+
+Reindex after doc changes: `pnpm knowledge:reindex` (local) or migrator one-shot in deploy (see [knowledge-api overview](../apps/knowledge-api/spec/overview.md)).
+
+## Skill files (`docs/skills/`)
+
+Domain procedural playbooks for agents (Hive account creation, deploy runbooks, etc.). **Not** the same as `.agents/skills/` — that folder is Cursor runtime tooling (Next.js, Nx); `docs/skills/` is indexed by knowledge-api and searchable via MCP.
+
+Recommended sections (same spirit as feature specs):
+
+1. **Title** — skill name (`# Create Hive account`).
+2. **When to use** — triggers, prerequisites, when *not* to use.
+3. **Steps** — ordered procedure; commands and payloads as fenced blocks.
+4. **Verification** — how to confirm success (commands, expected output, rollback).
+5. **Related** — links to specs, `AGENTS.md`, registry tools (`get_object_type`, …).
+
+Example:
+
+```markdown
+---
+title: Create Hive account
+type: skill
+scope: platform
+tags: [hive, account]
+---
+
+# Create Hive account
+
+## When to use
+
+User needs a new Hive account on mainnet; wallet/keychain available.
+
+## Steps
+
+1. …
+2. …
+
+## Verification
+
+- `hive-js` / API returns account `alice`
+```
+
+Path inference sets `type: skill` when frontmatter is omitted. Add `tags` for better FTS ranking.
+
 ## Agent expectations
 
+- New docs should include frontmatter when metadata is not obvious from the path.
+- New domain procedures belong in `docs/skills/` (not `.agents/skills/`).
 - If you implement a feature and find no spec -> add a spec in `docs/spec/` or `docs/apps/<app>/spec/`.
 - If a spec exists and code diverges -> update the spec or mark divergence: `> **TODO: spec-code divergence**`.
 - If you regenerate reference docs from registries, treat the **code** as source of truth; generated output is illustrative.

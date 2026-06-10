@@ -175,83 +175,20 @@ In plain CSS (e.g. Leaflet overrides), prefer **`var(--font-size-body)`**, **`va
 
 ## SEO and metadata
 
-Cross-cutting SEO lives in **`src/seo/`** (parallel to `src/i18n/` and `src/theme/`). Import via **`@/seo`** barrel only. Module layout: [`docs/apps/web/spec/architecture.md`](../../docs/apps/web/spec/architecture.md).
+**Canonical spec:** [`docs/apps/web/spec/seo.md`](../../docs/apps/web/spec/seo.md). **URL rewrites:** [`routing-proxy.md`](../../docs/apps/web/spec/routing-proxy.md).
 
-```
-src/seo/
-  domain/          metadata contracts, JSON-LD builders for post/profile (pure)
-  application/     buildPageMetadata({ route, model, locale, messages }) use-cases
-  infrastructure/  publicOrigin / buildPublicUrl helpers, API → OG mappers
-  presentation/    JsonLdScript (server component)
-  index.ts         public barrel — @/seo
-```
+Cross-cutting SEO lives in **`src/seo/`** — import via **`@/seo`** barrel only. Route files stay **thin**: `export async function generateMetadata` delegates to `@/seo` builders.
 
-Route files keep **`export async function generateMetadata`** (or static `metadata`), but stay **thin** — call the matching builder from `@/seo`. Do **not** put SEO logic in `src/shared/` or inline in page components.
+| Do | Don't |
+|----|--------|
+| Use `Metadata` / `generateMetadata` only | `next/head` or ad-hoc `<head>` in components |
+| Object pages: read `model.seo` from query-api (`includeSeo: true`) | Hand-build object canonical URLs on web |
+| Wrap shared loaders in `react.cache()` for metadata + page body | Duplicate fetches in `generateMetadata` |
+| Post/profile JSON-LD in `src/seo/domain/` | SEO helpers in `src/shared/` |
 
-### Next.js Metadata API
+Object `seo.canonical_url` and object `json_ld` are **query-api owned** — web injects only. Locale is not a URL segment — no `alternates.languages`. Sitemap/robots: `app/sitemap.ts`, `app/robots.ts` (see spec).
 
-- Use **`Metadata` / `generateMetadata`** only — **never** `next/head` (deprecated in App Router).
-- Root defaults live in **`app/layout.tsx`**: `metadataBase` from `env.publicOrigin` (`WEB_PUBLIC_ORIGIN` or `AUTH_APP_DISPLAY_ORIGIN`), site title template, default OG/Twitter.
-- Per-route metadata overrides title, description, `openGraph`, `twitter`, `alternates.canonical`, and (when needed) robots.
-
-### Object pages — query-api `seo` block is source of truth
-
-`ProjectedObject.seo` is attached only when query-api projects with **`includeSeo: true`** (object resolve endpoints). Contract: [`apps/query-api/src/domain/object-projection/projected-object.types.ts`](../../apps/query-api/src/domain/object-projection/projected-object.types.ts) (`ProjectedObjectSeo`: `title`, `description`, `canonical_url`, `json_ld`).
-
-- **`generateMetadata` for object routes must read `model.seo`** via `@/seo` builders — do not build a parallel title from `obj.fields.name`.
-- **`seo.canonical_url`** is computed in query-api via [`build-object-canonical-url.ts`](../../apps/query-api/src/domain/object-projection/build-object-canonical-url.ts) and [`@opden-data-layer/site-canonical`](../../libs/site-canonical/src/lib/fallback.ts). Web **must not** hand-build object canonical URLs; use `seo.canonical_url`. If `seo` is absent, fallback to `env.publicOrigin` + object path.
-- If `seo.canonical_url` points at a custom object site origin, **accept it as-is** — query-api owns that decision; web does not override.
-
-### JSON-LD
-
-- **Objects:** schema.org payloads are built in query-api [`ObjectSeoService`](../../apps/query-api/src/domain/object-projection/object-seo.service.ts) (`json_ld` is `{}` today — intentional stub; will grow by `object_type`: `Thing`, `Product`, `Recipe`, etc.). Web **injects only** — render via `<JsonLdScript data={model.seo.json_ld} />` in `src/seo/presentation/` when non-empty. **Do not** add or patch schema.org fields on the web side for objects.
-- **Posts / profiles:** builders live in `src/seo/domain/` (e.g. `Article`, `Person`) — query-api does not project these entity types yet.
-- Validity of `json_ld` is query-api’s responsibility; web still injects what the API returns.
-
-### Canonical URLs (non-object routes)
-
-Build in `@/seo` using `env.publicOrigin` and public URL rules from [`proxy.ts`](src/proxy.ts) (`/@account` → profile, `/object/:id`, post permalinks). One canonical URL per entity; **do not** use `alternates.languages` — locale is not a URL segment (see **i18n** above).
-
-### Open Graph and Twitter
-
-- **`openGraph.images` / `twitter.images`:** absolute URLs from API data:
-  - Object: `coverImageUrl`, `avatarUrl`
-  - Post (`FeedStoryView`): `thumbnailUrl`, `videoThumbnailUrl`
-  - Profile: `avatarUrl`, `coverImageUrl` from profile query
-- Resolve relative URLs with `buildPublicUrl()` from `@/shared/infrastructure/http/get-public-origin`.
-- When no image is available, fall back to default **`app/opengraph-image.png`** (static site banner).
-- Use **`twitter.card: 'summary_large_image'`** when a page has an OG image; otherwise inherit root default (`summary`).
-
-### i18n in metadata
-
-- `@/seo` builders encapsulate **`getRequestLocale()`** + **`loadMessages()`** — no repeated boilerplate in every `generateMetadata`.
-- Shareable routes (post, object, profile): prefer API-localized fields (`obj.seo.title` via `X-Locale`) plus i18n suffix keys from locale catalogs for tab/context labels.
-- Title fallback chain for objects: `obj.seo.title` → `obj.fields.name` → `object_id`. Never emit an empty `<title>`.
-- Do **not** hardcode English title/description on public shareable pages (post, object, profile, home, sign-in) when i18n keys or API fields exist.
-
-### Fetch deduplication
-
-Any loader used by **`generateMetadata` and the page body** must be wrapped in **`react.cache()`**. Reference: [`object-page-model.server.ts`](src/app/(app)/object/[object-id]/object-page-model.server.ts). Object fetches for metadata should request **`includeSeo: true`** (query-api resolve); extend API calls in the same PR when wiring SEO.
-
-### Edge cases
-
-| Situation | Behavior |
-|-----------|----------|
-| API returned no `seo` (`includeSeo: false` or error) | Builder falls back to root metadata defaults; route must not throw |
-| Empty `json_ld` | Skip `<JsonLdScript>`; HTML meta still from `Metadata` |
-| Missing OG image | Use default `app/opengraph-image.png` |
-
-### Sitemap and robots
-
-- Add **`app/sitemap.ts`** and **`app/robots.ts`** as Next.js conventions when implementing crawl coverage (dynamic sources: query-api objects/posts/users). Not required on every route change — track in a dedicated SEO PR.
-
-### Don’ts
-
-- Do not use **`next/head`** or ad-hoc `<head>` writes in components.
-- Do not build **object** canonical URLs on the web — use **`seo.canonical_url`**.
-- Do not duplicate API fetches in `generateMetadata` — reuse **`cache()`** loaders.
-- Do not place SEO helpers in **`src/shared/`** — use **`src/seo/`**.
-- Do not treat legacy Helmet docs under [`docs/apps/web/spec/pages/user-profile/`](../../docs/apps/web/spec/pages/user-profile/) as App Router patterns.
+**Profile / page specs:** start at [`docs/apps/web/spec/pages/index.md`](../../docs/apps/web/spec/pages/index.md) (site map). Profile hub: [`profile-shell.md`](../../docs/apps/web/spec/pages/user-profile/profile-shell.md). Do **not** use legacy Waivio docs or any spec referencing `src/client/`.
 
 ## Shared code
 
@@ -299,21 +236,15 @@ Plan error paths **when adding a feature**, not only after a production failure.
 
 ## Blockchain broadcast and trx confirmation
 
-After every successful **Hive wallet broadcast** that should update on-chain-backed UI (votes, comments, and similar flows):
+After every successful **Hive wallet broadcast** that should update on-chain-backed UI:
 
-1. **Capture `transactionId`** from the broadcast result immediately.
-2. **Subscribe on the notifications WebSocket** for that trx id — use **`awaitTrxConfirmation(trxId)`** from **`@/modules/notifications`** (wraps `NotificationsWsClient.subscribeTrx` with a correlation id). Do not poll HTTP for indexer completion.
-3. **Show in-place loading** on the affected control while waiting (e.g. spinner on vote count, subtle “waiting for confirmation” on comment submit) — keep optimistic UI until broadcast finishes; switch to confirming state only after you have the trx id.
-4. **Refresh server-rendered data** when confirmation arrives **or** when **`TRX_CONFIRMATION_TIMEOUT_MS`** elapses (default 10s): call **`refreshAfterBroadcast(router, revalidateAction)`** from `@/shared/infrastructure/query/refresh-after-broadcast` — it runs a tagged **`revalidateTag`** server action, then **`router.refresh()`**. **Never treat timeout as a hard error** — still refresh so the UI catches up eventually.
-5. **New on-chain actions** must follow the same pattern; do not leave stale counts or lists after broadcast.
-6. **Paginated client lists** seeded from RSC (`initialPage` / `initialItems`) must re-sync after `router.refresh()` — use **`useSyncedPaginatedList`** from `@/shared/presentation` (or an equivalent `useEffect` on the server initial payload). Counts from parent props update automatically; `useState(initial*)` for list rows does not.
-7. **Query-api Data Cache:** page-load clients use **`queryApiFetch`** with **`cacheTags`** (60s GET cache). After broadcast, invalidate via **`updateTag`** in **`revalidateObjectAfterBroadcast`**, **`revalidateUserSocialAfterBroadcast`**, or **`revalidateUserFeedAfterBroadcast`** (`revalidate-after-broadcast.server.ts`) — **not** `queryApiFetchLive` on every page load. `queryApiFetchLive` is for post-broadcast server actions only. POST `/resolve` counts stay fresh; stale lists were from cached GETs without tag invalidation.
+1. Capture **`transactionId`** → **`awaitTrxConfirmation(trxId)`** from **`@/modules/notifications`** (WS via **`/api/auth/ws-token`**; see [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md)).
+2. In-place loading on the control while waiting; optimistic UI until broadcast finishes.
+3. On confirm **or** **`TRX_CONFIRMATION_TIMEOUT_MS`** (10s): **`refreshAfterBroadcast(router, revalidate*)`** from `@/shared/infrastructure/query/refresh-after-broadcast` — **never treat timeout as hard error**.
+4. RSC-seeded paginated lists: **`useSyncedPaginatedList`** after refresh — `useState(initial*)` for rows does not update.
+5. Invalidate query-api GET cache tags via `revalidateObjectAfterBroadcast` / `revalidateUserSocialAfterBroadcast` / `revalidateUserFeedAfterBroadcast` — not `queryApiFetchLive` on every page load.
 
-Requires a notifications WebSocket URL (**`NOTIFICATIONS_WS_PUBLIC_URL`** at runtime in compose; see [Environment variables](#environment-variables-runtime-not-build)) and a logged-in session (JWT via **`/api/auth/ws-token`**). If WS is unavailable, `awaitTrxConfirmation` waits the timeout then returns so step 4 still runs.
-
-Implementation reference: `story-vote-button.tsx`, `story-comment-editor.tsx`, `modules/notifications/`. Server-side: [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md).
-
-**ODL envelope broadcasts** (e.g. `update_vote`, `update_create`): use **`useOdlCustomJsonId()`** from `@/config/odl-network-provider` — do not hardcode `odl-mainnet` / `odl-testnet`. **`ODL_NETWORK`** is runtime-only (compose `env_file`); not a Docker build-arg.
+**ODL `custom_json`:** **`useOdlCustomJsonId()`** — do not hardcode network ids. Reference: `story-vote-button.tsx`, `story-comment-editor.tsx`.
 
 ## `router.refresh()` and client state
 

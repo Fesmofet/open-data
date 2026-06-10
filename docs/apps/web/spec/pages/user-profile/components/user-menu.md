@@ -1,3 +1,21 @@
+---
+id: web-pages-user-profile-components-user-menu
+title: UserMenu
+type: spec
+status: active
+scope: web
+tags: [web, page, user-profile, components]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/pages/user-profile/profile-shell.md
+  - docs/apps/web/spec/pages/index.md
+  - docs/apps/web/spec/pages/user-profile/routes/feed.md
+  - docs/apps/web/spec/pages/user-profile/routes/transfers.md
+  - docs/apps/web/spec/pages/user-profile/routes/social-graph.md
+  - docs/apps/web/spec/pages/user-profile/routes/expertise.md
+---
+
 # UserMenu
 
 ## metadata
@@ -16,7 +34,27 @@
 ## navigation layers
 
 - **Primary:** one link per main section — see [rendering](#rendering).
-- **Secondary:** route-aligned links for those four sections only; URL details are specified in the tab specs linked from [global-user-menu.md](../tabs/global-user-menu.md) (not duplicated here). Wallet submenu uses `?type=` for active state.
+- **Secondary:** route-aligned links for Posts, Wallet, Followers, and Expertise only — see [Secondary subnav](#secondary-subnav). Wallet submenu uses `?type=` for active state ([transfers.md](../routes/transfers.md)).
+
+## Secondary subnav
+
+Shown when `getSubmenuVariant(pathname)` returns a variant (see `user-profile-subnav.ts`).
+
+| Primary active | Secondary links | Route spec |
+|----------------|-----------------|------------|
+| Posts (default feed) | `/@:name`, `/threads`, `/comments`, `/mentions`, `/activity` | [feed.md](../routes/feed.md) |
+| Wallet (`/transfers`) | `?type=WAIV`, `?type=HIVE`, `?type=ENGINE`, `?type=rebalancing` | [transfers.md](../routes/transfers.md) |
+| Followers section | `/followers`, `/following`, `/following-objects` (counts from social context) | [social-graph.md](../routes/social-graph.md) |
+| Expertise | `/expertise-hashtags`, `/expertise-objects` | [expertise.md](../routes/expertise.md) |
+
+WAIV table page (`/@:name/transfers/waiv-table`) may use a separate `tab` query for in-page tabs — not part of this header submenu.
+
+## Query params (UserMenu)
+
+| Param | Where | Effect |
+|-------|-------|--------|
+| `type` | `/transfers` and wallet submenu | Active wallet tab; default `WAIV` when missing (`getWalletTypeFromSearch`) |
+| `tab` | `/transfers/waiv-table` only | In-page WAIV table tabs (not header submenu) |
 
 ## inputs
 
@@ -33,7 +71,7 @@
 ## rendering
 
 - **Primary links:** `/@name`, `/@name/map`, `/@name/user-shop`, `/@name/recipe`, `/@name/favorites`, `/@name/transfers?type=WAIV`, `/@name/followers`, `/@name/expertise-hashtags`, `/@name/about`.
-- **Secondary row** (when that primary section is active): see [global-user-menu.md](../tabs/global-user-menu.md) § Submenus and [feed-posts-tabs.md](../tabs/feed-posts-tabs.md), [wallet-type-tabs.md](../tabs/wallet-type-tabs.md), [followers-tabs.md](../tabs/followers-tabs.md), [expertise-tabs.md](../tabs/expertise-tabs.md). WAIV table `tab` query ([waiv-table-tabs.md](../tabs/waiv-table-tabs.md)) is not part of this header submenu.
+- **Secondary row:** URLs in [Secondary subnav](#secondary-subnav). Feed secondary hidden when `getVisibleMenuKeys(shellMode)` restricts primary keys.
 
 ## emitted events
 
@@ -41,14 +79,11 @@
 
 ## References
 
-- [../page-spec.md](../page-spec.md)
-- [../tabs/global-user-menu.md](../tabs/global-user-menu.md)
-- [../tabs/feed-posts-tabs.md](../tabs/feed-posts-tabs.md)
-- [../tabs/wallet-type-tabs.md](../tabs/wallet-type-tabs.md)
-- [../tabs/waiv-table-tabs.md](../tabs/waiv-table-tabs.md)
-- [../tabs/followers-tabs.md](../tabs/followers-tabs.md)
-- [../tabs/expertise-tabs.md](../tabs/expertise-tabs.md)
-- [../query-params-audit.md](../query-params-audit.md)
+- [profile-shell.md](../profile-shell.md)
+- [feed.md](../routes/feed.md)
+- [transfers.md](../routes/transfers.md)
+- [social-graph.md](../routes/social-graph.md)
+- [expertise.md](../routes/expertise.md)
 
 ```yaml
 integration_contract:
@@ -61,9 +96,9 @@ integration_contract:
 
 ```yaml
 integration_contract_submenus:
-  input_data: same as primary; child paths and query per tab specs.
+  input_data: same as primary; child paths and query per route specs above.
   emitted_actions: Navigation via Link on secondary row.
   controlled_by_state: Router pathname + URLSearchParams (wallet type).
-  affected_by_route: feed, social-graph, transfers*, expertise children.
-  affected_by_query: see query-params-audit for wallet and waiv-table.
+  affected_by_route: feed, social-graph, transfers, expertise children.
+  affected_by_query: type on /transfers; tab on waiv-table page only.
 ```

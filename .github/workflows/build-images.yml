@@ -29,7 +29,7 @@ on:
         description: >-
           Optional comma-separated app names (e.g. web,query-api,migrator). When set,
           only these images are built; Nx affected and Rebuild all are ignored.
-          Allowed chain-indexer, query-api, auth-api, notifications, scheduler,
+          Allowed chain-indexer, query-api, knowledge-api, auth-api, notifications, scheduler,
           ipfs-gateway, stack-watchdog, web, migrator.
         type: string
         required: false
@@ -120,7 +120,7 @@ jobs:
 
           MODE="${{ steps.base.outputs.mode }}"
           if [ "$MODE" = "all" ]; then
-            JSON='["chain-indexer","query-api","auth-api","notifications","scheduler","ipfs-gateway","stack-watchdog","web","migrator"]'
+            JSON='["chain-indexer","query-api","knowledge-api","auth-api","notifications","scheduler","ipfs-gateway","stack-watchdog","web","migrator"]'
             {
               echo "matrix=$JSON"
               echo 'has_matrix=true'
@@ -147,6 +147,7 @@ jobs:
             const allow = new Set([
               'chain-indexer',
               'query-api',
+              'knowledge-api',
               'auth-api',
               'notifications',
               'scheduler',

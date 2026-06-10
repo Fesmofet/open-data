@@ -1,3 +1,16 @@
+---
+id: web-components-story-container
+title: Story container
+type: spec
+status: active
+scope: web
+tags: [web, components]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+  - docs/apps/web/spec/architecture.md
+---
+
 # Story container (feed row)
 
 **Back:** [web overview](../overview.md) · **Related:** [architecture](../architecture.md), [theme](../theme.md)

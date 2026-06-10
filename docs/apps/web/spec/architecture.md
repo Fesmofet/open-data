@@ -1,3 +1,15 @@
+---
+id: web-architecture
+title: web — application architecture
+type: spec
+status: active
+scope: web
+tags: [web, cross-cutting, architecture]
+updated_at: 2026-06-10
+related:
+  - docs/apps/web/spec/overview.md
+---
+
 # web — application architecture
 
 **Back:** [web overview](overview.md) · **Related:** [web conventions](web-conventions.md), [i18n](i18n.md), [theme](theme.md), [images](images.md)
