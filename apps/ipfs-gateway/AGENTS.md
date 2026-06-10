@@ -1,3 +1,9 @@
+---
+description: 
+globs: apps/ipfs-gateway/src/**
+alwaysApply: false
+---
+
 # ipfs-gateway — agent rules
 
 Specialization for this app. **Shared policy** (monorepo, NestJS, config validation, logging, testing, Nx) lives in the repo root [`AGENTS.md`](../../AGENTS.md). Do not duplicate that here.

@@ -1,3 +1,9 @@
+---
+description: 
+globs: apps/scheduler/src/**
+alwaysApply: false
+---
+
 # scheduler — agent rules
 
 Background service: NestJS **application context** only — **no HTTP server**. Shared policy (Kysely, Redis via `RedisClientFactory`, logging, Nx) lives in the repo root [`AGENTS.md`](../../AGENTS.md).

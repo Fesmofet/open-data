@@ -1,3 +1,9 @@
+---
+description: 
+globs: apps/web/src/**
+alwaysApply: false
+---
+
 # web — agent rules
 
 Specialization for this app. **Shared policy** (monorepo, docs standards, cross-cutting Nx) lives in the repo root [`AGENTS.md`](../../AGENTS.md). Web architecture and conventions are also documented under [`docs/apps/web/`](../../docs/apps/web/). This file is the **operational** checklist for `apps/web`.

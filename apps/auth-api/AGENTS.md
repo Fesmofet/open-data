@@ -1,3 +1,9 @@
+---
+description: 
+globs: apps/auth-api/src/**
+alwaysApply: false
+---
+
 # auth-api — agent rules
 
 Specialization for this app. **Shared policy** (monorepo, NestJS layering, Kysely, logging, testing, Nx) lives in the repo root [`AGENTS.md`](../../AGENTS.md). Do not duplicate that here.

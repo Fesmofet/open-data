@@ -1,3 +1,9 @@
+---
+description: 
+globs: apps/notifications/src/**
+alwaysApply: false
+---
+
 # notifications — agent rules
 
 Specialization for this app. **Shared policy** (monorepo, NestJS layering, testing, Nx) lives in the repo root [`AGENTS.md`](../../AGENTS.md).
