@@ -1,8 +1,14 @@
-import { Controller, Post, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Req,
+  Res,
+  VERSION_NEUTRAL,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { McpService } from './mcp.service';
 
-@Controller({ path: 'mcp' })
+@Controller({ path: 'mcp', version: VERSION_NEUTRAL })
 export class McpController {
   constructor(private readonly mcp: McpService) {}
 
