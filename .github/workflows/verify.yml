@@ -76,6 +76,38 @@ jobs:
         if: steps.paths.outputs.knowledge == 'true'
         run: pnpm nx test knowledge && pnpm nx test knowledge-api
 
+  query-api-unit:
+    name: Query API — unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: paths
+        with:
+          filters: |
+            query_api:
+              - 'apps/query-api/**'
+              - 'libs/currency/**'
+              - 'libs/objects-domain/**'
+
+      - uses: pnpm/action-setup@v4
+        if: steps.paths.outputs.query_api == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.paths.outputs.query_api == 'true'
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.paths.outputs.query_api == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests (query-api)
+        if: steps.paths.outputs.query_api == 'true'
+        run: pnpm nx test query-api
+
   web-verify:
     name: Web — locale JSON UTF-8 + TypeScript
     runs-on: ubuntu-latest

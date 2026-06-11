@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { searchCountsQuerySchema } from '../../domain/search/search-counts-query.schema';
 import { searchQuerySchema } from '../../domain/search/search-query.schema';
+import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
@@ -12,7 +13,7 @@ export function registerSearchTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'search',
     {
-      description: 'Search for objects and users on the platform',
+      description: catalogDescription('search'),
       inputSchema: withMcpLocaleContext(searchQuerySchema),
     },
     async (args) => {
@@ -32,7 +33,7 @@ export function registerSearchTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'search_counts',
     {
-      description: 'Get search result counts by object type and total users',
+      description: catalogDescription('search_counts'),
       inputSchema: searchCountsQuerySchema,
     },
     async (args) => {

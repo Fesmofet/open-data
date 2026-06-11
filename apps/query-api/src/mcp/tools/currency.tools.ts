@@ -1,5 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import { jsonToolResult } from '../mcp-tool.helpers';
 
@@ -7,7 +8,7 @@ export function registerCurrencyTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'get_currency_market',
     {
-      description: 'Get cryptocurrency market info (current and weekly)',
+      description: catalogDescription('get_currency_market'),
       inputSchema: z.object({
         ids: z.string().optional().describe('Comma-separated coin ids'),
         vs_currencies: z
@@ -28,7 +29,7 @@ export function registerCurrencyTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'get_currency_fiat_rates',
     {
-      description: 'Get latest fiat exchange rates for a base currency',
+      description: catalogDescription('get_currency_fiat_rates'),
       inputSchema: z.object({
         base: z.string().min(1).describe('Base currency code'),
         symbols: z
@@ -49,7 +50,7 @@ export function registerCurrencyTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'get_engine_rates',
     {
-      description: 'Get Hive Engine token rates (current and weekly)',
+      description: catalogDescription('get_engine_rates'),
       inputSchema: z.object({
         base: z.string().optional().describe('Base token symbol (e.g. WAIV)'),
       }),
@@ -63,7 +64,7 @@ export function registerCurrencyTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'get_engine_current',
     {
-      description: 'Get current Hive Engine token aggregates',
+      description: catalogDescription('get_engine_current'),
       inputSchema: z.object({
         base: z.string().optional().describe('Base token symbol (e.g. WAIV)'),
       }),
@@ -77,7 +78,7 @@ export function registerCurrencyTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'get_engine_chart',
     {
-      description: 'Get Hive Engine token price chart for a period',
+      description: catalogDescription('get_engine_chart'),
       inputSchema: z.object({
         period: z.string().min(1).describe('Chart period (e.g. 7d, 30d)'),
         base: z.string().optional().describe('Base token symbol (e.g. WAIV)'),
@@ -92,7 +93,7 @@ export function registerCurrencyTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'get_engine_pools_usd',
     {
-      description: 'Get USD scaling for Hive Engine swap pool symbols',
+      description: catalogDescription('get_engine_pools_usd'),
       inputSchema: z.object({
         symbols: z.string().min(1).describe('Comma-separated token symbols'),
       }),

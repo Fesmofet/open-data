@@ -4,6 +4,7 @@ import type { GetDiscoverTagCategoriesEndpoint } from '../domain/discover/get-di
 import type { GetDiscoverUsersEndpoint } from '../domain/discover/get-discover-users.endpoint';
 import type {
   GetPostByKeyEndpoint,
+  GetPostDiscussionEndpoint,
   GetUserBlogFeedEndpoint,
   GetUserCommentsFeedEndpoint,
   GetUserMentionsFeedEndpoint,
@@ -57,5 +58,6 @@ export interface McpToolDeps {
   getUserShopObjects: GetUserShopObjectsEndpoint;
   getUserShopSections: GetUserShopSectionsEndpoint;
   getPostByKey: GetPostByKeyEndpoint;
+  getPostDiscussion: GetPostDiscussionEndpoint;
   currencyQueries: CurrencyQueryService;
 }

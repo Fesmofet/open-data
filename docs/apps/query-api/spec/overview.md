@@ -45,6 +45,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [Object avatar fallback](object-avatar-fallback.md) | `fields.image` from parent when child has no `image` |
 | [Object ref lists](object-ref-list-endpoints.md) | `GET .../related`, `/similar`, `/add-on` |
 | [Object SEO](object-seo.md) | SEO fields on resolved objects |
+| [MCP agent mirror](mcp.md) | `POST /query/mcp` — live data tools for agents |
 
 ## Verification
 

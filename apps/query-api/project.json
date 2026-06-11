@@ -44,7 +44,7 @@
     },
     "test": {
       "options": {
-        "passWithNoTests": true
+        "passWithNoTests": false
       }
     }
   },

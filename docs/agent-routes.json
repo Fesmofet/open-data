@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T08:30:34.125Z",
+  "generated_at": "2026-06-11T09:18:51.398Z",
   "routes": [
     {
       "path": "docs/apps/auth-api/overview.md",
@@ -228,6 +228,20 @@
         "routing",
         "mcp",
         "first-visit"
+      ]
+    },
+    {
+      "path": "docs/skills/query-api-mcp-routing.md",
+      "title": "Query API MCP routing for agents",
+      "description": "First-visit map for query-api MCP live-data tools and how they differ from knowledge-api docs search.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "query-api",
+        "mcp",
+        "agent",
+        "routing",
+        "live-data"
       ]
     },
     {

@@ -11,6 +11,7 @@ import {
 } from '../domain/discover';
 import {
   GetPostByKeyEndpoint,
+  GetPostDiscussionEndpoint,
   GetUserBlogFeedEndpoint,
   GetUserCommentsFeedEndpoint,
   GetUserMentionsFeedEndpoint,
@@ -37,8 +38,10 @@ import {
   GetUserFollowingObjectsEndpoint,
 } from '../domain/social';
 import { GetUserProfileEndpoint } from '../domain/users';
+import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import type { McpToolDeps } from './mcp-tool.deps';
 import { registerAllMcpTools } from './register-all-tools';
+import { registerQueryMcpResources } from './register-query-mcp-resources';
 
 @Injectable()
 export class McpService {
@@ -69,6 +72,7 @@ export class McpService {
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
     private readonly getPostByKey: GetPostByKeyEndpoint,
+    private readonly getPostDiscussion: GetPostDiscussionEndpoint,
     private readonly currencyQueries: CurrencyQueryService,
   ) {}
 
@@ -98,6 +102,7 @@ export class McpService {
       getUserShopObjects: this.getUserShopObjects,
       getUserShopSections: this.getUserShopSections,
       getPostByKey: this.getPostByKey,
+      getPostDiscussion: this.getPostDiscussion,
       currencyQueries: this.currencyQueries,
     };
   }
@@ -106,12 +111,12 @@ export class McpService {
     const server = new McpServer(
       { name: 'query-api', version: '1.0.0' },
       {
-        capabilities: { tools: {} },
-        instructions:
-          'Read-only query API for the platform. Use tools to search, discover, resolve objects, read user profiles and feeds, and fetch currency data.',
+        capabilities: { tools: {}, resources: {}, prompts: {} },
+        instructions: QUERY_API_MCP_INSTRUCTIONS,
       },
     );
     registerAllMcpTools(server, this.buildDeps());
+    registerQueryMcpResources(server);
     return server;
   }
 

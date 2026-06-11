@@ -5,6 +5,7 @@ import {
   discoverTagCategoriesQuerySchema,
   discoverUsersQuerySchema,
 } from '../../domain/discover';
+import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
@@ -16,7 +17,7 @@ export function registerDiscoverTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'discover_objects',
     {
-      description: 'Discover objects by type, tags, sort order, and optional text query',
+      description: catalogDescription('discover_objects'),
       inputSchema: withMcpLocaleContext(discoverObjectsQuerySchema),
     },
     async (args) => {
@@ -41,7 +42,7 @@ export function registerDiscoverTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'discover_users',
     {
-      description: 'Discover users by optional text query with cursor pagination',
+      description: catalogDescription('discover_users'),
       inputSchema: discoverUsersQuerySchema.extend({
         viewer: z.string().optional().describe('Hive account name of the viewer'),
       }),
@@ -59,7 +60,7 @@ export function registerDiscoverTools(server: McpServer, deps: McpToolDeps): voi
   server.registerTool(
     'discover_tag_categories',
     {
-      description: 'List tag category facets for an object type and optional tag filters',
+      description: catalogDescription('discover_tag_categories'),
       inputSchema: discoverTagCategoriesQuerySchema,
     },
     async (args) => {

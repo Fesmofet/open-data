@@ -23,14 +23,10 @@ const typesArray = z.preprocess((v: unknown) => {
 export { qsArray, typesArray };
 
 export const userCategoriesQuerySchema = z.object({
-  /** Which `object_type` bucket to load (must match precomputed `scope_key`). */
-  types: typesArray,
-  /** Parent department name for level ≥ 2 (omit for root). */
-  name: z.string().optional(),
-  /** Ancestors before `name` when drilling down. */
-  path: qsArray,
-  /** Names excluded from siblings (client hint). */
-  excluded: qsArray,
+  types: typesArray.describe('Object type bucket (must match scope_key)'),
+  name: z.string().optional().describe('Parent department for level ≥ 2 (omit at root)'),
+  path: qsArray.describe('Ancestor category names when drilling down'),
+  excluded: qsArray.describe('Sibling names to exclude (client hint)'),
 });
 
 export type UserCategoriesQuery = z.infer<typeof userCategoriesQuerySchema>;

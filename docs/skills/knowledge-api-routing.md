@@ -47,6 +47,7 @@ related:
 | New Hive account | skill | `docs/skills/hive-account-signup.md` |
 | Sign/broadcast Hive/ODL txs | skill | `docs/skills/hive-blockchain-broadcast.md` |
 | App feature behavior | spec / overview | `docs/apps/<app>/spec/` or `overview.md` |
+| Live platform data (objects, feeds, posts) | skill | `docs/skills/query-api-mcp-routing.md` → query-api MCP |
 | Domain rules (votes, governance) | spec | `docs/spec/README.md` |
 | Object/update payload shape | registry tools | `get_object_type` / `get_update_schema` |
 | Coding style in this repo | agents | `AGENTS.md` or `apps/<app>/AGENTS.md` |

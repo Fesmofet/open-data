@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
 export const resolveNestedObjectsBodySchema = z.object({
-  ids: z.array(z.string().min(1)).min(1).max(32),
+  ids: z
+    .array(z.string().min(1))
+    .min(1)
+    .max(32)
+    .describe('Object ids to resolve (max 32, lightweight projection)'),
 });
 
 export type ResolveNestedObjectsBody = z.infer<typeof resolveNestedObjectsBodySchema>;

@@ -1,11 +1,28 @@
 import { z } from 'zod';
 
 export const objectUpdatesFeedQuerySchema = z.object({
-  cursor: z.string().optional(),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
-  update_type: z.string().min(1).optional(),
-  locale: z.string().min(1).optional(),
-  sort: z.enum(['recency', 'approval']).default('recency'),
+  cursor: z.string().optional().describe('Opaque pagination cursor'),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(50)
+    .default(20)
+    .describe('Page size'),
+  update_type: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Filter to a single update type id'),
+  locale: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Locale filter for update rows (in addition to MCP locale)'),
+  sort: z
+    .enum(['recency', 'approval'])
+    .default('recency')
+    .describe('Sort by recency or approval percent'),
 });
 
 export type ObjectUpdatesFeedQuery = z.infer<typeof objectUpdatesFeedQuerySchema>;

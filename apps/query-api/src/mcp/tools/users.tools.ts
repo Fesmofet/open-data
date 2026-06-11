@@ -7,6 +7,7 @@ import {
   userFollowingObjectsQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
+import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
@@ -41,7 +42,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_profile',
     {
-      description: 'Get a user profile by account name',
+      description: catalogDescription('get_user_profile'),
       inputSchema: z.object({
         ...accountField,
         viewer: z.string().optional().describe('Hive account name of the viewer'),
@@ -59,7 +60,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_blog',
     {
-      description: 'Get paginated blog feed posts for a user',
+      description: catalogDescription('get_user_blog'),
       inputSchema: userBlogFeedMcpSchema,
     },
     async (args) => {
@@ -82,7 +83,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_mentions',
     {
-      description: 'Get paginated mention feed for a user',
+      description: catalogDescription('get_user_mentions'),
       inputSchema: userBlogFeedMcpSchema,
     },
     async (args) => {
@@ -105,7 +106,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_threads',
     {
-      description: 'Get paginated threads feed for a user',
+      description: catalogDescription('get_user_threads'),
       inputSchema: userThreadsFeedMcpSchema,
     },
     async (args) => {
@@ -125,7 +126,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_comments',
     {
-      description: 'Get paginated comments feed for a user',
+      description: catalogDescription('get_user_comments'),
       inputSchema: userThreadsFeedMcpSchema,
     },
     async (args) => {
@@ -145,7 +146,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_followers',
     {
-      description: 'List followers of a user account',
+      description: catalogDescription('get_user_followers'),
       inputSchema: userSocialListQuerySchema.extend({
         ...accountField,
         viewer: z.string().optional().describe('Hive account name of the viewer'),
@@ -168,7 +169,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_following',
     {
-      description: 'List accounts a user is following',
+      description: catalogDescription('get_user_following'),
       inputSchema: userSocialListQuerySchema.extend({
         ...accountField,
         viewer: z.string().optional().describe('Hive account name of the viewer'),
@@ -191,7 +192,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_following_objects',
     {
-      description: 'List objects a user is following',
+      description: catalogDescription('get_user_following_objects'),
       inputSchema: withMcpLocaleContext(
         userFollowingObjectsQuerySchema.extend(accountField),
       ),
@@ -216,7 +217,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_categories',
     {
-      description: 'List shop navigation categories for a user',
+      description: catalogDescription('get_user_categories'),
       inputSchema: userCategoriesQuerySchema.extend(accountField),
     },
     async (args) => {
@@ -234,7 +235,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_shop_objects',
     {
-      description: 'List shop objects for a user with category filtering',
+      description: catalogDescription('get_user_shop_objects'),
       inputSchema: withMcpLocaleContext(
         shopObjectsQuerySchema.extend(accountField),
       ),
@@ -256,7 +257,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_user_shop_sections',
     {
-      description: 'List shop sections with preview objects for a user',
+      description: catalogDescription('get_user_shop_sections'),
       inputSchema: withMcpLocaleContext(
         shopSectionsQuerySchema.extend(accountField),
       ),

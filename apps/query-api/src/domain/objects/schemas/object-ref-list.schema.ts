@@ -4,8 +4,17 @@ const MAX_PAGE = 50;
 const DEFAULT_PAGE = 20;
 
 export const objectRefListQuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(MAX_PAGE).default(DEFAULT_PAGE),
-  cursor: z.string().optional(),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_PAGE)
+    .default(DEFAULT_PAGE)
+    .describe('Page size (max 50)'),
+  cursor: z
+    .string()
+    .optional()
+    .describe('Opaque cursor from previous page (object_id of last item)'),
 });
 
 export type ObjectRefListQuery = z.infer<typeof objectRefListQuerySchema>;

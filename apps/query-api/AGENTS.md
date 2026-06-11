@@ -1,5 +1,5 @@
 ---
-description: 
+description: Read-path query-api NestJS app with OpenAPI and MCP agent mirror at POST /query/mcp.
 globs: apps/query-api/src/**
 alwaysApply: false
 ---
@@ -53,6 +53,9 @@ src/
 ## MCP
 
 - **Endpoint:** `POST /query/mcp` (Streamable HTTP, stateless, no URI version).
+- **Instructions:** `src/mcp/mcp-instructions.ts` — enriched first-visit workflow (live data vs knowledge-api).
+- **Catalog:** `src/mcp/mcp-tool-catalog.ts` — single source of truth for tool metadata; add an entry before `registerTool`.
+- **Resources:** `register-query-mcp-resources.ts` — `odl-query://routing`, `odl-query://catalog/tools`, prompt `first_visit`.
 - Every new HTTP controller **must** be mirrored as MCP tools in `src/mcp/tools/<resource>.tools.ts` and registered via `register-all-tools.ts`.
 - **Exception:** `UserPostDraftsController` (JWT-authenticated writes) — do **not** expose via MCP.
 - MCP tools must **not** contain business logic — delegate to the same `*Endpoint.execute()` methods used by HTTP controllers.
@@ -60,8 +63,10 @@ src/
   - `locale` (default `en-US`) — replaces `Accept-Language` / `X-Locale`
   - `viewer` — replaces `X-Viewer`
   - `governance_object_id` — replaces `X-Governance-Object-Id`
-- Reuse domain Zod schemas for tool `inputSchema` (extend with context fields via `withMcpLocaleContext` in `mcp-tool.helpers.ts`).
+- Reuse domain Zod schemas for tool `inputSchema` (add `.describe()` on fields; extend with `withMcpLocaleContext` in `mcp-tool.helpers.ts`).
+- Use `catalogDescription(name)` for tool `description` strings.
 - MCP is not REST — do **not** add OpenAPI fragments for `/query/mcp`.
+- Spec: `docs/apps/query-api/spec/mcp.md`; routing skill: `docs/skills/query-api-mcp-routing.md`.
 
 ## Modules
 

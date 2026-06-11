@@ -10,11 +10,16 @@ export const discoverSortSchema = z.enum(['newest', 'oldest', 'rank']);
 export type DiscoverSort = z.infer<typeof discoverSortSchema>;
 
 export const discoverObjectsQuerySchema = z.object({
-  object_type: z.string().min(1).optional(),
-  q: z.string().max(100).optional(),
+  object_type: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Registry object type filter (e.g. book, product)'),
+  q: z.string().max(100).optional().describe('Optional text search within discover scope'),
   tags: z
     .union([z.string(), z.array(z.string())])
     .optional()
+    .describe('Tag filters combined with AND semantics')
     .transform((v) => {
       if (v == null) {
         return [] as string[];
@@ -22,35 +27,40 @@ export const discoverObjectsQuerySchema = z.object({
       const arr = Array.isArray(v) ? v : [v];
       return arr.map((s) => s.trim()).filter((s) => s.length > 0);
     }),
-  sort: discoverSortSchema.default('newest'),
-  cursor: z.string().optional(),
+  sort: discoverSortSchema
+    .default('newest')
+    .describe('Sort order: newest, oldest, or rank'),
+  cursor: z.string().optional().describe('Opaque pagination cursor from prior response'),
   limit: z.coerce
     .number()
     .int()
     .min(1)
     .max(DISCOVER_OBJECTS_MAX_LIMIT)
-    .default(DISCOVER_OBJECTS_DEFAULT_LIMIT),
+    .default(DISCOVER_OBJECTS_DEFAULT_LIMIT)
+    .describe('Page size'),
 });
 export type DiscoverObjectsQuery = z.infer<typeof discoverObjectsQuerySchema>;
 
 export const discoverUsersQuerySchema = z.object({
-  q: z.string().max(100).optional(),
-  cursor: z.string().optional(),
+  q: z.string().max(100).optional().describe('Optional account name search'),
+  cursor: z.string().optional().describe('Opaque pagination cursor'),
   limit: z.coerce
     .number()
     .int()
     .min(1)
     .max(DISCOVER_USERS_MAX_LIMIT)
-    .default(DISCOVER_USERS_DEFAULT_LIMIT),
+    .default(DISCOVER_USERS_DEFAULT_LIMIT)
+    .describe('Page size'),
 });
 export type DiscoverUsersQuery = z.infer<typeof discoverUsersQuerySchema>;
 
 export const discoverTagCategoriesQuerySchema = z.object({
-  object_type: z.string().min(1),
-  q: z.string().max(100).optional(),
+  object_type: z.string().min(1).describe('Object type for tag facet listing'),
+  q: z.string().max(100).optional().describe('Optional text filter'),
   tags: z
     .union([z.string(), z.array(z.string())])
     .optional()
+    .describe('Selected tags (AND) to narrow facets')
     .transform((v) => {
       if (v == null) {
         return [] as string[];

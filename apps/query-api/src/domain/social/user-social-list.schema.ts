@@ -10,27 +10,57 @@ export const userSubscriptionSortSchema = z
 
 /** Query for GET followers / GET following lists. */
 export const userSocialListQuerySchema = z.object({
-  sort: userSubscriptionSortSchema,
-  skip: z.coerce.number().int().min(0).optional().default(0),
-  /** `0` allowed for count-only payloads (tabs); default page size applies when omitted. */
-  limit: z.coerce.number().int().min(0).max(MAX_PAGE).optional().default(DEFAULT_PAGE),
+  sort: userSubscriptionSortSchema.describe('Sort: rank, followers, a-z, or recency'),
+  skip: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .default(0)
+    .describe('Offset for pagination'),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(MAX_PAGE)
+    .optional()
+    .default(DEFAULT_PAGE)
+    .describe('Page size (0 allowed for count-only tab payloads)'),
 });
 
 export type UserSocialListQuery = z.infer<typeof userSocialListQuerySchema>;
 
 /** Query for GET object authority accounts list. */
 export const objectAuthorityQuerySchema = userSocialListQuerySchema.extend({
-  authority_type: z.enum(['administrative', 'ownership']),
+  authority_type: z
+    .enum(['administrative', 'ownership'])
+    .describe('Authority role filter'),
 });
 
 export type ObjectAuthorityQuery = z.infer<typeof objectAuthorityQuerySchema>;
 
 /** Query for GET following-objects list. */
 export const userFollowingObjectsQuerySchema = z.object({
-  sort: z.enum(['weight', 'recency']).optional().default('weight'),
-  skip: z.coerce.number().int().min(0).optional().default(0),
-  /** `0` allowed for total count without loading rows (shell tabs). */
-  limit: z.coerce.number().int().min(0).max(MAX_PAGE).optional().default(DEFAULT_PAGE),
+  sort: z
+    .enum(['weight', 'recency'])
+    .optional()
+    .default('weight')
+    .describe('Sort followed objects by weight or recency'),
+  skip: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .default(0)
+    .describe('Offset for pagination'),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(MAX_PAGE)
+    .optional()
+    .default(DEFAULT_PAGE)
+    .describe('Page size (0 for count-only)'),
 });
 
 export type UserFollowingObjectsQuery = z.infer<typeof userFollowingObjectsQuerySchema>;

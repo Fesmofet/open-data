@@ -11,6 +11,7 @@ import {
   objectAuthorityQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
+import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
@@ -23,7 +24,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'resolve_object',
     {
-      description: 'Resolve and project a single object by id with optional update type filters',
+      description: catalogDescription('resolve_object'),
       inputSchema: withMcpLocaleContext(resolveObjectBodySchema),
     },
     async (args) => {
@@ -46,7 +47,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'resolve_nested_objects',
     {
-      description: 'Resolve multiple nested objects by id (lightweight projection)',
+      description: catalogDescription('resolve_nested_objects'),
       inputSchema: withMcpLocaleContext(resolveNestedObjectsBodySchema),
     },
     async (args) => {
@@ -64,7 +65,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'check_object_exists',
     {
-      description: 'Check whether an object exists by id',
+      description: catalogDescription('check_object_exists'),
       inputSchema: z.object({
         object_id: z.string().min(1).describe('Object id to check'),
       }),
@@ -113,24 +114,24 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
 
   registerRefListTool(
     'get_object_related',
-    'List objects related to the given object',
+    catalogDescription('get_object_related'),
     UPDATE_TYPES.IS_RELATED_TO,
   );
   registerRefListTool(
     'get_object_similar',
-    'List objects similar to the given object',
+    catalogDescription('get_object_similar'),
     UPDATE_TYPES.IS_SIMILAR_TO,
   );
   registerRefListTool(
     'get_object_add_on',
-    'List add-on objects for the given object',
+    catalogDescription('get_object_add_on'),
     UPDATE_TYPES.ADD_ON,
   );
 
   server.registerTool(
     'get_object_followers',
     {
-      description: 'List users following the given object',
+      description: catalogDescription('get_object_followers'),
       inputSchema: withMcpLocaleContext(
         userSocialListQuerySchema.extend({
           object_id: z.string().min(1).describe('Object id'),
@@ -155,7 +156,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'get_object_authority',
     {
-      description: 'List administrative or ownership authority holders for an object',
+      description: catalogDescription('get_object_authority'),
       inputSchema: withMcpLocaleContext(
         objectAuthorityQuerySchema.extend({
           object_id: z.string().min(1).describe('Object id'),
@@ -180,7 +181,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   server.registerTool(
     'get_object_updates',
     {
-      description: 'Get paginated update feed for an object',
+      description: catalogDescription('get_object_updates'),
       inputSchema: withMcpLocaleContext(
         objectUpdatesFeedQuerySchema.extend({
           object_id: z.string().min(1).describe('Object id'),
