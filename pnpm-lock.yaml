@@ -398,6 +398,12 @@ importers:
         specifier: ^0.34.5
         version: 0.34.5
 
+  apps/knowledge-api:
+    dependencies:
+      pg:
+        specifier: ^8.20.0
+        version: 8.20.0
+
   apps/migrator: {}
 
   apps/notifications:
