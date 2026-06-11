@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-navigation
 title: Object page — navigation & transitions
+description: "Covers all navigation behaviour on the object detail page (`/object/[object-id]`): URL routing, primary tab selection, nested catalog navigation, breadcrumb interaction, and browser history behaviour."
 tags: [web, page, object, navigation]
 related:
   - docs/apps/web/spec/overview.md

@@ -1,6 +1,7 @@
 ---
 id: docs-spec-data-model-users
 title: PostgreSQL: Waivio users
+description: "Normative DDL lives in schema.sql. Kysely row types: `@opden-data-layer/core` (`OdlDatabase`, `AccountsCurrentTable`, `UserMetadataTable`, etc.)."
 type: spec
 status: active
 scope: platform

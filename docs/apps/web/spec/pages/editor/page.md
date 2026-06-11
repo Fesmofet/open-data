@@ -1,6 +1,7 @@
 ---
 id: web-pages-editor
 title: Post editor
+description: "Authenticated screen for composing a post: title field and rich body using **Lexical** (`lexical`, `@lexical/react`, `@lexical/rich-text`, `@lexical/list`, `@lexical/link`). Legacy Waivio behavior (draft list, campaigns, linked objects, Slate) is described in `tmp/editor-page.md` and is **not** implemented in the MVP; extend with application queries and server actions when APIs exist."
 tags: [web, page, editor]
 related:
   - docs/apps/web/spec/pages/index.md

@@ -1,6 +1,7 @@
 ---
 id: web-maps
 title: Maps
+description: Geographic maps need a heavy browser-only SDK. Product UIs should depend on **`AppMap`**, **`AppMarker`**, and **`AppPopup`** plus **`MapProvider`**, not on Leaflet or MapLibre directly. That keeps open the option to move from **Leaflet** (raster tiles, simple stacks) to **MapLibre** (vector tiles, custom layers) without rewriting screens.
 type: spec
 status: active
 scope: web

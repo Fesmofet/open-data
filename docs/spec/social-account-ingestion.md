@@ -1,6 +1,7 @@
 ---
 id: docs-spec-social-account-ingestion
 title: Social and Account Ingestion
+description: "This document defines deterministic ingestion and normalization for Hive social/account operations:"
 type: spec
 status: active
 scope: platform

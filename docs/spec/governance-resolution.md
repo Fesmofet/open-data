@@ -1,6 +1,7 @@
 ---
 id: docs-spec-governance-resolution
 title: Governance Resolution
+description: Define how Query/Masking Service constructs an effective governance snapshot from a governance object indexed on-chain.
 type: spec
 status: active
 scope: platform

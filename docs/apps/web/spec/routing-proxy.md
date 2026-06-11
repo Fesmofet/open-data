@@ -1,6 +1,7 @@
 ---
 id: web-routing-proxy
 title: Routing and proxy
+description: Document request-time rewrites and session refresh in `apps/web/src/proxy.ts` (Next.js 16 proxy convention). Static config rewrites in `next.config.js` are minimal; **`/@account` and object tab URLs depend on this proxy**.
 type: spec
 status: active
 scope: web

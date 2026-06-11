@@ -1,6 +1,7 @@
 ---
 id: web-architecture
 title: web — application architecture
+description: "Normative layout for feature code in `apps/web`. The App Router (`src/app/`) stays **thin**: route files orchestrate queries and server actions; domain and application logic live under `src/modules/` and `src/shared/`."
 type: spec
 status: active
 scope: web

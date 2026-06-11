@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-object-status
 title: Object status
+description: Track **visibility / lifecycle** state on `objects_core` without deleting rows. Default is **`active`**.
 type: spec
 status: active
 scope: chain-indexer

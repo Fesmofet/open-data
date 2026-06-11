@@ -1,6 +1,7 @@
 ---
 id: docs-spec-storage
 title: Storage Specification
+description: - Primary publishing/storage path is Hive. - Indexer ingests canonical Hive events and stores neutral state.
 type: spec
 status: active
 scope: platform

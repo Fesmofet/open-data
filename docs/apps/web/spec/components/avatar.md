@@ -1,6 +1,7 @@
 ---
 id: web-components-avatar
 title: UserAvatar
+description: "`UserAvatar` renders a fixed-size portrait for a Hive account: optional explicit image URL from API/feed, otherwise a default Hive CDN URL. Falls back to the **placeholder** image when there is no resolvable URL or the image fails to load (`onError`)."
 type: spec
 status: active
 scope: web

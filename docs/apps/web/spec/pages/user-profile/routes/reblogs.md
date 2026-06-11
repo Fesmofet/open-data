@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-reblogs
 title: User profile — reblogs
+description: "Reblog list at `/@:name/reblogs`."
 type: spec
 status: active
 scope: web

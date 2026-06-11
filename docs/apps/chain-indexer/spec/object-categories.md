@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-object-categories
 title: Object categories
+description: Materialize governance-resolved **`category`** update values per object (`object_categories.category_names`) so the query layer does not join `object_updates` / validity for shop navigation.
 type: spec
 status: active
 scope: chain-indexer

@@ -1,6 +1,7 @@
 ---
 id: web-components-story-overflow-menu
 title: Story overflow menu
+description: "Context menu on each feed **story card** (`Story`) opened from the footer **more** control. Supports two item sets: **own post** vs **other user’s post**, with **Edit post** navigating to `/editor?author=…&permlink=…` when the viewer is the author."
 type: spec
 status: active
 scope: web

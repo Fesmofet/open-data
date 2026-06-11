@@ -1,6 +1,7 @@
 ---
 id: web-shell-mode
 title: Shell mode — `data-shell-mode` + structural tokens
+description: "Shell mode adjusts **structural** layout tokens (rail widths, card rhythm) via **`data-shell-mode` on `<html>`**, without changing components. It mirrors the theme stack: cookie, server resolution, client provider, **server action** for persistence, and optional UI switcher."
 type: spec
 status: active
 scope: web

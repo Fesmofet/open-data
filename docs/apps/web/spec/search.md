@@ -1,6 +1,7 @@
 ---
 id: web-search
 title: Header search and BFF
+description: "Predictive search in the app header: debounced queries, dropdown results, discover deep-links. Browser calls Next.js BFF routes; BFF proxies query-api with locale and viewer headers."
 type: spec
 status: active
 scope: web

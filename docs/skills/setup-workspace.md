@@ -1,11 +1,13 @@
 ---
 title: Setup agent workspace
+description: Clone the monorepo for a sidecar agent and resolve spec paths to source files (not local dev stack).
 type: skill
 status: active
 scope: platform
-tags: [agent, workspace, git, clone, onboarding, github]
-updated_at: 2026-06-10
+tags: [agent, workspace, git, clone, onboarding, github, agent-workspace, sidecar-agent]
+updated_at: 2026-06-11
 related:
+  - docs/skills/knowledge-api-routing.md
   - docs/README.md
   - docs/getting-started.md
   - docs/skills/hive-account-signup.md
@@ -15,6 +17,10 @@ related:
 ---
 
 # Setup agent workspace
+
+## Not the same as local dev setup
+
+This skill is for a **sidecar agent without a repo checkout**: clone the monorepo, resolve spec paths to source files, optional GitHub raw fetch. It does **not** cover Docker, migrations, or running apps locally — use [Getting started](../getting-started.md) for that.
 
 ## When to use
 
@@ -26,6 +32,7 @@ related:
 
 - The agent already runs with the repo as workspace root — use local paths directly.
 - You only need markdown specs — knowledge-api is enough; no clone required.
+- The user wants to **run the stack locally** (Docker, migrations, `pnpm nx serve`) — use [Getting started](../getting-started.md), not this skill.
 - The environment has **no shell** (MCP-only, no git) — use [GitHub fetch fallback](#github-fetch-fallback-no-clone) instead.
 
 ## Repository

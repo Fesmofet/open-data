@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-data-loading
 title: Object page — data loading
+description: Server-side fetch and caching for `/object/[object-id]`. Used by `page.tsx`, `generateMetadata`, and embedded sections.
 type: spec
 status: active
 scope: web

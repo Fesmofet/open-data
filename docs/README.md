@@ -1,12 +1,14 @@
 ---
 id: docs-readme
 title: Documentation
+description: Entry point for Open Data Layer documentation, specs, and agent playbooks.
 type: overview
 status: active
 scope: platform
 tags: [platform, onboarding]
-updated_at: 2026-06-10
+updated_at: 2026-06-11
 related:
+  - docs/skills/knowledge-api-routing.md
   - docs/getting-started.md
   - docs/standards/docs-standards.md
   - docs/skills/hive-account-signup.md
@@ -17,10 +19,19 @@ related:
 
 Entry point for Open Data Layer documentation.
 
+## For agents (first visit)
+
+1. Connect to **knowledge-api** MCP — read server `instructions` on `initialize`.
+2. Open [Knowledge API routing](skills/knowledge-api-routing.md) or `get_file` that path.
+3. `list_files({ type: "skill" })` — catalog playbooks with `description` one-liners.
+4. `get_context({ topic: "<task>" })` before implementing.
+5. `.agents/skills/` is **not** indexed — use `docs/skills/` for ODL playbooks.
+
 ## Quick links
 
 | Doc | Description |
 |-----|-------------|
+| [Knowledge API routing](skills/knowledge-api-routing.md) | MCP tools, doc types, first-visit map |
 | [Getting started](getting-started.md) | Local setup, migrations, run apps |
 | [Architecture overview](architecture/overview.md) | Four-service model, contracts |
 | [Specification index](spec/README.md) | Domain specs, data model, governance |

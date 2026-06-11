@@ -1,6 +1,7 @@
 ---
 id: docs-spec-data-model-posts
 title: PostgreSQL: Hive posts
+description: "Normative DDL lives in schema.sql. Kysely row types: `@opden-data-layer/core` (`OdlDatabase`, `PostsTable`, etc.)."
 type: spec
 status: active
 scope: platform

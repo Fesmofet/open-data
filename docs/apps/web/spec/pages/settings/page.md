@@ -1,6 +1,7 @@
 ---
 id: web-pages-settings
 title: Settings page
+description: "User preferences surface: locale, theme, and shell mode. Linked from the logged-in header account menu."
 tags: [web, page, settings]
 related:
   - docs/apps/web/spec/pages/index.md

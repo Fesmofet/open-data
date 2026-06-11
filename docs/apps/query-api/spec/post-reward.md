@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-post-reward
 title: Post reward
+description: Server-computed post rewards on all post-shaped feed payloads. Clients display `reward.label` and optional WAIV eligibility styling — no client-side payout math.
 type: spec
 status: active
 scope: query-api

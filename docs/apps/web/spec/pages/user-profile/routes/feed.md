@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-feed
 title: User profile feed tabs
+description: "Posts, threads, comments, mentions, and activity under `/@:name`. Each tab is a separate App Router segment under `(profile)/(main)/`."
 type: spec
 status: active
 scope: web

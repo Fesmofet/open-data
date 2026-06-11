@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-user-blog-feed-endpoint
 title: User blog feed
+description: Path parameter `name` is the Hive account name (3–32 chars, `[a-zA-Z0-9.-]`).
 type: spec
 status: active
 scope: query-api

@@ -1,6 +1,7 @@
 ---
 id: docs-spec-overflow-strategy
 title: Overflow Strategy
+description: Provide a deterministic policy for when publishing stays on Hive and when it offloads to IPFS.
 type: spec
 status: active
 scope: platform

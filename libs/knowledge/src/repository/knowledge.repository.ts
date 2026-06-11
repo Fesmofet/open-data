@@ -1,10 +1,15 @@
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
+import {
+  LIST_FILES_DEFAULT_LIMIT,
+  LIST_FILES_MAX_LIMIT,
+} from '../constants/search-scoring';
 import type {
   KnowledgeDatabase,
   KnowledgeFileRow,
   KnowledgeFileUpsert,
   ListFilesFilters,
+  ListFilesResult,
 } from './types';
 
 export class KnowledgeRepository {
@@ -33,9 +38,37 @@ export class KnowledgeRepository {
     return rows.map((r) => r.path);
   }
 
-  async listFiles(filters: ListFilesFilters): Promise<KnowledgeFileRow[]> {
-    let q = this.db.selectFrom('knowledge_files').selectAll();
+  async countFiles(): Promise<number> {
+    const row = await this.db
+      .selectFrom('knowledge_files')
+      .select(sql<number>`count(*)::int`.as('count'))
+      .executeTakeFirst();
+    return row?.count ?? 0;
+  }
 
+  async listFiles(filters: ListFilesFilters): Promise<ListFilesResult> {
+    const limit = Math.min(filters.limit ?? LIST_FILES_DEFAULT_LIMIT, LIST_FILES_MAX_LIMIT);
+    const offset = filters.offset ?? 0;
+
+    let countQ = this.db
+      .selectFrom('knowledge_files')
+      .select(sql<number>`count(*)::int`.as('count'));
+    if (filters.type) {
+      countQ = countQ.where('type', '=', filters.type);
+    }
+    if (filters.status) {
+      countQ = countQ.where('status', '=', filters.status);
+    }
+    if (filters.scope) {
+      countQ = countQ.where('scope', '=', filters.scope);
+    }
+    if (filters.tags && filters.tags.length > 0) {
+      countQ = countQ.where(sql<boolean>`tags && ${filters.tags}::text[]`);
+    }
+    const countRow = await countQ.executeTakeFirst();
+    const total = countRow?.count ?? 0;
+
+    let q = this.db.selectFrom('knowledge_files').selectAll();
     if (filters.type) {
       q = q.where('type', '=', filters.type);
     }
@@ -49,7 +82,9 @@ export class KnowledgeRepository {
       q = q.where(sql<boolean>`tags && ${filters.tags}::text[]`);
     }
 
-    return q.orderBy('path', 'asc').execute();
+    const files = await q.orderBy('path', 'asc').limit(limit).offset(offset).execute();
+
+    return { files, total, limit, offset };
   }
 
   async listTags(): Promise<Array<{ tag: string; count: number }>> {
@@ -78,6 +113,8 @@ export class KnowledgeRepository {
       const fileValues = {
         path: data.path,
         title: data.title,
+        description: data.description,
+        routing_text: data.routing_text,
         body: data.body,
         type: data.type,
         status: data.status,
@@ -135,5 +172,23 @@ export class KnowledgeRepository {
 
   async deleteFileByPath(path: string): Promise<void> {
     await this.db.deleteFrom('knowledge_files').where('path', '=', path).execute();
+  }
+
+  async listRouteCatalog(): Promise<
+    Array<{ path: string; title: string; description: string | null; type: string; scope: string | null; tags: string[] }>
+  > {
+    const rows = await this.db
+      .selectFrom('knowledge_files')
+      .select(['path', 'title', 'description', 'type', 'scope', 'tags'])
+      .where('status', '=', 'active')
+      .where((eb) =>
+        eb.or([
+          eb('type', '=', 'skill'),
+          eb('type', '=', 'overview'),
+        ]),
+      )
+      .orderBy('path', 'asc')
+      .execute();
+    return rows;
   }
 }

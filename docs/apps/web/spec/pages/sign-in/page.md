@@ -1,6 +1,7 @@
 ---
 id: web-pages-sign-in-page
 title: Sign in page
+description: Public login wall at `/sign-in` for unauthenticated visitors (e.g. after proxy redirect). Uses the `(public)` route group — no app shell chrome.
 type: spec
 status: active
 scope: web

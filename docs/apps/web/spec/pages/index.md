@@ -1,6 +1,7 @@
 ---
 id: web-pages-index
 title: Page specs — site map
+description: Every App Router `page.tsx` under `apps/web/src/app/` maps to a **route area** folder under `pages/`. Cross-cutting behavior (auth, feeds, object card, SEO) stays in the spec root — not duplicated here.
 type: spec
 status: active
 scope: web

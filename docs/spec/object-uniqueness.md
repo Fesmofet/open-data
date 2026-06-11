@@ -1,6 +1,7 @@
 ---
 id: docs-spec-object-uniqueness
 title: Object uniqueness and collision behavior
+description: This file defines write-path uniqueness rules for the Indexer Service.
 type: spec
 status: active
 scope: platform

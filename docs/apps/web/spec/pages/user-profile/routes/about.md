@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-about
 title: User profile — about
+description: "Extended profile information at `/@:name/about`. Uses about-specific layout (main + right rail, no left rail)."
 type: spec
 status: active
 scope: web

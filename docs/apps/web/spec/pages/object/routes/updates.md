@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-updates
 title: Object page — updates feed
+description: "- **URL:** `/object/[object-id]/updates` (optional query: `sort`, `update_type`, `locale`). The path stays in the address bar; {@link apps/web/src/proxy.ts} rewrites internally to the same page with `?tab=updates`. - **Query tabs:** other primary segments still use `?tab=…` on `/object/[object-id]` when needed. - **App files:** `apps/web/src/app/(app)/object/[object-id]/page.tsx`, `object-page-client.tsx`, `updates/updates-feed.actions.ts`"
 tags: [web, page, object, updates]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md

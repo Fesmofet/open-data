@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-hive-ingestion
 title: Hive ingestion
+description: Describe how **chain-indexer** advances through Hive blocks, resolves the **current block number** from Redis, and dispatches **parsed operations** into the ODL pipeline.
 type: spec
 status: active
 scope: chain-indexer

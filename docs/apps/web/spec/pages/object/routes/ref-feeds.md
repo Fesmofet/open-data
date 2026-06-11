@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-ref-feeds
 title: Object page — related, similar, add-on feeds
+description: "Center-column full feeds for Related, Similar, and Add-On tabs. Right-rail previews: right-rail.md."
 type: spec
 status: active
 scope: web

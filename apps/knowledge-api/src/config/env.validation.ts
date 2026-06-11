@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+const boolEnv = z
+  .string()
+  .optional()
+  .transform((v) => v === 'true' || v === '1');
+
 export const knowledgeApiConfigSchema = z.object({
   PORT: z.coerce.number().optional().default(7400),
   POSTGRES_HOST: z.string().min(1).optional().default('localhost'),
@@ -8,10 +13,22 @@ export const knowledgeApiConfigSchema = z.object({
   POSTGRES_USER: z.string().min(1).optional().default('postgres'),
   POSTGRES_PASSWORD: z.string().optional(),
   POSTGRES_POOL_MAX: z.coerce.number().optional().default(10),
-  KNOWLEDGE_ALLOW_REINDEX: z
-    .string()
+  REDIS_URI: z.string().optional().default('redis://localhost:6379'),
+  KNOWLEDGE_ALLOW_REINDEX: boolEnv,
+  KNOWLEDGE_STARTUP_REINDEX: boolEnv,
+  KNOWLEDGE_REINDEX_MIN_INTERVAL_SEC: z.coerce
+    .number()
+    .int()
+    .min(60)
     .optional()
-    .transform((v) => v === 'true' || v === '1'),
+    .default(300),
+  KNOWLEDGE_REINDEX_LOCK_TTL_SEC: z.coerce
+    .number()
+    .int()
+    .min(60)
+    .optional()
+    .default(600),
+  KNOWLEDGE_WRITE_AGENT_ROUTES: boolEnv,
   KNOWLEDGE_WORKSPACE_ROOT: z.string().optional(),
 });
 

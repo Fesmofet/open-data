@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { KnowledgeBootstrapModule } from './bootstrap/knowledge-bootstrap.module';
 import knowledgeApiConfig from './config/knowledge-api.config';
 import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './health/health.module';
 import { McpModule } from './mcp/mcp.module';
 
 @Module({
@@ -12,6 +14,8 @@ import { McpModule } from './mcp/mcp.module';
       load: [knowledgeApiConfig],
     }),
     DatabaseModule,
+    KnowledgeBootstrapModule,
+    HealthModule,
     McpModule,
   ],
 })

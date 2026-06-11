@@ -6,11 +6,15 @@ import { parseKnowledgeFile } from '../parser/parse-knowledge-file';
 import { buildRegistryDocuments } from '../registry/build-registry-documents';
 import { KnowledgeRepository } from '../repository/knowledge.repository';
 import type { KnowledgeDatabase } from '../repository/types';
+import { buildRoutingText } from '../routing/build-routing-text';
+import { writeAgentRoutesFile } from '../routing/write-agent-routes';
 import { splitLessonsFile } from './split-lessons';
 
 export interface ReindexOptions {
   workspaceRoot: string;
   pathFilter?: string;
+  /** When false, skip writing docs/agent-routes.json (prod bootstrap / read-only FS). Default true. */
+  writeAgentRoutes?: boolean;
 }
 
 export interface ReindexStats {
@@ -35,7 +39,9 @@ async function indexDocument(
   stats: { indexed: number; skipped: number; chunks: number },
 ): Promise<void> {
   const parsed = parseKnowledgeFile(relativePath, raw);
-  const unchanged = await repo.findFileByContentHash(parsed.path, parsed.contentHash);
+  const existing = await repo.findFileByPath(parsed.path);
+  const unchanged =
+    existing?.content_hash === parsed.contentHash && existing.routing_text != null;
   if (unchanged) {
     stats.skipped += 1;
     return;
@@ -43,10 +49,26 @@ async function indexDocument(
 
   const singleChunk = parsed.frontmatter.type === 'overview';
   const chunks = chunkMarkdown(parsed.body, { singleChunk });
+  const description = parsed.frontmatter.description?.trim() || null;
+  const routingText = buildRoutingText({
+    title: parsed.frontmatter.title,
+    description,
+    path: parsed.path,
+    tags: parsed.frontmatter.tags,
+  });
+
+  if (chunks.length > 0 && description) {
+    chunks[0] = {
+      ...chunks[0],
+      content: `${description}\n\n${chunks[0].content}`,
+    };
+  }
 
   await repo.upsertFile({
     path: parsed.path,
     title: parsed.frontmatter.title,
+    description,
+    routing_text: routingText,
     body: raw,
     type: parsed.frontmatter.type ?? 'spec',
     status: parsed.frontmatter.status,
@@ -129,6 +151,11 @@ export async function runKnowledgeReindex(
         deleted += 1;
       }
     }
+  }
+
+  if (!options.pathFilter && options.writeAgentRoutes !== false) {
+    const catalog = await repo.listRouteCatalog();
+    await writeAgentRoutesFile(options.workspaceRoot, catalog);
   }
 
   return {

@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-objects-resolve
 title: Objects resolve
+description: "When the `aggregateRating` update type is included in the resolve request, `fields.aggregateRating` is **always an array** (possibly empty) of aspect rows:"
 type: spec
 status: active
 scope: query-api

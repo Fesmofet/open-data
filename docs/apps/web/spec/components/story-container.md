@@ -1,6 +1,7 @@
 ---
 id: web-components-story-container
 title: Story container
+description: "`StoryContainer` and `Story` render a **single feed row** (post-like card) for profile feeds: posts, threads, comments, mentions, and activity. The legacy Redux-connected design is described in `tmp/story-container.md`; this app uses **server-provided props** only — no global feed store in the first slice."
 type: spec
 status: active
 scope: web

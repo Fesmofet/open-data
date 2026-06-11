@@ -1,6 +1,7 @@
 ---
 id: docs-spec-waiv-power
 title: WAIV power
+description: "- **`waiv_power`**: 30-day time-weighted rolling average used as voting weight for ODL **validity** (community tier) and **rank** (average and community fallback). - **`raw_waiv_power`**: live Hive Engine WAIV `stake + delegationsIn` for tracked accounts. - Source: Hive Engine **`tokens` / `balances`** row for symbol **WAIV**."
 type: spec
 status: active
 scope: platform

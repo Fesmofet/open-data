@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-transfers
 title: User profile — wallet and transfers
+description: "Wallet tabs and transfer history under `/@:name/transfers/...`. Wallet primary nav uses `?type=` (e.g. WAIV)."
 type: spec
 status: active
 scope: web

@@ -1,6 +1,7 @@
 ---
 id: docs-spec-governance-bootstrap
 title: Governance Bootstrap
+description: - Governance declarations are indexed as regular governance objects/events. - Governance is selected and applied in the Query/Masking service.
 type: spec
 status: active
 scope: platform

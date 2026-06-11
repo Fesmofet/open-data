@@ -1,8 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  KNOWLEDGE_MCP_INSTRUCTIONS,
   KnowledgeRepository,
+  KnowledgeRouteResolver,
   KnowledgeSearchService,
+  registerKnowledgeResources,
   registerKnowledgeTools,
   type KnowledgeDatabase,
 } from '@opden-data-layer/knowledge';
@@ -26,22 +29,26 @@ export class McpService {
     const server = new McpServer(
       { name: 'knowledge-api', version: '1.0.0' },
       {
-        capabilities: { tools: {} },
-        instructions:
-          'Project knowledge base: search docs, skills, lessons, and ODL object/update registries. Use get_context before implementing features; use get_object_type / get_update_schema for chain payloads.',
+        capabilities: { tools: {}, resources: {}, prompts: {} },
+        instructions: KNOWLEDGE_MCP_INSTRUCTIONS,
       },
     );
 
     const repo = new KnowledgeRepository(this.db);
     const search = new KnowledgeSearchService(this.db);
+    const router = new KnowledgeRouteResolver(this.db, search);
 
-    registerKnowledgeTools(server, {
+    const deps = {
       db: this.db,
       repo,
       search,
+      router,
       workspaceRoot: this.config.getOrThrow<string>('knowledge.workspaceRoot'),
       allowReindex: this.config.get<boolean>('knowledge.allowReindex') ?? false,
-    });
+    };
+
+    registerKnowledgeTools(server, deps);
+    registerKnowledgeResources(server, deps);
 
     return server;
   }

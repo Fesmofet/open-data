@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-gallery
 title: Object page — Gallery tab
+description: "Center-column Gallery tab at `/object/:id/gallery` and album drill-down at `/object/:id/gallery/album/:album_name`. Data comes from query-api `galleryAlbums` on object resolve; UI supports album grid, Related stub, album photo grid, and add-album / add-image modals."
 tags: [web, page, object, gallery]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md

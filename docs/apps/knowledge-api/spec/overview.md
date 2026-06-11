@@ -1,33 +1,48 @@
 ---
 id: docs-apps-knowledge-api-spec-overview
 title: knowledge-api
+description: MCP HTTP service for agent access to docs, skills, hybrid search, and ODL registries.
 type: overview
 status: active
 scope: knowledge-api
 tags: [knowledge-api, overview]
-updated_at: 2026-06-10
+updated_at: 2026-06-11
 related:
   - docs/README.md
+  - docs/skills/knowledge-api-routing.md
+  - docs/apps/knowledge-api/spec/search.md
 ---
 
 # knowledge-api
 
 MCP HTTP service for agent access to project documentation, skills, lessons, and ODL object/update registries.
 
+## Agent first visit
+
+1. MCP `initialize` — read server **instructions** (workflow + key paths).
+2. Resource `odl-knowledge://routing` or `get_file({ path: "docs/skills/knowledge-api-routing.md" })`.
+3. `resolve_doc({ topic: "<task>" })` → `get_file` on top path.
+4. `list_files({ type: "skill" })` — playbooks with `description` one-liners.
+5. Chain payloads: `get_object_type` / `get_update_schema` (not search).
+
+Canonical detail: [Knowledge API routing skill](../../skills/knowledge-api-routing.md). Search detail: [hybrid search](search.md).
+
 ## Stack
 
 - NestJS, Kysely + Postgres (`knowledge_files`, `knowledge_chunks`)
 - `@modelcontextprotocol/sdk` — Streamable HTTP, stateless `POST /knowledge/mcp`
 - Default port **7400** (`KNOWLEDGE_API_PORT`)
+- Hybrid search: FTS (`to_tsquery` prefix) + `ts_rank_cd` + `pg_trgm` on `routing_text`
 
 ## MCP tools
 
 | Tool | Source |
 |------|--------|
-| `search_knowledge` | Postgres FTS on indexed chunks |
+| `resolve_doc` | Curated routes + trigram + hybrid search |
+| `search_knowledge` | Hybrid FTS + trigram on indexed chunks |
 | `get_file` | Full markdown body from `knowledge_files` |
-| `get_context` | Search + dedupe + optional `AGENTS.md` chunk |
-| `list_files` | Filter by type, scope, tags, status |
+| `get_context` | Route resolver + chunk pick (fallback search) |
+| `list_files` | Filter + pagination (`limit`/`offset`, `total`) |
 | `list_tags` | Tag frequency from indexed files |
 | `reindex` | In-process reindex (dev only; `KNOWLEDGE_ALLOW_REINDEX=true`) |
 | `list_object_types` | `OBJECT_TYPE_REGISTRY` (live) |
@@ -35,21 +50,72 @@ MCP HTTP service for agent access to project documentation, skills, lessons, and
 | `list_update_types` | `UPDATE_REGISTRY` (live) |
 | `get_update_schema` | Zod → JSON Schema + example payload |
 
-## Indexing (migrator one-shot)
+## MCP resources and prompts
 
-After migrations:
+| URI / name | Content |
+|------------|---------|
+| `odl-knowledge://routing` | Routing skill markdown |
+| `odl-knowledge://catalog/skills` | JSON skills catalog |
+| `odl-knowledge://doc/{path}` | Doc by repo path |
+| Prompt `first_visit` | Numbered onboarding steps |
 
-```bash
-docker compose -p apps run --rm migrator pnpm exec tsx libs/migrations/src/cli.ts latest
-docker compose -p apps run --rm migrator pnpm exec tsx --tsconfig tsconfig.base.json scripts/knowledge-reindex.ts
-```
+## CI verification tiers
 
-Local dev:
+| Tier | Trigger | Command |
+|------|---------|---------|
+| 0 | `docs/**` in PR | `pnpm check:agent-docs` |
+| 1 | `libs/knowledge/**`, `apps/knowledge-api/**` | `pnpm nx test knowledge`, `pnpm nx test knowledge-api` |
+| 2 | Nightly / `workflow_dispatch` / label `knowledge-e2e` | `pnpm e2e:knowledge-api` |
+
+## Indexing
+
+### Production / staging (Docker)
+
+The image bundles a staged knowledge workspace (`docs/`, `tasks/lessons.md`, `AGENTS.md` files). On startup:
+
+1. If `knowledge_files` is **empty** — **sync reindex before HTTP listen** (cold start).
+2. If index is **warm** — **async reindex** after listen, throttled via Redis (`last-at` + lock, default min interval **5 min**).
+
+Env (see table below): `KNOWLEDGE_STARTUP_REINDEX=true`, `REDIS_URI`, `KNOWLEDGE_WORKSPACE_ROOT=/app` (set in Dockerfile).
+
+Health: `GET /knowledge/health` → `{ status, index: { fileCount, ready } }`.
+
+### Local dev
+
+`KNOWLEDGE_STARTUP_REINDEX` defaults to **false**. Run reindex manually after doc edits:
 
 ```bash
 pnpm knowledge:reindex
 pnpm nx serve knowledge-api
 ```
+
+CLI reindex writes `docs/agent-routes.json` (skills + overviews catalog). Startup reindex in Docker skips that file (`KNOWLEDGE_WRITE_AGENT_ROUTES=false`).
+
+### CI / E2E fallback
+
+```bash
+pnpm migrate && pnpm knowledge:reindex && pnpm nx e2e knowledge-api-e2e
+```
+
+Optional migrator one-shot (same script as local):
+
+```bash
+docker compose -p apps run --rm migrator pnpm exec tsx --tsconfig tsconfig.base.json scripts/knowledge-reindex.ts
+```
+
+## Environment
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `7400` | HTTP port |
+| `POSTGRES_*` | — | Postgres connection |
+| `REDIS_URI` | `redis://localhost:6379` | Required when startup reindex enabled |
+| `KNOWLEDGE_WORKSPACE_ROOT` | `process.cwd()` | Repo root with markdown sources (`/app` in Docker) |
+| `KNOWLEDGE_STARTUP_REINDEX` | `false` | `true` in Docker / staging / production compose |
+| `KNOWLEDGE_REINDEX_MIN_INTERVAL_SEC` | `300` | Warm reindex throttle |
+| `KNOWLEDGE_REINDEX_LOCK_TTL_SEC` | `600` | Distributed reindex lock TTL |
+| `KNOWLEDGE_WRITE_AGENT_ROUTES` | `false` | Write `docs/agent-routes.json` on startup reindex |
+| `KNOWLEDGE_ALLOW_REINDEX` | `false` | Enable MCP `reindex` tool (dev only) |
 
 ## Cursor MCP config
 
@@ -66,9 +132,24 @@ pnpm nx serve knowledge-api
 ## Verification
 
 ```bash
-pnpm nx build knowledge-api
-curl -s -X POST http://localhost:7400/knowledge/mcp \
-  -H 'content-type: application/json' \
-  -H 'accept: application/json' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+pnpm check:agent-docs
+pnpm nx test knowledge
+pnpm nx test knowledge-api
+pnpm e2e:knowledge-api
 ```
+
+## E2E verification
+
+MCP skill discovery is covered by `apps/knowledge-api-e2e` (real HTTP, no transport mocks).
+
+**Indexed paths used by E2E** (assert by `file_path`, not title):
+
+| Scenario | Expected path |
+|----------|---------------|
+| Knowledge API routing | `docs/skills/knowledge-api-routing.md` |
+| Hive account signup | `docs/skills/hive-account-signup.md` |
+| Agent workspace (sidecar / clone) | `docs/skills/setup-workspace.md` |
+| Local dev environment | `docs/getting-started.md` |
+| App spec (chain-indexer) | `docs/apps/chain-indexer/spec/vote-ingestion.md` |
+
+Unit tests: `pnpm nx test knowledge`. Full MCP E2E: nightly workflow `.github/workflows/knowledge-e2e.yml`.

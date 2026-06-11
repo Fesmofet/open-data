@@ -160,6 +160,7 @@ related:
 |-------|----------|----------------|
 | `id` | no | Slug from relative path (see example above); used for MCP `get_file` and dedup |
 | `title` | no | Defaults to first `#` heading or path slug |
+| `description` | no | One-line purpose for agents (≤500 chars); shown in `list_files` / `get_file`; boosts FTS. If omitted, first body line after `#` title is used at reindex |
 | `type` | no | `spec`, `skill`, `overview`, `adr`, `lesson`, `agents`, `registry` |
 | `status` | no | `active` (default), `draft`, `deprecated` |
 | `scope` | no | App name (`chain-indexer`, `web`, …) or `platform` |
@@ -189,11 +190,15 @@ related:
 | `tasks/lessons.md` | `lesson` | `platform` |
 | `**/AGENTS.md` | `agents` | app or `platform` |
 
-Reindex after doc changes: `pnpm knowledge:reindex` (local) or migrator one-shot in deploy (see [knowledge-api overview](../apps/knowledge-api/spec/overview.md)).
+Reindex after doc changes: `pnpm knowledge:reindex` (local dev). Deployed **knowledge-api** picks up doc changes on pod restart (startup reindex, Redis-throttled ≤5 min on warm index). See [knowledge-api overview](../apps/knowledge-api/spec/overview.md).
 
 ## Skill files (`docs/skills/`)
 
 Domain procedural playbooks for agents (Hive account creation, deploy runbooks, etc.). **Not** the same as `.agents/skills/` — that folder is Cursor runtime tooling (Next.js, Nx); `docs/skills/` is indexed by knowledge-api and searchable via MCP.
+
+**Agent onboarding:** [`docs/skills/knowledge-api-routing.md`](../skills/knowledge-api-routing.md) is the canonical first-visit map. MCP server `instructions` duplicate a compressed version; keep routing skill and instructions aligned when adding tools or paths.
+
+**CI:** `pnpm check:agent-docs` (runs on `docs/**` changes in verify workflow) requires non-empty `description` on every `docs/skills/*.md`, every file under `docs/apps/*/spec/`, and every `docs/spec/**/*.md`, plus valid `scope` on app overviews.
 
 Recommended sections (same spirit as feature specs):
 
@@ -208,6 +213,7 @@ Example:
 ```markdown
 ---
 title: Create Hive account
+description: Guide a user through creating a new Hive blockchain account.
 type: skill
 scope: platform
 tags: [hive, account]
@@ -230,6 +236,17 @@ User needs a new Hive account on mainnet; wallet/keychain available.
 ```
 
 Path inference sets `type: skill` when frontmatter is omitted. Add `tags` for better FTS ranking.
+
+### Environment setup (two docs)
+
+Do not mix these into one doc — agents search by intent and must land on the right target:
+
+| Doc | Indexed path | Use when |
+|-----|--------------|----------|
+| [Setup agent workspace](../skills/setup-workspace.md) | `docs/skills/setup-workspace.md` | Sidecar agent without checkout; clone repo; resolve spec paths to source |
+| [Getting started](../getting-started.md) | `docs/getting-started.md` | Local dev: Docker, migrations, `pnpm nx serve` |
+
+Cross-link both ways in **When to use** / **When not to use**. Reindex after edits: `pnpm knowledge:reindex`.
 
 ## Agent expectations
 

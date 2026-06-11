@@ -1,6 +1,7 @@
 ---
 id: web-seo
 title: SEO and metadata
+description: Normative rules for HTML metadata, Open Graph, Twitter cards, JSON-LD, canonical URLs, sitemap, and robots. Implementation lives in `@/seo` — not in `src/shared/` or inline page components.
 type: spec
 status: active
 scope: web

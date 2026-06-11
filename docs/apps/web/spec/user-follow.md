@@ -1,6 +1,7 @@
 ---
 id: web-user-follow
 title: User follow
+description: "- Profile hero: `UserProfileHeroClient` on `/@{account}` (layout under `user-profile/[name]`). - Account lists: `UserSocialAccountRow` on `/@{account}/followers` and `/@{account}/following`. - Objects tab: `UserSocialObjectRow` on `/@{account}/following-objects` (viewer **Unfollow** per object via ODL `object_follow`)."
 type: spec
 status: active
 scope: web

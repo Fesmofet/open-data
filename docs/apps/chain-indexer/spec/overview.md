@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-overview
 title: chain-indexer
+description: Indexes Hive blocks and ODL custom_json into Postgres — ingestion, parsers, and sync pipelines.
 type: overview
 status: active
 scope: chain-indexer

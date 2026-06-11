@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-create
 title: Object create page
+description: "Authenticated UI to compose a new object: type selection, dynamic fields from object-type registry, preview/health panels, and publish to Hive. Broadcast mechanics (chunking, IPFS) are in object-create-broadcast.md."
 tags: [web, page, object-create]
 related:
   - docs/apps/web/spec/object-create-broadcast.md

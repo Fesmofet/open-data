@@ -1,6 +1,7 @@
 ---
 id: docs-spec-object-type-entity
 title: Object Type
+description: `ObjectType` is a **code-level construct** — it does not exist as a database entity. Object types are defined as static TypeScript objects inside the indexer/API codebase and describe which update types are valid for objects of a given type, and what suggested values exist for each update.
 type: spec
 status: active
 scope: platform

@@ -1,6 +1,7 @@
 ---
 id: docs-apps-auth-api-spec-challenge-flow
 title: auth-api — challenge and login flows
+description: Global HTTP prefix is `auth` (see `apps/auth-api/src/main.ts`); controller routes are versioned under `v1`.
 type: spec
 status: active
 scope: auth-api

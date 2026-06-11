@@ -1,0 +1,251 @@
+{
+  "generated_at": "2026-06-11T08:30:34.125Z",
+  "routes": [
+    {
+      "path": "docs/apps/auth-api/overview.md",
+      "title": "auth-api",
+      "description": "**Back:** docs README",
+      "type": "overview",
+      "scope": "auth-api",
+      "tags": [
+        "auth-api",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/chain-indexer/README.md",
+      "title": "chain-indexer",
+      "description": "Hive blockchain indexer — write path, neutral state, Postgres persistence.",
+      "type": "overview",
+      "scope": "chain-indexer",
+      "tags": [
+        "chain-indexer",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/chain-indexer/spec/overview.md",
+      "title": "chain-indexer",
+      "description": "Indexes Hive blocks and ODL custom_json into Postgres — ingestion, parsers, and sync pipelines.",
+      "type": "overview",
+      "scope": "chain-indexer",
+      "tags": [
+        "chain-indexer",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/ipfs-gateway/README.md",
+      "title": "ipfs-gateway",
+      "description": "NestJS HTTP layer in front of Kubo — uploads, MFS namespaces, optional peer pin sync.",
+      "type": "overview",
+      "scope": "ipfs-gateway",
+      "tags": [
+        "ipfs-gateway",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/ipfs-gateway/spec/overview.md",
+      "title": "IPFS Gateway",
+      "description": "HTTP gateway for IPFS content — pinning, caching, and content-addressed delivery.",
+      "type": "overview",
+      "scope": "ipfs-gateway",
+      "tags": [
+        "ipfs-gateway",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/knowledge-api/spec/overview.md",
+      "title": "knowledge-api",
+      "description": "MCP HTTP service for agent access to docs, skills, hybrid search, and ODL registries.",
+      "type": "overview",
+      "scope": "knowledge-api",
+      "tags": [
+        "knowledge-api",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/notifications/overview.md",
+      "title": "notifications",
+      "description": "## Purpose",
+      "type": "overview",
+      "scope": "notifications",
+      "tags": [
+        "notifications",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/query-api/README.md",
+      "title": "query-api",
+      "description": "Read-path API — governance masking, object resolution.",
+      "type": "overview",
+      "scope": "query-api",
+      "tags": [
+        "query-api",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/query-api/spec/overview.md",
+      "title": "query-api",
+      "description": "Read-path HTTP API for objects, feeds, search, and governance-masked projections.",
+      "type": "overview",
+      "scope": "query-api",
+      "tags": [
+        "query-api",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/scheduler/spec/overview.md",
+      "title": "Scheduler app",
+      "description": "Background cron worker with Redis locks and Postgres job queue for scheduled tasks.",
+      "type": "overview",
+      "scope": "scheduler",
+      "tags": [
+        "scheduler",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/stack-watchdog/spec/overview.md",
+      "title": "stack-watchdog",
+      "description": "VPS sidecar that pulls and rolls out Docker Compose app stack images on a schedule.",
+      "type": "overview",
+      "scope": "stack-watchdog",
+      "tags": [
+        "stack-watchdog",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/web/README.md",
+      "title": "web",
+      "description": "Next.js App Router frontend.",
+      "type": "overview",
+      "scope": "web",
+      "tags": [
+        "web",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/apps/web/spec/overview.md",
+      "title": "web (Next.js)",
+      "description": "Next.js frontend — BFF, shell mode, i18n, object UI, and app conventions.",
+      "type": "overview",
+      "scope": "web",
+      "tags": [
+        "web",
+        "overview"
+      ]
+    },
+    {
+      "path": "docs/architecture/overview.md",
+      "title": "Services Architecture",
+      "description": "**Back:** Spec index · **Related:** governance-resolution, storage, acceptance-tests",
+      "type": "overview",
+      "scope": "platform",
+      "tags": [
+        "platform",
+        "overview",
+        "architecture"
+      ]
+    },
+    {
+      "path": "docs/getting-started.md",
+      "title": "Local Development Environment",
+      "description": "Prepare local dev stack — Docker, migrations, and run apps with pnpm nx serve.",
+      "type": "overview",
+      "scope": "platform",
+      "tags": [
+        "platform",
+        "onboarding",
+        "local-dev",
+        "docker",
+        "migrate",
+        "pnpm"
+      ]
+    },
+    {
+      "path": "docs/README.md",
+      "title": "Documentation",
+      "description": "Entry point for Open Data Layer documentation, specs, and agent playbooks.",
+      "type": "overview",
+      "scope": "platform",
+      "tags": [
+        "platform",
+        "onboarding"
+      ]
+    },
+    {
+      "path": "docs/skills/hive-account-signup.md",
+      "title": "Hive account signup",
+      "description": "Guide a user through creating a new Hive blockchain account via public signup providers.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "hive",
+        "account",
+        "signup",
+        "user",
+        "register",
+        "blockchain",
+        "keys",
+        "onboarding"
+      ]
+    },
+    {
+      "path": "docs/skills/hive-blockchain-broadcast.md",
+      "title": "Hive blockchain broadcast (ODL)",
+      "description": "Build, sign, and broadcast Hive and ODL custom_json transactions using repo libraries and registries.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "hive",
+        "broadcast",
+        "odl",
+        "custom_json",
+        "dhive",
+        "signing",
+        "object-create"
+      ]
+    },
+    {
+      "path": "docs/skills/knowledge-api-routing.md",
+      "title": "Knowledge API routing for agents",
+      "description": "First-visit map for MCP tools, doc types, and which skill or spec to open for a task.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "knowledge-api",
+        "agent",
+        "onboarding",
+        "routing",
+        "mcp",
+        "first-visit"
+      ]
+    },
+    {
+      "path": "docs/skills/setup-workspace.md",
+      "title": "Setup agent workspace",
+      "description": "Clone the monorepo for a sidecar agent and resolve spec paths to source files (not local dev stack).",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "agent",
+        "workspace",
+        "git",
+        "clone",
+        "onboarding",
+        "github",
+        "agent-workspace",
+        "sidecar-agent"
+      ]
+    }
+  ]
+}

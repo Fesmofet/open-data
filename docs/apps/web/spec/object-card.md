@@ -1,6 +1,7 @@
 ---
 id: web-object-card
 title: Object card
+description: "Single component: `apps/web/src/modules/feed/presentation/components/object-card.tsx`."
 type: spec
 status: active
 scope: web

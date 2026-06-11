@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-search
 title: Search endpoints
+description: "Predictive search for the web shell header: ranked **objects** and **users**. Global tab counts are loaded separately for performance."
 type: spec
 status: active
 scope: query-api

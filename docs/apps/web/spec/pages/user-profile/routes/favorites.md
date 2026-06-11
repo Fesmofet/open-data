@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-favorites
 title: User profile — favorites
+description: "Favorite objects for a user at `/@:name/favorites` with optional type filter segment."
 type: spec
 status: active
 scope: web

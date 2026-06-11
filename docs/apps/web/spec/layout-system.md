@@ -1,6 +1,7 @@
 ---
 id: web-layout-system
 title: Layout system
+description: This spec describes **structural** layout only (zones, breakpoints, scroll/sticky behavior). It does **not** cover colors, shadows, or domain data loading.
 type: spec
 status: active
 scope: web

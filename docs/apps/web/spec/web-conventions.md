@@ -1,6 +1,7 @@
 ---
 id: web-web-conventions
 title: web — development conventions
+description: "Actionable rules for `apps/web`. Full layering: architecture.md."
 type: spec
 status: active
 scope: web

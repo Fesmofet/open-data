@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-page-shell
 title: Object page shell
+description: "Layout, regions, and browse/edit modes for the object detail route. Tab URLs and nested `?path=` behavior: navigation.md. Per-tab content: routes/."
 type: spec
 status: active
 scope: web

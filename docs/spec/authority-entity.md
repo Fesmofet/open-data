@@ -1,6 +1,7 @@
 ---
 id: docs-spec-authority-entity
 title: Object Authority Entity
+description: `object_authority` is an open registry that records which users have claimed authority roles on specific objects. Any user may claim or relinquish authority via Hive events. The indexer stores all valid claims as neutral state without permission checks.
 type: spec
 status: active
 scope: platform

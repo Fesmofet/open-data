@@ -1,6 +1,7 @@
 ---
 id: web-images
 title: web — images and `next/image`
+description: "Normative rules for raster images in `apps/web`: when to use Next.js `Image`, how to configure remotes, and what to avoid."
 type: spec
 status: active
 scope: web

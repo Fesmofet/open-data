@@ -9,9 +9,21 @@ COPY nx.json tsconfig.base.json ./
 COPY apps/nest-webpack.shared.js ./apps/nest-webpack.shared.js
 COPY apps/knowledge-api ./apps/knowledge-api
 COPY libs ./libs
+COPY docs ./docs
+COPY tasks ./tasks
+COPY AGENTS.md ./AGENTS.md
+COPY apps/auth-api/AGENTS.md ./apps/auth-api/AGENTS.md
+COPY apps/chain-indexer/AGENTS.md ./apps/chain-indexer/AGENTS.md
+COPY apps/ipfs-gateway/AGENTS.md ./apps/ipfs-gateway/AGENTS.md
+COPY apps/notifications/AGENTS.md ./apps/notifications/AGENTS.md
+COPY apps/query-api/AGENTS.md ./apps/query-api/AGENTS.md
+COPY apps/scheduler/AGENTS.md ./apps/scheduler/AGENTS.md
+COPY apps/web/AGENTS.md ./apps/web/AGENTS.md
+COPY scripts/stage-knowledge-workspace.ts ./scripts/stage-knowledge-workspace.ts
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm exec nx run knowledge-api:build
+RUN pnpm exec tsx --tsconfig tsconfig.base.json scripts/stage-knowledge-workspace.ts
 
 RUN apk add --no-cache python3 make g++ \
     && mkdir -p /deploy \
@@ -24,5 +36,9 @@ FROM node:24.12.0-alpine3.23 AS production
 WORKDIR /app
 
 COPY --from=builder /deploy ./
+COPY --from=builder /app/dist/knowledge-workspace ./
+
+ENV KNOWLEDGE_WORKSPACE_ROOT=/app
+ENV KNOWLEDGE_STARTUP_REINDEX=true
 
 CMD ["node", "main.js"]

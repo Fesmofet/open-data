@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-right-rail
 title: Object page — right rail
+description: "Right column on the object detail page (`lg+`):"
 tags: [web, page, object, layout]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md

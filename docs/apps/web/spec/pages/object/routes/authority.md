@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-authority
 title: Object page — authority
+description: "- **URL:** `/object/[object-id]/authority` with optional `?sub=administrative|ownership` (default `administrative`) and the same `?sort=` as user social lists. {@link apps/web/src/proxy.ts} rewrites to `/object/[object-id]?tab=authority` (existing query preserved). - **Sub-tabs:** Administrative vs ownership counts come from resolve (`administrative_count`, `ownership_count`); lists are loaded via `GET /query/v1/objects/:id/authority?authority_type=…`. - **App files:** `apps/web/src/app/(app)/o…"
 tags: [web, page, object, authority]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md

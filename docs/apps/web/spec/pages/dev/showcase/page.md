@@ -1,6 +1,7 @@
 ---
 id: web-pages-dev-showcase-page
 title: Dev layout showcase
+description: Internal-only demo of layout primitives, shell modes, theme/locale switchers, and content arrangements. Not linked from production nav.
 type: spec
 status: draft
 scope: web

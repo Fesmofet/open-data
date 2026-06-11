@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-object-avatar-fallback
 title: Object avatar fallback to parent
+description: "When an object has no winning `image` update (avatar), query-api fills `fields.image` from the parent object's image before returning the projection."
 type: spec
 status: active
 scope: query-api

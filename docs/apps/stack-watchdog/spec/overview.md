@@ -1,6 +1,7 @@
 ---
 id: docs-apps-stack-watchdog-spec-overview
 title: stack-watchdog
+description: VPS sidecar that pulls and rolls out Docker Compose app stack images on a schedule.
 type: overview
 status: active
 scope: stack-watchdog

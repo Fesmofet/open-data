@@ -1,6 +1,7 @@
 ---
 id: web-pages-discover
 title: Discover page
+description: Browse objects by type or users with optional text search and tag-category filters (AND semantics).
 tags: [web, page, discover]
 related:
   - docs/apps/web/spec/pages/index.md

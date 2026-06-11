@@ -15,8 +15,15 @@ export default () => {
       password: env.POSTGRES_PASSWORD,
       poolMax: env.POSTGRES_POOL_MAX,
     },
+    redis: {
+      uri: env.REDIS_URI,
+    },
     knowledge: {
       allowReindex: env.KNOWLEDGE_ALLOW_REINDEX ?? false,
+      startupReindex: env.KNOWLEDGE_STARTUP_REINDEX ?? false,
+      reindexMinIntervalSec: env.KNOWLEDGE_REINDEX_MIN_INTERVAL_SEC,
+      reindexLockTtlSec: env.KNOWLEDGE_REINDEX_LOCK_TTL_SEC,
+      writeAgentRoutes: env.KNOWLEDGE_WRITE_AGENT_ROUTES ?? false,
       workspaceRoot:
         env.KNOWLEDGE_WORKSPACE_ROOT?.trim() ||
         path.resolve(process.cwd()),

@@ -1,6 +1,7 @@
 ---
 id: docs-spec-reject-codes
 title: Canonical Error Codes
+description: Separates write-path processing errors from query/masking errors.
 type: spec
 status: active
 scope: platform

@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-object-ref-list-endpoints
 title: Object reference lists
+description: Paginated lists of objects linked to a source object for shop-style cards (Related / Similar / Add-On rails and center-column feeds).
 type: spec
 status: active
 scope: query-api

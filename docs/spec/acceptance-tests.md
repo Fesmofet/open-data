@@ -1,6 +1,7 @@
 ---
 id: docs-spec-acceptance-tests
 title: Acceptance test cases
+description: "These cases validate core services:"
 type: spec
 status: active
 scope: platform

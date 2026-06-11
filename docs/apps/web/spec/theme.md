@@ -1,6 +1,7 @@
 ---
 id: web-theme
 title: Theme — `data-theme` + design tokens
+description: "Theming uses **`data-theme` on `<html>`** as the single source of truth for appearance. `apps/web/src/styles/theme.css` defines **design tokens** (CSS custom properties) per theme. Tailwind maps semantic utilities to those variables. Do **not** rely on `prefers-color-scheme` via `dark:` as the primary mechanism; use explicit themes (`light`, `dark`, `studio`, `midnight`, `sepia`, `apple`, `airbnb`) or **`system`** (OS-driven light/dark)."
 type: spec
 status: active
 scope: web

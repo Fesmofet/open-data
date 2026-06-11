@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-shop-feed-endpoints
 title: Shop / recipe object feeds
+description: "- `GET /query/v1/users/:name/shop-objects` — flat `ProjectedObject[]` in user shop scope with `categoryPath` filter, optional `uncategorizedOnly=true` (objects with no `category_names`), and `object_id` cursor. - `GET /query/v1/users/:name/shop-sections` — grouped preview rows (`sectionLimit` categories per page, 3 objects per category) for intermediate category nodes; cursor is the last category `name` from the previous page (same ordering as `GET .../categories`)."
 type: spec
 status: active
 scope: query-api

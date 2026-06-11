@@ -1,6 +1,7 @@
 ---
 id: docs-apps-scheduler-spec-overview
 title: Scheduler app
+description: Background cron worker with Redis locks and Postgres job queue for scheduled tasks.
 type: overview
 status: active
 scope: scheduler

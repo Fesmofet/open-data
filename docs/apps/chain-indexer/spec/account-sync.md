@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-account-sync
 title: Account sync
+description: "Background recovery for Hive accounts when the indexer has no (or incomplete) `accounts_current` row: load canonical account fields from `condenser_api.get_accounts`, then backfill **blog** follow edges and mutes from Hive APIs."
 type: spec
 status: active
 scope: chain-indexer

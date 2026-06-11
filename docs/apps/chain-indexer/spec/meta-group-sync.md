@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-meta-group-sync
 title: Meta group sync
+description: `objects_core.meta_group_id` stores the **winning** `group_id` update value for an object so the query layer can group or deduplicate catalog rows without joining `object_updates` on every search.
 type: spec
 status: active
 scope: chain-indexer

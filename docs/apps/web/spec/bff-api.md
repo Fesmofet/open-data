@@ -1,6 +1,7 @@
 ---
 id: web-bff-api
 title: web — BFF API routes
+description: Next.js **Route Handlers** under `apps/web/src/app/api/` proxy to backend services. The browser must not call auth-api or query-api origins directly for these flows.
 type: spec
 status: active
 scope: web

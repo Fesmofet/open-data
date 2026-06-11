@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-profile-shell
 title: User profile shell
+description: Describe the App Router layout tree, public URLs, and persistent regions for every route under a Hive account profile. Child route behavior lives in `routes/*.md`.
 type: spec
 status: active
 scope: web

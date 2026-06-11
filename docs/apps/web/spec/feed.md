@@ -1,6 +1,7 @@
 ---
 id: web-feed
 title: Feed
+description: Feed rows render `Story` (via `StoryContainer`) with stats, overflow menu, and optional media.
 type: spec
 status: active
 scope: web

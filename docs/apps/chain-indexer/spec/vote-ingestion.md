@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-vote-ingestion
 title: Vote ingestion and Hive sync queue
+description: How chain-indexer ingests Hive vote operations, updates post_active_votes, and enqueues the Hive post sync queue.
 type: spec
 status: active
 scope: chain-indexer

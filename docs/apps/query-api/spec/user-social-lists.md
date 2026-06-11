@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-user-social-lists
 title: User social lists
+description: Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows`, and `object_authority`.
 type: spec
 status: active
 scope: query-api

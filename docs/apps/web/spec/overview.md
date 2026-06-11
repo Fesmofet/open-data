@@ -1,6 +1,7 @@
 ---
 id: web-overview
 title: web (Next.js)
+description: Next.js frontend — BFF, shell mode, i18n, object UI, and app conventions.
 type: overview
 status: active
 scope: web

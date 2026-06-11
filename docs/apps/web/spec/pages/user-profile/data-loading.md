@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-data-loading
 title: User profile — data loading
+description: This document covers loading **shell profile** data (hero / header counts and display fields). Feed tabs and post lists are out of scope here — see routes/feed.md.
 type: spec
 status: active
 scope: web

@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-edit-mode
 title: Object page — edit mode
+description: Logged-in users can toggle **Edit** on an object profile page and add new ODL updates from the left rail via a `+` control on each block (except Rating). Submissions broadcast a Hive `custom_json` `update_create` event, then follow the standard trx confirmation pattern.
 tags: [web, page, object, edit]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md

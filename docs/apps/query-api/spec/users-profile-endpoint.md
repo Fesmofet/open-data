@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-users-profile-endpoint
 title: User profile
+description: "Path parameter `name` is the Hive account name (same constraints as legacy URLs: 3–32 chars, `[a-zA-Z0-9.-]`)."
 type: spec
 status: active
 scope: query-api

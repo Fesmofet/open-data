@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-overview
 title: query-api
+description: Read-path HTTP API for objects, feeds, search, and governance-masked projections.
 type: overview
 status: active
 scope: query-api

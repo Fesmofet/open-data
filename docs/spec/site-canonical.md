@@ -1,6 +1,7 @@
 ---
 id: docs-spec-site-canonical
 title: Site canonical
+description: "Variant **B** is fixed: `objects_core.canonical` stores **only** a normalized `https://` URL. Legacy non-URL values are cleared at migration time. Display/sort uses other fields (e.g. resolved `name`), not `canonical`."
 type: spec
 status: active
 scope: platform

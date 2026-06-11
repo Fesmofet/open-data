@@ -87,6 +87,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX:-10}
+      REDIS_URI: ${REDIS_URI:-redis://redis:6379}
+      KNOWLEDGE_STARTUP_REINDEX: ${KNOWLEDGE_STARTUP_REINDEX:-true}
       KNOWLEDGE_ALLOW_REINDEX: ${KNOWLEDGE_ALLOW_REINDEX:-false}
     networks:
       - opden-data-layer-net

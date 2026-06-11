@@ -1,6 +1,7 @@
 ---
 id: docs-apps-ipfs-gateway-spec-overview
 title: IPFS Gateway
+description: HTTP gateway for IPFS content — pinning, caching, and content-addressed delivery.
 type: overview
 status: active
 scope: ipfs-gateway

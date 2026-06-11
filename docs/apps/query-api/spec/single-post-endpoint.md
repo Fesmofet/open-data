@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-single-post-endpoint
 title: Single post endpoint
+description: `GET /query/v1/posts/{author}/{permlink}`
 type: spec
 status: active
 scope: query-api

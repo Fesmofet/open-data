@@ -1,6 +1,7 @@
 ---
 id: docs-spec-readme
 title: Open Data Layer specification — start here
+description: "Single entry point for normative domain documentation. **Developer onboarding** (install, run): docs/README.md."
 type: spec
 status: active
 scope: platform

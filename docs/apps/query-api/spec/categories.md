@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-categories
 title: Categories
+description: "Read **pre-aggregated** shop department data for a Hive account from `object_categories_related` (`scope_type = 'user'`, `scope_key = buildUserScopeKey(name, types)`)."
 type: spec
 status: active
 scope: query-api

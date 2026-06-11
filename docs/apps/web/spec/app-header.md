@@ -1,6 +1,7 @@
 ---
 id: web-app-header
 title: App header
+description: "Global chrome for the `(app)` route group: brand link, predictive search, notifications bell, and session actions. Implemented as `AppHeader` in `@/modules/app-header`, mounted from `apps/web/src/app/(app)/layout.tsx`/layout.tsx)."
 type: spec
 status: active
 scope: web

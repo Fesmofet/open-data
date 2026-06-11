@@ -1,0 +1,67 @@
+export interface CuratedRoute {
+  path: string;
+  keywords: string[];
+  reason: string;
+}
+
+/** Static high-confidence routes for common agent intents. */
+export const CURATED_ROUTES: CuratedRoute[] = [
+  {
+    path: 'docs/skills/knowledge-api-routing.md',
+    keywords: ['knowledge api', 'mcp routing', 'first visit', 'agent onboarding', 'how to use knowledge'],
+    reason: 'curated:mcp-routing',
+  },
+  {
+    path: 'docs/skills/setup-workspace.md',
+    keywords: ['setup workspace', 'sidecar agent', 'clone repo', 'agent workspace'],
+    reason: 'curated:agent-workspace',
+  },
+  {
+    path: 'docs/getting-started.md',
+    keywords: [
+      'local dev',
+      'local development',
+      'local development environment',
+      'docker compose',
+      'pnpm nx serve',
+      'migrate',
+      'how to run the project locally',
+      'prepare local development environment',
+      'run the project locally',
+    ],
+    reason: 'curated:local-dev',
+  },
+  {
+    path: 'docs/skills/hive-account-signup.md',
+    keywords: ['hive account', 'create hive account', 'signup', 'register hive'],
+    reason: 'curated:hive-signup',
+  },
+  {
+    path: 'docs/skills/hive-blockchain-broadcast.md',
+    keywords: ['broadcast', 'custom_json', 'sign transaction', 'dhive', 'blockchain broadcast'],
+    reason: 'curated:hive-broadcast',
+  },
+];
+
+export function matchCuratedRoutes(topic: string, scope?: string): Array<CuratedRoute & { confidence: number }> {
+  const normalized = topic.toLowerCase();
+  const hits: Array<CuratedRoute & { confidence: number }> = [];
+
+  for (const route of CURATED_ROUTES) {
+    if (scope && route.path.startsWith(`docs/apps/${scope}/`)) {
+      continue;
+    }
+    let score = 0;
+    for (const kw of route.keywords) {
+      const needle = kw.toLowerCase();
+      if (normalized.includes(needle)) {
+        score += needle.split(/\s+/).length;
+      }
+    }
+    if (score > 0) {
+      hits.push({ ...route, confidence: Math.min(1, 0.4 + score / 8) });
+    }
+  }
+
+  return hits.sort((a, b) => b.confidence - a.confidence);
+}

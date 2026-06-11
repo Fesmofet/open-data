@@ -1,6 +1,7 @@
 ---
 id: docs-spec-data-model-flow
 title: PostgreSQL Concept: Collections and Flow
+description: "This document describes the PostgreSQL schema (four tables), write flow, read flow, and MongoDB comparison notes (historical evaluation). There is **no projection table** — the authoritative tables are queried directly using JOINs, `tsvector` full-text search, and PostGIS. For the storage decision, see ADR: PostgreSQL over Mongo."
 type: spec
 status: active
 scope: platform

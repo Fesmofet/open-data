@@ -1,12 +1,14 @@
 ---
 id: docs-skills-hive-blockchain-broadcast
 title: Hive blockchain broadcast (ODL)
+description: Build, sign, and broadcast Hive and ODL custom_json transactions using repo libraries and registries.
 type: skill
 status: active
 scope: platform
 tags: [hive, broadcast, odl, custom_json, dhive, signing, object-create]
 updated_at: 2026-06-10
 related:
+  - docs/skills/knowledge-api-routing.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
   - docs/spec/README.md

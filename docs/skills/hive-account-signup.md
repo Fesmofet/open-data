@@ -1,13 +1,15 @@
 ---
 id: docs-skills-hive-account-signup
 title: Hive account signup
+description: Guide a user through creating a new Hive blockchain account via public signup providers.
 type: skill
 status: active
 scope: platform
-tags: [hive, account, signup, blockchain, keys, onboarding]
+tags: [hive, account, signup, user, register, blockchain, keys, onboarding]
 updated_at: 2026-06-10
 related:
   - docs/README.md
+  - docs/skills/knowledge-api-routing.md
   - docs/skills/setup-workspace.md
   - docs/skills/hive-blockchain-broadcast.md
   - docs/standards/docs-standards.md
@@ -21,6 +23,7 @@ Guide a user through creating a new Hive blockchain account using the best **pub
 ## When to use
 
 - User needs a **new Hive account** (username + keys) for Waivio/ODL apps, Hive signing, or testing.
+- User asks to **register a new Hive user** or create a mainnet account from scratch.
 - User asks which signup option is free, instant, anonymous, or cheapest.
 - Onboarding before [auth-api challenge flow](../apps/auth-api/spec/challenge-flow.md) (user must already have keys).
 

@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-components-user-menu
 title: UserMenu
+description: "- **Primary:** horizontal list of `Link` items; active class from pathname segments after `/@:name` (see `profile-path.ts`). - **Secondary (submenu):** when the active primary section is Posts, Wallet, Followers, or Expertise, a second row of `Link` items appears below the primary row (same header card). Labels and `aria-label` use i18n; styling uses design tokens (semantic Tailwind classes). Helpers: `user-profile-subnav.ts`."
 type: spec
 status: active
 scope: web

@@ -1,6 +1,7 @@
 ---
 id: docs-spec-vote-semantics
 title: Vote semantics: query-time validity and rank resolution
+description: Votes are stored as neutral raw events by the Indexer Service. All role-based interpretation is resolved in Query/Masking Service using governance context/snapshot.
 type: spec
 status: active
 scope: platform

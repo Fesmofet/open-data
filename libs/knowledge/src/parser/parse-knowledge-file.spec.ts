@@ -33,4 +33,25 @@ Content.`;
     expect(parsed.frontmatter.type).toBe('overview');
     expect(parsed.frontmatter.scope).toBe('query-api');
   });
+
+  it('uses explicit description from frontmatter', () => {
+    const raw = `---
+description: Short agent summary.
+---
+# Title
+
+Body line.`;
+    const parsed = parseKnowledgeFile('docs/skills/example.md', raw);
+    expect(parsed.frontmatter.description).toBe('Short agent summary.');
+  });
+
+  it('falls back to first body line after title for description', () => {
+    const raw = `# My Skill
+
+Guide the user through [signup](https://example.com).
+
+## Steps`;
+    const parsed = parseKnowledgeFile('docs/skills/example.md', raw);
+    expect(parsed.frontmatter.description).toBe('Guide the user through signup.');
+  });
 });

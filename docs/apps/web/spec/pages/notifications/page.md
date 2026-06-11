@@ -1,6 +1,7 @@
 ---
 id: web-pages-notifications
 title: Notifications UI
+description: "Logged-in users see activity notifications in two places:"
 tags: [web, page, notifications]
 related:
   - docs/apps/web/spec/pages/index.md

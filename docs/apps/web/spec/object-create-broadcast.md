@@ -1,6 +1,7 @@
 ---
 id: web-object-create-broadcast
 title: Object create broadcast
+description: Publishing a new object from `/object-create` sends ODL events (`object_create` + `update_create`) to Hive. Payload size is limited per `custom_json` operation; large forms are split across multiple ops in one transaction, or uploaded via IPFS.
 type: spec
 status: active
 scope: web

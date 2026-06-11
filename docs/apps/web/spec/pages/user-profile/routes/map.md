@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-map
 title: User profile — map
+description: "Map view for a user profile at `/@:name/map`. Full-width center column (no sidebars)."
 type: spec
 status: active
 scope: web

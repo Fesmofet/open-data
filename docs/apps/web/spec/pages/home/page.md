@@ -1,6 +1,7 @@
 ---
 id: web-pages-home
 title: Home page
+description: App root landing route under `(app)` shell. Currently a placeholder; metadata is fully wired via `@/seo`.
 tags: [web, page, home]
 related:
   - docs/apps/web/spec/pages/index.md

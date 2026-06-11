@@ -1,6 +1,7 @@
 ---
 id: web-auth
 title: web — authentication
+description: "- **auth-api** (Nest) issues JWTs; **web** never calls auth-api from the browser directly for login. - Next.js **route handlers** under `src/app/api/auth/*` proxy to `{AUTH_API_BASE_URL}/auth/v1/...` and set **httpOnly** cookies (`odl_access`, `odl_refresh`). `AUTH_API_BASE_URL` must be the **origin only** (no path segment). - Server code resolves the current user via `createCookieAuthContextProvider()` using `jose` and `AUTH_JWT_SECRET` (must match auth-api `JWT_SECRET`). - **Silent refresh:**…"
 type: spec
 status: active
 scope: web

@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-post-article
 title: Post article
+description: Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites them to `/user-profile/account/permlink` internally). Feed links use that form so the address bar matches the public scheme.
 tags: [web, page, user-profile, post]
 related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md

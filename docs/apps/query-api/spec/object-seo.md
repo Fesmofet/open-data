@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-object-seo
 title: query-api — object SEO projection
+description: "Attached when `ObjectProjectionService.project()` is called with **`includeSeo: true`** (object resolve / get-by-id paths)."
 type: spec
 status: active
 scope: query-api

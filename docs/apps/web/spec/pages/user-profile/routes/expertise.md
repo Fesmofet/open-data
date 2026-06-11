@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-expertise
 title: User profile — expertise
+description: "Expertise hashtags and objects under `/@:name/expertise-*`."
 type: spec
 status: active
 scope: web

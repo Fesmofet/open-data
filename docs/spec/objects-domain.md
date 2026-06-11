@@ -1,6 +1,7 @@
 ---
 id: docs-spec-objects-domain
 title: objects-domain: ResolvedView assembly
+description: `@opden-data-layer/objects-domain` is a framework-agnostic domain library that resolves raw database rows into fully structured `ResolvedObjectView` objects. It is reusable across any NestJS application in the monorepo.
 type: spec
 status: active
 scope: platform

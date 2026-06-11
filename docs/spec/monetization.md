@@ -1,6 +1,7 @@
 ---
 id: docs-spec-monetization
 title: Monetization and Plan Entitlements
+description: Define subscription tiers, entitlement boundaries, and SLA/quota dimensions enforced by gateway and billing services.
 type: spec
 status: active
 scope: platform

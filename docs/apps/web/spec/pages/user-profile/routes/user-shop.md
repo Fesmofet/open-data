@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-user-shop
 title: User profile shop and recipe
+description: Department-style object catalogs for a user’s shop (`book`, `product`) and recipe (`recipe`) lists with category navigation in the left parallel route.
 type: spec
 status: active
 scope: web

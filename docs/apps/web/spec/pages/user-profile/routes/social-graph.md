@@ -1,6 +1,7 @@
 ---
 id: web-pages-user-profile-routes-social-graph
 title: User profile social graph
+description: "Followers, following accounts, and following-objects lists under `/@:name`."
 type: spec
 status: active
 scope: web

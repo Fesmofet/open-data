@@ -1,6 +1,7 @@
 ---
 id: docs-spec-data-model-threads
 title: PostgreSQL: Hive threads
+description: "Normative DDL lives in schema.sql. Kysely row types: `@opden-data-layer/core` (`ThreadsTable`, `ThreadActiveVotesTable`)."
 type: spec
 status: active
 scope: platform

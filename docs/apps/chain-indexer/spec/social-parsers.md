@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-social-parsers
 title: Hive social parsers
+description: Deterministic handling of Hive operations that drive the social graph and profile display fields, aligned with tmp/user-social-parsers-spec.md (behavioral reference).
 type: spec
 status: active
 scope: chain-indexer

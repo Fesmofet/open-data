@@ -51,6 +51,11 @@
       "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
       "executor": "nx:noop"
     },
+    "test": {
+      "options": {
+        "passWithNoTests": false
+      }
+    },
     "serve": {
       "continuous": true,
       "executor": "@nx/js:node",

@@ -1,6 +1,7 @@
 ---
 id: docs-apps-query-api-spec-post-discussion-endpoint
 title: Post discussion thread
+description: Query `currency` (optional, default `USD`) — see post reward.
 type: spec
 status: active
 scope: query-api

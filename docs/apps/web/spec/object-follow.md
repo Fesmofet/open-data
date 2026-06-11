@@ -1,6 +1,7 @@
 ---
 id: web-object-follow
 title: Object follow
+description: Object detail hero (`ObjectHero` on `/object/[object-id]`) exposes **Follow**, **Following** (hover → **Unfollow**), and a **Bell** control when the viewer is following.
 type: spec
 status: active
 scope: web

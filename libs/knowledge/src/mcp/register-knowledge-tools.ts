@@ -2,6 +2,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
 import { z } from 'zod';
+import {
+  LIST_FILES_DEFAULT_LIMIT,
+  LIST_FILES_MAX_LIMIT,
+} from '../constants/search-scoring';
 import { runKnowledgeReindex } from '../indexer/knowledge-indexer';
 import {
   getObjectType,
@@ -13,17 +17,35 @@ import type { KnowledgeDatabase } from '../repository/types';
 import type { KnowledgeMcpDeps } from './mcp-tool.deps';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
+const KNOWLEDGE_TYPES = 'skill | spec | overview | lesson | agents | registry';
+
 export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps): void {
   server.registerTool(
     'search_knowledge',
     {
-      description: 'Search project knowledge by text query',
+      description:
+        'Discover indexed docs by hybrid FTS + trigram query. Use for initial discovery; then prefer resolve_doc, get_context, or get_file. Example queries: "hive account signup", "knowledge api routing", "chain-indexer vote ingestion".',
       inputSchema: z.object({
-        query: z.string().min(1),
-        limit: z.coerce.number().int().min(1).max(50).default(10),
-        types: z.array(z.string()).optional(),
-        tags: z.array(z.string()).optional(),
-        scope: z.string().optional(),
+        query: z
+          .string()
+          .min(1)
+          .describe('Natural language or keyword query (hybrid FTS + trigram)'),
+        limit: z.coerce
+          .number()
+          .int()
+          .min(1)
+          .max(50)
+          .default(10)
+          .describe('Max results (default 10)'),
+        types: z
+          .array(z.string())
+          .optional()
+          .describe(`Optional doc types: ${KNOWLEDGE_TYPES}`),
+        tags: z.array(z.string()).optional().describe('Optional tag filter (any match)'),
+        scope: z
+          .string()
+          .optional()
+          .describe('App or platform scope, e.g. platform, web, chain-indexer'),
       }),
     },
     async (args) => {
@@ -33,11 +55,45 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   );
 
   server.registerTool(
+    'resolve_doc',
+    {
+      description:
+        'Resolve the best doc path(s) for a task before get_file. Uses curated routes, trigram file match, then hybrid search. Prefer over raw search when implementing a feature.',
+      inputSchema: z.object({
+        topic: z.string().min(1).describe('Task or feature topic in natural language'),
+        scope: z
+          .string()
+          .optional()
+          .describe('Optional app scope, e.g. chain-indexer, query-api'),
+        max_routes: z.coerce
+          .number()
+          .int()
+          .min(1)
+          .max(10)
+          .default(5)
+          .describe('Max routes to return (default 5)'),
+      }),
+    },
+    async (args) => {
+      const result = await deps.router.resolveDoc({
+        topic: args.topic,
+        scope: args.scope,
+        maxRoutes: args.max_routes,
+      });
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_file',
     {
-      description: 'Return full markdown file by path',
+      description:
+        'Return full markdown file by repo-relative path (from resolve_doc, search_knowledge, or list_files). Includes title, description, tags, and body.',
       inputSchema: z.object({
-        path: z.string().min(1),
+        path: z
+          .string()
+          .min(1)
+          .describe('Repo-relative path, e.g. docs/skills/hive-account-signup.md'),
       }),
     },
     async (args) => {
@@ -48,6 +104,7 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
       return jsonToolResult({
         path: file.path,
         title: file.title,
+        description: file.description,
         type: file.type,
         status: file.status,
         tags: file.tags,
@@ -59,50 +116,80 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   server.registerTool(
     'get_context',
     {
-      description: 'Return compact context bundle for agent work on a topic',
+      description:
+        'Return a compact chunk bundle for a topic — uses route resolver first, then hybrid search fallback. Call early before implementing a feature.',
       inputSchema: z.object({
-        topic: z.string().min(1),
-        max_chunks: z.coerce.number().int().min(1).max(20).default(8),
-        scope: z.string().optional(),
+        topic: z.string().min(1).describe('Task or feature topic in natural language'),
+        max_chunks: z.coerce
+          .number()
+          .int()
+          .min(1)
+          .max(20)
+          .default(8)
+          .describe('Max chunks to return (default 8)'),
+        scope: z.string().optional().describe('Optional app scope to bias results'),
       }),
     },
     async (args) => {
-      const results = await deps.search.buildContext({
+      const { routes, chunks } = await deps.router.buildContextRoutes({
         topic: args.topic,
         maxChunks: args.max_chunks,
         scope: args.scope,
       });
-      return jsonToolResult({ results });
+      return jsonToolResult({ routes, results: chunks });
     },
   );
 
   server.registerTool(
     'list_files',
     {
-      description: 'List indexed knowledge files with filters',
+      description:
+        'List indexed knowledge files with filters and pagination. On first visit use type=skill to see playbooks with description one-liners.',
       inputSchema: z.object({
-        type: z.string().optional(),
-        status: z.string().optional(),
-        scope: z.string().optional(),
-        tags: z.array(z.string()).optional(),
+        type: z
+          .string()
+          .optional()
+          .describe(`Doc type filter: ${KNOWLEDGE_TYPES}`),
+        status: z.string().optional().describe('active, draft, or deprecated'),
+        scope: z.string().optional().describe('App or platform scope'),
+        tags: z.array(z.string()).optional().describe('Tag filter (any match)'),
+        limit: z.coerce
+          .number()
+          .int()
+          .min(1)
+          .max(LIST_FILES_MAX_LIMIT)
+          .optional()
+          .describe(`Page size (default ${LIST_FILES_DEFAULT_LIMIT}, max ${LIST_FILES_MAX_LIMIT})`),
+        offset: z.coerce
+          .number()
+          .int()
+          .min(0)
+          .optional()
+          .describe('Pagination offset (default 0)'),
       }),
     },
     async (args) => {
-      const files = await deps.repo.listFiles({
+      const result = await deps.repo.listFiles({
         type: args.type,
         status: args.status,
         scope: args.scope,
         tags: args.tags,
+        limit: args.limit,
+        offset: args.offset,
       });
       return jsonToolResult({
-        files: files.map((f) => ({
+        files: result.files.map((f) => ({
           path: f.path,
           title: f.title,
+          description: f.description,
           type: f.type,
           status: f.status,
           scope: f.scope,
           tags: f.tags,
         })),
+        total: result.total,
+        limit: result.limit,
+        offset: result.offset,
       });
     },
   );
@@ -110,7 +197,7 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   server.registerTool(
     'list_tags',
     {
-      description: 'List all known tags with document counts',
+      description: 'List all indexed tags with document counts — useful to discover topic vocabulary.',
       inputSchema: z.object({}),
     },
     async () => {
@@ -142,7 +229,7 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   server.registerTool(
     'list_object_types',
     {
-      description: 'List all ODL object types from the registry',
+      description: 'List all ODL object types from the live registry',
       inputSchema: z.object({}),
     },
     async () => jsonToolResult({ object_types: listObjectTypes() }),
@@ -151,9 +238,10 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   server.registerTool(
     'get_object_type',
     {
-      description: 'Get object type definition, supported updates, and create example',
+      description:
+        'Get object type definition, supported updates, and create example — use for chain object_create payloads',
       inputSchema: z.object({
-        object_type: z.string().min(1),
+        object_type: z.string().min(1).describe('Registry object type id'),
       }),
     },
     async (args) => {
@@ -168,7 +256,7 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   server.registerTool(
     'list_update_types',
     {
-      description: 'List all ODL update types from the registry',
+      description: 'List all ODL update types from the live registry',
       inputSchema: z.object({}),
     },
     async () => jsonToolResult({ update_types: listUpdateTypes() }),
@@ -177,9 +265,10 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
   server.registerTool(
     'get_update_schema',
     {
-      description: 'Get update type JSON Schema and broadcast example',
+      description:
+        'Get update type JSON Schema and broadcast example — use for custom_json update payloads',
       inputSchema: z.object({
-        update_type: z.string().min(1),
+        update_type: z.string().min(1).describe('Registry update type id'),
       }),
     },
     async (args) => {

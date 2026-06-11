@@ -1,18 +1,31 @@
 ---
 id: docs-getting-started
 title: Local Development Environment
+description: Prepare local dev stack — Docker, migrations, and run apps with pnpm nx serve.
 type: overview
 status: active
 scope: platform
-tags: [platform, onboarding]
-updated_at: 2026-06-10
+tags: [platform, onboarding, local-dev, docker, migrate, pnpm]
+updated_at: 2026-06-11
 related:
   - docs/README.md
+  - docs/skills/setup-workspace.md
 ---
 
 # Local Development Environment
 
-End-to-end guide: start infrastructure, run migrations, start the app.
+End-to-end guide: **prepare your local development environment**, start infrastructure, run migrations, and **run the project locally** with Nx.
+
+## When to use
+
+- You need a **local dev stack**: Docker Compose (Postgres, Redis), migrations, `pnpm nx serve`.
+- You are developing or testing apps inside an existing monorepo checkout.
+- You want to know **how to run the project locally** on your machine (not clone-only agent workspace setup).
+
+## When not to use
+
+- You are onboarding a **sidecar agent without a checkout** (clone repo, path contract only) — use [Setup agent workspace](../skills/setup-workspace.md).
+- You only need indexed markdown specs — knowledge-api MCP is enough; no Docker or migrate required.
 
 ---
 

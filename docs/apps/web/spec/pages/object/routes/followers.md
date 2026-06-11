@@ -1,6 +1,7 @@
 ---
 id: web-pages-object-routes-followers
 title: Object page — followers
+description: "- **URL:** `/object/[object-id]/followers` (optional `?sort=`). The path stays in the address bar; {@link apps/web/src/proxy.ts} rewrites internally to `/object/[object-id]?tab=followers` (existing query preserved). - **App files:** `apps/web/src/app/(app)/object/[object-id]/page.tsx`, `object-page-client.tsx`, `followers/object-followers.actions.ts` - **UI:** reuses {@link apps/web/src/modules/user-social/presentation/components/user-social-account-list.tsx} in the object profile **center colu…"
 tags: [web, page, object, social]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md

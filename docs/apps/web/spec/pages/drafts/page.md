@@ -1,6 +1,7 @@
 ---
 id: web-pages-drafts
 title: Editor drafts
+description: "- **query-api** (`/query/v1/users/:author/drafts`): list, create, patch, single delete, and **`POST .../drafts/bulk-delete`** with `{ draftIds: string[] }`. See user-post-drafts-endpoint.md. - **Web** calls the API from **server actions** in `apps/web/src/modules/editor/infrastructure/drafts.actions.ts` using the httpOnly access cookie as `Authorization: Bearer`. - **Initial draft load** (SSR): `fetchUserPostDraftForEditor` in `fetch-user-post-draft.server.ts` returns `draftId`, `title`, `body`…"
 tags: [web, page, editor, drafts]
 related:
   - docs/apps/web/spec/pages/editor/page.md

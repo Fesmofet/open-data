@@ -13,15 +13,59 @@ export interface ParsedKnowledgeFile {
   contentHash: string;
 }
 
+const DESCRIPTION_MAX_LENGTH = 500;
+
 function titleFromBody(body: string, fallback: string): string {
   const match = /^#\s+(.+)$/m.exec(body);
   return match?.[1]?.trim() ?? fallback;
 }
 
+function stripMarkdownLinks(text: string): string {
+  return text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim();
+}
+
+export function descriptionFromBody(body: string): string | null {
+  const lines = body.split(/\r?\n/);
+  let pastTitle = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!pastTitle) {
+      if (/^#\s+/.test(trimmed)) {
+        pastTitle = true;
+      }
+      continue;
+    }
+    if (!trimmed) {
+      continue;
+    }
+    const plain = stripMarkdownLinks(trimmed);
+    if (!plain) {
+      continue;
+    }
+    return plain.length <= DESCRIPTION_MAX_LENGTH
+      ? plain
+      : `${plain.slice(0, DESCRIPTION_MAX_LENGTH - 1)}…`;
+  }
+
+  return null;
+}
+
+function normalizeFrontmatterInput(
+  parsed: Record<string, unknown>,
+): Record<string, unknown> {
+  const out = { ...parsed };
+  const description = out['description'];
+  if (Array.isArray(description) || description === '') {
+    delete out['description'];
+  }
+  return out;
+}
+
 export function parseKnowledgeFile(relativePath: string, raw: string): ParsedKnowledgeFile {
   const { frontmatter: fmRaw, body } = splitFrontmatter(raw);
   const inferred = inferMetadataFromPath(relativePath);
-  const parsedFm = fmRaw ? parseFrontmatterYaml(fmRaw) : {};
+  const parsedFm = fmRaw ? normalizeFrontmatterInput(parseFrontmatterYaml(fmRaw)) : {};
 
   const merged = knowledgeFrontmatterSchema.parse({
     ...inferred,
@@ -34,12 +78,14 @@ export function parseKnowledgeFile(relativePath: string, raw: string): ParsedKno
     titleFromBody(body, id.replace(/-/g, ' '));
 
   const type = merged.type ?? inferred.type ?? 'spec';
+  const description = merged.description ?? descriptionFromBody(body) ?? undefined;
 
   const frontmatter = {
     ...merged,
     id,
     title,
     type,
+    ...(description ? { description } : {}),
   };
 
   const contentHash = computeContentHash(raw);

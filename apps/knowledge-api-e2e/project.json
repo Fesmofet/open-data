@@ -7,6 +7,12 @@
     "e2e": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/docs/**/*.md",
+        "{workspaceRoot}/tasks/lessons.md"
+      ],
       "options": {
         "jestConfig": "apps/knowledge-api-e2e/jest.config.cts",
         "passWithNoTests": true

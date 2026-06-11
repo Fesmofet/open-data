@@ -4,6 +4,8 @@ export interface KnowledgeFilesTable {
   id: Generated<string>;
   path: string;
   title: string;
+  description: string | null;
+  routing_text: string | null;
   body: string;
   type: string;
   status: string;
@@ -39,6 +41,8 @@ export interface KnowledgeFileRow {
   id: string;
   path: string;
   title: string;
+  description: string | null;
+  routing_text: string | null;
   body: string;
   type: string;
   status: string;
@@ -64,6 +68,8 @@ export interface KnowledgeChunkInsert {
 export interface KnowledgeFileUpsert {
   path: string;
   title: string;
+  description: string | null;
+  routing_text: string | null;
   body: string;
   type: string;
   status: string;
@@ -81,4 +87,13 @@ export interface ListFilesFilters {
   status?: string;
   scope?: string;
   tags?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListFilesResult {
+  files: KnowledgeFileRow[];
+  total: number;
+  limit: number;
+  offset: number;
 }

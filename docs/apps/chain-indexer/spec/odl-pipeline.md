@@ -1,6 +1,7 @@
 ---
 id: docs-apps-chain-indexer-spec-odl-pipeline
 title: ODL pipeline
+description: Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequenced, and written to PostgreSQL, including **write guards**, **registry** checks, and **batch import** from IPFS.
 type: spec
 status: active
 scope: chain-indexer
