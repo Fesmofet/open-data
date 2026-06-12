@@ -185,7 +185,7 @@ export function StoryVoteModal({
       open={open}
       onClose={onClose}
       labelledBy="story-vote-modal-title"
-      panelClassName="flex max-h-[min(32rem,calc(100dvh-2rem))] flex-col"
+      panelClassName="flex h-[min(32rem,calc(100dvh-2rem))] w-full flex-col"
     >
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <h2 id="story-vote-modal-title" className="sr-only">
