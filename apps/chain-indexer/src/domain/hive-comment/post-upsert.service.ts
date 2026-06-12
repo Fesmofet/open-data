@@ -18,6 +18,7 @@ import {
   extractMentions,
   formatHiveDateTime,
   parseJsonMetadata,
+  normalizeWobjectPercentsIfInvalid,
   parsePostObjectsForInsert,
   validateWobjectPercentSum,
 } from '@opden-data-layer/core';
@@ -181,12 +182,7 @@ export class PostUpsertService {
     const objectsRaw = parsePostObjectsForInsert(metadata, body);
     let objects = bindPostObjectsToPost(objectsRaw, author, permlink);
     objects = await this.resolvePostObjectsAgainstCore(objects);
-    if (!validateWobjectPercentSum(objects)) {
-      this.logger.warn(
-        `Skipping post ${author}/${permlink}: invalid wobject percent sum`,
-      );
-      return;
-    }
+    objects = this.normalizePostObjectPercents(objects, author, permlink);
 
     const languages = await detectPostLanguagesBcp47(body, op.title);
     const links = extractLinks(body);
@@ -235,13 +231,8 @@ export class PostUpsertService {
       author,
       permlink,
     );
-    const mergedObjects = await this.resolvePostObjectsAgainstCore(mergedObjectsBound);
-    if (!validateWobjectPercentSum(mergedObjects)) {
-      this.logger.warn(
-        `Skipping post update ${author}/${permlink}: invalid wobject percent sum`,
-      );
-      return;
-    }
+    let mergedObjects = await this.resolvePostObjectsAgainstCore(mergedObjectsBound);
+    mergedObjects = this.normalizePostObjectPercents(mergedObjects, author, permlink);
 
     const storedVotes = await this.postsRepository.findActiveVotes(author, permlink);
     const voteRows = this.mergeVotes(hive, storedVotes);
@@ -489,6 +480,20 @@ export class PostUpsertService {
     }
 
     return [...byVoter.values()];
+  }
+
+  private normalizePostObjectPercents(
+    objects: NewPostObject[],
+    author: string,
+    permlink: string,
+  ): NewPostObject[] {
+    if (validateWobjectPercentSum(objects)) {
+      return objects;
+    }
+    this.logger.warn(
+      `Post ${author}/${permlink}: invalid wobject percent sum; coercing linked objects to percent 0`,
+    );
+    return normalizeWobjectPercentsIfInvalid(objects);
   }
 
   /** Keep only object_ids present in `objects_core`; set `object_type` from core. */

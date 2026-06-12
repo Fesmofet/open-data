@@ -1,6 +1,7 @@
 import { MAX_POST_OBJECTS_PER_POST } from './post-objects.constants';
 import {
   bindPostObjectsToPost,
+  normalizeWobjectPercentsIfInvalid,
   parsePostObjectsForInsert,
   validateWobjectPercentSum,
 } from './post-objects.parse';
@@ -8,6 +9,48 @@ import {
 describe('post-objects.parse', () => {
   it('validateWobjectPercentSum allows empty', () => {
     expect(validateWobjectPercentSum([])).toBe(true);
+  });
+
+  it('normalizeWobjectPercentsIfInvalid coerces invalid sum to all zeros', () => {
+    const rows = [
+      {
+        author: 'a',
+        permlink: 'p',
+        object_id: 'x',
+        percent: 60,
+        object_type: null,
+      },
+      {
+        author: 'a',
+        permlink: 'p',
+        object_id: 'y',
+        percent: 50,
+        object_type: null,
+      },
+    ] as Parameters<typeof normalizeWobjectPercentsIfInvalid>[0];
+    const normalized = normalizeWobjectPercentsIfInvalid(rows);
+    expect(normalized.every((o) => o.percent === 0)).toBe(true);
+    expect(validateWobjectPercentSum(normalized)).toBe(true);
+  });
+
+  it('normalizeWobjectPercentsIfInvalid leaves valid percents unchanged', () => {
+    const rows = [
+      {
+        author: 'a',
+        permlink: 'p',
+        object_id: 'x',
+        percent: 40,
+        object_type: null,
+      },
+      {
+        author: 'a',
+        permlink: 'p',
+        object_id: 'y',
+        percent: 50,
+        object_type: null,
+      },
+    ] as Parameters<typeof normalizeWobjectPercentsIfInvalid>[0];
+    expect(normalizeWobjectPercentsIfInvalid(rows)).toEqual(rows);
   });
 
   it('validateWobjectPercentSum rejects sum > 101', () => {
@@ -57,6 +100,24 @@ describe('post-objects.parse', () => {
     const ids = parsePostObjectsForInsert(meta, '').map((r) => r.object_id).sort();
     expect(ids).toEqual(['tag-one', 'tag-two']);
     expect(parsePostObjectsForInsert(meta, '').every((r) => r.percent === 0)).toBe(true);
+  });
+
+  it('extracts object_id from waivio URLs in metadata.links and tags', () => {
+    const waivioUrl =
+      'https://www.waivio.com/object/ylr-waivio/page#mim-transform-your-passion-into-profit-with-waivio';
+    const meta = {
+      links: [waivioUrl, 'https://www.waivio.com/object/aiagents'],
+      tags: ['https://www.waivio.com/object/odl'],
+    };
+    const ids = parsePostObjectsForInsert(meta, '').map((r) => r.object_id).sort();
+    expect(ids).toEqual(['aiagents', 'odl', 'ylr-waivio']);
+  });
+
+  it('does not bind URL hash fragments from body waivio links', () => {
+    const body =
+      'https://www.waivio.com/object/ylr-waivio/page#mim-transform-your-passion-into-profit-with-waivio';
+    const ids = parsePostObjectsForInsert(null, body).map((r) => r.object_id);
+    expect(ids).toEqual(['ylr-waivio']);
   });
 
   it('maps body hashtags to percent 0 and lets objects override', () => {

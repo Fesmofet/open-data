@@ -37,19 +37,24 @@ Array of manual reward / weight assignments:
 
 ### `tags` (Hive)
 
-Hive stores **`tags` as `string[]`** (categories / hashtags). For indexing, each **non-empty** string after trim is treated as an **`object_id` candidate** with **`percent: 0`** (discovery-only link).
+Hive stores **`tags` as `string[]`** (categories / hashtags). For indexing, each **non-empty** string after trim is treated as an **`object_id` candidate** with **`percent: 0`** (discovery-only link). If a tag is a Waivio URL containing `/object/<object_id>`, only the **first path slug** is used (URL hash fragments such as nested page anchors are ignored).
+
+### `links` (Hive)
+
+Hive stores **`links` as `string[]`** (URLs attached to the post). Each string that contains `/object/<object_id>` contributes that **first path slug** with **`percent: 0`** (same rules as tags; hash fragments are not object ids).
 
 ### Body
 
 - Paths matching `/object/<object_id>` anywhere in the text (including inside full URLs such as Waivio links) add **`object_id`** with **`percent: 0`** unless overridden by `objects`. The indexer uses a shared pattern (`OBJECT_PATH_BODY_RE` in [`comment-post-object-candidates.ts`](../../../libs/core/src/post-objects/comment-post-object-candidates.ts)).
-- **`#hashtags` in the post body** add **`object_id`** tokens (same `#…` rules as comment binding: see `RE_HASHTAGS` in that module) with **`percent: 0`** unless overridden by `objects`.
+- **`#hashtags` in the post body** add **`object_id`** tokens (same `#…` rules as comment binding: see `RE_HASHTAGS` in that module) with **`percent: 0`** unless overridden by `objects`. **`#` inside URL fragments** (e.g. `…/page#nested-page`) is **not** treated as a hashtag.
 
 ## Merge order (same `object_id` from several sources)
 
-1. Apply **`tags`** (each → `percent: 0`).
-2. Add **`/object/...`** hits from the body (`percent: 0` if not already present).
-3. Add **body `#hashtags`** (`percent: 0` if not already present).
-4. Apply **`objects` last** so **manual percents win** over `tags` and body-derived ids.
+1. Apply **`tags`** (each → `percent: 0`; Waivio URLs → first `/object/<id>` slug).
+2. Add **`links`** with `/object/…` paths (`percent: 0` if not already present).
+3. Add **`/object/...`** hits from the body (`percent: 0` if not already present).
+4. Add **body `#hashtags`** (`percent: 0` if not already present).
+5. Apply **`objects` last** so **manual percents win** over `tags`, `links`, and body-derived ids.
 
 After merge and dedup, the indexer keeps at most **100** linked objects per post (`MAX_POST_OBJECTS_PER_POST` in [`post-objects.constants.ts`](../../../libs/core/src/post-objects/post-objects.constants.ts)). Extra entries are dropped in `Map` iteration order (roughly: tags in array order, then new body paths, then hashtags, then `metadata.objects` entries).
 
@@ -71,7 +76,7 @@ Rows are written only for `object_id` values that **exist in `objects_core`** at
 
 ## Percent sum validation
 
-Waivio-style rule: the **sum of all `percent` values** on the merged list must be in **`[0, 101]`** (see `validateWobjectPercentSum` in chain-indexer). Zeros from `tags` / body count toward the sum.
+Waivio-style rule: the **sum of all `percent` values** on the merged list should be in **`[0, 101]`** (see `validateWobjectPercentSum` in `@opden-data-layer/core`). Zeros from `tags` / body count toward the sum. When the sum is outside that range, chain-indexer **does not skip the post** — it logs a warning and **coerces every linked object to `percent: 0`** (`normalizeWobjectPercentsIfInvalid`).
 
 ## Mongo import (historical)
 

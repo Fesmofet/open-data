@@ -5,14 +5,27 @@
  * @see docs/spec/data-model/post-json-metadata-objects.md
  */
 
-/** `#token` where token is word chars or hyphen (aligned with legacy Waivio hashtag parsing). */
-export const RE_HASHTAGS = /#([\w-]+)/g;
+/**
+ * `#token` where token is word chars or hyphen.
+ * Requires `#` at start of text or after whitespace / common markdown delimiters so URL
+ * fragments (`…/page#nested-page`) are not treated as hashtags.
+ */
+export const RE_HASHTAGS = /(?:^|[\s([{"'])#([\w-]+)/g;
 
 /** Relative or in-URL `/object/<object_id>` segments (same character class as post-objects index). */
 export const OBJECT_PATH_BODY_RE = /\/object\/([a-z0-9._-]+)/gi;
 
+const OBJECT_PATH_SLUG_RE = /\/object\/([a-z0-9._-]+)/i;
+
 function uniqueNonEmpty(values: string[]): string[] {
   return [...new Set(values.filter((s) => s.length > 0))];
+}
+
+/** First `/object/<object_id>` slug in text (ignores URL hash fragments and nested paths). */
+export function extractFirstObjectPathSlug(text: string): string | null {
+  const m = OBJECT_PATH_SLUG_RE.exec(text.trim());
+  const id = m?.[1]?.trim();
+  return id || null;
 }
 
 export function extractHashtagObjectIdsFromBody(body: string): string[] {

@@ -1,6 +1,7 @@
 import type { NewPostObject } from '../db';
 import { MAX_POST_OBJECTS_PER_POST } from './post-objects.constants';
 import {
+  extractFirstObjectPathSlug,
   extractHashtagObjectIdsFromBody,
   extractObjectPathSlugsFromBody,
 } from './comment-post-object-candidates';
@@ -44,6 +45,14 @@ export function validateWobjectPercentSum(objects: NewPostObject[]): boolean {
   return sum >= 0 && sum <= 101;
 }
 
+/** When sum is outside [0, 101], set every linked object to percent 0 instead of dropping the post. */
+export function normalizeWobjectPercentsIfInvalid(objects: NewPostObject[]): NewPostObject[] {
+  if (objects.length === 0 || validateWobjectPercentSum(objects)) {
+    return objects;
+  }
+  return objects.map((o) => ({ ...o, percent: 0 }));
+}
+
 function parseMetadataObjects(raw: unknown): Array<{ object_id: string; percent: number }> {
   if (!Array.isArray(raw)) {
     return [];
@@ -64,8 +73,19 @@ function parseMetadataObjects(raw: unknown): Array<{ object_id: string; percent:
   return out;
 }
 
-function parseMetadataTagStrings(metadata: Record<string, unknown> | null): string[] {
-  const raw = metadata?.['tags'];
+function normalizeMetadataStringToObjectId(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return extractFirstObjectPathSlug(trimmed) ?? trimmed;
+}
+
+function parseMetadataStringArray(
+  metadata: Record<string, unknown> | null,
+  field: 'tags' | 'links',
+): string[] {
+  const raw = metadata?.[field];
   if (!Array.isArray(raw)) {
     return [];
   }
@@ -74,17 +94,26 @@ function parseMetadataTagStrings(metadata: Record<string, unknown> | null): stri
     if (typeof item !== 'string') {
       continue;
     }
-    const t = item.trim();
-    if (t) {
-      ids.push(t);
+    const id = normalizeMetadataStringToObjectId(item);
+    if (id) {
+      ids.push(id);
     }
   }
   return ids;
 }
 
+function parseMetadataTagStrings(metadata: Record<string, unknown> | null): string[] {
+  return parseMetadataStringArray(metadata, 'tags');
+}
+
+function parseMetadataLinkStrings(metadata: Record<string, unknown> | null): string[] {
+  return parseMetadataStringArray(metadata, 'links');
+}
+
 /**
- * Objects from `json_metadata.objects` (manual percents), `json_metadata.tags` (Hive string[] → percent 0),
- * body `/object/slug`, body `#hashtags`, then `objects` overwrites by `object_id`.
+ * Objects from `json_metadata.objects` (manual percents), `json_metadata.tags` / `links` (Hive string[] →
+ * percent 0; Waivio URLs → first `/object/<id>` slug only), body `/object/slug`, body `#hashtags`, then
+ * `objects` overwrites by `object_id`.
  *
  * @see docs/spec/data-model/post-json-metadata-objects.md
  */
@@ -96,6 +125,12 @@ export function parsePostObjectsForInsert(
 
   for (const id of parseMetadataTagStrings(metadata)) {
     byId.set(id, 0);
+  }
+
+  for (const id of parseMetadataLinkStrings(metadata)) {
+    if (!byId.has(id)) {
+      byId.set(id, 0);
+    }
   }
 
   for (const id of extractObjectPathSlugsFromBody(body)) {
