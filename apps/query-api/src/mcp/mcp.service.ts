@@ -12,6 +12,7 @@ import {
 import {
   GetPostByKeyEndpoint,
   GetPostDiscussionEndpoint,
+  GetPostVotersEndpoint,
   GetUserBlogFeedEndpoint,
   GetUserCommentsFeedEndpoint,
   GetUserMentionsFeedEndpoint,
@@ -73,6 +74,7 @@ export class McpService {
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
     private readonly getPostByKey: GetPostByKeyEndpoint,
     private readonly getPostDiscussion: GetPostDiscussionEndpoint,
+    private readonly getPostVoters: GetPostVotersEndpoint,
     private readonly currencyQueries: CurrencyQueryService,
   ) {}
 
@@ -103,6 +105,7 @@ export class McpService {
       getUserShopSections: this.getUserShopSections,
       getPostByKey: this.getPostByKey,
       getPostDiscussion: this.getPostDiscussion,
+      getPostVoters: this.getPostVoters,
       currencyQueries: this.currencyQueries,
     };
   }

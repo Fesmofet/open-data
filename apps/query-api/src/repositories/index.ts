@@ -32,7 +32,13 @@ export type {
   DiscoverUserRow,
 } from './discover.repository';
 export { PostsRepository } from './posts.repository';
-export type { FeedBranchRow, PostVoteSummary } from './posts.repository';
+export type {
+  FeedBranchRow,
+  PostVoteSummary,
+  PostVoterCounts,
+  PostVoterDbRow,
+  VoteDirection,
+} from './posts.repository';
 export { UserPostDraftsRepository } from './user-post-drafts.repository';
 export { UserAccountMutesRepository } from './user-account-mutes.repository';
 export { ThreadsRepository } from './threads.repository';

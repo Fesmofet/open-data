@@ -20,6 +20,12 @@ export { UserAvatar } from './avatar';
 
 export { IpfsImageDropZone } from './components/ipfs-image-drop-zone';
 export type { IpfsImageDropZoneProps } from './components/ipfs-image-drop-zone';
+export {
+  AppModal,
+  AppModalCloseButton,
+  APP_MODAL_Z_INDEX,
+} from './components/app-modal';
+export type { AppModalProps } from './components/app-modal';
 export { HydrationSafeAnchor } from './components/hydration-safe-anchor';
 export { NavMenu } from './components/nav-menu';
 export type { NavMenuItem, NavMenuProps } from './components/nav-menu';

@@ -44,6 +44,28 @@ export interface FeedVoteSummaryDto {
   voted: boolean;
 }
 
+export interface PostVoterProfileDto {
+  name: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+export interface PostVoterRowDto {
+  voter: string;
+  /** Hive vote weight scale (10000 = 100%). */
+  percent: number;
+  valueUsd: number;
+  valueLabel: string;
+  profile: PostVoterProfileDto;
+}
+
+export interface PostVotersPageDto {
+  upvoteCount: number;
+  downvoteCount: number;
+  items: PostVoterRowDto[];
+  nextCursor: string | null;
+}
+
 export interface FeedStoryItemDto {
   id: string;
   author: string;

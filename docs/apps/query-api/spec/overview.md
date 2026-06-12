@@ -38,6 +38,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [User mentions feed endpoint](user-mentions-feed-endpoint.md) | `POST /query/v1/users/:name/mentions` (`post_mentions`) |
 | [Single post endpoint](single-post-endpoint.md) | `GET /query/v1/posts/:author/:permlink` |
 | [Post discussion endpoint](post-discussion-endpoint.md) | `GET /query/v1/posts/:author/:permlink/discussion` |
+| [Post voters endpoint](post-voters-endpoint.md) | `GET /query/v1/posts/:author/:permlink/voters` |
 | [Post reward](post-reward.md) | `reward` + `waivRewardEligible` on post payloads |
 | [User post drafts](user-post-drafts-endpoint.md) | Draft CRUD (Bearer JWT, same `JWT_SECRET` as auth-api) |
 | [Search](search.md) | `GET /query/v1/search`, `GET /query/v1/search/counts` |

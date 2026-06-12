@@ -15,6 +15,7 @@ import {
 } from '../../domain/vote-weight';
 
 import { formatVoteSummary } from './story-utils';
+import { StoryVoteModal } from './story-vote-modal';
 
 function IconThumbUp({ className }: { className?: string }) {
   return (
@@ -55,6 +56,7 @@ export type StoryVoteButtonProps = {
   permlink: string;
   votes: FeedStoryView['votes'];
   currentUsername: string | null;
+  contentType?: 'post' | 'thread';
   /** Override default full-vs-clear toggle; see `VoteWeightContext` in feed domain. */
   resolveVoteWeight?: (ctx: VoteWeightContext) => number;
 };
@@ -64,6 +66,7 @@ export function StoryVoteButton({
   permlink,
   votes,
   currentUsername,
+  contentType = 'post',
   resolveVoteWeight = defaultResolveVoteWeight,
 }: StoryVoteButtonProps) {
   useHydrateWalletProvider();
@@ -74,6 +77,7 @@ export function StoryVoteButton({
   const [pending, setPending] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     setOptimisticVoted(votes?.voted ?? false);
@@ -128,6 +132,16 @@ export function StoryVoteButton({
     router,
   ]);
 
+  const onCountClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (optimisticCount > 0) {
+        setModalOpen(true);
+      }
+    },
+    [optimisticCount],
+  );
+
   const iconActive = optimisticVoted;
   const countAccent = optimisticVoted;
   const iconToneClass = iconActive ? 'text-accent' : 'text-muted';
@@ -137,36 +151,66 @@ export function StoryVoteButton({
       : 'font-weight-label tabular-nums text-fg-secondary';
 
   const canInteract = Boolean(currentUsername?.trim());
+  const countButtonClass = [
+    'rounded-btn px-0.5 py-0.5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+    optimisticCount > 0
+      ? 'cursor-pointer hover:bg-surface-control hover:text-accent'
+      : 'cursor-default',
+    countClass,
+  ].join(' ');
 
   return (
-    <div className="inline-flex flex-col items-start gap-0.5">
-      <button
-        type="button"
-        className="inline-flex items-center gap-1.5 rounded-btn px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={!canInteract || pending}
-        aria-label="Likes"
-        aria-busy={pending}
-        title={voteLine ?? undefined}
-        aria-pressed={optimisticVoted}
-        onClick={() => void onVoteClick()}
-      >
-        <span className={iconToneClass}>
-          {optimisticVoted ? <IconThumbUpFilled /> : <IconThumbUp />}
-        </span>
-        {confirming ? (
-          <span
-            className="inline-block h-3 w-3 animate-spin rounded-circle border-2 border-current border-t-transparent"
-            aria-label="Confirming"
-          />
-        ) : (
-          <span className={countClass}>{optimisticCount}</span>
-        )}
-      </button>
-      {error ? (
-        <span className="max-w-[12rem] text-nano text-error" role="alert">
-          {error}
-        </span>
-      ) : null}
-    </div>
+    <>
+      <div className="inline-flex flex-col items-start gap-0.5">
+        <div
+          className="inline-flex items-center gap-1.5 rounded-btn px-1 py-1 text-caption text-muted"
+          title={voteLine ?? undefined}
+        >
+          <button
+            type="button"
+            className="inline-flex rounded-btn p-0.5 transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!canInteract || pending}
+            aria-label="Likes"
+            aria-busy={pending}
+            aria-pressed={optimisticVoted}
+            onClick={() => void onVoteClick()}
+          >
+            <span className={iconToneClass}>
+              {optimisticVoted ? <IconThumbUpFilled /> : <IconThumbUp />}
+            </span>
+          </button>
+          {confirming ? (
+            <span
+              className="inline-block h-3 w-3 animate-spin rounded-circle border-2 border-current border-t-transparent"
+              aria-label="Confirming"
+            />
+          ) : (
+            <button
+              type="button"
+              className={countButtonClass}
+              aria-label={voteLine ?? 'Vote count'}
+              disabled={optimisticCount <= 0}
+              onClick={onCountClick}
+            >
+              {optimisticCount}
+            </button>
+          )}
+        </div>
+        {error ? (
+          <span className="max-w-[12rem] text-nano text-error" role="alert">
+            {error}
+          </span>
+        ) : null}
+      </div>
+      <StoryVoteModal
+        open={modalOpen}
+        authorName={authorName}
+        permlink={permlink}
+        contentType={contentType}
+        initialUpvoteCount={optimisticCount}
+        initialDownvoteCount={0}
+        onClose={() => setModalOpen(false)}
+      />
+    </>
   );
 }

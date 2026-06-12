@@ -13,3 +13,6 @@ export const LINKED_OBJECT_DESCRIPTION_MAX = 200;
 export const LINKED_OBJECT_CATEGORY_ITEMS_MAX = 2;
 
 export const FEED_PREVIEW_VOTER_DISPLAY = 3;
+
+/** Page size for post voters modal (legacy ReactionsList). */
+export const VOTERS_PAGE_LIMIT = 20;

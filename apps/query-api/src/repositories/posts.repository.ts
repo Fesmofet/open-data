@@ -19,6 +19,23 @@ export interface PostVoteSummary {
   voted: boolean;
 }
 
+export type VoteDirection = 'up' | 'down';
+
+export interface PostVoterCounts {
+  upvoteCount: number;
+  downvoteCount: number;
+  totalHiveRsharesSum: number;
+  totalWaivRsharesSum: number;
+}
+
+export interface PostVoterDbRow {
+  voter: string;
+  percent: number | null;
+  weight: number | null;
+  rshares: bigint | null;
+  rshares_waiv: number | null;
+}
+
 const PREVIEW_VOTER_LIMIT = 3;
 
 @Injectable()
@@ -296,6 +313,60 @@ export class PostsRepository {
     }
 
     return result;
+  }
+
+  async findPostVoterCounts(author: string, permlink: string): Promise<PostVoterCounts> {
+    const row = await sql<{
+      up_cnt: string | number;
+      down_cnt: string | number;
+      total_rshares: string | number;
+      total_rshares_waiv: string | number;
+    }>`
+      SELECT
+        COUNT(*) FILTER (
+          WHERE COALESCE(percent, 0) > 0 OR COALESCE(rshares, 0) > 0
+        ) AS up_cnt,
+        COUNT(*) FILTER (WHERE COALESCE(percent, 0) < 0) AS down_cnt,
+        COALESCE(SUM(COALESCE(rshares, 0)), 0) AS total_rshares,
+        COALESCE(SUM(COALESCE(rshares_waiv, 0)), 0) AS total_rshares_waiv
+      FROM post_active_votes
+      WHERE author = ${author} AND permlink = ${permlink}
+    `.execute(this.db);
+
+    const data = row.rows[0];
+    return {
+      upvoteCount: Number(data?.up_cnt ?? 0),
+      downvoteCount: Number(data?.down_cnt ?? 0),
+      totalHiveRsharesSum: Number(data?.total_rshares ?? 0),
+      totalWaivRsharesSum: Number(data?.total_rshares_waiv ?? 0),
+    };
+  }
+
+  async findPostVotersByDirection(
+    author: string,
+    permlink: string,
+    direction: VoteDirection,
+  ): Promise<PostVoterDbRow[]> {
+    const directionFilter =
+      direction === 'up'
+        ? sql`(COALESCE(percent, 0) > 0 OR COALESCE(rshares, 0) > 0)`
+        : sql`COALESCE(percent, 0) < 0`;
+
+    const rows = await sql<{
+      voter: string;
+      percent: number | null;
+      weight: number | null;
+      rshares: bigint | null;
+      rshares_waiv: number | null;
+    }>`
+      SELECT voter, percent, weight, rshares, rshares_waiv
+      FROM post_active_votes
+      WHERE author = ${author}
+        AND permlink = ${permlink}
+        AND ${directionFilter}
+    `.execute(this.db);
+
+    return rows.rows;
   }
 
   /** Posts the viewer account has reblogged (`post_reblogged_users`). */

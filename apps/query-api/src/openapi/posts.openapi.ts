@@ -151,6 +151,102 @@ const postDiscussionResponseSchema = registry.register(
   }),
 );
 
+const postVoterRowSchema = registry.register(
+  'PostVoterRow',
+  z.object({
+    voter: z.string(),
+    percent: z.number(),
+    valueUsd: z.number(),
+    valueLabel: z.string(),
+    profile: z.object({
+      name: z.string(),
+      displayName: z.string().nullable(),
+      avatarUrl: z.string().nullable(),
+    }),
+  }),
+);
+
+const postVotersPageSchema = registry.register(
+  'PostVotersPage',
+  z.object({
+    upvoteCount: z.number().int(),
+    downvoteCount: z.number().int(),
+    items: z.array(postVoterRowSchema),
+    nextCursor: z.string().nullable(),
+  }),
+);
+
+const votersDirectionQuery = z
+  .enum(['up', 'down'])
+  .openapi({
+    param: { name: 'direction', in: 'query', required: true },
+    description: 'Upvotes or downvotes tab.',
+    example: 'up',
+  });
+
+const votersContentTypeQuery = z
+  .enum(['post', 'thread'])
+  .optional()
+  .default('post')
+  .openapi({
+    param: { name: 'contentType', in: 'query', required: false },
+    description: 'Hive post (default) or thread row.',
+    example: 'post',
+  });
+
+const votersLimitQuery = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(20)
+  .optional()
+  .openapi({
+    param: { name: 'limit', in: 'query', required: false },
+    description: 'Page size (default 20, max 20).',
+    example: 20,
+  });
+
+const votersCursorQuery = z.string().optional().openapi({
+  param: { name: 'cursor', in: 'query', required: false },
+  description: 'Opaque cursor from `nextCursor` of the previous page.',
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/posts/{author}/{permlink}/voters',
+  summary: 'Paginated voters for a post or thread',
+  description:
+    'On-demand voter list for the reactions modal: per-voter profile, vote weight %, and USD value. Uses `post_active_votes` (or `thread_active_votes` when `contentType=thread`); falls back to Hive `get_active_votes` when the DB has no rows.',
+  request: {
+    params: z.object({ author: authorParam, permlink: permlinkParam }),
+    query: z.object({
+      direction: votersDirectionQuery,
+      contentType: votersContentTypeQuery,
+      limit: votersLimitQuery,
+      cursor: votersCursorQuery,
+      currency: currencyQueryParam,
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Voter page.',
+      content: {
+        'application/json': {
+          schema: postVotersPageSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Post/thread not found or no voter data.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
 registry.registerPath({
   method: 'get',
   path: '/query/v1/posts/{author}/{permlink}/discussion',

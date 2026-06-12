@@ -1,6 +1,7 @@
 export { FeedModule } from './feed.module';
 export { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 export { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
+export { GetPostVotersEndpoint } from './get-post-voters.endpoint';
 export { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 export { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 export { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
@@ -8,6 +9,8 @@ export { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 export type {
   FeedStoryItemDto,
   FeedVoteSummaryDto,
+  PostVoterRowDto,
+  PostVotersPageDto,
   SinglePostViewDto,
   DiscussionCommentDto,
   UserBlogFeedResponse,

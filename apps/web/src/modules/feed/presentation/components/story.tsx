@@ -436,6 +436,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             permlink={story.permlink}
             votes={story.votes}
             currentUsername={currentUsername}
+            contentType={feedTab === 'threads' ? 'thread' : 'post'}
           />
           <StoryStatButton
             icon={<IconComment />}

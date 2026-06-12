@@ -175,6 +175,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/post-discussion-endpoint.md',
   },
   {
+    name: 'get_post_voters',
+    description:
+      'Paginated upvote/downvote list for a post or thread with per-voter USD value and profile.',
+    httpEquivalent: 'GET /query/v1/posts/:author/:permlink/voters',
+    specPath: 'docs/apps/query-api/spec/post-voters-endpoint.md',
+  },
+  {
     name: 'get_currency_market',
     description: 'Crypto market info (current + weekly).',
     httpEquivalent: 'GET /query/v1/currency/market',

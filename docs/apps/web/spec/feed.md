@@ -56,4 +56,7 @@ The like control is **`StoryVoteButton`** (`story-vote-button.tsx`), used on fee
 
 - **Broadcast:** `buildVoteOp` + **`getWalletFacade().broadcast`**, with **`useHydrateWalletProvider`** (same wallet session pattern as comments).
 - **Default weights:** `HIVE_VOTE_WEIGHT_FULL` (10000) vs `HIVE_VOTE_WEIGHT_CLEAR` (0) via **`defaultResolveVoteWeight`** in [`domain/vote-weight.ts`](../../../../apps/web/src/modules/feed/domain/vote-weight.ts). Extend behavior with **`VoteWeightContext`** and an optional **`resolveVoteWeight`** prop on `StoryVoteButton` (e.g. future slider / custom %).
-- **UI:** Optimistic count toggle on success; guests see a disabled control. Server counts refresh on the next navigation or refetch (no `router.refresh` in v1).
+- **UI:** Optimistic count toggle on success; guests see a disabled control. After broadcast, **`refreshAfterBroadcast`** updates server counts.
+- **Hover:** Native `title` via `formatVoteSummary` (unchanged).
+- **Click count:** Opens **`StoryVoteModal`** — tabs for upvotes/downvotes, voter avatar, USD value, and vote %; paginated via **`GET /query/v1/posts/{author}/{permlink}/voters`** (`loadPostVotersAction`). Thumb icon click still toggles the vote.
+- **Threads tab:** Pass `contentType="thread"` so query-api reads `thread_active_votes`.

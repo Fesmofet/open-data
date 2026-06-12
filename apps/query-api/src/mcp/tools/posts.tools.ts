@@ -24,6 +24,21 @@ const postDiscussionSchema = z.object({
     .describe('Reward display currency (see post-reward.md)'),
 });
 
+const postVotersSchema = z.object({
+  ...postKeyFields,
+  direction: z.enum(['up', 'down']).describe('Vote direction tab'),
+  contentType: z
+    .enum(['post', 'thread'])
+    .default('post')
+    .describe('Hive post (default) or Leo/Ecency thread'),
+  limit: z.number().int().min(1).max(20).optional().describe('Page size (max 20)'),
+  cursor: z.string().optional().describe('Opaque pagination cursor from prior response'),
+  currency: z
+    .enum(SUPPORTED_CURRENCIES)
+    .default('USD')
+    .describe('Fiat currency for per-voter value labels'),
+});
+
 export function registerPostTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     'get_post',
@@ -71,6 +86,31 @@ export function registerPostTools(server: McpServer, deps: McpToolDeps): void {
       );
       if (!result) {
         return toolError(`Discussion not found: ${args.author}/${args.permlink}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_post_voters',
+    {
+      description: catalogDescription('get_post_voters'),
+      inputSchema: postVotersSchema,
+    },
+    async (args) => {
+      const result = await deps.getPostVoters.execute(
+        args.author,
+        args.permlink,
+        {
+          direction: args.direction,
+          contentType: args.contentType,
+          limit: args.limit,
+          cursor: args.cursor,
+        },
+        args.currency,
+      );
+      if (!result) {
+        return toolError(`Voters not found: ${args.author}/${args.permlink}`);
       }
       return jsonToolResult(result);
     },
