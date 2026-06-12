@@ -56,5 +56,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # migrate / knowledge:reindex use tsx --env-file=.env; POSTGRES_* come from job env above.
+      - name: Create empty .env for CLI scripts
+        run: touch .env
+
       - name: Migrate, reindex, and E2E
         run: pnpm e2e:knowledge-api
