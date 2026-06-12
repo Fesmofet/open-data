@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
+import { HIVE_ENGINE_HISTORY_NODES, HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
 
 const DEFAULT_HIVE_ENGINE_NODES = [...HIVE_ENGINE_NODES];
+const DEFAULT_HIVE_ENGINE_HISTORY_NODES = [...HIVE_ENGINE_HISTORY_NODES];
 
 function parseDisabledJobs(raw: string | undefined): Set<string> {
   if (!raw?.trim()) {
@@ -78,6 +79,27 @@ export const schedulerConfigSchema = z.object({
       return parsed.length > 0 ? parsed : [...DEFAULT_HIVE_ENGINE_NODES];
     }),
   CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(12_000),
+  HIVE_ENGINE_HISTORY_NODES: z
+    .string()
+    .optional()
+    .transform((s) => {
+      if (!s || s.trim().length === 0) {
+        return [...DEFAULT_HIVE_ENGINE_HISTORY_NODES];
+      }
+      return s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+    }),
+  HIVE_ENGINE_HISTORY_CACHE_PREFIX: z
+    .string()
+    .optional()
+    .default('scheduler_hive_engine_history'),
+  HIVE_ENGINE_HISTORY_MAX_RESPONSE_TIME_MS: z.coerce.number().optional().default(8000),
+  HIVE_ENGINE_HISTORY_URL_ROTATION_DB: z.coerce.number().optional().default(0),
+  POST_REWARDS_FINALIZE_DELAY_SEC: z.coerce.number().optional().default(900),
+  POST_REWARDS_FINALIZE_BATCH_SIZE: z.coerce.number().optional().default(50),
+  POST_REWARD_RECONCILE_BATCH_SIZE: z.coerce.number().optional().default(50),
 });
 
 export type SchedulerEnv = z.infer<typeof schedulerConfigSchema>;

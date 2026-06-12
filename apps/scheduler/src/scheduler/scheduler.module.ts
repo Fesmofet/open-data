@@ -5,6 +5,7 @@ import {
   ExchangeRateClientModule,
   HiveClientModule,
   HiveEngineClientModule,
+  HiveEngineHistoryClientModule,
   type HiveEngineClientModuleOptions,
   HIVE_RPC_NODES,
   RedisClientModule,
@@ -18,7 +19,12 @@ import { SchedulerDispatchService } from './scheduler-dispatch.service';
 import { SchedulerLockService } from './scheduler-lock.service';
 import { SchedulerWorkerService } from './scheduler-worker.service';
 import { SiteRegistryDailyRunner } from '../jobs/site-registry-daily.runner';
+import { PostRewardReconcileRunner } from '../jobs/post-reward-reconcile.runner';
+import { PostRewardsFinalizeRunner } from '../jobs/post-rewards-finalize.runner';
 import { WaivPowerAvgRunner } from '../jobs/waiv-power-avg.runner';
+import { PostRewardsFinalizeQueue } from '../queues/post-rewards-finalize.queue';
+import { PostWaivReconcileQueue } from '../queues/post-waiv-reconcile.queue';
+import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
 
 @Module({
   imports: [
@@ -85,10 +91,31 @@ import { WaivPowerAvgRunner } from '../jobs/waiv-power-avg.runner';
       }),
       inject: [ConfigService],
     }),
+    HiveEngineHistoryClientModule.forRootAsync({
+      useFactory: (config: ConfigService) => {
+        const client = config.get<{
+          nodes: string[];
+          cachePrefix?: string;
+          cacheTtlSeconds?: number;
+          maxResponseTimeMs?: number;
+          urlRotationDb?: number;
+        }>('hiveEngine.historyClient');
+        if (!client?.nodes?.length) {
+          throw new Error('scheduler: hiveEngine.historyClient.nodes is missing or empty');
+        }
+        return client;
+      },
+      inject: [ConfigService],
+    }),
   ],
   providers: [
     SiteRegistryDailyRunner,
     WaivPowerAvgRunner,
+    PostRewardReconcileRunner,
+    PostRewardsFinalizeRunner,
+    PostWaivReconcileQueue,
+    PostRewardsFinalizeQueue,
+    WaivRewardPoolCache,
     CurrencyCollectRunner,
     SchedulerLockService,
     SchedulerDispatchService,

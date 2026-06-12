@@ -1,4 +1,5 @@
 export * from './constants';
+export * from './post-reward';
 export * from './constants/category-tree.constants';
 export * from './post-objects';
 export * from './hive-thread';

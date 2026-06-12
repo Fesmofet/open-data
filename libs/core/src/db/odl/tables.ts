@@ -455,6 +455,8 @@ export interface PostsTable {
   net_rshares_waiv: number;
   total_payout_waiv: number;
   total_rewards_waiv: number;
+  /** Set once post-cashout reward finalization completes. */
+  rewards_finalized_at: string | null;
   /** Unix seconds for chronological feeds and sorting. */
   created_unix: number;
 }

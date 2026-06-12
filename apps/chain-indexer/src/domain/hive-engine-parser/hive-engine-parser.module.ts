@@ -4,11 +4,13 @@ import {
   HIVE_ENGINE_BLOCK_PARSER,
   HiveEngineProcessorModule,
 } from '@opden-data-layer/hive-engine-processor';
+import { WaivPostRewardModule } from '../waiv-post-reward/waiv-post-reward.module';
 import { HiveEngineCompositeParser } from './hive-engine-composite.parser';
 import {
   HIVE_ENGINE_SUB_PARSERS,
   type HiveEngineSubParser,
 } from './hive-engine-sub-parser.interface';
+import { WaivPostRewardParser } from './parsers/waiv-post-reward.parser';
 import { WaivStakeParser } from './parsers/waiv-stake.parser';
 
 /**
@@ -25,8 +27,9 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
  */
 @Module({
   imports: [
+    WaivPostRewardModule,
     HiveEngineProcessorModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, WaivPostRewardModule],
       useFactory: (config: ConfigService) => {
         const he = config.get<{
           blockNumberKey: string;
@@ -46,10 +49,11 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
         // ── sub-parsers ────────────────────────────────────────────────────
         // Add new parsers here and append them to the inject array below.
         WaivStakeParser,
+        WaivPostRewardParser,
         {
           provide: HIVE_ENGINE_SUB_PARSERS,
           useFactory: (...parsers: HiveEngineSubParser[]) => parsers,
-          inject: [WaivStakeParser],
+          inject: [WaivStakeParser, WaivPostRewardParser],
         },
 
         // ── composite dispatcher ───────────────────────────────────────────

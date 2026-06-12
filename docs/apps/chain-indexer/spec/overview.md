@@ -83,6 +83,7 @@ flowchart LR
 | [Meta group sync](meta-group-sync.md) | `meta_group_id` on `objects_core` synced from winning `group_id` via `ObjectViewService` + platform governance |
 | [Object categories](object-categories.md) | Materialized `category` per object + scoped `object_categories_related` for shop navigation queues |
 | [Object status](object-status.md) | `objects_core.status`; admin-only updates via governance cache; query-api exposes `active` only |
+| [WAIV post reward](waiv-post-reward.md) | Root-post WAIV fields from HE `comments` parser; reconcile + finalize in scheduler |
 
 **WAIV voting weight:** [waiv-power.md](../../../spec/waiv-power.md) — `user_object_powers`, ODL-triggered create events, Hive Engine stake/delegate increments.
 

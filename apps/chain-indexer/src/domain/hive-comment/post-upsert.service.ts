@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { HiveContentType } from '@opden-data-layer/clients';
 import { HiveClient } from '@opden-data-layer/clients';
@@ -34,6 +35,8 @@ import {
   POST_OBJECT_CHANGED_EVENT,
   PostObjectChangedEvent,
 } from '../odl-parser/post-object-changed.event';
+import { parseCashoutToUnix } from '@opden-data-layer/core';
+import { PostRewardsFinalizeQueue } from '../waiv-post-reward/post-rewards-finalize.queue';
 
 function toBigIntNaive(v: number | string | undefined | null): bigint {
   if (v === undefined || v === null) {
@@ -56,6 +59,8 @@ export class PostUpsertService {
     private readonly hiveClient: HiveClient,
     private readonly governanceCache: GovernanceCacheService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly finalizeQueue: PostRewardsFinalizeQueue,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -199,6 +204,12 @@ export class PostUpsertService {
         languages,
         votes,
       });
+      await this.scheduleFinalizeIfNeeded(
+        author,
+        permlink,
+        row.cashout_time,
+        null,
+      );
       this.eventEmitter.emit(POST_OBJECT_CHANGED_EVENT, new PostObjectChangedEvent(author));
       return;
     }
@@ -256,7 +267,35 @@ export class PostUpsertService {
       votes: voteRows,
     });
 
+    await this.scheduleFinalizeIfNeeded(
+      author,
+      permlink,
+      row.cashout_time,
+      existing.rewards_finalized_at ?? null,
+    );
+
     this.eventEmitter.emit(POST_OBJECT_CHANGED_EVENT, new PostObjectChangedEvent(op.author));
+  }
+
+  private async scheduleFinalizeIfNeeded(
+    author: string,
+    permlink: string,
+    cashoutTime: string | null | undefined,
+    rewardsFinalizedAt: string | null,
+  ): Promise<void> {
+    if (rewardsFinalizedAt) {
+      return;
+    }
+    const cashoutUnix = parseCashoutToUnix(cashoutTime);
+    if (cashoutUnix === null) {
+      return;
+    }
+    const delaySec = this.configService.get<number>(
+      'postRewardsFinalize.delaySec',
+      900,
+    );
+    const dueUnix = cashoutUnix + (Number.isFinite(delaySec) ? delaySec : 900);
+    await this.finalizeQueue.schedule(author, permlink, dueUnix);
   }
 
   private buildCreateRow(
@@ -317,6 +356,7 @@ export class PostUpsertService {
       net_rshares_waiv: 0,
       total_payout_waiv: 0,
       total_rewards_waiv: 0,
+      rewards_finalized_at: null,
       created_unix: createdUnix,
     };
   }
@@ -326,7 +366,14 @@ export class PostUpsertService {
     hive: HiveContentType,
     mergedBody: string,
     mergedMetadata: string,
-    existing: { created_unix: number; url: string | null },
+    existing: {
+      created_unix: number;
+      url: string | null;
+      net_rshares_waiv?: number;
+      total_payout_waiv?: number;
+      total_rewards_waiv?: number;
+      rewards_finalized_at?: string | null;
+    },
     blockTimestamp: string,
   ): NewPost {
     const author = op.author;
@@ -392,9 +439,10 @@ export class PostUpsertService {
       total_vote_weight: totalVoteWeight,
       promoted: hive.promoted ?? null,
       body_length: mergedBody.length,
-      net_rshares_waiv: 0,
-      total_payout_waiv: 0,
-      total_rewards_waiv: 0,
+      net_rshares_waiv: existing.net_rshares_waiv ?? 0,
+      total_payout_waiv: existing.total_payout_waiv ?? 0,
+      total_rewards_waiv: existing.total_rewards_waiv ?? 0,
+      rewards_finalized_at: existing.rewards_finalized_at ?? null,
       created_unix: existing.created_unix,
     };
   }

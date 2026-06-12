@@ -50,6 +50,7 @@ export const chainIndexerConfigSchema = z.object({
     .optional()
     .default('chain-indexer:cache:hive-engine:block-number'),
   HIVE_ENGINE_START_BLOCK: z.coerce.number().optional().default(59_083_591),
+  POST_REWARDS_FINALIZE_DELAY_SEC: z.coerce.number().optional().default(900),
   /** Origin for `buildFallbackCanonicalUrl` (https only), e.g. `https://fallback.example.com` */
   CANONICAL_FALLBACK_ORIGIN: z
     .string()

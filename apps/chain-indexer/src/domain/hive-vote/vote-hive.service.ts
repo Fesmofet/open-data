@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../../database';
 import { KYSELY } from '../../database';
+import { PostWaivReconcileQueue } from '../hive-engine-parser/post-waiv-reconcile.queue';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
@@ -16,6 +17,7 @@ export class VoteHiveService {
     @Inject(KYSELY) private readonly db: Kysely<Database>,
     private readonly postsRepository: PostsRepository,
     private readonly postSyncQueueRepository: PostSyncQueueRepository,
+    private readonly postWaivReconcileQueue: PostWaivReconcileQueue,
   ) {}
 
   async handleVote(
@@ -47,5 +49,7 @@ export class VoteHiveService {
         trx,
       );
     });
+
+    await this.postWaivReconcileQueue.markDirty(author, permlink, enqueuedAt);
   }
 }

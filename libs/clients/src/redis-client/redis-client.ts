@@ -137,6 +137,34 @@ class RedisClientWrapper implements RedisClientInterface {
     return Number(await this.client.zincrby(key, increment, member));
   }
 
+  async zAdd(key: string, score: number, member: string): Promise<void> {
+    await this.client.zadd(key, score, member);
+  }
+
+  async zRangeByScore(
+    key: string,
+    min: number | string,
+    max: number | string,
+    limitOffset?: number,
+    limitCount?: number,
+  ): Promise<string[]> {
+    if (limitOffset !== undefined && limitCount !== undefined) {
+      return this.client.zrangebyscore(
+        key,
+        min,
+        max,
+        'LIMIT',
+        limitOffset,
+        limitCount,
+      );
+    }
+    return this.client.zrangebyscore(key, min, max);
+  }
+
+  async zRem(key: string, member: string): Promise<void> {
+    await this.client.zrem(key, member);
+  }
+
   pipeline(): RedisPipelineInterface {
     return new RedisPipelineWrapper(this.client.pipeline());
   }

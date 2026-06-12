@@ -13,6 +13,7 @@ import type {
   NewPostMention,
   NewPostLanguage,
   NewPostRebloggedUser,
+  PostUpdate,
 } from '@opden-data-layer/core';
 import type { ActiveVotesType } from '@opden-data-layer/clients';
 import { sanitizePostRowJsonColumnsForDatabase } from '../domain/hive-comment/hive-post-normalize.util';
@@ -46,9 +47,27 @@ function toBigIntVoteRshares(v: number | string | undefined | null): bigint {
   return BigInt(Math.trunc(n));
 }
 
+type DbExecutor = Kysely<Database> | Transaction<Database>;
+
+export type HivePayoutFieldUpdate = Pick<
+  PostUpdate,
+  | 'pending_payout_value'
+  | 'total_payout_value'
+  | 'curator_payout_value'
+  | 'total_pending_payout_value'
+  | 'cashout_time'
+  | 'last_payout'
+  | 'net_rshares'
+  | 'total_vote_weight'
+>;
+
 @Injectable()
 export class PostsRepository {
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
+
+  private executor(trx?: DbExecutor): DbExecutor {
+    return trx ?? this.db;
+  }
 
   async findByKey(author: string, permlink: string): Promise<Post | undefined> {
     return this.db
@@ -143,11 +162,195 @@ export class PostsRepository {
       .execute();
   }
 
+  /** Root post only (`depth` 0 or null). */
+  async findRootPostByAuthorPermlink(
+    author: string,
+    permlink: string,
+  ): Promise<Post | undefined> {
+    return this.db
+      .selectFrom('posts')
+      .selectAll()
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .where((eb) =>
+        eb.or([eb('depth', '=', 0), eb('depth', 'is', null)]),
+      )
+      .executeTakeFirst();
+  }
+
+  /** Root post row lock for WAIV vote updates (caller must run inside a transaction). */
+  async findRootPostForUpdate(
+    author: string,
+    permlink: string,
+    trx: Transaction<Database>,
+  ): Promise<Post | undefined> {
+    return trx
+      .selectFrom('posts')
+      .selectAll()
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .where((eb) =>
+        eb.or([eb('depth', '=', 0), eb('depth', 'is', null)]),
+      )
+      .forUpdate()
+      .executeTakeFirst();
+  }
+
+  async applyWaivVoteUpdate(
+    params: {
+      author: string;
+      permlink: string;
+      voter: string;
+      rsharesWaiv: number;
+      weight?: number | null;
+      percent?: number | null;
+      netRsharesWaiv: number;
+      totalPayoutWaiv: number;
+      updatePayoutFields: boolean;
+    },
+    trx?: DbExecutor,
+  ): Promise<boolean> {
+    const db = this.executor(trx);
+    if (!trx) {
+      const post = await this.findRootPostByAuthorPermlink(
+        params.author,
+        params.permlink,
+      );
+      if (!post) {
+        return false;
+      }
+    }
+    if (params.updatePayoutFields) {
+      await db
+        .updateTable('posts')
+        .set({
+          net_rshares_waiv: params.netRsharesWaiv,
+          total_payout_waiv: params.totalPayoutWaiv,
+        })
+        .where('author', '=', params.author)
+        .where('permlink', '=', params.permlink)
+        .execute();
+    }
+    if (params.rsharesWaiv === 0 && (params.weight ?? 0) === 0) {
+      await db
+        .deleteFrom('post_active_votes')
+        .where('author', '=', params.author)
+        .where('permlink', '=', params.permlink)
+        .where('voter', '=', params.voter)
+        .execute();
+      return true;
+    }
+    await db
+      .insertInto('post_active_votes')
+      .values({
+        author: params.author,
+        permlink: params.permlink,
+        voter: params.voter,
+        weight: params.weight ?? null,
+        percent: params.percent ?? null,
+        rshares: null,
+        rshares_waiv: params.rsharesWaiv,
+      })
+      .onConflict((oc) =>
+        oc.columns(['author', 'permlink', 'voter']).doUpdateSet({
+          weight: params.weight ?? null,
+          percent: params.percent ?? null,
+          rshares_waiv: params.rsharesWaiv,
+        }),
+      )
+      .execute();
+    return true;
+  }
+
+  async incrementWaivRewards(
+    author: string,
+    permlink: string,
+    delta: number,
+    trx?: DbExecutor,
+  ): Promise<boolean> {
+    const result = await this.executor(trx)
+      .updateTable('posts')
+      .set({
+        total_rewards_waiv: sql`total_rewards_waiv + ${delta}::double precision`,
+      })
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .where('rewards_finalized_at', 'is', null)
+      .where((eb) =>
+        eb.or([eb('depth', '=', 0), eb('depth', 'is', null)]),
+      )
+      .executeTakeFirst();
+    const n = result.numUpdatedRows ?? BigInt(0);
+    return Number(n) > 0;
+  }
+
+  async updateWaivPayoutFields(
+    author: string,
+    permlink: string,
+    netRsharesWaiv: number,
+    totalPayoutWaiv: number,
+  ): Promise<void> {
+    await this.db
+      .updateTable('posts')
+      .set({
+        net_rshares_waiv: netRsharesWaiv,
+        total_payout_waiv: totalPayoutWaiv,
+      })
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+  }
+
+  async updateHivePayoutFields(
+    author: string,
+    permlink: string,
+    fields: HivePayoutFieldUpdate,
+  ): Promise<void> {
+    const patch = Object.fromEntries(
+      Object.entries(fields).filter(([, v]) => v !== undefined),
+    ) as HivePayoutFieldUpdate;
+    if (Object.keys(patch).length === 0) {
+      return;
+    }
+    await this.db
+      .updateTable('posts')
+      .set(patch)
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+  }
+
+  async upsertWaivVoteRshares(
+    author: string,
+    permlink: string,
+    voter: string,
+    rsharesWaiv: number,
+  ): Promise<void> {
+    await this.db
+      .insertInto('post_active_votes')
+      .values({
+        author,
+        permlink,
+        voter,
+        weight: null,
+        percent: null,
+        rshares: null,
+        rshares_waiv: rsharesWaiv,
+      })
+      .onConflict((oc) =>
+        oc.columns(['author', 'permlink', 'voter']).doUpdateSet({
+          rshares_waiv: rsharesWaiv,
+        }),
+      )
+      .execute();
+  }
+
   async findActiveVotes(
     author: string,
     permlink: string,
+    trx?: DbExecutor,
   ): Promise<PostActiveVote[]> {
-    return this.db
+    return this.executor(trx)
       .selectFrom('post_active_votes')
       .selectAll()
       .where('author', '=', author)
@@ -263,10 +466,17 @@ export class PostsRepository {
     const permlink = sanitized.permlink;
     const benEncoded = encodeBeneficiariesForPostgresJsonb(sanitized.beneficiaries);
     const beneficiariesSql = jsonbParamFromEncodedJson(benEncoded);
-    const { author: _a, permlink: _p, beneficiaries: _b, ...rest } = sanitized;
+    const {
+      author: _a,
+      permlink: _p,
+      beneficiaries: _b,
+      rewards_finalized_at: _rewardsFinalizedAt,
+      ...rest
+    } = sanitized;
     void _a;
     void _p;
     void _b;
+    void _rewardsFinalizedAt;
     const insertRow = {
       ...sanitized,
       beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
@@ -429,12 +639,15 @@ export class PostsRepository {
       const hiveVoters = new Set(hiveVotes.map((v) => v.voter));
       const stored = await trx
         .selectFrom('post_active_votes')
-        .select('voter')
+        .select(['voter', 'rshares_waiv'])
         .where('author', '=', author)
         .where('permlink', '=', permlink)
         .execute();
       for (const row of stored) {
         if (!hiveVoters.has(row.voter)) {
+          if ((row.rshares_waiv ?? 0) > 0) {
+            continue;
+          }
           await trx
             .deleteFrom('post_active_votes')
             .where('author', '=', author)

@@ -70,6 +70,9 @@ export default () => {
       blockNumberKey: env.HIVE_ENGINE_BLOCK_CACHE_KEY,
       startBlockNumber: env.HIVE_ENGINE_START_BLOCK,
     },
+    postRewardsFinalize: {
+      delaySec: env.POST_REWARDS_FINALIZE_DELAY_SEC,
+    },
     siteCanonical: {
       fallbackOrigin: env.CANONICAL_FALLBACK_ORIGIN,
       accountCacheTtlSec: env.CANONICAL_ACCOUNT_CACHE_TTL_SEC,

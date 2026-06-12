@@ -38,6 +38,15 @@ export interface RedisClientInterface {
   hIncrBy(key: string, field: string, increment: number): Promise<void>;
   expire(key: string, ttlSeconds: number): Promise<void>;
   zIncrBy(key: string, increment: number, member: string): Promise<number>;
+  zAdd(key: string, score: number, member: string): Promise<void>;
+  zRangeByScore(
+    key: string,
+    min: number | string,
+    max: number | string,
+    limitOffset?: number,
+    limitCount?: number,
+  ): Promise<string[]>;
+  zRem(key: string, member: string): Promise<void>;
   pipeline(): RedisPipelineInterface;
   publish(channel: string, message: string): Promise<void>;
   xAdd(stream: string, fields: Record<string, string>): Promise<string>;

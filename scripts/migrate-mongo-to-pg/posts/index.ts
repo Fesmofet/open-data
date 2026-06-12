@@ -39,6 +39,7 @@ import {
   buildMongoPostMetadataRecord,
   objectTypeByIdFromLegacyWobjects,
 } from './build-mongo-post-metadata';
+import { deriveRewardsFinalizedAt } from '../../../libs/core/src/post-reward/derive-rewards-finalized-at';
 import { normalizeMongoPostLanguage } from './normalize-post-language';
 import type { MongoDate, MongoPost } from './types';
 const BATCH_SIZE = 5000;
@@ -536,6 +537,10 @@ class MongoPostsMigrator {
       net_rshares_waiv: doc.net_rshares_WAIV ?? 0,
       total_payout_waiv: doc.total_payout_WAIV ?? 0,
       total_rewards_waiv: doc.total_rewards_WAIV ?? 0,
+      rewards_finalized_at: deriveRewardsFinalizedAt(
+        strOrNull(doc.cashout_time),
+        doc.depth ?? null,
+      ),
       created_unix: createdUnix,
     };
 

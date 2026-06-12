@@ -18,6 +18,7 @@ import * as m00017 from './00017_objects_core_created_at';
 import * as m00018 from './00018_knowledge_tables';
 import * as m00019 from './00019_knowledge_files_description';
 import * as m00020 from './00020_knowledge_search_hybrid';
+import * as m00021 from './00021_posts_rewards_finalized_at';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -45,4 +46,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00018_knowledge_tables': { up: m00018.up, down: m00018.down },
   '00019_knowledge_files_description': { up: m00019.up, down: m00019.down },
   '00020_knowledge_search_hybrid': { up: m00020.up, down: m00020.down },
+  '00021_posts_rewards_finalized_at': { up: m00021.up, down: m00021.down },
 };
