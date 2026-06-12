@@ -1,7 +1,5 @@
 'use client';
 
-import { createPortal } from 'react-dom';
-
 import { imageContentUrlForCid } from '@/config/ipfs-content-url';
 import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
@@ -32,7 +30,7 @@ export function EditorPostPreviewModal({
 }: EditorPostPreviewModalProps) {
   const contentBaseUrl = useIpfsContentBaseUrl();
 
-  if (!open || typeof document === 'undefined') {
+  if (!open) {
     return null;
   }
 
@@ -50,7 +48,7 @@ export function EditorPostPreviewModal({
     },
   });
 
-  return createPortal(
+  return (
     <PostInterceptModalShell onClose={onClose} showShareActions={false}>
       <FeedColumn>
         <BlogPostScreen
@@ -60,7 +58,6 @@ export function EditorPostPreviewModal({
           currentUsername={username}
         />
       </FeedColumn>
-    </PostInterceptModalShell>,
-    document.body,
+    </PostInterceptModalShell>
   );
 }

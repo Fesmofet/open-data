@@ -8,6 +8,7 @@ export {
   type UseInfiniteScrollOptions,
 } from './hooks/use-infinite-scroll';
 export { useLockBodyScroll } from './hooks/use-lock-body-scroll';
+export { useModalScrollLock } from './hooks/use-modal-scroll-lock';
 export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
 export {
   AVATAR_PLACEHOLDER_SRC,
@@ -26,6 +27,18 @@ export {
   APP_MODAL_Z_INDEX,
 } from './components/app-modal';
 export type { AppModalProps } from './components/app-modal';
+export {
+  ModalShell,
+  ModalShellCloseButton,
+} from './components/modal-shell';
+export type { ModalShellProps, ModalShellVariant } from './components/modal-shell';
+export {
+  MODAL_Z_INDEX_DEFAULT,
+  MODAL_Z_INDEX_ABOVE_MAP,
+  MODAL_Z_INDEX_GALLERY,
+  MODAL_Z_INDEX_GEO_FULLSCREEN,
+  APP_MODAL_Z_INDEX as MODAL_Z_INDEX_APP,
+} from './components/modal-shell.constants';
 export { HydrationSafeAnchor } from './components/hydration-safe-anchor';
 export { NavMenu } from './components/nav-menu';
 export type { NavMenuItem, NavMenuProps } from './components/nav-menu';

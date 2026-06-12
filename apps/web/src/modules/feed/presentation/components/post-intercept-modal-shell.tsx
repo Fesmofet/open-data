@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 
+import { ModalShell } from '@/shared/presentation';
 import { useDismissPostInterceptForObjectSurface } from '@/shared/presentation/hooks/use-dismiss-post-intercept-for-object-surface';
 
 type PostInterceptModalShellProps = {
@@ -91,31 +92,6 @@ export function PostInterceptModalShell({
     router.back();
   }, [onCloseProp, router]);
 
-  useEffect(() => {
-    if (hideForObjectSurface) return;
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [hideForObjectSurface, onClose]);
-
-  // Lock body scroll while modal is open.
-  // Measures the scrollbar width before hiding it and adds equivalent padding-right
-  // to <html> so fixed headers and the layout don't jump when the bar disappears.
-  useEffect(() => {
-    if (hideForObjectSurface) return;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.documentElement.style.paddingRight = `${scrollbarWidth}px`;
-    document.documentElement.classList.add('modal-open');
-    return () => {
-      document.documentElement.classList.remove('modal-open');
-      document.documentElement.style.paddingRight = '';
-    };
-  }, [hideForObjectSurface]);
-
   const openShareX = useCallback(() => {
     const shareUrl = window.location.href;
     window.open(
@@ -138,79 +114,51 @@ export function PostInterceptModalShell({
     return null;
   }
 
-  return (
-    <>
-      {/*
-        Blur layer is a separate, non-scrolling element so the browser only
-        needs to composite the backdrop-filter once, not on every scroll frame.
-        Keeping overflow-y-auto and backdrop-filter on the same fixed div
-        forces a re-composite of the blur on every scroll tick → visible jank.
-      */}
-      <div className="post-modal-scrim fixed inset-0 z-[100] backdrop-blur-[2px]" aria-hidden />
-      <div
-        className="post-modal-scroll fixed inset-0 z-[100] touch-pan-y overflow-y-auto"
-        role="presentation"
+  const mobileHeader = (
+    <div className="flex items-center justify-end border-b border-border px-4 py-2 lg:hidden">
+      <button
+        type="button"
+        aria-label="Close"
         onClick={onClose}
+        className="flex size-8 items-center justify-center rounded-circle text-fg-secondary hover:text-fg"
       >
-        {/*
-          Outer: full-width flex column that simply fills min-h-full so the
-          backdrop covers the whole viewport. py-8 gives top/bottom breathing room.
-        */}
-        <div className="flex min-h-full flex-col items-center justify-start px-4 py-8 sm:px-6">
-          {/*
-            Inner: card + pills sit side-by-side, centered as a unit.
-            max-w caps the total width; on smaller screens the pills collapse.
-          */}
-          <div className="flex w-full max-w-container-post items-start gap-3">
-            {/* Modal card */}
-            <div
-              role="dialog"
-              aria-modal="true"
-              className="min-w-0 flex-1 rounded-card border-0 bg-surface shadow-card-float"
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-            >
-              {/* Mobile close bar */}
-              <div className="flex items-center justify-end border-b border-border px-4 py-2 lg:hidden">
-                <button
-                  type="button"
-                  aria-label="Close"
-                  onClick={onClose}
-                  className="flex size-8 items-center justify-center rounded-circle text-fg-secondary hover:text-fg"
-                >
-                  <IconClose />
-                </button>
-              </div>
+        <IconClose />
+      </button>
+    </div>
+  );
 
-              <div className="px-6 py-5 sm:px-8 sm:py-6">{children}</div>
-            </div>
+  const desktopAside = (
+    <div className="flex flex-col gap-2 pt-4">
+      <ActionPill label="Close" onClick={onClose}>
+        <IconClose />
+      </ActionPill>
+      {showShareActions ? (
+        <>
+          <ActionPill label="Reblog">
+            <IconReblog />
+          </ActionPill>
+          <ActionPill label="Share on X" onClick={openShareX}>
+            <IconShareX />
+          </ActionPill>
+          <ActionPill label="Share on Facebook" onClick={openShareFacebook}>
+            <IconShareFacebook />
+          </ActionPill>
+        </>
+      ) : null}
+    </div>
+  );
 
-            {/* Floating action pills — desktop only, right side of card */}
-            <div
-              className="hidden shrink-0 flex-col gap-2 pt-4 lg:flex"
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-            >
-              <ActionPill label="Close" onClick={onClose}>
-                <IconClose />
-              </ActionPill>
-              {showShareActions ? (
-                <>
-                  <ActionPill label="Reblog">
-                    <IconReblog />
-                  </ActionPill>
-                  <ActionPill label="Share on X" onClick={openShareX}>
-                    <IconShareX />
-                  </ActionPill>
-                  <ActionPill label="Share on Facebook" onClick={openShareFacebook}>
-                    <IconShareFacebook />
-                  </ActionPill>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+  return (
+    <ModalShell
+      open
+      onClose={onClose}
+      align="start"
+      maxWidthClass="max-w-container-post"
+      panelClassName="border-0"
+      aside={desktopAside}
+      header={mobileHeader}
+    >
+      <div className="px-6 py-5 sm:px-8 sm:py-6">{children}</div>
+    </ModalShell>
   );
 }

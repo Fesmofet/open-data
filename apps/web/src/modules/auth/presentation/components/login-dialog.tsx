@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createPortal } from 'react-dom';
+
+import { ModalShell } from '@/shared/presentation';
 
 import { WALLET_PROVIDERS } from '../../domain/wallet-providers';
 import { ProviderList } from './provider-list';
@@ -21,46 +22,33 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
     router.refresh();
   }
 
-  if (!open) {
-    return null;
-  }
-
-  /** Portaled to `document.body` so `position: fixed` is not trapped by ancestors with `backdrop-filter` / transforms (e.g. app header). */
-  const dialog = (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="login-dialog-title"
-    >
-      <div className="max-h-[90vh] w-full max-w-container-narrow overflow-y-auto rounded-card-lg border border-border bg-surface p-card-padding shadow-card-float">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2
-            id="login-dialog-title"
-            className="text-section font-display text-heading"
-          >
-            Sign in
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-btn px-2 py-1 text-body-sm text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-          >
-            Close
-          </button>
-        </div>
-
-        <ProviderList
-          providers={INLINE_PROVIDERS}
-          onLoginSuccess={handleLoginSuccess}
-        />
-      </div>
+  const header = (
+    <div className="flex items-start justify-between gap-4 border-b border-border px-card-padding py-3">
+      <h2 id="login-dialog-title" className="text-section font-display text-heading">
+        Sign in
+      </h2>
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-btn px-2 py-1 text-body-sm text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+      >
+        Close
+      </button>
     </div>
   );
 
-  if (typeof document === 'undefined') {
-    return null;
-  }
-
-  return createPortal(dialog, document.body);
+  return (
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      labelledBy="login-dialog-title"
+      maxWidthClass="max-w-container-narrow"
+      panelClassName="rounded-card-lg"
+      header={header}
+    >
+      <div className="p-card-padding">
+        <ProviderList providers={INLINE_PROVIDERS} onLoginSuccess={handleLoginSuccess} />
+      </div>
+    </ModalShell>
+  );
 }

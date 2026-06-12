@@ -127,6 +127,49 @@ In plain CSS (e.g. Leaflet overrides), prefer **`var(--font-size-body)`**, **`va
 - Imports: **`@/shell-mode`** barrel only (see root AGENTS.md).
 - New shell behavior: add a helper in **`shell-mode-features.ts`** and, if needed, CSS hooks in **`theme.css`** — not scattered string comparisons.
 
+## Modals and overlays
+
+Portaled `role="dialog"` UI **must** use **`ModalShell`** or **`AppModal`** from **`@/shared/presentation`** — not ad-hoc `createPortal` + custom dialog markup in feature modules.
+
+| Use | Import |
+|-----|--------|
+| Tall/wide/custom overlays (post intercept, login, add-update, gallery, geo map) | **`ModalShell`** |
+| Compact centered dialogs (vote list, reward breakdown) | **`AppModal`** (wraps `ModalShell`) |
+| Z-index tiers | **`MODAL_Z_INDEX_*`** from `@/shared/presentation` (or `Z_INDEX_MODAL_ABOVE_MAP` in `@/modules/map` for map stack docs) |
+
+### Required scroll architecture
+
+```
+shell:  fixed inset-0 overflow-hidden     ← never overflow-y-auto here
+panel:  flex flex-col max-h-dvh overflow-hidden
+body:   flex-1 min-h-0 overflow-y-auto overscroll-contain   ← only scroll container (when scrollBody)
+```
+
+Use **`header`** / **`footer`** slots on `ModalShell` for chrome that must stay visible while the body scrolls.
+
+### Variants
+
+| `variant` | When |
+|-----------|------|
+| `dialog` (default) | Centered card; optional `aside` (e.g. post modal action pills) |
+| `fullscreen` | Gallery viewer, expanded geo map — set `scrollBody={false}` when layout is flex/media, not a scrolling list |
+
+### Forbidden in modals
+
+- `backdrop-blur` on modal scrims (use solid **`post-modal-scrim`** / `var(--color-modal-scrim)`)
+- `overflow-y-auto` on outer `fixed inset-0` wrappers
+- `max-h-[90vh] overflow-y-auto` on the panel root
+- Ad-hoc scroll lock (`document.body.style.overflow`, duplicate `html.modal-open` logic) — **`ModalShell`** owns lock via **`useModalScrollLock`**
+
+### Not `ModalShell` (documented exceptions)
+
+| Pattern | Examples |
+|---------|----------|
+| Mobile nav drawer | **`DrawerRegion`** |
+| Search / typeahead dropdowns | **`search-dropdown.tsx`**, editor object search fields |
+| Floating toolbars / insert menus | **`editor-format-toolbar.tsx`**, **`editor-insert-menu.tsx`** |
+| Notification / header dropdowns | **`notification-bell.tsx`**, **`logged-in-header-actions.tsx`** |
+
 ## Images
 
 - **`next/image`** for user-facing raster (avatars, feed thumbnails, covers).

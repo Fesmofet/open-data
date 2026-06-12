@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 import {
   buildOdlUpdateCreateOp,
@@ -12,8 +11,6 @@ import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 
 import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { locales } from '@/i18n/config/locales';
-import { Z_INDEX_MODAL_ABOVE_MAP } from '@/modules/map';
-
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
@@ -21,6 +18,7 @@ import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import { ModalShell, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
 
 import {
   defaultUpdateTypeForCandidates,
@@ -273,32 +271,55 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
 
   const showTypeSelect = typeSelectOptions.length > 0;
 
-  const dialog = (
-    <div
-      className="fixed inset-0 flex items-center justify-center bg-overlay p-4"
-      style={{ zIndex: Z_INDEX_MODAL_ABOVE_MAP }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-update-dialog-title"
-    >
-      <div className="max-h-[90vh] w-full max-w-container-narrow overflow-y-auto rounded-card-lg border border-border bg-surface p-card-padding shadow-card-float">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2
-            id="add-update-dialog-title"
-            className="text-section font-display text-heading"
-          >
-            {t('object_edit_modal_title')}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded-btn px-2 py-1 text-body-sm text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-          >
-            {t('object_edit_cancel')}
-          </button>
-        </div>
+  const header = (
+    <div className="flex items-start justify-between gap-4 border-b border-border px-card-padding py-3">
+      <h2 id="add-update-dialog-title" className="text-section font-display text-heading">
+        {t('object_edit_modal_title')}
+      </h2>
+      <button
+        type="button"
+        onClick={onClose}
+        disabled={submitting}
+        className="rounded-btn px-2 py-1 text-body-sm text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+      >
+        {t('object_edit_cancel')}
+      </button>
+    </div>
+  );
 
+  const footer = (
+    <div className="flex justify-end gap-2 border-t border-border px-card-padding py-3">
+      <button
+        type="button"
+        onClick={onClose}
+        disabled={submitting}
+        className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
+      >
+        {t('object_edit_cancel')}
+      </button>
+      <button
+        type="button"
+        onClick={() => void handleSubmit()}
+        disabled={!isValid || submitting || !definition}
+        className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg hover:opacity-90 disabled:opacity-50"
+      >
+        {submitting ? t('object_edit_submitting') : t('object_edit_submit')}
+      </button>
+    </div>
+  );
+
+  return (
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      labelledBy="add-update-dialog-title"
+      zIndex={MODAL_Z_INDEX_ABOVE_MAP}
+      maxWidthClass="max-w-container-narrow"
+      panelClassName="rounded-card-lg"
+      header={header}
+      footer={footer}
+    >
+      <div className="space-y-4 p-card-padding">
         {showTypeSelect ? (
           <UpdateTypeSelectField
             label={t('object_edit_suggest_field')}
@@ -310,7 +331,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
         ) : null}
 
         {definition ? (
-          <div className={showTypeSelect ? 'mt-4' : undefined}>
+          <div>
             <UpdateValueForm
               updateType={selectedType}
               value={value}
@@ -344,12 +365,12 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
         )}
 
         {error ? (
-          <p className="mt-3 text-body-sm text-accent" role="alert">
+          <p className="text-body-sm text-accent" role="alert">
             {error}
           </p>
         ) : null}
 
-        <label className="mt-4 flex cursor-pointer items-center gap-2 text-body-sm text-muted">
+        <label className="flex cursor-pointer items-center gap-2 text-body-sm text-muted">
           <input
             type="checkbox"
             className="size-4 rounded border-border accent-accent"
@@ -359,34 +380,9 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
           />
           <span>{t('like')}</span>
         </label>
-
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
-          >
-            {t('object_edit_cancel')}
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleSubmit()}
-            disabled={!isValid || submitting || !definition}
-            className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg hover:opacity-90 disabled:opacity-50"
-          >
-            {submitting ? t('object_edit_submitting') : t('object_edit_submit')}
-          </button>
-        </div>
       </div>
-    </div>
+    </ModalShell>
   );
-
-  if (typeof document === 'undefined') {
-    return null;
-  }
-
-  return createPortal(dialog, document.body);
 }
 
 export type {

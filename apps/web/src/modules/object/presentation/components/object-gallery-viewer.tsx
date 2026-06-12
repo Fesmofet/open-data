@@ -9,7 +9,6 @@ import {
   useState,
   type SVGProps,
 } from 'react';
-import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -26,7 +25,7 @@ import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '@/modules/object-updates/co
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
-import { useLockBodyScroll, UserAvatar } from '@/shared/presentation';
+import { ModalShell, MODAL_Z_INDEX_GALLERY, UserAvatar } from '@/shared/presentation';
 
 import type { GalleryApprovalStatsIndex } from '@/modules/object/domain/gallery-approval-stats';
 import {
@@ -177,8 +176,6 @@ export function ObjectGalleryViewer({
   const voteDisabled = votePending || voteConfirming;
   const meetsApprovalThreshold =
     currentStat.approvePercent > OBJECT_UPDATES_MIN_APPROVAL_PERCENT;
-
-  useLockBodyScroll(true);
 
   useEffect(() => {
     setActiveIndex(initialIndex);
@@ -391,13 +388,7 @@ export function ObjectGalleryViewer({
     return null;
   }
 
-  const overlay = (
-    <div
-      className="gallery-scrim fixed inset-0 z-[150] flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none text-fg"
-      role="dialog"
-      aria-modal="true"
-      aria-label={t('gallery')}
-    >
+  const galleryHeader = (
       <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
         <div className="flex min-w-0 items-center justify-start gap-2">
           {currentStat.creator ? (
@@ -571,7 +562,9 @@ export function ObjectGalleryViewer({
           />
         </div>
       </header>
+  );
 
+  const galleryMain = (
       <div className="relative flex min-h-0 flex-1 px-2">
         {count > 1 ? (
           <button
@@ -610,7 +603,9 @@ export function ObjectGalleryViewer({
           </button>
         ) : null}
       </div>
+  );
 
+  const galleryFooter = (
       <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -650,7 +645,23 @@ export function ObjectGalleryViewer({
           </p>
         ) : null}
       </footer>
+  );
 
+  return (
+    <>
+      <ModalShell
+        open
+        onClose={onClose}
+        variant="fullscreen"
+        zIndex={MODAL_Z_INDEX_GALLERY}
+        ariaLabel={t('gallery')}
+        panelClassName="gallery-scrim text-fg"
+        scrollBody={false}
+        header={galleryHeader}
+        footer={galleryFooter}
+      >
+        {galleryMain}
+      </ModalShell>
       {canSetAvatar && viewerUsername ? (
         <AddUpdateModal
           mode="generic"
@@ -663,12 +674,6 @@ export function ObjectGalleryViewer({
           updateTypeCounts={updateTypeCounts}
         />
       ) : null}
-    </div>
+    </>
   );
-
-  if (typeof document === 'undefined') {
-    return null;
-  }
-
-  return createPortal(overlay, document.body);
 }

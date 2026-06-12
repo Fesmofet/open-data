@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useMemo, useState, type SVGProps } from 'react';
-import { createPortal } from 'react-dom';
+import { useCallback, useId, useMemo, useState, type SVGProps } from 'react';
 
 import {
   AppMap,
@@ -12,7 +11,7 @@ import {
   MapProvider,
   type MapPosition,
 } from '@/modules/map';
-import { HydrationSafeAnchor } from '@/shared/presentation';
+import { HydrationSafeAnchor, ModalShell, MODAL_Z_INDEX_GEO_FULLSCREEN } from '@/shared/presentation';
 
 import {
   OBJECT_MAP_MODAL_MIN_HEIGHT_PX,
@@ -265,90 +264,29 @@ export function ObjectGeoPreview({ latitude, longitude, label }: ObjectGeoPrevie
     );
   }, []);
 
-  useEffect(() => {
-    if (!expanded) {
-      return;
-    }
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return (): void => {
-      document.body.style.overflow = prev;
-    };
-  }, [expanded]);
-
-  useEffect(() => {
-    if (!expanded) {
-      return;
-    }
-    const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        setExpanded(false);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return (): void => {
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [expanded]);
-
-  const modal =
-    expanded && typeof document !== 'undefined' ? (
-      createPortal(
-        <div
-          className="fixed inset-0 z-[240] flex flex-col bg-bg"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
+  const mapModalHeader = (
+    <>
+      <span id={titleId} className="sr-only">
+        {label}
+      </span>
+      <div className="flex shrink-0 justify-end border-b border-border px-2 py-2">
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          aria-label="Close map"
+          className="rounded-btn p-2 text-fg-secondary hover:bg-surface-alt hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
-          <span id={titleId} className="sr-only">
-            {label}
-          </span>
-          <div className="flex shrink-0 justify-end border-b border-border px-2 py-2">
-            <button
-              type="button"
-              onClick={() => setExpanded(false)}
-              aria-label="Close map"
-              className="rounded-btn p-2 text-fg-secondary hover:bg-surface-alt hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            >
-              <IconClose />
-            </button>
-          </div>
+          <IconClose />
+        </button>
+      </div>
+    </>
+  );
 
-          <div className="flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2">
-            <div className={`${MAP_EMBED_STACK_CLASS} min-h-0 flex-1`}>
-              <AppMap
-                center={center}
-                zoom={OBJECT_MAP_PREVIEW_ZOOM}
-                showBuiltInAttribution={false}
-                zoomUi={OBJECT_GEO_ZOOM_UI}
-                className="size-full rounded-btn border border-border"
-                style={{ minHeight: OBJECT_MAP_MODAL_MIN_HEIGHT_PX, width: '100%' }}
-              >
-                <MapInvalidateSizeOnMount />
-                <GeoMapMarkers
-                  center={center}
-                  label={label}
-                  userLocation={userLocation}
-                  fitBoundsPositions={fitBoundsPositions}
-                />
-              </AppMap>
-
-              <MapOverlayControls
-                onMinimize={() => setExpanded(false)}
-                onLocate={handleLocate}
-                locating={locating}
-                locateError={locateError}
-              />
-            </div>
-          </div>
-
-          <div className="shrink-0 pb-4 pt-1">
-            <OsmCreditLine />
-          </div>
-        </div>,
-        document.body,
-      )
-    ) : null;
+  const mapModalFooter = (
+    <div className="shrink-0 pb-4 pt-1">
+      <OsmCreditLine />
+    </div>
+  );
 
   return (
     <MapProvider>
@@ -379,7 +317,45 @@ export function ObjectGeoPreview({ latitude, longitude, label }: ObjectGeoPrevie
         </div>
 
         <OsmCreditLine />
-        {modal}
+        <ModalShell
+          open={expanded}
+          onClose={() => setExpanded(false)}
+          variant="fullscreen"
+          zIndex={MODAL_Z_INDEX_GEO_FULLSCREEN}
+          labelledBy={titleId}
+          panelClassName="bg-bg"
+          scrollBody={false}
+          header={mapModalHeader}
+          footer={mapModalFooter}
+        >
+          <div className="flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2">
+            <div className={`${MAP_EMBED_STACK_CLASS} min-h-0 flex-1`}>
+              <AppMap
+                center={center}
+                zoom={OBJECT_MAP_PREVIEW_ZOOM}
+                showBuiltInAttribution={false}
+                zoomUi={OBJECT_GEO_ZOOM_UI}
+                className="size-full rounded-btn border border-border"
+                style={{ minHeight: OBJECT_MAP_MODAL_MIN_HEIGHT_PX, width: '100%' }}
+              >
+                <MapInvalidateSizeOnMount />
+                <GeoMapMarkers
+                  center={center}
+                  label={label}
+                  userLocation={userLocation}
+                  fitBoundsPositions={fitBoundsPositions}
+                />
+              </AppMap>
+
+              <MapOverlayControls
+                onMinimize={() => setExpanded(false)}
+                onLocate={handleLocate}
+                locating={locating}
+                locateError={locateError}
+              />
+            </div>
+          </div>
+        </ModalShell>
       </div>
     </MapProvider>
   );
