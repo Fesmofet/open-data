@@ -60,6 +60,7 @@ function postRow(overrides: Partial<Post> = {}): Post {
     net_rshares_waiv: 0,
     total_payout_waiv: 0,
     total_rewards_waiv: 0,
+    rewards_finalized_at: null,
     created_unix: 1_700_000_000,
     ...overrides,
   };

@@ -1,3 +1,18 @@
+---
+id: docs-apps-query-api-spec-post-voters-endpoint
+title: Post voters endpoint
+description: Paginated up/down voter list for the feed reactions modal (`GET /query/v1/posts/{author}/{permlink}/voters`).
+type: spec
+status: active
+scope: query-api
+tags: [query-api, post-voters-endpoint]
+updated_at: 2026-06-12
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/apps/query-api/spec/single-post-endpoint.md
+  - docs/README.md
+---
+
 # Post voters endpoint
 
 `GET /query/v1/posts/:author/:permlink/voters`
