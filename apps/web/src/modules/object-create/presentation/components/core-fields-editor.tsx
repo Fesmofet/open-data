@@ -366,9 +366,16 @@ function TagCategoryItemsGroup({
                 type="button"
                 disabled={disabled}
                 className="hover:text-accent"
-                onClick={() =>
-                  setEditingKey(isEditing ? null : entry.entryKey)
-                }
+                onClick={() => {
+                  if (isEditing) {
+                    setEditingKey(null);
+                    if (isEmpty) {
+                      onRemoveField(entry.entryKey);
+                    }
+                    return;
+                  }
+                  setEditingKey(entry.entryKey);
+                }}
               >
                 {tagValue || t('object_create_tag_chip_empty')}
               </button>

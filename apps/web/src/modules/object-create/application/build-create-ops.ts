@@ -1,5 +1,6 @@
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import {
   buildCustomJsonOp,
   HIVE_CUSTOM_OP_DATA_MAX_LENGTH,
@@ -10,6 +11,7 @@ import {
 import { validateUpdateValue } from '@/modules/object-updates/application/update-value-form.utils';
 
 import { isDuplicateRefValue } from '../domain/duplicate-ref-field-values';
+import { isTagCategoryItemFilled } from '../domain/tag-category-item-value';
 import { filterFieldsForObjectType } from '../domain/filter-fields-for-object-type';
 import { groupFieldsByPriority } from '../domain/group-fields-by-priority';
 import { isEntryValid } from '../domain/object-health-score';
@@ -98,6 +100,12 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
 
   const acceptedFields: FieldEntry[] = [];
   for (const entry of fieldsForType) {
+    if (
+      entry.updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM &&
+      !isTagCategoryItemFilled(entry.value)
+    ) {
+      continue;
+    }
     if (
       isDuplicateRefValue(
         acceptedFields,

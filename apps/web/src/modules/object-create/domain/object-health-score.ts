@@ -207,7 +207,6 @@ export function validatePublishReadiness(
     !missingObjectIdSlug &&
     missingRequired.length === 0 &&
     invalidRequired.length === 0 &&
-    incompleteTagItems === 0 &&
     duplicateRefUpdateTypes.length === 0;
 
   return {

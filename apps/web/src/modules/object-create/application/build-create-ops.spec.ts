@@ -100,6 +100,38 @@ describe('buildCreateOps', () => {
     });
   });
 
+  it('omits tag_category_item rows with an empty value', () => {
+    const ops = buildCreateOps({
+      ...BASE,
+      fields: [
+        ...recipeRequiredFields(),
+        {
+          entryKey: 'tag:cuisine:1',
+          updateType: UPDATE_TYPES.TAG_CATEGORY_ITEM,
+          value: { category: 'Cuisine', value: '' },
+        },
+        {
+          entryKey: 'tag:cuisine:2',
+          updateType: UPDATE_TYPES.TAG_CATEGORY_ITEM,
+          value: { category: 'Cuisine', value: 'Italian' },
+        },
+      ],
+    });
+
+    const envelope = JSON.parse(ops[0]!.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    const tagEvents = envelope.events.filter(
+      (e) =>
+        e.action === 'update_create' &&
+        e.payload.update_type === UPDATE_TYPES.TAG_CATEGORY_ITEM,
+    );
+    expect(tagEvents).toHaveLength(1);
+    expect(tagEvents[0]?.payload).toMatchObject({
+      value_json: { category: 'Cuisine', value: 'Italian' },
+    });
+  });
+
   it('omits duplicate user_ref rows for the same update type', () => {
     const ops = buildCreateOps({
       objectId: 'gov1',

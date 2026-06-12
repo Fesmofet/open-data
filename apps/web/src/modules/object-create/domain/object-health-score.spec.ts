@@ -114,7 +114,7 @@ describe('validatePublishReadiness', () => {
     ).toBe(true);
   });
 
-  it('blocks publish when a tag row has no value', () => {
+  it('allows publish when a tag row has no value (empty tags are skipped)', () => {
     const result = validatePublishReadiness(
       'recipe',
       [
@@ -130,7 +130,7 @@ describe('validatePublishReadiness', () => {
       FULL_ID,
       PREFIX,
     );
-    expect(result.ready).toBe(false);
+    expect(result.ready).toBe(true);
     expect(result.incompleteTagItems).toBe(1);
   });
 
