@@ -23,6 +23,25 @@ const SUBPROCESS_ENV = {
   NX_TUI: 'false',
 };
 
+function runDeploySmoke() {
+  fs.rmSync(DEPLOY_SMOKE_DIR, { recursive: true, force: true });
+  fs.mkdirSync(DEPLOY_SMOKE_DIR, { recursive: true });
+  fs.copyFileSync(
+    path.join(ROOT, 'apps/query-api/package.json'),
+    path.join(DEPLOY_SMOKE_DIR, 'package.json'),
+  );
+  return spawnSync(
+    'pnpm',
+    ['install', '--prod', '--ignore-workspace', '--no-frozen-lockfile'],
+    {
+      cwd: DEPLOY_SMOKE_DIR,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+      env: SUBPROCESS_ENV,
+    },
+  );
+}
+
 const STEPS = [
   {
     label: 'OSV vulnerability scan',
@@ -41,17 +60,7 @@ const STEPS = [
   },
   {
     label: 'Docker prod install smoke (query-api externals)',
-    command: process.platform === 'win32' ? 'node' : 'sh',
-    args:
-      process.platform === 'win32'
-        ? [
-            '-e',
-            `const fs=require('fs');const os=require('os');const path=require('path');const cp=require('child_process');const dir=path.join(os.tmpdir(),'odl-deploy-smoke');fs.rmSync(dir,{recursive:true,force:true});fs.mkdirSync(dir,{recursive:true});fs.copyFileSync('apps/query-api/package.json',path.join(dir,'package.json'));const r=cp.spawnSync('pnpm',['install','--prod','--ignore-workspace','--no-frozen-lockfile'],{cwd:dir,stdio:'inherit',shell:true});process.exit(r.status??1);`,
-          ]
-        : [
-            '-c',
-            'set -euo pipefail; dir="${TMPDIR:-/tmp}/odl-deploy-smoke"; rm -rf "$dir"; mkdir -p "$dir"; cp apps/query-api/package.json "$dir/package.json"; cd "$dir" && pnpm install --prod --ignore-workspace --no-frozen-lockfile',
-          ],
+    run: runDeploySmoke,
     cleanup: () => fs.rmSync(DEPLOY_SMOKE_DIR, { recursive: true, force: true }),
   },
   {
@@ -63,12 +72,14 @@ const STEPS = [
 
 function runStep(step) {
   console.log(`\n=== ${step.label} ===\n`);
-  const result = spawnSync(step.command, step.args, {
-    cwd: ROOT,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-    env: SUBPROCESS_ENV,
-  });
+  const result = step.run
+    ? step.run()
+    : spawnSync(step.command, step.args, {
+        cwd: ROOT,
+        stdio: 'inherit',
+        shell: process.platform === 'win32',
+        env: SUBPROCESS_ENV,
+      });
   if (result.status !== 0) {
     console.error(`\nverify:deps failed at step: ${step.label}`);
     process.exit(result.status ?? 1);
