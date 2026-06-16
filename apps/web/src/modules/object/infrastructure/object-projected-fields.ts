@@ -1080,12 +1080,18 @@ export function projectedObjectLinkRows(o: ProjectedObjectView): ProjectedObject
 export type ProjectedTagCategoryItemRow = {
   value: string;
   category: string;
+  updateId?: string;
+};
+
+export type TagChipView = {
+  value: string;
+  updateId?: string;
 };
 
 export type TagCategorySectionView = {
   /** Display label from `tagCategory` / item `category`. */
   categoryTitle: string;
-  values: string[];
+  tags: TagChipView[];
 };
 
 export function parseTagCategoryItemRows(o: ProjectedObjectView): ProjectedTagCategoryItemRow[] {
@@ -1100,8 +1106,13 @@ export function parseTagCategoryItemRows(o: ProjectedObjectView): ProjectedTagCa
     }
     const value = readString(item.value);
     const category = readString(item.category);
+    const updateId = readString(item.update_id);
     if (value && category) {
-      rows.push({ value, category });
+      rows.push({
+        value,
+        category,
+        ...(updateId ? { updateId } : {}),
+      });
     }
   }
   return rows;
@@ -1117,13 +1128,14 @@ export function projectedTagCategorySections(o: ProjectedObjectView): TagCategor
     return [];
   }
 
-  const valuesByCategory = new Map<string, string[]>();
-  for (const { category, value } of rows) {
-    const existing = valuesByCategory.get(category);
+  const tagsByCategory = new Map<string, TagChipView[]>();
+  for (const { category, value, updateId } of rows) {
+    const chip: TagChipView = { value, ...(updateId ? { updateId } : {}) };
+    const existing = tagsByCategory.get(category);
     if (!existing) {
-      valuesByCategory.set(category, [value]);
-    } else if (!existing.includes(value)) {
-      existing.push(value);
+      tagsByCategory.set(category, [chip]);
+    } else if (!existing.some((tag) => tag.value === value)) {
+      existing.push(chip);
     }
   }
 
@@ -1135,12 +1147,49 @@ export function projectedTagCategorySections(o: ProjectedObjectView): TagCategor
 
   const sections: TagCategorySectionView[] = [];
   for (const name of categorySequence) {
-    const values = valuesByCategory.get(name);
-    if (values && values.length > 0) {
-      sections.push({ categoryTitle: name, values });
+    const tags = tagsByCategory.get(name);
+    if (tags && tags.length > 0) {
+      sections.push({ categoryTitle: name, tags });
     }
   }
   return sections;
+}
+
+/**
+ * Edit mode: one section per `tagCategory` name (including empty categories).
+ * Appends item-only categories not listed in `tagCategory` after known names.
+ */
+export function mergeTagCategorySectionsForEditMode(
+  categoryNames: readonly string[],
+  sections: readonly TagCategorySectionView[],
+): TagCategorySectionView[] {
+  const byCategory = new Map<string, TagChipView[]>();
+  for (const section of sections) {
+    byCategory.set(section.categoryTitle, section.tags);
+  }
+
+  const merged: TagCategorySectionView[] = [];
+  const seen = new Set<string>();
+
+  for (const name of categoryNames) {
+    const trimmed = name.trim();
+    if (!trimmed || seen.has(trimmed)) {
+      continue;
+    }
+    seen.add(trimmed);
+    merged.push({
+      categoryTitle: trimmed,
+      tags: byCategory.get(trimmed) ?? [],
+    });
+  }
+
+  for (const section of sections) {
+    if (!seen.has(section.categoryTitle)) {
+      merged.push(section);
+    }
+  }
+
+  return merged;
 }
 
 function distinctCategoryOrderFromRows(rows: ProjectedTagCategoryItemRow[]): string[] {

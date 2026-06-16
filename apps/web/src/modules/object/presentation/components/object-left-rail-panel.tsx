@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { buildDiscoverHref, encodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import {
   BLOCK_KIND_TO_UPDATE_TYPES,
@@ -22,11 +21,13 @@ import type {
   ObjectRefItem,
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
+import type { TagApprovalStatsIndex } from '../../domain/tag-approval-stats';
 
 import { ExternalLinkButton } from './external-link-modal';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
+import { ObjectTagsLeftRailSection } from './object-tags-left-rail-section';
 import { LeftRailTelephonesContent } from './left-rail-telephone-row';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
 import { StarRating } from './star-rating';
@@ -75,6 +76,7 @@ export type ObjectLeftRailPanelProps = {
   updateTypeCounts?: Record<string, number>;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  tagApprovalStats?: TagApprovalStatsIndex;
 };
 
 /** Max characters for description preview card (matches legacy sidebar truncation). */
@@ -316,6 +318,7 @@ export function ObjectLeftRailPanel({
   updateTypeCounts,
   viewerUsername,
   onRequireLogin,
+  tagApprovalStats,
 }: ObjectLeftRailPanelProps) {
   const { t } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
@@ -556,35 +559,20 @@ export function ObjectLeftRailPanel({
           case 'tags':
             return (
               <div key={`tags-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar {...editToolbarProps('tags', block.headingLabel)} />
-                <div className="space-y-4">
-                  {block.sections.map((section) => (
-                    <div key={section.categoryTitle}>
-                      <p className="text-fg text-body-sm font-weight-body">
-                        {section.categoryTitle}:
-                      </p>
-                      <div className="mt-1.5 flex flex-wrap gap-2">
-                        {section.values.map((tag) => (
-                          <Link
-                            key={`${section.categoryTitle}-${tag}`}
-                            href={buildDiscoverHref({
-                              type: objectTypeKey,
-                              tags: [encodeTagFilter(section.categoryTitle, tag)],
-                            })}
-                            prefetch={false}
-                            className="rounded-btn bg-surface px-2 py-1 text-caption text-fg transition-colors hover:bg-ghost-surface hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                            aria-label={t('object_tag_discover_aria')
-                              .replace('{category}', section.categoryTitle)
-                              .replace('{tag}', tag)}
-                            suppressHydrationWarning
-                          >
-                            {tag}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ObjectTagsLeftRailSection
+                  headingLabel={block.headingLabel}
+                  sections={block.sections}
+                  objectTypeKey={objectTypeKey}
+                  objectId={objectId}
+                  isEditMode={Boolean(editContext)}
+                  viewerUsername={viewerUsername}
+                  tagCategoryNames={editContext?.tagCategoryNames ?? []}
+                  count={editContext ? railBlockCount('tags') : undefined}
+                  onViewUpdates={editContext ? makeOnViewUpdates('tags') : undefined}
+                  addLabel={addLabel}
+                  tagApprovalStats={tagApprovalStats}
+                  onRequireLogin={onRequireLogin}
+                />
               </div>
             );
           case 'gallery':

@@ -33,8 +33,10 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | `object_ref` value | Debounced object search (same as menu item); submitted as `value_text` = referenced `object_id` |
 | `geo` value | Latitude/longitude inputs + interactive map (click to set marker; inputs move marker) |
 | `walletAddress` value | Cryptocurrency `<select>` (`WALLET_SYMBOLS` from core) + address + optional title |
+| **Tags** block (edit) | Inline pills per `tagCategory`; header `+` adds a new `tagCategory` (inline compose, no modal); dashed **New tag** pill per category broadcasts `tagCategoryItem`; click pill → `update_vote` **for** (orange border when viewer voted for); **×** → `update_vote` **against**; category removal only via Updates tab |
+| Tags data (MVP) | Only consensus-valid projected tags (`include_rejected=false`); per-viewer hide after reject deferred |
 
-Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from server).
+Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from server). The **Tags** block uses its own header `+` for categories instead of the generic add-update modal.
 
 ## Block → update type mapping
 
@@ -100,6 +102,9 @@ With Like enabled, the create event gets `event_id` (client UUID) and a second e
 | Form utils | `apps/web/src/modules/object-updates/application/update-value-form.utils.ts` |
 | Modal | `apps/web/src/modules/object-updates/presentation/components/add-update-modal.tsx` |
 | Left rail | `apps/web/src/modules/object/presentation/components/object-left-rail-panel.tsx` |
+| Tags left rail (edit) | `apps/web/src/modules/object/presentation/components/object-tags-left-rail-section.tsx` |
+| Tag chip | `apps/web/src/modules/object-updates/presentation/components/tag-chip.tsx` |
+| Tag vote stats | `apps/web/src/modules/object/infrastructure/tag-approval-stats.server.ts` |
 | Update count badge | `apps/web/src/modules/object/presentation/components/left-rail-update-count-badge.tsx` |
 | Block → filter | `resolveUpdateTypeFilterForBlockKind` in `block-update-type-map.ts` |
 | Page wiring | `apps/web/src/app/(app)/object/[object-id]/object-page-client.tsx` |

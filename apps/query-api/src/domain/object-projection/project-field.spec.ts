@@ -157,6 +157,43 @@ describe('projectFieldValue imageGalleryItem', () => {
   });
 });
 
+describe('projectFieldValue tagCategoryItem', () => {
+  it('projects category, value, and update_id from valid updates', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.TAG_CATEGORY_ITEM,
+      cardinality: 'multi',
+      values: [
+        {
+          update_id: 't1',
+          update_type: UPDATE_TYPES.TAG_CATEGORY_ITEM,
+          creator: 'c',
+          locale: null,
+          created_at_unix: 1,
+          event_seq: BigInt(1),
+          value_text: null,
+          value_geo: null,
+          value_json: { category: 'Cuisine', value: 'japanese' },
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: null,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    expect(projectFieldValue(field, UPDATE_TYPES.TAG_CATEGORY_ITEM, undefined)).toEqual([
+      {
+        category: 'Cuisine',
+        value: 'japanese',
+        update_id: 't1',
+      },
+    ]);
+  });
+});
+
 describe('geoJsonPointToLatLon', () => {
   const expected = { latitude: 49.187253, longitude: -123.131515 };
 

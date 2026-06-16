@@ -68,8 +68,8 @@ function appendLeftRailBlock(
     case 'tags':
       for (const section of block.sections) {
         pushEntry(fields, counters, UPDATE_TYPES.TAG_CATEGORY, section.categoryTitle);
-        for (const value of section.values) {
-          const trimmed = value.trim();
+        for (const tag of section.tags) {
+          const trimmed = tag.value.trim();
           if (trimmed.length > 0) {
             pushEntry(fields, counters, UPDATE_TYPES.TAG_CATEGORY_ITEM, {
               category: section.categoryTitle,

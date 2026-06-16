@@ -135,7 +135,7 @@ export type ObjectLeftRailBlock =
       kind: 'tags';
       headingLabel: string;
       /** Grouped by `tagCategory` × `tagCategoryItem.category`; empty categories omitted. */
-      sections: { categoryTitle: string; values: string[] }[];
+      sections: { categoryTitle: string; tags: { value: string; updateId?: string }[] }[];
     }
   | {
       kind: 'gallery';

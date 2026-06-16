@@ -12,6 +12,7 @@ import {
   projectedMenuItems,
   projectedSortCustom,
   projectedTagCategorySections,
+  mergeTagCategorySectionsForEditMode,
   projectedTelephoneEntries,
   projectedWalletAddressRows,
   projectedObjectLinkRows,
@@ -401,8 +402,49 @@ describe('object-projected-fields', () => {
     };
     const sections = projectedTagCategorySections(v);
     expect(sections.map((s) => s.categoryTitle)).toEqual(['Pros', 'Test']);
-    expect(sections[0].values).toEqual(['automation', 'development']);
-    expect(sections[1].values).toEqual(['testingdi']);
+    expect(sections[0].tags).toEqual([
+      { value: 'automation' },
+      { value: 'development' },
+    ]);
+    expect(sections[1].tags).toEqual([{ value: 'testingdi' }]);
+  });
+
+  it('preserves update_id on tagCategoryItem rows', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        tagCategory: ['Pros'],
+        tagCategoryItem: [
+          { value: 'automation', category: 'Pros', update_id: 'upd-1' },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const sections = projectedTagCategorySections(v);
+    expect(sections[0].tags).toEqual([{ value: 'automation', updateId: 'upd-1' }]);
+  });
+
+  it('mergeTagCategorySectionsForEditMode includes empty categories', () => {
+    const sections = projectedTagCategorySections({
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        tagCategory: ['Pros', 'Cons'],
+        tagCategoryItem: [{ value: 'a', category: 'Pros' }],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    });
+    const merged = mergeTagCategorySectionsForEditMode(['Pros', 'Cons'], sections);
+    expect(merged.map((s) => s.categoryTitle)).toEqual(['Pros', 'Cons']);
+    expect(merged[0].tags).toEqual([{ value: 'a' }]);
+    expect(merged[1].tags).toEqual([]);
   });
 
   it('formats wallet rows: optional title hides address line', () => {

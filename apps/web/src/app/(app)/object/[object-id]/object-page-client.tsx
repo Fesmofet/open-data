@@ -10,6 +10,7 @@ import type {
   AuthoritySubType,
 } from '@/modules/object';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
+import type { TagApprovalStatsIndex } from '@/modules/object/domain/tag-approval-stats';
 import { ObjectGalleryViewer } from '@/modules/object/presentation/components/object-gallery-viewer';
 import {
   LeftObjectProfileSidebar,
@@ -58,6 +59,8 @@ import {
 import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+
+import { fetchTagApprovalStatsAction } from './tag-approval.actions';
 
 export type ObjectPageClientProps = {
   model: ObjectPageViewModel;
@@ -141,6 +144,25 @@ export function ObjectPageClient({
   } | null>(null);
   const [activeFeedSubSegment, setActiveFeedSubSegment] =
     useState(defaultFeedSub);
+  const [tagApprovalStats, setTagApprovalStats] = useState<
+    TagApprovalStatsIndex | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (!isEditMode || !viewerUsername) {
+      setTagApprovalStats(undefined);
+      return;
+    }
+    let cancelled = false;
+    void fetchTagApprovalStatsAction(model.objectId).then((stats) => {
+      if (!cancelled) {
+        setTagApprovalStats(stats);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditMode, model.objectId, viewerUsername]);
 
   useEffect(() => {
     setActivePrimarySegment(
@@ -710,6 +732,7 @@ export function ObjectPageClient({
         updateTypeCounts={model.updateTypeCounts}
         viewerUsername={viewerUsername}
         onRequireLogin={openLogin}
+        tagApprovalStats={tagApprovalStats}
       />
     </LeftObjectProfileSidebar>
   );

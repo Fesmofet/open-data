@@ -8,6 +8,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { UpdateValueForm } from '@/modules/object-updates/presentation/components/update-value-form';
+import { TagChip } from '@/modules/object-updates/presentation/components/tag-chip';
 
 import type { AddFieldOptions } from '../../domain/add-field-options';
 import {
@@ -353,44 +354,28 @@ function TagCategoryItemsGroup({
           const isEmpty = !isTagCategoryItemFilled(entry.value);
           const isEditing = editingKey === entry.entryKey;
           return (
-            <span
+            <TagChip
               key={entry.entryKey}
-              className={[
-                'inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-body-sm',
-                isEmpty
-                  ? 'border-dashed border-border-strong text-muted'
-                  : 'border-border bg-ghost-surface text-fg',
-              ].join(' ')}
-            >
-              <button
-                type="button"
-                disabled={disabled}
-                className="hover:text-accent"
-                onClick={() => {
-                  if (isEditing) {
-                    setEditingKey(null);
-                    if (isEmpty) {
-                      onRemoveField(entry.entryKey);
-                    }
-                    return;
+              label={tagValue || t('object_create_tag_chip_empty')}
+              empty={isEmpty}
+              disabled={disabled}
+              onClick={() => {
+                if (isEditing) {
+                  setEditingKey(null);
+                  if (isEmpty) {
+                    onRemoveField(entry.entryKey);
                   }
-                  setEditingKey(entry.entryKey);
-                }}
-              >
-                {tagValue || t('object_create_tag_chip_empty')}
-              </button>
-              {allowRemove ? (
-                <button
-                  type="button"
-                  disabled={disabled}
-                  className="text-caption text-muted hover:text-accent"
-                  aria-label={t('object_create_remove_field')}
-                  onClick={() => onRemoveField(entry.entryKey)}
-                >
-                  ×
-                </button>
-              ) : null}
-            </span>
+                  return;
+                }
+                setEditingKey(entry.entryKey);
+              }}
+              onReject={
+                allowRemove
+                  ? () => onRemoveField(entry.entryKey)
+                  : undefined
+              }
+              rejectAria={t('object_create_remove_field')}
+            />
           );
         })}
       </div>

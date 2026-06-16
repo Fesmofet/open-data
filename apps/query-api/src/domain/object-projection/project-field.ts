@@ -153,6 +153,23 @@ function projectImageGalleryItemJson(
   return { ...o, url, rank_score: rankScore, update_id: updateId };
 }
 
+/** Project tag item JSON to `{ ...rest, update_id }` when category and value present. */
+function projectTagCategoryItemJson(
+  value: JsonValue | null,
+  updateId: string,
+): JsonValue | null {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const o = value as Record<string, JsonValue>;
+  const category = typeof o.category === 'string' ? o.category.trim() : '';
+  const tagValue = typeof o.value === 'string' ? o.value.trim() : '';
+  if (category.length === 0 || tagValue.length === 0) {
+    return null;
+  }
+  return { ...o, category, value: tagValue, update_id: updateId };
+}
+
 function coerceRankScore(raw: unknown): number | null {
   if (raw == null) {
     return null;
@@ -255,6 +272,11 @@ export function projectFieldValue(
               u.update_id,
             ),
           )
+          .filter((x) => x != null);
+      }
+      if (updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM) {
+        return valid
+          .map((u) => projectTagCategoryItemJson(u.value_json, u.update_id))
           .filter((x) => x != null);
       }
       return valid.map((u) => u.value_json ?? null);
