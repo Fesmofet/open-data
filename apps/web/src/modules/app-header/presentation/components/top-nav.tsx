@@ -12,6 +12,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 
+import { APP_HEADER_BRAND_LOGO } from '@/config/app-brand';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
@@ -324,7 +325,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     <div className="flex min-h-shell-header flex-wrap items-center gap-2 px-gutter py-2 sm:px-gutter-sm lg:flex-nowrap">
       <div
         className={[
-          'flex min-w-0 shrink-0 items-center',
+          'flex min-w-0 shrink-0 items-center -ms-1 me-4 sm:me-6 lg:-ms-2',
           hideActionsWhileMobileSearch ? 'hidden lg:flex' : 'flex',
         ].join(' ')}
       >
@@ -335,10 +336,14 @@ export function TopNav({ user: _user }: TopNavProps) {
           // Wallet extensions (e.g. Keychain) inject classes on anchors before hydration completes.
           suppressHydrationWarning
         >
-          <span aria-hidden className="rounded-btn bg-accent px-2 py-1 text-caption text-accent-fg">
-            ODL
-          </span>
-          <span className="max-w-[8rem] truncate sm:max-w-none">{t('app_header_brand_text')}</span>
+          <img
+            src={APP_HEADER_BRAND_LOGO.src}
+            width={APP_HEADER_BRAND_LOGO.width}
+            height={APP_HEADER_BRAND_LOGO.height}
+            alt=""
+            aria-hidden
+            className="h-8 w-auto max-w-[10rem] shrink-0"
+          />
         </Link>
       </div>
 

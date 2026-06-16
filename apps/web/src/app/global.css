@@ -81,7 +81,7 @@
   }
 
   .app-header-brand-link {
-    @apply inline-flex items-center gap-2 font-display text-body font-weight-label text-heading hover:text-link;
+    @apply inline-flex shrink-0 items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
   }
 
   .app-header-avatar-link {
