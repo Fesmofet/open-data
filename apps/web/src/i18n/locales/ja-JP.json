@@ -1558,6 +1558,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "{field} の更新を表示",
   "object_editing_by_users": "ユーザーによるオブジェクトの編集",
   "object_editing_by_users_info": "ウェブサイト上でユーザーがオブジェクトを変更できないようにします。承認済み管理者による更新のみ使用されます。",
   "object_exist": "そのようなオブジェクトはすでに存在します",

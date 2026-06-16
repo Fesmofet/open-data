@@ -27,6 +27,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | Edit mode | `+` next to each block heading (menu, description, phones, …) |
 | `+` click | Modal: optional update-type select (multi-type blocks), schema-driven value form, optional locale when `UPDATE_REGISTRY[type].localizable` |
 | Edit left rail | All supported slots show heading + `+` even when empty; order: **Name**, **Title**, Menu, Parent, Description, … (see `EDIT_MODE_LEFT_RAIL_BLOCK_ORDER`) |
+| Update count | Muted line under each field heading (e.g. `2 updates`); **click** navigates to the **Updates** tab and sets the feed `update_type` filter for that field |
 | Submit | Like checkbox (default on): `buildOdlUpdateCreateWithLikeOp` (create + vote in one trx) or off: `buildOdlUpdateCreateOp` only → wallet broadcast → `awaitTrxConfirmation` → `router.refresh()` |
 | Like | Footer checkbox labeled **Like**; when checked, envelope has `update_create` with `event_id` + `update_vote` with `create_event_id` pointing at that id |
 | `object_ref` value | Debounced object search (same as menu item); submitted as `value_text` = referenced `object_id` |
@@ -99,6 +100,8 @@ With Like enabled, the create event gets `event_id` (client UUID) and a second e
 | Form utils | `apps/web/src/modules/object-updates/application/update-value-form.utils.ts` |
 | Modal | `apps/web/src/modules/object-updates/presentation/components/add-update-modal.tsx` |
 | Left rail | `apps/web/src/modules/object/presentation/components/object-left-rail-panel.tsx` |
+| Update count badge | `apps/web/src/modules/object/presentation/components/left-rail-update-count-badge.tsx` |
+| Block → filter | `resolveUpdateTypeFilterForBlockKind` in `block-update-type-map.ts` |
 | Page wiring | `apps/web/src/app/(app)/object/[object-id]/object-page-client.tsx` |
 
 ## Verification

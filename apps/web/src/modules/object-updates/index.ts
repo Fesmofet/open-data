@@ -22,6 +22,7 @@ export { UpdateValueForm } from './presentation/components/update-value-form';
 export {
   BLOCK_KIND_TO_UPDATE_TYPES,
   getUpdateTypesForBlockKind,
+  resolveUpdateTypeFilterForBlockKind,
 } from './domain/block-update-type-map';
 
 export type { ObjectUpdatesFeedProps, LoadMoreObjectUpdatesFn } from './presentation/components/object-updates-feed';

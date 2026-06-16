@@ -1796,6 +1796,7 @@
   "object_edit_update_count_zero": "0 updates",
   "object_edit_validation_error": "Invalid value for this update type",
   "object_edit_value_label": "Value",
+  "object_edit_view_field_updates": "View updates for {field}",
   "object_edit_wallet_address": "Address",
   "object_edit_wallet_symbol": "Cryptocurrency",
   "object_edit_wallet_title": "Title (optional)",

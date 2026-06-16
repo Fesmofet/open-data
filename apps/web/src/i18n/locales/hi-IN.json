@@ -1558,6 +1558,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "{field} के अपडेट देखें",
   "object_editing_by_users": "उपयोगकर्ताओं द्वारा ऑब्जेक्ट संपादन",
   "object_editing_by_users_info": "उपयोगकर्ताओं को वेबसाइट पर ऑब्जेक्ट्स में बदलाव करने की अनुमति न दें। स्वीकृत प्रशासकों द्वारा केवल अपडेट का उपयोग किया जाएगा।",
   "object_exist": "ऐसी एक वस्तु पहले से मौजूद है",

@@ -41,6 +41,8 @@ export type ObjectLeftRailEditContext = {
   galleryAlbumNames: readonly string[];
   /** Per-type update row counts from object resolve. */
   updateTypeCounts: Record<string, number>;
+  /** Opens the updates feed filtered to the given left-rail block. */
+  onViewFieldUpdates?: (kind: ObjectLeftRailBlockKind) => void;
 };
 
 function countForBlockKind(
@@ -161,12 +163,14 @@ function LeftRailEditToolbar({
   addLabel,
   label,
   count,
+  onViewUpdates,
 }: {
   onAdd?: () => void;
   addLabel: string;
   label?: string;
   /** Existing update rows for this block (edit mode only). */
   count?: number;
+  onViewUpdates?: () => void;
 }) {
   if (!onAdd) {
     return null;
@@ -178,7 +182,11 @@ function LeftRailEditToolbar({
         {label ? <p className="font-weight-label text-fg">{label}</p> : null}
         {count != null ? (
           <div className="mt-1">
-            <LeftRailUpdateCountBadge count={count} />
+            <LeftRailUpdateCountBadge
+              count={count}
+              onClick={onViewUpdates}
+              fieldLabel={label}
+            />
           </div>
         ) : null}
       </div>
@@ -192,12 +200,14 @@ function LeftRailIdentifierSection({
   onAdd,
   addLabel,
   count,
+  onViewUpdates,
 }: {
   headingLabel: string;
   rows: { type: string; value: string }[];
   onAdd?: () => void;
   addLabel: string;
   count?: number;
+  onViewUpdates?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const contentId = useId();
@@ -223,7 +233,13 @@ function LeftRailIdentifierSection({
             ) : (
               <p className="font-weight-label text-fg">{headingLabel}</p>
             )}
-            {onAdd && count != null ? <LeftRailUpdateCountBadge count={count} /> : null}
+            {onAdd && count != null ? (
+              <LeftRailUpdateCountBadge
+                count={count}
+                onClick={onViewUpdates}
+                fieldLabel={headingLabel}
+              />
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -345,6 +361,23 @@ export function ObjectLeftRailPanel({
     return countForBlockKind(kind, editContext.updateTypeCounts);
   }
 
+  function makeOnViewUpdates(kind: ObjectLeftRailBlockKind) {
+    if (!editContext?.onViewFieldUpdates) {
+      return undefined;
+    }
+    return () => editContext.onViewFieldUpdates?.(kind);
+  }
+
+  function editToolbarProps(kind: ObjectLeftRailBlockKind, label: string) {
+    return {
+      onAdd: makeOnAdd(kind),
+      addLabel,
+      label,
+      count: railBlockCount(kind),
+      onViewUpdates: makeOnViewUpdates(kind),
+    };
+  }
+
   return (
     <div className="flex min-w-0 flex-col divide-y divide-border">
       {editContext && addModal ? (
@@ -366,12 +399,7 @@ export function ObjectLeftRailPanel({
           case 'menuItems':
             return (
               <div key={`menu-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('menuItems')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('menuItems')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('menuItems', block.headingLabel)} />
                 <ObjectMenuItemsStatic
                   items={block.items}
                   hostObjectId={objectId}
@@ -382,12 +410,7 @@ export function ObjectLeftRailPanel({
           case 'name':
             return (
               <div key={`name-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('name')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('name')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('name', block.headingLabel)} />
                 {block.text.trim() ? (
                   <p className="font-weight-label text-fg">{block.text}</p>
                 ) : null}
@@ -396,46 +419,26 @@ export function ObjectLeftRailPanel({
           case 'title':
             return (
               <div key={`title-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('title')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('title')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('title', block.headingLabel)} />
                 {block.text.trim() ? <p className="text-fg">{block.text}</p> : null}
               </div>
             );
           case 'image':
             return (
               <div key={`image-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('image')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('image')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('image', block.headingLabel)} />
               </div>
             );
           case 'imageBackground':
             return (
               <div key={`imageBackground-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('imageBackground')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('imageBackground')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('imageBackground', block.headingLabel)} />
               </div>
             );
           case 'parent':
             return (
               <div key={`parent-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('parent')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('parent')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('parent', block.headingLabel)} />
                 {block.objectId.trim() ? (
                   <Link
                     href={`/object/${encodeURIComponent(block.objectId)}`}
@@ -476,12 +479,7 @@ export function ObjectLeftRailPanel({
               intro.isTruncated || (canOpenDescriptionPage && !intro.display) || (intro.display && canOpenDescriptionPage && galleryPhotosAlbum != null && (galleryPhotosAlbum.items.length > 1));
             return (
               <div key={`desc-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('description')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('description')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('description', block.headingLabel)} />
                 {intro.display ? (
                   <p
                     className="leading-editorial text-fg"
@@ -505,12 +503,7 @@ export function ObjectLeftRailPanel({
           case 'button': {
             return (
               <div key={`btn-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('button')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('button')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('button', block.headingLabel)} />
                 {block.items.length > 0 ? (
                   <ul className="list-none space-y-2 p-0">
                     {block.items.map((item, itemIndex) => (
@@ -531,12 +524,7 @@ export function ObjectLeftRailPanel({
           case 'rating': {
             return (
               <div key={`rating-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('rating')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('rating')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('rating', block.headingLabel)} />
                 <ul className="list-none space-y-2 p-0">
                   {block.aspects.map((aspect, aspectIndex) => (
                     <li key={`${aspect.update_id}-${aspectIndex}`} className="min-w-0">
@@ -568,12 +556,7 @@ export function ObjectLeftRailPanel({
           case 'tags':
             return (
               <div key={`tags-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('tags')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('tags')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('tags', block.headingLabel)} />
                 <div className="space-y-4">
                   {block.sections.map((section) => (
                     <div key={section.categoryTitle}>
@@ -607,12 +590,7 @@ export function ObjectLeftRailPanel({
           case 'gallery':
             return (
               <div key={`gallery-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('gallery')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('gallery')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('gallery', block.headingLabel)} />
                 <ObjectGalleryCarousel
                   photos={block.photos}
                   onPhotoClick={
@@ -636,12 +614,7 @@ export function ObjectLeftRailPanel({
           case 'price':
             return (
               <div key={`price-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('price')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('price')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('price', block.headingLabel)} />
                 <div className="flex items-center gap-1">
                   <span className="text-muted" aria-hidden>
                     $
@@ -653,12 +626,7 @@ export function ObjectLeftRailPanel({
           case 'workHours':
             return (
               <div key={`hours-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('workHours')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('workHours')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('workHours', block.headingLabel)} />
                 <ul className="space-y-1">
                   {block.lines.map((line, lineIndex) => (
                     <li key={`${index}-${lineIndex}`}>{line}</li>
@@ -669,12 +637,7 @@ export function ObjectLeftRailPanel({
           case 'address':
             return (
               <div key={`addr-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('address')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('address')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('address', block.headingLabel)} />
                 <p className="whitespace-pre-line leading-editorial">{block.text}</p>
               </div>
             );
@@ -687,12 +650,7 @@ export function ObjectLeftRailPanel({
             const geoLabel = objectName.trim() || block.headingLabel;
             return (
               <div key={`geo-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('geo')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('geo')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('geo', block.headingLabel)} />
                 {hasCoords ? (
                   <div className="overflow-hidden rounded-btn">
                     <ObjectGeoPreview
@@ -708,12 +666,7 @@ export function ObjectLeftRailPanel({
           case 'websites':
             return (
               <div key={`web-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('websites')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('websites')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('websites', block.headingLabel)} />
                 <ul className="space-y-2">
                   {block.entries.map((entry) => (
                     <li key={`${entry.link}-${entry.title}`}>
@@ -738,24 +691,14 @@ export function ObjectLeftRailPanel({
           case 'phones':
             return (
               <div key={`phones-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('phones')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('phones')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('phones', block.headingLabel)} />
                 <LeftRailTelephonesContent entries={block.entries} />
               </div>
             );
           case 'email':
             return (
               <div key={`email-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('email')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('email')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('email', block.headingLabel)} />
                 <a
                   href={`mailto:${block.address}`}
                   className="block break-all text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -767,12 +710,7 @@ export function ObjectLeftRailPanel({
           case 'walletAddress':
             return (
               <div key={`wallet-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('walletAddress')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('walletAddress')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('walletAddress', block.headingLabel)} />
                 <ul className="list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
                     <li key={`${row.lineText}-${rowIndex}`} className="flex items-center gap-2">
@@ -805,17 +743,13 @@ export function ObjectLeftRailPanel({
                 onAdd={makeOnAdd('identifier')}
                 addLabel={addLabel}
                 count={railBlockCount('identifier')}
+                onViewUpdates={makeOnViewUpdates('identifier')}
               />
             );
           case 'link':
             return (
               <div key={`link-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd('link')}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount('link')}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('link', block.headingLabel)} />
                 <ul className="list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
                     <li key={`${row.label}-${rowIndex}`}>
@@ -849,12 +783,7 @@ export function ObjectLeftRailPanel({
           case 'publisher':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd(block.kind)}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount(block.kind)}
-                />
+                <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
                 {block.items.length > 0 ? (
                   <ObjectRefItemsList items={block.items} />
                 ) : null}
@@ -875,12 +804,7 @@ export function ObjectLeftRailPanel({
           case 'typicalAgeRange':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar
-                  onAdd={makeOnAdd(block.kind)}
-                  addLabel={addLabel}
-                  label={block.headingLabel}
-                  count={railBlockCount(block.kind)}
-                />
+                <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
               </div>
             );
           default: {

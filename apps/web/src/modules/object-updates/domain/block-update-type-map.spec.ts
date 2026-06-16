@@ -1,6 +1,9 @@
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
-import { getUpdateTypesForBlockKind } from './block-update-type-map';
+import {
+  getUpdateTypesForBlockKind,
+  resolveUpdateTypeFilterForBlockKind,
+} from './block-update-type-map';
 
 describe('getUpdateTypesForBlockKind', () => {
   const supported = [
@@ -29,5 +32,41 @@ describe('getUpdateTypesForBlockKind', () => {
 
   it('returns empty when type not supported for object', () => {
     expect(getUpdateTypesForBlockKind('geo', supported)).toEqual([]);
+  });
+});
+
+describe('resolveUpdateTypeFilterForBlockKind', () => {
+  const supported = [
+    UPDATE_TYPES.TITLE,
+    UPDATE_TYPES.TAG_CATEGORY,
+    UPDATE_TYPES.TAG_CATEGORY_ITEM,
+  ];
+
+  it('returns the single supported type for one-to-one blocks', () => {
+    expect(
+      resolveUpdateTypeFilterForBlockKind('title', supported, { title: 2 }),
+    ).toBe(UPDATE_TYPES.TITLE);
+  });
+
+  it('returns undefined when no supported types match the block', () => {
+    expect(resolveUpdateTypeFilterForBlockKind('geo', supported, {})).toBeUndefined();
+  });
+
+  it('picks the tag type with the highest count', () => {
+    expect(
+      resolveUpdateTypeFilterForBlockKind('tags', supported, {
+        [UPDATE_TYPES.TAG_CATEGORY]: 1,
+        [UPDATE_TYPES.TAG_CATEGORY_ITEM]: 5,
+      }),
+    ).toBe(UPDATE_TYPES.TAG_CATEGORY_ITEM);
+  });
+
+  it('falls back to the first supported candidate when counts are tied at zero', () => {
+    expect(
+      resolveUpdateTypeFilterForBlockKind('tags', supported, {
+        [UPDATE_TYPES.TAG_CATEGORY]: 0,
+        [UPDATE_TYPES.TAG_CATEGORY_ITEM]: 0,
+      }),
+    ).toBe(UPDATE_TYPES.TAG_CATEGORY_ITEM);
   });
 });

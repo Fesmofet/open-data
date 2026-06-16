@@ -1129,6 +1129,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Prikaži ažuriranja za {field}",
   "object_exist": "Takav objekt već postoji",
   "object_expertise": "Stručnjaci",
   "object_field_address": "Adresa",

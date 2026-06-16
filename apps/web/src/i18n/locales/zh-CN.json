@@ -1547,6 +1547,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "查看 {field} 的更新",
   "object_editing_by_users": "用户编辑对象",
   "object_editing_by_users_info": "不允许用户更改网站上的对象。只有经批准的管理员才能使用更新。",
   "object_exist": "此类对象已存在",

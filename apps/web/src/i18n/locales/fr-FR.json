@@ -1558,6 +1558,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Voir les mises à jour pour {field}",
   "object_editing_by_users": "Édition d'objet par les utilisateurs",
   "object_editing_by_users_info": "Ne pas permettre aux utilisateurs de faire des changements aux objets sur le site web. Seules les mises à jour par les administrateurs approuvés seront utilisées.",
   "object_exist": "Un tel objet existe déjà",

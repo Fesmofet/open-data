@@ -1558,6 +1558,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Bekyk opdaterings vir {field}",
   "object_editing_by_users": "Objek redigering deur gebruikers",
   "object_editing_by_users_info": "Laat nie toe dat gebruikers veranderinge aan voorwerpe op die webwerf maak nie. Slegs opdaterings deur goedgekeurde administrateurs sal gebruik word.",
   "object_exist": "So 'n voorwerp bestaan reeds",

@@ -4,6 +4,7 @@ describe('Object edit UI i18n keys (en-US)', () => {
   it('defines all keys used by add-update modal and left rail', () => {
     const keys = [
       'object_edit_add_update',
+      'object_edit_view_field_updates',
       'object_edit_modal_title',
       'object_edit_select_type',
       'object_edit_suggest_field',

@@ -1127,6 +1127,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Zobacz aktualizacje dla {field}",
   "object_exist": "Taki obiekt już istnieje",
   "object_expertise": "Eksperci",
   "object_field_address": "Adres",

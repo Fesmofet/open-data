@@ -1128,6 +1128,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "{field} 업데이트 보기",
   "object_exist": "이러한 개체가 이미 존재합니다.",
   "object_expertise": "전문가",
   "object_field_address": "주소",

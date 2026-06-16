@@ -1558,6 +1558,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Zobrazit aktualizace pro {field}",
   "object_editing_by_users": "Úprava objektů uživateli",
   "object_editing_by_users_info": "Nepovolujte uživatelům provádět změny na objektech na webu. Budou používány pouze aktualizace schválené administrátory.",
   "object_exist": "Takový objekt již existuje",

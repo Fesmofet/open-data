@@ -67,3 +67,24 @@ export function primaryUpdateTypeForBlockKind(
   const candidates = getUpdateTypesForBlockKind(kind, supportedUpdateTypes);
   return candidates[0];
 }
+
+/**
+ * Best `update_type` filter for the updates feed when a left-rail block is selected.
+ * Single-type blocks return that type; multi-type blocks pick the supported type with the highest count.
+ */
+export function resolveUpdateTypeFilterForBlockKind(
+  kind: ObjectLeftRailBlockKind,
+  supportedUpdateTypes: readonly string[],
+  counts: Record<string, number>,
+): string | undefined {
+  const candidates = getUpdateTypesForBlockKind(kind, supportedUpdateTypes);
+  if (candidates.length === 0) {
+    return undefined;
+  }
+  if (candidates.length === 1) {
+    return candidates[0];
+  }
+  return candidates.reduce((best, candidate) =>
+    (counts[candidate] ?? 0) > (counts[best] ?? 0) ? candidate : best,
+  );
+}

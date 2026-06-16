@@ -1129,6 +1129,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Frissítések megtekintése: {field}",
   "object_exist": "Ilyen tárgy már létezik",
   "object_expertise": "Szakértők",
   "object_field_address": "Cím",

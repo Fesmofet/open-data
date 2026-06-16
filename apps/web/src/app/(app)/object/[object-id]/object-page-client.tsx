@@ -35,6 +35,10 @@ import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-l
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import {
+  resolveUpdateTypeFilterForBlockKind,
+  type ObjectLeftRailBlockKind,
+} from '@/modules/object-updates/domain/block-update-type-map';
+import {
   buildObjectAddOnPath,
   buildObjectGalleryAlbumPath,
   buildObjectGalleryPath,
@@ -445,6 +449,32 @@ export function ObjectPageClient({
     return registryEntry?.supported_updates ?? [];
   }, [model.objectTypeKey]);
 
+  const onViewFieldUpdates = useCallback(
+    (kind: ObjectLeftRailBlockKind) => {
+      const updateType = resolveUpdateTypeFilterForBlockKind(
+        kind,
+        supportedUpdateTypes,
+        model.updateTypeCounts,
+      );
+      setActivePrimarySegment('updates');
+      const id = encodeURIComponent(model.objectId);
+      const base = `/object/${id}`;
+      const u = new URLSearchParams(searchParams.toString());
+      u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+      u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+      if (updateType) {
+        u.set('update_type', updateType);
+      } else {
+        u.delete('update_type');
+      }
+      const qs = u.toString();
+      router.replace(qs ? `${base}/updates?${qs}` : `${base}/updates`, {
+        scroll: false,
+      });
+    },
+    [model.objectId, model.updateTypeCounts, router, searchParams, supportedUpdateTypes],
+  );
+
   const objectFollowersFeed = useMemo(() => {
     if (embeddedFollowersPage == null) {
       return null;
@@ -643,6 +673,7 @@ export function ObjectPageClient({
           tagCategoryNames: model.tagCategoryNames,
           galleryAlbumNames: model.galleryAlbums.map((album) => album.name),
           updateTypeCounts: model.updateTypeCounts,
+          onViewFieldUpdates,
         }
       : undefined;
 

@@ -1128,6 +1128,7 @@
   "object_detail_pros_label": "Pros",
   "object_detail_rating": "Rating",
   "object_detail_view": "View",
+  "object_edit_view_field_updates": "Se opdateringer for {field}",
   "object_exist": "En sådan genstand eksisterer allerede",
   "object_expertise": "Eksperter",
   "object_field_address": "Adresse",
