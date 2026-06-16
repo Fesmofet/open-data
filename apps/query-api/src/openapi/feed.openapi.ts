@@ -128,6 +128,43 @@ const userBlogFeedBodySchema = registry.register(
     limit: z.number().int().min(1).max(50).optional(),
     cursor: z.string().optional(),
     currency: feedCurrencyBodyField,
+    object_ids: z
+      .array(z.string().min(1))
+      .max(20)
+      .optional()
+      .openapi({
+        description:
+          'When non-empty, only posts (and reblogs) linked to every listed object via `post_objects` (AND).',
+      }),
+  }),
+);
+
+const userBlogObjectFilterItemSchema = registry.register(
+  'UserBlogObjectFilterItem',
+  z.object({
+    object_id: z.string(),
+    name: z.string(),
+    count: z.number().int(),
+  }),
+);
+
+const userBlogObjectFiltersResponseSchema = registry.register(
+  'UserBlogObjectFiltersResponse',
+  z.object({
+    items: z.array(userBlogObjectFilterItemSchema),
+  }),
+);
+
+const userBlogObjectFiltersQuerySchema = registry.register(
+  'UserBlogObjectFiltersQuery',
+  z.object({
+    objects: z
+      .union([z.string(), z.array(z.string())])
+      .optional()
+      .openapi({
+        description:
+          'Repeated query param: active object_id filters (AND) to narrow facet counts.',
+      }),
   }),
 );
 
@@ -157,11 +194,47 @@ const accountNameParam = z
   });
 
 registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/blog/object-filters',
+  summary: 'User blog post object filters (facets)',
+  description:
+    'Lists objects appearing on the profile blog feed (own root posts + reblogs) with post counts. When `objects` query params are set, facets and counts reflect posts that contain all active filters (AND). Names come from object projection with `object_id` fallback.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    query: userBlogObjectFiltersQuerySchema,
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Facet list sorted by count descending.',
+      content: {
+        'application/json': {
+          schema: userBlogObjectFiltersResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/blog',
   summary: 'User blog feed (posts and reblogs)',
   description:
-    'Paginated newest-first feed: root posts by author plus reblogs, merged by time. Cursor is opaque (base64url JSON).',
+    'Paginated newest-first feed: root posts by author plus reblogs, merged by time. Cursor is opaque (base64url JSON). Optional `object_ids` filters posts that link to every id (AND) via `post_objects`.',
   request: {
     params: z.object({ name: accountNameParam }),
     headers: z.object({

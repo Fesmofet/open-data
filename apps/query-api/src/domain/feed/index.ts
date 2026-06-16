@@ -3,6 +3,7 @@ export { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 export { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
 export { GetPostVotersEndpoint } from './get-post-voters.endpoint';
 export { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
+export { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters.endpoint';
 export { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 export { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 export { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
@@ -17,6 +18,14 @@ export type {
   PostDiscussionResponseDto,
 } from './feed-story-dtos';
 export { userBlogFeedBodySchema, type UserBlogFeedBody } from './schemas/user-blog-feed.schema';
+export type {
+  UserBlogObjectFilterItemDto,
+  UserBlogObjectFiltersResponseDto,
+} from './user-blog-object-filters.types';
+export {
+  userBlogObjectFiltersQuerySchema,
+  type UserBlogObjectFiltersQuery,
+} from './schemas/user-blog-object-filters.schema';
 export {
   userThreadsFeedBodySchema,
   type UserThreadsFeedBody,

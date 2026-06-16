@@ -9,6 +9,7 @@ import { GetPostVotersEndpoint } from './get-post-voters.endpoint';
 import { PostRewardRatesCache } from './post-reward-rates.cache';
 import { PostRewardService } from './post-reward.service';
 import { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
+import { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters.endpoint';
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
@@ -17,6 +18,7 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
   imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule, ObjectProjectionModule],
   providers: [
     GetUserBlogFeedEndpoint,
+    GetUserBlogObjectFiltersEndpoint,
     GetUserThreadsFeedEndpoint,
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,
@@ -28,6 +30,7 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
   ],
   exports: [
     GetUserBlogFeedEndpoint,
+    GetUserBlogObjectFiltersEndpoint,
     GetUserThreadsFeedEndpoint,
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,

@@ -112,6 +112,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-blog-feed-endpoint.md',
   },
   {
+    name: 'get_user_blog_object_filters',
+    description:
+      'Faceted object filters for a user blog feed (post counts per linked object).',
+    httpEquivalent: 'GET /query/v1/users/:name/blog/object-filters',
+    specPath: 'docs/apps/query-api/spec/user-blog-object-filters-endpoint.md',
+  },
+  {
     name: 'get_user_mentions',
     description: 'Posts mentioning the user.',
     httpEquivalent: 'POST /query/v1/users/:name/mentions',

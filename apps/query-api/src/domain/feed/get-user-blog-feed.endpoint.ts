@@ -55,6 +55,7 @@ export class GetUserBlogFeedEndpoint {
       accountName,
       cursorPayload,
       limitPlusOne,
+      body.object_ids,
     );
 
     const hasMore = feedRows.length > limit;

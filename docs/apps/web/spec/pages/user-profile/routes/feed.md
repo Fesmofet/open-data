@@ -45,7 +45,8 @@ Subnav links: [user-menu.md](../components/user-menu.md) + [user-profile-subnav.
 
 ## Behavior
 
-- **Posts:** `getUserBlogFeedPageQuery`; supports tag filter via query `?tags=` (comma-separated) on the posts tab.
+- **Posts:** `getUserBlogFeedPageQuery`; optional object filters via query `?objects=` (repeated `object_id`) on the posts tab. AND semantics; facet sidebar recalculates counts when filters are active (see [user-blog-object-filters-endpoint.md](../../../../query-api/spec/user-blog-object-filters-endpoint.md)).
+- **Right sidebar:** `ProfilePostFilters` on posts tab only (`/@:name`); chips + clear all in feed column.
 - **Threads / comments / mentions:** respective feed queries with `sort: 'latest'` default.
 - **Activity:** mock feed via `getMockFeedItems()` until query-api activity endpoint is wired.
 - **Viewer context:** `createCookieAuthContextProvider().getUser()` passed into queries for vote/follow state.

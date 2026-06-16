@@ -2,6 +2,7 @@
 
 import { useCallback, useTransition } from 'react';
 
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { UserBlogFeedPage } from '@/modules/feed/application/dto/user-blog-feed-page.dto';
 import type { FeedTab } from '@/modules/feed/domain/feed-tab';
 import { FeedList, FeedPostGrid } from '@/modules/feed/presentation';
@@ -19,6 +20,7 @@ type BlogFeedPostsListProps = {
   initialPage: UserBlogFeedPage;
   feedTab: FeedTab;
   currentUsername: string | null;
+  objectIds?: string[];
 };
 
 export function BlogFeedPostsList({
@@ -26,7 +28,9 @@ export function BlogFeedPostsList({
   initialPage,
   feedTab,
   currentUsername,
+  objectIds = [],
 }: BlogFeedPostsListProps) {
+  const { t } = useI18n();
   const { resolvedMode } = useShellMode();
   const { items, setItems, cursor, setCursor, hasMore, setHasMore } =
     useSyncedPaginatedList(initialPage);
@@ -46,7 +50,7 @@ export function BlogFeedPostsList({
             ? await loadMoreUserCommentsFeedAction(accountName, cursor)
             : feedTab === 'mentions'
               ? await loadMoreUserMentionsFeedAction(accountName, cursor)
-              : await loadMoreUserBlogFeedAction(accountName, cursor);
+              : await loadMoreUserBlogFeedAction(accountName, cursor, objectIds);
       setItems((prev) => [...prev, ...next.items]);
       setCursor(next.cursor);
       setHasMore(next.hasMore);
@@ -55,6 +59,7 @@ export function BlogFeedPostsList({
     accountName,
     cursor,
     feedTab,
+    objectIds,
     pending,
     setCursor,
     setHasMore,
@@ -76,7 +81,11 @@ export function BlogFeedPostsList({
         <h2 id="feed-empty-title" className="text-body-lg font-weight-strong font-display text-fg">
           Feed
         </h2>
-        <p className="mt-2 text-body-sm text-muted">No items to show yet.</p>
+        <p className="mt-2 text-body-sm text-muted">
+          {objectIds.length > 0
+            ? t('profile_no_posts_for_filters')
+            : 'No items to show yet.'}
+        </p>
       </section>
     );
   }

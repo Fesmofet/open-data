@@ -1,9 +1,15 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { Post, PostObject } from '@opden-data-layer/core';
+import {
+  postKeysMatchingAllObjectIds,
+  ROOT_POST_PREDICATE_P,
+  ROOT_POST_PREDICATE_POSTS,
+  type UserBlogObjectFacetRow,
+} from './user-blog-post-scope';
 
 export interface FeedBranchRow {
   author: string;
@@ -40,6 +46,8 @@ const PREVIEW_VOTER_LIMIT = 3;
 
 @Injectable()
 export class PostsRepository {
+  private readonly logger = new Logger(PostsRepository.name);
+
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
   /**
@@ -49,10 +57,85 @@ export class PostsRepository {
     account: string,
     cursor: { feedAt: number; author: string; permlink: string } | null,
     limitPlusOne: number,
+    objectIds: readonly string[] = [],
   ): Promise<FeedBranchRow[]> {
-    const own = await this.loadOwnPostsBranch(account, cursor, limitPlusOne);
-    const reblogs = await this.loadReblogsBranch(account, cursor, limitPlusOne);
+    const own = await this.loadOwnPostsBranch(account, cursor, limitPlusOne, objectIds);
+    const reblogs = await this.loadReblogsBranch(account, cursor, limitPlusOne, objectIds);
     return mergeFeedBranches(own, reblogs, limitPlusOne);
+  }
+
+  /**
+   * Object facets for profile blog feed: distinct post count per object on scoped posts.
+   * When `activeObjectIds` is non-empty, scopes to posts containing all active ids (AND).
+   */
+  async findUserBlogObjectFacets(
+    account: string,
+    activeObjectIds: readonly string[] = [],
+  ): Promise<UserBlogObjectFacetRow[]> {
+    const uniqueActive = [...new Set(activeObjectIds.map((id) => id.trim()).filter(Boolean))];
+    const activeCount = uniqueActive.length;
+
+    try {
+      const activeIdList =
+        activeCount > 0
+          ? sql.join(
+              uniqueActive.map((id) => sql`${id}`),
+              sql`, `,
+            )
+          : null;
+
+      const scopedPostsFilter =
+        activeCount > 0 && activeIdList
+          ? sql`(ubp.author, ubp.permlink) IN (
+              SELECT po.author, po.permlink
+              FROM post_objects po
+              INNER JOIN user_blog_posts ubp2
+                ON po.author = ubp2.author AND po.permlink = ubp2.permlink
+              WHERE po.object_id IN (${activeIdList})
+              GROUP BY po.author, po.permlink
+              HAVING COUNT(DISTINCT po.object_id) = ${activeCount}
+            )`
+          : sql`TRUE`;
+
+      const result = await sql<{ object_id: string; post_count: number | string }>`
+        WITH user_blog_posts AS (
+          SELECT p.author, p.permlink
+          FROM posts p
+          WHERE p.author = ${account}
+            AND ${ROOT_POST_PREDICATE_P}
+          UNION
+          SELECT p.author, p.permlink
+          FROM post_reblogged_users r
+          INNER JOIN posts p ON r.author = p.author AND r.permlink = p.permlink
+          WHERE r.account = ${account}
+            AND ${ROOT_POST_PREDICATE_P}
+        ),
+        scoped_posts AS (
+          SELECT ubp.author, ubp.permlink
+          FROM user_blog_posts ubp
+          WHERE ${scopedPostsFilter}
+        )
+        SELECT
+          po.object_id AS object_id,
+          COUNT(*)::int AS post_count
+        FROM post_objects po
+        INNER JOIN scoped_posts sp
+          ON po.author = sp.author AND po.permlink = sp.permlink
+        GROUP BY po.object_id
+        ORDER BY post_count DESC, po.object_id ASC
+      `.execute(this.db);
+
+      return result.rows.map((r) => ({
+        object_id: r.object_id,
+        post_count:
+          typeof r.post_count === 'number' ? r.post_count : Math.trunc(Number(r.post_count)),
+      }));
+    } catch (error) {
+      this.logger.error(
+        `findUserBlogObjectFacets failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return [];
+    }
   }
 
   /**
@@ -109,26 +192,24 @@ export class PostsRepository {
     account: string,
     cursor: { feedAt: number; author: string; permlink: string } | null,
     limitPlusOne: number,
+    objectIds: readonly string[] = [],
   ): Promise<FeedBranchRow[]> {
-    // Root posts: match either Hive depth (0/null) or empty parents. Imports disagree on which is set.
     let qb = this.db
       .selectFrom('posts')
       .where('author', '=', account)
-      .where((eb) =>
-        eb.or([
-          eb.or([eb('depth', '=', 0), eb('depth', 'is', null)]),
-          eb.and([
-            sql<boolean>`TRIM(COALESCE(parent_author, '')) = ''`,
-            sql<boolean>`TRIM(COALESCE(parent_permlink, '')) = ''`,
-          ]),
-        ]),
-      )
+      .where(ROOT_POST_PREDICATE_POSTS)
       .select([
         'author',
         'permlink',
         sql<number>`posts.created_unix`.as('feed_at'),
         sql<string | null>`NULL::text`.as('reblogged_by'),
       ]);
+
+    if (objectIds.length > 0) {
+      qb = qb.where(
+        sql`(posts.author, posts.permlink) IN ${postKeysMatchingAllObjectIds(objectIds)}` as never,
+      );
+    }
 
     if (cursor) {
       qb = qb.where(
@@ -155,6 +236,7 @@ export class PostsRepository {
     account: string,
     cursor: { feedAt: number; author: string; permlink: string } | null,
     limitPlusOne: number,
+    objectIds: readonly string[] = [],
   ): Promise<FeedBranchRow[]> {
     let qb = this.db
       .selectFrom('post_reblogged_users as r')
@@ -162,21 +244,19 @@ export class PostsRepository {
         join.onRef('r.author', '=', 'p.author').onRef('r.permlink', '=', 'p.permlink'),
       )
       .where('r.account', '=', account)
-      .where((eb) =>
-        eb.or([
-          eb.or([eb('p.depth', '=', 0), eb('p.depth', 'is', null)]),
-          eb.and([
-            sql<boolean>`TRIM(COALESCE(p.parent_author, '')) = ''`,
-            sql<boolean>`TRIM(COALESCE(p.parent_permlink, '')) = ''`,
-          ]),
-        ]),
-      )
+      .where(ROOT_POST_PREDICATE_P)
       .select([
         sql<string>`p.author`.as('author'),
         sql<string>`p.permlink`.as('permlink'),
         sql<number>`r.reblogged_at_unix`.as('feed_at'),
         sql<string>`r.account`.as('reblogged_by'),
       ]);
+
+    if (objectIds.length > 0) {
+      qb = qb.where(
+        sql`(p.author, p.permlink) IN ${postKeysMatchingAllObjectIds(objectIds)}` as never,
+      );
+    }
 
     if (cursor) {
       qb = qb.where(

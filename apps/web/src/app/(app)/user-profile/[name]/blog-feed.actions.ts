@@ -7,9 +7,10 @@ import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/co
 export async function loadMoreUserBlogFeedAction(
   accountName: string,
   cursor: string,
+  objectIds: string[] = [],
 ): Promise<UserBlogFeedPage> {
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
   const viewer = user?.username ?? null;
-  return getUserBlogFeedPageQuery(accountName, { cursor, limit: 20 }, viewer);
+  return getUserBlogFeedPageQuery(accountName, { cursor, limit: 20, objectIds }, viewer);
 }

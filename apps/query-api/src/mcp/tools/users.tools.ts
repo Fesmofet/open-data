@@ -26,6 +26,32 @@ const userBlogFeedMcpSchema = withMcpLocaleContext(
     limit: z.coerce.number().int().min(1).max(50).default(20),
     cursor: z.string().optional(),
     currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+    object_ids: z
+      .array(z.string().min(1))
+      .max(20)
+      .optional()
+      .default([])
+      .describe('AND filter: posts must link to every object_id'),
+  }),
+);
+
+const userMentionsFeedMcpSchema = withMcpLocaleContext(
+  z.object({
+    ...accountField,
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    cursor: z.string().optional(),
+    currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+  }),
+);
+
+const userBlogObjectFiltersMcpSchema = withMcpLocaleContext(
+  z.object({
+    ...accountField,
+    objects: z
+      .array(z.string().min(1))
+      .optional()
+      .default([])
+      .describe('Active object_id filters (AND) for facet narrowing'),
   }),
 );
 
@@ -65,10 +91,33 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, limit, cursor, currency } = args;
+      const { account, limit, cursor, currency, object_ids } = args;
       const result = await deps.getUserBlogFeed.execute(
         account,
-        { limit, cursor, currency },
+        { limit, cursor, currency, object_ids },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`User not found: ${account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_blog_object_filters',
+    {
+      description: catalogDescription('get_user_blog_object_filters'),
+      inputSchema: userBlogObjectFiltersMcpSchema,
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { account, objects } = args;
+      const result = await deps.getUserBlogObjectFilters.execute(
+        account,
+        { objects },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
@@ -84,14 +133,14 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     'get_user_mentions',
     {
       description: catalogDescription('get_user_mentions'),
-      inputSchema: userBlogFeedMcpSchema,
+      inputSchema: userMentionsFeedMcpSchema,
     },
     async (args) => {
       const ctx = pickMcpContext(args);
       const { account, limit, cursor, currency } = args;
       const result = await deps.getUserMentionsFeed.execute(
         account,
-        { limit, cursor, currency },
+        { limit, cursor, currency, object_ids: [] },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,

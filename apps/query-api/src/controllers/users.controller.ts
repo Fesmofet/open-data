@@ -10,10 +10,14 @@ import {
 import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetUserBlogFeedEndpoint,
+  GetUserBlogObjectFiltersEndpoint,
   GetUserMentionsFeedEndpoint,
   userBlogFeedBodySchema,
+  userBlogObjectFiltersQuerySchema,
   type UserBlogFeedBody,
   type UserBlogFeedResponse,
+  type UserBlogObjectFiltersQuery,
+  type UserBlogObjectFiltersResponseDto,
 } from '../domain/feed';
 import {
   GetUserProfileEndpoint,
@@ -55,6 +59,7 @@ export class UsersController {
   constructor(
     private readonly getUserProfile: GetUserProfileEndpoint,
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
+    private readonly getUserBlogObjectFilters: GetUserBlogObjectFiltersEndpoint,
     private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
@@ -163,6 +168,27 @@ export class UsersController {
       throw new NotFoundException(`User not found: ${name}`);
     }
     return view;
+  }
+
+  @Get(':name/blog/object-filters')
+  async getBlogObjectFilters(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userBlogObjectFiltersQuerySchema)) query: UserBlogObjectFiltersQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserBlogObjectFiltersResponseDto> {
+    const result = await this.getUserBlogObjectFilters.execute(
+      name,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
   }
 
   @Post(':name/blog')

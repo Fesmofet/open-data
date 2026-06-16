@@ -7,10 +7,15 @@ import { fetchUserBlogFeed } from '../../infrastructure/clients/blog-feed.client
 
 export async function getUserBlogFeedPageQuery(
   accountName: string,
-  body: { limit?: number; cursor?: string } = {},
+  body: { limit?: number; cursor?: string; objectIds?: string[] } = {},
   viewer?: string | null,
 ): Promise<UserBlogFeedPage> {
-  const raw = await fetchUserBlogFeed(accountName, body, { viewer });
+  const object_ids = (body.objectIds ?? []).map((id) => id.trim()).filter(Boolean);
+  const raw = await fetchUserBlogFeed(
+    accountName,
+    { limit: body.limit, cursor: body.cursor, object_ids },
+    { viewer },
+  );
   if (!raw) {
     return { items: [], cursor: null, hasMore: false };
   }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { getUserProfileViewQuery } from '@/modules/user-profile';
+import { parseProfilePostFilters } from '@/modules/user-profile/domain/profile-post-filters-url';
 import {
   buildPersonJsonLd,
   buildProfileMetadata,
@@ -39,11 +40,15 @@ export async function generateMetadata({
 
 export default async function UserProfileFeedHomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ name: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { name } = await params;
   const accountName = decodeURIComponent(name);
+  const resolvedSearchParams = await searchParams;
+  const { objectIds: postFilterObjectIds } = parseProfilePostFilters(resolvedSearchParams);
   const locale = await getRequestLocale();
   const auth = createCookieAuthContextProvider();
   const viewer = (await auth.getUser())?.username ?? null;
@@ -67,7 +72,11 @@ export default async function UserProfileFeedHomePage({
   return (
     <>
       <JsonLdScript data={jsonLd} />
-      <FeedProfileContent accountName={accountName} feedTab="posts" />
+      <FeedProfileContent
+        accountName={accountName}
+        feedTab="posts"
+        postFilterObjectIds={postFilterObjectIds}
+      />
     </>
   );
 }

@@ -6,6 +6,7 @@ import {
   getUserThreadsFeedPageQuery,
   type FeedTab,
 } from '@/modules/feed';
+import { ProfilePostFilterChips } from '@/modules/user-profile/presentation/components/profile-post-filter-chips';
 import { FeedColumn } from '@/shared/presentation/layout';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
@@ -15,22 +16,38 @@ import { getMockFeedItems } from './mock-feed';
 type FeedProfileContentProps = {
   accountName: string;
   feedTab: FeedTab;
+  postFilterObjectIds?: string[];
 };
 
-export async function FeedProfileContent({ accountName, feedTab }: FeedProfileContentProps) {
+export async function FeedProfileContent({
+  accountName,
+  feedTab,
+  postFilterObjectIds = [],
+}: FeedProfileContentProps) {
   const auth = createCookieAuthContextProvider();
   const currentUser = await auth.getUser();
   const currentUsername = currentUser?.username ?? null;
 
   if (feedTab === 'posts') {
-    const page = await getUserBlogFeedPageQuery(accountName, {}, currentUsername);
+    const page = await getUserBlogFeedPageQuery(
+      accountName,
+      { objectIds: postFilterObjectIds },
+      currentUsername,
+    );
     return (
-      <BlogFeedPostsList
-        accountName={accountName}
-        initialPage={page}
-        feedTab={feedTab}
-        currentUsername={currentUsername}
-      />
+      <>
+        <ProfilePostFilterChips
+          accountName={accountName}
+          objectIds={postFilterObjectIds}
+        />
+        <BlogFeedPostsList
+          accountName={accountName}
+          initialPage={page}
+          feedTab={feedTab}
+          currentUsername={currentUsername}
+          objectIds={postFilterObjectIds}
+        />
+      </>
     );
   }
 

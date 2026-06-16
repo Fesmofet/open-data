@@ -7,6 +7,11 @@ export const userBlogFeedBodySchema = z.preprocess(
     limit: z.number().int().min(1).max(50).optional().default(20),
     cursor: z.string().optional(),
     currency: z.enum(SUPPORTED_CURRENCIES).optional().default('USD'),
+    object_ids: z
+      .array(z.string().min(1))
+      .max(20)
+      .optional()
+      .default([]),
   }),
 );
 
