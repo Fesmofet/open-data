@@ -1,3 +1,12 @@
+export {
+  applyCaseTransform,
+  toCapitalizeEachWord,
+  toLowercaseCase,
+  toSentenceCase,
+  toToggleCase,
+  toUppercaseCase,
+  type CaseTransformMode,
+} from './case-transform';
 export { fail, isFail, isOk, ok, type Result } from './result';
 export { UnauthorizedError } from './errors';
 export {

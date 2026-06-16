@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { ModalShell, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
+import { ModalShell, ModalShellCloseButton, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
 
 export type ExternalLinkModalProps = {
   url: string;
@@ -16,18 +16,14 @@ export function ExternalLinkModal({ url, onClose, onConfirm }: ExternalLinkModal
   const { t } = useI18n();
 
   const header = (
-    <div className="flex items-start justify-between gap-4 border-b border-border px-card-padding py-3">
-      <h2 id="external-link-dialog-title" className="text-section font-display text-heading">
+    <div className="flex items-center justify-between gap-4 border-b border-border px-card-padding py-3">
+      <h2
+        id="external-link-dialog-title"
+        className="min-w-0 flex-1 text-section font-display text-heading"
+      >
         {t('external_link_modal_title')}
       </h2>
-      <button
-        type="button"
-        onClick={onClose}
-        className="inline-flex size-10 shrink-0 items-center justify-center rounded-btn text-section leading-none text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-        aria-label={t('cancel')}
-      >
-        ×
-      </button>
+      <ModalShellCloseButton onClose={onClose} ariaLabel={t('cancel')} />
     </div>
   );
 

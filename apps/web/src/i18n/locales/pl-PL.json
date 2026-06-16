@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "W tej chwili nie możesz odrzucić kampanii",
   "cannot_reserve_company": "W tej chwili nie możesz zarezerwować kampanii",
   "case_status": "Status sprawy",
+  "case_transform_aria": "Zmień wielkość liter nazwy",
   "catalog": "Katalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

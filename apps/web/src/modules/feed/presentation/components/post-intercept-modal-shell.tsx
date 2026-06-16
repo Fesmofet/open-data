@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, type ReactNode } from 'react';
 
-import { ModalShell } from '@/shared/presentation';
+import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 import { useDismissPostInterceptForObjectSurface } from '@/shared/presentation/hooks/use-dismiss-post-intercept-for-object-surface';
 
 type PostInterceptModalShellProps = {
@@ -116,14 +116,7 @@ export function PostInterceptModalShell({
 
   const mobileHeader = (
     <div className="flex items-center justify-end border-b border-border px-4 py-2 lg:hidden">
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={onClose}
-        className="flex size-8 items-center justify-center rounded-circle text-fg-secondary hover:text-fg"
-      >
-        <IconClose />
-      </button>
+      <ModalShellCloseButton onClose={onClose} />
     </div>
   );
 

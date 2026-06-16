@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "Jy kan nie die veldtog op hierdie oomblik verwerp nie",
   "cannot_reserve_company": "Jy kan nie die veldtog op hierdie oomblik reserveer nie",
   "case_status": "Sakestatus",
+  "case_transform_aria": "Verander naam se hoof/kleinletters",
   "catalog": "Katalogus",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

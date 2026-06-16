@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "Sie können die Kampagne derzeit nicht ablehnen",
   "cannot_reserve_company": "Sie können die Kampagne derzeit nicht reservieren",
   "case_status": "Fallstatus",
+  "case_transform_aria": "Namensgroß-/Kleinschreibung ändern",
   "catalog": "Katalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

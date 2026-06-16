@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "Trenutno ne možete odbiti kampanju",
   "cannot_reserve_company": "Trenutno ne možete rezervirati kampanju",
   "case_status": "Status predmeta",
+  "case_transform_aria": "Promijeni veličinu slova imena",
   "catalog": "Katalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

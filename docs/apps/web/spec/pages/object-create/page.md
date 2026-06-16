@@ -25,7 +25,7 @@ Authenticated UI to compose a new object: type selection, dynamic fields from ob
 |------|--------|
 | Path | `/object-create` — `apps/web/src/app/(app)/object-create/page.tsx` |
 | Auth | Redirect to `/sign-in` when no session |
-| Entry | Header account menu **Create object**; editor **Create new object** with `?return=` |
+| Entry | Header account menu **Create object** only (editor uses in-place modal — see [editor page](../editor/page.md)) |
 
 ## Query params
 
@@ -38,7 +38,7 @@ Authenticated UI to compose a new object: type selection, dynamic fields from ob
 | Layer | Location |
 |-------|----------|
 | Client screen | `@/modules/object-create` — `ObjectCreateClient`, form hooks |
-| Build ops | `application/build-create-ops.ts`, `use-object-create-form.ts` |
+| Build ops | `application/build-create-ops.ts`, `use-object-create-form.ts` (full publish); editor modal uses `application/build-editor-quick-create-ops.ts` (name + supposed updates only) |
 | Domain | `generate-object-id`, field filters, validation |
 | Preview panels | Shared with object edit — `ObjectPreviewPanel`, `ObjectHealthPanel` |
 
@@ -49,7 +49,7 @@ Server generates `initialObjectIdPrefix` via `generatePrefix()` per request.
 - Form fields driven by `@opden-data-layer/core` object-type registry and supposed updates.
 - **Publish dock:** same status pattern as editor (`PendingOpsDock` family).
 - **Images:** IPFS upload via shared image actions; CID previews use `useIpfsContentBaseUrl()`.
-- **Return to editor:** flush editor autosave before navigating to object-create; on success strip `attachObject` after editor consumes it.
+- **Return to editor:** optional `?return=` when using this page from a bookmark or future entry; editor quick-create uses the modal path instead.
 
 ## Verification
 

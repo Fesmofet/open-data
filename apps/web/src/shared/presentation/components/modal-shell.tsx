@@ -39,13 +39,29 @@ export type ModalShellProps = {
   aside?: ReactNode;
 };
 
-export function ModalShellCloseButton({ onClose }: { onClose: () => void }) {
+export type ModalShellCloseButtonProps = {
+  onClose: () => void;
+  disabled?: boolean;
+  ariaLabel?: string;
+  className?: string;
+};
+
+export function ModalShellCloseButton({
+  onClose,
+  disabled = false,
+  ariaLabel = 'Close',
+  className = '',
+}: ModalShellCloseButtonProps) {
   return (
     <button
       type="button"
-      aria-label="Close"
+      aria-label={ariaLabel}
       onClick={onClose}
-      className="flex size-8 shrink-0 items-center justify-center rounded-circle text-fg-secondary hover:bg-surface-control hover:text-fg"
+      disabled={disabled}
+      className={[
+        'flex size-8 shrink-0 items-center justify-center rounded-circle text-fg-secondary hover:bg-surface-control hover:text-fg disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      ].join(' ')}
     >
       <svg
         width="16"

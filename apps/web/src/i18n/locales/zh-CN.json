@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "您目前无法拒绝该活动",
   "cannot_reserve_company": "您目前无法预定活动",
   "case_status": "案例状态",
+  "case_transform_aria": "更改名称大小写",
   "catalog": "目录",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

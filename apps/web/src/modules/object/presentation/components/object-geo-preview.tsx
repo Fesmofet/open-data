@@ -11,7 +11,7 @@ import {
   MapProvider,
   type MapPosition,
 } from '@/modules/map';
-import { HydrationSafeAnchor, ModalShell, MODAL_Z_INDEX_GEO_FULLSCREEN } from '@/shared/presentation';
+import { HydrationSafeAnchor, ModalShell, ModalShellCloseButton, MODAL_Z_INDEX_GEO_FULLSCREEN } from '@/shared/presentation';
 
 import {
   OBJECT_MAP_MODAL_MIN_HEIGHT_PX,
@@ -99,25 +99,6 @@ function IconMyLocation(props: SVGProps<SVGSVGElement>) {
       <line x1="12" y1="18" x2="12" y2="22" />
       <line x1="2" y1="12" x2="6" y2="12" />
       <line x1="18" y1="12" x2="22" y2="12" />
-    </svg>
-  );
-}
-
-function IconClose(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden
-      {...props}
-    >
-      <line x1="18" x2="6" y1="6" y2="18" />
-      <line x1="6" x2="18" y1="6" y2="18" />
     </svg>
   );
 }
@@ -269,15 +250,11 @@ export function ObjectGeoPreview({ latitude, longitude, label }: ObjectGeoPrevie
       <span id={titleId} className="sr-only">
         {label}
       </span>
-      <div className="flex shrink-0 justify-end border-b border-border px-2 py-2">
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          aria-label="Close map"
-          className="rounded-btn p-2 text-fg-secondary hover:bg-surface-alt hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-        >
-          <IconClose />
-        </button>
+      <div className="flex shrink-0 items-center justify-end border-b border-border px-2 py-2">
+        <ModalShellCloseButton
+          onClose={() => setExpanded(false)}
+          ariaLabel="Close map"
+        />
       </div>
     </>
   );

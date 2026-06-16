@@ -19,6 +19,8 @@ export {
 export type { ResolveAvatarUrlInput, UserAvatarProps } from './avatar';
 export { UserAvatar } from './avatar';
 
+export { CaseTransformTextField } from './components/case-transform-text-field';
+export type { CaseTransformTextFieldProps } from './components/case-transform-text-field';
 export { IpfsImageDropZone } from './components/ipfs-image-drop-zone';
 export type { IpfsImageDropZoneProps } from './components/ipfs-image-drop-zone';
 export {
@@ -31,7 +33,7 @@ export {
   ModalShell,
   ModalShellCloseButton,
 } from './components/modal-shell';
-export type { ModalShellProps, ModalShellVariant } from './components/modal-shell';
+export type { ModalShellProps, ModalShellVariant, ModalShellCloseButtonProps } from './components/modal-shell';
 export {
   MODAL_Z_INDEX_DEFAULT,
   MODAL_Z_INDEX_ABOVE_MAP,

@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "Praegu ei saa te kampaaniat tagasi lükata",
   "cannot_reserve_company": "Praegu ei saa kampaaniat reserveerida",
   "case_status": "Sagsstatus",
+  "case_transform_aria": "Muuda nime suur- ja väiketähti",
   "catalog": "Kataloog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

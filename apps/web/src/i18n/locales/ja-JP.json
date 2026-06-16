@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "現在、キャンペーンを拒否することはできません",
   "cannot_reserve_company": "現在、キャンペーンを予約することはできません",
   "case_status": "ケースステータス",
+  "case_transform_aria": "名前の大文字・小文字を変更",
   "catalog": "カタログ",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

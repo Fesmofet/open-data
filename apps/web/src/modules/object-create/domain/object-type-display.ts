@@ -1,3 +1,5 @@
+import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
+
 /** Grouped categories for the object type selector. */
 export const OBJECT_TYPE_GROUPS = [
   {
@@ -108,4 +110,13 @@ export const OBJECT_TYPE_DISPLAY_LABEL: Record<string, string> = {
 
 export function labelForObjectType(objectType: string): string {
   return OBJECT_TYPE_DISPLAY_LABEL[objectType] ?? objectType;
+}
+
+/** UI subtitle for a type (card copy, then registry machine description). */
+export function descriptionForObjectType(objectType: string): string {
+  return (
+    OBJECT_TYPE_CARD_DESCRIPTION[objectType] ??
+    OBJECT_TYPE_REGISTRY[objectType]?.description ??
+    ''
+  );
 }

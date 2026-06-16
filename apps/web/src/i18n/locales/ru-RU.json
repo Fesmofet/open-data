@@ -337,6 +337,7 @@
   "cannot_reject_campaign": "Вы не можете отклонить кампанию в данный момент",
   "cannot_reserve_company": "Вы не можете зарезервировать кампанию в данный момент",
   "case_status": "Статус дела",
+  "case_transform_aria": "Изменить регистр имени",
   "catalog": "Каталог",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

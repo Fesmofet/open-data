@@ -235,6 +235,7 @@
   "cannot_reject_campaign": "Anda tidak boleh menolak kempen pada masa ini",
   "cannot_reserve_company": "Anda tidak boleh menempah kempen pada masa ini",
   "case_status": "Status kes",
+  "case_transform_aria": "Tukar huruf besar/kecil nama",
   "catalog": "Katalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

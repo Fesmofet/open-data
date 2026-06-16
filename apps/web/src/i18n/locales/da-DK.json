@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "Du kan ikke afvise kampagnen i øjeblikket",
   "cannot_reserve_company": "Du kan ikke reservere kampagnen i øjeblikket",
   "case_status": "Sagsstatus",
+  "case_transform_aria": "Skift navnets store/små bogstaver",
   "catalog": "Katalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

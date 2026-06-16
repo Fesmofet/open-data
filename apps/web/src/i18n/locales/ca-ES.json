@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "De moment no podeu rebutjar la campanya",
   "cannot_reserve_company": "De moment no podeu reservar la campanya",
   "case_status": "Estat del cas",
+  "case_transform_aria": "Canvia majúscules/minúscules del nom",
   "catalog": "Catàleg",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

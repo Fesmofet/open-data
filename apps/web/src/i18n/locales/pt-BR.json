@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "Você não pode rejeitar a campanha no momento",
   "cannot_reserve_company": "Você não pode reservar a campanha no momento",
   "case_status": "Status do caso",
+  "case_transform_aria": "Alterar caixa do nome",
   "catalog": "Catálogo",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

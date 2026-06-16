@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "Наразі ви не можете скасувати кампанію",
   "cannot_reserve_company": "Наразі ви не можете зарезервувати кампанію",
   "case_status": "Статус справи",
+  "case_transform_aria": "Змінити регістр назви",
   "catalog": "Каталог",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

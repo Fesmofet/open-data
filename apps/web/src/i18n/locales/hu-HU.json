@@ -237,6 +237,7 @@
   "cannot_reject_campaign": "Jelenleg nem utasíthatja el a kampányt",
   "cannot_reserve_company": "Jelenleg nem foglalhatja le a kampányt",
   "case_status": "Eset állapota",
+  "case_transform_aria": "Név kis- és nagybetűinek módosítása",
   "catalog": "Katalógus",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

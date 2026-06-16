@@ -41,7 +41,6 @@ import { useEditorPostPublish } from '../../application/use-editor-post-publish'
 import type { PostEditorLinkedObject } from '../../domain/post-editor-linked-object';
 import {
   EDITOR_ATTACH_OBJECT_QUERY,
-  buildObjectCreateHrefFromEditor,
 } from '../../domain/post-editor-object-create-return';
 import {
   createUserDraftAction,
@@ -49,6 +48,7 @@ import {
 } from '../../infrastructure/drafts.actions';
 import { EditorAdvancedSettingsPanel } from './editor-advanced-settings-panel';
 import { EditorAttachedObjectsPanel } from './editor-attached-objects-panel';
+import { EditorCreateObjectModal } from './editor-create-object-modal';
 import { EditorPostPreviewModal } from './editor-post-preview-modal';
 import { EditorPublishDock } from './editor-publish-dock';
 import { LexicalPostEditor } from './lexical-editor';
@@ -105,6 +105,7 @@ export function EditorScreen({
     Record<string, SearchObjectResult>
   >({});
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [createObjectOpen, setCreateObjectOpen] = useState(false);
   const [legalAccepted, setLegalAccepted] = useState(false);
   const [rewardMode, setRewardMode] = useState<PostEditorRewardMode>(() =>
     parseRewardModeFromJsonMetadata(initialJsonMetadata),
@@ -473,11 +474,10 @@ export function EditorScreen({
     [buildJsonMetadataPayload, flushSave],
   );
 
-  const handleNavigateToObjectCreate = useCallback(async () => {
+  const handleOpenCreateObject = useCallback(async () => {
     await flushSave({ syncDraftUrl: false });
-    const id = stateRef.current.draftId;
-    router.push(buildObjectCreateHrefFromEditor({ draftId: id }));
-  }, [flushSave, router]);
+    setCreateObjectOpen(true);
+  }, [flushSave]);
 
   useEffect(() => {
     const attachId = searchParams.get(EDITOR_ATTACH_OBJECT_QUERY)?.trim();
@@ -620,7 +620,7 @@ export function EditorScreen({
             searchResultsById={searchResultsById}
             onLinkedObjectsChange={handleLinkedObjectsChangeWithSave}
             onObjectLinked={handleObjectLinkedFromEditor}
-            onNavigateToCreateObject={() => void handleNavigateToObjectCreate()}
+            onOpenCreateObject={() => void handleOpenCreateObject()}
           />
         </div>
 
@@ -656,6 +656,13 @@ export function EditorScreen({
         bodyLexicalJson={body}
         linkedObjects={linkedObjects}
         searchResultsById={searchResultsById}
+      />
+
+      <EditorCreateObjectModal
+        open={createObjectOpen}
+        onClose={() => setCreateObjectOpen(false)}
+        username={username}
+        onCreated={attachReturnedObject}
       />
     </main>
   );

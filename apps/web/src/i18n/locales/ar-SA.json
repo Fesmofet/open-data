@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "لا يمكنك رفض الحملة في الوقت الحالي",
   "cannot_reserve_company": "لا يمكنك حجز الحملة في الوقت الحالي",
   "case_status": "وضع حالة",
+  "case_transform_aria": "تغيير حالة أحرف الاسم",
   "catalog": "فهرس",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

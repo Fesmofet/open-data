@@ -21,7 +21,7 @@ export type EditorAttachedObjectsPanelProps = {
   searchResultsById: Readonly<Record<string, SearchObjectResult>>;
   onLinkedObjectsChange: (objects: PostEditorLinkedObject[]) => void;
   onObjectLinked: (result: SearchObjectResult) => void;
-  onNavigateToCreateObject: () => void;
+  onOpenCreateObject: () => void;
 };
 
 export function EditorAttachedObjectsPanel({
@@ -29,7 +29,7 @@ export function EditorAttachedObjectsPanel({
   searchResultsById,
   onLinkedObjectsChange,
   onObjectLinked,
-  onNavigateToCreateObject,
+  onOpenCreateObject,
 }: EditorAttachedObjectsPanelProps) {
   const { t } = useI18n();
 
@@ -84,7 +84,7 @@ export function EditorAttachedObjectsPanel({
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={onNavigateToCreateObject}
+          onClick={onOpenCreateObject}
           className="text-body-sm text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           {t('create_new_object')}

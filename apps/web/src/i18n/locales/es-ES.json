@@ -329,6 +329,7 @@
   "cannot_reject_campaign": "No puedes rechazar la campaña en este momento",
   "cannot_reserve_company": "No puedes reservar la campaña en este momento",
   "case_status": "Estado del caso",
+  "case_transform_aria": "Cambiar mayúsculas/minúsculas del nombre",
   "catalog": "Catálogo",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

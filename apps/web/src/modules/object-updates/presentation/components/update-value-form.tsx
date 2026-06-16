@@ -9,6 +9,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { CaseTransformTextField } from '@/shared/presentation/components/case-transform-text-field';
 
 import {
   labelForJsonFieldKey,
@@ -163,6 +164,18 @@ function UpdateValueFields({
       updateType === 'email' ? 'email' : updateType === 'url' ? 'url' : 'text';
     const placeholder =
       updateType === UPDATE_TYPES.IMAGE_GALLERY ? t('add_new_album_placeholder') : undefined;
+
+    if (updateType === UPDATE_TYPES.NAME && text.length <= 80) {
+      return (
+        <CaseTransformTextField
+          label={label ? <span className="font-weight-label text-fg">{label}</span> : undefined}
+          value={text}
+          onChange={onChange}
+          placeholder={placeholder}
+          type={inputType}
+        />
+      );
+    }
 
     return (
       <label className="block text-body-sm">

@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "지금은 캠페인을 거부 할 수 없습니다.",
   "cannot_reserve_company": "지금은 캠페인을 예약 할 수 없습니다.",
   "case_status": "케이스 상태",
+  "case_transform_aria": "이름 대소문자 변경",
   "catalog": "목록",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

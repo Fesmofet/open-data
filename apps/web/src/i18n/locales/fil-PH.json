@@ -236,6 +236,7 @@
   "cannot_reject_campaign": "Hindi mo maaaring tanggihan ang kampanya sa ngayon",
   "cannot_reserve_company": "Hindi mo maaaring ireserba ang kampanya sa ngayon",
   "case_status": "Katayuan ng kaso",
+  "case_transform_aria": "Baguhin ang case ng pangalan",
   "catalog": "Catalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

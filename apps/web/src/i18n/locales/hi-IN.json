@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "आप इस समय कैम्पेन को अस्वीकार नहीं कर सकते",
   "cannot_reserve_company": "आप इस समय कैम्पेन को आरक्षित नहीं कर सकते",
   "case_status": "मामले की स्थिति",
+  "case_transform_aria": "नाम के अक्षरों का केस बदलें",
   "catalog": "कैटलॉग",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

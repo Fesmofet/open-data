@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "Vous ne pouvez pas rejeter la campagne pour le moment",
   "cannot_reserve_company": "Vous ne pouvez pas réserver la campagne pour le moment",
   "case_status": "Statut du dossier",
+  "case_transform_aria": "Modifier la casse du nom",
   "catalog": "Catalogue",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

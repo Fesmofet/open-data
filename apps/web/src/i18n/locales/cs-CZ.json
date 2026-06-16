@@ -324,6 +324,7 @@
   "cannot_reject_campaign": "Momentálně nemůžete odmítnout kampaň",
   "cannot_reserve_company": "Momentálně nemůžete rezervovat kampaň",
   "case_status": "Stav případu",
+  "case_transform_aria": "Změnit velikost písmen názvu",
   "catalog": "Katalog",
   "catalog_sort_az": "A..Z",
   "catalog_sort_custom": "Custom",

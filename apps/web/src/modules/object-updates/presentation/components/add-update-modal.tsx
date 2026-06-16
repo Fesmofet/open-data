@@ -18,7 +18,7 @@ import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
-import { ModalShell, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
+import { ModalShell, ModalShellCloseButton, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
 
 import {
   defaultUpdateTypeForCandidates,
@@ -272,18 +272,18 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const showTypeSelect = typeSelectOptions.length > 0;
 
   const header = (
-    <div className="flex items-start justify-between gap-4 border-b border-border px-card-padding py-3">
-      <h2 id="add-update-dialog-title" className="text-section font-display text-heading">
+    <div className="flex items-center justify-between gap-4 border-b border-border px-card-padding py-3">
+      <h2
+        id="add-update-dialog-title"
+        className="min-w-0 flex-1 text-section font-display text-heading"
+      >
         {t('object_edit_modal_title')}
       </h2>
-      <button
-        type="button"
-        onClick={onClose}
+      <ModalShellCloseButton
+        onClose={onClose}
         disabled={submitting}
-        className="rounded-btn px-2 py-1 text-body-sm text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-      >
-        {t('object_edit_cancel')}
-      </button>
+        ariaLabel={t('object_edit_cancel')}
+      />
     </div>
   );
 
