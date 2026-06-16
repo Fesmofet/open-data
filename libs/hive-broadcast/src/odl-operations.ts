@@ -103,6 +103,75 @@ export function buildOdlUpdateCreateWithLikeOp(
   });
 }
 
+export type BuildOdlGalleryItemWithAlbumEnsureOpInput = {
+  readonly id: string;
+  readonly objectId: string;
+  readonly creator: string;
+  readonly albumName: string;
+  readonly itemValue: unknown;
+  readonly withLike?: boolean;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * One `custom_json` op: `imageGallery` album create, then `imageGalleryItem`,
+ * optionally with a like vote on the item in the same Hive transaction.
+ */
+export function buildOdlGalleryItemWithAlbumEnsureOp(
+  input: BuildOdlGalleryItemWithAlbumEnsureOpInput,
+): CustomJsonOp {
+  const postingAuths = input.required_posting_auths ?? [input.creator];
+  const events: Record<string, unknown>[] = [];
+
+  events.push({
+    action: 'update_create',
+    v: 1,
+    payload: {
+      object_id: input.objectId,
+      update_type: 'imageGallery',
+      creator: input.creator,
+      value_text: input.albumName,
+    },
+  });
+
+  const itemEventId = input.withLike ? crypto.randomUUID() : undefined;
+  const itemCreate: Record<string, unknown> = {
+    action: 'update_create',
+    v: 1,
+    payload: {
+      object_id: input.objectId,
+      update_type: 'imageGalleryItem',
+      creator: input.creator,
+      value_json: input.itemValue,
+    },
+  };
+  if (itemEventId) {
+    itemCreate['event_id'] = itemEventId;
+  }
+  events.push(itemCreate);
+
+  if (input.withLike && itemEventId) {
+    events.push({
+      action: 'update_vote',
+      v: 1,
+      payload: {
+        create_event_id: itemEventId,
+        object_id: input.objectId,
+        voter: input.creator,
+        vote: 'for',
+      },
+    });
+  }
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: postingAuths,
+    id: input.id,
+    json: JSON.stringify({ events }),
+  });
+}
+
 export type OdlUpdateVoteValue = 'for' | 'against' | 'remove';
 
 export type BuildOdlUpdateVoteOpInput = {

@@ -2,12 +2,24 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { normalizeImageCidOrUrlFormValue } from './image-form-value';
 
+/** Default album for orphan gallery items and first-time photo uploads. */
+export const DEFAULT_GALLERY_PHOTOS_ALBUM_NAME = 'Photos';
+
+/** Album names for the gallery item picker (on-chain names, or default Photos). */
+export function galleryAlbumPickerNames(
+  onChainAlbumNames: readonly string[],
+): string[] {
+  return onChainAlbumNames.length > 0
+    ? [...onChainAlbumNames]
+    : [DEFAULT_GALLERY_PHOTOS_ALBUM_NAME];
+}
+
 /** Default form state for a new `imageGalleryItem` update. */
 export function initialGalleryItemFormValue(
   presetAlbumName?: string,
 ): Record<string, unknown> {
   return {
-    album: presetAlbumName ?? '',
+    album: presetAlbumName ?? DEFAULT_GALLERY_PHOTOS_ALBUM_NAME,
     url: '',
     cid: '',
   };

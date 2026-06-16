@@ -75,12 +75,6 @@ export function CoreFieldsEditor({
       ) {
         return false;
       }
-      if (
-        type === UPDATE_TYPES.IMAGE_GALLERY_ITEM &&
-        galleryAlbumNames.length === 0
-      ) {
-        return false;
-      }
       const def = UPDATE_REGISTRY[type];
       const rowCount = fields.filter((f) => f.updateType === type).length;
       if (def?.cardinality === 'multi') {
@@ -237,12 +231,6 @@ function UpdateTypeSection({
     if (
       updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM &&
       tagCategoryNames.length === 0
-    ) {
-      return null;
-    }
-    if (
-      updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM &&
-      galleryAlbumNames.length === 0
     ) {
       return null;
     }

@@ -6,6 +6,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
+import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
 import { UpdateValueForm } from '@/modules/object-updates/presentation/components/update-value-form';
 
 import type { AddFieldOptions } from '../../domain/add-field-options';
@@ -105,8 +106,11 @@ export function MediaEditor({
         out.push(name);
       }
     }
+    if (out.length === 0 && supportsGalleryItem) {
+      return galleryAlbumPickerNames([]);
+    }
     return out;
-  }, [galleryAlbumNames, galleryItemEntries]);
+  }, [galleryAlbumNames, galleryItemEntries, supportsGalleryItem]);
 
   if (mediaTypes.length === 0) {
     return null;
@@ -241,11 +245,6 @@ export function MediaEditor({
                 );
               })}
 
-              {supportsGalleryItem && namedAlbums.length === 0 ? (
-                <p className="text-body-sm text-muted" role="status">
-                  {t('object_edit_gallery_item_no_albums')}
-                </p>
-              ) : null}
             </div>
           ) : null}
         </div>

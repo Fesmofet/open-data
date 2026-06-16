@@ -324,13 +324,6 @@ export function useObjectCreateForm({
   const addField = useCallback((updateType: string, options?: AddFieldOptions) => {
     setState((prev) => {
       const tagNames = listTagCategoryNamesFromFields(prev.fields);
-      const albumNames = listGalleryAlbumNamesFromFields(prev.fields);
-      if (
-        updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM &&
-        albumNames.length === 0
-      ) {
-        return prev;
-      }
       if (
         updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM &&
         tagNames.length === 0

@@ -2,9 +2,16 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { normalizeImageCidOrUrlFormValue } from '../../application/image-form-value';
+import { imageEditorConfigForUpdateType } from '../../application/image-editor-config';
+import {
+  DEFAULT_GALLERY_PHOTOS_ALBUM_NAME,
+  galleryAlbumPickerNames,
+} from '../../application/gallery-form-value';
 import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 
 export type ImageGalleryItemFormProps = {
@@ -29,6 +36,7 @@ export function ImageGalleryItemForm({
   const { t } = useI18n();
   const obj = asRecord(value);
   const album = typeof obj.album === 'string' ? obj.album : '';
+  const pickerAlbumNames = galleryAlbumPickerNames(albumNames);
 
   const imageValue = {
     url: typeof obj.url === 'string' ? obj.url : undefined,
@@ -61,23 +69,15 @@ export function ImageGalleryItemForm({
   );
 
   useEffect(() => {
-    if (lockAlbum || albumNames.length === 0) {
+    if (lockAlbum) {
       return;
     }
     const current =
       typeof objRef.current.album === 'string' ? objRef.current.album.trim() : '';
-    if (!current && albumNames[0]) {
-      patchValue({ album: albumNames[0] });
+    if (!current && pickerAlbumNames[0]) {
+      patchValue({ album: pickerAlbumNames[0] });
     }
-  }, [lockAlbum, albumNames, patchValue]);
-
-  if (albumNames.length === 0) {
-    return (
-      <p className="text-body-sm text-muted" role="status">
-        {t('object_edit_gallery_item_no_albums')}
-      </p>
-    );
-  }
+  }, [lockAlbum, pickerAlbumNames, patchValue]);
 
   const albumField = lockAlbum ? (
     <label className="block text-body-sm">
@@ -94,10 +94,10 @@ export function ImageGalleryItemForm({
       <span className="font-weight-label text-fg">{t('album')}</span>
       <select
         className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
-        value={album && albumNames.includes(album) ? album : albumNames[0] ?? ''}
+        value={album && pickerAlbumNames.includes(album) ? album : pickerAlbumNames[0] ?? DEFAULT_GALLERY_PHOTOS_ALBUM_NAME}
         onChange={(e) => patchValue({ album: e.target.value })}
       >
-        {albumNames.map((name) => (
+        {pickerAlbumNames.map((name) => (
           <option key={name} value={name}>
             {name}
           </option>
@@ -113,6 +113,7 @@ export function ImageGalleryItemForm({
         value={imageValue}
         onChange={handleImageChange}
         label={t('object_create_image_zone_title')}
+        editorConfig={imageEditorConfigForUpdateType(UPDATE_TYPES.IMAGE_GALLERY_ITEM)}
       />
     </div>
   );

@@ -23,6 +23,8 @@ export { CaseTransformTextField } from './components/case-transform-text-field';
 export type { CaseTransformTextFieldProps } from './components/case-transform-text-field';
 export { IpfsImageDropZone } from './components/ipfs-image-drop-zone';
 export type { IpfsImageDropZoneProps } from './components/ipfs-image-drop-zone';
+export { ImageEditorPanel } from './components/image-editor';
+export type { ImageEditorConfig, ImageEditorPanelProps } from './components/image-editor';
 export {
   AppModal,
   AppModalCloseButton,

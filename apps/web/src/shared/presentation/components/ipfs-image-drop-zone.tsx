@@ -21,6 +21,10 @@ const ZONE_BUTTON_COMPACT_CLASS =
 
 export type IpfsImageDropZoneProps = {
   onUploaded: (result: IpfsImageUploadResult) => void;
+  /** When set, file pick/drop/paste opens the editor instead of uploading immediately. */
+  onFilePicked?: (file: File) => void;
+  /** When set, URL paste opens the editor instead of importing immediately. */
+  onUrlPicked?: (url: string) => void;
   disabled?: boolean;
   compact?: boolean;
   legend?: string;
@@ -35,6 +39,8 @@ export type IpfsImageDropZoneProps = {
 
 export function IpfsImageDropZone({
   onUploaded,
+  onFilePicked,
+  onUrlPicked,
   disabled = false,
   compact = false,
   legend,
@@ -51,21 +57,43 @@ export function IpfsImageDropZone({
   const { uploadFile, importFromUrl, isPending, uploadError } =
     useIpfsImageUpload(onUploaded);
 
+  const pickFile = useCallback(
+    (file: File) => {
+      if (onFilePicked) {
+        onFilePicked(file);
+      } else {
+        uploadFile(file);
+      }
+    },
+    [onFilePicked, uploadFile],
+  );
+
+  const pickUrl = useCallback(
+    (url: string) => {
+      if (onUrlPicked) {
+        onUrlPicked(url);
+      } else {
+        importFromUrl(url);
+      }
+    },
+    [importFromUrl, onUrlPicked],
+  );
+
   const handleClipboardData = useCallback(
     (data: DataTransfer | null): boolean => {
       const file = imageFileFromClipboard(data);
       if (file) {
-        uploadFile(file);
+        pickFile(file);
         return true;
       }
       const pastedUrl = parseHttpUrlFromPaste(data?.getData('text/plain') ?? '');
       if (pastedUrl) {
-        importFromUrl(pastedUrl);
+        pickUrl(pastedUrl);
         return true;
       }
       return false;
     },
-    [importFromUrl, uploadFile],
+    [pickFile, pickUrl],
   );
 
   useEffect(() => {
@@ -108,21 +136,21 @@ export function IpfsImageDropZone({
       setIsDragOver(false);
       const file = e.dataTransfer.files[0];
       if (file?.type.startsWith('image/')) {
-        uploadFile(file);
+        pickFile(file);
       }
     },
-    [uploadFile],
+    [pickFile],
   );
 
   const onFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        uploadFile(file);
+        pickFile(file);
       }
       e.target.value = '';
     },
-    [uploadFile],
+    [pickFile],
   );
 
   const onPaste = useCallback(

@@ -6,7 +6,10 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
-import { initialGalleryItemFormValue } from '@/modules/object-updates/application/gallery-form-value';
+import {
+  galleryAlbumPickerNames,
+  initialGalleryItemFormValue,
+} from '@/modules/object-updates/application/gallery-form-value';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 import { GalleryImage } from './gallery-image';
@@ -15,6 +18,7 @@ export type ObjectGalleryTabContentProps = {
   objectId: string;
   objectName: string;
   galleryAlbums: ProjectedGalleryAlbumView[];
+  onChainGalleryAlbumNames?: readonly string[];
   activeAlbumName: string | null;
   viewerUsername: string | null;
   onRequireLogin: () => void;
@@ -34,6 +38,7 @@ export function ObjectGalleryTabContent({
   objectId,
   objectName,
   galleryAlbums,
+  onChainGalleryAlbumNames = [],
   activeAlbumName,
   viewerUsername,
   onRequireLogin,
@@ -49,9 +54,9 @@ export function ObjectGalleryTabContent({
 
   const canAddAlbum = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY);
   const canAddImage = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
-  const albumNames = useMemo(
-    () => galleryAlbums.map((album) => album.name),
-    [galleryAlbums],
+  const albumPickerNames = useMemo(
+    () => galleryAlbumPickerNames(onChainGalleryAlbumNames),
+    [onChainGalleryAlbumNames],
   );
   const addImageInitialValue = useMemo(
     () => initialGalleryItemFormValue(activeAlbumName ?? undefined),
@@ -137,7 +142,8 @@ export function ObjectGalleryTabContent({
             viewerUsername={viewerUsername}
             updateType={UPDATE_TYPES.IMAGE_GALLERY_ITEM}
             initialValue={addImageInitialValue}
-            galleryAlbumNames={albumNames}
+            galleryAlbumNames={albumPickerNames}
+            onChainGalleryAlbumNames={onChainGalleryAlbumNames}
             lockGalleryAlbum={Boolean(activeAlbumName)}
             updateTypeCounts={updateTypeCounts}
           />

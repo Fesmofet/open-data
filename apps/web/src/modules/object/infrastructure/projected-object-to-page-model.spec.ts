@@ -49,6 +49,7 @@ describe('projectedObjectWithCountsToPageModel gallery', () => {
     expect(model.previewGallery).toEqual([
       { url: 'https://example.com/a.jpg', rankScore: 100, isAvatar: false },
     ]);
+    expect(model.onChainGalleryAlbumNames).toEqual(['Photos']);
   });
 
   it('omits left-rail gallery block when previewGallery is avatar-only', () => {

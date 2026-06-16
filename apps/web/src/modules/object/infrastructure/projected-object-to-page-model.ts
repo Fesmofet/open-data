@@ -45,6 +45,7 @@ import {
   projectedPrice,
   projectedSortCustom,
   projectedTagCategoryNames,
+  projectedGalleryAlbumNames,
   projectedTagCategorySections,
   projectedTelephoneEntries,
   projectedWebsiteEntries,
@@ -511,6 +512,7 @@ export function projectedObjectWithCountsToPageModel(
 
   const leftRailBlocks = buildLeftRailBlocks(viewLike);
   const tagCategoryNames = projectedTagCategoryNames(viewLike);
+  const onChainGalleryAlbumNames = projectedGalleryAlbumNames(viewLike);
   const sortCustom = projectedSortCustom(viewLike);
   const listItems = applySortCustomToListItems(
     projectedListItems(viewLike),
@@ -556,6 +558,7 @@ export function projectedObjectWithCountsToPageModel(
     descriptionContent,
     previewGallery,
     galleryAlbums,
+    onChainGalleryAlbumNames,
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),
     feedSubTabs: FEED_SUB_TABS,

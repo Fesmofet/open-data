@@ -12,7 +12,6 @@ import {
 import { useRouter } from 'next/navigation';
 
 import {
-  buildOdlUpdateCreateOp,
   buildOdlUpdateVoteOp,
 } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
@@ -21,6 +20,7 @@ import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { buildGalleryItemBroadcastOp } from '@/modules/object-updates/application/build-gallery-item-broadcast-op';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '@/modules/object-updates/constants';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { UpdateVoteControls } from '@/modules/object-updates/presentation/components/update-vote-controls';
@@ -96,6 +96,8 @@ export type ObjectGalleryViewerProps = {
   album: ProjectedGalleryAlbumView;
   /** Real gallery albums on the object (excludes virtual albums like Related). */
   allGalleryAlbums: readonly ProjectedGalleryAlbumView[];
+  /** On-chain `imageGallery` names (for album ensure before `imageGalleryItem`). */
+  onChainGalleryAlbumNames?: readonly string[];
   initialIndex: number;
   onClose: () => void;
   viewerUsername: string | null;
@@ -109,6 +111,7 @@ export function ObjectGalleryViewer({
   objectName,
   album,
   allGalleryAlbums,
+  onChainGalleryAlbumNames = [],
   initialIndex,
   onClose,
   viewerUsername,
@@ -278,14 +281,14 @@ export function ObjectGalleryViewer({
       setAddAlbumPending(targetAlbumName);
       setAddAlbumError(null);
       try {
-        const op = buildOdlUpdateCreateOp({
+        const itemValue = galleryPhotoToGalleryItemValue(targetAlbumName, currentPhoto);
+        const op = buildGalleryItemBroadcastOp({
           id: odlCustomJsonId,
           objectId,
-          updateType: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
           creator,
-          valueKind: 'json',
-          value: galleryPhotoToGalleryItemValue(targetAlbumName, currentPhoto),
-          required_posting_auths: [creator],
+          itemValue,
+          onChainGalleryAlbumNames,
+          withLike: false,
         });
         const { transactionId } = await getWalletFacade().broadcast({
           operations: [op],
@@ -311,6 +314,7 @@ export function ObjectGalleryViewer({
       currentPhoto,
       objectId,
       odlCustomJsonId,
+      onChainGalleryAlbumNames,
       onRequireLogin,
       router,
       t,

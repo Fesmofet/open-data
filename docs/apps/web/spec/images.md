@@ -80,6 +80,20 @@ Upload (`POST /ipfs-gateway/upload/image`, `/upload/file`) is proxied at **`/ipf
 
 **Code:** `get-ipfs-content-base-url.ts`, `get-ipfs-gateway-server-base-url.ts`, `get-bearer-access-token.server.ts`, `upload-image.action.ts`.
 
+### Client-side image editor (before upload)
+
+For `image` (avatar), `imageBackground`, and `imageGalleryItem` fields, picking a file or pasting a URL opens an **inline editor** in `ImageCidOrUrlForm` before IPFS upload:
+
+| Update type | Crop aspect | Max export |
+|-------------|-------------|------------|
+| `image` | **1:1** (square avatar) | 1024 px |
+| `imageBackground` | Natural / free | 1920 px |
+| `imageGalleryItem` | Natural / free | 1920 px |
+
+Tools: zoom, fit (reset framing), rotate (+90°), mirror (horizontal). Letterboxing uses a neutral background when the image does not fill the crop frame (e.g. book covers). **Save** exports WebP client-side, then uploads via the existing `upload-image.action.ts` flow. Stored value remains `{ cid }` only.
+
+**Code:** `shared/presentation/components/image-editor/`, `image-editor-config.ts`, `image-cid-or-url-form.tsx`.
+
 ## Verification
 
 | Command | Purpose |

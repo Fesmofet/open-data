@@ -109,6 +109,6 @@ describe('buildGalleryAlbums', () => {
     });
 
     expect(result.previewGallery).toEqual([]);
-    expect(result.albums.find((a) => a.name === 'Photos')?.items).toEqual([]);
+    expect(result.albums).toEqual([]);
   });
 });

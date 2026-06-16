@@ -5,6 +5,7 @@ import {
   buildOdlRankVoteOp,
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
+  buildOdlGalleryItemWithAlbumEnsureOp,
   buildOdlUpdateCreateWithRankVoteOp,
   buildOdlUpdateVoteOp,
   buildOdlUserFollowBellOp,
@@ -365,6 +366,67 @@ describe('buildOdlBatchImportOp', () => {
     expect(parsed.events[0]?.payload).toEqual({
       type: 'ipfs',
       ref: 'bafyTestCid',
+    });
+  });
+});
+
+describe('buildOdlGalleryItemWithAlbumEnsureOp', () => {
+  it('creates imageGallery album then imageGalleryItem in one op', () => {
+    const op = buildOdlGalleryItemWithAlbumEnsureOp({
+      id: 'odl-testnet',
+      objectId: 'obj-1',
+      creator: 'alice',
+      albumName: 'Photos',
+      itemValue: {
+        album: 'Photos',
+        url: 'https://example.com/photo.jpg',
+      },
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events).toHaveLength(2);
+    expect(parsed.events[0]?.action).toBe('update_create');
+    expect(parsed.events[0]?.payload).toMatchObject({
+      update_type: 'imageGallery',
+      value_text: 'Photos',
+    });
+    expect(parsed.events[1]?.action).toBe('update_create');
+    expect(parsed.events[1]?.payload).toMatchObject({
+      update_type: 'imageGalleryItem',
+      value_json: {
+        album: 'Photos',
+        url: 'https://example.com/photo.jpg',
+      },
+    });
+  });
+
+  it('appends like vote on the gallery item when withLike is true', () => {
+    const op = buildOdlGalleryItemWithAlbumEnsureOp({
+      id: 'odl-testnet',
+      objectId: 'obj-1',
+      creator: 'alice',
+      albumName: 'Photos',
+      itemValue: { album: 'Photos', cid: 'bafy' },
+      withLike: true,
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: {
+        action: string;
+        event_id?: string;
+        payload: Record<string, unknown>;
+      }[];
+    };
+    expect(parsed.events).toHaveLength(3);
+    expect(parsed.events[1]?.event_id).toBeDefined();
+    expect(parsed.events[2]).toMatchObject({
+      action: 'update_vote',
+      payload: {
+        create_event_id: parsed.events[1]?.event_id,
+        vote: 'for',
+      },
     });
   });
 });

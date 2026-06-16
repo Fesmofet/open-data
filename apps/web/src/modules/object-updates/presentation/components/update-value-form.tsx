@@ -29,6 +29,7 @@ import { GeoUpdateForm } from './geo-update-form';
 import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 import { ImageGalleryItemForm } from './image-gallery-item-form';
 import { isImageCidOrUrlUpdateType } from '../../application/image-form-value';
+import { imageEditorConfigForUpdateType } from '../../application/image-editor-config';
 import { MenuItemForm } from './menu-item-form';
 import { ObjectRefSearchField } from './object-ref-search-field';
 import { TagCategoryItemForm } from './tag-category-item-form';
@@ -220,6 +221,7 @@ function UpdateValueFields({
           onChange={onChange}
           label={label}
           hideLegend={hideUpdateTypeHeading}
+          editorConfig={imageEditorConfigForUpdateType(updateType)}
         />
       );
     }

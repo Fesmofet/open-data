@@ -16,6 +16,7 @@ import { filterFieldsForObjectType } from '../domain/filter-fields-for-object-ty
 import { groupFieldsByPriority } from '../domain/group-fields-by-priority';
 import { isEntryValid } from '../domain/object-health-score';
 import type { FieldEntry } from '../domain/object-create.types';
+import { listGalleryAlbumNamesFromFields } from '../domain/supposed-update-seeds';
 
 export const OBJECT_CREATE_MAX_OPS_PER_TRX = 5;
 
@@ -57,6 +58,46 @@ function buildUpdateCreateEventPayload(
     payload['locale'] = entry.locale;
   }
   return payload;
+}
+
+function readGalleryItemAlbumName(value: unknown): string | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const album = (value as Record<string, unknown>).album;
+  if (typeof album !== 'string') {
+    return null;
+  }
+  const trimmed = album.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function ensureGalleryAlbumEvent(
+  objectId: string,
+  creator: string,
+  albumName: string,
+  acceptedFields: FieldEntry[],
+  events: OdlCreateEvent[],
+): void {
+  const existing = new Set(listGalleryAlbumNamesFromFields(acceptedFields));
+  if (existing.has(albumName)) {
+    return;
+  }
+  const syntheticEntry: FieldEntry = {
+    entryKey: `imageGallery:ensure:${albumName}`,
+    updateType: UPDATE_TYPES.IMAGE_GALLERY,
+    value: albumName,
+  };
+  const payload = buildUpdateCreateEventPayload(objectId, creator, syntheticEntry);
+  if (!payload) {
+    return;
+  }
+  acceptedFields.push(syntheticEntry);
+  events.push({
+    action: 'update_create',
+    v: 1,
+    payload,
+  });
 }
 
 export type BuildCreateOpsInput = {
@@ -118,6 +159,24 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
     }
     const locale =
       entry.locale && entry.locale.length > 0 ? entry.locale : input.language;
+    if (entry.updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
+      const definition = UPDATE_REGISTRY[entry.updateType];
+      const preParsed = definition
+        ? validateUpdateValue(definition, entry.value)
+        : null;
+      if (preParsed?.success) {
+        const albumName = readGalleryItemAlbumName(preParsed.value);
+        if (albumName) {
+          ensureGalleryAlbumEvent(
+            input.objectId,
+            input.creator,
+            albumName,
+            acceptedFields,
+            events,
+          );
+        }
+      }
+    }
     const payload = buildUpdateCreateEventPayload(input.objectId, input.creator, {
       ...entry,
       locale,

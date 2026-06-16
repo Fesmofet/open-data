@@ -152,6 +152,7 @@ export type ObjectPrimaryContentProps = {
   /** Server-rendered description body for `/object/:id/description`. */
   objectDescriptionBody?: ReactNode;
   galleryAlbums?: ProjectedGalleryAlbumView[];
+  onChainGalleryAlbumNames?: readonly string[];
   activeGalleryAlbum?: string | null;
   onOpenGalleryAlbum?: (albumName: string) => void;
   onBackToGalleryAlbums?: () => void;
@@ -184,6 +185,7 @@ export function ObjectPrimaryContent({
   objectPageBody,
   objectDescriptionBody,
   galleryAlbums = [],
+  onChainGalleryAlbumNames = [],
   activeGalleryAlbum = null,
   onOpenGalleryAlbum,
   onBackToGalleryAlbums,
@@ -568,6 +570,7 @@ export function ObjectPrimaryContent({
             objectId={objectId}
             objectName={title}
             galleryAlbums={galleryAlbums}
+            onChainGalleryAlbumNames={onChainGalleryAlbumNames}
             activeAlbumName={activeGalleryAlbum}
             viewerUsername={viewerUsername ?? null}
             onRequireLogin={onRequireLogin ?? (() => undefined)}

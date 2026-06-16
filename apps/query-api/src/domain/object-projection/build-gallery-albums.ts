@@ -172,13 +172,11 @@ export function buildGalleryAlbums(input: BuildGalleryAlbumsInput): BuildGallery
     orphans.push(photo);
   }
 
+  const photosOnChain = albumNameSet.has(DEFAULT_PHOTOS_ALBUM_NAME);
   let photosAlbumItems = albumsByName.get(DEFAULT_PHOTOS_ALBUM_NAME);
   if (!photosAlbumItems) {
     photosAlbumItems = [];
     albumsByName.set(DEFAULT_PHOTOS_ALBUM_NAME, photosAlbumItems);
-    if (!albumNames.includes(DEFAULT_PHOTOS_ALBUM_NAME)) {
-      albumNames.push(DEFAULT_PHOTOS_ALBUM_NAME);
-    }
   }
 
   const avatarUrl = input.avatarUrl?.trim() ?? null;
@@ -189,6 +187,10 @@ export function buildGalleryAlbums(input: BuildGalleryAlbumsInput): BuildGallery
   }
 
   photosAlbumItems.push(...orphans);
+
+  if (!photosOnChain && photosAlbumItems.length > 0) {
+    albumNames.push(DEFAULT_PHOTOS_ALBUM_NAME);
+  }
 
   const albums: ProjectedGalleryAlbum[] = albumNames.map((name) => {
     const items = sortAlbumItems(dedupeByUrl(albumsByName.get(name) ?? []));

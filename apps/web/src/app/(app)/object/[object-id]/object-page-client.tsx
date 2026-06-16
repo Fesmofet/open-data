@@ -11,6 +11,7 @@ import type {
 } from '@/modules/object';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 import type { TagApprovalStatsIndex } from '@/modules/object/domain/tag-approval-stats';
+import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
 import { ObjectGalleryViewer } from '@/modules/object/presentation/components/object-gallery-viewer';
 import {
   LeftObjectProfileSidebar,
@@ -693,7 +694,8 @@ export function ObjectPageClient({
           viewerUsername,
           supportedUpdateTypes,
           tagCategoryNames: model.tagCategoryNames,
-          galleryAlbumNames: model.galleryAlbums.map((album) => album.name),
+          galleryAlbumNames: galleryAlbumPickerNames(model.onChainGalleryAlbumNames),
+          onChainGalleryAlbumNames: model.onChainGalleryAlbumNames,
           updateTypeCounts: model.updateTypeCounts,
           onViewFieldUpdates,
         }
@@ -793,6 +795,7 @@ export function ObjectPageClient({
           objectPageBody={objectPageBody}
           objectDescriptionBody={objectDescriptionBody}
           galleryAlbums={model.galleryAlbums}
+          onChainGalleryAlbumNames={model.onChainGalleryAlbumNames}
           activeGalleryAlbum={activeGalleryAlbum}
           onOpenGalleryAlbum={onOpenGalleryAlbum}
           onBackToGalleryAlbums={onBackToGalleryAlbums}
@@ -811,6 +814,7 @@ export function ObjectPageClient({
           objectName={model.title}
           album={galleryFullView.album}
           allGalleryAlbums={model.galleryAlbums}
+          onChainGalleryAlbumNames={model.onChainGalleryAlbumNames}
           initialIndex={galleryFullView.initialIndex}
           onClose={onCloseGalleryFullView}
           viewerUsername={viewerUsername}

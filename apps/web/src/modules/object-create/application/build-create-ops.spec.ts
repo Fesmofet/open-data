@@ -389,4 +389,40 @@ describe('buildCreateOdlJson', () => {
     const ops = buildCreateOps({ ...BASE, fields });
     expect(ops.length).toBeGreaterThan(1);
   });
+
+  it('prepends imageGallery create when gallery item references a missing album', () => {
+    const json = buildCreateOdlJson({
+      ...BASE,
+      objectType: 'person',
+      fields: [
+        { entryKey: 'name', updateType: 'name', value: 'Alice' },
+        { entryKey: 'description', updateType: 'description', value: 'Bio' },
+        {
+          entryKey: 'image',
+          updateType: 'image',
+          value: { url: 'https://example.com/avatar.jpg' },
+        },
+        {
+          entryKey: 'gallery-item-1',
+          updateType: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
+          value: {
+            album: 'Photos',
+            url: 'https://example.com/photo.jpg',
+          },
+        },
+      ],
+    });
+    const parsed = JSON.parse(json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    const updateCreates = parsed.events.filter((e) => e.action === 'update_create');
+    expect(updateCreates.map((e) => e.payload.update_type)).toEqual([
+      'name',
+      'description',
+      'image',
+      'imageGallery',
+      'imageGalleryItem',
+    ]);
+    expect(updateCreates[3]?.payload.value_text).toBe('Photos');
+  });
 });

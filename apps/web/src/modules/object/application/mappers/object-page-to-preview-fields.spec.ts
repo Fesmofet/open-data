@@ -24,6 +24,7 @@ function minimalModel(
     descriptionContent: 'A great neighborhood shop.',
     previewGallery: [],
     galleryAlbums: [],
+    onChainGalleryAlbumNames: [],
     rating01To5: null,
     primaryTabs: [],
     feedSubTabs: [],

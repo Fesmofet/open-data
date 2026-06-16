@@ -1215,6 +1215,28 @@ export function projectedTagCategoryNames(o: ProjectedObjectView): string[] {
     .map((x) => x.trim());
 }
 
+/** On-chain gallery album names (`imageGallery` multi text). */
+export function projectedGalleryAlbumNames(o: ProjectedObjectView): string[] {
+  const raw = o.fields.imageGallery;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const names: string[] = [];
+  const seen = new Set<string>();
+  for (const row of raw) {
+    if (typeof row !== 'string') {
+      continue;
+    }
+    const name = row.trim();
+    if (!name || seen.has(name)) {
+      continue;
+    }
+    seen.add(name);
+    names.push(name);
+  }
+  return names;
+}
+
 /** Collects `tagCategoryItem.value` in API order (legacy helpers / tagline). */
 export function projectedTagCategoryItemValues(o: ProjectedObjectView): string[] {
   return parseTagCategoryItemRows(o).map((r) => r.value);

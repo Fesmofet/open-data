@@ -8,6 +8,7 @@ import {
   buildOdlUpdateCreateWithLikeOp,
 } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { locales } from '@/i18n/config/locales';
@@ -24,6 +25,8 @@ import {
   defaultUpdateTypeForCandidates,
   initialFormValueForUpdateTypeWithContext,
 } from '../../application/tag-category-item-form-value';
+import { buildGalleryItemBroadcastOp } from '../../application/build-gallery-item-broadcast-op';
+import { galleryAlbumPickerNames } from '../../application/gallery-form-value';
 import { validateUpdateValue } from '../../application/update-value-form.utils';
 import {
   type AddUpdateModalProps,
@@ -86,6 +89,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     viewerUsername,
     tagCategoryNames = EMPTY_STRING_ARRAY,
     galleryAlbumNames: galleryAlbumNamesProp = EMPTY_STRING_ARRAY,
+    onChainGalleryAlbumNames: onChainGalleryAlbumNamesProp = EMPTY_STRING_ARRAY,
   } = props;
 
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -97,6 +101,10 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const genericInitialValue =
     props.mode === 'generic' ? props.initialValue : undefined;
   const galleryAlbumNames = galleryAlbumNamesProp;
+  const onChainGalleryAlbumNames =
+    onChainGalleryAlbumNamesProp.length > 0
+      ? onChainGalleryAlbumNamesProp
+      : galleryAlbumNames;
   const lockGalleryAlbum =
     props.mode === 'generic' ? (props.lockGalleryAlbum ?? false) : false;
   const pickerInitialType = typePicker ? props.initialUpdateType : undefined;
@@ -225,9 +233,19 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
         locale: definition.localizable ? locale : undefined,
         required_posting_auths: [viewerUsername],
       } as const;
-      const op = likeChecked
-        ? buildOdlUpdateCreateWithLikeOp(createInput)
-        : buildOdlUpdateCreateOp(createInput);
+      const op =
+        selectedType === UPDATE_TYPES.IMAGE_GALLERY_ITEM
+          ? buildGalleryItemBroadcastOp({
+              id: odlCustomJsonId,
+              objectId,
+              creator: viewerUsername,
+              itemValue: parsed.value,
+              onChainGalleryAlbumNames,
+              withLike: likeChecked,
+            })
+          : likeChecked
+            ? buildOdlUpdateCreateWithLikeOp(createInput)
+            : buildOdlUpdateCreateOp(createInput);
       const { transactionId } = await getWalletFacade().broadcast({
         operations: [op],
       });
@@ -249,6 +267,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     viewerUsername,
     locale,
     likeChecked,
+    onChainGalleryAlbumNames,
     odlCustomJsonId,
     onClose,
     router,
@@ -338,7 +357,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
               onChange={setValue}
               onValidityChange={setIsValid}
               tagCategoryNames={tagCategoryNames}
-              galleryAlbumNames={galleryAlbumNames}
+              galleryAlbumNames={galleryAlbumPickerNames(onChainGalleryAlbumNames)}
               lockGalleryAlbum={lockGalleryAlbum}
               hideUpdateTypeHeading={hideUpdateTypeHeading}
             />

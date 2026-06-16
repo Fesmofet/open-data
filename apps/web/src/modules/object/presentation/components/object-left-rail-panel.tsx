@@ -40,6 +40,8 @@ export type ObjectLeftRailEditContext = {
   tagCategoryNames: readonly string[];
   /** Existing gallery album names (for `imageGalleryItem` picker). */
   galleryAlbumNames: readonly string[];
+  /** On-chain `imageGallery` names (for album ensure before `imageGalleryItem`). */
+  onChainGalleryAlbumNames: readonly string[];
   /** Per-type update row counts from object resolve. */
   updateTypeCounts: Record<string, number>;
   /** Opens the updates feed filtered to the given left-rail block. */
@@ -394,6 +396,7 @@ export function ObjectLeftRailPanel({
           initialUpdateType={addModal.initialUpdateType}
           tagCategoryNames={editContext.tagCategoryNames}
           galleryAlbumNames={editContext.galleryAlbumNames}
+          onChainGalleryAlbumNames={editContext.onChainGalleryAlbumNames}
           updateTypeCounts={editContext.updateTypeCounts}
         />
       ) : null}

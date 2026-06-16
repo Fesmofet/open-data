@@ -15,6 +15,7 @@ export { wireCommentOptionsPayload } from './hive-operation-wire';
 export {
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
+  buildOdlGalleryItemWithAlbumEnsureOp,
   buildOdlUpdateCreateWithRankVoteOp,
   buildOdlUpdateVoteOp,
   buildOdlRankVoteOp,
@@ -23,6 +24,7 @@ export {
   buildOdlUserFollowBellOp,
   buildOdlBatchImportOp,
   type BuildOdlUpdateCreateOpInput,
+  type BuildOdlGalleryItemWithAlbumEnsureOpInput,
   type BuildOdlUpdateCreateWithRankVoteOpInput,
   type BuildOdlUserFollowBellOpInput,
   type BuildOdlUpdateVoteOpInput,

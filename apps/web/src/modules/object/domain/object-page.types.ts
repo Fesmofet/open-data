@@ -286,6 +286,8 @@ export type ObjectPageViewModel = {
   previewGallery: ProjectedGalleryPhotoView[];
   /** Grouped gallery albums for Gallery tab (legacy `galleryAlbum`). */
   galleryAlbums: ProjectedGalleryAlbumView[];
+  /** On-chain `imageGallery` album names (for broadcast album ensure). */
+  onChainGalleryAlbumNames: string[];
   rating01To5: number | null;
   primaryTabs: ObjectPrimaryTabView[];
   feedSubTabs: ObjectFeedSubTabView[];

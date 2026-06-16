@@ -9,6 +9,8 @@ export type AddUpdateModalBaseProps = {
   tagCategoryNames?: readonly string[];
   /** Existing gallery album names (for `imageGalleryItem` album picker). */
   galleryAlbumNames?: readonly string[];
+  /** On-chain `imageGallery` names (for album ensure before `imageGalleryItem`). */
+  onChainGalleryAlbumNames?: readonly string[];
   /** Per-type update row counts from object resolve (for type picker labels). */
   updateTypeCounts?: Record<string, number>;
 };

@@ -53,7 +53,6 @@ export function defaultUpdateTypeForCandidates(
     return UPDATE_TYPES.TAG_CATEGORY_ITEM;
   }
   if (
-    galleryAlbumNames.length > 0 &&
     candidateUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM)
   ) {
     return UPDATE_TYPES.IMAGE_GALLERY_ITEM;
