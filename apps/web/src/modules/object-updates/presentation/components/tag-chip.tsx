@@ -50,7 +50,7 @@ export function TagChip({
   }, [editing]);
 
   const voteMode = onApprove != null;
-  const approved = voteMode && viewerVote === 'for';
+  const approved = viewerVote === 'for' && !empty && !editing;
 
   const shellClass = [
     'inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-body-sm',

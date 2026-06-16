@@ -8,7 +8,8 @@ import type {
   ObjectNestedViewResolved,
   ObjectPageViewModel,
   AuthoritySubType,
-} from '@/modules/object';
+  ObjectLeftRailBlock,
+} from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 import type { TagApprovalStatsIndex } from '@/modules/object/domain/tag-approval-stats';
 import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
@@ -62,6 +63,25 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { fetchTagApprovalStatsAction } from './tag-approval.actions';
+
+function tagSectionsFingerprintFromBlocks(blocks: readonly ObjectLeftRailBlock[]): string {
+  for (const block of blocks) {
+    if (block.kind !== 'tags') {
+      continue;
+    }
+    return block.sections
+      .map((section) =>
+        [
+          section.categoryTitle,
+          section.tags
+            .map((tag) => `${tag.value}#${tag.updateId ?? ''}`)
+            .join(','),
+        ].join(':'),
+      )
+      .join(';');
+  }
+  return '';
+}
 
 export type ObjectPageClientProps = {
   model: ObjectPageViewModel;
@@ -149,6 +169,11 @@ export function ObjectPageClient({
     TagApprovalStatsIndex | undefined
   >(undefined);
 
+  const tagSectionsFingerprint = useMemo(
+    () => tagSectionsFingerprintFromBlocks(model.leftRailBlocks),
+    [model.leftRailBlocks],
+  );
+
   useEffect(() => {
     if (!isEditMode || !viewerUsername) {
       setTagApprovalStats(undefined);
@@ -163,7 +188,7 @@ export function ObjectPageClient({
     return () => {
       cancelled = true;
     };
-  }, [isEditMode, model.objectId, viewerUsername]);
+  }, [isEditMode, model.objectId, viewerUsername, tagSectionsFingerprint]);
 
   useEffect(() => {
     setActivePrimarySegment(

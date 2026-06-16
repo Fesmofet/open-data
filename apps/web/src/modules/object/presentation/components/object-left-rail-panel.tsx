@@ -8,9 +8,9 @@ import Link from 'next/link';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import {
-  BLOCK_KIND_TO_UPDATE_TYPES,
   getUpdateTypesForBlockKind,
   primaryUpdateTypeForBlockKind,
+  resolveUpdateCountForBlockKind,
   type ObjectLeftRailBlockKind,
 } from '@/modules/object-updates/domain/block-update-type-map';
 import { mergeLeftRailBlocksForEditMode } from '@/modules/object-updates/domain/left-rail-edit-blocks';
@@ -51,13 +51,9 @@ export type ObjectLeftRailEditContext = {
 function countForBlockKind(
   kind: ObjectLeftRailBlockKind,
   counts: Record<string, number>,
+  supportedUpdateTypes: readonly string[],
 ): number {
-  return (
-    BLOCK_KIND_TO_UPDATE_TYPES[kind]?.reduce(
-      (sum, updateType) => sum + (counts[updateType] ?? 0),
-      0,
-    ) ?? 0
-  );
+  return resolveUpdateCountForBlockKind(kind, supportedUpdateTypes, counts);
 }
 
 export type ObjectLeftRailPanelProps = {
@@ -363,7 +359,11 @@ export function ObjectLeftRailPanel({
     if (!editContext) {
       return undefined;
     }
-    return countForBlockKind(kind, editContext.updateTypeCounts);
+    return countForBlockKind(
+      kind,
+      editContext.updateTypeCounts,
+      editContext.supportedUpdateTypes,
+    );
   }
 
   function makeOnViewUpdates(kind: ObjectLeftRailBlockKind) {

@@ -2,6 +2,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import {
   getUpdateTypesForBlockKind,
+  resolveUpdateCountForBlockKind,
   resolveUpdateTypeFilterForBlockKind,
 } from './block-update-type-map';
 
@@ -68,5 +69,37 @@ describe('resolveUpdateTypeFilterForBlockKind', () => {
         [UPDATE_TYPES.TAG_CATEGORY_ITEM]: 0,
       }),
     ).toBe(UPDATE_TYPES.TAG_CATEGORY_ITEM);
+  });
+});
+
+describe('resolveUpdateCountForBlockKind', () => {
+  const supported = [
+    UPDATE_TYPES.TITLE,
+    UPDATE_TYPES.TAG_CATEGORY,
+    UPDATE_TYPES.TAG_CATEGORY_ITEM,
+  ];
+
+  it('returns count for a single-type block', () => {
+    expect(
+      resolveUpdateCountForBlockKind('title', supported, { title: 3 }),
+    ).toBe(3);
+  });
+
+  it('uses feed filter type for multi-type blocks instead of summing', () => {
+    expect(
+      resolveUpdateCountForBlockKind('tags', supported, {
+        [UPDATE_TYPES.TAG_CATEGORY]: 2,
+        [UPDATE_TYPES.TAG_CATEGORY_ITEM]: 2,
+      }),
+    ).toBe(2);
+  });
+
+  it('picks the higher-count tag type when counts differ', () => {
+    expect(
+      resolveUpdateCountForBlockKind('tags', supported, {
+        [UPDATE_TYPES.TAG_CATEGORY]: 1,
+        [UPDATE_TYPES.TAG_CATEGORY_ITEM]: 5,
+      }),
+    ).toBe(5);
   });
 });

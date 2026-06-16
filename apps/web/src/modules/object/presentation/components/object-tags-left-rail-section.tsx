@@ -48,6 +48,10 @@ function IconAddUpdate({ className }: { className?: string }) {
   );
 }
 
+function tagOptimisticKey(category: string, value: string): string {
+  return `${category}\0${value}`;
+}
+
 export type ObjectTagsLeftRailSectionProps = {
   headingLabel: string;
   sections: TagCategorySectionView[];
@@ -95,6 +99,9 @@ export function ObjectTagsLeftRailSection({
   const [voteOverrides, setVoteOverrides] = useState<
     Record<string, 'for' | 'against'>
   >({});
+  const [optimisticallyLikedTagKeys, setOptimisticallyLikedTagKeys] = useState<
+    ReadonlySet<string>
+  >(() => new Set());
 
   useEffect(() => {
     setTagApprovalStats(tagApprovalStatsProp);
@@ -125,20 +132,55 @@ export function ObjectTagsLeftRailSection({
     return mergeTagCategorySectionsForEditMode(tagCategoryNames, sections);
   }, [isEditMode, sections, tagCategoryNames]);
 
+  useEffect(() => {
+    if (optimisticallyLikedTagKeys.size === 0) {
+      return;
+    }
+    setOptimisticallyLikedTagKeys((prev) => {
+      if (prev.size === 0) {
+        return prev;
+      }
+      const next = new Set(prev);
+      let changed = false;
+      for (const section of displaySections) {
+        for (const tag of section.tags) {
+          const key = tagOptimisticKey(section.categoryTitle, tag.value);
+          if (!next.has(key) || !tag.updateId) {
+            continue;
+          }
+          const stat = resolveTagApprovalStat(tag.updateId, tagApprovalStats);
+          if (stat.viewer_vote === 'for') {
+            next.delete(key);
+            changed = true;
+          }
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [displaySections, optimisticallyLikedTagKeys.size, tagApprovalStats]);
+
+  const refreshTagDataAfterBroadcast = useCallback(async () => {
+    await refreshAfterBroadcast(router, () =>
+      revalidateObjectAfterBroadcast(objectId),
+    );
+    const stats = await fetchTagApprovalStatsAction(objectId);
+    setTagApprovalStats(stats);
+  }, [objectId, router]);
+
   const broadcastCreate = useCallback(
-    async (updateType: string, value: unknown) => {
+    async (updateType: string, value: unknown): Promise<boolean> => {
       const definition = UPDATE_REGISTRY[updateType];
       if (!definition) {
-        return;
+        return false;
       }
       const voter = viewerUsername?.trim();
       if (!voter) {
         onRequireLogin?.();
-        return;
+        return false;
       }
       const parsed = validateUpdateValue(definition, value);
       if (!parsed.success) {
-        return;
+        return false;
       }
 
       setBusy(true);
@@ -157,15 +199,22 @@ export function ObjectTagsLeftRailSection({
           operations: [op],
         });
         void awaitTrxConfirmation(transactionId).finally(() => {
-          void refreshAfterBroadcast(router, () =>
-            revalidateObjectAfterBroadcast(objectId),
-          );
+          void refreshTagDataAfterBroadcast();
         });
+        return true;
+      } catch {
+        return false;
       } finally {
         setBusy(false);
       }
     },
-    [objectId, odlCustomJsonId, onRequireLogin, router, viewerUsername],
+    [
+      objectId,
+      odlCustomJsonId,
+      onRequireLogin,
+      refreshTagDataAfterBroadcast,
+      viewerUsername,
+    ],
   );
 
   const onVote = useCallback(
@@ -197,9 +246,7 @@ export function ObjectTagsLeftRailSection({
         });
         setVoteOverrides((prev) => ({ ...prev, [updateId]: vote }));
         void awaitTrxConfirmation(transactionId).finally(() => {
-          void refreshAfterBroadcast(router, () =>
-            revalidateObjectAfterBroadcast(objectId),
-          );
+          void refreshTagDataAfterBroadcast();
         });
       } finally {
         setBusy(false);
@@ -210,7 +257,7 @@ export function ObjectTagsLeftRailSection({
       objectId,
       odlCustomJsonId,
       onRequireLogin,
-      router,
+      refreshTagDataAfterBroadcast,
       tagApprovalStats,
       viewerUsername,
       voteOverrides,
@@ -237,7 +284,14 @@ export function ObjectTagsLeftRailSection({
       setTagDraft('');
       return;
     }
-    await broadcastCreate(UPDATE_TYPES.TAG_CATEGORY_ITEM, { category, value });
+    const ok = await broadcastCreate(UPDATE_TYPES.TAG_CATEGORY_ITEM, { category, value });
+    if (ok) {
+      setOptimisticallyLikedTagKeys((prev) => {
+        const next = new Set(prev);
+        next.add(tagOptimisticKey(category, value));
+        return next;
+      });
+    }
     setComposingTagCategory(null);
     setTagDraft('');
   }, [broadcastCreate, composingTagCategory, tagDraft]);
@@ -353,11 +407,15 @@ export function ObjectTagsLeftRailSection({
             <div className="mt-1.5 flex flex-wrap gap-2">
               {section.tags.map((tag) => {
                 const updateId = tag.updateId;
+                const optimisticKey = tagOptimisticKey(section.categoryTitle, tag.value);
+                const optimisticLiked = optimisticallyLikedTagKeys.has(optimisticKey);
                 const stat = resolveTagApprovalStat(updateId, tagApprovalStats);
                 const viewerVote =
                   updateId && voteOverrides[updateId] !== undefined
                     ? voteOverrides[updateId]
-                    : stat.viewer_vote;
+                    : optimisticLiked
+                      ? 'for'
+                      : stat.viewer_vote;
                 const voteDisabled = busy || !updateId;
                 return (
                   <TagChip

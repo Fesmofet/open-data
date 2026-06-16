@@ -88,3 +88,23 @@ export function resolveUpdateTypeFilterForBlockKind(
     (counts[candidate] ?? 0) > (counts[best] ?? 0) ? candidate : best,
   );
 }
+
+/**
+ * Update count for a left-rail badge. Matches the feed filter for multi-type blocks
+ * (e.g. tags: `tagCategoryItem` only, not `tagCategory` + `tagCategoryItem`).
+ */
+export function resolveUpdateCountForBlockKind(
+  kind: ObjectLeftRailBlockKind,
+  supportedUpdateTypes: readonly string[],
+  counts: Record<string, number>,
+): number {
+  const filterType = resolveUpdateTypeFilterForBlockKind(
+    kind,
+    supportedUpdateTypes,
+    counts,
+  );
+  if (!filterType) {
+    return 0;
+  }
+  return counts[filterType] ?? 0;
+}

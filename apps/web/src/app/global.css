@@ -113,7 +113,7 @@
   }
 
   .hero-on-photo-avatar {
-    @apply border border-ghost-border bg-ghost-surface p-1.5 backdrop-blur-sm;
+    @apply border border-ghost-border bg-ghost-surface backdrop-blur-sm;
   }
 
   .hero-on-photo-btn {
