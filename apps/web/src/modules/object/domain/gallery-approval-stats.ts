@@ -3,6 +3,13 @@ export type GalleryApprovalStat = {
   forCount: number;
   againstCount: number;
   viewer_vote: 'for' | 'against' | null;
+  forPreviewVoters?: string[];
+  againstPreviewVoters?: string[];
+  decisive_privileged_vote?: {
+    tier: 'admin' | 'trusted';
+    vote: 'for' | 'against';
+    voter: string;
+  } | null;
   /** Feed update id (present when stat comes from the updates index). */
   updateId?: string;
   /** Update creator username (present when stat comes from the updates index). */

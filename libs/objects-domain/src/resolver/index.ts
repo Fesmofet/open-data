@@ -6,6 +6,10 @@ export {
   type ResolveUpdateValidityResult,
 } from './resolve-validity';
 export {
+  resolveVoterPrivilegedTier,
+  type VoterPrivilegedTier,
+} from './resolve-voter-privileged-tier';
+export {
   compareResolvedUpdatesByRanking,
   computeUpdateRankPersistence,
   waivVoteWeight,

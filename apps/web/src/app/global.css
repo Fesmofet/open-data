@@ -259,37 +259,6 @@
     color: rgb(255 255 255 / 0.3);
   }
 
-  .gallery-vote-btn {
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-btn);
-    border: 1px solid rgb(255 255 255 / 0.2);
-    color: rgb(255 255 255 / 0.75);
-    font-size: var(--font-size-caption);
-    font-weight: var(--font-weight-label);
-    cursor: pointer;
-  }
-
-  .gallery-vote-btn:hover:not(:disabled) {
-    background-color: rgb(255 255 255 / 0.08);
-  }
-
-  .gallery-vote-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  .gallery-vote-btn--active-for {
-    color: var(--color-validity-approved);
-    background-color: color-mix(in srgb, var(--color-validity-approved) 10%, transparent);
-    border-color: color-mix(in srgb, var(--color-validity-approved) 30%, transparent);
-  }
-
-  .gallery-vote-btn--active-against {
-    color: var(--color-validity-rejected);
-    background-color: color-mix(in srgb, var(--color-validity-rejected) 10%, transparent);
-    border-color: color-mix(in srgb, var(--color-validity-rejected) 30%, transparent);
-  }
-
   .gallery-approval-percent--approved {
     color: var(--color-validity-approved);
   }

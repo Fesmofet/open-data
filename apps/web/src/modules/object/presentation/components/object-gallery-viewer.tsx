@@ -23,6 +23,7 @@ import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '@/modules/object-updates/constants';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
+import { UpdateVoteControls } from '@/modules/object-updates/presentation/components/update-vote-controls';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { ModalShell, MODAL_Z_INDEX_GALLERY, UserAvatar } from '@/shared/presentation';
@@ -608,24 +609,21 @@ export function ObjectGalleryViewer({
   const galleryFooter = (
       <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            disabled={voteDisabled || !votableUpdateId}
-            aria-pressed={effectiveVote === 'for'}
-            onClick={() => void onVote('for')}
-            className={`gallery-vote-btn ${effectiveVote === 'for' ? 'gallery-vote-btn--active-for' : ''}`}
-          >
-            {t('object_updates_approve')} {currentStat.forCount}
-          </button>
-          <button
-            type="button"
-            disabled={voteDisabled || !votableUpdateId}
-            aria-pressed={effectiveVote === 'against'}
-            onClick={() => void onVote('against')}
-            className={`gallery-vote-btn ${effectiveVote === 'against' ? 'gallery-vote-btn--active-against' : ''}`}
-          >
-            {t('object_updates_reject')} {currentStat.againstCount}
-          </button>
+          <UpdateVoteControls
+            objectId={objectId}
+            updateId={votableUpdateId}
+            approvePercent={currentStat.approvePercent}
+            decisivePrivilegedVote={currentStat.decisive_privileged_vote ?? null}
+            forCount={currentStat.forCount}
+            againstCount={currentStat.againstCount}
+            forPreviewVoters={currentStat.forPreviewVoters ?? []}
+            againstPreviewVoters={currentStat.againstPreviewVoters ?? []}
+            optimisticVote={effectiveVote}
+            voteDisabled={voteDisabled || !votableUpdateId}
+            onVote={(vote) => void onVote(vote)}
+            variant="gallery"
+            layoutClassName="flex flex-wrap gap-3"
+          />
         </div>
         <span>
           {t('object_updates_approval')}{' '}

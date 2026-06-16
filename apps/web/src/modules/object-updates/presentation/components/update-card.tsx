@@ -25,7 +25,9 @@ import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '../../constants';
 
+import { UpdateApprovalStatusBlock } from './update-approval-status-block';
 import { UpdateCardValue } from './update-card-value';
+import { UpdateVoteControls } from './update-vote-controls';
 
 const hiveAvatarUrl = (creator: string): string =>
   `https://images.hive.blog/u/${encodeURIComponent(creator)}/avatar`;
@@ -50,26 +52,6 @@ function unixToIsoSeconds(sec: number): string {
 
 function profileHrefForUsername(username: string): string {
   return `/@${encodeURIComponent(username)}`;
-}
-
-function decisivePrivilegedVoteLabelKey(
-  tier: 'admin' | 'trusted',
-  vote: 'for' | 'against',
-): string {
-  if (tier === 'admin') {
-    return vote === 'for'
-      ? 'object_updates_approved_by_admin'
-      : 'object_updates_rejected_by_admin';
-  }
-  return vote === 'for'
-    ? 'object_updates_approved_by_trusted'
-    : 'object_updates_rejected_by_trusted';
-}
-
-function approvalStatusBadgeClass(positive: boolean): string {
-  return `rounded-pill border border-border px-2 py-0.5 text-caption font-weight-label tabular-nums ${
-    positive ? 'text-validity-approved' : 'text-validity-rejected'
-  }`;
 }
 
 export function UpdateCard({
@@ -97,20 +79,6 @@ export function UpdateCard({
 
   const relative = formatRelativeFeedTime(unixToIsoSeconds(item.created_at_unix), loc);
   const weightLabel = formatReputation(item.creator_wobjects_weight, loc);
-  const approvePercentLabel = item.approve_percent.toLocaleString(loc, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  const meetsThreshold = item.approve_percent > OBJECT_UPDATES_MIN_APPROVAL_PERCENT;
-
-  const forActive =
-    optimisticVote === 'for'
-      ? 'text-validity-approved bg-validity-approved/10 border-validity-approved/30'
-      : 'text-fg-secondary border-border bg-surface-control hover:bg-surface-control-hover';
-  const againstActive =
-    optimisticVote === 'against'
-      ? 'text-validity-rejected bg-validity-rejected/10 border-validity-rejected/30'
-      : 'text-fg-secondary border-border bg-surface-control hover:bg-surface-control-hover';
 
   const minLine = t('object_updates_min_required').replace(
     '{percent}',
@@ -261,54 +229,24 @@ export function UpdateCard({
       </div>
 
       <div className="mt-3 border-t border-border pt-3">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-body-sm text-fg">{t('object_updates_approval')}</span>
-            <span className={approvalStatusBadgeClass(meetsThreshold)}>
-              {approvePercentLabel}%
-            </span>
-          </div>
-          {privilegedVote ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={approvalStatusBadgeClass(privilegedVote.vote === 'for')}
-              >
-                {privilegedVote.vote === 'for' ? t('approved') : t('rejected')}
-              </span>
-              <span className="text-body-sm text-fg">
-                {t(decisivePrivilegedVoteLabelKey(privilegedVote.tier, privilegedVote.vote))}{' '}
-                <Link
-                  href={profileHrefForUsername(privilegedVote.voter)}
-                  className="text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                  suppressHydrationWarning
-                >
-                  @{privilegedVote.voter}
-                </Link>
-              </span>
-            </div>
-          ) : null}
-        </div>
+        <UpdateApprovalStatusBlock
+          approvePercent={item.approve_percent}
+          decisivePrivilegedVote={privilegedVote}
+        />
         <p className="mt-2 text-caption text-muted">{minLine}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={voteDisabled}
-            aria-pressed={optimisticVote === 'for'}
-            className={`rounded-btn border px-3 py-1.5 text-caption font-weight-label disabled:cursor-not-allowed disabled:opacity-50 ${forActive}`}
-            onClick={() => void onVote('for')}
-          >
-            {t('object_updates_approve')} {item.for_vote_count}
-          </button>
-          <button
-            type="button"
-            disabled={voteDisabled}
-            aria-pressed={optimisticVote === 'against'}
-            className={`rounded-btn border px-3 py-1.5 text-caption font-weight-label disabled:cursor-not-allowed disabled:opacity-50 ${againstActive}`}
-            onClick={() => void onVote('against')}
-          >
-            {t('object_updates_reject')} {item.against_vote_count}
-          </button>
-        </div>
+        <UpdateVoteControls
+          objectId={item.object_id}
+          updateId={item.update_id}
+          approvePercent={item.approve_percent}
+          decisivePrivilegedVote={privilegedVote}
+          forCount={item.for_vote_count}
+          againstCount={item.against_vote_count}
+          forPreviewVoters={item.for_preview_voters}
+          againstPreviewVoters={item.against_preview_voters}
+          optimisticVote={optimisticVote}
+          voteDisabled={voteDisabled}
+          onVote={(vote) => void onVote(vote)}
+        />
         {error ? (
           <p className="mt-2 text-caption text-accent" role="alert">
             {error}

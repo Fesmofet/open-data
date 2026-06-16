@@ -16,6 +16,10 @@ import {
   type UpdatesApprovalCursorPayload,
   type UpdatesRecencyCursorPayload,
 } from './updates-cursor';
+import {
+  previewValidityVoters,
+  resolveLatestValidityVoters,
+} from './resolve-latest-validity-votes';
 import type {
   DecisivePrivilegedVoteDto,
   ObjectUpdateFeedItemDto,
@@ -277,6 +281,7 @@ export class GetObjectUpdatesFeedEndpoint {
       authorities,
     );
     const decisive_privileged_vote = this.mapDecisivePrivilegedVote(validity);
+    const { forVoters, againstVoters } = resolveLatestValidityVoters(updateVotes);
 
     return {
       update_id: jr.row.update_id,
@@ -293,6 +298,8 @@ export class GetObjectUpdatesFeedEndpoint {
       approve_percent: approvePercent,
       for_vote_count: forC,
       against_vote_count: againstC,
+      for_preview_voters: previewValidityVoters(forVoters.map((entry) => entry.voter)),
+      against_preview_voters: previewValidityVoters(againstVoters.map((entry) => entry.voter)),
       viewer_vote: viewerVote,
       decisive_privileged_vote,
     };

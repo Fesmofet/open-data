@@ -49,6 +49,10 @@ export type ObjectUpdateFeedItemDto = {
   approve_percent: number;
   for_vote_count: number;
   against_vote_count: number;
+  /** Up to three usernames with latest approve votes (hover preview). */
+  for_preview_voters: string[];
+  /** Up to three usernames with latest reject votes (hover preview). */
+  against_preview_voters: string[];
   viewer_vote: 'for' | 'against' | null;
   /** Decisive admin/trusted validity vote (LWAW/LWTW); null when curator filter or lower tiers apply. */
   decisive_privileged_vote: DecisivePrivilegedVoteDto | null;

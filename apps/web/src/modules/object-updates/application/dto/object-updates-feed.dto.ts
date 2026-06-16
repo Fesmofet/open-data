@@ -29,6 +29,8 @@ export const objectUpdateFeedItemDtoSchema = z.object({
   approve_percent: num(),
   for_vote_count: num().pipe(z.number().int()),
   against_vote_count: num().pipe(z.number().int()),
+  for_preview_voters: z.array(z.string()).default([]),
+  against_preview_voters: z.array(z.string()).default([]),
   viewer_vote: z.enum(['for', 'against']).nullable(),
   decisive_privileged_vote: decisivePrivilegedVoteSchema.nullable().default(null),
 });

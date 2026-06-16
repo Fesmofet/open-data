@@ -92,6 +92,9 @@ async function mergeUpdateTypeIntoIndex(
         forCount: item.for_vote_count,
         againstCount: item.against_vote_count,
         viewer_vote: item.viewer_vote,
+        forPreviewVoters: item.for_preview_voters,
+        againstPreviewVoters: item.against_preview_voters,
+        decisive_privileged_vote: item.decisive_privileged_vote,
         updateId: item.update_id,
         creator: item.creator,
       };

@@ -34,9 +34,11 @@ import {
 } from '../domain/social';
 import {
   GetObjectUpdatesFeedEndpoint,
+  GetUpdateVotersEndpoint,
   objectUpdatesFeedQuerySchema,
   type ObjectUpdatesFeedQuery,
   type ObjectUpdatesFeedResponseDto,
+  type UpdateVotersResponseDto,
 } from '../domain/object-updates';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -48,6 +50,7 @@ export class ObjectsController {
     private readonly getObjectById: GetObjectByIdEndpoint,
     private readonly getNestedObjects: GetNestedObjectsEndpoint,
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
+    private readonly getUpdateVoters: GetUpdateVotersEndpoint,
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
     private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
@@ -166,6 +169,27 @@ export class ObjectsController {
     });
     if (!result) {
       throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/updates/:updateId/voters')
+  async getUpdateVotersList(
+    @Param('objectId') objectId: string,
+    @Param('updateId') updateId: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+  ): Promise<UpdateVotersResponseDto> {
+    const decodedObjectId = decodeURIComponent(objectId);
+    const decodedUpdateId = decodeURIComponent(updateId);
+    const result = await this.getUpdateVoters.execute({
+      objectId: decodedObjectId,
+      updateId: decodedUpdateId,
+      governanceObjectIdFromHeader,
+    });
+    if (!result) {
+      throw new NotFoundException(
+        `Update not found: ${decodedUpdateId} on object ${decodedObjectId}`,
+      );
     }
     return result;
   }

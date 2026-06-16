@@ -209,4 +209,29 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
       return jsonToolResult(result);
     },
   );
+
+  server.registerTool(
+    'get_update_voters',
+    {
+      description: catalogDescription('get_update_voters'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          object_id: z.string().min(1).describe('Object id'),
+          update_id: z.string().min(1).describe('Update id'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const result = await deps.getUpdateVoters.execute({
+        objectId: args.object_id,
+        updateId: args.update_id,
+        governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
+      });
+      if (!result) {
+        return toolError(`Update not found: ${args.update_id} on object ${args.object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
 }

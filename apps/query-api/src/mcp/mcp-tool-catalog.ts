@@ -94,6 +94,12 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     httpEquivalent: 'GET /query/v1/objects/:id/updates',
   },
   {
+    name: 'get_update_voters',
+    description: 'Approve/reject voter lists for a single object update.',
+    httpEquivalent: 'GET /query/v1/objects/:id/updates/:updateId/voters',
+    specPath: 'docs/apps/query-api/spec/update-voters-endpoint.md',
+  },
+  {
     name: 'get_user_profile',
     description: 'User profile shell data by Hive account name.',
     httpEquivalent: 'GET /query/v1/users/:name/profile',

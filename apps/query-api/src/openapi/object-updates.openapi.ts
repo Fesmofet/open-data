@@ -24,6 +24,8 @@ const objectUpdateFeedItemSchema = registry.register(
     approve_percent: z.number(),
     for_vote_count: z.number().int(),
     against_vote_count: z.number().int(),
+    for_preview_voters: z.array(z.string()),
+    against_preview_voters: z.array(z.string()),
     viewer_vote: z.enum(['for', 'against']).nullable(),
     decisive_privileged_vote: z
       .object({
@@ -97,6 +99,73 @@ registry.registerPath({
     },
     404: {
       description: 'Object not found or not active.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+const updateVoterProfileSchema = registry.register(
+  'UpdateVoterProfile',
+  z.object({
+    name: z.string(),
+    displayName: z.string().nullable(),
+    avatarUrl: z.string().nullable(),
+  }),
+);
+
+const updateVoterRowSchema = registry.register(
+  'UpdateVoterRow',
+  z.object({
+    voter: z.string(),
+    event_seq: z.string(),
+    privileged_tier: z.enum(['admin', 'trusted']).nullable(),
+    profile: updateVoterProfileSchema,
+  }),
+);
+
+const updateVotersResponseSchema = registry.register(
+  'UpdateVotersResponse',
+  z.object({
+    for_count: z.number().int(),
+    against_count: z.number().int(),
+    for_voters: z.array(updateVoterRowSchema),
+    against_voters: z.array(updateVoterRowSchema),
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/updates/{updateId}/voters',
+  summary: 'Validity voters for a single object update',
+  description:
+    'Lists usernames who approved or rejected an update (latest vote per voter). Used by the web vote report modal.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+      updateId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'updateId', in: 'path', required: true } }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Approve and reject voter lists.',
+      content: {
+        'application/json': {
+          schema: updateVotersResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object update not found.',
       content: {
         'application/json': {
           schema: notFoundSchema,

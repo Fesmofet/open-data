@@ -19,6 +19,7 @@ import {
   GetUserThreadsFeedEndpoint,
 } from '../domain/feed';
 import { GetObjectUpdatesFeedEndpoint } from '../domain/object-updates/get-object-updates-feed.endpoint';
+import { GetUpdateVotersEndpoint } from '../domain/object-updates/get-update-voters.endpoint';
 import {
   CheckObjectExistsEndpoint,
   GetNestedObjectsEndpoint,
@@ -61,6 +62,7 @@ export class McpService {
     private readonly getObjectFollowers: GetObjectFollowersEndpoint,
     private readonly getObjectAuthority: GetObjectAuthorityEndpoint,
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
+    private readonly getUpdateVoters: GetUpdateVotersEndpoint,
     private readonly getUserProfile: GetUserProfileEndpoint,
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
     private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
@@ -92,6 +94,7 @@ export class McpService {
       getObjectFollowers: this.getObjectFollowers,
       getObjectAuthority: this.getObjectAuthority,
       getObjectUpdatesFeed: this.getObjectUpdatesFeed,
+      getUpdateVoters: this.getUpdateVoters,
       getUserProfile: this.getUserProfile,
       getUserBlogFeed: this.getUserBlogFeed,
       getUserMentionsFeed: this.getUserMentionsFeed,
