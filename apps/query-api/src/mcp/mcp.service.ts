@@ -34,6 +34,7 @@ import {
 import { GetSearchCountsEndpoint } from '../domain/search/get-search-counts.endpoint';
 import { GetSearchEndpoint } from '../domain/search/get-search.endpoint';
 import {
+  GetUserShopFiltersEndpoint,
   GetUserShopObjectsEndpoint,
   GetUserShopSectionsEndpoint,
 } from '../domain/shop';
@@ -88,6 +89,7 @@ export class McpService {
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
+    private readonly getUserShopFilters: GetUserShopFiltersEndpoint,
     private readonly getPostByKey: GetPostByKeyEndpoint,
     private readonly getPostDiscussion: GetPostDiscussionEndpoint,
     private readonly getPostVoters: GetPostVotersEndpoint,
@@ -126,6 +128,7 @@ export class McpService {
       getUserCategories: this.getUserCategories,
       getUserShopObjects: this.getUserShopObjects,
       getUserShopSections: this.getUserShopSections,
+      getUserShopFilters: this.getUserShopFilters,
       getPostByKey: this.getPostByKey,
       getPostDiscussion: this.getPostDiscussion,
       getPostVoters: this.getPostVoters,

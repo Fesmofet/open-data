@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, shop-feed-endpoints]
-updated_at: 2026-06-10
+updated_at: 2026-06-17
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/README.md
@@ -16,13 +16,14 @@ related:
 
 **Endpoints:**
 
-- `GET /query/v1/users/:name/shop-objects` — flat `ProjectedObject[]` in user shop scope with `categoryPath` filter, optional `uncategorizedOnly=true` (objects with no `category_names`), and `object_id` cursor.
-- `GET /query/v1/users/:name/shop-sections` — grouped preview rows (`sectionLimit` categories per page, 3 objects per category) for intermediate category nodes; cursor is the last category `name` from the previous page (same ordering as `GET .../categories`).
+- `GET /query/v1/users/:name/shop-objects` — flat `ProjectedObject[]` in user shop scope with `categoryPath` filter, optional `uncategorizedOnly=true` (objects with no `category_names`), optional `tags[]` (`category:value`, AND) and optional `rating` (`6` | `8` | `10` legacy threshold), and `object_id` cursor.
+- `GET /query/v1/users/:name/shop-sections` — grouped preview rows (`sectionLimit` categories per page, 3 objects per category) for intermediate category nodes; cursor is the last category `name` from the previous page (same ordering as `GET .../categories`). Optional `tags[]` and `rating` omit categories with zero matches (API/MCP); the web profile UI uses `shop-objects` instead when filters are active.
+- `GET /query/v1/users/:name/shop/filters` — tag category facets (counts scoped to user shop membership and current `categoryPath`) plus static rating thresholds `[10, 8, 6]`. Optional `tags[]` narrows facet counts (AND).
 
 **Scope:** Same membership as `object_categories_related` user scopes (`object_authority` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
 
 **Projection:** `ObjectViewService` with update types `name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`; then `ObjectProjectionService.batchProject`.
 
-**Client:** Profile `user-shop` and `recipe` central column (`apps/web`): leaf URLs load `shop-objects`; non-leaf load `shop-sections`. Sidebar link **Uncategorized** routes to `…/uncategorized` with `uncategorizedOnly=true`.
+**Client:** Profile `user-shop` and `recipe` central column (`apps/web`): leaf URLs and **any URL with active `tags`/`rating` filters** load `shop-objects` (flat list); non-leaf browse without filters loads `shop-sections`. Sidebar link **Uncategorized** routes to `…/uncategorized` with `uncategorizedOnly=true`. Right column (`ProfileShopFilters`) loads facets from `GET …/shop/filters`; active filters are URL query params `tags` and `rating`.
 
 **See also:** [Shop categories](categories.md), [docs/apps/chain-indexer/spec/object-categories.md](../../chain-indexer/spec/object-categories.md).

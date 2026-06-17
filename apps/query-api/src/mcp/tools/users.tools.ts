@@ -2,7 +2,7 @@ import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { userCategoriesQuerySchema } from '../../domain/categories/categories-query.schema';
-import { shopObjectsQuerySchema, shopSectionsQuerySchema } from '../../domain/shop/shop.schema';
+import { shopFiltersQuerySchema, shopObjectsQuerySchema, shopSectionsQuerySchema } from '../../domain/shop/shop.schema';
 import {
   userFollowingObjectsQuerySchema,
   userSocialListQuerySchema,
@@ -340,6 +340,24 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_shop_filters',
+    {
+      description: catalogDescription('get_user_shop_filters'),
+      inputSchema: shopFiltersQuerySchema.extend(accountField),
+    },
+    async (args) => {
+      const { account, types, categoryPath, uncategorizedOnly, tags } = args;
+      const result = await deps.getUserShopFilters.execute(account, {
+        types,
+        categoryPath,
+        uncategorizedOnly,
+        tags,
+      });
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_shop_objects',
     {
       description: catalogDescription('get_user_shop_objects'),
@@ -349,10 +367,10 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, types, categoryPath, uncategorizedOnly, limit, cursor } = args;
+      const { account, types, categoryPath, uncategorizedOnly, limit, cursor, tags, rating } = args;
       const result = await deps.getUserShopObjects.execute(
         account,
-        { types, categoryPath, uncategorizedOnly, limit, cursor },
+        { types, categoryPath, uncategorizedOnly, limit, cursor, tags, rating },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
@@ -371,10 +389,10 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, types, path, cursor, sectionLimit, name } = args;
+      const { account, types, path, cursor, sectionLimit, name, tags, rating } = args;
       const result = await deps.getUserShopSections.execute(
         account,
-        { types, path, cursor, sectionLimit, name },
+        { types, path, cursor, sectionLimit, name, tags, rating },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,

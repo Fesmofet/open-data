@@ -11,6 +11,8 @@ export async function loadMoreShopObjectsAction(
   categoryPath: string[],
   cursor: string,
   uncategorizedOnly?: boolean,
+  tags?: string[],
+  rating?: number | null,
 ): Promise<ShopObjectsPage> {
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
@@ -22,6 +24,8 @@ export async function loadMoreShopObjectsAction(
       cursor,
       limit: 20,
       uncategorizedOnly: uncategorizedOnly === true ? true : undefined,
+      tags,
+      rating: rating ?? null,
     },
     user?.username ?? null,
   );
@@ -33,6 +37,8 @@ export async function loadMoreShopSectionsAction(
   navName: string | undefined,
   navPath: string[],
   cursor: string,
+  tags?: string[],
+  rating?: number | null,
 ): Promise<ShopSectionsPage> {
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
@@ -45,6 +51,8 @@ export async function loadMoreShopSectionsAction(
       path: navPath,
       cursor,
       sectionLimit: 3,
+      tags,
+      rating: rating ?? null,
     },
     user?.username ?? null,
   );

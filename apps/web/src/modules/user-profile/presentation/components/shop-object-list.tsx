@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 
 import type { ShopObjectsPage } from '../../domain/types/shop-objects';
+import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 
@@ -16,8 +17,11 @@ export type ShopObjectListProps = {
   types: readonly string[];
   categoryPath: string[];
   uncategorizedOnly?: boolean;
+  shopFilters?: ProfileShopFiltersState;
   viewerUsername?: string | null;
 };
+
+const EMPTY_SHOP_FILTERS: ProfileShopFiltersState = { tags: [], rating: null };
 
 export function ShopObjectList({
   accountName,
@@ -25,6 +29,7 @@ export function ShopObjectList({
   types,
   categoryPath,
   uncategorizedOnly = false,
+  shopFilters = EMPTY_SHOP_FILTERS,
   viewerUsername,
 }: ShopObjectListProps) {
   const { openLogin } = useLoginModal();
@@ -76,6 +81,8 @@ export function ShopObjectList({
                   [...categoryPath],
                   cursor,
                   uncategorizedOnly ? true : undefined,
+                  shopFilters.tags,
+                  shopFilters.rating,
                 );
                 setItems((prev) => [...prev, ...next.items]);
                 setCursor(next.cursor);

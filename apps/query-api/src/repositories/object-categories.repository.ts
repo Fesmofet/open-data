@@ -3,46 +3,14 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-
-function postLinkedPredicate(
-  account: string,
-  types: readonly string[],
-  includePostObjects: boolean,
-  shopDeselectIds: readonly string[],
-) {
-  if (!includePostObjects || types.length === 0) {
-    return sql`FALSE`;
-  }
-  const typeList = sql.join(types.map((t) => sql`${t}`), sql`, `);
-  const deselectClause =
-    shopDeselectIds.length === 0
-      ? sql`TRUE`
-      : sql`NOT (po.object_id IN (${sql.join(
-          shopDeselectIds.map((id) => sql`${id}`),
-          sql`, `,
-        )}))`;
-  return sql`po.author = ${account.trim()} AND po.object_type IN (${typeList}) AND (${deselectClause})`;
-}
-
-function categoryNamesContainPath(categoryPath: readonly string[]) {
-  if (categoryPath.length === 0) {
-    return sql`TRUE`;
-  }
-  return sql`cat.category_names @> ARRAY[${sql.join(
-    categoryPath.map((p) => sql`${p}`),
-    sql`, `,
-  )}]::text[]`;
-}
-
-function parentPathPrefixSql(parentPath: readonly string[]) {
-  if (parentPath.length === 0) {
-    return sql`ARRAY[]::text[]`;
-  }
-  return sql`ARRAY[${sql.join(
-    parentPath.map((p) => sql`${p}`),
-    sql`, `,
-  )}]::text[]`;
-}
+import {
+  buildShopObjectFilterClause,
+  buildShopScopeCtes,
+  parentPathPrefixSql,
+  type ShopScopeParams,
+  type ShopTagCategoryRow,
+  type ShopTagFilter,
+} from './shop-scope.sql';
 
 @Injectable()
 export class ObjectCategoriesRepository {
@@ -62,26 +30,29 @@ export class ObjectCategoriesRepository {
     cursor: string | null;
     hideLinkedObjects: boolean;
     shopDeselectObjectIds: string[];
+    tags?: ShopTagFilter[];
+    rating?: number | null;
   }): Promise<{ objectIds: string[]; nextCursor: string | null; hasMore: boolean }> {
     const account = params.username.trim();
     if (account.length === 0 || params.types.length === 0 || params.limit <= 0) {
       return { objectIds: [], nextCursor: null, hasMore: false };
     }
 
-    const includePost = !params.hideLinkedObjects;
-
-    const categoryFilter = params.uncategorizedOnly
-      ? sql`(cat.category_names IS NULL OR cardinality(cat.category_names) = 0)`
-      : categoryNamesContainPath(params.categoryPath);
-    const cursor = params.cursor?.trim() ?? '';
+    const scope: ShopScopeParams = {
+      account,
+      types: params.types,
+      categoryPath: params.categoryPath,
+      uncategorizedOnly: params.uncategorizedOnly,
+      hideLinkedObjects: params.hideLinkedObjects,
+      shopDeselectObjectIds: params.shopDeselectObjectIds,
+    };
+    const tags = params.tags ?? [];
+    const objectFilter = buildShopObjectFilterClause(sql`obj.object_id`, tags, params.rating ?? null);
+    const { authorityTypeFilter, postPred, categoryFilter, cursorFilter } = buildShopScopeCtes(
+      scope,
+      { objectFilter, cursorObjectId: params.cursor },
+    );
     const take = params.limit + 1;
-
-    const authorityTypeFilter =
-      params.types.length === 0
-        ? sql`FALSE`
-        : sql`oc.object_type IN (${sql.join(params.types.map((t) => sql`${t}`), sql`, `)})`;
-
-    const postPred = postLinkedPredicate(account, params.types, includePost, params.shopDeselectObjectIds);
 
     try {
       const rows = await sql<{ object_id: string }>`
@@ -110,7 +81,8 @@ export class ObjectCategoriesRepository {
           INNER JOIN objects_core oc ON oc.object_id = obj.object_id AND oc.status = 'active'
           LEFT JOIN object_categories cat ON cat.object_id = obj.object_id
           WHERE (${categoryFilter})
-            AND (${cursor.length === 0 ? sql`TRUE` : sql`obj.object_id > ${cursor}`})
+            AND (${objectFilter})
+            AND (${cursorFilter})
         )
         SELECT object_id
         FROM scoped_objects
@@ -143,6 +115,8 @@ export class ObjectCategoriesRepository {
     objectsPerCategory: number;
     hideLinkedObjects: boolean;
     shopDeselectObjectIds: string[];
+    tags?: ShopTagFilter[];
+    rating?: number | null;
   }): Promise<Map<string, string[]>> {
     const result = new Map<string, string[]>();
     for (const n of params.categoryNames) {
@@ -159,14 +133,17 @@ export class ObjectCategoriesRepository {
       return result;
     }
 
-    const includePost = !params.hideLinkedObjects;
-    const authorityTypeFilter =
-      params.types.length === 0
-        ? sql`FALSE`
-        : sql`oc.object_type IN (${sql.join(params.types.map((t) => sql`${t}`), sql`, `)})`;
-
-    const postPred = postLinkedPredicate(account, params.types, includePost, params.shopDeselectObjectIds);
-
+    const scope: ShopScopeParams = {
+      account,
+      types: params.types,
+      categoryPath: [],
+      uncategorizedOnly: false,
+      hideLinkedObjects: params.hideLinkedObjects,
+      shopDeselectObjectIds: params.shopDeselectObjectIds,
+    };
+    const tags = params.tags ?? [];
+    const objectFilter = buildShopObjectFilterClause(sql`b.object_id`, tags, params.rating ?? null);
+    const { authorityTypeFilter, postPred } = buildShopScopeCtes(scope);
     const parentArrSql = parentPathPrefixSql(params.parentPath);
 
     try {
@@ -205,6 +182,7 @@ export class ObjectCategoriesRepository {
           FROM base_scope b
           INNER JOIN object_categories cat ON cat.object_id = b.object_id
           WHERE cat.category_names @> (${parentArrSql} || ARRAY[c.candidate_name]::text[])
+            AND (${objectFilter})
           ORDER BY b.object_id ASC
           LIMIT ${params.objectsPerCategory}
         ) s
@@ -223,6 +201,290 @@ export class ObjectCategoriesRepository {
         }`,
       );
       return result;
+    }
+  }
+
+  /** Filtered object counts per category name (full path = parentPath + name). */
+  async countObjectIdsByScopeForCategories(params: {
+    username: string;
+    types: string[];
+    categoryNames: string[];
+    parentPath: string[];
+    hideLinkedObjects: boolean;
+    shopDeselectObjectIds: string[];
+    tags?: ShopTagFilter[];
+    rating?: number | null;
+  }): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+    for (const n of params.categoryNames) {
+      result.set(n, 0);
+    }
+
+    const account = params.username.trim();
+    if (
+      account.length === 0 ||
+      params.types.length === 0 ||
+      params.categoryNames.length === 0
+    ) {
+      return result;
+    }
+
+    const scope: ShopScopeParams = {
+      account,
+      types: params.types,
+      categoryPath: [],
+      uncategorizedOnly: false,
+      hideLinkedObjects: params.hideLinkedObjects,
+      shopDeselectObjectIds: params.shopDeselectObjectIds,
+    };
+    const tags = params.tags ?? [];
+    const objectFilter = buildShopObjectFilterClause(sql`b.object_id`, tags, params.rating ?? null);
+    const { authorityTypeFilter, postPred } = buildShopScopeCtes(scope);
+    const parentArrSql = parentPathPrefixSql(params.parentPath);
+
+    try {
+      const rows = await sql<{ category_name: string; object_count: number | string }>`
+        WITH authority_objects AS (
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
+            AND oa.account = ${account}
+            AND oa.authority_type IN ('ownership', 'administrative')
+            AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+        ),
+        post_linked_objects AS (
+          SELECT DISTINCT po.object_id
+          FROM post_objects po
+          INNER JOIN objects_core oc ON oc.object_id = po.object_id AND oc.status = 'active'
+          WHERE (${postPred})
+        ),
+        base_scope AS (
+          SELECT DISTINCT obj.object_id
+          FROM (
+            SELECT object_id FROM authority_objects
+            UNION
+            SELECT object_id FROM post_linked_objects
+          ) obj
+        ),
+        cats AS (
+          SELECT candidate_name
+          FROM unnest(${params.categoryNames}::text[]) AS candidate_name
+        )
+        SELECT
+          c.candidate_name AS category_name,
+          (
+            SELECT COUNT(*)::int
+            FROM base_scope b
+            INNER JOIN object_categories cat ON cat.object_id = b.object_id
+            WHERE cat.category_names @> (${parentArrSql} || ARRAY[c.candidate_name]::text[])
+              AND (${objectFilter})
+          ) AS object_count
+        FROM cats c
+      `.execute(this.db);
+
+      for (const row of rows.rows) {
+        result.set(row.category_name, Number(row.object_count));
+      }
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `countObjectIdsByScopeForCategories failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return result;
+    }
+  }
+
+  /** Filtered uncategorized object count in user shop scope (empty `category_names`). */
+  async countUncategorizedObjectIdsByScope(params: {
+    username: string;
+    types: string[];
+    hideLinkedObjects: boolean;
+    shopDeselectObjectIds: string[];
+    tags?: ShopTagFilter[];
+    rating?: number | null;
+  }): Promise<number> {
+    const account = params.username.trim();
+    if (account.length === 0 || params.types.length === 0) {
+      return 0;
+    }
+
+    const scope: ShopScopeParams = {
+      account,
+      types: params.types,
+      categoryPath: [],
+      uncategorizedOnly: true,
+      hideLinkedObjects: params.hideLinkedObjects,
+      shopDeselectObjectIds: params.shopDeselectObjectIds,
+    };
+    const tags = params.tags ?? [];
+    const objectFilter = buildShopObjectFilterClause(sql`obj.object_id`, tags, params.rating ?? null);
+    const { authorityTypeFilter, postPred, categoryFilter } = buildShopScopeCtes(scope, {
+      objectFilter,
+    });
+
+    try {
+      const result = await sql<{ object_count: number | string }>`
+        WITH authority_objects AS (
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
+            AND oa.account = ${account}
+            AND oa.authority_type IN ('ownership', 'administrative')
+            AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+        ),
+        post_linked_objects AS (
+          SELECT DISTINCT po.object_id
+          FROM post_objects po
+          INNER JOIN objects_core oc ON oc.object_id = po.object_id AND oc.status = 'active'
+          WHERE (${postPred})
+        ),
+        scoped_objects AS (
+          SELECT DISTINCT obj.object_id
+          FROM (
+            SELECT object_id FROM authority_objects
+            UNION
+            SELECT object_id FROM post_linked_objects
+          ) obj
+          INNER JOIN objects_core oc ON oc.object_id = obj.object_id AND oc.status = 'active'
+          LEFT JOIN object_categories cat ON cat.object_id = obj.object_id
+          WHERE (${categoryFilter})
+            AND (${objectFilter})
+        )
+        SELECT COUNT(*)::int AS object_count
+        FROM scoped_objects
+      `.execute(this.db);
+
+      return Number(result.rows[0]?.object_count ?? 0);
+    } catch (error) {
+      this.logger.error(
+        `countUncategorizedObjectIdsByScope failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return 0;
+    }
+  }
+
+  /** Tag facet rows for objects in user shop scope (optionally narrowed by active tags). */
+  async getShopTagCategories(
+    scope: ShopScopeParams,
+    activeTags: ShopTagFilter[] = [],
+  ): Promise<ShopTagCategoryRow[]> {
+    const account = scope.account.trim();
+    if (account.length === 0 || scope.types.length === 0) {
+      return [];
+    }
+
+    const { authorityTypeFilter, postPred, categoryFilter } = buildShopScopeCtes(scope);
+
+    try {
+      if (activeTags.length > 0) {
+        const narrowingFilter = buildShopObjectFilterClause(
+          sql`so.object_id`,
+          activeTags,
+          null,
+        );
+
+        const result = await sql<ShopTagCategoryRow>`
+          WITH authority_objects AS (
+            SELECT DISTINCT oc.object_id
+            FROM objects_core oc
+            INNER JOIN object_authority oa ON oa.object_id = oc.object_id
+              AND oa.account = ${account}
+              AND oa.authority_type IN ('ownership', 'administrative')
+              AND (${authorityTypeFilter})
+              AND oc.status = 'active'
+          ),
+          post_linked_objects AS (
+            SELECT DISTINCT po.object_id
+            FROM post_objects po
+            INNER JOIN objects_core oc ON oc.object_id = po.object_id AND oc.status = 'active'
+            WHERE (${postPred})
+          ),
+          scoped_objects AS (
+            SELECT DISTINCT obj.object_id
+            FROM (
+              SELECT object_id FROM authority_objects
+              UNION
+              SELECT object_id FROM post_linked_objects
+            ) obj
+            INNER JOIN objects_core oc ON oc.object_id = obj.object_id AND oc.status = 'active'
+            LEFT JOIN object_categories cat ON cat.object_id = obj.object_id
+            WHERE (${categoryFilter})
+          ),
+          narrowed_objects AS (
+            SELECT so.object_id
+            FROM scoped_objects so
+            WHERE (${narrowingFilter})
+          )
+          SELECT
+            tci.category AS category,
+            tci.value AS tag_value,
+            COUNT(DISTINCT tci.object_id)::int AS object_count
+          FROM object_tag_category_items tci
+          WHERE tci.object_id IN (SELECT object_id FROM narrowed_objects)
+          GROUP BY 1, 2
+          ORDER BY 1 ASC, 3 DESC, 2 ASC
+        `.execute(this.db);
+
+        return result.rows.map((row) => ({
+          category: row.category,
+          tag_value: row.tag_value,
+          object_count: Number(row.object_count),
+        }));
+      }
+
+      const result = await sql<ShopTagCategoryRow>`
+        WITH authority_objects AS (
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
+            AND oa.account = ${account}
+            AND oa.authority_type IN ('ownership', 'administrative')
+            AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+        ),
+        post_linked_objects AS (
+          SELECT DISTINCT po.object_id
+          FROM post_objects po
+          INNER JOIN objects_core oc ON oc.object_id = po.object_id AND oc.status = 'active'
+          WHERE (${postPred})
+        ),
+        scoped_objects AS (
+          SELECT DISTINCT obj.object_id
+          FROM (
+            SELECT object_id FROM authority_objects
+            UNION
+            SELECT object_id FROM post_linked_objects
+          ) obj
+          INNER JOIN objects_core oc ON oc.object_id = obj.object_id AND oc.status = 'active'
+          LEFT JOIN object_categories cat ON cat.object_id = obj.object_id
+          WHERE (${categoryFilter})
+        )
+        SELECT
+          tci.category AS category,
+          tci.value AS tag_value,
+          COUNT(DISTINCT tci.object_id)::int AS object_count
+        FROM object_tag_category_items tci
+        WHERE tci.object_id IN (SELECT object_id FROM scoped_objects)
+        GROUP BY 1, 2
+        ORDER BY 1 ASC, 3 DESC, 2 ASC
+      `.execute(this.db);
+
+      return result.rows.map((row) => ({
+        category: row.category,
+        tag_value: row.tag_value,
+        object_count: Number(row.object_count),
+      }));
+    } catch (error) {
+      this.logger.error(
+        `getShopTagCategories failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return [];
     }
   }
 }

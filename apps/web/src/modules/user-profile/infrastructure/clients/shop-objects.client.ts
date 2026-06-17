@@ -9,9 +9,26 @@ export type FetchShopObjectsParams = {
   categoryPath: string[];
   /** When true, only objects with no category tags (query-api `uncategorizedOnly`). */
   uncategorizedOnly?: boolean;
+  tags?: readonly string[];
+  rating?: number | null;
   limit?: number;
   cursor?: string | null;
 };
+
+function appendShopFilterParams(
+  sp: URLSearchParams,
+  params: { tags?: readonly string[]; rating?: number | null },
+): void {
+  for (const tag of params.tags ?? []) {
+    const trimmed = tag.trim();
+    if (trimmed) {
+      sp.append('tags', trimmed);
+    }
+  }
+  if (params.rating != null) {
+    sp.set('rating', String(params.rating));
+  }
+}
 
 function buildShopObjectsSearchParams(params: FetchShopObjectsParams): string {
   const sp = new URLSearchParams();
@@ -26,6 +43,7 @@ function buildShopObjectsSearchParams(params: FetchShopObjectsParams): string {
   if (params.uncategorizedOnly === true) {
     sp.set('uncategorizedOnly', 'true');
   }
+  appendShopFilterParams(sp, params);
   if (params.limit != null) {
     sp.set('limit', String(params.limit));
   }
@@ -42,6 +60,8 @@ export type FetchShopSectionsParams = {
   name?: string;
   /** Ancestors before `name`. */
   path?: string[];
+  tags?: readonly string[];
+  rating?: number | null;
   cursor?: string | null;
   sectionLimit?: number;
 };
@@ -60,6 +80,7 @@ function buildShopSectionsSearchParams(params: FetchShopSectionsParams): string 
       sp.append('path', segment);
     }
   }
+  appendShopFilterParams(sp, params);
   if (params.sectionLimit != null) {
     sp.set('sectionLimit', String(params.sectionLimit));
   }

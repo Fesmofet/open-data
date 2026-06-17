@@ -12,6 +12,7 @@ import './categories.openapi';
 import './currency.openapi';
 import './search.openapi';
 import './discover.openapi';
+import './shop.openapi';
 
 export function generateOpenApiDocument() {
   const base = new OpenApiGeneratorV31(registry.definitions).generateDocument({

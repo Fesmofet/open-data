@@ -10,6 +10,7 @@ import {
 } from '../../repositories';
 import { buildUserCategoriesResponse } from '../categories/build-user-categories-response';
 import type { UserCategoriesQuery } from '../categories/categories-query.schema';
+import { parseTagFilters } from '../discover/get-discover-objects.endpoint';
 import { ObjectProjectionService } from '../object-projection';
 import type { ProjectedObject } from '../object-projection/projected-object.types';
 import { SHOP_CARD_UPDATE_TYPES, SHOP_SECTION_OBJECTS_PER_CATEGORY } from './shop.constants';
@@ -32,6 +33,8 @@ function orderAggregatedByIds(objects: AggregatedObject[], objectIds: string[]):
   const map = new Map(objects.map((o) => [o.core.object_id, o]));
   return objectIds.map((id) => map.get(id)).filter((o): o is AggregatedObject => o != null);
 }
+
+type NavItem = { name: string; objects_count: number; has_children: boolean };
 
 @Injectable()
 export class GetUserShopSectionsEndpoint {
@@ -57,6 +60,9 @@ export class GetUserShopSectionsEndpoint {
       return null;
     }
 
+    const activeTags = parseTagFilters(query.tags ?? []);
+    const hasFilters = activeTags.length > 0 || query.rating != null;
+
     const [flags, deselectIds, relatedRows] = await Promise.all([
       this.userMetadataRepo.findShopVisibilityFlags(name),
       this.shopDeselectRepo.findObjectIdsByAccount(name),
@@ -81,25 +87,51 @@ export class GetUserShopSectionsEndpoint {
       start = idx >= 0 ? idx + 1 : 0;
     }
 
-    const pageItems = ordered.slice(start, start + query.sectionLimit);
-    const hasMore = start + pageItems.length < ordered.length;
+    const nameSeg = query.name?.trim() ?? '';
+    const parentPathForSamples = nameSeg.length > 0 ? [...(query.path ?? []), nameSeg] : [];
+
+    const scopeParams = {
+      username: name,
+      types: query.types,
+      parentPath: parentPathForSamples,
+      hideLinkedObjects: hideLinked,
+      shopDeselectObjectIds: deselectIds,
+      tags: activeTags,
+      rating: query.rating ?? null,
+    };
+
+    let pageItems: NavItem[];
+    let filteredCounts: Map<string, number> | null = null;
+    let hasMore: boolean;
+
+    if (hasFilters) {
+      const candidates = ordered.slice(start);
+      if (candidates.length === 0) {
+        return { sections: [], cursor: null, hasMore: false };
+      }
+
+      filteredCounts = await this.objectCategoriesRepo.countObjectIdsByScopeForCategories({
+        ...scopeParams,
+        categoryNames: candidates.map((c) => c.name),
+      });
+
+      const matching = candidates.filter((c) => (filteredCounts.get(c.name) ?? 0) > 0);
+      pageItems = matching.slice(0, query.sectionLimit);
+      hasMore = matching.length > query.sectionLimit;
+    } else {
+      pageItems = ordered.slice(start, start + query.sectionLimit);
+      hasMore = start + pageItems.length < ordered.length;
+    }
 
     if (pageItems.length === 0) {
       return { sections: [], cursor: null, hasMore: false };
     }
 
-    const nameSeg = query.name?.trim() ?? '';
-    const parentPathForSamples = nameSeg.length > 0 ? [...(query.path ?? []), nameSeg] : [];
-
     const categoryNames = pageItems.map((p) => p.name);
     const idsByCategory = await this.objectCategoriesRepo.findObjectIdsByScopeForCategories({
-      username: name,
-      types: query.types,
+      ...scopeParams,
       categoryNames,
-      parentPath: parentPathForSamples,
       objectsPerCategory: SHOP_SECTION_OBJECTS_PER_CATEGORY,
-      hideLinkedObjects: hideLinked,
-      shopDeselectObjectIds: deselectIds,
     });
 
     const allIdsOrdered: string[] = [];
@@ -129,15 +161,22 @@ export class GetUserShopSectionsEndpoint {
     });
     const projectedById = new Map(projectedList.map((p) => [p.object_id, p]));
 
-    const sections: ShopSectionEntry[] = pageItems.map((row) => {
-      const ids = idsByCategory.get(row.name) ?? [];
-      const items = ids.map((id) => projectedById.get(id)).filter((p): p is ProjectedObject => p != null);
-      return {
-        categoryName: row.name,
-        items,
-        totalObjects: row.objects_count,
-      };
-    });
+    const sections: ShopSectionEntry[] = pageItems
+      .map((row) => {
+        const ids = idsByCategory.get(row.name) ?? [];
+        const items = ids
+          .map((id) => projectedById.get(id))
+          .filter((p): p is ProjectedObject => p != null);
+        const totalObjects = hasFilters
+          ? (filteredCounts?.get(row.name) ?? 0)
+          : row.objects_count;
+        return {
+          categoryName: row.name,
+          items,
+          totalObjects,
+        };
+      })
+      .filter((section) => !hasFilters || section.totalObjects > 0);
 
     const lastSection = pageItems[pageItems.length - 1];
     const nextCursor = hasMore && lastSection ? lastSection.name : null;

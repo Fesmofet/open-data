@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { useState, useTransition } from 'react';
 
 import type { ShopSectionsPage } from '../../domain/types/shop-objects';
+import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
+import { profileShopFiltersActive } from '../../domain/profile-shop-filters-url';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 
 import { useLoginModal } from '@/modules/auth';
 
 import { loadMoreShopSectionsAction } from '@/app/(app)/user-profile/[name]/shop-feed.actions';
+import { ProfileShopFilteredEmpty } from './profile-shop-filtered-empty';
 
 export type ShopSectionsProps = {
   accountName: string;
@@ -22,8 +25,11 @@ export type ShopSectionsProps = {
   navName?: string;
   /** Ancestors before `navName`. */
   navPath: string[];
+  shopFilters?: ProfileShopFiltersState;
   viewerUsername?: string | null;
 };
+
+const EMPTY_SHOP_FILTERS: ProfileShopFiltersState = { tags: [], rating: null };
 
 function sectionHref(basePath: string, lineageSegments: string[], categoryName: string): string {
   const segments = [...lineageSegments, categoryName].map((s) => encodeURIComponent(s));
@@ -38,6 +44,7 @@ export function ShopSections({
   lineageSegments,
   navName,
   navPath,
+  shopFilters = EMPTY_SHOP_FILTERS,
   viewerUsername,
 }: ShopSectionsProps) {
   const { openLogin } = useLoginModal();
@@ -47,6 +54,9 @@ export function ShopSections({
   const [pending, startTransition] = useTransition();
 
   if (sections.length === 0) {
+    if (profileShopFiltersActive(shopFilters)) {
+      return <ProfileShopFilteredEmpty />;
+    }
     return (
       <section
         className="rounded-card border border-border bg-surface/80 p-card-padding"
@@ -117,6 +127,8 @@ export function ShopSections({
                   navName,
                   [...navPath],
                   cursor,
+                  shopFilters.tags,
+                  shopFilters.rating,
                 );
                 setSections((prev) => [...prev, ...next.sections]);
                 setCursor(next.cursor);

@@ -4,7 +4,9 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
+import { isUserProfileShopOrRecipeTab } from '../../domain/profile-shop-filters-url';
 import { ProfilePostFiltersFromUrl } from './profile-post-filters';
+import { ProfileShopFiltersFromUrl } from './profile-shop-filters';
 
 type RightSidebarProps = {
   accountName: string;
@@ -28,15 +30,23 @@ function FiltersFallback() {
 
 function RightSidebarContent({ accountName }: RightSidebarProps) {
   const pathname = usePathname();
-  if (!isUserProfilePostsTab(pathname)) {
-    return null;
+  if (isUserProfilePostsTab(pathname)) {
+    return (
+      <Suspense fallback={<FiltersFallback />}>
+        <ProfilePostFiltersFromUrl accountName={accountName} />
+      </Suspense>
+    );
   }
 
-  return (
-    <Suspense fallback={<FiltersFallback />}>
-      <ProfilePostFiltersFromUrl accountName={accountName} />
-    </Suspense>
-  );
+  if (isUserProfileShopOrRecipeTab(pathname)) {
+    return (
+      <Suspense fallback={<FiltersFallback />}>
+        <ProfileShopFiltersFromUrl accountName={accountName} />
+      </Suspense>
+    );
+  }
+
+  return null;
 }
 
 export function RightSidebar({ accountName }: RightSidebarProps) {

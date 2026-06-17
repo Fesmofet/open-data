@@ -7,6 +7,7 @@ import {
   UserMetadataRepository,
   UserShopDeselectRepository,
 } from '../../repositories';
+import { parseTagFilters } from '../discover/get-discover-objects.endpoint';
 import { ObjectProjectionService } from '../object-projection';
 import type { ProjectedObject } from '../object-projection/projected-object.types';
 import { SHOP_CARD_UPDATE_TYPES } from './shop.constants';
@@ -63,6 +64,8 @@ export class GetUserShopObjectsEndpoint {
       cursor: query.cursor ?? null,
       hideLinkedObjects: hideLinked,
       shopDeselectObjectIds: deselectIds,
+      tags: parseTagFilters(query.tags ?? []),
+      rating: query.rating ?? null,
     });
 
     if (page.objectIds.length === 0) {

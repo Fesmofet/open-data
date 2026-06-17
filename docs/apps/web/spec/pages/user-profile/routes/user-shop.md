@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, shop]
-updated_at: 2026-06-10
+updated_at: 2026-06-17
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
@@ -36,6 +36,8 @@ Department-style object catalogs for a user’s shop (`book`, `product`) and rec
 |-----------|------|
 | `ProfileShopMainContent` | Center column object grid (`types`: shop → `['book','product']`, recipe → `['recipe']`) |
 | `CategoryNav` | Left rail category tree for current `basePath` and `lineageSegments` |
+| `ProfileShopFilters` | Right rail tag + rating filters (shop and recipe tabs) |
+| `ProfileShopFilterChips` | Active filter pills above the feed |
 | `ObjectCard` | Card rendering — [object-card.md](../../../object-card.md) |
 | `shop-feed.actions.ts` | Server actions for paginated shop loads |
 
@@ -43,7 +45,8 @@ Department-style object catalogs for a user’s shop (`book`, `product`) and rec
 
 - **basePath:** `/@${accountName}/user-shop` or `/recipe` — used for nav links and breadcrumbs.
 - **Parallel routes:** `(main)/layout.tsx` renders `@leftSidebar` slot; shop/recipe pages pair main + sidebar segments.
-- **Pagination:** infinite scroll on object lists; maps API rows via `projectedListItemToObjectView`.
+- **Filters:** URL query `tags=Category:value` (repeatable, AND) and optional `rating` (`6` | `8` | `10`). Right column loads facets from BFF `GET /api/users/:name/shop/filters` (scoped to current category path). Same filters on `user-shop` and `recipe`. When any filter is active, the center column uses a **flat** `shop-objects` list (not category sections) so facet counts match visible rows.
+- **Pagination:** load-more buttons on object lists and section pages; maps API rows via `ObjectCard`.
 - **Shell mode:** left category rail hidden on Instagram/Twitter presets per `shell-hide-instagram` / vertical rail swap (see [profile-shell.md](../profile-shell.md)).
 
 ## Verification

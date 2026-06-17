@@ -33,14 +33,18 @@ import {
   type UserCategoriesQuery,
 } from '../domain/categories';
 import {
+  GetUserShopFiltersEndpoint,
   GetUserShopObjectsEndpoint,
   GetUserShopSectionsEndpoint,
+  shopFiltersQuerySchema,
   shopObjectsQuerySchema,
   shopSectionsQuerySchema,
+  type ShopFiltersQuery,
   type ShopObjectsQuery,
   type ShopObjectsResponse,
   type ShopSectionsQuery,
   type ShopSectionsResponse,
+  type UserShopFiltersResponseDto,
 } from '../domain/shop';
 import {
   GetUserFollowersEndpoint,
@@ -74,6 +78,7 @@ export class UsersController {
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
+    private readonly getUserShopFilters: GetUserShopFiltersEndpoint,
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
@@ -88,6 +93,14 @@ export class UsersController {
     @Query(new ZodQueryPipe(userCategoriesQuerySchema)) query: UserCategoriesQuery,
   ): Promise<UserCategoriesResponse> {
     return this.getUserCategories.execute(name, query);
+  }
+
+  @Get(':name/shop/filters')
+  async getShopFilters(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(shopFiltersQuerySchema)) query: ShopFiltersQuery,
+  ): Promise<UserShopFiltersResponseDto | null> {
+    return this.getUserShopFilters.execute(name, query);
   }
 
   @Get(':name/shop-objects')
