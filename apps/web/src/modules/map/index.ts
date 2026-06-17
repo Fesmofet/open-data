@@ -4,6 +4,7 @@ export type {
   AppMarkerProps,
   AppMarkerVariant,
   AppPopupProps,
+  MapBoundingBox,
   MapPosition,
   MapProviderPort,
 } from './types';

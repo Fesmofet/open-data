@@ -18,6 +18,8 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:favorites-types`,
   userFavorites: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:favorites`,
+  userFavoritesMap: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:favorites-map`,
   userBlogFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:blog-feed`,
   userThreadsFeed: (accountName: string) =>

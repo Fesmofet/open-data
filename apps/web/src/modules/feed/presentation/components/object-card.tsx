@@ -8,7 +8,11 @@ import { ObjectPageLink } from './object-page-link';
 
 import type { CardRatingDimension } from '../../application/dto/object-card-rating';
 import { mergeRatingDimensions } from '../../application/dto/object-card-rating';
-import { truncateObjectCardDescription } from '../../application/dto/object-card-description';
+import {
+  OBJECT_CARD_DESCRIPTION_MAX_LENGTH,
+  OBJECT_CARD_MAP_SIDEBAR_DESCRIPTION_MAX_LENGTH,
+  truncateObjectCardDescription,
+} from '../../application/dto/object-card-description';
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/discover-registry';
@@ -18,6 +22,7 @@ import { AdministrativeHeartButton } from '@/modules/object/presentation/compone
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB_SIZE = 120;
+const MAP_SIDEBAR_THUMB_SIZE = 88;
 
 function CardNavTarget({
   href,
@@ -72,20 +77,36 @@ function RatingsGrid({
   objectId,
   viewerUsername,
   onRequireLogin,
+  compact = false,
 }: {
   dims: CardRatingDimension[];
   objectId: string;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  /** Single row — for narrow columns (profile map sidebar). */
+  compact?: boolean;
 }) {
   if (dims.length === 0) {
     return null;
   }
   return (
-    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+    <div
+      className={
+        compact
+          ? 'mt-1.5 flex min-w-0 items-center gap-1.5'
+          : 'mt-2 grid grid-cols-2 gap-x-4 gap-y-1'
+      }
+    >
       {dims.map(
         ({ dimension, update_id, averageRating01To5, userRating01To5, totalVoters }) => (
-          <div key={dimension} className="flex min-w-0 items-center gap-1.5">
+          <div
+            key={dimension}
+            className={
+              compact
+                ? 'flex min-w-0 flex-col items-start gap-0.5'
+                : 'flex min-w-0 items-center gap-1.5'
+            }
+          >
             <StarRating
               averageRating01To5={averageRating01To5}
               userRating01To5={userRating01To5}
@@ -118,10 +139,14 @@ export type ObjectCardProps = {
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
   /** Post editor: hide admin heart and use compact row with trailing controls. */
-  layout?: 'default' | 'editorRow';
+  layout?: 'default' | 'editorRow' | 'mapSidebar';
   hideAdministrativeHeart?: boolean;
   /** Post editor: toggle + slider column on the right. */
   trailing?: ReactNode;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  /** Fired after administrative heart toggle succeeds (e.g. profile map refetch). */
+  onAdministrativeAuthorityChange?: () => void;
 };
 
 /**
@@ -137,9 +162,13 @@ export function ObjectCard({
   layout = 'default',
   hideAdministrativeHeart = false,
   trailing,
+  onMouseEnter,
+  onMouseLeave,
+  onAdministrativeAuthorityChange,
 }: ObjectCardProps) {
   const editorRow = layout === 'editorRow';
-  const thumbSize = editorRow ? 72 : THUMB_SIZE;
+  const mapSidebar = layout === 'mapSidebar';
+  const thumbSize = editorRow ? 72 : mapSidebar ? MAP_SIDEBAR_THUMB_SIZE : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
   const subtitleParts = [typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
@@ -147,7 +176,12 @@ export function ObjectCard({
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
   const descriptionRaw = objectFields.description(o);
-  const description = descriptionRaw ? truncateObjectCardDescription(descriptionRaw) : undefined;
+  const description = descriptionRaw
+    ? truncateObjectCardDescription(
+        descriptionRaw,
+        mapSidebar ? OBJECT_CARD_MAP_SIDEBAR_DESCRIPTION_MAX_LENGTH : OBJECT_CARD_DESCRIPTION_MAX_LENGTH,
+      )
+    : undefined;
   const href = objectPagePath(o.object_id);
   const titleLabel = name ?? o.object_id;
   const objectTypeKey = o.object_type?.trim() ?? '';
@@ -155,6 +189,7 @@ export function ObjectCard({
     getRatingDimensionNamesForObjectType(objectTypeKey),
     objectFields.aggregateRatingAspects(o),
   );
+  const visibleRatingDims = mapSidebar ? ratingDims.slice(0, 1) : ratingDims;
 
   const [navPending, setNavPending] = useState(false);
   const navPendingCountRef = useRef(0);
@@ -167,7 +202,10 @@ export function ObjectCard({
   }, []);
 
   const rootClassName = [
-    'relative list-none rounded-card border-[0.5px] border-border bg-surface-control/40 p-card-padding shadow-whisper',
+    'relative list-none border-[0.5px] border-border bg-surface-control/40 shadow-whisper',
+    mapSidebar
+      ? 'rounded-card py-card-padding pe-card-padding ps-gutter sm:ps-gutter-sm'
+      : 'rounded-card p-card-padding',
     navPending ? 'opacity-90' : '',
   ]
     .filter(Boolean)
@@ -176,7 +214,12 @@ export function ObjectCard({
   const showHeart = !hideAdministrativeHeart && !editorRow;
 
   return (
-    <Root className={rootClassName} aria-busy={navPending || undefined}>
+    <Root
+      className={rootClassName}
+      aria-busy={navPending || undefined}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {showHeart ? (
         <div className="absolute end-3 top-3">
           <AdministrativeHeartButton
@@ -184,6 +227,7 @@ export function ObjectCard({
             initialActive={o.hasAdministrativeAuthority ?? false}
             viewerUsername={viewerUsername}
             onRequireLogin={onRequireLogin}
+            onAuthorityChange={onAdministrativeAuthorityChange}
           />
         </div>
       ) : null}
@@ -245,14 +289,22 @@ export function ObjectCard({
           {subtitle ? <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p> : null}
           {!editorRow ? (
             <RatingsGrid
-              dims={ratingDims}
+              dims={visibleRatingDims}
               objectId={o.object_id}
               viewerUsername={viewerUsername}
               onRequireLogin={onRequireLogin}
+              compact={mapSidebar}
             />
           ) : null}
           {description ? (
-            <p className="mt-2 text-body-sm leading-body text-fg">{description}</p>
+            <p
+              className={[
+                'text-body-sm leading-body text-fg',
+                mapSidebar ? 'mt-1.5 line-clamp-2' : 'mt-2',
+              ].join(' ')}
+            >
+              {description}
+            </p>
           ) : null}
         </div>
         {trailing ? (

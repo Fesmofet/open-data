@@ -1,0 +1,21 @@
+/* Object infowindow on profile / favorites maps (legacy Waivio map card). */
+.map-object-popup.leaflet-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.map-object-popup.leaflet-popup .leaflet-popup-content {
+  margin: 0;
+  line-height: inherit;
+}
+
+.map-object-popup.leaflet-popup .leaflet-popup-close-button {
+  color: var(--color-fg-secondary);
+  font-size: 1.25rem;
+  padding: 0.25rem 0.35rem;
+}
+
+.map-object-popup.leaflet-popup .leaflet-popup-close-button:hover {
+  color: var(--color-fg);
+}

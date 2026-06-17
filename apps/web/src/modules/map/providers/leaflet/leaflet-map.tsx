@@ -1,9 +1,5 @@
 'use client';
 
-import L from 'leaflet';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
 
@@ -12,17 +8,7 @@ import '../../map-leaflet-zoom-ui.css';
 import type { AppMapProps } from '../../types';
 import { LeafletMapCenterSync } from './leaflet-map-center-sync';
 import { LeafletMapClickHandler } from './leaflet-map-click-handler';
-
-function assetSrc(mod: string | { src: string }): string {
-  return typeof mod === 'string' ? mod : mod.src;
-}
-
-/** Default markers break under most bundlers unless icon URLs are set explicitly. */
-L.Icon.Default.mergeOptions({
-  iconUrl: assetSrc(markerIcon),
-  iconRetinaUrl: assetSrc(markerIcon2x),
-  shadowUrl: assetSrc(markerShadow),
-});
+import { LeafletMapViewportHandler } from './leaflet-map-viewport-handler';
 
 const DEFAULT_TILE_LAYER_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const DEFAULT_TILE_ATTRIBUTION =
@@ -46,6 +32,7 @@ export function LeafletAppMap({
   maxZoom = DEFAULT_MAP_MAX_ZOOM,
   tileNoWrap = true,
   onMapClick,
+  onViewportChange,
 }: AppMapProps) {
   const attributionForLayer =
     showBuiltInAttribution === false ? '' : tileAttribution;
@@ -85,6 +72,9 @@ export function LeafletAppMap({
       />
       {customZoom ? <ZoomControl position={zoomUi.position} /> : null}
       <LeafletMapCenterSync center={center} />
+      {onViewportChange ? (
+        <LeafletMapViewportHandler onViewportChange={onViewportChange} />
+      ) : null}
       {onMapClick ? <LeafletMapClickHandler onMapClick={onMapClick} /> : null}
       {children}
     </MapContainer>

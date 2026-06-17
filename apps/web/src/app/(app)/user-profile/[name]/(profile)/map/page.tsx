@@ -1,5 +1,3 @@
-import { ProfileRouteStub } from '@/modules/user-profile';
+import { UserProfileMapPage } from '@/modules/user-profile/presentation/pages/user-profile-map-page';
 
-export default function UserProfileMapPage() {
-  return <ProfileRouteStub title="Map" description="Map view for this profile." />;
-}
+export default UserProfileMapPage;

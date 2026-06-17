@@ -180,6 +180,12 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/users-favorites-endpoint.md',
   },
   {
+    name: 'post_user_favorites_map',
+    description: 'Geo-filtered favorites in a bounding box for profile map.',
+    httpEquivalent: 'POST /query/v1/users/:name/favorites/map',
+    specPath: 'docs/apps/query-api/spec/users-favorites-endpoint.md',
+  },
+  {
     name: 'get_user_categories',
     description: 'Shop department tree for a user catalog.',
     httpEquivalent: 'GET /query/v1/users/:name/categories',

@@ -32,6 +32,20 @@ Expose legacy-equivalent favorites scope for profile `/@:name/favorites`:
 |--------|------|----------|
 | `GET` | `/query/v1/users/:name/favorites/types` | `{ types: string[] }` — distinct types, count DESC |
 | `GET` | `/query/v1/users/:name/favorites` | `{ items: ProjectedObject[], total, hasMore }` |
+| `POST` | `/query/v1/users/:name/favorites/map` | `{ items: ProjectedObject[], hasMore }` — geo bbox filter |
+
+### Body (`POST .../favorites/map`)
+
+| Field | Notes |
+|-------|-------|
+| `box.topPoint` | `[lng, lat]` north-east corner |
+| `box.bottomPoint` | `[lng, lat]` south-west corner |
+| `objectTypes` | Optional; subset of `MAP_GEO_OBJECT_TYPES` (default: all 17 map types) |
+| `skip` / `limit` | Offset pagination; default limit 10, max 100 |
+
+Additional filters vs list endpoint: `object_type ∈ MAP_GEO_OBJECT_TYPES`, latest `geo` update inside `box` (PostGIS `ST_Intersects`).
+
+Sort: `weight DESC NULLS LAST`, `object_id ASC`.
 
 ### Query (`GET .../favorites`)
 
@@ -48,9 +62,10 @@ Same as other user object lists: `Accept-Language` / `X-Locale`, optional `X-Vie
 
 ## Web client
 
-`apps/web` module `user-profile`: `fetchFavoritesTypes`, `fetchFavoritesObjects`; cache tags `userFavoritesTypes`, `userFavorites`.
+`apps/web` module `user-profile`: `fetchFavoritesTypes`, `fetchFavoritesObjects`, `fetchFavoritesMap`; cache tags `userFavoritesTypes`, `userFavorites`, `userFavoritesMap`.
 
 ## MCP
 
 - `get_user_favorites_types`
 - `get_user_favorites`
+- `post_user_favorites_map`

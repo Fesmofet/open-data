@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, maps]
-updated_at: 2026-06-10
+updated_at: 2026-06-17
 related:
   - docs/apps/web/spec/overview.md
 ---
@@ -64,6 +64,8 @@ Coordinate type is **`MapPosition`**: `readonly [latitude, longitude]`.
 
 Optional **`onMapClick`** on **`AppMap`** (Leaflet): fires with `[latitude, longitude]` when the user clicks the map — used by the object-edit geo picker.
 
+Optional **`onViewportChange`** on **`AppMap`** (Leaflet): fires on mount and after pan/zoom with a legacy-style bbox `{ topPoint: [lng, lat], bottomPoint: [lng, lat] }` — used by profile map reload/list.
+
 ### Tile layer (Leaflet)
 
 Optional props on **`AppMap`**:
@@ -74,7 +76,29 @@ Optional props on **`AppMap`**:
 
 ### Default marker icons (Leaflet)
 
-Bundlers often break Leaflet’s default marker images. The Leaflet provider sets **icon URLs from `leaflet/dist/images/*`** via `L.Icon.Default.mergeOptions`. If markers still break in a new bundler, verify PNG imports resolve to public URLs and adjust the merge options in `providers/leaflet/leaflet-map.tsx`.
+The default **`AppMarker`** variant uses the **Waivio orange teardrop pin** (legacy `SimpleMarker.js` SVG via `L.divIcon`, colors `#f87007` / white). Props:
+
+- `highlighted` — larger pin (list hover on profile map)
+- `dimmed` — 0.5 fill opacity (non-highlighted pins when another is hovered)
+
+The **`user-location`** variant remains a round accent dot (`map-user-location-marker`).
+
+Implementation: `components/waivio-map-pin.ts`, `providers/leaflet/leaflet-marker.tsx`.
+
+- `onClick` — optional Leaflet marker click handler (profile map highlight)
+- `children` — typically `AppPopup` for infowindows
+
+### MapFitBounds
+
+`MapFitBounds` fits the viewport when `positions` has at least two `[lat, lng]` pairs. Re-fits only when the positions key changes (avoids loops). Used by profile map after marker load. Implementation: `components/MapFitBounds.tsx`.
+
+### Popups (Leaflet)
+
+`AppPopup` supports `className`, `maxWidth`, and `minWidth`. Profile map uses `className="map-object-popup"` with styles in `map-leaflet-popup.css` for zero-padding infowindow cards.
+
+### Viewport changes
+
+`LeafletMapViewportHandler` emits `onViewportChange` on mount and after `moveend`/`zoomend`. Callback is ref-stable to avoid effect loops.
 
 ## Swapping the engine
 

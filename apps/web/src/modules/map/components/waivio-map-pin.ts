@@ -1,0 +1,34 @@
+/** Legacy Waivio map pin colors (`websites/constants/colors.js`). */
+export const WAIVIO_MAP_PIN_COLORS = {
+  body: '#f87007',
+  text: '#ffffff',
+} as const;
+
+export const WAIVIO_MAP_PIN_SIZE = {
+  width: 29,
+  height: 30,
+  highlightedWidth: 40,
+  highlightedHeight: 45,
+} as const;
+
+export type WaivioMapPinOptions = {
+  width?: number;
+  height?: number;
+  markerColor?: string;
+  markerText?: string;
+  /** Legacy non-promoted pins use 0.5 fill opacity. */
+  dimmed?: boolean;
+};
+
+/**
+ * Inline SVG for Leaflet `L.divIcon` (legacy `SimpleMarker.js`).
+ */
+export function waivioMapPinSvgHtml(options: WaivioMapPinOptions = {}): string {
+  const width = options.width ?? WAIVIO_MAP_PIN_SIZE.width;
+  const height = options.height ?? WAIVIO_MAP_PIN_SIZE.height;
+  const markerColor = options.markerColor ?? WAIVIO_MAP_PIN_COLORS.body;
+  const markerText = options.markerText ?? WAIVIO_MAP_PIN_COLORS.text;
+  const fillOpacity = options.dimmed ? '0.5' : '1';
+
+  return `<svg width="${width}" height="${height}" viewBox="0 0 54 74" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M16.155 2.8043L16.1702 2.79707C19.4194 1.25484 24.444 0.709236 29.5015 1.1449C34.5645 1.58106 39.3074 2.97007 42.0413 4.97785C50.4705 11.2308 54.3128 17.6652 53.9801 25.8505C53.6397 34.2299 48.9286 44.7072 39.3855 58.9671C36.2978 63.5282 33.9096 66.8534 31.8711 69.0376C29.7949 71.2621 28.3534 72 27.1905 72C26.0309 72 24.6009 71.2655 22.5486 69.043C20.5321 66.8596 18.1768 63.5346 15.1328 58.9719L15.1285 58.9655C10.151 51.5937 6.39496 45.141 3.8664 39.758C1.32731 34.3526 0.0860976 30.1496 0 27.2263C0.0086184 17.2532 6.64362 7.04729 16.1395 2.81116L16.155 2.8043Z" fill="white"/><path d="M16.5751 2.78801L16.5869 2.78255L16.5985 2.77679L16.6136 2.76932C19.6305 1.27686 24.4451 0.701074 29.4121 1.14702C34.3877 1.59376 38.9124 3.01124 41.4317 4.93867C49.6915 11.3255 53.2971 17.7512 52.9809 25.8616C52.6517 34.3065 48.0764 45.0299 38.5456 59.8736C35.454 64.6334 33.1053 68.0351 31.1262 70.2453C29.08 72.5304 27.8953 73 27.1905 73C26.4913 73 25.3184 72.5363 23.2971 70.2549L23.297 70.2549C21.3404 68.0467 19.0249 64.6468 15.9774 59.8862L15.9757 59.8834L15.975 59.8823L15.9718 59.8772L15.9678 59.871C11.0079 52.215 7.27959 45.5352 4.77809 39.9848C2.25972 34.397 1.08399 30.1669 1.00002 27.3206C1.01458 17.3112 7.42961 7.04017 16.5611 2.79447L16.5751 2.78801Z" fill="${markerColor}" fill-opacity="${fillOpacity}" stroke="${markerText}" stroke-width="2"/><circle cx="27" cy="26" r="15" fill="${markerText}" fill-opacity="0.7"/></svg>`;
+}

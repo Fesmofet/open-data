@@ -37,6 +37,8 @@ export type AdministrativeHeartButtonProps = {
   initialActive: boolean;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  /** Called after a successful authority broadcast and cache revalidation. */
+  onAuthorityChange?: () => void;
 };
 
 export function AdministrativeHeartButton({
@@ -44,6 +46,7 @@ export function AdministrativeHeartButton({
   initialActive,
   viewerUsername,
   onRequireLogin,
+  onAuthorityChange,
 }: AdministrativeHeartButtonProps) {
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -85,6 +88,7 @@ export function AdministrativeHeartButton({
           await revalidateObjectAfterBroadcast(objectId);
           await revalidateUserSocialAfterBroadcast(account);
         }).finally(() => {
+          onAuthorityChange?.();
           setPending(false);
         });
       });
@@ -92,7 +96,7 @@ export function AdministrativeHeartButton({
       setActive(previous);
       setPending(false);
     }
-  }, [active, objectId, odlCustomJsonId, onRequireLogin, pending, router, viewerUsername]);
+  }, [active, objectId, odlCustomJsonId, onAuthorityChange, onRequireLogin, pending, router, viewerUsername]);
 
   const hint = active ? t('feed_linked_object_admin_hint') : t('object_detail_favorites_add');
   const canInteract = viewerUsername != null && viewerUsername.trim().length > 0;

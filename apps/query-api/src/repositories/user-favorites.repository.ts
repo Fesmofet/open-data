@@ -1,5 +1,5 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { FAVORITES_OBJECT_TYPES } from '@opden-data-layer/core';
+import { FAVORITES_OBJECT_TYPES, MAP_GEO_OBJECT_TYPES } from '@opden-data-layer/core';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
@@ -11,11 +11,32 @@ export type FavoritesScopeParams = {
   shopDeselectObjectIds: readonly string[];
 };
 
+/** Legacy map bbox: `[longitude, latitude]` pairs. */
+export type MapBoundingBox = {
+  topPoint: [number, number];
+  bottomPoint: [number, number];
+};
+
 function favoritesTypeListSql() {
   return sql.join(
     FAVORITES_OBJECT_TYPES.map((t) => sql`${t}`),
     sql`, `,
   );
+}
+
+function mapGeoTypeListSql(types: readonly string[]) {
+  return sql.join(
+    types.map((t) => sql`${t}`),
+    sql`, `,
+  );
+}
+
+function resolveMapObjectTypes(requestTypes?: readonly string[]): readonly string[] {
+  const allowed = new Set<string>(MAP_GEO_OBJECT_TYPES);
+  if (requestTypes == null || requestTypes.length === 0) {
+    return MAP_GEO_OBJECT_TYPES;
+  }
+  return requestTypes.filter((t) => allowed.has(t));
 }
 
 function postLinkedPredicate(
@@ -151,6 +172,63 @@ export class UserFavoritesRepository {
     } catch (error) {
       this.logger.error(
         `findTypesByScope failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return [];
+    }
+  }
+
+  async findMapObjectIdsByScope(
+    scope: FavoritesScopeParams,
+    box: MapBoundingBox,
+    objectTypes: readonly string[] | undefined,
+    skip: number,
+    limit: number,
+  ): Promise<string[]> {
+    const account = scope.account.trim();
+    if (account.length === 0 || limit <= 0) {
+      return [];
+    }
+
+    const mapTypes = resolveMapObjectTypes(objectTypes);
+    if (mapTypes.length === 0) {
+      return [];
+    }
+
+    const [swLng, swLat] = box.bottomPoint;
+    const [neLng, neLat] = box.topPoint;
+
+    try {
+      const cte = this.scopedObjectsCte(scope);
+      const rows = await sql<{ object_id: string }>`
+        ${cte},
+        geo_objects AS (
+          SELECT d.object_id, d.weight
+          FROM distinct_objects d
+          INNER JOIN LATERAL (
+            SELECT ou.value_geo
+            FROM object_updates ou
+            WHERE ou.object_id = d.object_id
+              AND ou.update_type = 'geo'
+              AND ou.value_geo IS NOT NULL
+            ORDER BY ou.rank_score DESC NULLS LAST, ou.created_at_unix DESC
+            LIMIT 1
+          ) geo ON TRUE
+          WHERE d.object_type IN (${mapGeoTypeListSql(mapTypes)})
+            AND ST_Intersects(
+              geo.value_geo::geometry,
+              ST_MakeEnvelope(${swLng}, ${swLat}, ${neLng}, ${neLat}, 4326)
+            )
+        )
+        SELECT object_id
+        FROM geo_objects
+        ORDER BY weight DESC NULLS LAST, object_id ASC
+        OFFSET ${skip}
+        LIMIT ${limit}
+      `.execute(this.db);
+      return rows.rows.map((r) => r.object_id);
+    } catch (error) {
+      this.logger.error(
+        `findMapObjectIdsByScope failed: ${error instanceof Error ? error.message : String(error)}`,
       );
       return [];
     }

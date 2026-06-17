@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { userFavoritesMapBodySchema } from '../domain/favorites/post-user-favorites-map.schema';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 import { accountNameParam, paginatedProjectedObjectsSchema } from './users-social.openapi';
@@ -19,6 +20,14 @@ const userFavoritesTypesResponseSchema = registry.register(
     types: z
       .array(z.string())
       .openapi({ description: 'Object types present in favorites, sorted by count descending.' }),
+  }),
+);
+
+const userFavoritesMapResponseSchema = registry.register(
+  'UserFavoritesMapResponse',
+  z.object({
+    items: z.array(projectedObjectOpenApiSchema),
+    hasMore: z.boolean(),
   }),
 );
 
@@ -79,4 +88,33 @@ registry.registerPath({
   },
 });
 
-export { userFavoritesTypesResponseSchema };
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/favorites/map',
+  summary: 'Geo-filtered user favorites for profile map',
+  description:
+    'Favorites scope intersected with `MAP_GEO_OBJECT_TYPES` and objects whose latest `geo` update falls inside `box`. Returns projected objects with `fields.geo` when available. Unknown users get `{ items: [], hasMore: false }`.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'accept-language': favoritesLocaleHeader,
+      'x-locale': favoritesLocaleHeader,
+      'x-viewer': favoritesViewerHeader,
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: userFavoritesMapBodySchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Map markers or sidebar list page.',
+      content: { 'application/json': { schema: userFavoritesMapResponseSchema } },
+    },
+  },
+});
+
+export { userFavoritesTypesResponseSchema, userFavoritesMapResponseSchema };

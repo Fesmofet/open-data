@@ -56,7 +56,10 @@ import {
 import {
   GetUserFavoritesEndpoint,
   GetUserFavoritesTypesEndpoint,
+  PostUserFavoritesMapEndpoint,
+  userFavoritesMapBodySchema,
   userFavoritesQuerySchema,
+  type UserFavoritesMapBody,
   type UserFavoritesQuery,
   type UserFavoritesTypesResponse,
 } from '../domain/favorites';
@@ -76,6 +79,7 @@ export class UsersController {
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
     private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
     private readonly getUserFavorites: GetUserFavoritesEndpoint,
+    private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -170,6 +174,24 @@ export class UsersController {
   @Get(':name/favorites/types')
   async getFavoritesTypes(@Param('name') name: string): Promise<UserFavoritesTypesResponse> {
     return this.getUserFavoritesTypes.execute(name);
+  }
+
+  @Post(':name/favorites/map')
+  async postFavoritesMap(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(userFavoritesMapBodySchema)) body: UserFavoritesMapBody,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ) {
+    const result = await this.postUserFavoritesMap.execute(
+      name,
+      body,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    return result ?? { items: [], hasMore: false };
   }
 
   @Get(':name/favorites')

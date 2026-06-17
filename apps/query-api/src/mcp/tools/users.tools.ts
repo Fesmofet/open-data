@@ -7,6 +7,7 @@ import {
   userFollowingObjectsQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
+import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
@@ -295,6 +296,28 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         ctx.viewerAccount,
       );
       return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'post_user_favorites_map',
+    {
+      description: catalogDescription('post_user_favorites_map'),
+      inputSchema: withMcpLocaleContext(
+        userFavoritesMapBodySchema.extend(accountField),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { account, box, objectTypes, skip, limit } = args;
+      const result = await deps.postUserFavoritesMap.execute(
+        account,
+        toUserFavoritesMapBody({ box, objectTypes, skip, limit }),
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      return jsonToolResult(result ?? { items: [], hasMore: false });
     },
   );
 

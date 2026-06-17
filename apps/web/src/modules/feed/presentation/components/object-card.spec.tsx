@@ -103,4 +103,40 @@ describe('ObjectCard navigation', () => {
     expect(screen.getByRole('button', { name: 'View object: Spicy Agedashi Tofu' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Spicy Agedashi Tofu' })).toBeInTheDocument();
   });
+
+  it('mapSidebar layout shows a single rating row', () => {
+    const { container } = render(
+      <ul>
+        <ObjectCard
+          object={{
+            ...sampleObject,
+            fields: {
+              ...sampleObject.fields,
+              description: 'a'.repeat(200),
+              aggregateRatingAspects: [
+                {
+                  dimension: 'Overall',
+                  update_id: 'u1',
+                  averageRating: 4000,
+                  userRating: null,
+                  totalVoters: 2,
+                },
+                {
+                  dimension: 'Service',
+                  update_id: 'u2',
+                  averageRating: 3000,
+                  userRating: null,
+                  totalVoters: 1,
+                },
+              ],
+            },
+          }}
+          layout="mapSidebar"
+        />
+      </ul>,
+    );
+
+    expect(container.querySelectorAll('[data-testid="star-rating"]')).toHaveLength(1);
+    expect(screen.queryByText('Service')).not.toBeInTheDocument();
+  });
 });

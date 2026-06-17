@@ -3,6 +3,12 @@ import type { ComponentType, CSSProperties, ReactNode } from 'react';
 /** WGS84 coordinate as latitude, longitude (matches common map SDKs). */
 export type MapPosition = readonly [latitude: number, longitude: number];
 
+/** Legacy bbox for map search APIs: `[longitude, latitude]` corners. */
+export type MapBoundingBox = {
+  topPoint: readonly [longitude: number, latitude: number];
+  bottomPoint: readonly [longitude: number, latitude: number];
+};
+
 /** Leaflet zoom control customization (ignored by engines that don't support it yet). */
 export type AppMapZoomUi =
   | {
@@ -46,6 +52,8 @@ export interface AppMapProps {
    * Position is `[latitude, longitude]`.
    */
   onMapClick?: (position: MapPosition) => void;
+  /** Fires on initial mount and after pan/zoom (Leaflet). */
+  onViewportChange?: (box: MapBoundingBox) => void;
 }
 
 /** `default` — standard pin; `user-location` — round dot for the viewer's position. */
@@ -55,14 +63,26 @@ export interface AppMarkerProps {
   position: MapPosition;
   children?: ReactNode;
   /**
-   * Leaflet: `default` uses the standard pin; `user-location` uses a round accent dot.
+   * Leaflet: `default` uses the Waivio orange pin; `user-location` uses a round accent dot.
    * @default 'default'
    */
   variant?: AppMarkerVariant;
+  /** Enlarge pin (legacy list hover). */
+  highlighted?: boolean;
+  /** Lower fill opacity (legacy non-promoted markers). */
+  dimmed?: boolean;
+  /** Leaflet: fired when the marker is clicked. */
+  onClick?: () => void;
 }
 
 export interface AppPopupProps {
   children?: ReactNode;
+  /** Leaflet: class on the `.leaflet-popup` root (e.g. `map-object-popup`). */
+  className?: string;
+  /** Leaflet popup content max width in pixels. */
+  maxWidth?: number;
+  /** Leaflet popup content min width in pixels. */
+  minWidth?: number;
 }
 
 /**

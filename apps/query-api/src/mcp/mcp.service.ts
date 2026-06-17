@@ -45,6 +45,7 @@ import {
 import {
   GetUserFavoritesEndpoint,
   GetUserFavoritesTypesEndpoint,
+  PostUserFavoritesMapEndpoint,
 } from '../domain/favorites';
 import { GetUserProfileEndpoint } from '../domain/users';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
@@ -83,6 +84,7 @@ export class McpService {
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
     private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
     private readonly getUserFavorites: GetUserFavoritesEndpoint,
+    private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
@@ -120,6 +122,7 @@ export class McpService {
       getUserFollowingObjects: this.getUserFollowingObjects,
       getUserFavoritesTypes: this.getUserFavoritesTypes,
       getUserFavorites: this.getUserFavorites,
+      postUserFavoritesMap: this.postUserFavoritesMap,
       getUserCategories: this.getUserCategories,
       getUserShopObjects: this.getUserShopObjects,
       getUserShopSections: this.getUserShopSections,

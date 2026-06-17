@@ -1,12 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useMap } from 'react-leaflet';
 
 import type { MapPosition } from '../types';
 
 const FIT_BOUNDS_PADDING_PX = 48;
+
+function positionsKey(positions: readonly MapPosition[]): string {
+  return positions.map(([lat, lng]) => `${lat},${lng}`).join('|');
+}
 
 export type MapFitBoundsProps = {
   positions: readonly MapPosition[];
@@ -18,11 +22,17 @@ export type MapFitBoundsProps = {
  */
 export function MapFitBounds({ positions }: MapFitBoundsProps): null {
   const map = useMap();
+  const lastFittedKeyRef = useRef('');
 
   useEffect(() => {
     if (positions.length < 2) {
       return;
     }
+    const key = positionsKey(positions);
+    if (key === lastFittedKeyRef.current) {
+      return;
+    }
+    lastFittedKeyRef.current = key;
     const latLngBounds = positions.map(
       ([lat, lng]) => [lat, lng] as [number, number],
     );

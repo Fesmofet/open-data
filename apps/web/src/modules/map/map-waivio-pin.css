@@ -1,0 +1,8 @@
+.map-waivio-pin-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.map-waivio-pin-icon svg {
+  display: block;
+}
