@@ -20,6 +20,8 @@ related:
 - `GET /query/v1/users/:name/shop-sections` — grouped preview rows (`sectionLimit` categories per page, 3 objects per category) for intermediate category nodes; cursor is the last category `name` from the previous page (same ordering as `GET .../categories`). Optional `tags[]` and `rating` omit categories with zero matches (API/MCP); the web profile UI uses `shop-objects` instead when filters are active.
 - `GET /query/v1/users/:name/shop/filters` — tag category facets (counts scoped to user shop membership and current `categoryPath`) plus static rating thresholds `[10, 8, 6]`. Optional `tags[]` and optional `rating` narrow facet counts (AND / minimum threshold).
 
+**Rating filter SQL:** `rating=6|8|10` maps to ODL `rank_score >= threshold × 1000` on any `aggregateRating` update. Uses persisted `object_updates.rank_score`, or mean `rank_votes.rank` when score is null (same fallback as object projection). Legacy Mongo `average_rating_weight` (0–10) is migrated to `rank_score` during import.
+
 **Scope:** Same membership as `object_categories_related` user scopes (`object_authority` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
 
 **Projection:** `ObjectViewService` with update types `name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`; then `ObjectProjectionService.batchProject`.

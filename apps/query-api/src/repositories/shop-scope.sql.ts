@@ -67,8 +67,14 @@ export function shopRatingExistsFragment(
     SELECT 1 FROM object_updates ou
     WHERE ou.object_id = ${objectIdColumn}
       AND ou.update_type = 'aggregateRating'
-      AND ou.status = 'active'
-      AND ou.rank_score >= ${minRank}
+      AND COALESCE(
+        ou.rank_score,
+        (
+          SELECT ROUND(AVG(rv.rank))::int
+          FROM rank_votes rv
+          WHERE rv.update_id = ou.update_id
+        )
+      ) >= ${minRank}
   )`;
 }
 
