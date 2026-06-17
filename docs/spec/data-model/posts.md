@@ -25,6 +25,7 @@ This schema normalizes the legacy Mongo `PostSchema` (embedded arrays and denorm
 | **posts** | One row per Hive post. Primary key `(author, permlink)`. Scalar fields + `beneficiaries` as JSONB + `created_unix` for sorting. |
 | **post_active_votes** | One row per active vote on a post. FK to `posts`. |
 | **post_objects** | Many-to-many: post ↔ `objects_core`. `object_type` denormalized for filters without JOIN. |
+| **post_object_related_images** | Virtual Related gallery: one HTTPS image URL per object per post (from `json_metadata.image`). See [post-object-related-images.md](post-object-related-images.md). |
 | **post_reblogged_users** | Who reblogged which post; `reblogged_at_unix` drives chronological “reblog in my feed” ordering. |
 | **post_languages** | BCP 47 tags per post (multi-value); filter news streams by language. |
 | **post_links** | URLs extracted for indexed lookup. |

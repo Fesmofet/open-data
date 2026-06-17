@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import type { Kysely } from 'kysely';
 import {
   type NewPostObject,
   extractObjectIdsFromCommentBody,
@@ -11,10 +12,13 @@ import { PostsRepository } from '../../repositories/posts.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
 import type { CommentOperationPayload } from './hive-comment.schema';
 import { PostUpsertService } from './post-upsert.service';
+import { PostRelatedImagesSyncService } from './post-related-images-sync.service';
 import {
   POST_OBJECT_CHANGED_EVENT,
   PostObjectChangedEvent,
 } from '../odl-parser/post-object-changed.event';
+import type { Database } from '../../database';
+import { KYSELY } from '../../database';
 
 /**
  * Binds `objects_core` objects to a **root post** when a user mentions them in a **comment** body
@@ -30,6 +34,8 @@ export class CommentPostObjectBindService {
     private readonly threadsRepository: ThreadsRepository,
     private readonly postUpsert: PostUpsertService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly relatedImagesSync: PostRelatedImagesSyncService,
+    @Inject(KYSELY) private readonly db: Kysely<Database>,
   ) {}
 
   async tryBindObjectsFromComment(
@@ -101,7 +107,16 @@ export class CommentPostObjectBindService {
       object_type: types.get(object_id) ?? null,
     }));
 
-    await this.postsRepository.appendPostObjects(rows);
+    await this.db.transaction().execute(async (trx) => {
+      await this.postsRepository.appendPostObjects(rows, trx);
+      await this.relatedImagesSync.appendForNewBindings(
+        parentAuthor,
+        parentPermlink,
+        post.json_metadata ?? '',
+        rows,
+        trx,
+      );
+    });
 
     this.eventEmitter.emit(
       POST_OBJECT_CHANGED_EVENT,

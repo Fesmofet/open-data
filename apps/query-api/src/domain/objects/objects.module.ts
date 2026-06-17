@@ -8,6 +8,11 @@ import { GetNestedObjectsEndpoint } from './get-nested-objects.endpoint';
 import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
 import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
 import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
+import {
+  GetObjectRelatedAlbumEndpoint,
+  GetObjectRelatedAlbumPreviewEndpoint,
+  ObjectRelatedAlbumQuerySupport,
+} from './get-object-related-album.endpoint';
 import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
 
 @Module({
@@ -23,6 +28,9 @@ import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
     GetObjectFollowersEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
+    ObjectRelatedAlbumQuerySupport,
+    GetObjectRelatedAlbumPreviewEndpoint,
+    GetObjectRelatedAlbumEndpoint,
     CheckObjectExistsEndpoint,
   ],
   exports: [
@@ -31,6 +39,9 @@ import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
     GetObjectFollowersEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
+    ObjectRelatedAlbumQuerySupport,
+    GetObjectRelatedAlbumPreviewEndpoint,
+    GetObjectRelatedAlbumEndpoint,
     CheckObjectExistsEndpoint,
   ],
 })

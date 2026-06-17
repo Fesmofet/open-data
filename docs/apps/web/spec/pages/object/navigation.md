@@ -129,7 +129,7 @@ Proxy rewrites to `?tab=description`. Center column uses `ObjectDescriptionBody`
 
 Left rail **Description** button links here when description text or gallery preview exists. Gallery block shows `ObjectGalleryCarousel` (looped prev/next) from `previewGallery` **excluding avatar-only rows** — hidden when every preview photo is the object avatar.
 
-**TODO:** related album photos from posts (legacy separate API — not in v1).
+**Known gap:** legacy merged Related post photos into description and sidebar; ODL serves Related only on the [Gallery tab](routes/gallery.md). API: [object-related-album.md](../../../../../query-api/spec/object-related-album.md).
 
 ---
 

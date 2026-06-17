@@ -23,6 +23,7 @@ import type {
   NewPostLink,
   NewPostMention,
   NewPostObject,
+  NewPostObjectRelatedImage,
   NewPostRebloggedUser,
   OdlDatabase,
 } from '../../../libs/core/src/db';
@@ -30,6 +31,11 @@ import {
   bindPostObjectsToPost,
   parsePostObjectsForInsert,
 } from '../../../libs/core/src/post-objects';
+import {
+  buildRelatedImageRows,
+  extractPostImageUrls,
+  isObjectTypeEligibleForRelatedAlbum,
+} from '../../../libs/core/src/post-related-images';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
@@ -61,6 +67,10 @@ interface MigrationStats {
   languageRowsBuffered: number;
   linkRowsBuffered: number;
   mentionRowsBuffered: number;
+  relatedImageRowsBuffered: number;
+  relatedImageRowsSkippedNoFk: number;
+  relatedImageRowsSkippedNoImages: number;
+  relatedImageRowsSkippedIneligibleType: number;
 }
 
 function fail(message: string): never {
@@ -218,6 +228,8 @@ class MongoPostsMigrator {
 
   private mentionBuffer: NewPostMention[] = [];
 
+  private relatedImageBuffer: NewPostObjectRelatedImage[] = [];
+
   readonly stats: MigrationStats = {
     postsSeen: 0,
     postsSkippedMissingPk: 0,
@@ -231,6 +243,10 @@ class MongoPostsMigrator {
     languageRowsBuffered: 0,
     linkRowsBuffered: 0,
     mentionRowsBuffered: 0,
+    relatedImageRowsBuffered: 0,
+    relatedImageRowsSkippedNoFk: 0,
+    relatedImageRowsSkippedNoImages: 0,
+    relatedImageRowsSkippedIneligibleType: 0,
   };
 
   constructor(connectionString: string) {
@@ -368,11 +384,40 @@ class MongoPostsMigrator {
       .execute();
   }
 
+  private async flushRelatedImages(): Promise<void> {
+    if (this.relatedImageBuffer.length === 0) {
+      return;
+    }
+    const chunk = this.relatedImageBuffer;
+    this.relatedImageBuffer = [];
+    const ids = chunk.map((r) => r.object_id);
+    const existing = await this.resolveExistingObjectIds(ids);
+    const filtered: NewPostObjectRelatedImage[] = [];
+    for (const row of chunk) {
+      if (existing.has(row.object_id)) {
+        filtered.push(row);
+      } else {
+        this.stats.relatedImageRowsSkippedNoFk += 1;
+      }
+    }
+    if (filtered.length === 0) {
+      return;
+    }
+    await this.db
+      .insertInto('post_object_related_images')
+      .values(filtered)
+      .onConflict((oc) =>
+        oc.columns(['object_id', 'author', 'permlink', 'image_url']).doNothing(),
+      )
+      .execute();
+  }
+
   /** FK-safe order: posts → children. */
   async flushAll(): Promise<void> {
     await this.flushPosts();
     await this.flushVotes();
     await this.flushObjects();
+    await this.flushRelatedImages();
     await this.flushReblogs();
     await this.flushLanguages();
     await this.flushLinks();
@@ -391,17 +436,20 @@ class MongoPostsMigrator {
       await this.flushPosts();
       await this.flushVotes();
       await this.flushObjects();
+      await this.flushRelatedImages();
     }
     if (this.reblogBuffer.length >= BATCH_SIZE) {
       await this.flushPosts();
       await this.flushVotes();
       await this.flushObjects();
+      await this.flushRelatedImages();
       await this.flushReblogs();
     }
     if (this.languageBuffer.length >= BATCH_SIZE) {
       await this.flushPosts();
       await this.flushVotes();
       await this.flushObjects();
+      await this.flushRelatedImages();
       await this.flushReblogs();
       await this.flushLanguages();
     }
@@ -409,6 +457,7 @@ class MongoPostsMigrator {
       await this.flushPosts();
       await this.flushVotes();
       await this.flushObjects();
+      await this.flushRelatedImages();
       await this.flushReblogs();
       await this.flushLanguages();
       await this.flushLinks();
@@ -417,10 +466,17 @@ class MongoPostsMigrator {
       await this.flushPosts();
       await this.flushVotes();
       await this.flushObjects();
+      await this.flushRelatedImages();
       await this.flushReblogs();
       await this.flushLanguages();
       await this.flushLinks();
       await this.flushMentions();
+    }
+    if (this.relatedImageBuffer.length >= BATCH_SIZE) {
+      await this.flushPosts();
+      await this.flushVotes();
+      await this.flushObjects();
+      await this.flushRelatedImages();
     }
   }
 
@@ -457,6 +513,41 @@ class MongoPostsMigrator {
   private pushMention(row: NewPostMention): void {
     this.mentionBuffer.push(row);
     this.stats.mentionRowsBuffered += 1;
+  }
+
+  private pushRelatedImage(row: NewPostObjectRelatedImage): void {
+    this.relatedImageBuffer.push(row);
+    this.stats.relatedImageRowsBuffered += 1;
+  }
+
+  private pushRelatedImagesForPost(
+    author: string,
+    permlink: string,
+    jsonMetadata: string,
+    objectRows: NewPostObject[],
+  ): void {
+    const imageUrls = extractPostImageUrls(jsonMetadata);
+    if (imageUrls.length === 0) {
+      this.stats.relatedImageRowsSkippedNoImages += objectRows.length;
+      return;
+    }
+    const rows = buildRelatedImageRows(
+      objectRows.map((row) => ({
+        object_id: row.object_id,
+        object_type: row.object_type ?? null,
+      })),
+      author,
+      permlink,
+      imageUrls,
+    );
+    for (const row of objectRows) {
+      if (!isObjectTypeEligibleForRelatedAlbum(row.object_type)) {
+        this.stats.relatedImageRowsSkippedIneligibleType += 1;
+      }
+    }
+    for (const row of rows) {
+      this.pushRelatedImage(row);
+    }
   }
 
   processPost(doc: MongoPost): void {
@@ -569,12 +660,21 @@ class MongoPostsMigrator {
       author,
       permlink,
     );
+    const enrichedObjects: NewPostObject[] = [];
     for (const row of objectRows) {
-      this.pushObject({
+      const enriched = {
         ...row,
         object_type: row.object_type ?? typeById.get(row.object_id) ?? null,
-      });
+      };
+      enrichedObjects.push(enriched);
+      this.pushObject(enriched);
     }
+
+    const jsonMetadata =
+      typeof doc.json_metadata === 'string'
+        ? doc.json_metadata
+        : JSON.stringify(doc.json_metadata ?? {});
+    this.pushRelatedImagesForPost(author, permlink, jsonMetadata, enrichedObjects);
 
     for (const account of doc.reblogged_users ?? []) {
       const acc = account?.trim();
@@ -627,6 +727,7 @@ async function dropPostBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
   await sql`DROP INDEX IF EXISTS idx_post_reblogged_users_account_reblogged_at`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_post_objects_object_id`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_post_objects_object_type`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_object_related_images_object_id`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_post_active_votes_voter`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_posts_author_created_unix`.execute(db);
   console.log('Indexes dropped.');
@@ -638,6 +739,7 @@ async function recreatePostBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
   await sql`CREATE INDEX idx_post_active_votes_voter ON post_active_votes (voter)`.execute(db);
   await sql`CREATE INDEX idx_post_objects_object_id ON post_objects (object_id)`.execute(db);
   await sql`CREATE INDEX idx_post_objects_object_type ON post_objects (object_type) WHERE object_type IS NOT NULL`.execute(db);
+  await sql`CREATE INDEX idx_post_object_related_images_object_id ON post_object_related_images (object_id)`.execute(db);
   await sql`CREATE INDEX idx_post_reblogged_users_account_reblogged_at ON post_reblogged_users (account, reblogged_at_unix DESC)`.execute(db);
   await sql`CREATE INDEX idx_post_languages_language ON post_languages (language)`.execute(db);
   await sql`CREATE INDEX idx_post_links_url ON post_links (url)`.execute(db);

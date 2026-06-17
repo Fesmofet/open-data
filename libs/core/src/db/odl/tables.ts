@@ -47,6 +47,7 @@ export interface OdlDatabase {
   posts: PostsTable;
   post_active_votes: PostActiveVotesTable;
   post_objects: PostObjectsTable;
+  post_object_related_images: PostObjectRelatedImagesTable;
   post_reblogged_users: PostRebloggedUsersTable;
   post_languages: PostLanguagesTable;
   post_links: PostLinksTable;
@@ -499,6 +500,23 @@ export interface PostObjectsTable {
 export type PostObject = Selectable<PostObjectsTable>;
 export type NewPostObject = Insertable<PostObjectsTable>;
 export type PostObjectUpdate = Updateable<PostObjectsTable>;
+
+// ---------------------------------------------------------------------------
+// post_object_related_images
+// ---------------------------------------------------------------------------
+
+export interface PostObjectRelatedImagesTable {
+  object_id: string;
+  author: string;
+  permlink: string;
+  image_url: string;
+  sort_ord: number;
+}
+
+export type PostObjectRelatedImage = Selectable<PostObjectRelatedImagesTable>;
+export type NewPostObjectRelatedImage = Insertable<PostObjectRelatedImagesTable>;
+export type PostObjectRelatedImageUpdate =
+  Updateable<PostObjectRelatedImagesTable>;
 
 // ---------------------------------------------------------------------------
 // post_reblogged_users

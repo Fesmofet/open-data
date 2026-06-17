@@ -62,6 +62,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `resolve_nested_objects` | `POST /query/v1/objects/resolve-nested` | [objects-resolve.md](objects-resolve.md) |
 | `check_object_exists` | `GET /query/v1/objects/:id/exists` | — |
 | `get_object_related` | `GET .../related` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
+| `get_object_related_album_preview` | `GET .../gallery/related/preview` | [object-related-album.md](object-related-album.md) |
+| `get_object_related_album` | `GET .../gallery/related` | [object-related-album.md](object-related-album.md) |
 | `get_object_similar` | `GET .../similar` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
 | `get_object_add_on` | `GET .../add-on` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
 | `get_object_followers` | `GET .../followers` | [user-social-lists.md](user-social-lists.md) |

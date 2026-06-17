@@ -71,6 +71,9 @@ export type ProjectedGalleryPhotoView = {
   rankScore: number | null;
   isAvatar: boolean;
   update_id?: string;
+  /** Virtual Related album: source Hive post author. */
+  postAuthor?: string;
+  postPermlink?: string;
 };
 
 /** Grouped gallery album (legacy `galleryAlbum` + items). */

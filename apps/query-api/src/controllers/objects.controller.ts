@@ -15,9 +15,17 @@ import {
   GetObjectFollowersEndpoint,
   GetObjectAuthorityEndpoint,
   GetObjectRefListEndpoint,
+  GetObjectRelatedAlbumEndpoint,
+  GetObjectRelatedAlbumPreviewEndpoint,
+  relatedAlbumListQuerySchema,
+  relatedAlbumPreviewQuerySchema,
   objectRefListQuerySchema,
   resolveObjectBodySchema,
   resolveNestedObjectsBodySchema,
+  type RelatedAlbumListQuery,
+  type RelatedAlbumListResponseDto,
+  type RelatedAlbumPreviewQuery,
+  type RelatedAlbumPreviewResponseDto,
   type ProjectedObjectWithCounts,
   type ResolveObjectBody,
   type ResolveNestedObjectsBody,
@@ -54,6 +62,8 @@ export class ObjectsController {
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
     private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
+    private readonly getObjectRelatedAlbumPreviewEndpoint: GetObjectRelatedAlbumPreviewEndpoint,
+    private readonly getObjectRelatedAlbumEndpoint: GetObjectRelatedAlbumEndpoint,
     private readonly checkObjectExists: CheckObjectExistsEndpoint,
   ) {}
 
@@ -64,6 +74,47 @@ export class ObjectsController {
     const objectId = decodeURIComponent(rawObjectId);
     const exists = await this.checkObjectExists.execute(objectId);
     return { exists };
+  }
+
+  @Get(':objectId/gallery/related/preview')
+  async getObjectRelatedAlbumPreview(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(relatedAlbumPreviewQuerySchema))
+    query: RelatedAlbumPreviewQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+  ): Promise<RelatedAlbumPreviewResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectRelatedAlbumPreviewEndpoint.execute(
+      decodedId,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/gallery/related')
+  async getObjectRelatedAlbumList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(relatedAlbumListQuerySchema)) query: RelatedAlbumListQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+  ): Promise<RelatedAlbumListResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectRelatedAlbumEndpoint.execute(
+      decodedId,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
   }
 
   @Get(':objectId/related')

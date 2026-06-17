@@ -4,6 +4,8 @@ export * from './get-nested-objects.endpoint';
 export * from './get-object-followers.endpoint';
 export * from './get-object-authority.endpoint';
 export * from './get-object-ref-list.endpoint';
+export * from './get-object-related-album.endpoint';
+export * from './schemas/related-album.schema';
 export * from './schemas/object-ref-list.schema';
 export * from './objects.module';
 export * from './projected-object-with-counts.types';

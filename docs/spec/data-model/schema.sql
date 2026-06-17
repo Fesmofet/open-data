@@ -439,6 +439,22 @@ CREATE TABLE post_mentions (
 CREATE INDEX idx_post_mentions_account ON post_mentions (account);
 
 -- ---------------------------------------------------------------------------
+-- post_object_related_images (virtual Related gallery from post json_metadata.image)
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_object_related_images (
+  object_id   TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  author      TEXT NOT NULL,
+  permlink    TEXT NOT NULL,
+  image_url   TEXT NOT NULL,
+  sort_ord    SMALLINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (object_id, author, permlink, image_url),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_object_related_images_object_id
+  ON post_object_related_images (object_id);
+
+-- ---------------------------------------------------------------------------
 -- threads (Leo / Ecency thread-style Hive comments)
 -- ---------------------------------------------------------------------------
 CREATE TABLE threads (

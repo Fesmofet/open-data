@@ -31,6 +31,9 @@ import {
 import { ObjectCenterBreadcrumbs } from './object-center-breadcrumbs';
 import { ObjectFeedSubNav } from './object-feed-sub-nav';
 import { ObjectGalleryTabContent } from './object-gallery-tab-content';
+import { ObjectRelatedAlbumSection } from './object-related-album-section';
+import { RELATED_ALBUM_NAME } from '@opden-data-layer/core/post-related-images';
+import type { RelatedAlbumListView, RelatedAlbumPreviewView } from '../../domain/related-album.types';
 import { ObjectListContent } from './object-list-content';
 import { ObjectNestedPageBody } from './object-nested-page-body';
 import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
@@ -161,6 +164,9 @@ export type ObjectPrimaryContentProps = {
   updateTypeCounts?: Record<string, number>;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  objectTypeKey?: string;
+  relatedAlbumPreview?: RelatedAlbumPreviewView | null;
+  relatedAlbumInitialPage?: RelatedAlbumListView | null;
 };
 
 export function ObjectPrimaryContent({
@@ -194,6 +200,9 @@ export function ObjectPrimaryContent({
   updateTypeCounts,
   viewerUsername,
   onRequireLogin,
+  objectTypeKey = '',
+  relatedAlbumPreview = null,
+  relatedAlbumInitialPage = null,
 }: ObjectPrimaryContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -564,6 +573,19 @@ export function ObjectPrimaryContent({
     }
 
     if (activePrimarySegment === 'gallery') {
+      if (activeGalleryAlbum === RELATED_ALBUM_NAME) {
+        return (
+          <FeedColumn>
+            <ObjectRelatedAlbumSection
+              objectId={objectId}
+              initialPage={relatedAlbumInitialPage}
+              onBackToAlbums={onBackToGalleryAlbums ?? (() => undefined)}
+              onOpenPhoto={onOpenGalleryPhoto}
+            />
+          </FeedColumn>
+        );
+      }
+
       return (
         <FeedColumn>
           <ObjectGalleryTabContent
@@ -579,6 +601,8 @@ export function ObjectPrimaryContent({
             onOpenAlbum={onOpenGalleryAlbum ?? (() => undefined)}
             onBackToAlbums={onBackToGalleryAlbums ?? (() => undefined)}
             onOpenPhoto={onOpenGalleryPhoto}
+            objectTypeKey={objectTypeKey}
+            relatedAlbumPreview={relatedAlbumPreview}
           />
         </FeedColumn>
       );

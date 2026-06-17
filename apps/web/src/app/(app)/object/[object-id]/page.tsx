@@ -4,6 +4,10 @@ import { notFound } from 'next/navigation';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+import {
+  RELATED_ALBUM_NAME,
+  isObjectTypeEligibleForRelatedAlbum,
+} from '@opden-data-layer/core/post-related-images';
 
 import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
 import { ObjectDescriptionBody } from '@/modules/object/presentation/components/object-description-body';
@@ -26,6 +30,10 @@ import {
   fetchObjectRefList,
   REF_LIST_PAGE_SIZE,
 } from '@/modules/object/infrastructure/object-ref-list.client';
+import {
+  fetchObjectRelatedAlbumPage,
+  fetchObjectRelatedAlbumPreview,
+} from '@/modules/object/infrastructure/fetch-object-related-album.server';
 import type { ObjectPageViewModel } from '@/modules/object';
 import {
   parseSubscriptionSortParam,
@@ -316,6 +324,16 @@ export default async function ObjectDetailPage({
       })()
     : null;
 
+  const needsRelatedAlbumData = isObjectTypeEligibleForRelatedAlbum(model.objectTypeKey);
+  const [relatedAlbumPreview, relatedAlbumInitialPage] = await Promise.all([
+    needsRelatedAlbumData && initialPrimarySegment === 'gallery'
+      ? fetchObjectRelatedAlbumPreview(objectId, { locale })
+      : Promise.resolve(null),
+    needsRelatedAlbumData && initialGalleryAlbum === RELATED_ALBUM_NAME
+      ? fetchObjectRelatedAlbumPage(objectId, { locale, limit: 20 })
+      : Promise.resolve(null),
+  ]);
+
   const followersTabCount = objectFollowersCount(model);
 
   const updatesFeedSlot =
@@ -359,6 +377,8 @@ export default async function ObjectDetailPage({
         viewerUsername={viewerUsername}
         initialPrimarySegment={initialPrimarySegment}
         initialGalleryAlbum={initialGalleryAlbum}
+        relatedAlbumPreview={relatedAlbumPreview}
+        relatedAlbumInitialPage={relatedAlbumInitialPage}
         initialNestedStack={initialNestedStack}
         defaultNestedContent={defaultNestedContent}
         objectPageBody={objectPageBody}

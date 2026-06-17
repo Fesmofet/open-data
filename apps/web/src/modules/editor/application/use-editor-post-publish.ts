@@ -17,6 +17,7 @@ import {
   collectImageCidsFromEditorState,
   hasLexicalDraftBodyContent,
 } from './editor-body-serialization';
+import { buildHivePostImageMetadata } from './build-hive-post-image-metadata';
 import { lexicalStateToMarkdown } from './lexical-state-to-markdown';
 import {
   buildPublishCommentOptions,
@@ -111,8 +112,10 @@ export function useEditorPostPublish({
         tags: publishTags,
       });
       const imageCids = collectImageCidsFromEditorState(body);
-      const imageUrls = imageCids.map((cid) =>
-        contentBaseUrl ? imageContentUrlForCid(contentBaseUrl, cid) : cid,
+      const imageUrls = buildHivePostImageMetadata(
+        imageCids,
+        contentBaseUrl,
+        (cid) => imageContentUrlForCid(contentBaseUrl!, cid),
       );
       const merged = stripEditorOnlyJsonMetadataFields(
         mergeJsonMetadataWithObjects(jsonMetadata, linkedObjects) as Record<

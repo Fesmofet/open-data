@@ -1,8 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+import {
+  RELATED_ALBUM_NAME,
+  isObjectTypeEligibleForRelatedAlbum,
+} from '@opden-data-layer/core/post-related-images';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
@@ -12,6 +16,9 @@ import {
 } from '@/modules/object-updates/application/gallery-form-value';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import type { RelatedAlbumPreviewView } from '../../domain/related-album.types';
+import { fetchObjectRelatedAlbumPreviewAction } from '../../infrastructure/object-related-album.actions';
+import { GalleryAlbumCardSkeleton } from './gallery-skeletons';
 import { GalleryImage } from './gallery-image';
 
 export type ObjectGalleryTabContentProps = {
@@ -28,6 +35,8 @@ export type ObjectGalleryTabContentProps = {
   onBackToAlbums: () => void;
   /** Opens full-screen viewer on the object page layer (outside scrollable gallery grid). */
   onOpenPhoto?: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;
+  objectTypeKey?: string;
+  relatedAlbumPreview?: RelatedAlbumPreviewView | null;
 };
 
 function albumCoverUrl(album: ProjectedGalleryAlbumView): string | null {
@@ -47,6 +56,8 @@ export function ObjectGalleryTabContent({
   onOpenAlbum,
   onBackToAlbums,
   onOpenPhoto,
+  objectTypeKey = '',
+  relatedAlbumPreview = null,
 }: ObjectGalleryTabContentProps) {
   const { t } = useI18n();
   const [addAlbumOpen, setAddAlbumOpen] = useState(false);
@@ -62,6 +73,71 @@ export function ObjectGalleryTabContent({
     () => initialGalleryItemFormValue(activeAlbumName ?? undefined),
     [activeAlbumName],
   );
+  const relatedAlbumEligible = isObjectTypeEligibleForRelatedAlbum(objectTypeKey);
+  const [resolvedRelatedPreview, setResolvedRelatedPreview] =
+    useState<RelatedAlbumPreviewView | null>(relatedAlbumPreview);
+  const [relatedPreviewLoading, setRelatedPreviewLoading] = useState(
+    relatedAlbumEligible && relatedAlbumPreview == null,
+  );
+  const [relatedPreviewError, setRelatedPreviewError] = useState(false);
+
+  const applyPreviewResult = useCallback(
+    (result: Awaited<ReturnType<typeof fetchObjectRelatedAlbumPreviewAction>>) => {
+      if (result.status === 'error') {
+        setRelatedPreviewError(true);
+        setResolvedRelatedPreview(null);
+        return;
+      }
+      setRelatedPreviewError(false);
+      setResolvedRelatedPreview(result.data);
+    },
+    [],
+  );
+
+  const retryRelatedPreview = useCallback(() => {
+    setRelatedPreviewLoading(true);
+    setRelatedPreviewError(false);
+    void fetchObjectRelatedAlbumPreviewAction(objectId).then((result) => {
+      applyPreviewResult(result);
+      setRelatedPreviewLoading(false);
+    });
+  }, [applyPreviewResult, objectId]);
+
+  useEffect(() => {
+    setResolvedRelatedPreview(relatedAlbumPreview);
+  }, [relatedAlbumPreview]);
+
+  useEffect(() => {
+    if (!relatedAlbumEligible) {
+      setRelatedPreviewLoading(false);
+      setRelatedPreviewError(false);
+      return;
+    }
+    if (relatedAlbumPreview != null) {
+      setRelatedPreviewLoading(false);
+      setRelatedPreviewError(false);
+      return;
+    }
+
+    let cancelled = false;
+    setRelatedPreviewLoading(true);
+    setRelatedPreviewError(false);
+    void fetchObjectRelatedAlbumPreviewAction(objectId).then((result) => {
+      if (cancelled) {
+        return;
+      }
+      applyPreviewResult(result);
+      setRelatedPreviewLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyPreviewResult, objectId, relatedAlbumEligible, relatedAlbumPreview]);
+
+  const showRelatedAlbum =
+    relatedAlbumEligible && (resolvedRelatedPreview?.count ?? 0) > 0;
+  const relatedCoverUrl = resolvedRelatedPreview?.items[0]?.url ?? null;
 
   const requireLoginOr = (action: () => void) => {
     if (!viewerUsername?.trim()) {
@@ -196,15 +272,42 @@ export function ObjectGalleryTabContent({
           );
         })}
 
-        <div
-          className="flex flex-col overflow-hidden rounded-btn border border-border bg-surface/40 opacity-70"
-          aria-hidden
-        >
-          <div className="relative aspect-square w-full bg-surface/80" />
-          <span className="px-2 py-2 text-body-sm font-weight-label text-muted">
-            {t('related')} (0)
-          </span>
-        </div>
+        {showRelatedAlbum ? (
+          <button
+            type="button"
+            className="group flex flex-col overflow-hidden rounded-btn border border-border bg-surface/60 text-left hover:border-accent/40"
+            onClick={() => onOpenAlbum(RELATED_ALBUM_NAME)}
+          >
+            <div className="relative aspect-square w-full bg-surface">
+              {relatedCoverUrl ? (
+                <GalleryImage
+                  src={relatedCoverUrl}
+                  sizes="(max-width: 768px) 50vw, 200px"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-caption text-muted">
+                  {t('gallery')}
+                </div>
+              )}
+            </div>
+            <span className="px-2 py-2 text-body-sm font-weight-label text-fg">
+              {t('related')} ({resolvedRelatedPreview?.count ?? 0})
+            </span>
+          </button>
+        ) : relatedPreviewLoading ? (
+          <GalleryAlbumCardSkeleton />
+        ) : relatedPreviewError ? (
+          <div className="flex flex-col gap-2 rounded-btn border border-border bg-surface/60 p-3">
+            <p className="text-body-sm text-muted">{t('gallery_load_failed')}</p>
+            <button
+              type="button"
+              className="self-start text-body-sm font-weight-label text-accent hover:underline"
+              onClick={retryRelatedPreview}
+            >
+              {t('gallery_try_again')}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {canAddAlbum && viewerUsername ? (

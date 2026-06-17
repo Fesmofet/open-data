@@ -12,7 +12,7 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 | Script | Input | Target tables |
 |--------|--------|----------------|
 | `pnpm migrate:mongo-objects` | Wobject array JSON | `objects_core`, `object_updates`, `validity_votes`, `object_authority` |
-| `pnpm migrate:mongo-posts` | Post array JSON | `posts`, `post_active_votes`, `post_objects`, `post_reblogged_users`, `post_languages`, `post_links`, `post_mentions` |
+| `pnpm migrate:mongo-posts` | Post array JSON | `posts`, `post_active_votes`, `post_objects`, `post_object_related_images`, `post_reblogged_users`, `post_languages`, `post_links`, `post_mentions` |
 | `pnpm migrate:mongo-users` | User array JSON | `accounts_current` (Waivio columns), `user_metadata`, `user_notification_settings`, `user_referrals`, `user_post_bookmarks`, `user_object_follows` |
 | `pnpm migrate:mongo-subscriptions` | Subscription array JSON | `user_subscriptions` |
 | `pnpm migrate:mongo-mutes` | Mute / ignore pair array JSON | `user_account_mutes` |
@@ -87,6 +87,7 @@ Source shape: legacy Mongo [`PostSchema`](../../tmp/PostSchema.js). ODL columns:
 - **Skipped:** `blocked_for_apps`, singular `language`, `reblog_to`. Posts with both `title` and `body` empty after trim are ignored entirely (stat `postsSkippedEmptyTitleBody`).
 - **`post_languages`:** `languages[]` may use regional tags (`en-US`). The importer stores the **primary language subtag** only (`en`), canonicalized with `Intl`, and dedupes per post (e.g. `en-US` + `en-GB` → one `en` row).
 - **`post_objects`:** Built with the same merge rules as chain-indexer (`json_metadata.objects` or legacy `wobjects`, `tags` / `json_metadata.tags`, body `/object/...`). `object_type` from legacy `wobjects` when present. Rows are inserted only when `object_id` exists in `objects_core` (missing FKs are skipped; see migrator stats `postObjectsSkippedNoFk`).
+- **`post_object_related_images`:** Derived from `json_metadata.image` (HTTPS URLs) × eligible `post_objects` rows (same rules as chain-indexer `buildRelatedImageRows`). Stats: `relatedImageRowsBuffered`, `relatedImageRowsSkippedNoFk`, `relatedImageRowsSkippedNoImages`, `relatedImageRowsSkippedIneligibleType`. Re-runs use `ON CONFLICT DO NOTHING`. For a full rebuild: `TRUNCATE post_object_related_images` then re-run `migrate:mongo-posts`.
 - **`post_reblogged_users.reblogged_at_unix`:** Mongo stores only account names. The importer sets a single timestamp per post from, in order: `updatedAt`, `createdAt` (mongoose), `last_update` / `active` (parsed), else `created_unix` of the post.
 - **`created_unix`:** `created` string, then mongoose `createdAt` / `updatedAt`, then `_id` ObjectId seconds.
 
@@ -103,5 +104,5 @@ Source: [`tmp/UserSchema.js`](../../tmp/UserSchema.js). ODL: [`libs/core/src/db/
 
 ## Related
 
-- Spec: [`docs/spec/data-model/posts.md`](../../docs/spec/data-model/posts.md), [`docs/spec/data-model/users.md`](../../docs/spec/data-model/users.md)
+- Spec: [`docs/spec/data-model/posts.md`](../../docs/spec/data-model/posts.md), [`docs/spec/data-model/post-object-related-images.md`](../../docs/spec/data-model/post-object-related-images.md), [`docs/spec/data-model/users.md`](../../docs/spec/data-model/users.md)
 - Schema migrations: [`docs/operations/migrations.md`](../../docs/operations/migrations.md)

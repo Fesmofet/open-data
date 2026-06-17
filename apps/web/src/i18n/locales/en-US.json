@@ -950,6 +950,8 @@
   "gallery_add_album_success": "You successfully have created the {albumName} album.",
   "gallery_image_failed_to_load": "This image failed to load",
   "gallery_list_empty": "There are no photos in this album. Be the first to add one!",
+  "gallery_load_failed": "Could not load related gallery photos.",
+  "gallery_try_again": "Try again",
   "general": "general",
   "geo_area": "GEO area",
   "getSteemAccountNow": "to get a Hive account now using:",

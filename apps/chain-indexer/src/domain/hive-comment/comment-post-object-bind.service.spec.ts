@@ -14,6 +14,14 @@ function op(partial: Partial<CommentOperationPayload>): CommentOperationPayload 
   };
 }
 
+function makeDb() {
+  return {
+    transaction: jest.fn().mockReturnValue({
+      execute: jest.fn(async (fn: (trx: object) => Promise<void>) => fn({})),
+    }),
+  };
+}
+
 describe('CommentPostObjectBindService', () => {
   it('returns early when thread parent account', async () => {
     const posts = { findByKey: jest.fn(), findPostObjectIdsForPost: jest.fn(), appendPostObjects: jest.fn() };
@@ -22,12 +30,16 @@ describe('CommentPostObjectBindService', () => {
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
     const eventEmitter = { emit: jest.fn() };
+    const relatedImagesSync = { appendForNewBindings: jest.fn() };
+    const db = makeDb();
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
       eventEmitter as never,
+      relatedImagesSync as never,
+      db as never,
     );
 
     await svc.tryBindObjectsFromComment(
@@ -45,12 +57,16 @@ describe('CommentPostObjectBindService', () => {
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
     const eventEmitter = { emit: jest.fn() };
+    const relatedImagesSync = { appendForNewBindings: jest.fn() };
+    const db = makeDb();
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
       eventEmitter as never,
+      relatedImagesSync as never,
+      db as never,
     );
 
     await svc.tryBindObjectsFromComment(op({ body: '#x' }), '2000-01-01T00:00:00');
@@ -65,12 +81,16 @@ describe('CommentPostObjectBindService', () => {
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
     const eventEmitter = { emit: jest.fn() };
+    const relatedImagesSync = { appendForNewBindings: jest.fn() };
+    const db = makeDb();
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
       eventEmitter as never,
+      relatedImagesSync as never,
+      db as never,
     );
 
     await svc.tryBindObjectsFromComment(op({ body: 'plain' }), '2000-01-01T00:00:00');
@@ -80,7 +100,7 @@ describe('CommentPostObjectBindService', () => {
 
   it('appends new post_objects when parent post exists and core has id', async () => {
     const posts = {
-      findByKey: jest.fn().mockResolvedValue({ author: 'alice', permlink: 'p' }),
+      findByKey: jest.fn().mockResolvedValue({ author: 'alice', permlink: 'p', json_metadata: '{}' }),
       findPostObjectIdsForPost: jest.fn().mockResolvedValue(new Set<string>()),
       appendPostObjects: jest.fn(),
     };
@@ -93,25 +113,47 @@ describe('CommentPostObjectBindService', () => {
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
     const eventEmitter = { emit: jest.fn() };
+    const relatedImagesSync = { appendForNewBindings: jest.fn() };
+    const db = makeDb();
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
       eventEmitter as never,
+      relatedImagesSync as never,
+      db as never,
     );
 
     await svc.tryBindObjectsFromComment(op({ body: '#obj1' }), '2000-01-01T00:00:00');
 
     expect(postUpsert.ensureRootPostInDb).not.toHaveBeenCalled();
-    expect(posts.appendPostObjects).toHaveBeenCalledWith([
-      {
-        author: 'alice',
-        permlink: 'p',
-        object_id: 'obj1',
-        percent: 0,
-        object_type: 'hashtag',
-      },
-    ]);
+    expect(posts.appendPostObjects).toHaveBeenCalledWith(
+      [
+        {
+          author: 'alice',
+          permlink: 'p',
+          object_id: 'obj1',
+          percent: 0,
+          object_type: 'hashtag',
+        },
+      ],
+      expect.anything(),
+    );
+    expect(relatedImagesSync.appendForNewBindings).toHaveBeenCalledWith(
+      'alice',
+      'p',
+      '{}',
+      [
+        {
+          author: 'alice',
+          permlink: 'p',
+          object_id: 'obj1',
+          percent: 0,
+          object_type: 'hashtag',
+        },
+      ],
+      expect.anything(),
+    );
   });
 });

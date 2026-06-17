@@ -104,6 +104,8 @@ export type ObjectGalleryViewerProps = {
   onRequireLogin: () => void;
   supportedUpdateTypes: readonly string[];
   updateTypeCounts?: Record<string, number>;
+  /** Post-derived Related album — no on-chain votes or add-to-album actions. */
+  isVirtualRelatedAlbum?: boolean;
 };
 
 export function ObjectGalleryViewer({
@@ -118,6 +120,7 @@ export function ObjectGalleryViewer({
   onRequireLogin,
   supportedUpdateTypes,
   updateTypeCounts,
+  isVirtualRelatedAlbum = false,
 }: ObjectGalleryViewerProps) {
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -148,8 +151,11 @@ export function ObjectGalleryViewer({
   const count = photos.length;
   const currentPhoto = photos[activeIndex];
   const displayName = objectName.trim() || objectId;
-  const canSetAvatar = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
-  const canAddToAlbum = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
+  const canSetAvatar =
+    !isVirtualRelatedAlbum && supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
+  const canAddToAlbum =
+    !isVirtualRelatedAlbum &&
+    supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
   const otherGalleryAlbums = useMemo(
     () => allGalleryAlbums.filter((entry) => entry.name !== album.name),
     [allGalleryAlbums, album.name],
@@ -191,6 +197,9 @@ export function ObjectGalleryViewer({
   }, [activeIndex, currentPhoto?.url, currentPhoto?.cid]);
 
   useEffect(() => {
+    if (isVirtualRelatedAlbum) {
+      return;
+    }
     let cancelled = false;
     void fetchGalleryApprovalStatsAction(objectId).then((stats) => {
       if (!cancelled) {
@@ -200,7 +209,7 @@ export function ObjectGalleryViewer({
     return () => {
       cancelled = true;
     };
-  }, [objectId]);
+  }, [isVirtualRelatedAlbum, objectId]);
 
   useEffect(() => {
     setVoteError(null);
@@ -430,6 +439,12 @@ export function ObjectGalleryViewer({
             {displayName}
           </span>
           <div ref={albumDropdownRef} className="relative">
+            {isVirtualRelatedAlbum ? (
+              <span className="gallery-chrome-text text-body-sm">
+                <span className="gallery-chrome-text-muted">{t('album')}:</span> {album.name}
+              </span>
+            ) : (
+              <>
             <button
               type="button"
               className="gallery-chrome-control inline-flex items-center gap-1 px-2 py-1"
@@ -542,6 +557,8 @@ export function ObjectGalleryViewer({
                 ) : null}
               </div>
             ) : null}
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-end gap-2">
@@ -610,7 +627,21 @@ export function ObjectGalleryViewer({
       </div>
   );
 
-  const galleryFooter = (
+  const galleryFooter = isVirtualRelatedAlbum ? (
+      <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
+        {currentPhoto?.postAuthor ? (
+          <Link
+            href={`/@${encodeURIComponent(currentPhoto.postAuthor)}`}
+            className="gallery-chrome-text text-body-sm font-weight-label hover:underline"
+            suppressHydrationWarning
+          >
+            @{currentPhoto.postAuthor}
+          </Link>
+        ) : (
+          <span className="gallery-chrome-text-muted text-body-sm">{t('related')}</span>
+        )}
+      </footer>
+  ) : (
       <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <UpdateVoteControls

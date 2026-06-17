@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { objectUpdatesFeedQuerySchema } from '../../domain/object-updates/schemas/object-updates-feed.schema';
 import {
   objectRefListQuerySchema,
+  relatedAlbumListQuerySchema,
+  relatedAlbumPreviewQuerySchema,
   resolveNestedObjectsBodySchema,
   resolveObjectBodySchema,
 } from '../../domain/objects';
@@ -126,6 +128,56 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
     'get_object_add_on',
     catalogDescription('get_object_add_on'),
     UPDATE_TYPES.ADD_ON,
+  );
+
+  server.registerTool(
+    'get_object_related_album_preview',
+    {
+      description: catalogDescription('get_object_related_album_preview'),
+      inputSchema: withMcpLocaleContext(
+        relatedAlbumPreviewQuerySchema.extend({
+          object_id: z.string().min(1).describe('Source object id'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const result = await deps.getObjectRelatedAlbumPreview.execute(
+        args.object_id,
+        { limit: args.limit },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${args.object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_object_related_album',
+    {
+      description: catalogDescription('get_object_related_album'),
+      inputSchema: withMcpLocaleContext(
+        relatedAlbumListQuerySchema.extend({
+          object_id: z.string().min(1).describe('Source object id'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const result = await deps.getObjectRelatedAlbum.execute(
+        args.object_id,
+        { limit: args.limit, cursor: args.cursor },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${args.object_id}`);
+      }
+      return jsonToolResult(result);
+    },
   );
 
   server.registerTool(

@@ -65,6 +65,18 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/object-ref-list-endpoints.md',
   },
   {
+    name: 'get_object_related_album_preview',
+    description: 'Preview images for virtual Related gallery (post-derived).',
+    httpEquivalent: 'GET /query/v1/objects/:id/gallery/related/preview',
+    specPath: 'docs/apps/query-api/spec/object-related-album.md',
+  },
+  {
+    name: 'get_object_related_album',
+    description: 'Paginated virtual Related gallery images.',
+    httpEquivalent: 'GET /query/v1/objects/:id/gallery/related',
+    specPath: 'docs/apps/query-api/spec/object-related-album.md',
+  },
+  {
     name: 'get_object_similar',
     description: 'Paginated similar objects (IS_SIMILAR_TO).',
     httpEquivalent: 'GET /query/v1/objects/:id/similar',

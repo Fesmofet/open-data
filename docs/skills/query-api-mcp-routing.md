@@ -42,6 +42,7 @@ related:
 | Discover browse by type/tags | `discover_objects`, `discover_tag_categories` |
 | Object detail projection | `resolve_object` |
 | Related / similar / add-on rails | `get_object_related`, `get_object_similar`, `get_object_add_on` |
+| Object gallery Related album | `get_object_related_album_preview`, `get_object_related_album` |
 | Object update history | `get_object_updates` |
 | User profile shell | `get_user_profile` |
 | User feeds | `get_user_blog`, `get_user_threads`, `get_user_comments`, `get_user_mentions` |

@@ -5,12 +5,14 @@ import { RepositoriesModule } from '../../repositories/repositories.module';
 import { CommentPostObjectBindService } from './comment-post-object-bind.service';
 import { CommentOperationOrchestrator } from './comment-orchestrator.service';
 import { PostUpsertService } from './post-upsert.service';
+import { PostRelatedImagesSyncService } from './post-related-images-sync.service';
 import { ThreadParseService } from './thread-parse.service';
 
 @Module({
   imports: [RepositoriesModule, GovernanceModule, WaivPostRewardModule],
   providers: [
     PostUpsertService,
+    PostRelatedImagesSyncService,
     ThreadParseService,
     CommentPostObjectBindService,
     CommentOperationOrchestrator,

@@ -2,6 +2,7 @@ export * from './constants';
 export * from './post-reward';
 export * from './constants/category-tree.constants';
 export * from './post-objects';
+export * from './post-related-images';
 export * from './hive-thread';
 export * from './redis';
 export * from './db';

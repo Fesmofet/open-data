@@ -11,7 +11,9 @@ import type {
   ObjectLeftRailBlock,
 } from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
+import type { RelatedAlbumListView, RelatedAlbumPreviewView } from '@/modules/object/domain/related-album.types';
 import type { TagApprovalStatsIndex } from '@/modules/object/domain/tag-approval-stats';
+import { RELATED_ALBUM_NAME } from '@opden-data-layer/core/post-related-images';
 import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
 import { ObjectGalleryViewer } from '@/modules/object/presentation/components/object-gallery-viewer';
 import {
@@ -102,6 +104,8 @@ export type ObjectPageClientProps = {
   initialPrimarySegment: string;
   /** SSR-restored active gallery album from proxy `?gallery_album=` or path. */
   initialGalleryAlbum: string | null;
+  relatedAlbumPreview?: RelatedAlbumPreviewView | null;
+  relatedAlbumInitialPage?: RelatedAlbumListView | null;
   /** SSR-restored nested stack from `?path=`. */
   initialNestedStack: ObjectNestedViewResolved[];
   /** SSR-resolved first menu item content when URL has no `?path=` (business-like objects). */
@@ -131,6 +135,8 @@ export function ObjectPageClient({
   viewerUsername,
   initialPrimarySegment,
   initialGalleryAlbum,
+  relatedAlbumPreview = null,
+  relatedAlbumInitialPage = null,
   initialNestedStack,
   defaultNestedContent,
   objectPageBody,
@@ -829,6 +835,9 @@ export function ObjectPageClient({
           updateTypeCounts={model.updateTypeCounts}
           viewerUsername={viewerUsername}
           onRequireLogin={openLogin}
+          objectTypeKey={model.objectTypeKey}
+          relatedAlbumPreview={relatedAlbumPreview}
+          relatedAlbumInitialPage={relatedAlbumInitialPage}
         />
       }
         rightRail={rightRail}
@@ -846,6 +855,7 @@ export function ObjectPageClient({
           onRequireLogin={openLogin}
           supportedUpdateTypes={supportedUpdateTypes}
           updateTypeCounts={model.updateTypeCounts}
+          isVirtualRelatedAlbum={galleryFullView.album.name === RELATED_ALBUM_NAME}
         />
       ) : null}
     </>

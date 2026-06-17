@@ -29,9 +29,11 @@ export function GalleryImage({
 }: GalleryImageProps) {
   const { t } = useI18n();
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setFailed(false);
+    setLoaded(false);
   }, [src]);
 
   if (failed) {
@@ -39,16 +41,27 @@ export function GalleryImage({
   }
 
   return (
-    <Image
-      src={src}
-      alt=""
-      fill
-      className={className}
-      sizes={sizes}
-      priority={priority}
-      unoptimized={shouldUnoptimizeRemoteImage(src)}
-      onLoad={onLoad}
-      onError={() => setFailed(true)}
-    />
+    <div className="absolute inset-0">
+      {!loaded ? (
+        <div
+          className="absolute inset-0 animate-pulse bg-surface-control"
+          aria-hidden
+        />
+      ) : null}
+      <Image
+        src={src}
+        alt=""
+        fill
+        className={className}
+        sizes={sizes}
+        priority={priority}
+        unoptimized={shouldUnoptimizeRemoteImage(src)}
+        onLoad={(event) => {
+          setLoaded(true);
+          onLoad?.(event);
+        }}
+        onError={() => setFailed(true)}
+      />
+    </div>
   );
 }

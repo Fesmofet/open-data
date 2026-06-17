@@ -14,6 +14,9 @@
       "@opden-data-layer/core/update-types": [
         "../../libs/core/src/update-registry/update-types.ts"
       ],
+      "@opden-data-layer/core/post-related-images": [
+        "../../libs/core/src/post-related-images/index.ts"
+      ],
       "@opden-data-layer/migrations": ["../../libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["../../libs/clients/src/index.ts"],
       "@opden-data-layer/objects-domain": ["../../libs/objects-domain/src/index.ts"],

@@ -20,6 +20,7 @@ import { UpdatesFeedRepository } from './updates-feed.repository';
 import { SearchRepository } from './search.repository';
 import { DiscoverRepository } from './discover.repository';
 import { ObjectRefListRepository } from './object-ref-list.repository';
+import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 
 @Module({
   providers: [
@@ -44,6 +45,7 @@ import { ObjectRefListRepository } from './object-ref-list.repository';
     SearchRepository,
     DiscoverRepository,
     ObjectRefListRepository,
+    PostObjectRelatedImagesRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -67,6 +69,7 @@ import { ObjectRefListRepository } from './object-ref-list.repository';
     SearchRepository,
     DiscoverRepository,
     ObjectRefListRepository,
+    PostObjectRelatedImagesRepository,
   ],
 })
 export class RepositoriesModule {}

@@ -50,6 +50,8 @@ Loaded in `page.tsx` when tabs/sections need them:
 | Updates feed initial page | Active tab `updates` | `ObjectPageUpdatesFeedSection` |
 | Authority lists | Tab `authority` | `getObjectAuthorityPageQuery` |
 | Ref list full page | Tab related/similar/add-on | `fetchObjectRefList` page size 20 |
+| Related album preview | Active tab `gallery` (SSR) or client on gallery tab | `fetchObjectRelatedAlbumPreview` |
+| Related album list page | `gallery_album=Related` (SSR) or client in `ObjectRelatedAlbumSection` | `fetchObjectRelatedAlbumPage` |
 | Nested stack | `?path=` | `resolveNestedObjectPath` / per-item resolve |
 
 ## Mapping

@@ -76,6 +76,7 @@ flowchart LR
 | Feature | Description |
 |---------|-------------|
 | [Hive ingestion](hive-ingestion.md) | Sequential block loop, Redis cursor, `custom_json` routing, error handling |
+| [Post related images sync](post-object-related-images-sync.md) | `post_object_related_images` from post `json_metadata.image` + `post_objects` |
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
 | [ODL pipeline](odl-pipeline.md) | Envelope, actions, repositories, write guards, batch import |
 | [Vote ingestion](vote-ingestion.md) | Hive `vote` → `post_active_votes` + `post_sync_queue`; worker fills `rshares` and ghost posts |

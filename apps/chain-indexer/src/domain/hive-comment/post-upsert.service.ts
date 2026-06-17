@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import type { Kysely } from 'kysely';
 import type { HiveContentType } from '@opden-data-layer/clients';
 import { HiveClient } from '@opden-data-layer/clients';
 import type {
@@ -38,6 +39,9 @@ import {
 } from '../odl-parser/post-object-changed.event';
 import { parseCashoutToUnix } from '@opden-data-layer/core';
 import { PostRewardsFinalizeQueue } from '../waiv-post-reward/post-rewards-finalize.queue';
+import { PostRelatedImagesSyncService } from './post-related-images-sync.service';
+import type { Database } from '../../database';
+import { KYSELY } from '../../database';
 
 function toBigIntNaive(v: number | string | undefined | null): bigint {
   if (v === undefined || v === null) {
@@ -62,6 +66,8 @@ export class PostUpsertService {
     private readonly eventEmitter: EventEmitter2,
     private readonly finalizeQueue: PostRewardsFinalizeQueue,
     private readonly configService: ConfigService,
+    private readonly relatedImagesSync: PostRelatedImagesSyncService,
+    @Inject(KYSELY) private readonly db: Kysely<Database>,
   ) {}
 
   /**
@@ -193,12 +199,21 @@ export class PostUpsertService {
       const createdStr = formatHiveDateTime(blockTimestamp);
       const row = this.buildCreateRow(op, body, jsonMetadata, blockTimestamp, createdUnix, createdStr);
       const votes: NewPostActiveVote[] = [];
-      await this.postsRepository.upsertPostWithSatellites(row, {
-        objects,
-        links,
-        mentions,
-        languages,
-        votes,
+      await this.db.transaction().execute(async (trx) => {
+        await this.postsRepository.upsertPostWithSatellitesTrx(trx, row, {
+          objects,
+          links,
+          mentions,
+          languages,
+          votes,
+        });
+        await this.relatedImagesSync.syncForPost(
+          author,
+          permlink,
+          jsonMetadata,
+          objects,
+          trx,
+        );
       });
       await this.scheduleFinalizeIfNeeded(
         author,
@@ -250,12 +265,21 @@ export class PostUpsertService {
       blockTimestamp,
     );
 
-    await this.postsRepository.upsertPostWithSatellites(row, {
-      objects: mergedObjects,
-      links: finalLinks,
-      mentions: finalMentions,
-      languages: finalLanguages,
-      votes: voteRows,
+    await this.db.transaction().execute(async (trx) => {
+      await this.postsRepository.upsertPostWithSatellitesTrx(trx, row, {
+        objects: mergedObjects,
+        links: finalLinks,
+        mentions: finalMentions,
+        languages: finalLanguages,
+        votes: voteRows,
+      });
+      await this.relatedImagesSync.syncForPost(
+        author,
+        permlink,
+        mergedMetadata,
+        mergedObjects,
+        trx,
+      );
     });
 
     await this.scheduleFinalizeIfNeeded(

@@ -388,11 +388,11 @@ export class PostsRepository {
     return rows.map((r) => r.author);
   }
 
-  async appendPostObjects(rows: NewPostObject[]): Promise<void> {
+  async appendPostObjects(rows: NewPostObject[], trx?: DbExecutor): Promise<void> {
     if (rows.length === 0) {
       return;
     }
-    await this.db
+    await this.executor(trx)
       .insertInto('post_objects')
       .values(rows)
       .onConflict((oc) =>
@@ -449,9 +449,10 @@ export class PostsRepository {
   }
 
   /**
-   * Single transaction: upsert post row + replace satellites.
+   * Upsert post row + replace satellites inside an existing transaction.
    */
-  async upsertPostWithSatellites(
+  async upsertPostWithSatellitesTrx(
+    trx: DbExecutor,
     row: NewPost,
     data: {
       objects: NewPostObject[];
@@ -481,74 +482,91 @@ export class PostsRepository {
       ...sanitized,
       beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
     };
+
+    await trx
+      .insertInto('posts')
+      .values(insertRow)
+      .onConflict((oc) =>
+        oc.columns(['author', 'permlink']).doUpdateSet({
+          ...rest,
+          beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
+        }),
+      )
+      .execute();
+
+    await trx
+      .deleteFrom('post_objects')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+    await trx
+      .deleteFrom('post_links')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+    await trx
+      .deleteFrom('post_mentions')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+    await trx
+      .deleteFrom('post_languages')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+    await trx
+      .deleteFrom('post_active_votes')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+
+    if (data.objects.length > 0) {
+      await trx.insertInto('post_objects').values(data.objects).execute();
+    }
+    if (data.links.length > 0) {
+      const linkRows: NewPostLink[] = data.links.map((url) => ({
+        author,
+        permlink,
+        url,
+      }));
+      await trx.insertInto('post_links').values(linkRows).execute();
+    }
+    if (data.mentions.length > 0) {
+      const mentionRows: NewPostMention[] = data.mentions.map((account) => ({
+        author,
+        permlink,
+        account,
+      }));
+      await trx.insertInto('post_mentions').values(mentionRows).execute();
+    }
+    if (data.languages.length > 0) {
+      const langRows: NewPostLanguage[] = data.languages.map((language) => ({
+        author,
+        permlink,
+        language,
+      }));
+      await trx.insertInto('post_languages').values(langRows).execute();
+    }
+    if (data.votes.length > 0) {
+      await trx.insertInto('post_active_votes').values(data.votes).execute();
+    }
+  }
+
+  /**
+   * Single transaction: upsert post row + replace satellites.
+   */
+  async upsertPostWithSatellites(
+    row: NewPost,
+    data: {
+      objects: NewPostObject[];
+      links: string[];
+      mentions: string[];
+      languages: string[];
+      votes: NewPostActiveVote[];
+    },
+  ): Promise<void> {
     await this.db.transaction().execute(async (trx) => {
-      await trx
-        .insertInto('posts')
-        .values(insertRow)
-        .onConflict((oc) =>
-          oc.columns(['author', 'permlink']).doUpdateSet({
-            ...rest,
-            beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
-          }),
-        )
-        .execute();
-
-      await trx
-        .deleteFrom('post_objects')
-        .where('author', '=', author)
-        .where('permlink', '=', permlink)
-        .execute();
-      await trx
-        .deleteFrom('post_links')
-        .where('author', '=', author)
-        .where('permlink', '=', permlink)
-        .execute();
-      await trx
-        .deleteFrom('post_mentions')
-        .where('author', '=', author)
-        .where('permlink', '=', permlink)
-        .execute();
-      await trx
-        .deleteFrom('post_languages')
-        .where('author', '=', author)
-        .where('permlink', '=', permlink)
-        .execute();
-      await trx
-        .deleteFrom('post_active_votes')
-        .where('author', '=', author)
-        .where('permlink', '=', permlink)
-        .execute();
-
-      if (data.objects.length > 0) {
-        await trx.insertInto('post_objects').values(data.objects).execute();
-      }
-      if (data.links.length > 0) {
-        const linkRows: NewPostLink[] = data.links.map((url) => ({
-          author,
-          permlink,
-          url,
-        }));
-        await trx.insertInto('post_links').values(linkRows).execute();
-      }
-      if (data.mentions.length > 0) {
-        const mentionRows: NewPostMention[] = data.mentions.map((account) => ({
-          author,
-          permlink,
-          account,
-        }));
-        await trx.insertInto('post_mentions').values(mentionRows).execute();
-      }
-      if (data.languages.length > 0) {
-        const langRows: NewPostLanguage[] = data.languages.map((language) => ({
-          author,
-          permlink,
-          language,
-        }));
-        await trx.insertInto('post_languages').values(langRows).execute();
-      }
-      if (data.votes.length > 0) {
-        await trx.insertInto('post_active_votes').values(data.votes).execute();
-      }
+      await this.upsertPostWithSatellitesTrx(trx, row, data);
     });
   }
 

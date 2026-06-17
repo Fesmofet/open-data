@@ -333,3 +333,98 @@ registerObjectRefListPath(
   'List add-on objects',
   'Returns VALID `addOn` refs on the source object first, then backfills with objects that have an `addOn` update pointing at the source object id (reverse add-on). Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor`.',
 );
+
+const relatedAlbumImageSchema = z.object({
+  url: z.string(),
+  postAuthor: z.string(),
+  postPermlink: z.string(),
+});
+
+const relatedAlbumPreviewResponseSchema = z.object({
+  count: z.number().int(),
+  items: z.array(relatedAlbumImageSchema),
+});
+
+const relatedAlbumListResponseSchema = z.object({
+  count: z.number().int(),
+  items: z.array(relatedAlbumImageSchema),
+  hasMore: z.boolean(),
+  cursor: z.string().nullable(),
+});
+
+const relatedAlbumHeaders = z.object({
+  'accept-language': z.string().optional().openapi({
+    description: 'Preferred locale (first BCP-47 tag is used).',
+  }),
+  'x-locale': z.string().optional().openapi({
+    description: 'When valid, overrides `Accept-Language`.',
+  }),
+  'x-governance-object-id': z.string().optional().openapi({
+    description:
+      'Optional governance object ID; merged with platform governance from `GOVERNANCE_OBJECT_ID`.',
+  }),
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/gallery/related/preview',
+  summary: 'Related album preview',
+  description:
+    'Preview images for the virtual Related gallery (post `json_metadata.image` URLs linked via `post_objects`). Excludes posts listed in object `remove` updates. Default preview size 4.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(50).optional().openapi({
+        description: 'Preview image count (default 4).',
+      }),
+    }),
+    headers: relatedAlbumHeaders,
+  },
+  responses: {
+    200: {
+      description: 'Related album preview.',
+      content: {
+        'application/json': { schema: relatedAlbumPreviewResponseSchema },
+      },
+    },
+    404: {
+      description: 'Object not found.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/gallery/related',
+  summary: 'Related album images',
+  description:
+    'Paginated images for the virtual Related gallery. Offset `cursor` (numeric string). Excludes posts in object `remove` updates.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: objectRefListQueryOpenApi,
+    headers: relatedAlbumHeaders,
+  },
+  responses: {
+    200: {
+      description: 'Paginated related album images.',
+      content: {
+        'application/json': { schema: relatedAlbumListResponseSchema },
+      },
+    },
+    404: {
+      description: 'Object not found.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
