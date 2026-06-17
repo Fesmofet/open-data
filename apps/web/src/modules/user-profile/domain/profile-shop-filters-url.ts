@@ -106,3 +106,13 @@ export function isUserProfileShopOrRecipeTab(pathname: string): boolean {
 export function profileShopFiltersActive(filters: ProfileShopFiltersState): boolean {
   return filters.tags.length > 0 || filters.rating != null;
 }
+
+/** Stable React `key` for shop list remount when scope or filters change. */
+export function buildShopListScopeKey(
+  lineageSegments: readonly string[],
+  uncategorizedOnly: boolean,
+  filters: ProfileShopFiltersState,
+): string {
+  const pathPart = uncategorizedOnly ? '__uncategorized__' : lineageSegments.join('/');
+  return `${pathPart}::${filters.tags.join('|')}::${filters.rating ?? ''}`;
+}

@@ -88,4 +88,36 @@ describe('GetUserShopSectionsEndpoint', () => {
     expect(result?.sections[0]?.totalObjects).toBe(1);
     expect(objectCategoriesRepo.countObjectIdsByScopeForCategories).toHaveBeenCalled();
   });
+
+  it('returns empty response when section cursor is unknown', async () => {
+    const endpoint = new GetUserShopSectionsEndpoint(
+      {
+        findShopVisibilityFlags: jest.fn().mockResolvedValue({
+          hide_linked_objects: false,
+          hide_recipe_objects: false,
+        }),
+      } as never,
+      { findObjectIdsByAccount: jest.fn().mockResolvedValue([]) } as never,
+      { findByUserScope: jest.fn().mockResolvedValue([]) } as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    const result = await endpoint.execute(
+      'alice',
+      {
+        types: ['recipe'],
+        path: [],
+        cursor: 'missing-category',
+        sectionLimit: 3,
+      },
+      'en-US',
+      undefined,
+      undefined,
+    );
+
+    expect(result).toEqual({ sections: [], cursor: null, hasMore: false });
+  });
 });

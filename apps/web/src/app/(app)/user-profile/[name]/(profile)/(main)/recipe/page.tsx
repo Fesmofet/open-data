@@ -20,6 +20,7 @@ export default async function UserProfileRecipePage({ params, searchParams }: Pa
       basePath={basePath}
       lineageSegments={[]}
       shopFilters={shopFilters}
+      sectionKey="recipe"
     />
   );
 }

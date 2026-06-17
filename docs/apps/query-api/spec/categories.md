@@ -33,7 +33,9 @@ Query string (all optional except noted):
 | `path` | Repeatable; ancestors before `name` when drilling down. |
 | `excluded` | Repeatable; names to hide from the sibling list. |
 
-Response: `items[]` with `name`, `objects_count`, `has_children`; `uncategorized_count` (from sentinel `__uncategorized__`); root-only `show_other` when more than **20** greedy top rows exist.
+Response: `items[]` with `name`, `objects_count`, `has_children`; `uncategorized_count`; root-only `show_other` when more than **20** greedy top rows exist.
+
+At **root** (no `name`), `uncategorized_count` is computed **live** from scoped objects with empty `category_names` via `countUncategorizedObjectIdsByScope` (not the stale `object_categories_related` `__uncategorized__` sentinel). Drill-down responses keep the sentinel value from the pre-aggregated nav row.
 
 Implementation: [`GetUserCategoriesEndpoint`](../../../apps/query-api/src/domain/categories/get-user-categories.endpoint.ts), filters [`level1-filter.ts`](../../../apps/query-api/src/domain/categories/level1-filter.ts), [`level2-filter.ts`](../../../apps/query-api/src/domain/categories/level2-filter.ts).
 
@@ -53,7 +55,7 @@ Let `ancestry = [...path, name]`.
 3. Sort by `objects_count` desc; drop **near-duplicate** pairs when both sides miss **< 10** group keys vs intersection (`GROUP_KEY_OVERLAP_TOLERANCE`, uses **`group_keys`**; empty **`group_keys`** skips dedup).
 4. **`has_children`:** some row passes `lineage = [...path, name, D]`.
 
-Uncategorized is only counted at the **root** response.
+Uncategorized is only counted at the **root** response using the live query above.
 
 ## Global scope
 

@@ -38,6 +38,10 @@ export async function GET(
       url.searchParams.append('tags', trimmed);
     }
   }
+  const rating = request.nextUrl.searchParams.get('rating')?.trim();
+  if (rating) {
+    url.searchParams.set('rating', rating);
+  }
 
   const upstream = await fetch(url.toString(), {
     method: 'GET',

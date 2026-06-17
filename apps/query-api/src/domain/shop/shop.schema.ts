@@ -91,6 +91,7 @@ export const shopFiltersQuerySchema = z.object({
       .describe('When true, only objects with no category_names'),
   ),
   tags: shopTagsQuery.describe('Selected tags (AND) to narrow facet counts'),
+  rating: shopRatingQuery.describe('Minimum aggregate rating threshold to narrow facet counts'),
 });
 
 export type ShopFiltersQuery = z.infer<typeof shopFiltersQuerySchema>;

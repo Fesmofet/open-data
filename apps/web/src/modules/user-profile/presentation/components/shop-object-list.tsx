@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ShopObjectsPage } from '../../domain/types/shop-objects';
 import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
+import { useSyncedPaginatedList } from '@/shared/presentation';
 
 import { useLoginModal } from '@/modules/auth';
 
@@ -19,6 +21,8 @@ export type ShopObjectListProps = {
   uncategorizedOnly?: boolean;
   shopFilters?: ProfileShopFiltersState;
   viewerUsername?: string | null;
+  /** `'user-shop'` or `'recipe'` — empty state title. */
+  sectionKey?: 'user-shop' | 'recipe';
 };
 
 const EMPTY_SHOP_FILTERS: ProfileShopFiltersState = { tags: [], rating: null };
@@ -31,12 +35,16 @@ export function ShopObjectList({
   uncategorizedOnly = false,
   shopFilters = EMPTY_SHOP_FILTERS,
   viewerUsername,
+  sectionKey = 'user-shop',
 }: ShopObjectListProps) {
+  const { t } = useI18n();
   const { openLogin } = useLoginModal();
-  const [items, setItems] = useState(initialPage.items);
-  const [cursor, setCursor] = useState(initialPage.cursor);
-  const [hasMore, setHasMore] = useState(initialPage.hasMore);
+  const { items, setItems, cursor, setCursor, hasMore, setHasMore } =
+    useSyncedPaginatedList(initialPage);
   const [pending, startTransition] = useTransition();
+
+  const emptyTitle =
+    sectionKey === 'recipe' ? t('user_profile_recipe') : t('profile_shop_title');
 
   if (items.length === 0) {
     return (
@@ -45,9 +53,9 @@ export function ShopObjectList({
         aria-labelledby="shop-objects-empty"
       >
         <h2 id="shop-objects-empty" className="text-body-lg font-weight-strong font-display text-fg">
-          Shop
+          {emptyTitle}
         </h2>
-        <p className="mt-2 text-body-sm text-muted">No objects in this category yet.</p>
+        <p className="mt-2 text-body-sm text-muted">{t('profile_shop_empty_category')}</p>
       </section>
     );
   }
@@ -90,7 +98,7 @@ export function ShopObjectList({
               });
             }}
           >
-            {pending ? 'Loading…' : 'Load more'}
+            {pending ? t('profile_shop_loading') : t('profile_shop_load_more')}
           </button>
         </div>
       ) : null}

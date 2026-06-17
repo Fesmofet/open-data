@@ -31,7 +31,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [User profile endpoint](users-profile-endpoint.md) | `GET /query/v1/users/:name/profile` |
 | [User social lists](user-social-lists.md) | `GET .../:name/followers`, `/following`, `/following-objects` |
 | [Shop categories](categories.md) | `GET /query/v1/users/:name/categories` |
-| [Shop / recipe object feeds](shop-feed-endpoints.md) | `GET .../shop-objects`, `GET .../shop-sections` |
+| [Shop / recipe object feeds](shop-feed-endpoints.md) | `GET .../shop-objects`, `GET .../shop-sections`, `GET .../shop/filters` |
 | [User favorites](users-favorites-endpoint.md) | `GET .../favorites/types`, `GET .../favorites`, `POST .../favorites/map` |
 | [User blog feed endpoint](user-blog-feed-endpoint.md) | `POST /query/v1/users/:name/blog` |
 | [User threads feed endpoint](user-threads-feed-endpoint.md) | `POST /query/v1/users/:name/threads` |

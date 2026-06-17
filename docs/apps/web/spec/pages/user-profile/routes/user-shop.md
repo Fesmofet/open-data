@@ -46,6 +46,7 @@ Department-style object catalogs for a user’s shop (`book`, `product`) and rec
 - **basePath:** `/@${accountName}/user-shop` or `/recipe` — used for nav links and breadcrumbs.
 - **Parallel routes:** `(main)/layout.tsx` renders `@leftSidebar` slot; shop/recipe pages pair main + sidebar segments.
 - **Filters:** URL query `tags=Category:value` (repeatable, AND) and optional `rating` (`6` | `8` | `10`). Right column loads facets from BFF `GET /api/users/:name/shop/filters` (scoped to current category path). Same filters on `user-shop` and `recipe`. When any filter is active, the center column uses a **flat** `shop-objects` list (not category sections) so facet counts match visible rows.
+- **Filter preservation:** Left category nav links, section header links, Up/All, and Uncategorized preserve active `tags`/`rating` query params via `buildProfileShopHref`.
 - **Pagination:** load-more buttons on object lists and section pages; maps API rows via `ObjectCard`.
 - **Shell mode:** left category rail hidden on Instagram/Twitter presets per `shell-hide-instagram` / vertical rail swap (see [profile-shell.md](../profile-shell.md)).
 

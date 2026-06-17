@@ -47,6 +47,7 @@ export class GetUserShopFiltersEndpoint {
         shopDeselectObjectIds: deselectIds,
       },
       activeTags,
+      query.rating ?? null,
     );
 
     const order = getTagCategoryOrderForShopTypes(query.types);

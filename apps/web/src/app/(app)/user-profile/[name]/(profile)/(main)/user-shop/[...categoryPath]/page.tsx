@@ -24,6 +24,7 @@ export default async function UserProfileUserShopCategoryPage({
       basePath={basePath}
       lineageSegments={lineageSegments}
       shopFilters={shopFilters}
+      sectionKey="user-shop"
     />
   );
 }

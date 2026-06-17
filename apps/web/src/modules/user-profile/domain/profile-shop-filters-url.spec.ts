@@ -1,5 +1,6 @@
 import {
   buildProfileShopHref,
+  buildShopListScopeKey,
   parseProfileShopFilters,
   setProfileShopRatingFilter,
   toggleProfileShopTagFilter,
@@ -31,5 +32,14 @@ describe('profile-shop-filters-url', () => {
     expect(setProfileShopRatingFilter(null, 10, true)).toBe(10);
     expect(setProfileShopRatingFilter(10, 8, true)).toBe(8);
     expect(setProfileShopRatingFilter(10, 10, false)).toBeNull();
+  });
+
+  it('buildShopListScopeKey encodes path, uncategorized, and filters', () => {
+    expect(
+      buildShopListScopeKey(['Desserts'], false, { tags: ['Cuisine:asian'], rating: 8 }),
+    ).toBe('Desserts::Cuisine:asian::8');
+    expect(buildShopListScopeKey([], true, { tags: [], rating: null })).toBe(
+      '__uncategorized__::::',
+    );
   });
 });

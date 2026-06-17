@@ -1,11 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useSearchParams } from 'next/navigation';
 
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ShopSectionsPage } from '../../domain/types/shop-objects';
 import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
-import { profileShopFiltersActive } from '../../domain/profile-shop-filters-url';
+import {
+  buildProfileShopHref,
+  parseProfileShopFilters,
+  profileShopFiltersActive,
+} from '../../domain/profile-shop-filters-url';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 
@@ -27,11 +33,12 @@ export type ShopSectionsProps = {
   navPath: string[];
   shopFilters?: ProfileShopFiltersState;
   viewerUsername?: string | null;
+  sectionKey?: 'user-shop' | 'recipe';
 };
 
 const EMPTY_SHOP_FILTERS: ProfileShopFiltersState = { tags: [], rating: null };
 
-function sectionHref(basePath: string, lineageSegments: string[], categoryName: string): string {
+function sectionPath(basePath: string, lineageSegments: string[], categoryName: string): string {
   const segments = [...lineageSegments, categoryName].map((s) => encodeURIComponent(s));
   return `${basePath}/${segments.join('/')}`;
 }
@@ -46,12 +53,25 @@ export function ShopSections({
   navPath,
   shopFilters = EMPTY_SHOP_FILTERS,
   viewerUsername,
+  sectionKey = 'user-shop',
 }: ShopSectionsProps) {
+  const { t } = useI18n();
   const { openLogin } = useLoginModal();
+  const searchParams = useSearchParams();
+  const urlFilters = useMemo(() => parseProfileShopFilters(searchParams), [searchParams]);
   const [sections, setSections] = useState(initialSections.sections);
   const [cursor, setCursor] = useState(initialSections.cursor);
   const [hasMore, setHasMore] = useState(initialSections.hasMore);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setSections(initialSections.sections);
+    setCursor(initialSections.cursor);
+    setHasMore(initialSections.hasMore);
+  }, [initialSections.cursor, initialSections.hasMore, initialSections.sections]);
+
+  const emptyTitle =
+    sectionKey === 'recipe' ? t('user_profile_recipe') : t('profile_shop_title');
 
   if (sections.length === 0) {
     if (profileShopFiltersActive(shopFilters)) {
@@ -63,9 +83,9 @@ export function ShopSections({
         aria-labelledby="shop-sections-empty"
       >
         <h2 id="shop-sections-empty" className="text-body-lg font-weight-strong font-display text-fg">
-          Shop
+          {emptyTitle}
         </h2>
-        <p className="mt-2 text-body-sm text-muted">No categories to show yet.</p>
+        <p className="mt-2 text-body-sm text-muted">{t('profile_shop_sections_empty')}</p>
       </section>
     );
   }
@@ -82,7 +102,10 @@ export function ShopSections({
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 id={`shop-section-${sec.categoryName}`} className="text-heading font-label text-body-lg">
                 <Link
-                  href={sectionHref(basePath, lineageSegments, sec.categoryName)}
+                  href={buildProfileShopHref(
+                    sectionPath(basePath, lineageSegments, sec.categoryName),
+                    urlFilters,
+                  )}
                   suppressHydrationWarning
                   className="text-fg underline-offset-2 hover:underline"
                 >
@@ -90,11 +113,11 @@ export function ShopSections({
                 </Link>
               </h2>
               <p className="text-caption text-fg-secondary tabular-nums">
-                {sec.totalObjects} object{sec.totalObjects === 1 ? '' : 's'}
+                {t('profile_shop_object_count').replace('{count}', String(sec.totalObjects))}
               </p>
             </div>
             {sec.items.length === 0 ? (
-              <p className="mt-3 text-body-sm text-muted">No preview items.</p>
+              <p className="mt-3 text-body-sm text-muted">{t('profile_shop_no_preview')}</p>
             ) : (
               <ul className="mt-4 flex flex-col gap-card-padding">
                 {sec.items.map((o) => (
@@ -136,7 +159,7 @@ export function ShopSections({
               });
             }}
           >
-            {pending ? 'Loading…' : 'Load more sections'}
+            {pending ? t('profile_shop_loading') : t('profile_shop_load_more_sections')}
           </button>
         </div>
       ) : null}

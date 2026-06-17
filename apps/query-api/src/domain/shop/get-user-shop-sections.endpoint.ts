@@ -84,7 +84,10 @@ export class GetUserShopSectionsEndpoint {
     const cursor = query.cursor?.trim();
     if (cursor && cursor.length > 0) {
       const idx = ordered.findIndex((it) => it.name === cursor);
-      start = idx >= 0 ? idx + 1 : 0;
+      if (idx < 0) {
+        return { sections: [], cursor: null, hasMore: false };
+      }
+      start = idx + 1;
     }
 
     const nameSeg = query.name?.trim() ?? '';

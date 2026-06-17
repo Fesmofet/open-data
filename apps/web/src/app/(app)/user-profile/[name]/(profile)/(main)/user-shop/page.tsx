@@ -20,6 +20,7 @@ export default async function UserProfileUserShopPage({ params, searchParams }: 
       basePath={basePath}
       lineageSegments={[]}
       shopFilters={shopFilters}
+      sectionKey="user-shop"
     />
   );
 }

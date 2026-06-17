@@ -8,6 +8,7 @@ export type FetchProfileShopFiltersParams = {
   categoryPath: string[];
   uncategorizedOnly?: boolean;
   tags?: readonly string[];
+  rating?: number | null;
   signal?: AbortSignal;
 };
 
@@ -29,6 +30,9 @@ function buildSearchParams(params: FetchProfileShopFiltersParams): string {
     if (trimmed) {
       sp.append('tags', trimmed);
     }
+  }
+  if (params.rating != null) {
+    sp.set('rating', String(params.rating));
   }
   return sp.toString();
 }

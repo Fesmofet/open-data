@@ -24,6 +24,7 @@ export default async function UserProfileRecipeCategoryPage({
       basePath={basePath}
       lineageSegments={lineageSegments}
       shopFilters={shopFilters}
+      sectionKey="recipe"
     />
   );
 }

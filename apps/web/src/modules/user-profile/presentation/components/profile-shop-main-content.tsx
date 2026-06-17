@@ -4,7 +4,10 @@ import { getCategoryNav } from '../../infrastructure/clients/categories.client';
 import { getShopObjectsQuery } from '../../application/queries/get-shop-objects.query';
 import { getShopSectionsQuery } from '../../application/queries/get-shop-sections.query';
 import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
-import { profileShopFiltersActive } from '../../domain/profile-shop-filters-url';
+import {
+  buildShopListScopeKey,
+  profileShopFiltersActive,
+} from '../../domain/profile-shop-filters-url';
 import { apiNavContextFromLineage, UNCATEGORIZED_SHOP_PATH_SEGMENT } from './category-nav-path';
 import { ProfileShopFilterChips } from './profile-shop-filter-chips';
 import { ProfileShopFilteredEmpty } from './profile-shop-filtered-empty';
@@ -17,6 +20,7 @@ export type ProfileShopMainContentProps = {
   basePath: string;
   lineageSegments: string[];
   shopFilters?: ProfileShopFiltersState;
+  sectionKey?: 'user-shop' | 'recipe';
 };
 
 const EMPTY_SHOP_FILTERS: ProfileShopFiltersState = { tags: [], rating: null };
@@ -32,6 +36,7 @@ export async function ProfileShopMainContent({
   basePath,
   lineageSegments,
   shopFilters = EMPTY_SHOP_FILTERS,
+  sectionKey = 'user-shop',
 }: ProfileShopMainContentProps) {
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
@@ -42,7 +47,6 @@ export async function ProfileShopMainContent({
   };
 
   const chips = <ProfileShopFilterChips filters={shopFilters} />;
-  const listKey = `${shopFilters.tags.join('|')}-${shopFilters.rating ?? ''}`;
 
   const uncategorizedOnly =
     lineageSegments.length === 1 && lineageSegments[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT;
@@ -67,7 +71,7 @@ export async function ProfileShopMainContent({
           <ProfileShopFilteredEmpty />
         ) : (
           <ShopObjectList
-            key={listKey}
+            key={buildShopListScopeKey(lineageSegments, uncategorizedOnly, shopFilters)}
             accountName={accountName}
             initialPage={page}
             types={types}
@@ -75,6 +79,7 @@ export async function ProfileShopMainContent({
             uncategorizedOnly={uncategorizedOnly}
             shopFilters={shopFilters}
             viewerUsername={viewerUsername}
+            sectionKey={sectionKey}
           />
         )}
       </>
@@ -104,13 +109,14 @@ export async function ProfileShopMainContent({
       <>
         {chips}
         <ShopObjectList
-          key={listKey}
+          key={buildShopListScopeKey(lineageSegments, false, shopFilters)}
           accountName={accountName}
           initialPage={page}
           types={types}
           categoryPath={lineageSegments}
           shopFilters={shopFilters}
           viewerUsername={viewerUsername}
+          sectionKey={sectionKey}
         />
       </>
     );
@@ -132,6 +138,7 @@ export async function ProfileShopMainContent({
     <>
       {chips}
       <ShopSections
+        key={buildShopListScopeKey(lineageSegments, false, shopFilters)}
         accountName={accountName}
         initialSections={sections}
         types={types}
@@ -141,6 +148,7 @@ export async function ProfileShopMainContent({
         navPath={path}
         shopFilters={shopFilters}
         viewerUsername={viewerUsername}
+        sectionKey={sectionKey}
       />
     </>
   );

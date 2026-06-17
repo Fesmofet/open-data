@@ -273,14 +273,14 @@ export class ObjectCategoriesRepository {
         )
         SELECT
           c.candidate_name AS category_name,
-          (
-            SELECT COUNT(*)::int
-            FROM base_scope b
-            INNER JOIN object_categories cat ON cat.object_id = b.object_id
-            WHERE cat.category_names @> (${parentArrSql} || ARRAY[c.candidate_name]::text[])
-              AND (${objectFilter})
-          ) AS object_count
+          COUNT(DISTINCT b.object_id)::int AS object_count
         FROM cats c
+        INNER JOIN object_categories cat
+          ON cat.category_names @> (${parentArrSql} || ARRAY[c.candidate_name]::text[])
+        INNER JOIN base_scope b
+          ON b.object_id = cat.object_id
+          AND (${objectFilter})
+        GROUP BY c.candidate_name
       `.execute(this.db);
 
       for (const row of rows.rows) {
@@ -369,10 +369,11 @@ export class ObjectCategoriesRepository {
     }
   }
 
-  /** Tag facet rows for objects in user shop scope (optionally narrowed by active tags). */
+  /** Tag facet rows for objects in user shop scope (optionally narrowed by active tags/rating). */
   async getShopTagCategories(
     scope: ShopScopeParams,
     activeTags: ShopTagFilter[] = [],
+    ratingThreshold: number | null = null,
   ): Promise<ShopTagCategoryRow[]> {
     const account = scope.account.trim();
     if (account.length === 0 || scope.types.length === 0) {
@@ -380,13 +381,14 @@ export class ObjectCategoriesRepository {
     }
 
     const { authorityTypeFilter, postPred, categoryFilter } = buildShopScopeCtes(scope);
+    const needsNarrowing = activeTags.length > 0 || ratingThreshold != null;
 
     try {
-      if (activeTags.length > 0) {
+      if (needsNarrowing) {
         const narrowingFilter = buildShopObjectFilterClause(
           sql`so.object_id`,
           activeTags,
-          null,
+          ratingThreshold,
         );
 
         const result = await sql<ShopTagCategoryRow>`
@@ -426,7 +428,7 @@ export class ObjectCategoriesRepository {
             tci.value AS tag_value,
             COUNT(DISTINCT tci.object_id)::int AS object_count
           FROM object_tag_category_items tci
-          WHERE tci.object_id IN (SELECT object_id FROM narrowed_objects)
+          INNER JOIN narrowed_objects no ON no.object_id = tci.object_id
           GROUP BY 1, 2
           ORDER BY 1 ASC, 3 DESC, 2 ASC
         `.execute(this.db);
@@ -470,7 +472,7 @@ export class ObjectCategoriesRepository {
           tci.value AS tag_value,
           COUNT(DISTINCT tci.object_id)::int AS object_count
         FROM object_tag_category_items tci
-        WHERE tci.object_id IN (SELECT object_id FROM scoped_objects)
+        INNER JOIN scoped_objects so ON so.object_id = tci.object_id
         GROUP BY 1, 2
         ORDER BY 1 ASC, 3 DESC, 2 ASC
       `.execute(this.db);

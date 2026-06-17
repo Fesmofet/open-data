@@ -346,12 +346,13 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
       inputSchema: shopFiltersQuerySchema.extend(accountField),
     },
     async (args) => {
-      const { account, types, categoryPath, uncategorizedOnly, tags } = args;
+      const { account, types, categoryPath, uncategorizedOnly, tags, rating } = args;
       const result = await deps.getUserShopFilters.execute(account, {
         types,
         categoryPath,
         uncategorizedOnly,
         tags,
+        rating,
       });
       return jsonToolResult(result);
     },

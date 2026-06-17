@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import type { CategoryNavItem } from '../../domain/types/category-nav';
+import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
+import { buildProfileShopHref } from '../../domain/profile-shop-filters-url';
 import { getCategoryLineageFromPathname } from './category-nav-path';
 
 type CategoryNavListProps = {
@@ -12,9 +14,10 @@ type CategoryNavListProps = {
   basePath: string;
   /** `'user-shop'` or `'recipe'` */
   sectionKey: 'user-shop' | 'recipe';
+  filters: ProfileShopFiltersState;
 };
 
-export function CategoryNavList({ items, basePath, sectionKey }: CategoryNavListProps) {
+export function CategoryNavList({ items, basePath, sectionKey, filters }: CategoryNavListProps) {
   const pathname = usePathname();
   const lineage = getCategoryLineageFromPathname(pathname, sectionKey);
   const prefix =
@@ -23,7 +26,8 @@ export function CategoryNavList({ items, basePath, sectionKey }: CategoryNavList
   return (
     <ul className="mt-2 list-none space-y-0.5 p-0" role="list">
       {items.map((item) => {
-        const href = `${basePath}/${prefix}${encodeURIComponent(item.name)}`;
+        const path = `${basePath}/${prefix}${encodeURIComponent(item.name)}`;
+        const href = buildProfileShopHref(path, filters);
         const isActive = lineage.length > 0 && lineage[lineage.length - 1] === item.name;
         return (
           <li key={item.name}>

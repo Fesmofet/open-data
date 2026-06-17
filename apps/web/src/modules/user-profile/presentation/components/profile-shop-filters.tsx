@@ -137,6 +137,7 @@ export function ProfileShopFilters({
   const router = useRouter();
   const [data, setData] = useState<ProfileShopFiltersResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => new Set());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -157,26 +158,41 @@ export function ProfileShopFilters({
   useEffect(() => {
     const ac = new AbortController();
     setLoading(true);
+    setFetchError(false);
     void (async () => {
       const res = await fetchProfileShopFilters(accountName, {
         types,
         categoryPath,
         uncategorizedOnly,
         tags: filters.tags,
+        rating: filters.rating,
         signal: ac.signal,
       });
       if (!ac.signal.aborted) {
-        setData(res);
-        if (res && filters.tags.length === 0) {
-          setCollapsedCategories(
-            buildDefaultCollapsed(orderTagSections(res.categories, registryOrder), filters.tags),
-          );
+        if (res === null) {
+          setFetchError(true);
+          setData(null);
+        } else {
+          setData(res);
+          if (filters.tags.length === 0) {
+            setCollapsedCategories(
+              buildDefaultCollapsed(orderTagSections(res.categories, registryOrder), filters.tags),
+            );
+          }
         }
         setLoading(false);
       }
     })();
     return () => ac.abort();
-  }, [accountName, types, categoryPath, uncategorizedOnly, filters.tags, registryOrder]);
+  }, [
+    accountName,
+    types,
+    categoryPath,
+    uncategorizedOnly,
+    filters.tags,
+    filters.rating,
+    registryOrder,
+  ]);
 
   useEffect(() => {
     if (filters.tags.length === 0 || !data?.categories) {
@@ -258,6 +274,10 @@ export function ProfileShopFilters({
     });
   }, []);
 
+  const filterAriaLabel = isUserProfileRecipeTab(pathname)
+    ? t('profile_filter_recipe')
+    : t('profile_filter_shop');
+
   if (!showTagFilters && !showRatingFilters) {
     return null;
   }
@@ -272,7 +292,7 @@ export function ProfileShopFilters({
   return (
     <aside
       className="relative z-0 min-w-0 w-full self-start overflow-hidden rounded-card border border-border bg-surface/60 p-card-padding lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto"
-      aria-label={t('profile_filter_shop')}
+      aria-label={filterAriaLabel}
       aria-busy={loading}
     >
       <h2 className="mb-3 flex items-center gap-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
@@ -280,7 +300,36 @@ export function ProfileShopFilters({
         <span>{t('discover_filters_title')}</span>
       </h2>
 
-      {loading ? (
+      {fetchError && !loading ? (
+        <div className="space-y-2">
+          <p className="text-body-sm text-muted">{t('profile_filters_load_error')}</p>
+          <button
+            type="button"
+            className="text-caption text-link underline"
+            onClick={() => {
+              setFetchError(false);
+              setLoading(true);
+              void fetchProfileShopFilters(accountName, {
+                types,
+                categoryPath,
+                uncategorizedOnly,
+                tags: filters.tags,
+                rating: filters.rating,
+              }).then((res) => {
+                if (res === null) {
+                  setFetchError(true);
+                  setData(null);
+                } else {
+                  setData(res);
+                }
+                setLoading(false);
+              });
+            }}
+          >
+            {t('profile_filters_retry')}
+          </button>
+        </div>
+      ) : loading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-20 animate-pulse rounded-btn bg-surface-control" aria-hidden />

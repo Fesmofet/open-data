@@ -18,7 +18,7 @@ related:
 
 - `GET /query/v1/users/:name/shop-objects` — flat `ProjectedObject[]` in user shop scope with `categoryPath` filter, optional `uncategorizedOnly=true` (objects with no `category_names`), optional `tags[]` (`category:value`, AND) and optional `rating` (`6` | `8` | `10` legacy threshold), and `object_id` cursor.
 - `GET /query/v1/users/:name/shop-sections` — grouped preview rows (`sectionLimit` categories per page, 3 objects per category) for intermediate category nodes; cursor is the last category `name` from the previous page (same ordering as `GET .../categories`). Optional `tags[]` and `rating` omit categories with zero matches (API/MCP); the web profile UI uses `shop-objects` instead when filters are active.
-- `GET /query/v1/users/:name/shop/filters` — tag category facets (counts scoped to user shop membership and current `categoryPath`) plus static rating thresholds `[10, 8, 6]`. Optional `tags[]` narrows facet counts (AND).
+- `GET /query/v1/users/:name/shop/filters` — tag category facets (counts scoped to user shop membership and current `categoryPath`) plus static rating thresholds `[10, 8, 6]`. Optional `tags[]` and optional `rating` narrow facet counts (AND / minimum threshold).
 
 **Scope:** Same membership as `object_categories_related` user scopes (`object_authority` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
 
