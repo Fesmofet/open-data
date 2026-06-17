@@ -34,6 +34,8 @@ export async function revalidateUserSocialAfterBroadcast(accountName: string): P
   updateTag(queryApiCacheTags.userFollowers(name));
   updateTag(queryApiCacheTags.userFollowing(name));
   updateTag(queryApiCacheTags.userFollowingObjects(name));
+  updateTag(queryApiCacheTags.userFavoritesTypes(name));
+  updateTag(queryApiCacheTags.userFavorites(name));
   revalidatePath(userProfilePath(name), 'layout');
 }
 

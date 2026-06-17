@@ -1,5 +1,12 @@
-import { ProfileRouteStub } from '@/modules/user-profile';
+import { ProfileFavoritesMainContent } from '@/modules/user-profile';
 
-export default function UserProfileFavoritesPage() {
-  return <ProfileRouteStub title="Favorites" description="Favorite objects for this profile." />;
+type PageProps = {
+  params: Promise<{ name: string }>;
+};
+
+export default async function UserProfileFavoritesPage({ params }: PageProps) {
+  const { name } = await params;
+  const accountName = decodeURIComponent(name);
+
+  return <ProfileFavoritesMainContent accountName={accountName} />;
 }

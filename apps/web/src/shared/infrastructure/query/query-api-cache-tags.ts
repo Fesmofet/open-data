@@ -14,6 +14,10 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:following`,
   userFollowingObjects: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:following-objects`,
+  userFavoritesTypes: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:favorites-types`,
+  userFavorites: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:favorites`,
   userBlogFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:blog-feed`,
   userThreadsFeed: (accountName: string) =>

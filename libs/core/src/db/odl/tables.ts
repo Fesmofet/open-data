@@ -279,6 +279,8 @@ export interface UserMetadataTable {
   hide_linked_objects: boolean;
   /** When true, exclude recipe objects linked via `post_objects` from the recipe bucket. */
   hide_recipe_objects: boolean;
+  /** When true, exclude post-linked objects from favorites scope. */
+  hide_favorite_objects: boolean;
 }
 
 export type UserMetadata = Selectable<UserMetadataTable>;

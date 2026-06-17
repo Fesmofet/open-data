@@ -9,6 +9,13 @@ export { ShopObjectList } from './components/shop-object-list';
 export type { ShopObjectListProps } from './components/shop-object-list';
 export { ShopSections } from './components/shop-sections';
 export type { ShopSectionsProps } from './components/shop-sections';
+export { FavoritesTypeNav } from './components/favorites-type-nav';
+export type { FavoritesTypeNavProps } from './components/favorites-type-nav';
+export { FavoritesObjectList } from './components/favorites-object-list';
+export type { FavoritesObjectListProps } from './components/favorites-object-list';
+export { ProfileFavoritesMainContent } from './components/profile-favorites-main-content';
+export type { ProfileFavoritesMainContentProps } from './components/profile-favorites-main-content';
+export { getFavoritesTypesQuery, getFavoritesObjectsPageQuery } from '../application/queries/get-favorites.query';
 export { UserProfileHeroClient } from './components/user-profile-hero-client';
 export type { UserProfileHeroClientProps } from './components/user-profile-hero-client';
 export {

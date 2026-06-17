@@ -106,6 +106,7 @@ export const updateUserMetadataPayloadSchema = z
     currency: z.union([z.string(), z.null()]),
     hide_linked_objects: z.boolean(),
     hide_recipe_objects: z.boolean(),
+    hide_favorite_objects: z.boolean().default(false),
   })
   .strict();
 

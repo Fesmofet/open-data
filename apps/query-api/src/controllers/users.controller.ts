@@ -53,6 +53,13 @@ import {
   type UserFollowingObjectsQuery,
   type UserSocialListQuery,
 } from '../domain/social';
+import {
+  GetUserFavoritesEndpoint,
+  GetUserFavoritesTypesEndpoint,
+  userFavoritesQuerySchema,
+  type UserFavoritesQuery,
+  type UserFavoritesTypesResponse,
+} from '../domain/favorites';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -67,6 +74,8 @@ export class UsersController {
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
+    private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
+    private readonly getUserFavorites: GetUserFavoritesEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -156,6 +165,28 @@ export class UsersController {
       throw new NotFoundException(`User not found: ${name}`);
     }
     return result;
+  }
+
+  @Get(':name/favorites/types')
+  async getFavoritesTypes(@Param('name') name: string): Promise<UserFavoritesTypesResponse> {
+    return this.getUserFavoritesTypes.execute(name);
+  }
+
+  @Get(':name/favorites')
+  async getFavorites(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userFavoritesQuerySchema)) query: UserFavoritesQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedProjectedObjects | null> {
+    return this.getUserFavorites.execute(
+      name,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
   }
 
   @Get(':name/profile')

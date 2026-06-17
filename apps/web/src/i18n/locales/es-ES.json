@@ -806,6 +806,8 @@
   "faq": "Preguntas frecuentes",
   "favorite_topics": "Temas favoritos",
   "favorites": "Favoritos",
+  "favorites_empty": "Aún no hay objetos favoritos en esta categoría.",
+  "favorites_types_empty": "Aún no hay tipos de objetos favoritos.",
   "features": "Características",
   "fee_on_deposits": "Hay una tarifa del 0.75% en los depósitos (tarifa mínima de 0.001 para HIVE).",
   "fee_on_withdrawals": "tarifa por retiros",

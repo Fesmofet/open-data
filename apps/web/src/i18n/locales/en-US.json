@@ -835,6 +835,8 @@
   "faq": "FAQ",
   "favorite_topics": "Favorite topics",
   "favorites": "Favorites",
+  "favorites_empty": "No favorite objects in this category yet.",
+  "favorites_types_empty": "No favorite object types yet.",
   "features": "Features",
   "fee_on_deposits": "There is a 0.75% fee on deposits (minimum fee 0.001 for HIVE).",
   "fee_on_withdrawals": "fee on withdrawals",

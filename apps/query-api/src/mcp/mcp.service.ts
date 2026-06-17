@@ -42,6 +42,10 @@ import {
   GetUserFollowingEndpoint,
   GetUserFollowingObjectsEndpoint,
 } from '../domain/social';
+import {
+  GetUserFavoritesEndpoint,
+  GetUserFavoritesTypesEndpoint,
+} from '../domain/favorites';
 import { GetUserProfileEndpoint } from '../domain/users';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import type { McpToolDeps } from './mcp-tool.deps';
@@ -77,6 +81,8 @@ export class McpService {
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
+    private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
+    private readonly getUserFavorites: GetUserFavoritesEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
@@ -112,6 +118,8 @@ export class McpService {
       getUserFollowers: this.getUserFollowers,
       getUserFollowing: this.getUserFollowing,
       getUserFollowingObjects: this.getUserFollowingObjects,
+      getUserFavoritesTypes: this.getUserFavoritesTypes,
+      getUserFavorites: this.getUserFavorites,
       getUserCategories: this.getUserCategories,
       getUserShopObjects: this.getUserShopObjects,
       getUserShopSections: this.getUserShopSections,

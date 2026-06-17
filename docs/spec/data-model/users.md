@@ -23,8 +23,9 @@ Constants: `REFERRAL_TYPES`, `REFERRAL_STATUSES`, `SUPPORTED_CURRENCIES` in `@op
 | Table | Role |
 | ----- | ---- |
 | **accounts_current** | Hive account row + Waivio fields (`alias`, `profile_image`, `wobjects_weight`, counts, `stage_version`, `referral_status`, `last_activity`). |
-| **user_metadata** | 1:1 settings from `UserMetadataSchema` (excluding nested `userNotifications`). |
+| **user_metadata** | 1:1 settings from `UserMetadataSchema` (excluding nested `userNotifications`). Includes shop/favorites visibility: `hide_linked_objects`, `hide_recipe_objects`, `hide_favorite_objects`. |
 | **user_notification_settings** | 1:1 notification toggles from `UserNotificationsSchema` (nested under `user_metadata.settings` in Mongo). Column `vote` stores Mongo `like` (`like` is reserved in SQL). |
+| **user_shop_deselect** | Per-user deselect of post-linked objects from shop/favorites (`account`, `object_id`). |
 | **user_referrals** | Rows from `referral[]`; PK `(account, agent, type)`. |
 | **user_post_bookmarks** | Bookmark strings that look like `author/permlink` (post refs). Object-only strings (no `/`) are not stored. |
 | **user_subscriptions** | `SubscriptionSchema` follower/following + `bell` + `created_at` (relationship time; default `NOW()`, backfilled from Mongo `_id` where available). |
@@ -51,6 +52,9 @@ erDiagram
   UserMetadata {
     text account PK
     jsonb post_locales
+    boolean hide_linked_objects
+    boolean hide_recipe_objects
+    boolean hide_favorite_objects
   }
 
   UserSubscription {
@@ -67,8 +71,10 @@ erDiagram
 | ----- | ----- | ------- |
 | user_referrals | `(agent)` | Lookup by agent |
 | user_post_bookmarks | `(account)` | List bookmarks per user |
+| user_shop_deselect | `(account)` | List deselected post-linked objects per user |
 | user_subscriptions | `(following)`, `(following, created_at DESC)`, `(follower, created_at DESC)` | Followers of an account; recency listings |
 | user_object_follows | `(object_id)`, `(account, created_at DESC)` | Who follows an object |
+| post_objects | `(author)` | Shop/favorites: filter post-linked objects by profile author |
 
 ## Data import
 

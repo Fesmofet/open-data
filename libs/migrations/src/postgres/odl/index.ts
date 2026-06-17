@@ -20,6 +20,8 @@ import * as m00019 from './00019_knowledge_files_description';
 import * as m00020 from './00020_knowledge_search_hybrid';
 import * as m00021 from './00021_posts_rewards_finalized_at';
 import * as m00022 from './00022_post_object_related_images';
+import * as m00023 from './00023_user_metadata_hide_favorite_objects';
+import * as m00024 from './00024_post_objects_author_index';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -49,4 +51,6 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00020_knowledge_search_hybrid': { up: m00020.up, down: m00020.down },
   '00021_posts_rewards_finalized_at': { up: m00021.up, down: m00021.down },
   '00022_post_object_related_images': { up: m00022.up, down: m00022.down },
+  '00023_user_metadata_hide_favorite_objects': { up: m00023.up, down: m00023.down },
+  '00024_post_objects_author_index': { up: m00024.up, down: m00024.down },
 };

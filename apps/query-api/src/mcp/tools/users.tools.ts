@@ -7,6 +7,7 @@ import {
   userFollowingObjectsQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
+import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
@@ -259,6 +260,40 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
       if (!result) {
         return toolError(`User not found: ${account}`);
       }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_favorites_types',
+    {
+      description: catalogDescription('get_user_favorites_types'),
+      inputSchema: z.object(accountField),
+    },
+    async (args) => {
+      const result = await deps.getUserFavoritesTypes.execute(args.account);
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_favorites',
+    {
+      description: catalogDescription('get_user_favorites'),
+      inputSchema: withMcpLocaleContext(
+        userFavoritesQuerySchema.extend(accountField),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { account, objectType, skip, limit } = args;
+      const result = await deps.getUserFavorites.execute(
+        account,
+        { objectType, skip, limit },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
       return jsonToolResult(result);
     },
   );

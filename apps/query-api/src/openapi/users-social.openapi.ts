@@ -64,6 +64,8 @@ export const subscriptionSortEnum = ['rank', 'followers', 'a-z', 'recency'] as c
 /** Shared response schema for user-profile and object follower lists. */
 export const paginatedUserFollowListOpenApiSchema = paginatedUserFollowListSchema;
 
+export { accountNameParam, paginatedProjectedObjectsSchema };
+
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/followers',

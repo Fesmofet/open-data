@@ -7,6 +7,7 @@ import { ObjectsModule } from '../domain/objects';
 import { SearchModule } from '../domain/search';
 import { ShopModule } from '../domain/shop/shop.module';
 import { SocialModule } from '../domain/social/social.module';
+import { FavoritesModule } from '../domain/favorites/favorites.module';
 import { UsersModule } from '../domain/users';
 import { McpController } from './mcp.controller';
 import { McpService } from './mcp.service';
@@ -20,6 +21,7 @@ import { McpService } from './mcp.service';
     CategoriesModule,
     ShopModule,
     SocialModule,
+    FavoritesModule,
     SearchModule,
     DiscoverModule,
   ],

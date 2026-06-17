@@ -77,6 +77,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_followers` | `GET .../followers` | [user-social-lists.md](user-social-lists.md) |
 | `get_user_following` | `GET .../following` | [user-social-lists.md](user-social-lists.md) |
 | `get_user_following_objects` | `GET .../following-objects` | [user-social-lists.md](user-social-lists.md) |
+| `get_user_favorites_types` | `GET .../favorites/types` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
+| `get_user_favorites` | `GET .../favorites` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
 | `get_user_categories` | `GET .../categories` | [categories.md](categories.md) |
 | `get_user_shop_objects` | `GET .../shop-objects` | [shop-feed-endpoints.md](shop-feed-endpoints.md) |
 | `get_user_shop_sections` | `GET .../shop-sections` | [shop-feed-endpoints.md](shop-feed-endpoints.md) |

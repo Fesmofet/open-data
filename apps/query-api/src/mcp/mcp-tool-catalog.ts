@@ -168,6 +168,18 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-social-lists.md',
   },
   {
+    name: 'get_user_favorites_types',
+    description: 'Object types present in user favorites (sidebar).',
+    httpEquivalent: 'GET /query/v1/users/:name/favorites/types',
+    specPath: 'docs/apps/query-api/spec/users-favorites-endpoint.md',
+  },
+  {
+    name: 'get_user_favorites',
+    description: 'Paginated favorite objects for a user profile.',
+    httpEquivalent: 'GET /query/v1/users/:name/favorites',
+    specPath: 'docs/apps/query-api/spec/users-favorites-endpoint.md',
+  },
+  {
     name: 'get_user_categories',
     description: 'Shop department tree for a user catalog.',
     httpEquivalent: 'GET /query/v1/users/:name/categories',

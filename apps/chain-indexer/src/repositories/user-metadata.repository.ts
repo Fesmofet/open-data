@@ -53,6 +53,7 @@ export class UserMetadataRepository {
         currency: data.currency,
         hide_linked_objects: data.hide_linked_objects,
         hide_recipe_objects: data.hide_recipe_objects,
+        hide_favorite_objects: data.hide_favorite_objects,
       })
       .onConflict((oc) =>
         oc.column('account').doUpdateSet({
@@ -70,6 +71,7 @@ export class UserMetadataRepository {
           currency: data.currency,
           hide_linked_objects: data.hide_linked_objects,
           hide_recipe_objects: data.hide_recipe_objects,
+          hide_favorite_objects: data.hide_favorite_objects,
         }),
       )
       .execute();

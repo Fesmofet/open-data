@@ -10,7 +10,10 @@ import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import {
+  revalidateObjectAfterBroadcast,
+  revalidateUserSocialAfterBroadcast,
+} from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 function IconHeartAdministrative({ active }: { active: boolean }) {
   return (
@@ -78,9 +81,10 @@ export function AdministrativeHeartButton({
         operations: [op],
       });
       void awaitTrxConfirmation(transactionId).finally(() => {
-        void refreshAfterBroadcast(router, () =>
-          revalidateObjectAfterBroadcast(objectId),
-        ).finally(() => {
+        void refreshAfterBroadcast(router, async () => {
+          await revalidateObjectAfterBroadcast(objectId);
+          await revalidateUserSocialAfterBroadcast(account);
+        }).finally(() => {
           setPending(false);
         });
       });

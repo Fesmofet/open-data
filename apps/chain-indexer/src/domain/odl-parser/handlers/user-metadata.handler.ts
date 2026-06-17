@@ -48,6 +48,7 @@ export class UserMetadataHandler implements OdlActionHandler {
         currency: d.currency === undefined ? null : d.currency,
         hide_linked_objects: d.hide_linked_objects,
         hide_recipe_objects: d.hide_recipe_objects,
+        hide_favorite_objects: d.hide_favorite_objects,
       };
       await this.userMetadataRepository.upsertFull(ctx.creator, row);
       this.eventEmitter.emit(USER_METADATA_CHANGED_EVENT, new UserMetadataChangedEvent(ctx.creator));

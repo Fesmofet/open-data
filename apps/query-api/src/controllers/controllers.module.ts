@@ -7,6 +7,7 @@ import { UsersModule } from '../domain/users';
 import { CategoriesModule } from '../domain/categories/categories.module';
 import { ShopModule } from '../domain/shop/shop.module';
 import { SocialModule } from '../domain/social/social.module';
+import { FavoritesModule } from '../domain/favorites/favorites.module';
 import { ObjectUpdatesModule } from '../domain/object-updates';
 import { CurrencyController } from './currency.controller';
 import { ObjectsController } from './objects.controller';
@@ -30,6 +31,7 @@ import { DiscoverModule } from '../domain/discover';
     CategoriesModule,
     ShopModule,
     SocialModule,
+    FavoritesModule,
     SearchModule,
     DiscoverModule,
   ],

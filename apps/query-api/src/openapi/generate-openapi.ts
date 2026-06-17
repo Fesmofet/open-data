@@ -4,6 +4,7 @@ import './objects.openapi';
 import './object-updates.openapi';
 import './users.openapi';
 import './users-social.openapi';
+import './users-favorites.openapi';
 import './feed.openapi';
 import './posts.openapi';
 import './user-post-drafts.openapi';

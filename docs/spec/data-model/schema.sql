@@ -199,8 +199,22 @@ CREATE TABLE user_metadata (
   upvote_setting                 BOOLEAN NOT NULL DEFAULT FALSE,
   vote_percent                   INT NOT NULL DEFAULT 5000,
   voting_power                   BOOLEAN NOT NULL DEFAULT TRUE,
-  currency                       TEXT
+  currency                       TEXT,
+  hide_linked_objects            BOOLEAN NOT NULL DEFAULT FALSE,
+  hide_recipe_objects            BOOLEAN NOT NULL DEFAULT FALSE,
+  hide_favorite_objects          BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+-- ---------------------------------------------------------------------------
+-- user_shop_deselect (per-user hide for post-linked shop/favorites objects)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_shop_deselect (
+  account    TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+  object_id  TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  PRIMARY KEY (account, object_id)
+);
+
+CREATE INDEX idx_user_shop_deselect_account ON user_shop_deselect (account);
 
 -- ---------------------------------------------------------------------------
 -- user_notification_settings (UserNotificationsSchema)
@@ -384,6 +398,7 @@ CREATE TABLE post_objects (
 
 CREATE INDEX idx_post_objects_object_id ON post_objects (object_id);
 CREATE INDEX idx_post_objects_object_type ON post_objects (object_type) WHERE object_type IS NOT NULL;
+CREATE INDEX idx_post_objects_author ON post_objects (author);
 
 -- ---------------------------------------------------------------------------
 -- post_reblogged_users
