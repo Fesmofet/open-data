@@ -7,6 +7,7 @@ import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 import { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
 import { GetPostVotersEndpoint } from './get-post-voters.endpoint';
 import { PostRewardRatesCache } from './post-reward-rates.cache';
+import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
 import { PostRewardService } from './post-reward.service';
 import { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 import { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters.endpoint';
@@ -28,6 +29,7 @@ import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
     GetPostDiscussionEndpoint,
     GetPostVotersEndpoint,
     PostRewardRatesCache,
+    HiveGlobalPropertiesCache,
     PostRewardService,
   ],
   exports: [
@@ -41,6 +43,7 @@ import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
     GetPostDiscussionEndpoint,
     GetPostVotersEndpoint,
     PostRewardRatesCache,
+    HiveGlobalPropertiesCache,
     PostRewardService,
   ],
 })

@@ -26,4 +26,6 @@ export const redisKey = {
     buildRedisKey(APP, 'cache', 'post-reward', 'waiv-hive-usd'),
   postRewardFiatRates: (base: string) =>
     buildRedisKey(APP, 'cache', 'post-reward', 'fiat', base),
+  hiveGlobalProperties: () =>
+    buildRedisKey(APP, 'cache', 'hive', 'dynamic-global-properties'),
 } as const;

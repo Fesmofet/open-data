@@ -54,11 +54,13 @@ export function ActivityFeed({
   const [cursor, setCursor] = useState(page.cursor);
   const [hasMore, setHasMore] = useState(page.hasMore);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
 
   useEffect(() => {
     setItems(page.items);
     setCursor(page.cursor);
     setHasMore(page.hasMore);
+    setLoadMoreError(false);
   }, [page]);
 
   const handleLoadMore = useCallback(() => {
@@ -66,9 +68,12 @@ export function ActivityFeed({
       return;
     }
     setLoadingMore(true);
+    setLoadMoreError(false);
     void loadMoreAction(accountName, cursor)
       .then((next) => {
         if (next.error) {
+          setHasMore(false);
+          setLoadMoreError(true);
           return;
         }
         let stopPaging = false;
@@ -85,7 +90,7 @@ export function ActivityFeed({
   }, [accountName, cursor, loadMoreAction, loading, loadingMore]);
 
   const { sentinelRef } = useInfiniteScroll({
-    hasMore: hasMore && !loading,
+    hasMore: hasMore && !loading && !loadMoreError,
     isLoading: loadingMore,
     onLoadMore: handleLoadMore,
   });
@@ -174,6 +179,11 @@ export function ActivityFeed({
             </p>
           ) : null}
         </div>
+      ) : null}
+      {loadMoreError ? (
+        <p className="py-2 text-center text-body-sm text-muted" role="alert">
+          {t('activity_error')}
+        </p>
       ) : null}
     </FeedColumn>
   );

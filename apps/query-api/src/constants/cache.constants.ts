@@ -21,3 +21,6 @@ export const POST_REWARD_WAIV_HIVE_RATE_CACHE_TTL_SEC = 600;
 
 /** Redis TTL for fiat crosses (USD base) in post reward enrichment (seconds). */
 export const POST_REWARD_FIAT_RATES_CACHE_TTL_SEC = 21_600;
+
+/** Redis TTL for Hive dynamic global properties (vesting fund/shares for activity HP). */
+export const HIVE_GLOBAL_PROPERTIES_CACHE_TTL_SEC = 300;

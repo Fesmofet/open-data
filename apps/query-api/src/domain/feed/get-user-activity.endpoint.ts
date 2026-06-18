@@ -21,11 +21,7 @@ import {
   type UserActivityResponse,
 } from './activity-item-dtos';
 import type { UserActivityBody } from './schemas/user-activity.schema';
-
-const DEFAULT_CHAIN_CONTEXT = {
-  totalVestingShares: '0',
-  totalVestingFundSteem: '0',
-} as const;
+import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
 
 /** Keep paging Hive until the page is filled (after filtering hidden ops). */
 const ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS = 40;
@@ -44,6 +40,7 @@ export class GetUserActivityEndpoint {
   constructor(
     private readonly accounts: AccountsCurrentRepository,
     private readonly hiveClient: HiveClient,
+    private readonly hiveGlobalProperties: HiveGlobalPropertiesCache,
   ) {}
 
   async execute(
@@ -86,21 +83,13 @@ export class GetUserActivityEndpoint {
         ? encodeActivityCursor({ operationIndex: collected.resumeFrom })
         : null;
 
-    const globalProps = await this.hiveClient.getDynamicGlobalProperties();
-    const totalVestingFund =
-      globalProps?.total_vesting_fund_hive ??
-      globalProps?.total_vesting_fund_steem ??
-      DEFAULT_CHAIN_CONTEXT.totalVestingFundSteem;
+    const chainContext = await this.hiveGlobalProperties.getChainContextFields();
 
     return {
       items: pageItems,
       cursor,
       hasMore,
-      chainContext: {
-        totalVestingShares:
-          globalProps?.total_vesting_shares ?? DEFAULT_CHAIN_CONTEXT.totalVestingShares,
-        totalVestingFundSteem: totalVestingFund,
-      },
+      chainContext,
     };
   }
 

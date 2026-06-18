@@ -22,3 +22,18 @@ export const userActivityResponseSchema = z.object({
 
 export type ActivityItemApi = z.infer<typeof activityItemApiSchema>;
 export type UserActivityResponseApi = z.infer<typeof userActivityResponseSchema>;
+
+const activityPageViewSchema = z.object({
+  items: z.array(z.object({ id: z.string() }).passthrough()),
+  cursor: z.string().nullable(),
+  hasMore: z.boolean(),
+  chainContext: z.object({
+    totalVestingShares: z.string(),
+    totalVestingFundSteem: z.string(),
+  }),
+});
+
+export const activityPageQueryResultSchema = z.object({
+  page: activityPageViewSchema,
+  error: z.enum(['unavailable', 'invalid_response']).nullable(),
+});

@@ -45,7 +45,7 @@ Body is optional (`{}` default) — same preprocess pattern as other feed POST e
 | `items[]` | Raw operations: `id`, `operationIndex`, `trxId`, `timestamp` (ISO), `block`, `type`, `payload` |
 | `cursor` | Next page cursor or `null` |
 | `hasMore` | Whether more history exists |
-| `chainContext` | `totalVestingShares`, `totalVestingFundSteem` for HP conversion in the web UI |
+| `chainContext` | `totalVestingShares`, `totalVestingFundSteem` for HP conversion in the web UI (from cached `get_dynamic_global_properties`, Redis TTL 5 min) |
 
 ## Filtering
 
@@ -57,8 +57,9 @@ When `filters` is empty, no Hive operation bitmask is sent (all operation types 
 
 When `filters` is non-empty:
 
-1. **Bitmask** — union of Hive operation indices for all selected keys → `filter_low` / `filter_high` on each `get_account_history` RPC round-trip (`buildActivityFilterMask` in `@opden-data-layer/core/hive-account-history`).
+1. **Bitmask** — union of Hive operation indices for all selected keys → `operation_filter_low` / `operation_filter_high` on each `get_account_history` RPC round-trip (`makeOperationBitMask` / `buildActivityFilterMask` in `@opden-data-layer/core/hive-account-history`). Indices **0–63** map to `filter_low`; **64–127** to `filter_high`. Large masks use BigInt internally; values above `Number.MAX_SAFE_INTEGER` are sent as decimal strings in RPC params.
 2. **Semantic pass** — after mapping each row, `matchesActivityFilters` applies payload rules (OR across selected keys). Bitmask alone is insufficient for vote weight, transfer direction, follow/unfollow/reblog `custom_json`, and reply-vs-post comments.
+3. **Sparse bitmask paging** — when a filtered RPC batch is empty but history may continue, the endpoint steps `from` backward by `requestLimit` until index `0` (virtual/reward ops with gaps in history).
 
 | UI filter | Bitmask ops | Semantic |
 |-----------|-------------|----------|
@@ -68,14 +69,15 @@ When `filters` is non-empty:
 | `replied` | `comment` | exclude top-level posts (`parent_author === ''`) |
 | `powered_up` | `transfer_to_vesting`, `transfer_to_vesting_completed` | — |
 | `received` / `transfer` | `transfer` | `to` / `from` vs profile account |
-| `savings` | savings transfer ops | — |
+| `savings` | savings transfer ops + `interest` (index 55) | — |
 | `author_reward` / `curation_reward` / `claim_rewards` | respective reward ops | — |
 
-Active filters may require more Hive round-trips before a full page is filled (cap remains **40** trips per HTTP request).
+Active filters may require more Hive round-trips before a full page is filled.
 
 ## Paging limits
 
-- Each HTTP request may perform up to **40** Hive round trips (`ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS`).
+- **Without filters:** up to **40** Hive round trips per HTTP request (`ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS`).
+- **With filters:** up to **80** round trips (`ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS_WITH_FILTERS`) — rare ops may sit deep in history.
 - **Without filters:** **100** raw rows per trip (`HIVE_HISTORY_DEFAULT_BATCH_SIZE`) — many ops are dropped as `effective_comment_vote`.
 - **With filters:** **1000** raw rows per trip when `from` allows it (`HIVE_ACCOUNT_HISTORY_MAX_BATCH_SIZE`). Hive requires `start >= limit - 1`; when paging into low operation indices the endpoint shrinks the RPC limit to `min(batchSize, from + 1)` (legacy `walletHelper` behavior).
 - **Assert Exception + `sequence`:** when a filtered page is empty but Hive returns `error.data.stack[0].data.sequence`, the client continues from that operation index (legacy `getProcessHistorySocket` in campaigns `hiveRequests.js`) instead of failing the HTTP request.
@@ -84,7 +86,7 @@ Active filters may require more Hive round-trips before a full page is filled (c
 ## Errors
 
 - `404` when `accounts_current` has no row for `name`.
-- `400` when `cursor` is present but cannot be decoded (invalid base64 or payload).
+- `400` when `cursor` is present but cannot be decoded (invalid base64 or payload), or when `filters` contains unknown keys (Zod enum validation).
 - `503` when the Hive node returns no account-history payload on a paging round (RPC failure — not an empty account).
 
 ## MCP
@@ -93,4 +95,4 @@ Tool: `get_user_activity` — same contract as HTTP.
 
 ## Verification
 
-`pnpm nx test query-api --testPathPattern=user-activity`
+`pnpm nx test query-api --testPathPatterns="user-activity|hive-global-properties"`

@@ -4,6 +4,7 @@ import {
 } from '@opden-data-layer/core/hive-account-history';
 
 import type { ActivityPageQueryResult } from '../../domain/types/activity-row-view';
+import { activityPageQueryResultSchema } from '../../application/dto/activity-api.schema';
 
 export async function fetchUserActivityPageClient(
   accountName: string,
@@ -35,7 +36,12 @@ export async function fetchUserActivityPageClient(
     if (!res.ok) {
       return null;
     }
-    return (await res.json()) as ActivityPageQueryResult;
+    const json: unknown = await res.json();
+    const parsed = activityPageQueryResultSchema.safeParse(json);
+    if (!parsed.success) {
+      return { page: { items: [], cursor: null, hasMore: false, chainContext: { totalVestingShares: '0', totalVestingFundSteem: '0' } }, error: 'invalid_response' };
+    }
+    return parsed.data as ActivityPageQueryResult;
   } catch {
     return null;
   }

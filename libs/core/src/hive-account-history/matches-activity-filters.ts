@@ -133,7 +133,10 @@ export function matchesActivityFilter(
         matchesCustomJsonFilter(filter, item.payload)
       );
     case 'replied':
-      return item.type === HIVE_OP.COMMENT;
+      return (
+        item.type === HIVE_OP.COMMENT &&
+        asString(item.payload['parent_author']).length > 0
+      );
     case 'powered_up':
       return (
         item.type === HIVE_OP.TRANSFER_TO_VESTING ||

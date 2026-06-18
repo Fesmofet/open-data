@@ -41,7 +41,7 @@ Subnav links: [user-menu.md](../components/user-menu.md) + [user-profile-subnav.
 | Shared loader UI | [`feed-profile-content.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/feed-profile-content.tsx) |
 | Posts list + infinite scroll | [`blog-feed-posts-list.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/blog-feed-posts-list.tsx) |
 | Feed queries | `@/modules/feed` — `getUserBlogFeedPageQuery`, `getUserThreadsFeedPageQuery`, etc. |
-| Server actions (load more) | `blog-feed.actions.ts`, `threads-feed.actions.ts`, `comments-feed.actions.ts`, `mentions-feed.actions.ts`, `activity-feed.actions.ts` |
+| Server actions (load more) | `blog-feed.actions.ts`, `threads-feed.actions.ts`, `comments-feed.actions.ts`, `mentions-feed.actions.ts` |
 
 ## Behavior
 

@@ -87,13 +87,14 @@ describe('buildActivityFilterMask', () => {
     });
   });
 
-  it('builds savings mask without interest RPC bit', () => {
+  it('builds savings mask including interest RPC bit', () => {
     const mask = buildActivityFilterMask(['savings']);
     expect(mask?.filterLow).toBe(
       (
         BigInt(1) << BigInt(32) |
         BigInt(1) << BigInt(33) |
         BigInt(1) << BigInt(34) |
+        BigInt(1) << BigInt(55) |
         BigInt(1) << BigInt(59)
       ).toString(),
     );
@@ -157,5 +158,41 @@ describe('matchesActivityFilters', () => {
         profile,
       ),
     ).toBe(true);
+  });
+
+  it('matches savings interest operation', () => {
+    expect(
+      matchesActivityFilter(
+        {
+          type: HIVE_OP.INTEREST,
+          payload: { owner: 'alice', interest: '0.001 HBD' },
+        },
+        'savings',
+        profile,
+      ),
+    ).toBe(true);
+  });
+
+  it('matches replied only for comments with parent_author', () => {
+    expect(
+      matchesActivityFilter(
+        {
+          type: HIVE_OP.COMMENT,
+          payload: { parent_author: 'bob', parent_permlink: 'p' },
+        },
+        'replied',
+        profile,
+      ),
+    ).toBe(true);
+    expect(
+      matchesActivityFilter(
+        {
+          type: HIVE_OP.COMMENT,
+          payload: { parent_author: '', parent_permlink: '' },
+        },
+        'replied',
+        profile,
+      ),
+    ).toBe(false);
   });
 });

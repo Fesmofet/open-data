@@ -4,6 +4,7 @@ import type { HiveAccountHistoryRow } from '@opden-data-layer/clients';
 import { buildActivityFilterMask } from '@opden-data-layer/core/hive-account-history';
 
 import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
+import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
 import { encodeActivityCursor } from './activity-cursor';
 import { mapHiveAccountHistoryRow } from './activity-item-dtos';
 
@@ -16,8 +17,9 @@ function hivePage(
 
 describe('GetUserActivityEndpoint', () => {
   let accounts: { findByName: jest.Mock };
-  let hiveClient: jest.Mocked<
-    Pick<HiveClient, 'getAccountHistory' | 'getDynamicGlobalProperties'>
+  let hiveClient: jest.Mocked<Pick<HiveClient, 'getAccountHistory'>>;
+  let hiveGlobalProperties: jest.Mocked<
+    Pick<HiveGlobalPropertiesCache, 'getChainContextFields'>
   >;
   let endpoint: GetUserActivityEndpoint;
 
@@ -25,11 +27,17 @@ describe('GetUserActivityEndpoint', () => {
     accounts = { findByName: jest.fn() };
     hiveClient = {
       getAccountHistory: jest.fn(),
-      getDynamicGlobalProperties: jest.fn(),
+    };
+    hiveGlobalProperties = {
+      getChainContextFields: jest.fn().mockResolvedValue({
+        totalVestingShares: '100',
+        totalVestingFundSteem: '50',
+      }),
     };
     endpoint = new GetUserActivityEndpoint(
       accounts as never,
       hiveClient as unknown as HiveClient,
+      hiveGlobalProperties as unknown as HiveGlobalPropertiesCache,
     );
   });
 
@@ -40,10 +48,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('returns newest-first items and cursor from oldest in batch', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
     hiveClient.getAccountHistory.mockResolvedValue(
       hivePage([
       [
@@ -80,11 +84,11 @@ describe('GetUserActivityEndpoint', () => {
     expect(result?.chainContext.totalVestingShares).toBe('100');
   });
 
-  it('uses total_vesting_fund_hive when steem field is absent', async () => {
+  it('uses chain context from HiveGlobalPropertiesCache', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_hive: '210616861.512 HIVE',
+    hiveGlobalProperties.getChainContextFields.mockResolvedValue({
+      totalVestingShares: '100',
+      totalVestingFundSteem: '210616861.512 HIVE',
     });
     hiveClient.getAccountHistory.mockResolvedValue(hivePage([]));
 
@@ -95,10 +99,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('sorts ascending Hive batches to newest-first', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
     hiveClient.getAccountHistory.mockResolvedValue(
       hivePage([
       [
@@ -134,11 +134,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('keeps paging Hive when hidden ops are filtered and more history exists', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
-
     const hiddenOp = (index: number): HiveAccountHistoryRow => [
       index,
       {
@@ -198,10 +193,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('picks newest visible ops when Hive returns oldest-first rows', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
     hiveClient.getAccountHistory.mockResolvedValue(
       hivePage([
       [
@@ -237,10 +228,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('skips operations newer than the cursor anchor on the first Hive batch', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
     hiveClient.getAccountHistory.mockResolvedValue(
       hivePage([
       [
@@ -293,10 +280,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('passes Hive bitmask for reward filters and post-filters semantically', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
     hiveClient.getAccountHistory
       .mockResolvedValueOnce(
         hivePage([
@@ -349,11 +332,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('returns hasMore false when rare filter matches are exhausted before page fill', async () => {
     accounts.findByName.mockResolvedValue({ name: 'flowmaster' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_hive: '50',
-    });
-
     const authorReward = (index: number): HiveAccountHistoryRow => [
       index,
       {
@@ -397,11 +375,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('returns hasMore when filtered scan stops before history end with no matches yet', async () => {
     accounts.findByName.mockResolvedValue({ name: 'flowmaster' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_hive: '50',
-    });
-
     const voteRow = (index: number): HiveAccountHistoryRow => [
       index,
       {
@@ -438,10 +411,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('applies semantic transfer filter after Hive returns rows', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
     hiveClient.getAccountHistory.mockResolvedValue(
       hivePage([
       [
@@ -480,11 +449,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('load more with filters shrinks Hive limit when cursor is near history start', async () => {
     accounts.findByName.mockResolvedValue({ name: 'flowmaster' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
-
     const followOp = (index: number): HiveAccountHistoryRow => [
       index,
       {
@@ -538,11 +502,6 @@ describe('GetUserActivityEndpoint', () => {
 
   it('continues paging when Hive returns assert continueFrom hint', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
-    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
-      total_vesting_shares: '100',
-      total_vesting_fund_steem: '50',
-    });
-
     const vote = (index: number): HiveAccountHistoryRow => [
       index,
       {

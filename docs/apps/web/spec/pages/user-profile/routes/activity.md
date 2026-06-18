@@ -26,15 +26,16 @@ related:
 
 Left sidebar (`@leftSidebar`) shows default category nav only on activity; **activity filters** render in the **right rail** via `RightSidebar` → `ActivityFiltersFromUrl` (same pattern as post/shop filters). Hidden on viewports below `lg`.
 
-Loading skeleton: `(main)/activity/loading.tsx` (`FeedListSkeleton`).
+Loading skeleton: `(main)/activity/loading.tsx` (`ActivityListSkeleton`).
 
 ## Data
 
-- `POST /query/v1/users/:name/activity` via [`user-activity`](../../../../../apps/web/src/modules/user-activity/) module.
+- RSC first page: `POST /query/v1/users/:name/activity` via [`user-activity`](../../../../../apps/web/src/modules/user-activity/) server client (`activity.client.ts`).
+- Client filter changes and load more: `POST /api/users/:name/activity` BFF route → `getUserActivityPageQuery` (`activity.browser.client.ts`).
 - RSC: `parseActivityFilters(searchParams)` → `getUserActivityPageQuery(accountName, { filters })` → `ActivityFeedClient`.
-- Load more: `loadMoreUserActivityAction` passes the same `filters` array from URL on every page (filters are **not** encoded in the cursor).
+- Load more sends the same `filters` array from URL on every request (filters are **not** encoded in the cursor).
 - Ordering: **newest at top**; scroll appends older pages.
-- Changing a filter checkbox updates `?activity=` and **resets** the feed (`key` on `ActivityFeed` from serialized filters).
+- Changing a filter checkbox updates `?activity=` via `history.replaceState` and resets feed state in `ActivityFeedClient` (skeleton while refetching).
 - Cache tags: `query-api:user:{name}:activity-feed` (always) plus `…:activity-feed:{sorted-filters}` when filters are active; base tag invalidated in `revalidateUserFeedAfterBroadcast` after vote/comment/reblog broadcasts.
 
 ## Filters (URL + POST body)
@@ -90,7 +91,8 @@ Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_mo
 | State | Condition | Message key |
 |-------|-----------|---------------|
 | Empty | `items.length === 0`, no error | `activity_empty` |
-| Unavailable | API null / Hive 503 / load-more failure | `activity_error` |
+| Unavailable | API null / Hive 503 / initial load failure | `activity_error` |
+| Load more failed | BFF error while scrolling with existing items | `activity_error` below list |
 | Invalid response | Zod parse failure on API payload | `activity_error` |
 
 ## Module layout
@@ -98,7 +100,8 @@ Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_mo
 | Piece | Path |
 |-------|------|
 | Module barrel | `apps/web/src/modules/user-activity/index.ts` |
-| API client | `infrastructure/clients/activity.client.ts` |
+| API client (RSC) | `infrastructure/clients/activity.client.ts` |
+| API client (browser) | `infrastructure/clients/activity.browser.client.ts` |
 | Mapper | `application/mappers/build-activity-row-view.ts` |
 | Feed UI | `presentation/components/activity-feed.tsx` |
 | Filters UI | `presentation/components/activity-filters.tsx`, `domain/activity-filters-url.ts` |
