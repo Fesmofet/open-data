@@ -63,3 +63,4 @@ nginx/.htpasswd
 nginx/conf.d/default.conf
 nginx/conf.d/*.nokey
 .husky/
+next-env.d.ts

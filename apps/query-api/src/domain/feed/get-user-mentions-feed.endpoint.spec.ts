@@ -97,7 +97,13 @@ describe('GetUserMentionsFeedEndpoint', () => {
 
   it('returns null when profile account is missing', async () => {
     accounts.findByName.mockResolvedValue(null);
-    const r = await endpoint.execute('alice', { limit: 20, currency: 'USD' }, 'en', undefined, undefined);
+    const r = await endpoint.execute(
+      'alice',
+      { limit: 20, currency: 'USD', object_ids: [] },
+      'en',
+      undefined,
+      undefined,
+    );
     expect(r).toBeNull();
     expect(postsRepo.findMentionsFeed).not.toHaveBeenCalled();
   });
@@ -113,7 +119,13 @@ describe('GetUserMentionsFeedEndpoint', () => {
     };
     postsRepo.findMentionsFeed.mockResolvedValue([row]);
 
-    const r = await endpoint.execute('alice', { limit: 20, currency: 'USD' }, 'en', undefined, 'viewer1');
+    const r = await endpoint.execute(
+      'alice',
+      { limit: 20, currency: 'USD', object_ids: [] },
+      'en',
+      undefined,
+      'viewer1',
+    );
     expect(r).not.toBeNull();
     expect(mutesRepo.listMutedForMuters).toHaveBeenCalledWith(['viewer1']);
     expect(postsRepo.findMentionsFeed).toHaveBeenCalledWith(
@@ -130,7 +142,13 @@ describe('GetUserMentionsFeedEndpoint', () => {
     accounts.findByName.mockResolvedValue(minimalAccount('alice'));
     postsRepo.findMentionsFeed.mockResolvedValue([]);
 
-    await endpoint.execute('alice', { limit: 20, currency: 'USD' }, 'en', undefined, undefined);
+    await endpoint.execute(
+      'alice',
+      { limit: 20, currency: 'USD', object_ids: [] },
+      'en',
+      undefined,
+      undefined,
+    );
     expect(mutesRepo.listMutedForMuters).not.toHaveBeenCalled();
     expect(postsRepo.findMentionsFeed).toHaveBeenCalledWith('alice', [], null, 21);
   });
