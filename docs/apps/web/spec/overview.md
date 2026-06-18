@@ -63,6 +63,7 @@ Do **not** duplicate page-route detail in this file — link the site map or the
 | [app-header.md](app-header.md) | Global header, search, notifications bell, account menu |
 | [search.md](search.md) | Header search BFF → query-api |
 | [feed.md](feed.md) | Feed story list, Lexical comment under story when logged in |
+| [pages/user-profile/routes/activity.md](pages/user-profile/routes/activity.md) | Profile activity tab — Hive account history cards |
 | [object-card.md](object-card.md) | Shared `ObjectCard` (discover, feed links, shop): rating grid, admin heart |
 | [object-create-broadcast.md](object-create-broadcast.md) | Object create: `custom_json` chunking, IPFS path, publish dock size |
 | [object-follow.md](object-follow.md) | Object detail: Follow/Unfollow + Bell → ODL `object_follow` broadcast |

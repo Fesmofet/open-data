@@ -13,7 +13,11 @@ related:
 
 # Feed (story list)
 
-**Related:** [Story container](components/story-container.md), [auth](auth.md), [architecture](architecture.md).
+**Related:** [Story container](components/story-container.md), [auth](auth.md), [architecture](architecture.md), [Profile activity tab](pages/user-profile/routes/activity.md) (Hive account history — not `Story` rows).
+
+## Profile activity tab
+
+The `/@:name/activity` route uses **`ActivityRowShell`** cards from `@/modules/user-activity`, not this feed `Story` list. See [activity.md](pages/user-profile/routes/activity.md).
 
 ## Story cards
 

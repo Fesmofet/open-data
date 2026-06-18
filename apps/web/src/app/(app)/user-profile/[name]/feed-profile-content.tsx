@@ -1,5 +1,4 @@
 import {
-  FeedList,
   getUserBlogFeedPageQuery,
   getUserCommentsFeedPageQuery,
   getUserMentionsFeedPageQuery,
@@ -7,11 +6,11 @@ import {
   type FeedTab,
 } from '@/modules/feed';
 import { ProfilePostFilterChips } from '@/modules/user-profile/presentation/components/profile-post-filter-chips';
-import { FeedColumn } from '@/shared/presentation/layout';
+import { getUserActivityPageQuery } from '@/modules/user-activity/application/queries/get-user-activity-page.query';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
 import { BlogFeedPostsList } from './blog-feed-posts-list';
-import { getMockFeedItems } from './mock-feed';
+import { ActivityFeedClient } from './activity-feed-client';
 
 type FeedProfileContentProps = {
   accountName: string;
@@ -95,27 +94,13 @@ export async function FeedProfileContent({
     );
   }
 
-  const items = getMockFeedItems(accountName, feedTab);
-
-  if (items.length === 0) {
-    return (
-      <FeedColumn>
-        <section
-          className="rounded-card border border-border bg-surface/80 p-card-padding"
-          aria-labelledby="feed-empty-title"
-        >
-          <h2 id="feed-empty-title" className="text-body-lg font-weight-strong font-display text-fg">
-            Feed
-          </h2>
-          <p className="mt-2 text-body-sm text-muted">No items to show yet.</p>
-        </section>
-      </FeedColumn>
-    );
-  }
-
+  const { page: activityPage, error: activityError } =
+    await getUserActivityPageQuery(accountName);
   return (
-    <FeedColumn>
-      <FeedList items={items} feedTab={feedTab} currentUsername={currentUsername} />
-    </FeedColumn>
+    <ActivityFeedClient
+      accountName={accountName}
+      initialPage={activityPage}
+      initialError={activityError}
+    />
   );
 }

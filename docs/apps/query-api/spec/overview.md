@@ -37,6 +37,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [User threads feed endpoint](user-threads-feed-endpoint.md) | `POST /query/v1/users/:name/threads` |
 | [User comments feed endpoint](user-comments-feed-endpoint.md) | `POST /query/v1/users/:name/comments` (Hive) |
 | [User mentions feed endpoint](user-mentions-feed-endpoint.md) | `POST /query/v1/users/:name/mentions` (`post_mentions`) |
+| [User activity endpoint](user-activity-endpoint.md) | `POST /query/v1/users/:name/activity` (Hive `get_account_history`) |
 | [Single post endpoint](single-post-endpoint.md) | `GET /query/v1/posts/:author/:permlink` |
 | [Post discussion endpoint](post-discussion-endpoint.md) | `GET /query/v1/posts/:author/:permlink/discussion` |
 | [Post voters endpoint](post-voters-endpoint.md) | `GET /query/v1/posts/:author/:permlink/voters` |

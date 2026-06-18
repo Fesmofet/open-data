@@ -9,6 +9,7 @@ import {
 } from '../../domain/social/user-social-list.schema';
 import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
+import { userActivityBodyFieldsSchema } from '../../domain/feed/schemas/user-activity.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
@@ -64,6 +65,10 @@ const userThreadsFeedMcpSchema = z.object({
   sort: z.enum(['latest', 'oldest']).default('latest'),
   currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
   viewer: z.string().optional().describe('Hive account name of the viewer'),
+});
+
+const userActivityMcpSchema = userActivityBodyFieldsSchema.extend({
+  ...accountField,
 });
 
 export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
@@ -187,6 +192,22 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         { limit, cursor, sort, currency },
         viewer,
       );
+      if (!result) {
+        return toolError(`User not found: ${account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_activity',
+    {
+      description: catalogDescription('get_user_activity'),
+      inputSchema: userActivityMcpSchema,
+    },
+    async (args) => {
+      const { account, limit, cursor } = args;
+      const result = await deps.getUserActivity.execute(account, { limit, cursor });
       if (!result) {
         return toolError(`User not found: ${account}`);
       }

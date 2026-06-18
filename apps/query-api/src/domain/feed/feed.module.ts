@@ -13,6 +13,7 @@ import { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
+import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
 
 @Module({
   imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule, ObjectProjectionModule],
@@ -22,6 +23,7 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
     GetUserThreadsFeedEndpoint,
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,
+    GetUserActivityEndpoint,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
     GetPostVotersEndpoint,
@@ -34,6 +36,7 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
     GetUserThreadsFeedEndpoint,
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,
+    GetUserActivityEndpoint,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
     GetPostVotersEndpoint,

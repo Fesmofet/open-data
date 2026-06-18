@@ -11,6 +11,7 @@ import type {
   GetUserCommentsFeedEndpoint,
   GetUserMentionsFeedEndpoint,
   GetUserThreadsFeedEndpoint,
+  GetUserActivityEndpoint,
 } from '../domain/feed';
 import type { GetObjectUpdatesFeedEndpoint } from '../domain/object-updates/get-object-updates-feed.endpoint';
 import type { GetUpdateVotersEndpoint } from '../domain/object-updates/get-update-voters.endpoint';
@@ -66,6 +67,7 @@ export interface McpToolDeps {
   getUserMentionsFeed: GetUserMentionsFeedEndpoint;
   getUserThreadsFeed: GetUserThreadsFeedEndpoint;
   getUserCommentsFeed: GetUserCommentsFeedEndpoint;
+  getUserActivity: GetUserActivityEndpoint;
   getUserFollowers: GetUserFollowersEndpoint;
   getUserFollowing: GetUserFollowingEndpoint;
   getUserFollowingObjects: GetUserFollowingObjectsEndpoint;

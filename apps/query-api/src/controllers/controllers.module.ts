@@ -15,6 +15,7 @@ import { UserPostDraftsController } from './user-post-drafts.controller';
 import { PostsController } from './posts.controller';
 import { UsersController } from './users.controller';
 import { UserThreadsController } from './user-threads.controller';
+import { UserActivityController } from './user-activity.controller';
 import { SearchController } from './search.controller';
 import { SearchModule } from '../domain/search';
 import { DiscoverController } from './discover.controller';
@@ -39,6 +40,7 @@ import { DiscoverModule } from '../domain/discover';
     ObjectsController,
     UsersController,
     UserThreadsController,
+    UserActivityController,
     PostsController,
     UserPostDraftsController,
     CurrencyController,

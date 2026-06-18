@@ -7,6 +7,7 @@ export { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters
 export { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 export { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 export { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
+export { GetUserActivityEndpoint } from './get-user-activity.endpoint';
 export type {
   FeedStoryItemDto,
   FeedVoteSummaryDto,
@@ -30,3 +31,12 @@ export {
   userThreadsFeedBodySchema,
   type UserThreadsFeedBody,
 } from './schemas/user-threads-feed.schema';
+export {
+  userActivityBodySchema,
+  type UserActivityBody,
+} from './schemas/user-activity.schema';
+export type {
+  ActivityItemDto,
+  ActivityChainContextDto,
+  UserActivityResponse,
+} from './activity-item-dtos';

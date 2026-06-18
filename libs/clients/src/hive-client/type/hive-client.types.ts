@@ -133,3 +133,22 @@ export type HiveCurrentMedianHistoryPrice = {
   base: string;
   quote: string;
 };
+
+/** One entry from `condenser_api.get_account_history` (index + operation row). */
+export type HiveAccountHistoryEntry = {
+  trx_id: string;
+  block: number;
+  trx_in_block: number;
+  op_in_trx: number;
+  virtual_op: boolean;
+  timestamp: string;
+  op: [string, Record<string, unknown>];
+};
+
+export type HiveAccountHistoryRow = [number, HiveAccountHistoryEntry];
+
+/** Result of `condenser_api.get_dynamic_global_properties`. */
+export type HiveDynamicGlobalProperties = {
+  total_vesting_shares: string;
+  total_vesting_fund_steem: string;
+};

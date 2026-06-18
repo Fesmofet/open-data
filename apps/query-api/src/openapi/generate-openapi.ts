@@ -6,6 +6,7 @@ import './users.openapi';
 import './users-social.openapi';
 import './users-favorites.openapi';
 import './feed.openapi';
+import './user-activity.openapi';
 import './posts.openapi';
 import './user-post-drafts.openapi';
 import './categories.openapi';

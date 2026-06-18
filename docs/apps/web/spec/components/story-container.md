@@ -1,7 +1,7 @@
 ---
 id: web-components-story-container
 title: Story container
-description: "`StoryContainer` and `Story` render a **single feed row** (post-like card) for profile feeds: posts, threads, comments, mentions, and activity. The legacy Redux-connected design is described in `tmp/story-container.md`; this app uses **server-provided props** only — no global feed store in the first slice."
+description: "`StoryContainer` and `Story` render a **single feed row** (post-like card) for profile feeds: posts, threads, comments, and mentions. Activity uses `@/modules/user-activity` instead — see [activity.md](../pages/user-profile/routes/activity.md)."
 type: spec
 status: active
 scope: web
@@ -18,7 +18,7 @@ related:
 
 ## Purpose
 
-`StoryContainer` and `Story` render a **single feed row** (post-like card) for profile feeds: posts, threads, comments, mentions, and activity. The legacy Redux-connected design is described in `tmp/story-container.md`; this app uses **server-provided props** only — no global feed store in the first slice.
+`StoryContainer` and `Story` render a **single feed row** (post-like card) for profile feeds: posts, threads, comments, and mentions. The **activity** tab is out of scope — it uses operation timeline cards in `@/modules/user-activity` ([activity.md](../pages/user-profile/routes/activity.md)).
 
 ## Code locations
 
@@ -45,12 +45,12 @@ related:
 2. `FeedProfileContent` calls `getUserBlogFeedPageQuery(accountName)` → `POST` to query-api [`user-blog-feed-endpoint.md`](../../../query-api/spec/user-blog-feed-endpoint.md) via `blog-feed.client.ts`.
 3. `BlogFeedPostsList` (client) renders `FeedList` and optional **Load more**; pagination uses the server action `loadMoreUserBlogFeedAction` with the opaque `cursor`.
 
-### Other tabs (threads, comments, mentions, activity)
+### Other tabs (threads, comments, mentions)
 
-1. `getMockFeedItems(accountName, tab)` returns `FeedStoryView[]` (**demo** account only; see below).
-2. `FeedProfileContent` renders `FeedList` or an empty state.
+1. Respective `getUser*FeedPageQuery` or mock (`getMockFeedItems` for demo-only stubs where still used).
+2. `BlogFeedPostsList` renders `FeedList`.
 
-Each row: `StoryContainer` → `Story` with serialized props.
+**Activity** is not a Story row — see [activity.md](../pages/user-profile/routes/activity.md).
 
 ## `FeedStoryView` (DTO)
 

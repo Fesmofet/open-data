@@ -1,0 +1,50 @@
+/** Hive account history operation type strings (condenser_api.get_account_history op[0]). */
+export const HIVE_OP = {
+  ACCOUNT_CREATE: 'account_create',
+  ACCOUNT_CREATE_WITH_DELEGATION: 'account_create_with_delegation',
+  VOTE: 'vote',
+  ACCOUNT_UPDATE: 'account_update',
+  ACCOUNT_UPDATE2: 'account_update2',
+  COMMENT: 'comment',
+  DELETE_COMMENT: 'delete_comment',
+  CUSTOM_JSON: 'custom_json',
+  AUTHOR_REWARD: 'author_reward',
+  CURATION_REWARD: 'curation_reward',
+  ACCOUNT_WITNESS_VOTE: 'account_witness_vote',
+  FILL_VESTING_WITHDRAW: 'fill_vesting_withdraw',
+  WITHDRAW_VESTING: 'withdraw_vesting',
+  SET_WITHDRAW_VESTING_ROUTE: 'set_withdraw_vesting_route',
+  TRANSFER: 'transfer',
+  TRANSFER_TO_VESTING: 'transfer_to_vesting',
+  CANCEL_TRANSFER_FROM_SAVINGS: 'cancel_transfer_from_savings',
+  TRANSFER_FROM_SAVINGS: 'transfer_from_savings',
+  TRANSFER_TO_SAVINGS: 'transfer_to_savings',
+  DELEGATE_VESTING_SHARES: 'delegate_vesting_shares',
+  CLAIM_REWARD_BALANCE: 'claim_reward_balance',
+  FILL_ORDER: 'fill_order',
+  LIMIT_ORDER: 'limit_order',
+  CONVERT: 'convert',
+  FILL_CONVERT_REQUEST: 'fill_convert_request',
+  COLLATERALIZED_CONVERT: 'collateralized_convert',
+  FILL_COLLATERALIZED_CONVERT_REQUEST: 'fill_collateralized_convert_request',
+  INTEREST: 'interest',
+  FILL_TRANSFER_FROM_SAVINGS: 'fill_transfer_from_savings',
+  TRANSFER_TO_VESTING_COMPLETED: 'transfer_to_vesting_completed',
+  PROPOSAL_PAY: 'proposal_pay',
+  COMMENT_REWARDS: 'comment_rewards',
+  EFFECTIVE_COMMENT_VOTE: 'effective_comment_vote',
+} as const;
+
+export const CUSTOM_JSON_ID = {
+  FOLLOW: 'follow',
+  FOLLOW_WOBJECT: 'follow_wobject',
+  UNFOLLOW_WOBJECT: 'unfollow_wobject',
+  WOBJ_RATING: 'wobj_rating',
+} as const;
+
+export const CUSTOM_JSON_ACTION = {
+  REBLOG: 'reblog',
+  FOLLOW: 'follow',
+  FOLLOW_WOBJECT: 'follow_wobject',
+  UNFOLLOW_WOBJECT: 'unfollow_wobject',
+} as const;

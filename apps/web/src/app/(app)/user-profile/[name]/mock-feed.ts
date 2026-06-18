@@ -94,29 +94,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         },
       ];
     case 'activity':
-      return [
-        {
-          id: 'mock-activity-1',
-          authorName: 'demo',
-          permlink: 'mock-activity-1',
-          createdAt: t2,
-          title: 'Vote on a post',
-          excerpt: 'Activity tab mock — e.g. vote, follow, or transfer event summary.',
-          permalinkPath: '/user-profile/demo/activity',
-          rebloggedByViewer: false,
-          ...mockRewardDefaults,
-        },
-        {
-          id: 'mock-activity-2',
-          authorName: 'demo',
-          permlink: 'mock-activity-2',
-          createdAt: t1,
-          title: 'Started following @alice',
-          excerpt: 'Second activity row for layout check.',
-          rebloggedByViewer: false,
-          ...mockRewardDefaults,
-        },
-      ];
+      return [];
     default: {
       const _exhaustive: never = tab;
       return _exhaustive;

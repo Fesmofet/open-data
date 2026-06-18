@@ -7,6 +7,8 @@ import {
   HiveCurrentMedianHistoryPrice,
   HiveFollowRelation,
   HiveMutedAccount,
+  HiveAccountHistoryRow,
+  HiveDynamicGlobalProperties,
 } from '../type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
@@ -60,6 +62,15 @@ export interface HiveClientInterface {
   >;
 
   getMutedList(observer: string): Promise<HiveMutedAccount[]>;
+
+  /** `condenser_api.get_account_history` — paginated on-chain account operations. `from=-1` = newest. */
+  getAccountHistory(
+    account: string,
+    from: number,
+    limit: number,
+  ): Promise<HiveAccountHistoryRow[] | null>;
+
+  getDynamicGlobalProperties(): Promise<HiveDynamicGlobalProperties | undefined>;
 }
 
 export interface GetVoteInterface {

@@ -12,6 +12,8 @@ export const CONDENSER_API = Object.freeze({
   GET_FOLLOWING: `${HIVE_API.CONDENSER_API}.get_following`,
   GET_DISCUSSIONS_BY_COMMENTS: `${HIVE_API.CONDENSER_API}.get_discussions_by_comments`,
   GET_CURRENT_MEDIAN_HISTORY_PRICE: `${HIVE_API.CONDENSER_API}.get_current_median_history_price`,
+  GET_ACCOUNT_HISTORY: `${HIVE_API.CONDENSER_API}.get_account_history`,
+  GET_DYNAMIC_GLOBAL_PROPERTIES: `${HIVE_API.CONDENSER_API}.get_dynamic_global_properties`,
 } as const);
 
 export const BRIDGE = Object.freeze({

@@ -150,6 +150,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-comments-feed-endpoint.md',
   },
   {
+    name: 'get_user_activity',
+    description:
+      'Paginated Hive account history for the profile activity tab (raw operations).',
+    httpEquivalent: 'POST /query/v1/users/:name/activity',
+    specPath: 'docs/apps/query-api/spec/user-activity-endpoint.md',
+  },
+  {
     name: 'get_user_followers',
     description: 'Accounts following the user.',
     httpEquivalent: 'GET /query/v1/users/:name/followers',

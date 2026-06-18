@@ -41,14 +41,14 @@ Subnav links: [user-menu.md](../components/user-menu.md) + [user-profile-subnav.
 | Shared loader UI | [`feed-profile-content.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/feed-profile-content.tsx) |
 | Posts list + infinite scroll | [`blog-feed-posts-list.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/blog-feed-posts-list.tsx) |
 | Feed queries | `@/modules/feed` — `getUserBlogFeedPageQuery`, `getUserThreadsFeedPageQuery`, etc. |
-| Server actions (load more) | `blog-feed.actions.ts`, `threads-feed.actions.ts`, `comments-feed.actions.ts`, `mentions-feed.actions.ts` |
+| Server actions (load more) | `blog-feed.actions.ts`, `threads-feed.actions.ts`, `comments-feed.actions.ts`, `mentions-feed.actions.ts`, `activity-feed.actions.ts` |
 
 ## Behavior
 
 - **Posts:** `getUserBlogFeedPageQuery`; optional object filters via query `?objects=` (repeated `object_id`) on the posts tab. AND semantics; facet sidebar recalculates counts when filters are active (see [user-blog-object-filters-endpoint.md](../../../../query-api/spec/user-blog-object-filters-endpoint.md)).
 - **Right sidebar:** `ProfilePostFilters` on posts tab only (`/@:name`); chips + clear all in feed column.
 - **Threads / comments / mentions:** respective feed queries with `sort: 'latest'` default.
-- **Activity:** mock feed via `getMockFeedItems()` until query-api activity endpoint is wired.
+- **Activity:** [`activity.md`](activity.md) — Hive account history via `@/modules/user-activity` (not `Story`/`FeedList`).
 - **Viewer context:** `createCookieAuthContextProvider().getUser()` passed into queries for vote/follow state.
 - **Pagination:** RSC seeds `initialPage`; client uses `useSyncedPaginatedList` + `useInfiniteScroll` (see [feed.md](../../../feed.md)).
 - **SEO:** default feed page `generateMetadata` → `buildProfileMetadata` + optional `Person` JSON-LD via `@/seo`.

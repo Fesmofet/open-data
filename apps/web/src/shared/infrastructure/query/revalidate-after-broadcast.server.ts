@@ -50,5 +50,6 @@ export async function revalidateUserFeedAfterBroadcast(accountName: string): Pro
   updateTag(queryApiCacheTags.userThreadsFeed(name));
   updateTag(queryApiCacheTags.userCommentsFeed(name));
   updateTag(queryApiCacheTags.userMentionsFeed(name));
+  updateTag(queryApiCacheTags.userActivityFeed(name));
   revalidatePath(userProfilePath(name), 'layout');
 }

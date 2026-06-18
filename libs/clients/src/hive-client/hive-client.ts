@@ -8,6 +8,10 @@ import {
   HiveCurrentMedianHistoryPrice,
   HiveFollowRelation,
 } from './type';
+import type {
+  HiveAccountHistoryRow,
+  HiveDynamicGlobalProperties,
+} from './type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
@@ -248,6 +252,40 @@ export class HiveClient implements HiveClientInterface {
         observer,
         follow_type: 'muted',
       })) ?? []
+    );
+  }
+
+  async getAccountHistory(
+    account: string,
+    from: number,
+    limit: number,
+  ): Promise<HiveAccountHistoryRow[] | null> {
+    const normalizedAccount = account.trim().toLowerCase();
+    if (normalizedAccount === '') {
+      return [];
+    }
+    const rawLimit = Number(limit);
+    const clampedLimit =
+      Number.isFinite(rawLimit) && rawLimit >= 1
+        ? Math.min(100, Math.floor(rawLimit))
+        : 20;
+    const startIndex = Number.isFinite(from) ? Math.floor(from) : -1;
+    const rows = await this.hiveRequest<HiveAccountHistoryRow[]>(
+      CONDENSER_API.GET_ACCOUNT_HISTORY,
+      [normalizedAccount, startIndex, clampedLimit],
+    );
+    if (rows === undefined) {
+      return null;
+    }
+    return rows ?? [];
+  }
+
+  async getDynamicGlobalProperties(): Promise<
+    HiveDynamicGlobalProperties | undefined
+  > {
+    return this.hiveRequest<HiveDynamicGlobalProperties>(
+      CONDENSER_API.GET_DYNAMIC_GLOBAL_PROPERTIES,
+      [],
     );
   }
 }

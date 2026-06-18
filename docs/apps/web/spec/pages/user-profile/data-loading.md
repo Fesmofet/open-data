@@ -19,7 +19,7 @@ related:
 
 ## Scope
 
-This document covers loading **shell profile** data (hero / header counts and display fields). Feed tabs and post lists are out of scope here — see [routes/feed.md](routes/feed.md).
+This document covers loading **shell profile** data (hero / header counts and display fields). Feed tabs and post lists are out of scope here — see [routes/feed.md](routes/feed.md). The **activity** tab uses Hive account history via [`routes/activity.md`](routes/activity.md), not the blog `Story` feed.
 
 ## When data loads
 
