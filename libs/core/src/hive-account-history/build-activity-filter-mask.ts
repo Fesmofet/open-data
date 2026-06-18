@@ -1,13 +1,15 @@
 import type { ActivityFilterKey } from './activity-filter-keys';
 import { makeOperationBitMask, type OperationBitMask } from './make-operation-bit-mask';
 import { getOperationIndicesForActivityFilters } from './matches-activity-filters';
+import { HIVE_OPERATION_INDEX } from './operation-indices';
 
 /**
- * Hive `condenser_api.get_account_history` only reliably applies `operation_filter_low`
- * for protocol indices 0–31. Higher indices (savings, rewards, virtual ops) must be
- * matched by semantic post-filter — passing a bitmask for them returns empty or wrong rows.
+ * `interest` pollutes RPC results on some nodes when combined in the low-word mask;
+ * still matched semantically via the savings filter.
  */
-const HIVE_RPC_FILTER_MAX_INDEX = 31;
+const RPC_MASK_EXCLUDED_INDICES = new Set<number>([
+  HIVE_OPERATION_INDEX.interest,
+]);
 
 export function buildActivityFilterMask(
   filters: readonly ActivityFilterKey[],
@@ -15,11 +17,10 @@ export function buildActivityFilterMask(
   if (filters.length === 0) {
     return null;
   }
-  const indices = getOperationIndicesForActivityFilters(filters);
+  const indices = getOperationIndicesForActivityFilters(filters).filter(
+    (index) => !RPC_MASK_EXCLUDED_INDICES.has(index),
+  );
   if (indices.length === 0) {
-    return null;
-  }
-  if (indices.some((index) => index > HIVE_RPC_FILTER_MAX_INDEX)) {
     return null;
   }
   return makeOperationBitMask(indices);

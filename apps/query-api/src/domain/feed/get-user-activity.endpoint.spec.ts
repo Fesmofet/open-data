@@ -1,6 +1,7 @@
 import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { HiveClient } from '@opden-data-layer/clients';
 import type { HiveAccountHistoryRow } from '@opden-data-layer/clients';
+import { buildActivityFilterMask } from '@opden-data-layer/core/hive-account-history';
 
 import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
 import { encodeActivityCursor } from './activity-cursor';
@@ -290,7 +291,7 @@ describe('GetUserActivityEndpoint', () => {
     );
   });
 
-  it('omits Hive bitmask for reward filters and post-filters semantically', async () => {
+  it('passes Hive bitmask for reward filters and post-filters semantically', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' });
     hiveClient.getDynamicGlobalProperties.mockResolvedValue({
       total_vesting_shares: '100',
@@ -328,7 +329,8 @@ describe('GetUserActivityEndpoint', () => {
           ],
         ]),
       )
-      .mockResolvedValueOnce(hivePage([]));
+      .mockResolvedValueOnce(hivePage([]))
+      .mockResolvedValue(hivePage([]));
 
     const result = await endpoint.execute('alice', {
       limit: 20,
@@ -339,10 +341,58 @@ describe('GetUserActivityEndpoint', () => {
       'alice',
       -1,
       1000,
-      undefined,
+      buildActivityFilterMask(['curation_reward']),
     );
     expect(result?.items).toHaveLength(1);
     expect(result?.items[0]?.trxId).toBe('cur');
+  });
+
+  it('returns hasMore false when rare filter matches are exhausted before page fill', async () => {
+    accounts.findByName.mockResolvedValue({ name: 'flowmaster' });
+    hiveClient.getDynamicGlobalProperties.mockResolvedValue({
+      total_vesting_shares: '100',
+      total_vesting_fund_hive: '50',
+    });
+
+    const authorReward = (index: number): HiveAccountHistoryRow => [
+      index,
+      {
+        trx_id: `author-${index}`,
+        block: 1,
+        trx_in_block: 0,
+        op_in_trx: 0,
+        virtual_op: true,
+        timestamp: '2021-09-06T00:00:00',
+        op: [
+          'author_reward',
+          {
+            author: 'flowmaster',
+            permlink: `post-${index}`,
+            hbd_payout: '0.009 HBD',
+            hive_payout: '0.000 HIVE',
+            vesting_payout: '0.016 VESTS',
+          },
+        ],
+      },
+    ];
+
+    hiveClient.getAccountHistory.mockImplementation((_account, from) => {
+      if (from < 0 || from > 1339) {
+        return Promise.resolve(
+          hivePage([authorReward(1339), authorReward(1356)]),
+        );
+      }
+      return Promise.resolve(hivePage([]));
+    });
+
+    const result = await endpoint.execute('flowmaster', {
+      limit: 20,
+      filters: ['author_reward'],
+    });
+
+    expect(result?.items).toHaveLength(2);
+    expect(result?.hasMore).toBe(false);
+    expect(result?.cursor).toBeNull();
   });
 
   it('returns hasMore when filtered scan stops before history end with no matches yet', async () => {

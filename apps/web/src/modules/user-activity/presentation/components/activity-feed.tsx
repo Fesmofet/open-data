@@ -71,9 +71,13 @@ export function ActivityFeed({
         if (next.error) {
           return;
         }
-        setItems((prev) => mergeUniqueActivityRows(prev, next.page.items));
+        let stopPaging = false;
+        setItems((prev) => {
+          stopPaging = prev.length > 0 && next.page.items.length === 0;
+          return mergeUniqueActivityRows(prev, next.page.items);
+        });
+        setHasMore(stopPaging ? false : next.page.hasMore);
         setCursor(next.page.cursor);
-        setHasMore(next.page.hasMore);
       })
       .finally(() => {
         setLoadingMore(false);

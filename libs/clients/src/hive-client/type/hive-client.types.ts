@@ -149,8 +149,8 @@ export type HiveAccountHistoryRow = [number, HiveAccountHistoryEntry];
 
 /** Bitmask pair for Hive `get_account_history` operation filters. */
 export type HiveOperationFilter = {
-  filterLow: number;
-  filterHigh: number;
+  filterLow: number | string;
+  filterHigh: number | string;
 };
 
 /** One `get_account_history` RPC page (may include Hive assert continue hint). */

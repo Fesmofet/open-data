@@ -155,6 +155,14 @@ export class GetUserActivityEndpoint {
           from = continueFrom;
           continue;
         }
+        if (operationFilter && from > 0) {
+          const nextFrom = Math.max(0, from - requestLimit);
+          if (nextFrom === from) {
+            break;
+          }
+          from = nextFrom;
+          continue;
+        }
         break;
       }
 

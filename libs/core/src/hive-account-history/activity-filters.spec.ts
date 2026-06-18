@@ -32,6 +32,33 @@ describe('makeOperationBitMask', () => {
     expect(mask.filterLow).toBe(1 | (1 << 2));
     expect(mask.filterHigh).toBe(0);
   });
+
+  it('sets virtual reward bits above JS 32-bit shift range', () => {
+    expect(makeOperationBitMask([HIVE_OPERATION_INDEX.author_reward])).toEqual({
+      filterLow: 2 ** 51,
+      filterHigh: 0,
+    });
+    expect(makeOperationBitMask([HIVE_OPERATION_INDEX.curation_reward])).toEqual({
+      filterLow: 2 ** 52,
+      filterHigh: 0,
+    });
+  });
+
+  it('unions savings and reward indices without JS shift corruption', () => {
+    const mask = makeOperationBitMask([
+      HIVE_OPERATION_INDEX.transfer_to_savings,
+      HIVE_OPERATION_INDEX.transfer_from_savings,
+      HIVE_OPERATION_INDEX.fill_transfer_from_savings,
+    ]);
+    expect(mask.filterLow).toBe(
+      (
+        BigInt(1) << BigInt(32) |
+        BigInt(1) << BigInt(33) |
+        BigInt(1) << BigInt(59)
+      ).toString(),
+    );
+    expect(mask.filterHigh).toBe(0);
+  });
 });
 
 describe('buildActivityFilterMask', () => {
@@ -45,15 +72,37 @@ describe('buildActivityFilterMask', () => {
     expect(mask?.filterLow).toBe(1 << HIVE_OPERATION_INDEX.transfer);
   });
 
-  it('skips RPC mask for savings and reward filters', () => {
-    expect(buildActivityFilterMask(['savings'])).toBeNull();
-    expect(buildActivityFilterMask(['author_reward'])).toBeNull();
-    expect(buildActivityFilterMask(['curation_reward'])).toBeNull();
-    expect(buildActivityFilterMask(['claim_rewards'])).toBeNull();
+  it('builds mask for reward filters', () => {
+    expect(buildActivityFilterMask(['author_reward'])).toEqual({
+      filterLow: 2 ** 51,
+      filterHigh: 0,
+    });
+    expect(buildActivityFilterMask(['curation_reward'])).toEqual({
+      filterLow: 2 ** 52,
+      filterHigh: 0,
+    });
+    expect(buildActivityFilterMask(['claim_rewards'])).toEqual({
+      filterLow: 2 ** 39,
+      filterHigh: 0,
+    });
   });
 
-  it('skips RPC mask when mixed with high-index ops', () => {
-    expect(buildActivityFilterMask(['transfer', 'curation_reward'])).toBeNull();
+  it('builds savings mask without interest RPC bit', () => {
+    const mask = buildActivityFilterMask(['savings']);
+    expect(mask?.filterLow).toBe(
+      (
+        BigInt(1) << BigInt(32) |
+        BigInt(1) << BigInt(33) |
+        BigInt(1) << BigInt(34) |
+        BigInt(1) << BigInt(59)
+      ).toString(),
+    );
+  });
+
+  it('unions mask indices for mixed filters', () => {
+    const mask = buildActivityFilterMask(['transfer', 'curation_reward']);
+    expect(mask?.filterLow).toBe((1 << 2) + 2 ** 52);
+    expect(mask?.filterHigh).toBe(0);
   });
 });
 
