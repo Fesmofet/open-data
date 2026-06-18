@@ -7,8 +7,10 @@ import {
   HiveCurrentMedianHistoryPrice,
   HiveFollowRelation,
   HiveMutedAccount,
+  HiveAccountHistoryPage,
   HiveAccountHistoryRow,
   HiveDynamicGlobalProperties,
+  HiveOperationFilter,
 } from '../type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
@@ -68,7 +70,8 @@ export interface HiveClientInterface {
     account: string,
     from: number,
     limit: number,
-  ): Promise<HiveAccountHistoryRow[] | null>;
+    operationFilter?: HiveOperationFilter,
+  ): Promise<HiveAccountHistoryPage | null>;
 
   getDynamicGlobalProperties(): Promise<HiveDynamicGlobalProperties | undefined>;
 }

@@ -27,3 +27,9 @@ export const HIVE_RPC_NODES = [
   'https://api.openhive.network',
   'https://rpc.mahdiyari.info',
 ];
+
+/** Retries per `get_account_history` call (node rotation picks a new URL each attempt). */
+export const HIVE_ACCOUNT_HISTORY_ATTEMPTS = 3;
+
+/** Hive `get_account_history` RPC limit ceiling (`limit <= 1000`). */
+export const HIVE_ACCOUNT_HISTORY_MAX_LIMIT = 1000;

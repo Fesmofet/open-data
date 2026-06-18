@@ -1,6 +1,9 @@
 import 'server-only';
 
-import { ACTIVITY_DISPLAY_PAGE_SIZE } from '@opden-data-layer/core/hive-account-history';
+import {
+  ACTIVITY_DISPLAY_PAGE_SIZE,
+  type ActivityFilterKey,
+} from '@opden-data-layer/core/hive-account-history';
 
 import { userActivityResponseSchema } from '../dto/activity-api.schema';
 import { buildActivityPageViews } from '../mappers/build-activity-row-view';
@@ -27,11 +30,16 @@ function toQueryResult(
 
 export async function getUserActivityPageQuery(
   accountName: string,
-  body: { limit?: number; cursor?: string } = {},
+  body: {
+    limit?: number;
+    cursor?: string;
+    filters?: ActivityFilterKey[];
+  } = {},
 ): Promise<ActivityPageQueryResult> {
   const raw = await fetchUserActivity(accountName, {
     limit: body.limit ?? ACTIVITY_DISPLAY_PAGE_SIZE,
     cursor: body.cursor,
+    filters: body.filters ?? [],
   });
   if (!raw) {
     return toQueryResult(EMPTY_PAGE, 'unavailable');

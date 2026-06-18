@@ -126,6 +126,38 @@ describe('buildActivityRowView', () => {
     }
   });
 
+  it('maps curation reward with HP from vests asset string', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:5',
+        operationIndex: 5,
+        trxId: 'cur',
+        timestamp: '2024-01-01T00:00:04Z',
+        block: 1,
+        type: 'curation_reward',
+        payload: {
+          author: 'bob',
+          permlink: 'post-1',
+          curator: 'alice',
+          reward: '4.933654 VESTS',
+        },
+      },
+      {
+        profileAccount: 'alice',
+        chainContext: {
+          totalVestingShares: '341602453178.281332 VESTS',
+          totalVestingFundSteem: '210616861.512 HIVE',
+        },
+      },
+    );
+    expect(row?.kind).toBe('reward_curation');
+    if (row?.kind === 'reward_curation') {
+      expect(row.author).toBe('bob');
+      expect(row.permlink).toBe('post-1');
+      expect(row.hpAmount).toBeCloseTo(0.00304, 4);
+    }
+  });
+
   it('filters null rows in buildActivityPageViews', () => {
     const rows = buildActivityPageViews(
       [

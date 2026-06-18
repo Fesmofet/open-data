@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
+import { useInfiniteScroll } from '@/shared/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 
 import type {
@@ -12,6 +12,7 @@ import type {
   ActivityPageView,
   ActivityRowView,
 } from '../../domain/types/activity-row-view';
+import { ActivityListSkeleton } from './activity-list-skeleton';
 import { ActivityRow } from './activity-row';
 
 function mergeUniqueActivityRows(
@@ -32,8 +33,9 @@ function mergeUniqueActivityRows(
 
 type ActivityFeedProps = {
   accountName: string;
-  initialPage: ActivityPageView;
-  initialError?: ActivityLoadError | null;
+  page: ActivityPageView;
+  loading?: boolean;
+  loadError?: ActivityLoadError | null;
   loadMoreAction: (
     accountName: string,
     cursor: string,
@@ -42,57 +44,64 @@ type ActivityFeedProps = {
 
 export function ActivityFeed({
   accountName,
-  initialPage,
-  initialError = null,
+  page,
+  loading = false,
+  loadError = null,
   loadMoreAction,
 }: ActivityFeedProps) {
   const { t } = useI18n();
-  const { items, setItems, cursor, setCursor, hasMore, setHasMore } =
-    useSyncedPaginatedList(initialPage);
+  const [items, setItems] = useState(page.items);
+  const [cursor, setCursor] = useState(page.cursor);
+  const [hasMore, setHasMore] = useState(page.hasMore);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState<ActivityLoadError | null>(
-    initialError,
-  );
+
+  useEffect(() => {
+    setItems(page.items);
+    setCursor(page.cursor);
+    setHasMore(page.hasMore);
+  }, [page]);
 
   const handleLoadMore = useCallback(() => {
-    if (!cursor || loadingMore) {
+    if (!cursor || loadingMore || loading) {
       return;
     }
     setLoadingMore(true);
     void loadMoreAction(accountName, cursor)
       .then((next) => {
         if (next.error) {
-          setLoadError(next.error);
-          setHasMore(false);
           return;
         }
-        setLoadError(null);
         setItems((prev) => mergeUniqueActivityRows(prev, next.page.items));
         setCursor(next.page.cursor);
         setHasMore(next.page.hasMore);
       })
-      .catch(() => {
-        setLoadError('unavailable');
-        setHasMore(false);
-      })
       .finally(() => {
         setLoadingMore(false);
       });
-  }, [
-    accountName,
-    cursor,
-    loadMoreAction,
-    loadingMore,
-    setCursor,
-    setHasMore,
-    setItems,
-  ]);
+  }, [accountName, cursor, loadMoreAction, loading, loadingMore]);
 
   const { sentinelRef } = useInfiniteScroll({
-    hasMore,
+    hasMore: hasMore && !loading,
     isLoading: loadingMore,
     onLoadMore: handleLoadMore,
   });
+
+  useEffect(() => {
+    if (loading || loadError) {
+      return;
+    }
+    if (items.length === 0 && hasMore && cursor && !loadingMore) {
+      handleLoadMore();
+    }
+  }, [items.length, hasMore, cursor, loadingMore, loading, loadError, handleLoadMore]);
+
+  if (loading) {
+    return (
+      <div aria-busy="true" aria-live="polite" aria-label={t('activity_loading')}>
+        <ActivityListSkeleton />
+      </div>
+    );
+  }
 
   if (loadError && items.length === 0) {
     return (
@@ -127,7 +136,9 @@ export function ActivityFeed({
           >
             {t('activity')}
           </h2>
-          <p className="mt-2 text-body-sm text-muted">{t('activity_empty')}</p>
+          <p className="mt-2 text-body-sm text-muted">
+            {hasMore || loadingMore ? t('activity_loading') : t('activity_empty')}
+          </p>
         </section>
       </FeedColumn>
     );
@@ -159,11 +170,6 @@ export function ActivityFeed({
             </p>
           ) : null}
         </div>
-      ) : null}
-      {loadError && items.length > 0 ? (
-        <p className="py-2 text-center text-body-sm text-muted" role="alert">
-          {t('activity_error')}
-        </p>
       ) : null}
     </FeedColumn>
   );

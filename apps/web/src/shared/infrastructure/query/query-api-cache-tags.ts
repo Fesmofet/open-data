@@ -28,6 +28,10 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:comments-feed`,
   userMentionsFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:mentions-feed`,
-  userActivityFeed: (accountName: string) =>
-    `query-api:user:${accountName.trim().toLowerCase()}:activity-feed`,
+  userActivityFeed: (accountName: string, filtersKey = '') => {
+    const name = accountName.trim().toLowerCase();
+    const base = `query-api:user:${name}:activity-feed`;
+    const key = filtersKey.trim();
+    return key.length > 0 ? `${base}:${key}` : base;
+  },
 } as const;

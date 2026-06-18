@@ -6,6 +6,7 @@ import {
   type FeedTab,
 } from '@/modules/feed';
 import { ProfilePostFilterChips } from '@/modules/user-profile/presentation/components/profile-post-filter-chips';
+import type { ActivityFilterKey } from '@opden-data-layer/core/hive-account-history';
 import { getUserActivityPageQuery } from '@/modules/user-activity/application/queries/get-user-activity-page.query';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
@@ -16,12 +17,14 @@ type FeedProfileContentProps = {
   accountName: string;
   feedTab: FeedTab;
   postFilterObjectIds?: string[];
+  activityFilters?: ActivityFilterKey[];
 };
 
 export async function FeedProfileContent({
   accountName,
   feedTab,
   postFilterObjectIds = [],
+  activityFilters = [],
 }: FeedProfileContentProps) {
   const auth = createCookieAuthContextProvider();
   const currentUser = await auth.getUser();
@@ -95,12 +98,13 @@ export async function FeedProfileContent({
   }
 
   const { page: activityPage, error: activityError } =
-    await getUserActivityPageQuery(accountName);
+    await getUserActivityPageQuery(accountName, { filters: activityFilters });
   return (
     <ActivityFeedClient
       accountName={accountName}
       initialPage={activityPage}
       initialError={activityError}
+      initialFilters={activityFilters}
     />
   );
 }

@@ -270,7 +270,9 @@ export function ActivityRowContent({ row }: { row: ActivityRowView }) {
             )}
           </span>
           {row.memo ? (
-            <span className="mt-1 block text-caption text-muted">{row.memo}</span>
+            <span className="mt-1 block min-w-0 break-all text-caption text-muted">
+              {row.memo}
+            </span>
           ) : null}
         </ActivityRowShell>
       );

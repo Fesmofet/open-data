@@ -147,8 +147,24 @@ export type HiveAccountHistoryEntry = {
 
 export type HiveAccountHistoryRow = [number, HiveAccountHistoryEntry];
 
+/** Bitmask pair for Hive `get_account_history` operation filters. */
+export type HiveOperationFilter = {
+  filterLow: number;
+  filterHigh: number;
+};
+
+/** One `get_account_history` RPC page (may include Hive assert continue hint). */
+export type HiveAccountHistoryPage = {
+  rows: HiveAccountHistoryRow[];
+  /** Next operation index when Hive returns Assert Exception with `sequence`. */
+  continueFrom?: number;
+};
+
 /** Result of `condenser_api.get_dynamic_global_properties`. */
 export type HiveDynamicGlobalProperties = {
   total_vesting_shares: string;
-  total_vesting_fund_steem: string;
+  /** Legacy condenser field name (pre-HIVE rename). */
+  total_vesting_fund_steem?: string;
+  /** Current condenser field name. */
+  total_vesting_fund_hive?: string;
 };

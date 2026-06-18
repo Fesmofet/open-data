@@ -25,7 +25,7 @@ export function ActivityRowShell({
           </div>
         ) : null}
         <div className="min-w-0 flex-1">
-          <div className="text-body-sm text-fg">{children}</div>
+          <div className="min-w-0 break-words text-body-sm text-fg">{children}</div>
           <ActivityTimestamp
             timestamp={timestamp}
             className="mt-1 block text-caption text-muted"

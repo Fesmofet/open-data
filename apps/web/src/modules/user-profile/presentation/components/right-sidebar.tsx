@@ -3,6 +3,8 @@
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 
+import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
+import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
 import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
 import { isUserProfileShopOrRecipeTab } from '../../domain/profile-shop-filters-url';
 import { ProfilePostFiltersFromUrl } from './profile-post-filters';
@@ -42,6 +44,14 @@ function RightSidebarContent({ accountName }: RightSidebarProps) {
     return (
       <Suspense fallback={<FiltersFallback />}>
         <ProfileShopFiltersFromUrl accountName={accountName} />
+      </Suspense>
+    );
+  }
+
+  if (isUserProfileActivityTab(pathname)) {
+    return (
+      <Suspense fallback={<FiltersFallback />}>
+        <ActivityFiltersFromUrl accountName={accountName} />
       </Suspense>
     );
   }

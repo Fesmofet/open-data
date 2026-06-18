@@ -206,8 +206,12 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
       inputSchema: userActivityMcpSchema,
     },
     async (args) => {
-      const { account, limit, cursor } = args;
-      const result = await deps.getUserActivity.execute(account, { limit, cursor });
+      const { account, limit, cursor, filters } = args;
+      const result = await deps.getUserActivity.execute(account, {
+        limit,
+        cursor,
+        filters,
+      });
       if (!result) {
         return toolError(`User not found: ${account}`);
       }

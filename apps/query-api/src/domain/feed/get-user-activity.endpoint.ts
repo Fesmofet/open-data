@@ -1,9 +1,14 @@
 import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import {
   ACTIVITY_DISPLAY_PAGE_SIZE,
+  buildActivityFilterMask,
+  matchesActivityFilters,
+  resolveHiveAccountHistoryBatchSize,
+  resolveHiveAccountHistoryRequestLimit,
+  type ActivityFilterKey,
 } from '@opden-data-layer/core/hive-account-history';
 import { HiveClient } from '@opden-data-layer/clients';
-import type { HiveAccountHistoryRow } from '@opden-data-layer/clients';
+import type { HiveAccountHistoryRow, HiveOperationFilter } from '@opden-data-layer/clients';
 
 import { AccountsCurrentRepository } from '../../repositories';
 import {
@@ -25,8 +30,14 @@ const DEFAULT_CHAIN_CONTEXT = {
 /** Keep paging Hive until the page is filled (after filtering hidden ops). */
 const ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS = 40;
 
-/** Per Hive node: `get_account_history` rows are oldest-first; last row is newest. */
-const HIVE_HISTORY_REQUEST_SIZE = 100;
+/** Rare filtered ops may sit deep in history; scan further when filters are active. */
+const ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS_WITH_FILTERS = 80;
+
+type CollectActivityResult = {
+  items: ActivityItemDto[];
+  /** Oldest not-yet-scanned operation index when paging stopped early; null if history exhausted. */
+  resumeFrom: number | null;
+};
 
 @Injectable()
 export class GetUserActivityEndpoint {
@@ -49,23 +60,37 @@ export class GetUserActivityEndpoint {
       throw new BadRequestException('Invalid activity cursor');
     }
 
+    const filters = body.filters ?? [];
+    const operationFilter = buildActivityFilterMask(filters);
     const pageLimit = body.limit ?? ACTIVITY_DISPLAY_PAGE_SIZE;
     const from = cursorPayload?.operationIndex ?? -1;
     const collected = await this.collectActivityItems(
       profileAccountName,
       from,
       pageLimit + 1,
+      filters,
+      operationFilter,
     );
 
-    const pageItems = collected.slice(0, pageLimit);
-    const hasMore = collected.length > pageLimit;
+    const pageItems = collected.items.slice(0, pageLimit);
+    const hasMoreItems = collected.items.length > pageLimit;
+    const canScanFurther =
+      collected.resumeFrom !== null && collected.resumeFrom > 0;
+    const hasMore = hasMoreItems || (pageItems.length < pageLimit && canScanFurther);
     const oldestInPage = pageItems[pageItems.length - 1];
-    const cursor =
-      hasMore && oldestInPage && oldestInPage.operationIndex > 0
+    const cursor = hasMoreItems
+      ? oldestInPage && oldestInPage.operationIndex > 0
         ? encodeActivityCursor({ operationIndex: oldestInPage.operationIndex - 1 })
+        : null
+      : canScanFurther && collected.resumeFrom !== null
+        ? encodeActivityCursor({ operationIndex: collected.resumeFrom })
         : null;
 
     const globalProps = await this.hiveClient.getDynamicGlobalProperties();
+    const totalVestingFund =
+      globalProps?.total_vesting_fund_hive ??
+      globalProps?.total_vesting_fund_steem ??
+      DEFAULT_CHAIN_CONTEXT.totalVestingFundSteem;
 
     return {
       items: pageItems,
@@ -74,9 +99,7 @@ export class GetUserActivityEndpoint {
       chainContext: {
         totalVestingShares:
           globalProps?.total_vesting_shares ?? DEFAULT_CHAIN_CONTEXT.totalVestingShares,
-        totalVestingFundSteem:
-          globalProps?.total_vesting_fund_steem ??
-          DEFAULT_CHAIN_CONTEXT.totalVestingFundSteem,
+        totalVestingFundSteem: totalVestingFund,
       },
     };
   }
@@ -85,13 +108,21 @@ export class GetUserActivityEndpoint {
     account: string,
     startFrom: number,
     targetCount: number,
-  ): Promise<ActivityItemDto[]> {
+    filters: ActivityFilterKey[],
+    operationFilter: HiveOperationFilter | null,
+  ): Promise<CollectActivityResult> {
     const pool = new Map<number, ActivityItemDto>();
     let from = startFrom;
     const maxOperationIndex = startFrom >= 0 ? startFrom : undefined;
     let prevFrom = Number.NaN;
+    const hiveBatchSize = resolveHiveAccountHistoryBatchSize(filters.length > 0);
+    const maxRoundTrips =
+      filters.length > 0
+        ? ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS_WITH_FILTERS
+        : ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS;
+    let resumeFrom: number | null = null;
 
-    for (let round = 0; round < ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS; round++) {
+    for (let round = 0; round < maxRoundTrips; round++) {
       if (pool.size >= targetCount) {
         break;
       }
@@ -101,21 +132,39 @@ export class GetUserActivityEndpoint {
       }
       prevFrom = from;
 
-      const historyRows = await this.hiveClient.getAccountHistory(
+      const requestLimit = resolveHiveAccountHistoryRequestLimit(from, hiveBatchSize);
+      const historyPage = await this.hiveClient.getAccountHistory(
         account,
         from,
-        HIVE_HISTORY_REQUEST_SIZE,
+        requestLimit,
+        operationFilter ?? undefined,
       );
 
-      if (historyRows === null) {
+      if (historyPage === null) {
         throw new ServiceUnavailableException('Hive account history unavailable');
       }
 
+      const { rows: historyRows, continueFrom } = historyPage;
+
       if (historyRows.length === 0) {
+        if (
+          continueFrom !== undefined &&
+          continueFrom !== from &&
+          continueFrom !== prevFrom
+        ) {
+          from = continueFrom;
+          continue;
+        }
         break;
       }
 
-      this.addVisibleRowsToPool(historyRows, pool, maxOperationIndex);
+      this.addVisibleRowsToPool(
+        historyRows,
+        pool,
+        account,
+        filters,
+        maxOperationIndex,
+      );
 
       const oldestInBatch = historyRows[0]?.[0];
       if (oldestInBatch === undefined) {
@@ -136,19 +185,28 @@ export class GetUserActivityEndpoint {
       }
 
       if (
-        historyRows.length < HIVE_HISTORY_REQUEST_SIZE &&
+        historyRows.length < requestLimit &&
         (pool.size >= targetCount || oldestInBatch <= 0)
       ) {
         break;
       }
     }
 
-    return sortNewestFirst([...pool.values()]).slice(0, targetCount);
+    if (from > 0 && pool.size < targetCount) {
+      resumeFrom = from;
+    }
+
+    return {
+      items: sortNewestFirst([...pool.values()]).slice(0, targetCount),
+      resumeFrom,
+    };
   }
 
   private addVisibleRowsToPool(
     historyRows: HiveAccountHistoryRow[],
     pool: Map<number, ActivityItemDto>,
+    profileAccount: string,
+    filters: ActivityFilterKey[],
     maxOperationIndex?: number,
   ): void {
     for (const row of historyRows) {
@@ -162,6 +220,12 @@ export class GetUserActivityEndpoint {
 
       const item = mapHiveAccountHistoryRow(row);
       if (!item) {
+        continue;
+      }
+      if (
+        filters.length > 0 &&
+        !matchesActivityFilters(item, filters, profileAccount)
+      ) {
         continue;
       }
       pool.set(item.operationIndex, item);

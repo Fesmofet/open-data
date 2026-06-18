@@ -9,13 +9,16 @@ import {
   HiveFollowRelation,
 } from './type';
 import type {
+  HiveAccountHistoryPage,
   HiveAccountHistoryRow,
   HiveDynamicGlobalProperties,
+  HiveOperationFilter,
 } from './type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
-import { CONDENSER_API, BRIDGE } from './constants';
+import { CONDENSER_API, BRIDGE, HIVE_ACCOUNT_HISTORY_ATTEMPTS, HIVE_ACCOUNT_HISTORY_MAX_LIMIT } from './constants';
+import { parseHiveAccountHistoryAssertContinueFrom } from './parse-hive-account-history-assert';
 import { UrlRotationManager, UrlRotationService } from '../redis-client';
 import { HIVE_CLIENT_MODULE_OPTIONS } from './hive-client.options';
 import type { HiveClientModuleOptions } from './hive-client.options';
@@ -68,7 +71,8 @@ export class HiveClient implements HiveClientInterface {
     const start = Date.now();
     let hasError = false;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutMs = this.options.maxResponseTimeMs ?? 8000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const resp = await fetch(url, {
@@ -78,7 +82,24 @@ export class HiveClient implements HiveClientInterface {
         signal: controller.signal,
       });
 
-      const data = (await resp.json()) as { result?: T; error?: unknown };
+      const bodyText = await resp.text();
+      if (!bodyText.trim()) {
+        hasError = true;
+        return undefined;
+      }
+
+      let data: { result?: T; error?: unknown };
+      try {
+        data = JSON.parse(bodyText) as { result?: T; error?: unknown };
+      } catch (error) {
+        this.logger.error(
+          `Invalid JSON from ${url}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        hasError = true;
+        return undefined;
+      }
 
       hasError = !resp.ok || Boolean(data?.error);
       return data?.result;
@@ -259,25 +280,107 @@ export class HiveClient implements HiveClientInterface {
     account: string,
     from: number,
     limit: number,
-  ): Promise<HiveAccountHistoryRow[] | null> {
+    operationFilter?: HiveOperationFilter,
+  ): Promise<HiveAccountHistoryPage | null> {
     const normalizedAccount = account.trim().toLowerCase();
     if (normalizedAccount === '') {
-      return [];
+      return { rows: [] };
     }
     const rawLimit = Number(limit);
     const clampedLimit =
       Number.isFinite(rawLimit) && rawLimit >= 1
-        ? Math.min(100, Math.floor(rawLimit))
+        ? Math.min(HIVE_ACCOUNT_HISTORY_MAX_LIMIT, Math.floor(rawLimit))
         : 20;
     const startIndex = Number.isFinite(from) ? Math.floor(from) : -1;
-    const rows = await this.hiveRequest<HiveAccountHistoryRow[]>(
-      CONDENSER_API.GET_ACCOUNT_HISTORY,
-      [normalizedAccount, startIndex, clampedLimit],
-    );
-    if (rows === undefined) {
-      return null;
+    const params: (string | number)[] = [
+      normalizedAccount,
+      startIndex,
+      clampedLimit,
+    ];
+    if (operationFilter) {
+      params.push(operationFilter.filterLow, operationFilter.filterHigh);
     }
-    return rows ?? [];
+    for (let attempt = 0; attempt < HIVE_ACCOUNT_HISTORY_ATTEMPTS; attempt++) {
+      const page = await this.fetchAccountHistoryPage(params);
+      if (page !== undefined) {
+        return page;
+      }
+    }
+    return null;
+  }
+
+  private async fetchAccountHistoryPage(
+    params: (string | number)[],
+  ): Promise<HiveAccountHistoryPage | undefined> {
+    const url = await this.pickNode();
+    const start = Date.now();
+    let hasError = false;
+    const controller = new AbortController();
+    const timeoutMs = this.options.maxResponseTimeMs ?? 8000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: CONDENSER_API.GET_ACCOUNT_HISTORY,
+          params,
+          id: 1,
+        }),
+        signal: controller.signal,
+      });
+
+      const bodyText = await resp.text();
+      if (!bodyText.trim()) {
+        hasError = true;
+        return undefined;
+      }
+
+      let data: {
+        result?: HiveAccountHistoryRow[];
+        error?: unknown;
+      };
+      try {
+        data = JSON.parse(bodyText) as {
+          result?: HiveAccountHistoryRow[];
+          error?: unknown;
+        };
+      } catch (error) {
+        this.logger.error(
+          `Invalid JSON from ${url}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        hasError = true;
+        return undefined;
+      }
+
+      if (data.error) {
+        const continueFrom = parseHiveAccountHistoryAssertContinueFrom(data.error);
+        if (continueFrom !== undefined) {
+          return { rows: [], continueFrom };
+        }
+        hasError = true;
+        return undefined;
+      }
+
+      if (!resp.ok) {
+        hasError = true;
+        return undefined;
+      }
+
+      return { rows: data.result ?? [] };
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error.message : String(error));
+      hasError = true;
+      return undefined;
+    } finally {
+      clearTimeout(timeoutId);
+      const responseTime = Date.now() - start;
+      await this.recordRequest(url, responseTime, hasError);
+    }
   }
 
   async getDynamicGlobalProperties(): Promise<

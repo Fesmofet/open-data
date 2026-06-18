@@ -10,6 +10,16 @@ describe('vestToHp', () => {
     expect(vestToHp('1000000', '10000000', '5000000')).toBeCloseTo(500000);
   });
 
+  it('parses Hive asset strings', () => {
+    expect(
+      vestToHp(
+        '4.933654 VESTS',
+        '341602453178.281332 VESTS',
+        '210616861.512 HIVE',
+      ),
+    ).toBeCloseTo(0.00304, 4);
+  });
+
   it('returns 0 for invalid input', () => {
     expect(vestToHp('x', '0', '1')).toBe(0);
   });

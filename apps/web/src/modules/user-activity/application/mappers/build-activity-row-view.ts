@@ -170,8 +170,8 @@ export function buildActivityRowView(
       return {
         ...base,
         kind: 'reward_curation',
-        author: asString(p.comment_author),
-        permlink: asString(p.comment_permlink),
+        author: asString(p.author) || asString(p.comment_author),
+        permlink: asString(p.permlink) || asString(p.comment_permlink),
         hpAmount: vestToHp(
           asString(p.reward),
           totalVestingShares,

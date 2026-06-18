@@ -26,8 +26,11 @@ Returns paginated on-chain account history for `/@:name/activity`. The query-api
 |-------|------|---------|-------|
 | `limit` | int 1–500 | 20 | Page size (`ACTIVITY_DISPLAY_PAGE_SIZE`; max `ACTIVITY_MAX_PAGE_SIZE`) |
 | `cursor` | string? | — | Opaque base64url JSON `{ operationIndex }`; encodes `oldestOnPage.operationIndex - 1` |
+| `filters` | string[] | `[]` | Activity filter keys (`ACTIVITY_FILTER_KEYS`); max 14; OR semantics |
 
 Body is optional (`{}` default) — same preprocess pattern as other feed POST endpoints.
+
+**Cursor vs filters:** `cursor` carries only `operationIndex`. Clients must send the same `filters` array on every request (first page and load more). Changing filters starts a new timeline from `from = -1`.
 
 ## Ordering
 
@@ -48,9 +51,34 @@ Body is optional (`{}` default) — same preprocess pattern as other feed POST e
 
 - `effective_comment_vote` operations are **excluded** server-side (legacy behavior).
 
+### Activity filters
+
+When `filters` is empty, no Hive operation bitmask is sent (all operation types except `effective_comment_vote` may appear).
+
+When `filters` is non-empty:
+
+1. **Bitmask** — union of Hive operation indices for all selected keys → `filter_low` / `filter_high` on each `get_account_history` RPC round-trip (`buildActivityFilterMask` in `@opden-data-layer/core/hive-account-history`).
+2. **Semantic pass** — after mapping each row, `matchesActivityFilters` applies payload rules (OR across selected keys). Bitmask alone is insufficient for vote weight, transfer direction, follow/unfollow/reblog `custom_json`, and reply-vs-post comments.
+
+| UI filter | Bitmask ops | Semantic |
+|-----------|-------------|----------|
+| `upvoted` / `downvoted` / `unvoted` | `vote` | `weight` sign |
+| `followed` / `unfollowed` | `custom_json` | follow blog / ignore |
+| `reblogged` | `custom_json` | reblog action |
+| `replied` | `comment` | exclude top-level posts (`parent_author === ''`) |
+| `powered_up` | `transfer_to_vesting`, `transfer_to_vesting_completed` | — |
+| `received` / `transfer` | `transfer` | `to` / `from` vs profile account |
+| `savings` | savings transfer ops | — |
+| `author_reward` / `curation_reward` / `claim_rewards` | respective reward ops | — |
+
+Active filters may require more Hive round-trips before a full page is filled (cap remains **40** trips per HTTP request).
+
 ## Paging limits
 
-- Each HTTP request may perform up to **40** Hive round trips (`ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS`), fetching **100** raw rows per trip (`HIVE_HISTORY_REQUEST_SIZE`).
+- Each HTTP request may perform up to **40** Hive round trips (`ACTIVITY_FEED_MAX_HIVE_ROUND_TRIPS`).
+- **Without filters:** **100** raw rows per trip (`HIVE_HISTORY_DEFAULT_BATCH_SIZE`) — many ops are dropped as `effective_comment_vote`.
+- **With filters:** **1000** raw rows per trip when `from` allows it (`HIVE_ACCOUNT_HISTORY_MAX_BATCH_SIZE`). Hive requires `start >= limit - 1`; when paging into low operation indices the endpoint shrinks the RPC limit to `min(batchSize, from + 1)` (legacy `walletHelper` behavior).
+- **Assert Exception + `sequence`:** when a filtered page is empty but Hive returns `error.data.stack[0].data.sequence`, the client continues from that operation index (legacy `getProcessHistorySocket` in campaigns `hiveRequests.js`) instead of failing the HTTP request.
 - On accounts with dense hidden-op noise, `hasMore` may become `false` before the full chain history is exhausted.
 
 ## Errors

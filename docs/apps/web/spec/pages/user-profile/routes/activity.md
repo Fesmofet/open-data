@@ -22,16 +22,32 @@ related:
 | Public URL | App Router file |
 |------------|-----------------|
 | `/@:name/activity` | `(main)/activity/page.tsx` |
+| `/@:name/activity?activity=upvoted,transfer` | same — filtered activity |
+
+Left sidebar (`@leftSidebar`) shows default category nav only on activity; **activity filters** render in the **right rail** via `RightSidebar` → `ActivityFiltersFromUrl` (same pattern as post/shop filters). Hidden on viewports below `lg`.
 
 Loading skeleton: `(main)/activity/loading.tsx` (`FeedListSkeleton`).
 
 ## Data
 
 - `POST /query/v1/users/:name/activity` via [`user-activity`](../../../../../apps/web/src/modules/user-activity/) module.
-- RSC: `getUserActivityPageQuery` → `ActivityFeedClient` with `initialPage` + optional `initialError`.
-- Load more: `loadMoreUserActivityAction` + `useSyncedPaginatedList` + `useInfiniteScroll` (20 per page).
+- RSC: `parseActivityFilters(searchParams)` → `getUserActivityPageQuery(accountName, { filters })` → `ActivityFeedClient`.
+- Load more: `loadMoreUserActivityAction` passes the same `filters` array from URL on every page (filters are **not** encoded in the cursor).
 - Ordering: **newest at top**; scroll appends older pages.
-- Cache tag: `query-api:user-activity-feed:{name}`; invalidated in `revalidateUserFeedAfterBroadcast` after vote/comment/reblog broadcasts.
+- Changing a filter checkbox updates `?activity=` and **resets** the feed (`key` on `ActivityFeed` from serialized filters).
+- Cache tags: `query-api:user:{name}:activity-feed` (always) plus `…:activity-feed:{sorted-filters}` when filters are active; base tag invalidated in `revalidateUserFeedAfterBroadcast` after vote/comment/reblog broadcasts.
+
+## Filters (URL + POST body)
+
+| URL param | Value | Example |
+|-----------|-------|---------|
+| `activity` | Comma-separated filter keys (OR semantics) | `?activity=upvoted,received` |
+
+Keys match `ACTIVITY_FILTER_KEYS` in `@opden-data-layer/core/hive-account-history` (`upvoted`, `downvoted`, …). Empty / omitted = full timeline (server excludes `effective_comment_vote` only).
+
+UI: `ActivityFilters` in `RightSidebar` (`ActivityFiltersFromUrl`) toggles checkboxes → `buildProfileActivityHref` → client navigation. Each API request sends `body.filters: string[]` (same set as URL).
+
+Server applies Hive `operation_filter_low/high` bitmask plus semantic post-filter in query-api — see [user-activity-endpoint](../../../query-api/spec/user-activity-endpoint.md#activity-filters).
 
 ## UI model
 
@@ -67,7 +83,7 @@ Each row is an **activity operation card** (`ActivityRowShell`), not `Story` / `
 
 ## i18n
 
-Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_more`, `activity_loading`, `activity_error`, row labels in `activity-row-content.tsx`. Shared wallet/social keys (`upvoted`, `followed_user`, `author_reward`, …) reused where possible.
+Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_more`, `activity_loading`, `activity_error`, row labels in `activity-row-content.tsx`. Filter panel: `activity_filters_*`, `activity_filter_*` (14 keys). Shared wallet/social keys reused in row content where possible.
 
 ## Empty and error states
 
@@ -85,6 +101,8 @@ Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_mo
 | API client | `infrastructure/clients/activity.client.ts` |
 | Mapper | `application/mappers/build-activity-row-view.ts` |
 | Feed UI | `presentation/components/activity-feed.tsx` |
+| Filters UI | `presentation/components/activity-filters.tsx`, `domain/activity-filters-url.ts` |
+| Right sidebar | `user-profile/.../right-sidebar.tsx` (`ActivityFiltersFromUrl` on activity tab) |
 | Route wiring | `feed-profile-content.tsx`, `activity-feed-client.tsx` |
 
 ## Verification
