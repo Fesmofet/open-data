@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { PROFILE_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 import type { CategoryNavData } from '../../domain/types/category-nav';
 import { CategoryNavChrome } from './category-nav-chrome';
@@ -22,7 +23,10 @@ export function CategoryNavPanel({
 
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted"
+      className={[
+        PROFILE_RAIL_STICKY_CLASS,
+        'rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted',
+      ].join(' ')}
       aria-label={t('profile_categories_title')}
     >
       <p className="font-weight-label text-fg">{t('profile_categories_title')}</p>

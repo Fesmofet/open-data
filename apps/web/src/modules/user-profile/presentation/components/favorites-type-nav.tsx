@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { PROFILE_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 import { formatFavoritesTypeLabel } from './favorites-type-label';
 
@@ -22,7 +23,13 @@ export function FavoritesTypeNav({ accountName, types, activeType }: FavoritesTy
 
   if (types.length === 0) {
     return (
-      <nav aria-label={t('favorites')} className="rounded-card border border-border bg-surface/60 p-card-padding">
+      <nav
+        aria-label={t('favorites')}
+        className={[
+          PROFILE_RAIL_STICKY_CLASS,
+          'rounded-card border border-border bg-surface/60 p-card-padding',
+        ].join(' ')}
+      >
         <p className="font-weight-label text-fg">{t('favorites')}</p>
         <p className="mt-2 text-body-sm text-muted">{t('favorites_types_empty')}</p>
       </nav>
@@ -32,7 +39,10 @@ export function FavoritesTypeNav({ accountName, types, activeType }: FavoritesTy
   return (
     <nav
       aria-label={t('favorites')}
-      className="rounded-card border border-border bg-surface/60 p-card-padding"
+      className={[
+        PROFILE_RAIL_STICKY_CLASS,
+        'rounded-card border border-border bg-surface/60 p-card-padding',
+      ].join(' ')}
     >
       <p className="mb-3 font-weight-label text-fg">{t('favorites')}</p>
       <ul className="flex flex-col gap-1">

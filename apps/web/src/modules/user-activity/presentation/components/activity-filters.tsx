@@ -12,6 +12,7 @@ import {
   replaceProfileActivityFiltersInUrl,
   toggleActivityFilter,
 } from '../../domain/activity-filters-url';
+import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 import { useActivityFiltersFromUrl } from '../hooks/use-activity-filters-from-url';
 
 type ActivityFiltersProps = {
@@ -83,7 +84,10 @@ export function ActivityFilters({
 
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-card-padding"
+      className={[
+        PROFILE_FILTER_RAIL_STICKY_CLASS,
+        'rounded-card border border-border bg-surface/60 p-card-padding',
+      ].join(' ')}
       aria-label={t('activity_filters_title')}
     >
       <h2 className="text-body-sm font-weight-strong text-fg">

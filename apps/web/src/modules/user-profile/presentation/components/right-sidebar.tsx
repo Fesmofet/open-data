@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 
 import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
 import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
+import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
 import { isUserProfileShopOrRecipeTab } from '../../domain/profile-shop-filters-url';
 import { ProfilePostFiltersFromUrl } from './profile-post-filters';
@@ -17,7 +18,10 @@ type RightSidebarProps = {
 function FiltersFallback() {
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-card-padding"
+      className={[
+        PROFILE_FILTER_RAIL_STICKY_CLASS,
+        'rounded-card border border-border bg-surface/60 p-card-padding',
+      ].join(' ')}
       aria-hidden
     >
       <div className="h-6 w-32 animate-pulse rounded-btn bg-surface-control" />

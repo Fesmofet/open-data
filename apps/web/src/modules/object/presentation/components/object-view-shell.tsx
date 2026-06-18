@@ -47,10 +47,8 @@ export function ObjectViewShell({
 
         <main className="min-h-[12rem] min-w-0">{center}</main>
 
-        <HiddenBelow breakpoint="lg">
-          <div className="shell-hide-instagram">
-            <StickyRegion offset="0">{rightRail}</StickyRegion>
-          </div>
+        <HiddenBelow breakpoint="lg" className="min-w-0">
+          <div className="shell-hide-instagram lg:contents">{rightRail}</div>
         </HiddenBelow>
       </div>
     </div>

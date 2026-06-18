@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { encodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 import type { ProfileShopFiltersResponse } from '../../domain/profile-shop-filters-response.schema';
 import {
@@ -291,7 +292,10 @@ export function ProfileShopFilters({
 
   return (
     <aside
-      className="relative z-0 min-w-0 w-full self-start overflow-hidden rounded-card border border-border bg-surface/60 p-card-padding lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto"
+      className={[
+        PROFILE_FILTER_RAIL_STICKY_CLASS,
+        'rounded-card border border-border bg-surface/60 p-card-padding',
+      ].join(' ')}
       aria-label={filterAriaLabel}
       aria-busy={loading}
     >

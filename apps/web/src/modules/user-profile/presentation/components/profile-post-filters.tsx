@@ -12,6 +12,7 @@ import {
 } from '../../domain/profile-post-filters-url';
 import type { ProfilePostObjectFilterItem } from '../../domain/profile-post-filters-response.schema';
 import { fetchProfilePostObjectFilters } from '../../infrastructure/profile-post-filters.client';
+import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 const FILTER_DEBOUNCE_MS = 300;
 const INITIAL_VISIBLE_COUNT = 10;
@@ -104,7 +105,10 @@ export function ProfilePostFilters({ accountName, objectIds }: ProfilePostFilter
 
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm"
+      className={[
+        PROFILE_FILTER_RAIL_STICKY_CLASS,
+        'rounded-card border border-border bg-surface/60 p-card-padding text-body-sm',
+      ].join(' ')}
       aria-label={t('profile_filter_posts')}
       aria-busy={loading}
     >

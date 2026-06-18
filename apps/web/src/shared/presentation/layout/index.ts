@@ -29,6 +29,8 @@ export type { MasonryGridProps } from './arrangements/masonry-grid';
 export { CenteredArticle } from './arrangements/centered-article';
 export type { CenteredArticleProps } from './arrangements/centered-article';
 
+export { PROFILE_RAIL_STICKY_CLASS, PROFILE_FILTER_RAIL_STICKY_CLASS } from './profile-filter-rail-classes';
+
 export { LayoutProvider, useLayoutContext } from './context/layout-context';
 export type { LayoutContextValue, ContentArrangement } from './context/layout-context';
 

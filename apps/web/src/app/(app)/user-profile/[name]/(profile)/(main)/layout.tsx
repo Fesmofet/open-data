@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import {
   FixedRegion,
   HiddenBelow,
-  StickyRegion,
 } from '@/shared/presentation/layout';
 import {
   RightSidebar,
@@ -29,13 +28,9 @@ export default async function UserProfileMainShellLayout({
         'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
       ].join(' ')}
     >
-      <HiddenBelow breakpoint="lg">
-        <div className="shell-profile-left-rail shell-hide-instagram">
-          <div className="shell-hide-twitter">
-            <StickyRegion offset="0">
-              {leftSidebar}
-            </StickyRegion>
-          </div>
+      <HiddenBelow breakpoint="lg" className="min-w-0">
+        <div className="shell-profile-left-rail shell-hide-instagram lg:contents">
+          <div className="shell-hide-twitter lg:contents">{leftSidebar}</div>
           <div className="shell-show-twitter">
             <FixedRegion>
               <UserMenuVerticalRail accountName={accountName} />
@@ -46,11 +41,9 @@ export default async function UserProfileMainShellLayout({
 
       <main className="min-h-[12rem] min-w-0">{children}</main>
 
-      <HiddenBelow breakpoint="lg">
-        <div className="shell-hide-instagram">
-          <StickyRegion offset="0">
-            <RightSidebar accountName={accountName} />
-          </StickyRegion>
+      <HiddenBelow breakpoint="lg" className="min-w-0">
+        <div className="shell-hide-instagram lg:contents">
+          <RightSidebar accountName={accountName} />
         </div>
       </HiddenBelow>
     </div>
