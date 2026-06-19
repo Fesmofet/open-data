@@ -1,5 +1,9 @@
-import { ProfileSectionSkeleton } from '@/modules/user-profile';
+import { WaivWalletSummarySkeleton } from '@/modules/user-wallet';
 
-export default function ProfileTransfersLoading() {
-  return <ProfileSectionSkeleton />;
+export default function UserProfileTransfersLoading() {
+  return (
+    <div aria-busy="true" aria-label="Loading wallet">
+      <WaivWalletSummarySkeleton />
+    </div>
+  );
 }

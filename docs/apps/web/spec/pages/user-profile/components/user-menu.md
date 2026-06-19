@@ -44,7 +44,7 @@ Shown when `getSubmenuVariant(pathname)` returns a variant (see `user-profile-su
 | Primary active | Secondary links | Route spec |
 |----------------|-----------------|------------|
 | Posts (default feed) | `/@:name`, `/threads`, `/comments`, `/mentions`, `/activity` | [feed.md](../routes/feed.md) |
-| Wallet (`/transfers`) | `?type=WAIV`, `?type=HIVE`, `?type=ENGINE`, `?type=rebalancing` | [transfers.md](../routes/transfers.md) |
+| Wallet (`/transfers`) | `?type=WAIV`, `?type=HIVE`, `?type=ENGINE` | [transfers.md](../routes/transfers.md) |
 | Followers section | `/followers`, `/following`, `/following-objects` (counts from social context) | [social-graph.md](../routes/social-graph.md) |
 | Expertise | `/expertise-hashtags`, `/expertise-objects` | [expertise.md](../routes/expertise.md) |
 

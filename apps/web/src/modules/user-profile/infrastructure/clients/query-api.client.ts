@@ -13,6 +13,49 @@ export type QueryApiFetchOptions = RequestInit & {
   cacheTags?: string[];
 };
 
+export type QueryApiFetchOutcome<T> =
+  | { ok: true; data: T }
+  | { ok: false; status: number | 'network' };
+
+/**
+ * Server-only fetch with HTTP status — use when callers must distinguish 503 from 404.
+ */
+export async function queryApiFetchOutcome<T>(
+  path: string,
+  init?: QueryApiFetchOptions,
+): Promise<QueryApiFetchOutcome<T>> {
+  const { cacheTags, ...fetchInit } = init ?? {};
+  const base = env.QUERY_API_URL.replace(/\/$/, '');
+  const url = path.startsWith('http')
+    ? path
+    : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+  const nextInit = fetchInit as RequestInit & {
+    next?: { revalidate?: number | false; tags?: string[] };
+  };
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...fetchInit,
+      next: {
+        revalidate: 60,
+        ...(cacheTags && cacheTags.length > 0 ? { tags: cacheTags } : {}),
+        ...nextInit.next,
+      },
+    });
+  } catch (err) {
+    console.error(`[query-api] network error for ${path}:`, err);
+    return { ok: false, status: 'network' };
+  }
+  if (!res.ok) {
+    if (res.status !== 404) {
+      console.error(`[query-api] ${res.status} for ${path}`);
+    }
+    return { ok: false, status: res.status };
+  }
+  const data = (await res.json()) as T;
+  return { ok: true, data };
+}
+
 /**
  * Server-only fetch to query-api.
  * Returns `null` on network failures, 404, or non-OK responses (never throws).

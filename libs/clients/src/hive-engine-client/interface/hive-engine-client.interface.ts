@@ -22,6 +22,8 @@ import type {
 export interface HiveEngineClientInterface {
   find<T>(params: FindContractParams): Promise<T[]>;
   findOne<T>(params: FindOneContractParams): Promise<T | null>;
+  findOneStrict<T>(params: FindOneContractParams): Promise<T | null>;
+  findStrict<T>(params: FindContractParams): Promise<T[]>;
   getBlockInfo(blockNumber: number): Promise<HiveEngineBlock | undefined>;
   getStatus(): Promise<HiveEngineStatus | undefined>;
 
@@ -47,11 +49,17 @@ export interface HiveEngineClientInterface {
   findTokenDelegations(
     params?: FindContractTableParams,
   ): Promise<HiveEngineTokenDelegation[]>;
+  findTokenDelegationsStrict(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineTokenDelegation[]>;
   findOneTokenDelegation(
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineTokenDelegation | null>;
 
   findTokenPendingUnstakes(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineTokenPendingUnstake[]>;
+  findTokenPendingUnstakesStrict(
     params?: FindContractTableParams,
   ): Promise<HiveEngineTokenPendingUnstake[]>;
   findOneTokenPendingUnstake(
@@ -62,6 +70,9 @@ export interface HiveEngineClientInterface {
     params?: FindContractTableParams,
   ): Promise<HiveEngineTokenBalance[]>;
   findOneTokenBalance(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineTokenBalance | null>;
+  findOneTokenBalanceStrict(
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineTokenBalance | null>;
 

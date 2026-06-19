@@ -50,6 +50,10 @@ import {
   PostUserFavoritesMapEndpoint,
 } from '../domain/favorites';
 import { GetUserProfileEndpoint } from '../domain/users';
+import {
+  GetUserEngineTokenDelegationsEndpoint,
+  GetUserWaivWalletEndpoint,
+} from '../domain/wallet';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import type { McpToolDeps } from './mcp-tool.deps';
 import { registerAllMcpTools } from './register-all-tools';
@@ -82,6 +86,8 @@ export class McpService {
     private readonly getUserThreadsFeed: GetUserThreadsFeedEndpoint,
     private readonly getUserCommentsFeed: GetUserCommentsFeedEndpoint,
     private readonly getUserActivity: GetUserActivityEndpoint,
+    private readonly getUserWaivWallet: GetUserWaivWalletEndpoint,
+    private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
@@ -122,6 +128,8 @@ export class McpService {
       getUserThreadsFeed: this.getUserThreadsFeed,
       getUserCommentsFeed: this.getUserCommentsFeed,
       getUserActivity: this.getUserActivity,
+      getUserWaivWallet: this.getUserWaivWallet,
+      getUserEngineTokenDelegations: this.getUserEngineTokenDelegations,
       getUserFollowers: this.getUserFollowers,
       getUserFollowing: this.getUserFollowing,
       getUserFollowingObjects: this.getUserFollowingObjects,

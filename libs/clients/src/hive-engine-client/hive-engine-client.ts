@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { UrlRotationManager, UrlRotationService } from '../redis-client';
+import { HiveEngineUnavailableError } from './hive-engine-unavailable.error';
 import {
   HE_ENDPOINT,
   JSON_RPC_REQUEST_ID,
@@ -156,6 +157,38 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     return result;
   }
 
+  /**
+   * Like findOne but throws {@link HiveEngineUnavailableError} when the RPC fails.
+   * Returns null only when the document is absent (empty result).
+   */
+  async findOneStrict<T>(params: FindOneContractParams): Promise<T | null> {
+    const result = await this.contractsRequest<T | T[] | null>('findOne', params);
+    if (result === undefined) {
+      throw new HiveEngineUnavailableError();
+    }
+    if (result === null) {
+      return null;
+    }
+    if (Array.isArray(result)) {
+      return result.length > 0 ? result[0] : null;
+    }
+    return result;
+  }
+
+  /**
+   * Like find but throws {@link HiveEngineUnavailableError} when the RPC fails.
+   */
+  async findStrict<T>(params: FindContractParams): Promise<T[]> {
+    const result = await this.contractsRequest<T[] | T | null>('find', params);
+    if (result === undefined) {
+      throw new HiveEngineUnavailableError();
+    }
+    if (Array.isArray(result)) {
+      return result;
+    }
+    return [];
+  }
+
   findTokens(
     params?: FindContractTableParams,
   ): Promise<HiveEngineToken[]> {
@@ -226,6 +259,16 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     });
   }
 
+  findTokenDelegationsStrict(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineTokenDelegation[]> {
+    return this.findStrict<HiveEngineTokenDelegation>({
+      contract: 'tokens',
+      table: 'delegations',
+      ...params,
+    });
+  }
+
   findOneTokenDelegation(
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineTokenDelegation | null> {
@@ -240,6 +283,16 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     params?: FindContractTableParams,
   ): Promise<HiveEngineTokenPendingUnstake[]> {
     return this.find<HiveEngineTokenPendingUnstake>({
+      contract: 'tokens',
+      table: 'pendingUnstakes',
+      ...params,
+    });
+  }
+
+  findTokenPendingUnstakesStrict(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineTokenPendingUnstake[]> {
+    return this.findStrict<HiveEngineTokenPendingUnstake>({
       contract: 'tokens',
       table: 'pendingUnstakes',
       ...params,
@@ -270,6 +323,16 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineTokenBalance | null> {
     return this.findOne<HiveEngineTokenBalance>({
+      contract: 'tokens',
+      table: 'balances',
+      query,
+    });
+  }
+
+  findOneTokenBalanceStrict(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineTokenBalance | null> {
+    return this.findOneStrict<HiveEngineTokenBalance>({
       contract: 'tokens',
       table: 'balances',
       query,

@@ -11,19 +11,12 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 import type { BroadcastTransactionResult } from '../../domain/types';
 import { getHivesignerToken } from '../hivesigner-token';
+import { buildHiveSignerCustomJsonSignUrl } from './hivesigner-custom-json-sign-url';
+import { hivePayloadRequiresActiveKey } from './hive-operation-signing';
+
+export const HIVESIGNER_REDIRECT_INITIATED = 'HiveSigner redirect initiated';
 
 type WireOperation = [string, Record<string, unknown>];
-
-const ACTIVE_KEY_OPERATIONS = new Set([
-  'transfer',
-  'transfer_to_vesting',
-  'withdraw_vesting',
-  'account_update',
-  'account_update2',
-  'convert',
-  'limit_order_create',
-  'limit_order_cancel',
-]);
 
 function assertNeverForHiveOp(x: never): never {
   throw new Error(`Unsupported Hive operation: ${JSON.stringify(x)}`);
@@ -70,13 +63,6 @@ function toWireOperation(op: HiveOperation): WireOperation {
   return assertNeverForHiveOp(op);
 }
 
-function requiresActiveKey(op: HiveOperation): boolean {
-  if (op.type === 'custom_json') {
-    return op.required_auths.length > 0;
-  }
-  return ACTIVE_KEY_OPERATIONS.has(op.type);
-}
-
 function extractTransactionIdFromBroadcastResult(result: unknown): string | null {
   if (typeof result === 'string' && result.trim().length > 0) {
     return result.trim();
@@ -106,17 +92,30 @@ function redirectForActiveKeyOperations(wireOps: WireOperation[]): never {
 
   const callbackUri = window.location.href;
   const [name, params] = wireOps[0];
-  const signUrl = hivesigner.sign(
-    name,
-    params as Record<string, string | number | boolean>,
-    callbackUri,
-  );
+
+  const signUrl =
+    name === 'custom_json'
+      ? buildHiveSignerCustomJsonSignUrl(
+          params as {
+            required_auths: string[];
+            required_posting_auths: string[];
+            id: string;
+            json: string;
+          },
+          callbackUri,
+        )
+      : hivesigner.sign(
+          name,
+          params as Record<string, string | number | boolean>,
+          callbackUri,
+        );
+
   if (typeof signUrl !== 'string') {
     const err = signUrl as { error_description?: string; error?: string };
     throw new Error(err.error_description ?? err.error ?? 'HiveSigner sign URL failed');
   }
   window.location.assign(signUrl);
-  throw new Error('HiveSigner redirect initiated');
+  throw new Error(HIVESIGNER_REDIRECT_INITIATED);
 }
 
 export function createHiveSignerSigner(): IHiveSigner {
@@ -128,7 +127,7 @@ export function createHiveSignerSigner(): IHiveSigner {
       }
 
       const wireOps = payload.operations.map(toWireOperation);
-      const usesActiveKey = payload.operations.some(requiresActiveKey);
+      const usesActiveKey = hivePayloadRequiresActiveKey(payload.operations);
 
       if (usesActiveKey) {
         redirectForActiveKeyOperations(wireOps);

@@ -35,10 +35,10 @@ See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`, `ODL_NETWOR
 
 `WalletFacade` (`createWalletFacade`) exposes `login(provider, username)`, `broadcast`, and **`setActiveProvider(provider | null)`** (restore active signer without re-login).
 
-- **Browser singleton:** `getWalletFacade()` (`infrastructure/wallet-facade.client.ts`) shares one facade + BFF client across the app. After a **full page reload**, the cookie session is still valid but the in-memory `activeProvider` is lost; successful Keychain login stores `'keychain'` in **`sessionStorage`** (`ODL_WALLET_PROVIDER_SESSION_KEY`). Client code calls **`useHydrateWalletProvider()`** to read `sessionStorage` and `setActiveProvider('keychain')` so `broadcast` works after refresh. **HiveSigner / HiveAuth** hydration is not implemented yet.
+- **Browser singleton:** `getWalletFacade()` (`infrastructure/wallet-facade.client.ts`) shares one facade + BFF client across the app. After a **full page reload**, the cookie session is still valid but the in-memory `activeProvider` is lost; **`useHydrateWalletProvider()`** restores Keychain or HiveSigner from `localStorage`. **HiveAuth** broadcast is not implemented.
 - **Operations:** Domain builders (`buildVoteOp`, `buildCommentOp`, `buildCommentOptionsOp`, `buildCustomJsonOp`, `buildReblogOp`) produce a normalized `BroadcastTransactionInput` (`HiveOperationPayload`).
 - **ODL `custom_json`:** Client broadcasts use **`useOdlCustomJsonId()`** (runtime **`ODL_NETWORK`** via root layout). `mainnet` → `odl-mainnet`, `testnet` → `odl-testnet` — same **`ODL_NETWORK`** as **chain-indexer**. Docker: one repo-root **`.env`** at container start only (no build-time ODL env on the image).
-- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. Keychain uses `hive_keychain.requestBroadcast`; HiveSigner and HiveAuth signers are stubs until wired.
+- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. Keychain uses `hive_keychain.requestBroadcast` with **Active** key for Hive Engine `custom_json`. HiveSigner: posting-key ops via SDK; active-key Engine ops redirect to HiveSigner sign URL. HiveAuth signer throws until implemented.
 - **Providers:** Keychain, HiveAuth (manual `authData` step in UI), HiveSigner (redirect).
 
 ### `json_metadata` and comment + `comment_options`

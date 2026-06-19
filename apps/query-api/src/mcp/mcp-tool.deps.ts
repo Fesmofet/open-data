@@ -44,6 +44,10 @@ import type {
   PostUserFavoritesMapEndpoint,
 } from '../domain/favorites';
 import type { GetUserProfileEndpoint } from '../domain/users';
+import type {
+  GetUserEngineTokenDelegationsEndpoint,
+  GetUserWaivWalletEndpoint,
+} from '../domain/wallet';
 
 export interface McpToolDeps {
   search: GetSearchEndpoint;
@@ -68,6 +72,8 @@ export interface McpToolDeps {
   getUserThreadsFeed: GetUserThreadsFeedEndpoint;
   getUserCommentsFeed: GetUserCommentsFeedEndpoint;
   getUserActivity: GetUserActivityEndpoint;
+  getUserWaivWallet: GetUserWaivWalletEndpoint;
+  getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint;
   getUserFollowers: GetUserFollowersEndpoint;
   getUserFollowing: GetUserFollowingEndpoint;
   getUserFollowingObjects: GetUserFollowingObjectsEndpoint;

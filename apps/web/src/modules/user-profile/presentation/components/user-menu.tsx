@@ -24,7 +24,7 @@ type UserMenuProps = {
   direction?: UserMenuDirection;
 };
 
-const WALLET_TYPES = ['WAIV', 'HIVE', 'ENGINE', 'rebalancing'] as const;
+const WALLET_TYPES = ['WAIV', 'HIVE', 'ENGINE'] as const;
 
 function isActive(
   rest: string[],
@@ -222,10 +222,10 @@ function UserMenuInner({
         {submenuVariant === 'wallet' ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_wallet_aria')}>
             {WALLET_TYPES.map((type) => {
-              const href = type === 'rebalancing' ? `${base}/transfers?type=rebalancing` : `${base}/transfers?type=${type}`;
+              const href = `${base}/transfers?type=${type}`;
               return (
                 <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, true)}>
-                  {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : type === 'ENGINE' ? t('hive_engine_wallet') : t('rebalance_wallet')}
+                  {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
                 </UserProfileNavLink>
               );
             })}
@@ -300,10 +300,10 @@ function UserMenuInner({
             aria-label={t('user_profile_submenu_wallet_aria')}
           >
             {WALLET_TYPES.map((type) => {
-              const href = type === 'rebalancing' ? `${base}/transfers?type=rebalancing` : `${base}/transfers?type=${type}`;
+              const href = `${base}/transfers?type=${type}`;
               return (
                 <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, false)}>
-                  {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : type === 'ENGINE' ? t('hive_engine_wallet') : t('rebalance_wallet')}
+                  {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
                 </UserProfileNavLink>
               );
             })}

@@ -33,12 +33,24 @@ Wallet tabs and transfer history under `/@:name/transfers/...`. Wallet primary n
 
 | Param | Values | Effect |
 |-------|--------|--------|
-| `type` | `WAIV` (default), `HIVE`, `ENGINE`, `rebalancing` | Wallet tab active state in [user-menu.md](../components/user-menu.md) secondary row |
+| `type` | `WAIV` (default), `HIVE`, `ENGINE` | Wallet tab active state in [user-menu.md](../components/user-menu.md) secondary row |
 | `tab` | (waiv-table page only) | In-page tabs on `/@:name/transfers/waiv-table` — not header submenu |
 
 ## Current implementation
 
-> **TODO: spec-code divergence** — landing `/transfers` uses `ProfileRouteStub`. Sub-routes may be stub or partial.
+WAIV tab (`?type=WAIV`): summary card with balances, est. account value, and Engine token operations (power up/down, transfer, delegate, manage delegations) for the profile owner. Data from `GET /query/v1/users/{name}/wallet/waiv`.
+
+**Layout:** each balance row shows the amount top-right with the action button **below** the amount (legacy parity). Subtitle stays left under the row title.
+
+**Unavailable state:** when query-api returns `503`, network fails, or the response fails Zod validation, the tab shows `t('unavailable')` — never a summary card with fake zero balances.
+
+**Broadcast:** Keychain signs inline; Hive Engine ops use the **active** key. HiveSigner redirects to hivesigner.com for active-key `custom_json` (no error flash before redirect). After broadcast: trx confirmation → `revalidateUserWaivWalletAfterBroadcast` → `router.refresh()`.
+
+**Manage delegations:** client fetch to `GET /api/users/{name}/wallet/engine/{symbol}/delegations` (BFF → query-api). Delegation lists use cache tags invalidated on wallet broadcast.
+
+**Owner-only:** wallet action buttons and modals render only when `viewerUsername` matches profile `name` (case-insensitive).
+
+Other wallet tabs remain stubbed.
 
 Shell hides left/right rails on `waiv-table` layout — see [profile-shell.md](../profile-shell.md).
 

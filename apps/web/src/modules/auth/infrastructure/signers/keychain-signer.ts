@@ -8,6 +8,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 import type { BroadcastTransactionResult } from '../../domain/types';
 import type { KeychainWireOperation, HiveKeychainWindow } from '../providers/keychain-provider';
+import { resolveKeychainBroadcastKey } from './hive-operation-signing';
 
 function resolveSigningAccount(operations: readonly HiveOperation[]): string {
   if (operations.length === 0) {
@@ -114,8 +115,9 @@ export function createKeychainSigner(): IHiveSigner {
       }
       const account = resolveSigningAccount(payload.operations);
       const wireOps = payload.operations.map(toWireOperation);
+      const key = resolveKeychainBroadcastKey(payload.operations);
       return new Promise((resolve, reject) => {
-        kc.requestBroadcast(account, wireOps, 'Posting', (response) => {
+        kc.requestBroadcast(account, wireOps, key, (response) => {
           if (!response.success) {
             reject(new Error(response.error ?? 'Broadcast failed'));
             return;

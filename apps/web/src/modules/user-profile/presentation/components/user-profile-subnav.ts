@@ -27,9 +27,6 @@ export function getWalletTypeFromSearch(search: string): string {
   if (upper === 'WAIV' || upper === 'HIVE' || upper === 'ENGINE') {
     return upper;
   }
-  if (raw.toLowerCase() === 'rebalancing') {
-    return 'rebalancing';
-  }
   return 'WAIV';
 }
 

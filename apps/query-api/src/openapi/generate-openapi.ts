@@ -7,6 +7,7 @@ import './users-social.openapi';
 import './users-favorites.openapi';
 import './feed.openapi';
 import './user-activity.openapi';
+import './user-wallet.openapi';
 import './posts.openapi';
 import './user-post-drafts.openapi';
 import './categories.openapi';

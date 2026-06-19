@@ -20,6 +20,8 @@ import { SearchController } from './search.controller';
 import { SearchModule } from '../domain/search';
 import { DiscoverController } from './discover.controller';
 import { DiscoverModule } from '../domain/discover';
+import { WalletModule } from '../domain/wallet';
+import { UserWalletController } from './user-wallet.controller';
 
 @Module({
   imports: [
@@ -35,12 +37,14 @@ import { DiscoverModule } from '../domain/discover';
     FavoritesModule,
     SearchModule,
     DiscoverModule,
+    WalletModule,
   ],
   controllers: [
     ObjectsController,
     UsersController,
     UserThreadsController,
     UserActivityController,
+    UserWalletController,
     PostsController,
     UserPostDraftsController,
     CurrencyController,

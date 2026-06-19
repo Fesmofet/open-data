@@ -220,6 +220,42 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_waiv_wallet',
+    {
+      description: catalogDescription('get_user_waiv_wallet'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserWaivWallet.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_engine_token_delegations',
+    {
+      description: catalogDescription('get_user_engine_token_delegations'),
+      inputSchema: z.object({
+        ...accountField,
+        symbol: z.string().min(1).describe('Hive Engine token symbol (e.g. WAIV)'),
+      }),
+    },
+    async (args) => {
+      const result = await deps.getUserEngineTokenDelegations.execute(
+        args.account,
+        args.symbol,
+      );
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_followers',
     {
       description: catalogDescription('get_user_followers'),

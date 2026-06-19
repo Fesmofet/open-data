@@ -9,6 +9,7 @@ import { ShopModule } from '../domain/shop/shop.module';
 import { SocialModule } from '../domain/social/social.module';
 import { FavoritesModule } from '../domain/favorites/favorites.module';
 import { UsersModule } from '../domain/users';
+import { WalletModule } from '../domain/wallet';
 import { McpController } from './mcp.controller';
 import { McpService } from './mcp.service';
 
@@ -24,6 +25,7 @@ import { McpService } from './mcp.service';
     FavoritesModule,
     SearchModule,
     DiscoverModule,
+    WalletModule,
   ],
   controllers: [McpController],
   providers: [McpService],

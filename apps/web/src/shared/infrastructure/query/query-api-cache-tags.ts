@@ -34,4 +34,8 @@ export const queryApiCacheTags = {
     const key = filtersKey.trim();
     return key.length > 0 ? `${base}:${key}` : base;
   },
+  userWaivWallet: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:waiv-wallet`,
+  userEngineTokenDelegations: (accountName: string, symbol: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:engine-delegations:${symbol.trim().toUpperCase()}`,
 } as const;

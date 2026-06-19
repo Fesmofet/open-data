@@ -53,3 +53,16 @@ export async function revalidateUserFeedAfterBroadcast(accountName: string): Pro
   updateTag(queryApiCacheTags.userActivityFeed(name));
   revalidatePath(userProfilePath(name), 'layout');
 }
+
+/** WAIV wallet summary after Engine token broadcast. */
+export async function revalidateUserWaivWalletAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  const name = accountName.trim().toLowerCase();
+  if (name.length === 0) {
+    return;
+  }
+  updateTag(queryApiCacheTags.userWaivWallet(name));
+  updateTag(queryApiCacheTags.userEngineTokenDelegations(name, 'WAIV'));
+  revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
+}
