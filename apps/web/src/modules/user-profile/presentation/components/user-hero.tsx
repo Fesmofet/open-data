@@ -37,11 +37,7 @@ export function UserHero(props: UserHeroProps) {
       <UserHeader {...headerProps} />
       <div className="px-gutter pb-3 sm:px-gutter-sm">
         <UserProfileNavContext.Provider value={navCtx}>
-          <UserMenuClient
-            accountName={headerProps.username}
-            pathname={pathname}
-            search={search}
-          />
+          <UserMenuClient accountName={headerProps.username} />
         </UserProfileNavContext.Provider>
       </div>
     </header>

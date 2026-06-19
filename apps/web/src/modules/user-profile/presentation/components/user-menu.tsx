@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
   profileSectionTabClass,
@@ -16,13 +14,13 @@ import {
   isFeedSectionActive,
 } from './user-profile-subnav';
 import { useUserProfileSocialCounts } from './user-profile-social-counts-context';
+import { useEffectiveProfileNav } from './user-profile-pending-nav-context';
+import { UserProfileNavLink } from './user-profile-nav-link';
 
 export type UserMenuDirection = 'horizontal' | 'vertical';
 
 type UserMenuProps = {
   accountName: string;
-  pathname: string;
-  search: string;
   direction?: UserMenuDirection;
 };
 
@@ -108,15 +106,18 @@ function getFeedSubActive(rest: string[], segment: 'posts' | string): boolean {
   return (rest[0] ?? '') === segment;
 }
 
-export function UserMenu({
+export function UserMenu(props: UserMenuProps) {
+  return <UserMenuInner {...props} />;
+}
+
+function UserMenuInner({
   accountName,
-  pathname,
-  search,
   direction = 'horizontal',
 }: UserMenuProps) {
   const { t } = useI18n();
   const { resolvedMode } = useShellMode();
   const visibleMenuKeys = getVisibleMenuKeys(resolvedMode);
+  const { pathname, search } = useEffectiveProfileNav();
   const rest = getSegmentsAfterAccount(pathname);
   const base = `/@${accountName}`;
   const walletType = getWalletTypeFromSearch(search);
@@ -198,24 +199,23 @@ export function UserMenu({
       <div className="space-y-1">
         <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_nav_aria')}>
           {primaryItems.map((item) => (
-            <Link
+            <UserProfileNavLink
               key={item.key}
               href={item.href}
               className={navLinkClass(item.active, true)}
-              prefetch={false}
             >
               {item.label}
-            </Link>
+            </UserProfileNavLink>
           ))}
         </nav>
 
         {submenuVariant === 'feed' && visibleMenuKeys == null ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_feed_aria')}>
-            <Link href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), true)} prefetch={false}>{t('posts')}</Link>
-            <Link href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), true)} prefetch={false}>{t('threads')}</Link>
-            <Link href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), true)} prefetch={false}>{t('comments')}</Link>
-            <Link href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), true)} prefetch={false}>{t('mentions')}</Link>
-            <Link href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), true)} prefetch={false}>{t('activity')}</Link>
+            <UserProfileNavLink href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), true)}>{t('posts')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), true)}>{t('threads')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), true)}>{t('comments')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), true)}>{t('mentions')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), true)}>{t('activity')}</UserProfileNavLink>
           </nav>
         ) : null}
 
@@ -224,9 +224,9 @@ export function UserMenu({
             {WALLET_TYPES.map((type) => {
               const href = type === 'rebalancing' ? `${base}/transfers?type=rebalancing` : `${base}/transfers?type=${type}`;
               return (
-                <Link key={type} href={href} className={subNavLinkClass(walletType === type, true)} prefetch={false}>
+                <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, true)}>
                   {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : type === 'ENGINE' ? t('hive_engine_wallet') : t('rebalance_wallet')}
-                </Link>
+                </UserProfileNavLink>
               );
             })}
           </nav>
@@ -234,22 +234,22 @@ export function UserMenu({
 
         {submenuVariant === 'followers' ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_followers_aria')}>
-            <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', true)} prefetch={false}>
+            <UserProfileNavLink href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', true)}>
               <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
-            </Link>
-            <Link href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', true)} prefetch={false}>
+            </UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', true)}>
               <SocialSubmenuLinkLabel label={t('following')} count={socialCounts?.followingCount} />
-            </Link>
-            <Link href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', true)} prefetch={false}>
+            </UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', true)}>
               <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
-            </Link>
+            </UserProfileNavLink>
           </nav>
         ) : null}
 
         {submenuVariant === 'expertise' ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_expertise_aria')}>
-            <Link href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', true)} prefetch={false}>{t('hashtags')}</Link>
-            <Link href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', true)} prefetch={false}>{t('objects')}</Link>
+            <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', true)}>{t('hashtags')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', true)}>{t('objects')}</UserProfileNavLink>
           </nav>
         ) : null}
       </div>
@@ -266,7 +266,7 @@ export function UserMenu({
           aria-label={t('user_profile_nav_aria')}
         >
           {primaryItems.map((item) => (
-            <Link
+            <UserProfileNavLink
               key={item.key}
               href={item.href}
               className={[
@@ -275,10 +275,9 @@ export function UserMenu({
               ]
                 .filter(Boolean)
                 .join(' ')}
-              prefetch={false}
             >
               {item.label}
-            </Link>
+            </UserProfileNavLink>
           ))}
         </nav>
 
@@ -287,11 +286,11 @@ export function UserMenu({
             className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
             aria-label={t('user_profile_submenu_feed_aria')}
           >
-            <Link href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), false)} prefetch={false}>{t('posts')}</Link>
-            <Link href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), false)} prefetch={false}>{t('threads')}</Link>
-            <Link href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), false)} prefetch={false}>{t('comments')}</Link>
-            <Link href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), false)} prefetch={false}>{t('mentions')}</Link>
-            <Link href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), false)} prefetch={false}>{t('activity')}</Link>
+            <UserProfileNavLink href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), false)}>{t('posts')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), false)}>{t('threads')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), false)}>{t('comments')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), false)}>{t('mentions')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), false)}>{t('activity')}</UserProfileNavLink>
           </nav>
         ) : null}
 
@@ -303,9 +302,9 @@ export function UserMenu({
             {WALLET_TYPES.map((type) => {
               const href = type === 'rebalancing' ? `${base}/transfers?type=rebalancing` : `${base}/transfers?type=${type}`;
               return (
-                <Link key={type} href={href} className={subNavLinkClass(walletType === type, false)} prefetch={false}>
+                <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, false)}>
                   {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : type === 'ENGINE' ? t('hive_engine_wallet') : t('rebalance_wallet')}
-                </Link>
+                </UserProfileNavLink>
               );
             })}
           </nav>
@@ -316,15 +315,15 @@ export function UserMenu({
             className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
             aria-label={t('user_profile_submenu_followers_aria')}
           >
-            <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)} prefetch={false}>
+            <UserProfileNavLink href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)}>
               <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
-            </Link>
-            <Link href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', false)} prefetch={false}>
+            </UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', false)}>
               <SocialSubmenuLinkLabel label={t('following')} count={socialCounts?.followingCount} />
-            </Link>
-            <Link href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)} prefetch={false}>
+            </UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)}>
               <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
-            </Link>
+            </UserProfileNavLink>
           </nav>
         ) : null}
 
@@ -333,8 +332,8 @@ export function UserMenu({
             className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
             aria-label={t('user_profile_submenu_expertise_aria')}
           >
-            <Link href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)} prefetch={false}>{t('hashtags')}</Link>
-            <Link href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)} prefetch={false}>{t('objects')}</Link>
+            <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)}>{t('hashtags')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)}>{t('objects')}</UserProfileNavLink>
           </nav>
         ) : null}
       </div>

@@ -28,5 +28,24 @@ export {
 export type { UserProfileSocialCounts } from './components/user-profile-social-counts-context';
 export { LeftSidebar } from './components/left-sidebar';
 export { RightSidebar } from './components/right-sidebar';
+export { UserProfilePendingNavRoot } from './components/user-profile-pending-nav-root';
+export { UserProfilePendingNavSync } from './components/user-profile-pending-nav-sync';
+export {
+  useEffectiveProfileNav,
+  UserProfilePendingNavProvider,
+} from './components/user-profile-pending-nav-context';
+export { UserProfileNavLink } from './components/user-profile-nav-link';
+export {
+  ProfileCategoryNavSkeleton,
+  ProfileFavoritesTypeNavSkeleton,
+  ProfileLeftRailSkeleton,
+  ProfileMapSkeleton,
+  ProfileObjectListSkeleton,
+  ProfileReblogsFeedSkeleton,
+  ProfileSectionSkeleton,
+  ProfileShopContentSkeleton,
+  ProfileSocialListSkeleton,
+} from './components/profile-content-skeletons';
+export { ProfileMapSidebarListSkeleton } from './components/profile-map-sidebar-list-skeleton';
 export { UserMenuVerticalRail } from './components/user-menu-vertical-rail';
 export type { UserProfileShellUser } from './components/types';

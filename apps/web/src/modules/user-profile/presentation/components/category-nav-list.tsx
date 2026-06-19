@@ -1,12 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { CategoryNavItem } from '../../domain/types/category-nav';
 import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
 import { buildProfileShopHref } from '../../domain/profile-shop-filters-url';
 import { getCategoryLineageFromPathname } from './category-nav-path';
+import { useEffectiveProfileNav } from './user-profile-pending-nav-context';
+import { UserProfileNavLink } from './user-profile-nav-link';
 
 type CategoryNavListProps = {
   items: CategoryNavItem[];
@@ -18,7 +19,7 @@ type CategoryNavListProps = {
 };
 
 export function CategoryNavList({ items, basePath, sectionKey, filters }: CategoryNavListProps) {
-  const pathname = usePathname();
+  const { pathname } = useEffectiveProfileNav();
   const lineage = getCategoryLineageFromPathname(pathname, sectionKey);
   const prefix =
     lineage.length > 0 ? `${lineage.map((s) => encodeURIComponent(s)).join('/')}/` : '';
@@ -31,9 +32,8 @@ export function CategoryNavList({ items, basePath, sectionKey, filters }: Catego
         const isActive = lineage.length > 0 && lineage[lineage.length - 1] === item.name;
         return (
           <li key={item.name}>
-            <Link
+            <UserProfileNavLink
               href={href}
-              suppressHydrationWarning
               className={[
                 'flex items-center justify-between gap-2 rounded-btn px-2 py-1.5 text-body-sm transition-colors',
                 isActive ? 'bg-surface font-weight-label text-fg' : 'text-muted hover:bg-surface/80 hover:text-fg',
@@ -46,7 +46,7 @@ export function CategoryNavList({ items, basePath, sectionKey, filters }: Catego
                   ›
                 </span>
               ) : null}
-            </Link>
+            </UserProfileNavLink>
           </li>
         );
       })}

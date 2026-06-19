@@ -1,11 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { PROFILE_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 import { formatFavoritesTypeLabel } from './favorites-type-label';
+import { useEffectiveProfileNav } from './user-profile-pending-nav-context';
+import { UserProfileNavLink } from './user-profile-nav-link';
+import { getSegmentsAfterAccount } from './profile-path';
 
 export type FavoritesTypeNavProps = {
   accountName: string;
@@ -16,10 +17,18 @@ export type FavoritesTypeNavProps = {
 
 export function FavoritesTypeNav({ accountName, types, activeType }: FavoritesTypeNavProps) {
   const { t } = useI18n();
+  const { pathname } = useEffectiveProfileNav();
+  const rest = getSegmentsAfterAccount(pathname);
+  const routeType =
+    rest[0] === 'favorites' && rest.length > 1 ? decodeURIComponent(rest[1] ?? '') : undefined;
   const basePath = `/@${accountName}/favorites`;
   const firstType = types[0];
   const resolvedActive =
-    activeType != null && activeType.length > 0 ? activeType : firstType;
+    routeType != null && routeType.length > 0
+      ? routeType
+      : activeType != null && activeType.length > 0
+        ? activeType
+        : firstType;
 
   if (types.length === 0) {
     return (
@@ -50,12 +59,11 @@ export function FavoritesTypeNav({ accountName, types, activeType }: FavoritesTy
           const href = `${basePath}/${encodeURIComponent(type)}`;
           const isActive = type === resolvedActive;
           const isBareFirst =
-            (activeType == null || activeType.length === 0) && type === firstType;
+            routeType == null && activeType == null && type === firstType;
           return (
             <li key={type}>
-              <Link
+              <UserProfileNavLink
                 href={href}
-                suppressHydrationWarning
                 className={[
                   'block rounded-btn px-2 py-1.5 text-body-sm underline-offset-2 hover:bg-surface-control hover:text-fg',
                   isActive ? 'font-weight-label text-fg bg-surface-control' : 'text-muted',
@@ -63,7 +71,7 @@ export function FavoritesTypeNav({ accountName, types, activeType }: FavoritesTy
                 aria-current={isActive ? (isBareFirst ? 'page' : 'true') : undefined}
               >
                 {formatFavoritesTypeLabel(type)}
-              </Link>
+              </UserProfileNavLink>
             </li>
           );
         })}

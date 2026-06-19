@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -11,8 +10,10 @@ import {
   buildProfileShopHref,
   parseProfileShopFilters,
 } from '../../domain/profile-shop-filters-url';
-import { UNCATEGORIZED_SHOP_PATH_SEGMENT } from './category-nav-path';
+import { getCategoryLineageFromPathname, UNCATEGORIZED_SHOP_PATH_SEGMENT } from './category-nav-path';
 import { CategoryNavList } from './category-nav-list';
+import { useEffectiveProfileNav } from './user-profile-pending-nav-context';
+import { UserProfileNavLink } from './user-profile-nav-link';
 
 export type CategoryNavChromeProps = {
   data: CategoryNavData;
@@ -29,7 +30,9 @@ export function CategoryNavChrome({
 }: CategoryNavChromeProps) {
   const { t } = useI18n();
   const searchParams = useSearchParams();
+  const { pathname } = useEffectiveProfileNav();
   const filters = useMemo(() => parseProfileShopFilters(searchParams), [searchParams]);
+  const lineage = getCategoryLineageFromPathname(pathname, sectionKey);
 
   const upPath =
     lineageSegments.length <= 1
@@ -43,20 +46,18 @@ export function CategoryNavChrome({
     <>
       {lineageSegments.length > 0 ? (
         <p className="mb-2 flex flex-wrap gap-x-3 gap-y-1 text-caption">
-          <Link
+          <UserProfileNavLink
             href={buildProfileShopHref(upPath, filters)}
-            suppressHydrationWarning
             className="text-muted underline-offset-2 hover:text-fg hover:underline"
           >
             {t('profile_categories_up')}
-          </Link>
-          <Link
+          </UserProfileNavLink>
+          <UserProfileNavLink
             href={buildProfileShopHref(basePath, filters)}
-            suppressHydrationWarning
             className="text-muted underline-offset-2 hover:text-fg hover:underline"
           >
             {t('profile_categories_all')}
-          </Link>
+          </UserProfileNavLink>
         </p>
       ) : null}
       {!data || data.items.length === 0 ? (
@@ -70,26 +71,25 @@ export function CategoryNavChrome({
         />
       )}
       {data && data.uncategorized_count > 0 ? (
-        <Link
+        <UserProfileNavLink
           href={buildProfileShopHref(
             `${basePath}/${encodeURIComponent(UNCATEGORIZED_SHOP_PATH_SEGMENT)}`,
             filters,
           )}
-          suppressHydrationWarning
           className={[
             'mt-3 block border-t border-border pt-2 text-caption underline-offset-2 hover:text-fg hover:underline',
-            lineageSegments.length === 1 && lineageSegments[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
+            lineage.length === 1 && lineage[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
               ? 'font-weight-label text-fg'
               : 'text-muted',
           ].join(' ')}
           aria-current={
-            lineageSegments.length === 1 && lineageSegments[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
+            lineage.length === 1 && lineage[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
               ? 'page'
               : undefined
           }
         >
           {t('profile_categories_uncategorized')}
-        </Link>
+        </UserProfileNavLink>
       ) : null}
     </>
   );

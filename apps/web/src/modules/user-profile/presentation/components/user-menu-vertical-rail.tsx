@@ -1,8 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -43,26 +41,12 @@ function UserMenuVerticalRailSkeleton() {
 
 /**
  * Client boundary for rendering UserMenu vertically in the left rail.
- * Reads pathname/search from Next.js hooks for active-link state.
- * UserMenu is client-only (dynamic ssr: false), matching UserHero — avoids
- * hydration mismatches from pathname/search during SSR vs first client render.
+ * Active-link state comes from {@link useEffectiveProfileNav} inside UserMenu.
  */
 export function UserMenuVerticalRail({ accountName }: UserMenuVerticalRailProps) {
-  const pathname = usePathname();
-  const search = useSearchParams().toString();
-  const menuProps = useMemo(
-    () => ({
-      accountName,
-      pathname,
-      search,
-      direction: 'vertical' as const,
-    }),
-    [accountName, pathname, search],
-  );
-
   return (
     <div className="rounded-card border border-border bg-bg p-2 shadow-card">
-      <UserMenuClient {...menuProps} />
+      <UserMenuClient accountName={accountName} direction="vertical" />
     </div>
   );
 }

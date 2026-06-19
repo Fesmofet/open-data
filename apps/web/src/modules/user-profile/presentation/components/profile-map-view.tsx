@@ -33,6 +33,7 @@ import {
   mapBoxesEqual,
 } from '../../domain/types/favorites-map';
 import { MapObjectPopupCard } from './map-object-popup-card';
+import { ProfileMapSidebarListSkeleton } from './profile-map-sidebar-list-skeleton';
 
 const OSM_COPYRIGHT_URL = 'https://www.openstreetmap.org/copyright';
 const DEFAULT_MAP_CENTER: MapPosition = [20, 0];
@@ -55,6 +56,7 @@ export function ProfileMapView({ accountName, viewerUsername }: ProfileMapViewPr
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [showReload, setShowReload] = useState(false);
   const [listError, setListError] = useState(false);
+  const [hasLoadedListOnce, setHasLoadedListOnce] = useState(false);
   const [currentBox, setCurrentBox] = useState<MapBoundingBox | null>(null);
   const [listPending, startListTransition] = useTransition();
   const [markersPending, startMarkersTransition] = useTransition();
@@ -76,11 +78,15 @@ export function ProfileMapView({ accountName, viewerUsername }: ProfileMapViewPr
           if (!append) {
             setListError(true);
             setListPage(EMPTY_PAGE);
+            setHasLoadedListOnce(true);
           }
           return;
         }
         setListError(false);
         const page = result.page;
+        if (!append) {
+          setHasLoadedListOnce(true);
+        }
         setListPage((prev) => ({
           items: append ? [...prev.items, ...page.items] : page.items,
           hasMore: page.hasMore,
@@ -228,6 +234,11 @@ export function ProfileMapView({ accountName, viewerUsername }: ProfileMapViewPr
     [markersWithGeo],
   );
 
+  const showListSkeleton =
+    listPending || (!hasLoadedListOnce && listPage.items.length === 0 && !listError);
+  const showListEmpty =
+    hasLoadedListOnce && !listPending && listPage.items.length === 0 && !listError;
+
   return (
     <div className="flex h-[calc(100vh-14rem)] min-h-0 flex-col overflow-hidden lg:flex-row">
       <aside className="flex max-h-[40vh] min-h-0 shrink-0 flex-col overflow-hidden border-border lg:h-full lg:max-h-full lg:w-[38%] lg:max-w-xl lg:shrink-0 lg:border-r">
@@ -246,7 +257,9 @@ export function ProfileMapView({ accountName, viewerUsername }: ProfileMapViewPr
         <div className="min-h-0 flex-1 overflow-y-auto pb-card-padding pe-card-padding pt-card-padding">
           {listError ? (
             <p className="text-body-sm text-muted">{t('profile_map_load_error')}</p>
-          ) : listPage.items.length === 0 && !listPending ? (
+          ) : showListSkeleton ? (
+            <ProfileMapSidebarListSkeleton />
+          ) : showListEmpty ? (
             <p className="text-body-sm text-muted">{t('favorites_empty')}</p>
           ) : (
             <FeedColumn>
@@ -333,6 +346,7 @@ export function ProfileMapView({ accountName, viewerUsername }: ProfileMapViewPr
             className="pointer-events-auto underline"
             target="_blank"
             rel="noopener noreferrer"
+            suppressHydrationWarning
           >
             © OpenStreetMap
           </a>

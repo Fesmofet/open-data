@@ -5,6 +5,8 @@ import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import {
   getUserProfileQuery,
   UserProfileHeroClient,
+  UserProfilePendingNavRoot,
+  UserProfilePendingNavSync,
   UserProfileSocialCountsProvider,
 } from '@/modules/user-profile';
 import { getUserFollowingObjectsPageQuery } from '@/modules/user-social';
@@ -45,14 +47,17 @@ export default async function ProfileGroupLayout({
         followingObjectsCount: objectsHead.total,
       }}
     >
-      <Suspense fallback={null}>
-        <UserProfileHeroClient
-          accountName={decoded}
-          initialUser={profile}
-          viewerUsername={viewer}
-        />
-        {children}
-      </Suspense>
+      <UserProfilePendingNavRoot>
+        <Suspense fallback={null}>
+          <UserProfilePendingNavSync />
+          <UserProfileHeroClient
+            accountName={decoded}
+            initialUser={profile}
+            viewerUsername={viewer}
+          />
+          {children}
+        </Suspense>
+      </UserProfilePendingNavRoot>
     </UserProfileSocialCountsProvider>
   );
 }
