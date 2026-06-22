@@ -15,9 +15,17 @@ import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
 import type { MongoUserRcDelegation } from './types';
-import { normalizeRcAmount } from '@opden-data-layer/core';
 
 const BATCH_SIZE = 5000;
+
+/** Coerce legacy Mongo RC amounts (often floats) to a positive integer. */
+function normalizeRcAmount(value: unknown): number {
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num) || num <= 0) {
+    return 0;
+  }
+  return Math.trunc(num);
+}
 
 interface MigrationStats {
   rowsSeen: number;
