@@ -3,7 +3,7 @@ export {
   CUSTOM_JSON_ID,
   CUSTOM_JSON_ACTION,
 } from './operation-types';
-export { vestToHp } from './vest-conversion';
+export { vestToHp, normalizeHiveAssetAmount, type HiveAssetLike } from './vest-conversion';
 export { parseCustomJsonOp, type ParsedCustomJsonOp } from './parse-custom-json';
 export { isWalletOperation } from './is-wallet-operation';
 export {

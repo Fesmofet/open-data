@@ -52,6 +52,8 @@ import {
 import { GetUserProfileEndpoint } from '../domain/users';
 import {
   GetUserEngineTokenDelegationsEndpoint,
+  GetUserHiveHpDelegationsEndpoint,
+  GetUserHiveRcDelegationsEndpoint,
   GetUserWaivWalletEndpoint,
 } from '../domain/wallet';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
@@ -88,6 +90,8 @@ export class McpService {
     private readonly getUserActivity: GetUserActivityEndpoint,
     private readonly getUserWaivWallet: GetUserWaivWalletEndpoint,
     private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
+    private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
+    private readonly getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint,
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
@@ -130,6 +134,8 @@ export class McpService {
       getUserActivity: this.getUserActivity,
       getUserWaivWallet: this.getUserWaivWallet,
       getUserEngineTokenDelegations: this.getUserEngineTokenDelegations,
+      getUserHiveHpDelegations: this.getUserHiveHpDelegations,
+      getUserHiveRcDelegations: this.getUserHiveRcDelegations,
       getUserFollowers: this.getUserFollowers,
       getUserFollowing: this.getUserFollowing,
       getUserFollowingObjects: this.getUserFollowingObjects,

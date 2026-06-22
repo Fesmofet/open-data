@@ -594,6 +594,7 @@
   "delegate_modal_info_part2": "请注意，委托是即时的，但在解委托后，需要",
   "delegate_modal_info_part3": "天才能将金额返回到您的帐户。",
   "delegate_modal_info_part4": "单击下面的按钮以转到HiveSigner完成您的交易。",
+  "delegate_rc_modal_info": "请输入您希望委派部分 Resource Credits 的账户名称。",
   "delegated_to": "委托给",
   "delegation_from": "委托来自",
   "delete": "删除",

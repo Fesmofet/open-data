@@ -8,8 +8,20 @@ import { I18nProvider } from '@/i18n/providers/i18n-provider';
 
 import { WaivWalletTab } from './waiv-wallet-tab';
 
-jest.mock('../engine-token/wallet-modal-host', () => ({
-  WalletModalHost: ({ children }: { children: ReactNode }) => <>{children}</>,
+jest.mock('../wallet/transfers-waiv-wallet-view', () => ({
+  TransfersWaivWalletView: () => <div data-testid="transfers-waiv-wallet-view" />,
+}));
+
+jest.mock('../wallet/unified-wallet-modal-host', () => ({
+  UnifiedWalletModalHost: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
+jest.mock('../wallet/wallet-modal-context', () => ({
+  useWalletModal: () => ({
+    openModal: jest.fn(),
+    closeModal: jest.fn(),
+    modal: null,
+  }),
 }));
 
 const messages = {
@@ -34,13 +46,13 @@ function renderTab(
 }
 
 describe('WaivWalletTab', () => {
-  it('shows unavailable when wallet data failed to load', () => {
+  it('renders transfers waiv wallet view', () => {
     renderTab();
-    expect(screen.getByText('Unavailable')).toBeInTheDocument();
+    expect(screen.getByTestId('transfers-waiv-wallet-view')).toBeInTheDocument();
   });
 
-  it('shows activity_error for invalid_response', () => {
+  it('renders with invalid_response error prop', () => {
     renderTab({ error: 'invalid_response' });
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByTestId('transfers-waiv-wallet-view')).toBeInTheDocument();
   });
 });

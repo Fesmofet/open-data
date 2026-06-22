@@ -41,6 +41,8 @@ export interface OdlDatabase {
   user_referrals: UserReferralsTable;
   user_post_bookmarks: UserPostBookmarksTable;
   user_subscriptions: UserSubscriptionsTable;
+  user_delegations: UserDelegationsTable;
+  user_rc_delegations: UserRcDelegationsTable;
   user_account_mutes: UserAccountMutesTable;
   user_object_follows: UserObjectFollowsTable;
   user_shop_deselect: UserShopDeselectTable;
@@ -376,6 +378,35 @@ export interface UserSubscriptionsTable {
 export type UserSubscription = Selectable<UserSubscriptionsTable>;
 export type NewUserSubscription = Insertable<UserSubscriptionsTable>;
 export type UserSubscriptionUpdate = Updateable<UserSubscriptionsTable>;
+
+// ---------------------------------------------------------------------------
+// user_delegations (Hive HP vesting delegations)
+// ---------------------------------------------------------------------------
+
+export interface UserDelegationsTable {
+  delegator: string;
+  delegatee: string;
+  vesting_shares: number;
+  delegation_date: Date | null;
+}
+
+export type UserDelegation = Selectable<UserDelegationsTable>;
+export type NewUserDelegation = Insertable<UserDelegationsTable>;
+export type UserDelegationUpdate = Updateable<UserDelegationsTable>;
+
+// ---------------------------------------------------------------------------
+// user_rc_delegations (Hive RC delegations)
+// ---------------------------------------------------------------------------
+
+export interface UserRcDelegationsTable {
+  delegator: string;
+  delegatee: string;
+  rc: string;
+}
+
+export type UserRcDelegation = Selectable<UserRcDelegationsTable>;
+export type NewUserRcDelegation = Insertable<UserRcDelegationsTable>;
+export type UserRcDelegationUpdate = Updateable<UserRcDelegationsTable>;
 
 // ---------------------------------------------------------------------------
 // user_account_mutes (Hive follow ignore — pair-level social mute)

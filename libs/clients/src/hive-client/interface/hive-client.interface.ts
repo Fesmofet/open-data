@@ -11,6 +11,13 @@ import {
   HiveAccountHistoryRow,
   HiveDynamicGlobalProperties,
   HiveOperationFilter,
+  HiveRcAccount,
+  HiveRcDelegation,
+  HiveSavingsWithdrawRequest,
+  HiveVestingDelegation,
+  HiveVestingDelegationExpiration,
+  HiveFindVestingDelegationsResult,
+  HiveFindVestingDelegationExpirationsResult,
 } from '../type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
@@ -43,6 +50,55 @@ export interface HiveClientInterface {
   ): CommentOptionsOperation[1];
 
   getAccounts(names: string[]): Promise<HiveAccountType[]>;
+
+  /** Like `getAccounts` but throws when the node is unavailable. */
+  getAccountsStrict(names: string[]): Promise<HiveAccountType[]>;
+
+  getVestingDelegations(
+    delegator: string,
+    startDelegatee: string,
+    limit: number,
+  ): Promise<HiveVestingDelegation[]>;
+
+  getVestingDelegationsStrict(
+    delegator: string,
+    startDelegatee: string,
+    limit: number,
+  ): Promise<HiveVestingDelegation[]>;
+
+  findVestingDelegationsToAccount(account: string): Promise<HiveVestingDelegation[]>;
+
+  findVestingDelegationsToAccountStrict(account: string): Promise<HiveVestingDelegation[]>;
+
+  findVestingDelegationExpirations(
+    account: string,
+  ): Promise<HiveVestingDelegationExpiration[]>;
+
+  findVestingDelegationExpirationsStrict(
+    account: string,
+  ): Promise<HiveVestingDelegationExpiration[]>;
+
+  findRcAccounts(accounts: string[]): Promise<HiveRcAccount[]>;
+
+  findRcAccountsStrict(accounts: string[]): Promise<HiveRcAccount[]>;
+
+  listRcDirectDelegations(
+    from: string,
+    to: string,
+    limit: number,
+  ): Promise<HiveRcDelegation[]>;
+
+  listRcDirectDelegationsStrict(
+    from: string,
+    to: string,
+    limit: number,
+  ): Promise<HiveRcDelegation[]>;
+
+  getSavingsWithdrawFrom(account: string): Promise<HiveSavingsWithdrawRequest[]>;
+
+  getSavingsWithdrawFromStrict(account: string): Promise<HiveSavingsWithdrawRequest[]>;
+
+  getDynamicGlobalPropertiesStrict(): Promise<HiveDynamicGlobalProperties>;
 
   getFollowers(
     account: string,

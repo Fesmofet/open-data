@@ -24,6 +24,8 @@ import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 import { UserObjectPowersRepository } from './user-object-powers.repository';
 import { UserObjectFollowsRepository } from './user-object-follows.repository';
 import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
+import { UserDelegationsRepository } from './user-delegations.repository';
+import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 
 @Module({
   providers: [
@@ -52,6 +54,8 @@ import { PostObjectRelatedImagesRepository } from './post-object-related-images.
     UserObjectPowersRepository,
     UserObjectFollowsRepository,
     PostObjectRelatedImagesRepository,
+    UserDelegationsRepository,
+    UserRcDelegationsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -79,6 +83,8 @@ import { PostObjectRelatedImagesRepository } from './post-object-related-images.
     UserObjectPowersRepository,
     UserObjectFollowsRepository,
     PostObjectRelatedImagesRepository,
+    UserDelegationsRepository,
+    UserRcDelegationsRepository,
   ],
 })
 export class RepositoriesModule {}

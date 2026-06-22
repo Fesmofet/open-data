@@ -595,6 +595,7 @@
   "delegate_modal_info_part2": "Si prega di notare che le deleghe sono immediate, ma ci vorranno",
   "delegate_modal_info_part3": "giorni perché l'importo venga restituito al tuo account dopo la rimozione della delega.",
   "delegate_modal_info_part4": "Clicca sul pulsante qui sotto per essere reindirizzato a HiveSigner per completare la transazione.",
+  "delegate_rc_modal_info": "Inserisci il nome dell'account a cui desideri delegare una parte dei tuoi Resource Credits.",
   "delegated_to": "Delegato a",
   "delegation_from": "Delega da",
   "delete": "Elimina",

@@ -1,13 +1,10 @@
 'use client';
 
-import { useI18n } from '@/i18n/providers/i18n-provider';
-
 import type {
   WaivWalletLoadError,
   WaivWalletSummaryView,
 } from '../../../domain/types/waiv-wallet-view';
-import { WalletModalHost } from '../engine-token/wallet-modal-host';
-import { WaivWalletSummary } from './waiv-wallet-summary';
+import { TransfersWaivWalletView } from '../wallet/transfers-waiv-wallet-view';
 
 export type WaivWalletTabProps = {
   accountName: string;
@@ -22,23 +19,13 @@ export function WaivWalletTab({
   summary,
   error,
 }: WaivWalletTabProps) {
-  const { t } = useI18n();
-  const canManageWallet =
-    viewerUsername?.trim().toLowerCase() === accountName.trim().toLowerCase();
-
-  if (error || !summary) {
-    return (
-      <p className="rounded-card border border-border bg-bg p-card-padding text-body-sm text-muted">
-        {error === 'invalid_response'
-          ? t('activity_error')
-          : t('unavailable')}
-      </p>
-    );
-  }
-
   return (
-    <WalletModalHost account={accountName} viewerUsername={viewerUsername}>
-      <WaivWalletSummary summary={summary} canManageWallet={canManageWallet} />
-    </WalletModalHost>
+    <TransfersWaivWalletView
+      accountName={accountName}
+      viewerUsername={viewerUsername}
+      waivSummary={summary!}
+      waivError={error}
+      hiveSummary={null}
+    />
   );
 }

@@ -16,6 +16,7 @@ import { CommentOperationOrchestrator } from '../hive-comment/comment-orchestrat
 import { AccountProfileUpdateService } from '../hive-social/account-profile-update.service';
 import { AccountEnsureService } from '../hive-social/account-ensure.service';
 import { VoteHiveService } from '../hive-vote/vote-hive.service';
+import { HiveHpDelegationService } from '../hive-delegation/hive-hp-delegation.service';
 
 @Injectable()
 export class HiveMainParser {
@@ -29,6 +30,7 @@ export class HiveMainParser {
     private readonly accountProfileUpdate: AccountProfileUpdateService,
     private readonly accountEnsure: AccountEnsureService,
     private readonly voteHiveService: VoteHiveService,
+    private readonly hpDelegationService: HiveHpDelegationService,
   ) {
     this.handlers = {
       [HIVE_OPERATION.CUSTOM_JSON]: {
@@ -68,6 +70,17 @@ export class HiveMainParser {
       [HIVE_OPERATION.VOTE]: {
         handle: (p, ctx) =>
           this.voteHiveService.handleVote(p as Record<string, unknown>, ctx),
+      },
+      [HIVE_OPERATION.DELEGATE_VESTING_SHARES]: {
+        handle: (p, ctx) =>
+          this.hpDelegationService.handleDelegateVestingShares(
+            p as {
+              delegator?: string;
+              delegatee?: string;
+              vesting_shares?: string | number;
+            },
+            ctx,
+          ),
       },
     };
   }

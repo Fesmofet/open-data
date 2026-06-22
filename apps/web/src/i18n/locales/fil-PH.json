@@ -416,6 +416,7 @@
   "delegate_modal_info_part2": "Pakitandaan na ang mga delegasyon ay instant, ngunit ito ay aabutin",
   "delegate_modal_info_part3": "araw para sa halagang ibabalik sa iyong account pagkatapos ng undelegation.",
   "delegate_modal_info_part4": "I-click ang button sa ibaba upang mai-redirect sa HiveSigner upang makumpleto ang iyong transaksyon.",
+  "delegate_rc_modal_info": "Ilagay ang pangalan ng account na nais mong i-delegate ang bahagi ng iyong Resource Credits.",
   "delegated_to": "Ibinigay sa",
   "delegation_from": "Delegasyon mula sa",
   "delete": "tanggalin",

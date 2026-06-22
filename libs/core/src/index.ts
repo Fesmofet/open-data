@@ -11,3 +11,4 @@ export * from './utils';
 export * from './update-registry';
 export * from './object-type-registry';
 export * from './hive-account-history';
+export * from './hive';

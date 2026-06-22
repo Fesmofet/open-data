@@ -20,6 +20,16 @@ describe('vestToHp', () => {
     ).toBeCloseTo(0.00304, 4);
   });
 
+  it('parses database_api asset objects', () => {
+    expect(
+      vestToHp(
+        { amount: '4933654', precision: 6 },
+        '341602453178.281332 VESTS',
+        '210616861.512 HIVE',
+      ),
+    ).toBeCloseTo(0.00304, 4);
+  });
+
   it('returns 0 for invalid input', () => {
     expect(vestToHp('x', '0', '1')).toBe(0);
   });

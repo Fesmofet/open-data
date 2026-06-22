@@ -4,6 +4,11 @@ import Image from 'next/image';
 import type { ReactNode } from 'react';
 
 import { WalletActionSplit, type WalletActionSplitItem } from '../shared/wallet-action-split';
+import { WalletBalanceAmount } from '../shared/wallet-balance-amount';
+import {
+  WALLET_ROW_TOKEN_ICON_PX,
+  WalletPowerLightningIcon,
+} from '../shared/wallet-row-icons';
 
 /** Waivio wallet tab parity — {@link walletSymbolIconSrc} in object module uses the same file. */
 export const WAIV_TOKEN_ICON_SRC = '/images/icons/cryptocurrencies/waiv.png';
@@ -12,32 +17,53 @@ export type WaivWalletBalanceRowProps = {
   icon?: ReactNode;
   /** Token image fills the 40×40 circle (no accent glyph background). */
   iconFullBleed?: boolean;
+  /** Power lightning: accent color without circle shell. */
+  iconVariant?: 'default' | 'accent' | 'plain';
   /** Keeps label column aligned when this row has no icon. */
   reserveIconSpace?: boolean;
   title: string;
   subtitle?: string;
   amount: string;
   amountSuffix?: string;
+  amountOnClick?: () => void;
+  amountTooltip?: ReactNode;
+  amountTooltipDisabled?: boolean;
   showBorderBottom?: boolean;
   actions?: {
     primaryLabel: string;
     onPrimary: () => void;
     menuItems?: WalletActionSplitItem[];
+    primaryDisabled?: boolean;
+    primaryDisabledTooltip?: string;
   } | null;
 };
 
 export function WaivWalletBalanceRow({
   icon,
   iconFullBleed = false,
+  iconVariant = 'default',
   reserveIconSpace = false,
   title,
   subtitle,
   amount,
   amountSuffix,
+  amountOnClick,
+  amountTooltip,
+  amountTooltipDisabled,
   showBorderBottom = true,
   actions,
 }: WaivWalletBalanceRowProps) {
   const showIconColumn = icon !== undefined || reserveIconSpace;
+
+  const iconShellClass = (() => {
+    if (iconVariant === 'accent') {
+      return 'flex h-10 w-10 shrink-0 items-center justify-center text-accent';
+    }
+    if (iconVariant === 'plain') {
+      return 'flex h-10 w-10 shrink-0 items-center justify-center';
+    }
+    return 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent';
+  })();
 
   return (
     <div
@@ -49,13 +75,11 @@ export function WaivWalletBalanceRow({
       {showIconColumn ? (
         icon ? (
           iconFullBleed ? (
-            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center">
               {icon}
             </div>
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
-              {icon}
-            </div>
+            <div className={iconShellClass}>{icon}</div>
           )
         ) : (
           <div className="h-10 w-10 shrink-0" aria-hidden />
@@ -68,19 +92,20 @@ export function WaivWalletBalanceRow({
         ) : null}
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
-        <p className="text-body font-weight-strong text-fg tabular-nums">
-          {amount}
-          {amountSuffix ? (
-            <span className="ml-1 text-body-sm font-weight-body text-muted">
-              {amountSuffix}
-            </span>
-          ) : null}
-        </p>
+        <WalletBalanceAmount
+          amount={amount}
+          amountSuffix={amountSuffix}
+          onClick={amountOnClick}
+          tooltip={amountTooltip}
+          tooltipDisabled={amountTooltipDisabled}
+        />
         {actions ? (
           <WalletActionSplit
             primaryLabel={actions.primaryLabel}
             onPrimary={actions.onPrimary}
             menuItems={actions.menuItems}
+            disabled={actions.primaryDisabled}
+            disabledTooltip={actions.primaryDisabledTooltip}
           />
         ) : null}
       </div>
@@ -93,19 +118,15 @@ function WaivTokenIcon() {
     <Image
       src={WAIV_TOKEN_ICON_SRC}
       alt=""
-      width={40}
-      height={40}
-      className="h-10 w-10 object-cover"
+      width={WALLET_ROW_TOKEN_ICON_PX}
+      height={WALLET_ROW_TOKEN_ICON_PX}
+      className="h-[22px] w-[22px] object-contain"
     />
   );
 }
 
 function PowerIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
-    </svg>
-  );
+  return <WalletPowerLightningIcon />;
 }
 
 function PersonIcon() {

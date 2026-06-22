@@ -8,11 +8,13 @@ export const HIVE_OPERATION = Object.freeze({
   CREATE_ACCOUNT: 'create_account',
   CREATE_CLAIMED_ACCOUNT: 'create_claimed_account',
   VOTE: 'vote',
+  DELEGATE_VESTING_SHARES: 'delegate_vesting_shares',
 } as const);
 
 /** Hive `custom_json` id for follow / reblog / mute (JSON array payload). */
 export const HIVE_CUSTOM_JSON_ID = Object.freeze({
   FOLLOW: 'follow',
+  RC: 'rc',
 } as const);
 
 export const CUSTOM_JSON_ID = Object.freeze({

@@ -415,6 +415,7 @@
   "delegate_modal_info_part2": "يرجى ملاحظة أن الوفود فورية ، ولكنها ستستغرق",
   "delegate_modal_info_part3": "أيام لإعادة المبلغ إلى حسابك بعد إلغاء التفويض.",
   "delegate_modal_info_part4": "انقر فوق الزر أدناه لإعادة توجيهك إلى HiveSigner لإكمال معاملتك.",
+  "delegate_rc_modal_info": "يرجى إدخال اسم الحساب الذي ترغب في تفويض جزء من Resource Credits إليه.",
   "delegated_to": "المفوضة لل",
   "delegation_from": "وفد من",
   "delete": "حذف",

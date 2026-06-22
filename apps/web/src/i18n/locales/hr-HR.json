@@ -416,6 +416,7 @@
   "delegate_modal_info_part2": "Imajte na umu da su delegacije trenutne, ali će potrajati",
   "delegate_modal_info_part3": "dana da se iznos vrati na vaš račun nakon poništavanja delegiranja.",
   "delegate_modal_info_part4": "Kliknite donji gumb kako biste bili preusmjereni na HiveSigner kako biste dovršili svoju transakciju.",
+  "delegate_rc_modal_info": "Unesite naziv računa kojem želite delegirati dio svojih Resource Credits.",
   "delegated_to": "Delegiran na",
   "delegation_from": "Delegacija iz",
   "delete": "izbrisati",

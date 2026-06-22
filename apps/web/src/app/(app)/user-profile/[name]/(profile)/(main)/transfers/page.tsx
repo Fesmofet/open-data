@@ -2,8 +2,9 @@ import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/co
 import { ProfileRouteStub } from '@/modules/user-profile';
 import { getWalletTypeFromSearch } from '@/modules/user-profile/presentation/components/user-profile-subnav';
 import {
+  getHiveWalletSummaryQuery,
   getWaivWalletSummaryQuery,
-  WaivWalletTab,
+  TransfersWalletShell,
 } from '@/modules/user-wallet';
 
 type UserProfileTransfersPageProps = {
@@ -35,25 +36,32 @@ export default async function UserProfileTransfersPage({
     searchParamsToQuery(await searchParams),
   );
 
-  if (walletType !== 'WAIV') {
+  const auth = createCookieAuthContextProvider();
+  const user = await auth.getUser();
+
+  const [waiv, hive] = await Promise.all([
+    getWaivWalletSummaryQuery(accountName),
+    getHiveWalletSummaryQuery(accountName),
+  ]);
+
+  if (walletType === 'HIVE' || walletType === 'WAIV') {
     return (
-      <ProfileRouteStub
-        title="Wallet / transfers"
-        description="Wallet tabs (WAIV, HIVE, Engine) driven by ?type= query."
+      <TransfersWalletShell
+        accountName={accountName}
+        viewerUsername={user?.username ?? null}
+        walletType={walletType}
+        waivSummary={waiv.summary}
+        waivError={waiv.error}
+        hiveSummary={hive.summary}
+        hiveError={hive.error}
       />
     );
   }
 
-  const auth = createCookieAuthContextProvider();
-  const user = await auth.getUser();
-  const { summary, error } = await getWaivWalletSummaryQuery(accountName);
-
   return (
-    <WaivWalletTab
-      accountName={accountName}
-      viewerUsername={user?.username ?? null}
-      summary={summary}
-      error={error}
+    <ProfileRouteStub
+      title="Wallet / transfers"
+      description="Wallet tabs (WAIV, HIVE, Engine) driven by ?type= query."
     />
   );
 }

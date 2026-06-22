@@ -415,6 +415,7 @@
   "delegate_modal_info_part2": "Należy pamiętać, że delegacje są natychmiastowe, ale zajmie to",
   "delegate_modal_info_part3": "dni na zwrot kwoty na Twoje konto po cofnięciu delegacji.",
   "delegate_modal_info_part4": "Kliknij przycisk poniżej, aby zostać przekierowanym do HiveSigner i dokończyć transakcję.",
+  "delegate_rc_modal_info": "Wprowadź nazwę konta, któremu chcesz delegować część swoich Resource Credits.",
   "delegated_to": "Delegowane do",
   "delegation_from": "Delegacja z",
   "delete": "kasować",

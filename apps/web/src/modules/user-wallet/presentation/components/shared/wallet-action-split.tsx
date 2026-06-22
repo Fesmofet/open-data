@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { WalletHoverTooltip } from './wallet-hover-tooltip';
+
 export type WalletActionSplitItem = {
   id: string;
   label: string;
@@ -13,6 +15,7 @@ export type WalletActionSplitProps = {
   onPrimary: () => void;
   menuItems?: WalletActionSplitItem[];
   disabled?: boolean;
+  disabledTooltip?: string;
 };
 
 export function WalletActionSplit({
@@ -20,6 +23,7 @@ export function WalletActionSplit({
   onPrimary,
   menuItems = [],
   disabled = false,
+  disabledTooltip,
 }: WalletActionSplitProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -39,17 +43,25 @@ export function WalletActionSplit({
 
   const hasMenu = menuItems.length > 0;
 
+  const primaryButton = (
+    <button
+      type="button"
+      className="px-3 py-1.5 text-body-sm font-weight-label text-accent hover:bg-accent/10 disabled:opacity-50"
+      onClick={onPrimary}
+      disabled={disabled}
+    >
+      {primaryLabel}
+    </button>
+  );
+
   return (
     <div ref={rootRef} className="relative inline-flex shrink-0">
       <div className="inline-flex overflow-hidden rounded-btn border border-accent">
-        <button
-          type="button"
-          className="px-3 py-1.5 text-body-sm font-weight-label text-accent hover:bg-accent/10 disabled:opacity-50"
-          onClick={onPrimary}
-          disabled={disabled}
-        >
-          {primaryLabel}
-        </button>
+        {disabled && disabledTooltip ? (
+          <WalletHoverTooltip content={disabledTooltip}>{primaryButton}</WalletHoverTooltip>
+        ) : (
+          primaryButton
+        )}
         {hasMenu ? (
           <button
             type="button"

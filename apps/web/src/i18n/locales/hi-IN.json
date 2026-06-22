@@ -595,6 +595,7 @@
   "delegate_modal_info_part2": "कृपया ध्यान दें कि सौंपने में तुरंत होता है, लेकिन असौंपने के बाद धन वापस आने में",
   "delegate_modal_info_part3": "दिन लगेंगे।",
   "delegate_modal_info_part4": "अपना लेन-देन पूरा करने के लिए कृपया नीचे दिए गए बटन पर क्लिक करें, जिससे आपको HiveSigner पर पुनर्निर्देशित किया जाएगा।",
+  "delegate_rc_modal_info": "कृपया उस खाते का नाम दर्ज करें जिसे आप अपने Resource Credits का हिस्सा delegate करना चाहते हैं।",
   "delegated_to": "सौंपा गया",
   "delegation_from": "सौंपने के लिए",
   "delete": "हटाएं",

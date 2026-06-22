@@ -35,6 +35,7 @@ libs/migrations/src/
   postgres/
     odl/                          # ODL schema (objects_core, object_updates, votes, accounts_current, posts, post_*)
       00001_odl_schema.ts         # consolidated DDL (former 00001–00008); add 00002_… for new changes
+      00025_user_delegations.ts   # user_delegations + user_rc_delegations (HP/RC delegations)
       index.ts                    # MIGRATIONS record for OdlMigrationProvider
   cli.ts                          # CLI entry (latest | down | status)
   provider.ts                     # OdlMigrationProvider

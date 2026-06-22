@@ -13,11 +13,18 @@ import type {
   HiveAccountHistoryRow,
   HiveDynamicGlobalProperties,
   HiveOperationFilter,
+  HiveRcAccount,
+  HiveRcDelegation,
+  HiveSavingsWithdrawRequest,
+  HiveVestingDelegation,
+  HiveFindVestingDelegationsResult,
+  HiveFindVestingDelegationExpirationsResult,
 } from './type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
-import { CONDENSER_API, BRIDGE, HIVE_ACCOUNT_HISTORY_ATTEMPTS, HIVE_ACCOUNT_HISTORY_MAX_LIMIT } from './constants';
+import { CONDENSER_API, BRIDGE, RC_API, DATABASE_API, HIVE_ACCOUNT_HISTORY_ATTEMPTS, HIVE_ACCOUNT_HISTORY_MAX_LIMIT } from './constants';
+import { HiveNodeUnavailableError } from './hive-node-unavailable.error';
 import { parseHiveAccountHistoryAssertContinueFrom } from './parse-hive-account-history-assert';
 import { UrlRotationManager, UrlRotationService } from '../redis-client';
 import { HIVE_CLIENT_MODULE_OPTIONS } from './hive-client.options';
@@ -230,6 +237,218 @@ export class HiveClient implements HiveClientInterface {
     );
   }
 
+  async getAccountsStrict(names: string[]): Promise<HiveAccountType[]> {
+    if (names.length === 0) {
+      return [];
+    }
+    const result = await this.hiveRequest<HiveAccountType[]>(
+      CONDENSER_API.GET_ACCOUNTS,
+      [names],
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result;
+  }
+
+  async getVestingDelegations(
+    delegator: string,
+    startDelegatee: string,
+    limit: number,
+  ): Promise<HiveVestingDelegation[]> {
+    const normalized = delegator.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const clampedLimit =
+      Number.isFinite(limit) && limit >= 1 ? Math.min(1000, Math.floor(limit)) : 1000;
+    return (
+      (await this.hiveRequest<HiveVestingDelegation[]>(
+        CONDENSER_API.GET_VESTING_DELEGATIONS,
+        [normalized, startDelegatee.trim(), clampedLimit],
+      )) ?? []
+    );
+  }
+
+  async getVestingDelegationsStrict(
+    delegator: string,
+    startDelegatee: string,
+    limit: number,
+  ): Promise<HiveVestingDelegation[]> {
+    const normalized = delegator.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const clampedLimit =
+      Number.isFinite(limit) && limit >= 1 ? Math.min(1000, Math.floor(limit)) : 1000;
+    const result = await this.hiveRequest<HiveVestingDelegation[]>(
+      CONDENSER_API.GET_VESTING_DELEGATIONS,
+      [normalized, startDelegatee.trim(), clampedLimit],
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result;
+  }
+
+  async findVestingDelegationsToAccount(
+    account: string,
+  ): Promise<HiveVestingDelegation[]> {
+    const normalized = account.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const result = await this.hiveRequest<HiveFindVestingDelegationsResult>(
+      DATABASE_API.FIND_VESTING_DELEGATIONS,
+      { account: normalized },
+    );
+    return result?.delegations ?? [];
+  }
+
+  async findVestingDelegationsToAccountStrict(
+    account: string,
+  ): Promise<HiveVestingDelegation[]> {
+    const normalized = account.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const result = await this.hiveRequest<HiveFindVestingDelegationsResult>(
+      DATABASE_API.FIND_VESTING_DELEGATIONS,
+      { account: normalized },
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result.delegations ?? [];
+  }
+
+  async findVestingDelegationExpirations(
+    account: string,
+  ): Promise<HiveFindVestingDelegationExpirationsResult['delegations']> {
+    const normalized = account.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const result =
+      await this.hiveRequest<HiveFindVestingDelegationExpirationsResult>(
+        DATABASE_API.FIND_VESTING_DELEGATION_EXPIRATIONS,
+        { account: normalized },
+      );
+    return result?.delegations ?? [];
+  }
+
+  async findVestingDelegationExpirationsStrict(
+    account: string,
+  ): Promise<HiveFindVestingDelegationExpirationsResult['delegations']> {
+    const normalized = account.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const result =
+      await this.hiveRequest<HiveFindVestingDelegationExpirationsResult>(
+        DATABASE_API.FIND_VESTING_DELEGATION_EXPIRATIONS,
+        { account: normalized },
+      );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result.delegations ?? [];
+  }
+
+  async findRcAccounts(accounts: string[]): Promise<HiveRcAccount[]> {
+    if (accounts.length === 0) {
+      return [];
+    }
+    const result = await this.hiveRequest<{ rc_accounts: HiveRcAccount[] }>(
+      RC_API.FIND_RC_ACCOUNTS,
+      { accounts: accounts.map((a) => a.trim().toLowerCase()) },
+    );
+    return result?.rc_accounts ?? [];
+  }
+
+  async findRcAccountsStrict(accounts: string[]): Promise<HiveRcAccount[]> {
+    if (accounts.length === 0) {
+      return [];
+    }
+    const result = await this.hiveRequest<{ rc_accounts: HiveRcAccount[] }>(
+      RC_API.FIND_RC_ACCOUNTS,
+      { accounts: accounts.map((a) => a.trim().toLowerCase()) },
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result.rc_accounts ?? [];
+  }
+
+  async listRcDirectDelegations(
+    from: string,
+    to: string,
+    limit: number,
+  ): Promise<HiveRcDelegation[]> {
+    const normalizedFrom = from.trim().toLowerCase();
+    if (normalizedFrom === '') {
+      return [];
+    }
+    const clampedLimit =
+      Number.isFinite(limit) && limit >= 1 ? Math.min(1000, Math.floor(limit)) : 1000;
+    const result = await this.hiveRequest<{ rc_direct_delegations: HiveRcDelegation[] }>(
+      RC_API.LIST_RC_DIRECT_DELEGATIONS,
+      { start: [normalizedFrom, to.trim()], limit: clampedLimit },
+    );
+    return result?.rc_direct_delegations ?? [];
+  }
+
+  async listRcDirectDelegationsStrict(
+    from: string,
+    to: string,
+    limit: number,
+  ): Promise<HiveRcDelegation[]> {
+    const normalizedFrom = from.trim().toLowerCase();
+    if (normalizedFrom === '') {
+      return [];
+    }
+    const clampedLimit =
+      Number.isFinite(limit) && limit >= 1 ? Math.min(1000, Math.floor(limit)) : 1000;
+    const result = await this.hiveRequest<{ rc_direct_delegations: HiveRcDelegation[] }>(
+      RC_API.LIST_RC_DIRECT_DELEGATIONS,
+      { start: [normalizedFrom, to.trim()], limit: clampedLimit },
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result.rc_direct_delegations ?? [];
+  }
+
+  async getSavingsWithdrawFrom(account: string): Promise<HiveSavingsWithdrawRequest[]> {
+    const normalized = account.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    return (
+      (await this.hiveRequest<HiveSavingsWithdrawRequest[]>(
+        CONDENSER_API.GET_SAVINGS_WITHDRAW_FROM,
+        [normalized],
+      )) ?? []
+    );
+  }
+
+  async getSavingsWithdrawFromStrict(
+    account: string,
+  ): Promise<HiveSavingsWithdrawRequest[]> {
+    const normalized = account.trim().toLowerCase();
+    if (normalized === '') {
+      return [];
+    }
+    const result = await this.hiveRequest<HiveSavingsWithdrawRequest[]>(
+      CONDENSER_API.GET_SAVINGS_WITHDRAW_FROM,
+      [normalized],
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result;
+  }
+
   async getFollowers(
     account: string,
     startFollower: string | null,
@@ -390,5 +609,16 @@ export class HiveClient implements HiveClientInterface {
       CONDENSER_API.GET_DYNAMIC_GLOBAL_PROPERTIES,
       [],
     );
+  }
+
+  async getDynamicGlobalPropertiesStrict(): Promise<HiveDynamicGlobalProperties> {
+    const result = await this.hiveRequest<HiveDynamicGlobalProperties>(
+      CONDENSER_API.GET_DYNAMIC_GLOBAL_PROPERTIES,
+      [],
+    );
+    if (result === undefined) {
+      throw new HiveNodeUnavailableError();
+    }
+    return result;
   }
 }

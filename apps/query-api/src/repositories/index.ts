@@ -29,6 +29,8 @@ export { ObjectRefListRepository } from './object-ref-list.repository';
 export { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 export { UserFavoritesRepository } from './user-favorites.repository';
 export type { FavoritesScopeParams } from './user-favorites.repository';
+export { UserDelegationsRepository } from './user-delegations.repository';
+export { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 export type {
   DiscoverObjectCandidateRow,
   DiscoverTagCategoryRow,

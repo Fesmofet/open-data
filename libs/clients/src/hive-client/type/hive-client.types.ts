@@ -102,7 +102,24 @@ export type CommentStateType = {
   content: Record<string, HiveContentType>;
 };
 
-/** Subset of `condenser_api.get_accounts` result used for indexer sync. */
+/** Wallet-related fields from `condenser_api.get_accounts`. */
+export type HiveAccountWalletFields = {
+  balance: string;
+  hbd_balance: string;
+  vesting_shares: string;
+  delegated_vesting_shares: string;
+  received_vesting_shares: string;
+  savings_balance: string;
+  savings_hbd_balance: string;
+  savings_hbd_seconds: string;
+  savings_hbd_seconds_last_update: string;
+  savings_hbd_last_interest_payment: string;
+  to_withdraw: string;
+  vesting_withdraw_rate: string;
+  next_vesting_withdrawal: string;
+};
+
+/** Subset of `condenser_api.get_accounts` result used for indexer sync and wallet. */
 export type HiveAccountType = {
   id: number;
   name: string;
@@ -114,6 +131,59 @@ export type HiveAccountType = {
   post_count: number;
   last_post: string;
   last_root_post: string;
+} & Partial<HiveAccountWalletFields>;
+
+/** One row from vesting delegation RPCs (`condenser_api` or `database_api`). */
+export type HiveVestingDelegation = {
+  delegator: string;
+  delegatee: string;
+  vesting_shares: string | { amount: string; precision?: number };
+  min_delegation_time: string;
+};
+
+/** One row from `database_api.find_vesting_delegation_expirations`. */
+export type HiveVestingDelegationExpiration = {
+  delegator: string;
+  vesting_shares: string | { amount: string; precision?: number };
+  completion_date?: string;
+};
+
+export type HiveFindVestingDelegationsResult = {
+  delegations: HiveVestingDelegation[];
+};
+
+export type HiveFindVestingDelegationExpirationsResult = {
+  delegations: HiveVestingDelegationExpiration[];
+};
+
+/** One row from `rc_api.find_rc_accounts`. */
+export type HiveRcAccount = {
+  account: string;
+  rc_manabar: {
+    current_mana: string;
+    last_update_time: number;
+  };
+  max_rc: string;
+  delegated_rc: string;
+  received_delegated_rc: string;
+};
+
+/** One row from `rc_api.list_rc_direct_delegations`. */
+export type HiveRcDelegation = {
+  from: string;
+  to: string;
+  delegated_rc: number;
+};
+
+/** One row from `condenser_api.get_savings_withdraw_from`. */
+export type HiveSavingsWithdrawRequest = {
+  id: number;
+  from: string;
+  request_id: number;
+  amount: string;
+  to: string;
+  memo: string;
+  complete?: string;
 };
 
 /** One row from `condenser_api.get_followers` / `get_following`. */
@@ -167,4 +237,6 @@ export type HiveDynamicGlobalProperties = {
   total_vesting_fund_steem?: string;
   /** Current condenser field name. */
   total_vesting_fund_hive?: string;
+  /** Basis points per year (e.g. 2000 = 20% APR). */
+  hbd_interest_rate?: number;
 };

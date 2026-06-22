@@ -24,6 +24,23 @@ function resolveSigningAccount(operations: readonly HiveOperation[]): string {
       case 'comment_options':
         accounts.add(op.author);
         break;
+      case 'transfer':
+      case 'transfer_to_vesting':
+      case 'transfer_to_savings':
+      case 'transfer_from_savings':
+        accounts.add(op.from);
+        break;
+      case 'withdraw_vesting':
+      case 'delegate_vesting_shares':
+      case 'cancel_transfer_from_savings':
+        accounts.add(
+          op.type === 'withdraw_vesting'
+            ? op.account
+            : op.type === 'delegate_vesting_shares'
+              ? op.delegator
+              : op.from,
+        );
+        break;
       case 'custom_json': {
         const posting = op.required_posting_auths[0];
         const active = op.required_auths[0];
@@ -85,6 +102,70 @@ function toWireOperation(op: HiveOperation): KeychainWireOperation {
           required_posting_auths: [...op.required_posting_auths],
           id: op.id,
           json: op.json,
+        },
+      ];
+    case 'transfer':
+      return [
+        'transfer',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+          memo: op.memo,
+        },
+      ];
+    case 'transfer_to_vesting':
+      return [
+        'transfer_to_vesting',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+        },
+      ];
+    case 'withdraw_vesting':
+      return [
+        'withdraw_vesting',
+        {
+          account: op.account,
+          vesting_shares: op.vesting_shares,
+        },
+      ];
+    case 'delegate_vesting_shares':
+      return [
+        'delegate_vesting_shares',
+        {
+          delegator: op.delegator,
+          delegatee: op.delegatee,
+          vesting_shares: op.vesting_shares,
+        },
+      ];
+    case 'transfer_to_savings':
+      return [
+        'transfer_to_savings',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+          memo: op.memo,
+        },
+      ];
+    case 'transfer_from_savings':
+      return [
+        'transfer_from_savings',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+          memo: op.memo,
+        },
+      ];
+    case 'cancel_transfer_from_savings':
+      return [
+        'cancel_transfer_from_savings',
+        {
+          from: op.from,
+          request_id: op.request_id,
         },
       ];
   }

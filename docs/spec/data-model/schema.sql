@@ -294,6 +294,32 @@ CREATE TABLE user_account_mutes (
 CREATE INDEX idx_user_account_mutes_muted ON user_account_mutes (muted);
 
 -- ---------------------------------------------------------------------------
+-- user_delegations (HP vesting delegations — chain-indexer + mongo import)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_delegations (
+  delegator       TEXT NOT NULL,
+  delegatee       TEXT NOT NULL,
+  vesting_shares  DOUBLE PRECISION NOT NULL DEFAULT 0,
+  delegation_date TIMESTAMPTZ,
+  PRIMARY KEY (delegator, delegatee)
+);
+
+CREATE INDEX idx_user_delegations_delegatee ON user_delegations (delegatee);
+CREATE INDEX idx_user_delegations_delegator ON user_delegations (delegator);
+
+-- ---------------------------------------------------------------------------
+-- user_rc_delegations (RC delegations — chain-indexer + mongo import)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_rc_delegations (
+  delegator TEXT NOT NULL,
+  delegatee TEXT NOT NULL,
+  rc        BIGINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (delegator, delegatee)
+);
+
+CREATE INDEX idx_user_rc_delegations_delegatee ON user_rc_delegations (delegatee);
+
+-- ---------------------------------------------------------------------------
 -- user_object_follows (UserSchema.objects_follow + bell)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_object_follows (

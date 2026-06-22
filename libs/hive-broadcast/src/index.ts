@@ -15,6 +15,21 @@ export {
   type HiveEngineTokensTransferPayload,
 } from './hive-engine-token-operations';
 export {
+  buildTransferOp,
+  buildTransferToVestingOp,
+  buildWithdrawVestingOp,
+  buildCancelPowerDownOp,
+  buildDelegateVestingSharesOp,
+  buildTransferToSavingsOp,
+  buildTransferFromSavingsOp,
+  buildCancelTransferFromSavingsOp,
+  buildClaimHbdInterestOps,
+  buildDelegateRcOp,
+  buildUndelegateRcOp,
+  formatHiveAssetAmount,
+  type HiveTransferAsset,
+} from './hive-l1-wallet-operations';
+export {
   buildCommentOptionsBeneficiaryExtension,
   buildVoteOp,
   buildCommentOp,

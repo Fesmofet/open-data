@@ -16,7 +16,8 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 | `pnpm migrate:mongo-users` | User array JSON | `accounts_current` (Waivio columns), `user_metadata`, `user_notification_settings`, `user_referrals`, `user_post_bookmarks`, `user_object_follows` |
 | `pnpm migrate:mongo-subscriptions` | Subscription array JSON | `user_subscriptions` |
 | `pnpm migrate:mongo-mutes` | Mute / ignore pair array JSON | `user_account_mutes` |
-| `pnpm migrate:mongo-currency` | Up to three array JSON exports (CoinGecko stats, Hive Engine rates, fiat `currency_rates`) | `currency_statistics`, `hive_engine_rates`, `currency_rates` |
+| `pnpm migrate:mongo-delegations` | `delegations` collection JSON | `user_delegations` |
+| `pnpm migrate:mongo-rc-delegations` | `user_rc_delegations` collection JSON | `user_rc_delegations` |
 
 ### Objects (wobjects)
 
@@ -52,7 +53,31 @@ pnpm migrate:mongo-subscriptions <path-to-subscriptions.json>
 pnpm migrate:mongo-mutes <path-to-mutes.json>
 ```
 
-Each document should follow legacy **`MutedUserSchema`**: `mutedBy` (who muted) and `userName` (muted account). These map to PostgreSQL `user_account_mutes` as `(muter, muted)`. Optional fallbacks: `muter`/`muted`, or `follower`/`following`. Requires schema migration that creates `user_account_mutes`.
+### HP delegations (`delegations` collection)
+
+```bash
+pnpm migrate:mongo-delegations <path-to-delegations.json>
+```
+
+Mongo export:
+
+```bash
+mongoexport --collection=delegations --out=delegations.json --jsonArray
+```
+
+### RC delegations (`user_rc_delegations` collection)
+
+```bash
+pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json>
+```
+
+Mongo export:
+
+```bash
+mongoexport --collection=user_rc_delegations --out=user_rc_delegations.json --jsonArray
+```
+
+Each document: `delegator`, `delegatee`, `rc` (numeric, raw chain units).
 
 ### Currency (legacy currency-service collections)
 

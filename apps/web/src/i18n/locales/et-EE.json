@@ -415,6 +415,7 @@
   "delegate_modal_info_part2": "Pange tähele, et delegeerimine toimub kohe, kuid see võtab aega",
   "delegate_modal_info_part3": "päeva jooksul, et summa pärast delegeerimise tühistamist teie kontole tagastatakse.",
   "delegate_modal_info_part4": "Tehingu lõpuleviimiseks HiveSigneri suunamiseks klõpsake allolevat nuppu.",
+  "delegate_rc_modal_info": "Sisestage konto nimi, kellele soovite osa oma Resource Creditsidest delegeerida.",
   "delegated_to": "Delegado a",
   "delegation_from": "Delegación de",
   "delete": "kustuta",

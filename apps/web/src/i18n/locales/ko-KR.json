@@ -415,6 +415,7 @@
   "delegate_modal_info_part2": "위임은 즉시 이루어지지만 시간이 걸립니다.",
   "delegate_modal_info_part3": "위임 취소 후 금액이 귀하의 계정으로 반환되는 데 걸리는 일.",
   "delegate_modal_info_part4": "아래 버튼을 클릭하면 거래를 완료하기 위해 HiveSigner로 리디렉션됩니다.",
+  "delegate_rc_modal_info": "Resource Credits의 일부를 위임할 계정 이름을 입력하세요.",
   "delegated_to": "위임자",
   "delegation_from": "위임자",
   "delete": "지우다",

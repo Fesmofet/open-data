@@ -60,7 +60,16 @@ So the cursor always moves forward by one height per loop iteration.
 
 ### 3.3 Operation coverage
 
-`HiveMainParser` registers handlers only for **`custom_json`** today. Other operation types are skipped.
+`HiveMainParser` dispatches these operation types (others are skipped):
+
+| Operation | Handler |
+|-----------|---------|
+| `custom_json` | [`HiveCustomJsonParser`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-custom-json-parser.ts) — ODL id, follow, RC (`id` = `rc`); see [hive-delegations](hive-delegations.md) |
+| `comment` / `delete_comment` | Comment orchestrator |
+| `account_update` | Profile update |
+| `create_account` / `create_claimed_account` | Account ensure |
+| `vote` | Vote indexing |
+| `delegate_vesting_shares` | HP delegations → `user_delegations`; see [hive-delegations](hive-delegations.md) |
 
 ### 3.4 ODL `custom_json` id
 

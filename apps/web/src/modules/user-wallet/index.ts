@@ -5,6 +5,18 @@ export type {
   EngineTokenDelegationsView,
 } from './domain/types/waiv-wallet-view';
 
+export type {
+  HiveWalletSummaryView,
+  HiveWalletLoadError,
+  HiveWalletQueryResult,
+  HiveHpDelegationsView,
+  HiveRcDelegationsView,
+} from './domain/types/hive-wallet-view';
+
+export { TransfersWalletShell } from './presentation/components/wallet/transfers-wallet-shell';
 export { WaivWalletTab } from './presentation/components/waiv/waiv-wallet-tab';
 export { WaivWalletSummarySkeleton } from './presentation/components/waiv/waiv-wallet-summary-skeleton';
+export { HiveWalletTab } from './presentation/components/hive/hive-wallet-tab';
+export { HiveWalletSummarySkeleton } from './presentation/components/hive/hive-wallet-summary-skeleton';
 export { getWaivWalletSummaryQuery } from './application/queries/get-waiv-wallet-summary.query';
+export { getHiveWalletSummaryQuery } from './application/queries/get-hive-wallet-summary.query';

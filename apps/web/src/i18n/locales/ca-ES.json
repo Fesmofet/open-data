@@ -415,6 +415,7 @@
   "delegate_modal_info_part2": "Tingueu en compte que les delegacions són instantànies, però caldrà",
   "delegate_modal_info_part3": "dies perquè l'import es torni al vostre compte després de la cancel·lació de la delegació.",
   "delegate_modal_info_part4": "Feu clic al botó següent per ser redirigit a HiveSigner per completar la vostra transacció.",
+  "delegate_rc_modal_info": "Introduïu el nom del compte al qual voleu delegar una part dels vostres Resource Credits.",
   "delegated_to": "Delegat a",
   "delegation_from": "Delegació de",
   "delete": "esborrar",

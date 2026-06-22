@@ -5,6 +5,7 @@ import { HiveCustomJsonParserModule } from './hive-custom-json-parser.module';
 import { HiveCommentParserModule } from '../hive-comment/hive-comment-parser.module';
 import { HiveSocialModule } from '../hive-social/hive-social.module';
 import { HiveVoteModule } from '../hive-vote/hive-vote.module';
+import { HiveDelegationModule } from '../hive-delegation/hive-delegation.module';
 import { BLOCK_PARSER } from '@opden-data-layer/hive-processor';
 
 @Module({
@@ -13,6 +14,7 @@ import { BLOCK_PARSER } from '@opden-data-layer/hive-processor';
     HiveCommentParserModule,
     HiveSocialModule,
     HiveVoteModule,
+    HiveDelegationModule,
   ],
   providers: [
     HiveMainParser,

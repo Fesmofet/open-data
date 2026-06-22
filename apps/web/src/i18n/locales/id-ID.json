@@ -595,6 +595,7 @@
   "delegate_modal_info_part2": "Harap dicatat bahwa delegasi adalah instan, tetapi akan memerlukan",
   "delegate_modal_info_part3": "hari untuk jumlahnya dikembalikan ke akun Anda setelah didelegasikan.",
   "delegate_modal_info_part4": "Klik tombol di bawah ini untuk diarahkan ke HiveSigner untuk menyelesaikan transaksi Anda.",
+  "delegate_rc_modal_info": "Masukkan nama akun yang ingin Anda delegasikan sebagian Resource Credits.",
   "delegated_to": "Didelegasikan ke",
   "delegation_from": "Delegasi dari",
   "delete": "Hapus",

@@ -22,6 +22,8 @@ import { DiscoverRepository } from './discover.repository';
 import { ObjectRefListRepository } from './object-ref-list.repository';
 import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 import { UserFavoritesRepository } from './user-favorites.repository';
+import { UserDelegationsRepository } from './user-delegations.repository';
+import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 
 @Module({
   providers: [
@@ -48,6 +50,8 @@ import { UserFavoritesRepository } from './user-favorites.repository';
     ObjectRefListRepository,
     PostObjectRelatedImagesRepository,
     UserFavoritesRepository,
+    UserDelegationsRepository,
+    UserRcDelegationsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -73,6 +77,8 @@ import { UserFavoritesRepository } from './user-favorites.repository';
     ObjectRefListRepository,
     PostObjectRelatedImagesRepository,
     UserFavoritesRepository,
+    UserDelegationsRepository,
+    UserRcDelegationsRepository,
   ],
 })
 export class RepositoriesModule {}

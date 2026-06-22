@@ -59,6 +59,70 @@ function toWireOperation(op: HiveOperation): WireOperation {
           json: op.json,
         },
       ];
+    case 'transfer':
+      return [
+        'transfer',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+          memo: op.memo,
+        },
+      ];
+    case 'transfer_to_vesting':
+      return [
+        'transfer_to_vesting',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+        },
+      ];
+    case 'withdraw_vesting':
+      return [
+        'withdraw_vesting',
+        {
+          account: op.account,
+          vesting_shares: op.vesting_shares,
+        },
+      ];
+    case 'delegate_vesting_shares':
+      return [
+        'delegate_vesting_shares',
+        {
+          delegator: op.delegator,
+          delegatee: op.delegatee,
+          vesting_shares: op.vesting_shares,
+        },
+      ];
+    case 'transfer_to_savings':
+      return [
+        'transfer_to_savings',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+          memo: op.memo,
+        },
+      ];
+    case 'transfer_from_savings':
+      return [
+        'transfer_from_savings',
+        {
+          from: op.from,
+          to: op.to,
+          amount: op.amount,
+          memo: op.memo,
+        },
+      ];
+    case 'cancel_transfer_from_savings':
+      return [
+        'cancel_transfer_from_savings',
+        {
+          from: op.from,
+          request_id: op.request_id,
+        },
+      ];
   }
   return assertNeverForHiveOp(op);
 }

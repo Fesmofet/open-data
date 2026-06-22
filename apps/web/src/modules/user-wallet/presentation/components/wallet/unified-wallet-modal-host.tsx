@@ -1,0 +1,128 @@
+'use client';
+
+import type { ReactNode } from 'react';
+
+import { useHydrateWalletProvider } from '@/modules/auth';
+
+import { HiveCancelSavingsWithdrawModal } from '../hive-wallet/hive-cancel-savings-withdraw-modal';
+import { HiveDelegateRcModal } from '../hive-wallet/hive-delegate-rc-modal';
+import { HiveManageRcDelegationsModal } from '../hive-wallet/hive-manage-rc-delegations-modal';
+import { WalletBalancesProvider } from './wallet-balances-context';
+import { WalletCancelPowerDownModal } from './wallet-cancel-power-down-modal';
+import { WalletDelegateModal } from './wallet-delegate-modal';
+import { WalletManageDelegationsModal } from './wallet-manage-delegations-modal';
+import { WalletModalProvider, useWalletModal } from './wallet-modal-context';
+import { WalletPowerModal } from './wallet-power-modal';
+import { WalletTransferModal } from './wallet-transfer-modal';
+
+import type { HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
+import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
+import type { WalletModalState } from '../../../domain/wallet-modal-types';
+
+function WalletModals({
+  account,
+  modal,
+  closeModal,
+}: {
+  account: string;
+  modal: Exclude<WalletModalState, null>;
+  closeModal: () => void;
+}) {
+  switch (modal.kind) {
+    case 'transfer':
+      return (
+        <WalletTransferModal
+          open
+          onClose={closeModal}
+          account={account}
+          state={modal}
+        />
+      );
+    case 'power':
+      return (
+        <WalletPowerModal open onClose={closeModal} account={account} state={modal} />
+      );
+    case 'delegate':
+      return (
+        <WalletDelegateModal open onClose={closeModal} account={account} state={modal} />
+      );
+    case 'manage':
+      return (
+        <WalletManageDelegationsModal
+          open
+          onClose={closeModal}
+          account={account}
+          state={modal}
+        />
+      );
+    case 'cancelPowerDown':
+      return (
+        <WalletCancelPowerDownModal
+          open
+          onClose={closeModal}
+          account={account}
+          state={modal}
+        />
+      );
+    case 'delegateRc':
+      return <HiveDelegateRcModal open onClose={closeModal} account={account} />;
+    case 'manageRc':
+      return (
+        <HiveManageRcDelegationsModal open onClose={closeModal} account={account} />
+      );
+    case 'cancelSavingsWithdraw':
+      return (
+        <HiveCancelSavingsWithdrawModal
+          open
+          onClose={closeModal}
+          account={account}
+          state={modal}
+        />
+      );
+    default:
+      return null;
+  }
+}
+
+function WalletModalsGate({ account }: { account: string }) {
+  const { modal, closeModal } = useWalletModal();
+  if (!modal) {
+    return null;
+  }
+  return <WalletModals account={account} modal={modal} closeModal={closeModal} />;
+}
+
+export type UnifiedWalletModalHostProps = {
+  account: string;
+  viewerUsername: string | null;
+  waivSummary: WaivWalletSummaryView | null;
+  hiveSummary: HiveWalletSummaryView | null;
+  children: ReactNode;
+};
+
+function UnifiedWalletModalHostInner({
+  account,
+  viewerUsername,
+  waivSummary,
+  hiveSummary,
+  children,
+}: UnifiedWalletModalHostProps) {
+  useHydrateWalletProvider();
+  const canManage =
+    viewerUsername?.trim().toLowerCase() === account.trim().toLowerCase();
+
+  return (
+    <WalletBalancesProvider waivSummary={waivSummary} hiveSummary={hiveSummary}>
+      {children}
+      {canManage ? <WalletModalsGate account={account} /> : null}
+    </WalletBalancesProvider>
+  );
+}
+
+export function UnifiedWalletModalHost(props: UnifiedWalletModalHostProps) {
+  return (
+    <WalletModalProvider>
+      <UnifiedWalletModalHostInner {...props} />
+    </WalletModalProvider>
+  );
+}

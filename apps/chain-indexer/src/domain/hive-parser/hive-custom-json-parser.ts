@@ -4,6 +4,7 @@ import type { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
 import { HIVE_CUSTOM_JSON_ID } from '../../constants/hive-parser';
 import { OdlCustomJsonParser } from '../odl-parser/odl-custom-json-parser';
 import { FollowSocialService } from '../hive-social/follow-social.service';
+import { HiveRcDelegationService } from '../hive-delegation/hive-rc-delegation.service';
 import type { HiveOperationHandlerContext } from './hive-handler-context';
 
 type CustomJsonIdHandler = (
@@ -20,6 +21,7 @@ export class HiveCustomJsonParser {
     private readonly odlParser: OdlCustomJsonParser,
     private readonly configService: ConfigService,
     private readonly followSocial: FollowSocialService,
+    private readonly rcDelegationService: HiveRcDelegationService,
   ) {
     const odlId = this.configService.get<string>('hive.odlCustomJsonId');
 
@@ -32,9 +34,13 @@ export class HiveCustomJsonParser {
     const handleFollow: CustomJsonIdHandler = (payload, context) =>
       this.followSocial.handleFollowCustomJson(payload, context);
 
+    const handleRc: CustomJsonIdHandler = (payload) =>
+      this.rcDelegationService.handleRcCustomJson(payload);
+
     this.handlers = {
       [odlId]: handleOdl,
       [HIVE_CUSTOM_JSON_ID.FOLLOW]: handleFollow,
+      [HIVE_CUSTOM_JSON_ID.RC]: handleRc,
     };
   }
 

@@ -417,6 +417,7 @@
   "delegate_modal_info_part2": "Felhívjuk figyelmét, hogy a delegációk azonnaliak, de időbe telik",
   "delegate_modal_info_part3": "napon belül visszakerül az összeg a számlájára a delegálás visszavonása után.",
   "delegate_modal_info_part4": "Kattintson az alábbi gombra, hogy átirányítsa a HiveSigner oldalra a tranzakció befejezéséhez.",
+  "delegate_rc_modal_info": "Adja meg annak a fióknak a nevét, amelynek a Resource Credits egy részét delegálni szeretné.",
   "delegated_to": "Delegált",
   "delegation_from": "Delegáció innen",
   "delete": "töröl",

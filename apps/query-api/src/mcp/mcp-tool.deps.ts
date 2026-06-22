@@ -46,6 +46,8 @@ import type {
 import type { GetUserProfileEndpoint } from '../domain/users';
 import type {
   GetUserEngineTokenDelegationsEndpoint,
+  GetUserHiveHpDelegationsEndpoint,
+  GetUserHiveRcDelegationsEndpoint,
   GetUserWaivWalletEndpoint,
 } from '../domain/wallet';
 
@@ -74,6 +76,8 @@ export interface McpToolDeps {
   getUserActivity: GetUserActivityEndpoint;
   getUserWaivWallet: GetUserWaivWalletEndpoint;
   getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint;
+  getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint;
+  getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint;
   getUserFollowers: GetUserFollowersEndpoint;
   getUserFollowing: GetUserFollowingEndpoint;
   getUserFollowingObjects: GetUserFollowingObjectsEndpoint;

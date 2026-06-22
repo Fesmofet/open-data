@@ -595,6 +595,7 @@
   "delegate_modal_info_part2": "委任は即時ですが、アン委任後、指定された期間に",
   "delegate_modal_info_part3": "日かかります。",
   "delegate_modal_info_part4": "トランザクションを完了するために、以下のボタンをクリックしてHiveSignerにリダイレクトされます。",
+  "delegate_rc_modal_info": "Resource Creditsの一部を委任したいアカウント名を入力してください。",
   "delegated_to": "委任先",
   "delegation_from": "委任元",
   "delete": "削除",

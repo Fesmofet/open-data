@@ -43,7 +43,68 @@ export type CustomJsonOp = {
   readonly json: string;
 };
 
-export type HiveOperation = VoteOp | CommentOp | CommentOptionsOp | CustomJsonOp;
+export type TransferOp = {
+  readonly type: 'transfer';
+  readonly from: string;
+  readonly to: string;
+  readonly amount: string;
+  readonly memo: string;
+};
+
+export type TransferToVestingOp = {
+  readonly type: 'transfer_to_vesting';
+  readonly from: string;
+  readonly to: string;
+  readonly amount: string;
+};
+
+export type WithdrawVestingOp = {
+  readonly type: 'withdraw_vesting';
+  readonly account: string;
+  readonly vesting_shares: string;
+};
+
+export type DelegateVestingSharesOp = {
+  readonly type: 'delegate_vesting_shares';
+  readonly delegator: string;
+  readonly delegatee: string;
+  readonly vesting_shares: string;
+};
+
+export type TransferToSavingsOp = {
+  readonly type: 'transfer_to_savings';
+  readonly from: string;
+  readonly to: string;
+  readonly amount: string;
+  readonly memo: string;
+};
+
+export type TransferFromSavingsOp = {
+  readonly type: 'transfer_from_savings';
+  readonly from: string;
+  readonly to: string;
+  readonly amount: string;
+  readonly memo: string;
+};
+
+export type CancelTransferFromSavingsOp = {
+  readonly type: 'cancel_transfer_from_savings';
+  readonly from: string;
+  readonly request_id: number;
+};
+
+export type HiveOperation =
+  | VoteOp
+  | CommentOp
+  | CommentOptionsOp
+  | CustomJsonOp
+  | TransferOp
+  | TransferToVestingOp
+  | WithdrawVestingOp
+  | DelegateVestingSharesOp
+  | TransferToSavingsOp
+  | TransferFromSavingsOp
+  | CancelTransferFromSavingsOp;
 
 export type HiveOperationPayload = {
   readonly operations: readonly HiveOperation[];

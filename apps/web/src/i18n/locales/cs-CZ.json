@@ -595,6 +595,7 @@
   "delegate_modal_info_part2": "Upozornění: Delegace probíhá okamžitě, ale vrácení prostředků na váš účet po zrušení delegace potrvá",
   "delegate_modal_info_part3": "dnů.",
   "delegate_modal_info_part4": "Klikněte na tlačítko níže pro přesměrování na HiveSigner k dokončení transakce.",
+  "delegate_rc_modal_info": "Zadejte název účtu, kterému chcete delegovat část svých Resource Credits.",
   "delegated_to": "Delegováno na",
   "delegation_from": "Delegace od",
   "delete": "Smazat",

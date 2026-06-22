@@ -169,6 +169,18 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-waiv-wallet-endpoint.md',
   },
   {
+    name: 'get_user_hive_hp_delegations',
+    description: 'Incoming, outgoing, and expiring HIVE Power delegations for a user.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/hive/delegations',
+    specPath: 'docs/apps/query-api/spec/user-hive-wallet-endpoint.md',
+  },
+  {
+    name: 'get_user_hive_rc_delegations',
+    description: 'Incoming and outgoing Resource Credit delegations for a user.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/hive/rc-delegations',
+    specPath: 'docs/apps/query-api/spec/user-hive-wallet-endpoint.md',
+  },
+  {
     name: 'get_user_followers',
     description: 'Accounts following the user.',
     httpEquivalent: 'GET /query/v1/users/:name/followers',

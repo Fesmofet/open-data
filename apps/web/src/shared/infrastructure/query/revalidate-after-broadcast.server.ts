@@ -66,3 +66,17 @@ export async function revalidateUserWaivWalletAfterBroadcast(
   updateTag(queryApiCacheTags.userEngineTokenDelegations(name, 'WAIV'));
   revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
 }
+
+/** HIVE wallet summary after L1 wallet broadcast. */
+export async function revalidateUserHiveWalletAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  const name = accountName.trim().toLowerCase();
+  if (name.length === 0) {
+    return;
+  }
+  updateTag(queryApiCacheTags.userHiveWallet(name));
+  updateTag(queryApiCacheTags.userHiveHpDelegations(name));
+  updateTag(queryApiCacheTags.userHiveRcDelegations(name));
+  revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
+}

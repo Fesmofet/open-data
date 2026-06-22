@@ -256,6 +256,36 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_hive_hp_delegations',
+    {
+      description: catalogDescription('get_user_hive_hp_delegations'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserHiveHpDelegations.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_hive_rc_delegations',
+    {
+      description: catalogDescription('get_user_hive_rc_delegations'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserHiveRcDelegations.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_followers',
     {
       description: catalogDescription('get_user_followers'),

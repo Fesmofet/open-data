@@ -602,6 +602,7 @@
   "delegate_modal_info_part2": "Ten en cuenta que las delegaciones son instantáneas, pero tomará",
   "delegate_modal_info_part3": "días para que la cantidad se devuelva a tu cuenta después de la desestacación.",
   "delegate_modal_info_part4": "Haz clic en el botón de abajo para ser redirigido a HiveSigner y completar tu transacción.",
+  "delegate_rc_modal_info": "Introduzca el nombre de la cuenta a la que desea delegar una parte de sus Resource Credits.",
   "delegated_to": "Delegado a",
   "delegation_from": "Delegación desde",
   "delete": "Eliminar",

@@ -1,13 +1,20 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 
 import {
   formatEngineTokenAmountDisplay,
+  formatNextPowerDownAt,
   formatNextPowerDownSubtitle,
 } from '../../../domain/engine-token-amount';
 import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
-import { useEngineTokenModal } from '../engine-token/engine-token-modal-context';
+import type { WalletMainAsset } from '../../../domain/wallet-modal-types';
+import { useWalletModal } from '../wallet/wallet-modal-context';
+import { WalletDelegationsListModal } from '../wallet/wallet-delegations-list-modal';
+import { WalletPowerDownProgressModal } from '../wallet/wallet-power-down-progress-modal';
 import {
   PersonIcon,
   PowerIcon,
@@ -18,47 +25,45 @@ import {
 export type WaivWalletSummaryProps = {
   summary: WaivWalletSummaryView;
   canManageWallet: boolean;
+  defaultAsset: WalletMainAsset;
 };
 
 export function WaivWalletSummary({
   summary,
   canManageWallet,
+  defaultAsset,
 }: WaivWalletSummaryProps) {
   const { t, locale } = useI18n();
-  const { openModal } = useEngineTokenModal();
-  const symbol = 'WAIV';
+  const { openModal } = useWalletModal();
+  const [powerDownProgressOpen, setPowerDownProgressOpen] = useState(false);
+  const [waivDelegationsOpen, setWaivDelegationsOpen] = useState(false);
+
+  const powerDownTooltipDate = formatNextPowerDownAt(
+    summary.powerDown?.nextUnstakeAt,
+    locale,
+  );
+  const powerDownTooltip = useMemo(() => {
+    if (!powerDownTooltipDate) {
+      return t('wallet_wp_delegations_tooltip');
+    }
+    return interpolateMessage(t('wallet_pending_power_down_tooltip'), {
+      date: powerDownTooltipDate,
+    });
+  }, [powerDownTooltipDate, t]);
+
   const actions = canManageWallet
     ? {
         openPowerUp: () =>
-          openModal({
-            kind: 'power',
-            mode: 'up',
-            symbol,
-            maxLiquid: summary.balance.liquid,
-          }),
+          openModal({ kind: 'power', mode: 'up', asset: defaultAsset }),
         openTransfer: () =>
-          openModal({
-            kind: 'transfer',
-            symbol,
-            maxLiquid: summary.balance.liquid,
-            tokenUsdRate: summary.rates.waivUsd,
-          }),
+          openModal({ kind: 'transfer', asset: defaultAsset }),
         openDelegate: () =>
-          openModal({
-            kind: 'delegate',
-            symbol,
-            maxStake: summary.balance.stake,
-          }),
+          openModal({ kind: 'delegate', asset: defaultAsset }),
         openPowerDown: () =>
-          openModal({
-            kind: 'power',
-            mode: 'down',
-            symbol,
-            maxStake: summary.balance.stake,
-          }),
-        openManage: () => openModal({ kind: 'manage', symbol }),
+          openModal({ kind: 'power', mode: 'down', asset: defaultAsset }),
+        openManage: () => openModal({ kind: 'manage', asset: defaultAsset }),
         openCancelPowerDown: () =>
-          openModal({ kind: 'cancelPowerDown', symbol }),
+          openModal({ kind: 'cancelPowerDown', asset: defaultAsset }),
       }
     : null;
 
@@ -89,6 +94,7 @@ export function WaivWalletSummary({
       />
       <WaivWalletBalanceRow
         icon={<PowerIcon />}
+        iconVariant="accent"
         title={`${t('waiv_wallet')} Power`}
         subtitle={t('staked_waiv_tokens')}
         amount={summary.display.waivPower}
@@ -123,6 +129,8 @@ export function WaivWalletSummary({
           )}
           amount={formatEngineTokenAmountDisplay(summary.balance.pendingUnstake)}
           amountSuffix="WP"
+          amountOnClick={() => setPowerDownProgressOpen(true)}
+          amountTooltip={powerDownTooltip}
           showBorderBottom={!summary.flags.showDelegationsRow}
           actions={
             actions
@@ -141,6 +149,8 @@ export function WaivWalletSummary({
           subtitle={t('manage_delegations')}
           amount={summary.display.delegationsNet}
           amountSuffix="WP"
+          amountOnClick={() => setWaivDelegationsOpen(true)}
+          amountTooltip={t('wallet_wp_delegations_tooltip')}
           showBorderBottom={false}
           actions={
             actions
@@ -170,6 +180,23 @@ export function WaivWalletSummary({
           {summary.display.estAccountValueUsd} USD
         </p>
       </div>
+      {summary.flags.showPowerDownRow ? (
+        <WalletPowerDownProgressModal
+          open={powerDownProgressOpen}
+          onClose={() => setPowerDownProgressOpen(false)}
+          title={t('power_down')}
+          amount={formatEngineTokenAmountDisplay(summary.balance.pendingUnstake)}
+          symbol="WP"
+          nextDateLabel={powerDownTooltipDate}
+          weeksTotal={4}
+        />
+      ) : null}
+      <WalletDelegationsListModal
+        open={waivDelegationsOpen}
+        onClose={() => setWaivDelegationsOpen(false)}
+        account={summary.account}
+        variant="waiv"
+      />
     </section>
   );
 }

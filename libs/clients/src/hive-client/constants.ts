@@ -1,6 +1,7 @@
 const HIVE_API = Object.freeze({
   CONDENSER_API: 'condenser_api',
   BRIDGE: 'bridge',
+  RC_API: 'rc_api',
 } as const);
 
 export const CONDENSER_API = Object.freeze({
@@ -14,6 +15,19 @@ export const CONDENSER_API = Object.freeze({
   GET_CURRENT_MEDIAN_HISTORY_PRICE: `${HIVE_API.CONDENSER_API}.get_current_median_history_price`,
   GET_ACCOUNT_HISTORY: `${HIVE_API.CONDENSER_API}.get_account_history`,
   GET_DYNAMIC_GLOBAL_PROPERTIES: `${HIVE_API.CONDENSER_API}.get_dynamic_global_properties`,
+  GET_VESTING_DELEGATIONS: `${HIVE_API.CONDENSER_API}.get_vesting_delegations`,
+  GET_SAVINGS_WITHDRAW_FROM: `${HIVE_API.CONDENSER_API}.get_savings_withdraw_from`,
+} as const);
+
+export const RC_API = Object.freeze({
+  FIND_RC_ACCOUNTS: `${HIVE_API.RC_API}.find_rc_accounts`,
+  LIST_RC_DIRECT_DELEGATIONS: `${HIVE_API.RC_API}.list_rc_direct_delegations`,
+} as const);
+
+export const DATABASE_API = Object.freeze({
+  FIND_VESTING_DELEGATIONS: 'database_api.find_vesting_delegations',
+  FIND_VESTING_DELEGATION_EXPIRATIONS:
+    'database_api.find_vesting_delegation_expirations',
 } as const);
 
 export const BRIDGE = Object.freeze({

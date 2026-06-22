@@ -86,6 +86,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_shop_sections` | `GET .../shop-sections` | [shop-feed-endpoints.md](shop-feed-endpoints.md) |
 | `get_user_waiv_wallet` | `GET .../wallet/waiv` | [user-waiv-wallet-endpoint.md](user-waiv-wallet-endpoint.md) |
 | `get_user_engine_token_delegations` | `GET .../wallet/engine/{symbol}/delegations` | [user-waiv-wallet-endpoint.md](user-waiv-wallet-endpoint.md) |
+| `get_user_hive_hp_delegations` | `GET .../wallet/hive/delegations` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |
+| `get_user_hive_rc_delegations` | `GET .../wallet/hive/rc-delegations` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |
 | `get_post` | `GET /query/v1/posts/:author/:permlink` | [single-post-endpoint.md](single-post-endpoint.md) |
 | `get_post_discussion` | `GET .../discussion` | [post-discussion-endpoint.md](post-discussion-endpoint.md) |
 | `get_currency_market` | `GET /query/v1/currency/market` | — |

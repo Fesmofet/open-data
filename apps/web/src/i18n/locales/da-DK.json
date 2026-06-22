@@ -415,6 +415,7 @@
   "delegate_modal_info_part2": "Bemærk venligst, at delegationer er øjeblikkelige, men det vil tage",
   "delegate_modal_info_part3": "dage for, at beløbet returneres til din konto efter annullering.",
   "delegate_modal_info_part4": "Klik på knappen nedenfor for at blive omdirigeret til HiveSigner for at fuldføre din transaktion.",
+  "delegate_rc_modal_info": "Indtast navnet på den konto, du vil delegere en del af dine Resource Credits til.",
   "delegated_to": "Delegeret til",
   "delegation_from": "Delegation fra",
   "delete": "slette",
