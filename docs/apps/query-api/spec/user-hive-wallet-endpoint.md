@@ -1,3 +1,17 @@
+---
+id: query-api-user-hive-wallet-endpoint
+title: User HIVE wallet endpoint
+description: Live Hive L1 wallet summary and HP/RC delegation lists for the profile wallet tab.
+type: spec
+status: active
+scope: query-api
+tags: [query-api, wallet, hive]
+updated_at: 2026-06-22
+related:
+  - docs/apps/web/spec/pages/user-profile/routes/transfers.md
+  - docs/apps/chain-indexer/spec/hive-delegations.md
+---
+
 # User HIVE wallet endpoint
 
 `GET /query/v1/users/{name}/wallet/hive`
