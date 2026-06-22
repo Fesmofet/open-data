@@ -152,30 +152,40 @@ export function WalletTransferModal({
       return;
     }
 
-    const recipientError =
-      asset === 'WAIV'
-        ? validateEngineTokenRecipient(to)
-        : validateHiveWalletRecipient(to);
-    if (recipientError) {
-      const key =
-        asset === 'WAIV'
-          ? engineTokenFormValidationMessageKey(recipientError)
-          : hiveWalletFormValidationMessageKey(recipientError);
-      setValidationError(t(key));
-      return;
+    if (asset === 'WAIV') {
+      const recipientError = validateEngineTokenRecipient(to);
+      if (recipientError) {
+        setValidationError(t(engineTokenFormValidationMessageKey(recipientError)));
+        return;
+      }
+    } else {
+      const recipientError = validateHiveWalletRecipient(to);
+      if (recipientError) {
+        setValidationError(t(hiveWalletFormValidationMessageKey(recipientError)));
+        return;
+      }
     }
 
-    const amountError =
-      balanceConfig.validation === 'hive'
-        ? validateHiveWalletAmount(amount, balanceConfig.maxAmount)
-        : validateEngineTokenAmount(amount, balanceConfig.maxAmount);
-    if (amountError) {
-      const key =
-        balanceConfig.validation === 'hive'
-          ? hiveWalletFormValidationMessageKey(amountError)
-          : engineTokenFormValidationMessageKey(amountError);
-      setValidationError(t(key));
-      return;
+    if (balanceConfig.validation === 'hive') {
+      const amountError = validateHiveWalletAmount(
+        amount,
+        balanceConfig.maxAmount,
+      );
+      if (amountError) {
+        setValidationError(t(hiveWalletFormValidationMessageKey(amountError)));
+        return;
+      }
+    } else {
+      const amountError = validateEngineTokenAmount(
+        amount,
+        balanceConfig.maxAmount,
+      );
+      if (amountError) {
+        setValidationError(
+          t(engineTokenFormValidationMessageKey(amountError)),
+        );
+        return;
+      }
     }
 
     setValidationError(null);

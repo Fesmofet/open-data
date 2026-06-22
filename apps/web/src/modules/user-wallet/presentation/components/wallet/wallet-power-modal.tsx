@@ -116,17 +116,26 @@ export function WalletPowerModal({
       return;
     }
 
-    const amountError =
-      balanceConfig.validation === 'hive'
-        ? validateHiveWalletAmount(amount, balanceConfig.maxAmount)
-        : validateEngineTokenAmount(amount, balanceConfig.maxAmount);
-    if (amountError) {
-      const key =
-        balanceConfig.validation === 'hive'
-          ? hiveWalletFormValidationMessageKey(amountError)
-          : engineTokenFormValidationMessageKey(amountError);
-      setValidationError(t(key));
-      return;
+    if (balanceConfig.validation === 'hive') {
+      const amountError = validateHiveWalletAmount(
+        amount,
+        balanceConfig.maxAmount,
+      );
+      if (amountError) {
+        setValidationError(t(hiveWalletFormValidationMessageKey(amountError)));
+        return;
+      }
+    } else {
+      const amountError = validateEngineTokenAmount(
+        amount,
+        balanceConfig.maxAmount,
+      );
+      if (amountError) {
+        setValidationError(
+          t(engineTokenFormValidationMessageKey(amountError)),
+        );
+        return;
+      }
     }
 
     setValidationError(null);

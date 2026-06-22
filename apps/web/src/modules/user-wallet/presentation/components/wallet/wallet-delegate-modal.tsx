@@ -136,44 +136,52 @@ export function WalletDelegateModal({
       return;
     }
 
-    const recipientError =
-      asset === 'WAIV'
-        ? validateEngineTokenRecipient(to)
-        : validateHiveWalletRecipient(to);
-    if (recipientError) {
-      const key =
-        asset === 'WAIV'
-          ? engineTokenFormValidationMessageKey(recipientError)
-          : hiveWalletFormValidationMessageKey(recipientError);
-      setValidationError(t(key));
-      return;
+    if (asset === 'WAIV') {
+      const recipientError = validateEngineTokenRecipient(to);
+      if (recipientError) {
+        setValidationError(t(engineTokenFormValidationMessageKey(recipientError)));
+        return;
+      }
+    } else {
+      const recipientError = validateHiveWalletRecipient(to);
+      if (recipientError) {
+        setValidationError(t(hiveWalletFormValidationMessageKey(recipientError)));
+        return;
+      }
     }
 
-    const amountError =
-      balanceConfig.validation === 'hive'
-        ? hiveSummary
-          ? validateHiveDelegationAmount(
-              amount,
-              balanceConfig.maxAmount,
-              hiveSummary.chain,
-            )
-          : 'amount_invalid'
-        : validateEngineTokenAmount(amount, balanceConfig.maxAmount);
-    if (amountError) {
-      const key =
-        balanceConfig.validation === 'hive'
-          ? hiveWalletFormValidationMessageKey(amountError)
-          : engineTokenFormValidationMessageKey(amountError);
-      setValidationError(
-        amountError === 'delegation_below_minimum' && hiveSummary
-          ? interpolateMessage(t(key), {
-              minHp: formatHiveAmount(
-                getHiveDelegationMinimumHp(hiveSummary.chain),
-              ),
-            })
-          : t(key),
+    if (balanceConfig.validation === 'hive') {
+      const amountError = hiveSummary
+        ? validateHiveDelegationAmount(
+            amount,
+            balanceConfig.maxAmount,
+            hiveSummary.chain,
+          )
+        : 'amount_invalid';
+      if (amountError) {
+        const key = hiveWalletFormValidationMessageKey(amountError);
+        setValidationError(
+          amountError === 'delegation_below_minimum' && hiveSummary
+            ? interpolateMessage(t(key), {
+                minHp: formatHiveAmount(
+                  getHiveDelegationMinimumHp(hiveSummary.chain),
+                ),
+              })
+            : t(key),
+        );
+        return;
+      }
+    } else {
+      const amountError = validateEngineTokenAmount(
+        amount,
+        balanceConfig.maxAmount,
       );
-      return;
+      if (amountError) {
+        setValidationError(
+          t(engineTokenFormValidationMessageKey(amountError)),
+        );
+        return;
+      }
     }
 
     setValidationError(null);
