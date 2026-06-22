@@ -78,5 +78,6 @@ export async function revalidateUserHiveWalletAfterBroadcast(
   updateTag(queryApiCacheTags.userHiveWallet(name));
   updateTag(queryApiCacheTags.userHiveHpDelegations(name));
   updateTag(queryApiCacheTags.userHiveRcDelegations(name));
+  updateTag(queryApiCacheTags.userActivityFeed(name, 'wallet'));
   revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
 }

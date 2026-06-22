@@ -1,11 +1,23 @@
-import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import type { ActivityPageQueryResult } from '@/modules/user-activity/domain/types/activity-row-view';
 import { ProfileRouteStub } from '@/modules/user-profile';
 import { getWalletTypeFromSearch } from '@/modules/user-profile/presentation/components/user-profile-subnav';
 import {
+  getHiveWalletHistoryPageQuery,
   getHiveWalletSummaryQuery,
   getWaivWalletSummaryQuery,
   TransfersWalletShell,
 } from '@/modules/user-wallet';
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+
+const EMPTY_HISTORY: ActivityPageQueryResult = {
+  page: {
+    items: [],
+    cursor: null,
+    hasMore: false,
+    chainContext: { totalVestingShares: '0', totalVestingFundSteem: '0' },
+  },
+  error: null,
+};
 
 type UserProfileTransfersPageProps = {
   params: Promise<{ name: string }>;
@@ -39,9 +51,12 @@ export default async function UserProfileTransfersPage({
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
 
-  const [waiv, hive] = await Promise.all([
+  const [waiv, hive, hiveHistory] = await Promise.all([
     getWaivWalletSummaryQuery(accountName),
     getHiveWalletSummaryQuery(accountName),
+    walletType === 'HIVE'
+      ? getHiveWalletHistoryPageQuery(accountName)
+      : Promise.resolve(EMPTY_HISTORY),
   ]);
 
   if (walletType === 'HIVE' || walletType === 'WAIV') {
@@ -54,6 +69,8 @@ export default async function UserProfileTransfersPage({
         waivError={waiv.error}
         hiveSummary={hive.summary}
         hiveError={hive.error}
+        hiveHistoryPage={hiveHistory.page}
+        hiveHistoryError={hiveHistory.error}
       />
     );
   }

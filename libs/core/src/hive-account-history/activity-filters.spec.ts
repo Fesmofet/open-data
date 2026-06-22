@@ -173,6 +173,43 @@ describe('matchesActivityFilters', () => {
     ).toBe(true);
   });
 
+  it('matches wallet filter for all wallet operations', () => {
+    expect(
+      matchesActivityFilter(
+        { type: HIVE_OP.TRANSFER, payload: {} },
+        'wallet',
+        profile,
+      ),
+    ).toBe(true);
+    expect(
+      matchesActivityFilter(
+        { type: HIVE_OP.LIMIT_ORDER_CANCEL, payload: {} },
+        'wallet',
+        profile,
+      ),
+    ).toBe(true);
+    expect(
+      matchesActivityFilter(
+        { type: HIVE_OP.LIMIT_ORDER_CREATE2, payload: {} },
+        'wallet',
+        profile,
+      ),
+    ).toBe(true);
+    expect(
+      matchesActivityFilter(
+        { type: HIVE_OP.VOTE, payload: {} },
+        'wallet',
+        profile,
+      ),
+    ).toBe(false);
+  });
+
+  it('builds wallet filter mask with multiple indices', () => {
+    const mask = buildActivityFilterMask(['wallet']);
+    expect(mask).not.toBeNull();
+    expect(mask?.filterLow).toBeTruthy();
+  });
+
   it('matches replied only for comments with parent_author', () => {
     expect(
       matchesActivityFilter(

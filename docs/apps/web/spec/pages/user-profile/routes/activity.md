@@ -77,14 +77,16 @@ Each row is an **activity operation card** (`ActivityRowShell`), not `Story` / `
 | `wallet_power_down` | power-down ops | Start / stop / route / withdraw |
 | `wallet_convert` | convert ops | HBD/HIVE convert |
 | `wallet_fill_order` | `fill_order` | Market fill |
-| `wallet_limit_order` | `limit_order` | Limit order sell → min receive |
+| `wallet_limit_order` | `limit_order`, `limit_order_create2` | Limit order sell → min receive |
+| `wallet_cancel_order` | `limit_order_cancel` | Canceled limit order |
+| `wallet_proposal_pay` | `proposal_pay` | DAO proposal payment |
 | `generic` | fallback | Raw `type` + field table (`json` one-line scroll) |
 
 `effective_comment_vote` operations are excluded server-side and never rendered.
 
 ## i18n
 
-Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_more`, `activity_loading`, `activity_error`, row labels in `activity-row-content.tsx`. Filter panel: `activity_filters_*`, `activity_filter_*` (14 keys). Shared wallet/social keys reused in row content where possible.
+Activity-specific keys (prefix `activity_`): `activity_empty`, `activity_load_more`, `activity_loading`, `activity_error`, row labels in `activity-row-content.tsx`. Filter panel: `activity_filters_*`, `activity_filter_*` (14 sidebar keys; `wallet` is API-only for `/transfers?type=HIVE`, not shown in the sidebar). Shared wallet/social keys reused in row content where possible.
 
 ## Empty and error states
 

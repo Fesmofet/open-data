@@ -4,6 +4,7 @@ import type { HiveAccountHistoryRow } from '@opden-data-layer/clients';
 import { buildActivityFilterMask } from '@opden-data-layer/core/hive-account-history';
 
 import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
+import { HiveAccountHistoryPagerService } from './hive-account-history-pager.service';
 import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
 import { encodeActivityCursor } from './activity-cursor';
 import { mapHiveAccountHistoryRow } from './activity-item-dtos';
@@ -36,7 +37,7 @@ describe('GetUserActivityEndpoint', () => {
     };
     endpoint = new GetUserActivityEndpoint(
       accounts as never,
-      hiveClient as unknown as HiveClient,
+      new HiveAccountHistoryPagerService(hiveClient as unknown as HiveClient),
       hiveGlobalProperties as unknown as HiveGlobalPropertiesCache,
     );
   });
@@ -497,6 +498,23 @@ describe('GetUserActivityEndpoint', () => {
       4,
       5,
       { filterLow: 1 << 18, filterHigh: 0 },
+    );
+  });
+
+  it('passes Hive bitmask for wallet filter', async () => {
+    accounts.findByName.mockResolvedValue({ name: 'alice' });
+    hiveClient.getAccountHistory.mockResolvedValue(hivePage([]));
+
+    await endpoint.execute('alice', {
+      limit: 20,
+      filters: ['wallet'],
+    });
+
+    expect(hiveClient.getAccountHistory).toHaveBeenCalledWith(
+      'alice',
+      -1,
+      1000,
+      buildActivityFilterMask(['wallet']),
     );
   });
 

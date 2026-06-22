@@ -1,5 +1,9 @@
 import type { HiveWalletLoadError, HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
 import type { WaivWalletLoadError, WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
+import type {
+  ActivityLoadError,
+  ActivityPageView,
+} from '@/modules/user-activity/domain/types/activity-row-view';
 import { TransfersHiveWalletView } from './transfers-hive-wallet-view';
 import { TransfersWaivWalletView } from './transfers-waiv-wallet-view';
 
@@ -11,6 +15,8 @@ export type TransfersWalletShellProps = {
   waivError: WaivWalletLoadError | null;
   hiveSummary: HiveWalletSummaryView | null;
   hiveError: HiveWalletLoadError | null;
+  hiveHistoryPage?: ActivityPageView;
+  hiveHistoryError?: ActivityLoadError | null;
 };
 
 export function TransfersWalletShell({
@@ -21,6 +27,8 @@ export function TransfersWalletShell({
   waivError,
   hiveSummary,
   hiveError,
+  hiveHistoryPage,
+  hiveHistoryError,
 }: TransfersWalletShellProps) {
   if (walletType === 'WAIV') {
     return (
@@ -40,8 +48,17 @@ export function TransfersWalletShell({
         accountName={accountName}
         viewerUsername={viewerUsername}
         waivSummary={waivSummary}
-        hiveSummary={hiveSummary!}
+        hiveSummary={hiveSummary}
         hiveError={hiveError}
+        historyPage={
+          hiveHistoryPage ?? {
+            items: [],
+            cursor: null,
+            hasMore: false,
+            chainContext: { totalVestingShares: '0', totalVestingFundSteem: '0' },
+          }
+        }
+        historyError={hiveHistoryError}
       />
     );
   }

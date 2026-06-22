@@ -13,6 +13,7 @@ export const ACTIVITY_FILTER_KEYS = [
   'author_reward',
   'curation_reward',
   'claim_rewards',
+  'wallet',
 ] as const;
 
 export type ActivityFilterKey = (typeof ACTIVITY_FILTER_KEYS)[number];

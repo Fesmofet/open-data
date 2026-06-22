@@ -190,4 +190,171 @@ describe('buildActivityRowView', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]?.kind).toBe('wallet_transfer');
   });
+
+  it('maps self transfer when from and to are profile account', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:6',
+        operationIndex: 6,
+        trxId: 'self',
+        timestamp: '2024-01-01T00:00:05Z',
+        block: 1,
+        type: 'transfer',
+        payload: {
+          from: 'alice',
+          to: 'alice',
+          amount: '2.000 HIVE',
+          memo: '',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_transfer');
+    if (row?.kind === 'wallet_transfer') {
+      expect(row.direction).toBe('self');
+      expect(row.counterparty).toBe('alice');
+    }
+  });
+
+  it('maps fill_order isSeller when profile is current_owner', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:7',
+        operationIndex: 7,
+        trxId: 'fill',
+        timestamp: '2024-01-01T00:00:06Z',
+        block: 1,
+        type: 'fill_order',
+        payload: {
+          current_owner: 'alice',
+          open_owner: 'bob',
+          current_pays: '10.000 HIVE',
+          open_pays: '2.000 HBD',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_fill_order');
+    if (row?.kind === 'wallet_fill_order') {
+      expect(row.isSeller).toBe(true);
+      expect(row.exchanger).toBe('bob');
+    }
+  });
+
+  it('maps fill_order buyer when profile is open_owner', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:8',
+        operationIndex: 8,
+        trxId: 'fill2',
+        timestamp: '2024-01-01T00:00:07Z',
+        block: 1,
+        type: 'fill_order',
+        payload: {
+          current_owner: 'bob',
+          open_owner: 'alice',
+          current_pays: '10.000 HIVE',
+          open_pays: '2.000 HBD',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_fill_order');
+    if (row?.kind === 'wallet_fill_order') {
+      expect(row.isSeller).toBe(false);
+      expect(row.exchanger).toBe('bob');
+    }
+  });
+
+  it('maps limit_order_create2 like limit_order', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:9',
+        operationIndex: 9,
+        trxId: 'lim2',
+        timestamp: '2024-01-01T00:00:08Z',
+        block: 1,
+        type: 'limit_order_create2',
+        payload: {
+          seller: 'alice',
+          orderid: 2,
+          amount_to_sell: '5.000 HBD',
+          min_to_receive: '20.000 HIVE',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_limit_order');
+    if (row?.kind === 'wallet_limit_order') {
+      expect(row.amountToSell).toBe('5.000 HBD');
+      expect(row.minToReceive).toBe('20.000 HIVE');
+    }
+  });
+
+  it('maps wallet_savings with request_id', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:10',
+        operationIndex: 10,
+        trxId: 'sav',
+        timestamp: '2024-01-01T00:00:09Z',
+        block: 1,
+        type: 'transfer_from_savings',
+        payload: {
+          amount: '1.000 HIVE',
+          request_id: 42,
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_savings');
+    if (row?.kind === 'wallet_savings') {
+      expect(row.requestId).toBe('42');
+    }
+  });
+
+  it('maps wallet_cancel_order', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:11',
+        operationIndex: 11,
+        trxId: 'cancel',
+        timestamp: '2024-01-01T00:00:10Z',
+        block: 1,
+        type: 'limit_order_cancel',
+        payload: {
+          open_pays: '10.000 HIVE',
+          current_pays: '2.000 HBD',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_cancel_order');
+    if (row?.kind === 'wallet_cancel_order') {
+      expect(row.openPays).toBe('10.000 HIVE');
+    }
+  });
+
+  it('maps wallet_proposal_pay direction', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:12',
+        operationIndex: 12,
+        trxId: 'prop',
+        timestamp: '2024-01-01T00:00:11Z',
+        block: 1,
+        type: 'proposal_pay',
+        payload: {
+          receiver: 'alice',
+          hbd_payout: '1.000 HBD',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_proposal_pay');
+    if (row?.kind === 'wallet_proposal_pay') {
+      expect(row.direction).toBe('in');
+      expect(row.amount).toBe('1.000 HBD');
+    }
+  });
 });

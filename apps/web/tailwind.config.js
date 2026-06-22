@@ -17,6 +17,7 @@ module.exports = {
     { pattern: /^md:grid-cols-[1-6]$/ },
     { pattern: /^lg:grid-cols-[1-6]$/ },
     { pattern: /^xl:grid-cols-[1-6]$/ },
+    'text-success',
   ],
   content: [
     './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
@@ -52,6 +53,7 @@ module.exports = {
         'tertiary-fg': 'var(--color-tertiary-fg)',
         error: 'var(--color-error)',
         'error-fg': 'var(--color-error-fg)',
+        success: 'var(--color-validity-approved)',
         'validity-approved': 'var(--color-validity-approved)',
         'validity-rejected': 'var(--color-validity-rejected)',
         focus: 'var(--color-focus)',

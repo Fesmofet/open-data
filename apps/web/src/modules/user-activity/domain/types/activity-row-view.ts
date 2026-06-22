@@ -99,7 +99,7 @@ export type ActivityRowView =
       kind: 'wallet_transfer';
       id: string;
       timestamp: string;
-      direction: 'in' | 'out';
+      direction: 'in' | 'out' | 'self';
       amount: string;
       currency: string;
       counterparty: string;
@@ -121,6 +121,7 @@ export type ActivityRowView =
       operationType: string;
       amount: string;
       currency: string;
+      requestId?: string;
     }
   | {
       kind: 'wallet_claim_rewards';
@@ -137,6 +138,7 @@ export type ActivityRowView =
       delegator: string;
       delegatee: string;
       hpAmount: number;
+      isUndelegation: boolean;
     }
   | {
       kind: 'wallet_power_down';
@@ -147,6 +149,8 @@ export type ActivityRowView =
       from?: string;
       to?: string;
       percent?: number;
+      counterparty?: string;
+      direction?: 'in' | 'out';
     }
   | {
       kind: 'wallet_convert';
@@ -162,6 +166,10 @@ export type ActivityRowView =
       timestamp: string;
       currentPays: string;
       openPays: string;
+      exchanger: string;
+      transferAmount: string;
+      receivedAmount: string;
+      isSeller: boolean;
     }
   | {
       kind: 'wallet_limit_order';
@@ -170,6 +178,22 @@ export type ActivityRowView =
       amountToSell: string;
       minToReceive: string;
       seller: string;
+    }
+  | {
+      kind: 'wallet_cancel_order';
+      id: string;
+      timestamp: string;
+      openPays: string;
+      currentPays: string;
+    }
+  | {
+      kind: 'wallet_proposal_pay';
+      id: string;
+      timestamp: string;
+      receiver: string;
+      payer: string;
+      amount: string;
+      direction: 'in' | 'out';
     }
   | {
       kind: 'generic';

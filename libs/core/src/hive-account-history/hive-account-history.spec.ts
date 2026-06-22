@@ -79,5 +79,15 @@ describe('classifyActivityOperation', () => {
   it('classifies fill_order and limit_order separately', () => {
     expect(classifyActivityOperation(HIVE_OP.FILL_ORDER, {})).toBe('wallet_fill_order');
     expect(classifyActivityOperation(HIVE_OP.LIMIT_ORDER, {})).toBe('wallet_limit_order');
+    expect(classifyActivityOperation(HIVE_OP.LIMIT_ORDER_CREATE2, {})).toBe(
+      'wallet_limit_order',
+    );
+  });
+
+  it('classifies limit_order_cancel and proposal_pay as wallet kinds', () => {
+    expect(classifyActivityOperation(HIVE_OP.LIMIT_ORDER_CANCEL, {})).toBe(
+      'wallet_cancel_order',
+    );
+    expect(classifyActivityOperation(HIVE_OP.PROPOSAL_PAY, {})).toBe('wallet_proposal_pay');
   });
 });

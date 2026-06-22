@@ -40,11 +40,13 @@ Wallet tabs and transfer history under `/@:name/transfers/...`. Wallet primary n
 
 WAIV tab (`?type=WAIV`): summary card with balances, est. account value, and Engine token operations (power up/down, transfer, delegate, manage delegations) for the profile owner. Data from `GET /query/v1/users/{name}/wallet/waiv`.
 
-HIVE tab (`?type=HIVE`): L1 wallet summary (liquid HIVE, HP, delegations net, RC, savings, HBD, interest, est. USD). Data from `GET /query/v1/users/{name}/wallet/hive`. Owner actions use L1 broadcast ops (transfer, vesting, savings, HP/RC delegate, claim interest). Hive node down → `503` / `t('unavailable')`. See [user-hive-wallet-endpoint.md](../../../../../query-api/spec/user-hive-wallet-endpoint.md).
+HIVE tab (`?type=HIVE`): L1 wallet summary (liquid HIVE, HP, delegations net, RC, savings, HBD, interest, est. USD) plus **paginated wallet transaction history** below the summary. History data from `POST /query/v1/users/{name}/activity` with `filters: ["wallet"]`, page size 20, cursor pagination, infinite scroll. Data from `GET /query/v1/users/{name}/wallet/hive` for balances. Owner actions use L1 broadcast ops (transfer, vesting, savings, HP/RC delegate, claim interest). See [user-hive-wallet-endpoint.md](../../../../../query-api/spec/user-hive-wallet-endpoint.md).
+
+Wallet transaction history is rendered only on this transfers page (not on `HiveWalletTab` export or the activity tab). Legacy-parity card UI lives in `user-wallet/.../hive/history/`.
 
 **Layout:** each balance row shows the amount top-right with the action button **below** the amount (legacy parity). Subtitle stays left under the row title.
 
-**Unavailable state:** when query-api returns `503`, network fails, or the response fails Zod validation, the tab shows `t('unavailable')` — never a summary card with fake zero balances.
+**Unavailable state:** when query-api returns `503`, network fails, or the response fails Zod validation, the **summary** shows `t('unavailable')` (or `t('activity_error')` on invalid response) — never a summary card with fake zero balances. **Wallet history** still loads independently when the activity API succeeds (degraded mode). Owner wallet modals are disabled while the summary is unavailable.
 
 **Broadcast (WAIV):** Keychain signs inline; Hive Engine ops use the **active** key. HiveSigner redirects to hivesigner.com for active-key `custom_json` (no error flash before redirect). After broadcast: trx confirmation → `revalidateUserWaivWalletAfterBroadcast` → `router.refresh()`.
 

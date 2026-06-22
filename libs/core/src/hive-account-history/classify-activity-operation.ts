@@ -23,6 +23,8 @@ export type ActivityRowKind =
   | 'wallet_convert'
   | 'wallet_fill_order'
   | 'wallet_limit_order'
+  | 'wallet_cancel_order'
+  | 'wallet_proposal_pay'
   | 'generic';
 
 export function classifyActivityOperation(
@@ -79,7 +81,12 @@ export function classifyActivityOperation(
     case HIVE_OP.FILL_ORDER:
       return 'wallet_fill_order';
     case HIVE_OP.LIMIT_ORDER:
+    case HIVE_OP.LIMIT_ORDER_CREATE2:
       return 'wallet_limit_order';
+    case HIVE_OP.LIMIT_ORDER_CANCEL:
+      return 'wallet_cancel_order';
+    case HIVE_OP.PROPOSAL_PAY:
+      return 'wallet_proposal_pay';
     case HIVE_OP.CUSTOM_JSON: {
       const id = typeof payload['id'] === 'string' ? payload['id'] : '';
       const json = typeof payload['json'] === 'string' ? payload['json'] : '';

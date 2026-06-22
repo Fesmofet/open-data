@@ -2,6 +2,8 @@ import { HIVE_OP } from './operation-types';
 import { HIVE_OPERATION_INDEX } from './operation-indices';
 import type { ActivityFilterKey } from './activity-filter-keys';
 import { parseCustomJsonOp } from './parse-custom-json';
+import { getWalletOperationIndices } from './get-wallet-operation-indices';
+import { isWalletOperation } from './is-wallet-operation';
 
 export type ActivityHistoryItem = {
   type: string;
@@ -40,6 +42,7 @@ const FILTER_OPERATION_INDICES: Record<ActivityFilterKey, readonly number[]> = {
   author_reward: [HIVE_OPERATION_INDEX.author_reward],
   curation_reward: [HIVE_OPERATION_INDEX.curation_reward],
   claim_rewards: [HIVE_OPERATION_INDEX.claim_reward_balance],
+  wallet: getWalletOperationIndices(),
 };
 
 function asString(value: unknown): string {
@@ -156,6 +159,8 @@ export function matchesActivityFilter(
       return item.type === HIVE_OP.CURATION_REWARD;
     case 'claim_rewards':
       return item.type === HIVE_OP.CLAIM_REWARD_BALANCE;
+    case 'wallet':
+      return isWalletOperation(item.type);
     default: {
       const _exhaustive: never = filter;
       return _exhaustive;

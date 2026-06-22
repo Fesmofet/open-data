@@ -15,6 +15,7 @@ import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
+import { HiveAccountHistoryPagerService } from './hive-account-history-pager.service';
 
 @Module({
   imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule, ObjectProjectionModule],
@@ -25,6 +26,7 @@ import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,
     GetUserActivityEndpoint,
+    HiveAccountHistoryPagerService,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
     GetPostVotersEndpoint,

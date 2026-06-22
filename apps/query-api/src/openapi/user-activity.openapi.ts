@@ -52,7 +52,7 @@ registry.registerPath({
   path: '/query/v1/users/{name}/activity',
   summary: 'User profile activity (Hive account history)',
   description:
-    'Thin proxy over `condenser_api.get_account_history` for the profile activity tab. Optional `filters` apply Hive operation bitmasks plus server-side semantic matching (vote direction, transfer direction, custom_json follow/reblog). `effective_comment_vote` operations are excluded. Cursor encodes the next Hive `from` operation index only (filters travel in body/URL, not cursor).',
+    'Thin proxy over `condenser_api.get_account_history` for the profile activity tab. Optional `filters` apply Hive operation bitmasks plus server-side semantic matching (vote direction, transfer direction, custom_json follow/reblog, wallet history via `wallet`). `effective_comment_vote` operations are excluded. Cursor encodes the next Hive `from` operation index only (filters travel in body/URL, not cursor).',
   request: {
     params: z.object({ name: accountNameParam }),
     body: {

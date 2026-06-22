@@ -189,14 +189,16 @@ export function buildActivityRowView(
     case 'wallet_transfer': {
       const { amount, currency } = parseAssetAmount(p.amount);
       const to = asString(p.to).toLowerCase();
-      const from = asString(p.from);
+      const from = asString(p.from).toLowerCase();
+      const isSelf = from === to && from === profile;
+      const direction = isSelf ? 'self' : to === profile ? 'in' : 'out';
       return {
         ...base,
         kind: 'wallet_transfer',
-        direction: to === profile ? 'in' : 'out',
+        direction,
         amount,
         currency,
-        counterparty: to === profile ? from : asString(p.to),
+        counterparty: to === profile ? asString(p.from) : asString(p.to),
         memo: asString(p.memo),
       };
     }
@@ -224,6 +226,10 @@ export function buildActivityRowView(
         operationType: item.type,
         amount,
         currency,
+        requestId:
+          typeof p.request_id === 'number'
+            ? String(p.request_id)
+            : asString(p.request_id) || undefined,
       };
     }
     case 'wallet_claim_rewards': {
@@ -240,18 +246,20 @@ export function buildActivityRowView(
         hp: hp > 0 ? `${hp.toFixed(3)} HP` : '',
       };
     }
-    case 'wallet_delegate':
+    case 'wallet_delegate': {
+      const vests = asString(p.vesting_shares);
+      const isUndelegation = vests.startsWith('-') || parseFloat(vests) < 0;
       return {
         ...base,
         kind: 'wallet_delegate',
         delegator: asString(p.delegator),
         delegatee: asString(p.delegatee),
-        hpAmount: vestToHp(
-          asString(p.vesting_shares),
-          totalVestingShares,
-          totalVestingFundSteem,
+        hpAmount: Math.abs(
+          vestToHp(vests, totalVestingShares, totalVestingFundSteem),
         ),
+        isUndelegation,
       };
+    }
     case 'wallet_power_down': {
       if (item.type === HIVE_OP.WITHDRAW_VESTING) {
         const vests = asString(p.vesting_shares);
@@ -265,21 +273,34 @@ export function buildActivityRowView(
         };
       }
       if (item.type === HIVE_OP.SET_WITHDRAW_VESTING_ROUTE) {
+        const fromAccount = asString(p.from_account);
+        const toAccount = asString(p.to_account);
+        const routePercent = asNumber(p.percent);
         return {
           ...base,
           kind: 'wallet_power_down',
           subtype: 'route',
           hpAmount: '',
-          from: asString(p.from_account),
-          to: asString(p.to_account),
-          percent: asNumber(p.percent),
+          from: fromAccount,
+          to: toAccount,
+          percent: routePercent,
+          counterparty:
+            fromAccount.toLowerCase() === profile ? toAccount : fromAccount,
+          direction: fromAccount.toLowerCase() === profile ? 'out' : 'in',
         };
       }
+      const withdrawTo = asString(p.to);
+      const withdrawFrom = asString(p.from);
+      const withdrawDirection =
+        withdrawTo.toLowerCase() === profile ? 'in' : 'out';
       return {
         ...base,
         kind: 'wallet_power_down',
         subtype: 'withdraw',
         hpAmount: asString(p.deposited) || asString(p.amount),
+        counterparty:
+          withdrawDirection === 'in' ? withdrawFrom : withdrawTo,
+        direction: withdrawDirection,
       };
     }
     case 'wallet_convert': {
@@ -302,11 +323,27 @@ export function buildActivityRowView(
     case 'wallet_fill_order': {
       const current = parseAssetAmount(p.current_pays);
       const open = parseAssetAmount(p.open_pays);
+      const currentOwner = asString(p.current_owner).toLowerCase();
+      const openOwner = asString(p.open_owner);
+      const exchanger =
+        currentOwner === profile ? openOwner : asString(p.current_owner);
+      const transferAmount =
+        currentOwner === profile
+          ? `${current.amount} ${current.currency}`.trim()
+          : `${open.amount} ${open.currency}`.trim();
+      const receivedAmount =
+        currentOwner === profile
+          ? `${open.amount} ${open.currency}`.trim()
+          : `${current.amount} ${current.currency}`.trim();
       return {
         ...base,
         kind: 'wallet_fill_order',
         currentPays: `${current.amount} ${current.currency}`.trim(),
         openPays: `${open.amount} ${open.currency}`.trim(),
+        exchanger,
+        transferAmount,
+        receivedAmount,
+        isSeller: currentOwner === profile,
       };
     }
     case 'wallet_limit_order': {
@@ -318,6 +355,29 @@ export function buildActivityRowView(
         seller: asString(p.seller),
         amountToSell: `${sell.amount} ${sell.currency}`.trim(),
         minToReceive: `${minReceive.amount} ${minReceive.currency}`.trim(),
+      };
+    }
+    case 'wallet_cancel_order': {
+      const open = parseAssetAmount(p.open_pays);
+      const current = parseAssetAmount(p.current_pays);
+      return {
+        ...base,
+        kind: 'wallet_cancel_order',
+        openPays: `${open.amount} ${open.currency}`.trim(),
+        currentPays: `${current.amount} ${current.currency}`.trim(),
+      };
+    }
+    case 'wallet_proposal_pay': {
+      const { amount, currency } = parseAssetAmount(p.hbd_payout ?? p.amount);
+      const receiver = asString(p.receiver);
+      const isIncoming = receiver.toLowerCase() === profile;
+      return {
+        ...base,
+        kind: 'wallet_proposal_pay',
+        receiver,
+        payer: asString(p.from) || 'steem.dao',
+        amount: `${amount} ${currency}`.trim(),
+        direction: isIncoming ? 'in' : 'out',
       };
     }
     default:

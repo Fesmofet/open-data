@@ -6,6 +6,7 @@ export {
 export { vestToHp, normalizeHiveAssetAmount, type HiveAssetLike } from './vest-conversion';
 export { parseCustomJsonOp, type ParsedCustomJsonOp } from './parse-custom-json';
 export { isWalletOperation } from './is-wallet-operation';
+export { getWalletOperationIndices } from './get-wallet-operation-indices';
 export {
   classifyActivityOperation,
   type ActivityRowKind,

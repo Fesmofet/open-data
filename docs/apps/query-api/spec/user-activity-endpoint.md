@@ -26,7 +26,7 @@ Returns paginated on-chain account history for `/@:name/activity`. The query-api
 |-------|------|---------|-------|
 | `limit` | int 1–500 | 20 | Page size (`ACTIVITY_DISPLAY_PAGE_SIZE`; max `ACTIVITY_MAX_PAGE_SIZE`) |
 | `cursor` | string? | — | Opaque base64url JSON `{ operationIndex }`; encodes `oldestOnPage.operationIndex - 1` |
-| `filters` | string[] | `[]` | Activity filter keys (`ACTIVITY_FILTER_KEYS`); max 14; OR semantics |
+| `filters` | string[] | `[]` | Activity filter keys (`ACTIVITY_FILTER_KEYS`); max 15; OR semantics |
 
 Body is optional (`{}` default) — same preprocess pattern as other feed POST endpoints.
 
@@ -70,6 +70,7 @@ When `filters` is non-empty:
 | `powered_up` | `transfer_to_vesting`, `transfer_to_vesting_completed` | — |
 | `received` / `transfer` | `transfer` | `to` / `from` vs profile account |
 | `savings` | savings transfer ops + `interest` (index 55) | — |
+| `wallet` | all wallet ops via `getWalletOperationIndices()` (incl. `limit_order_create2`) | `isWalletOperation` |
 | `author_reward` / `curation_reward` / `claim_rewards` | respective reward ops | — |
 
 Active filters may require more Hive round-trips before a full page is filled.

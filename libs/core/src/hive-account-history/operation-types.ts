@@ -23,6 +23,8 @@ export const HIVE_OP = {
   CLAIM_REWARD_BALANCE: 'claim_reward_balance',
   FILL_ORDER: 'fill_order',
   LIMIT_ORDER: 'limit_order',
+  LIMIT_ORDER_CREATE2: 'limit_order_create2',
+  LIMIT_ORDER_CANCEL: 'limit_order_cancel',
   CONVERT: 'convert',
   FILL_CONVERT_REQUEST: 'fill_convert_request',
   COLLATERALIZED_CONVERT: 'collateralized_convert',

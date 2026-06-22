@@ -19,4 +19,5 @@ export { WaivWalletSummarySkeleton } from './presentation/components/waiv/waiv-w
 export { HiveWalletTab } from './presentation/components/hive/hive-wallet-tab';
 export { HiveWalletSummarySkeleton } from './presentation/components/hive/hive-wallet-summary-skeleton';
 export { getWaivWalletSummaryQuery } from './application/queries/get-waiv-wallet-summary.query';
+export { getHiveWalletHistoryPageQuery } from './application/queries/get-hive-wallet-history-page.query';
 export { getHiveWalletSummaryQuery } from './application/queries/get-hive-wallet-summary.query';

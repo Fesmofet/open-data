@@ -253,21 +253,23 @@ export function ActivityRowContent({ row }: { row: ActivityRowView }) {
       return (
         <ActivityRowShell timestamp={row.timestamp}>
           <span>
-            {row.direction === 'in'
+            {row.direction === 'in' || row.direction === 'self'
               ? t('activity_received')
               : t('activity_transferred')}{' '}
             {row.amount} {row.currency}{' '}
-            {row.direction === 'in' ? (
-              <>
-                {t('activity_from')}{' '}
-                <ProfileLink name={row.counterparty}>@{row.counterparty}</ProfileLink>
-              </>
-            ) : (
-              <>
-                {t('activity_to')}{' '}
-                <ProfileLink name={row.counterparty}>@{row.counterparty}</ProfileLink>
-              </>
-            )}
+            {row.direction !== 'self' ? (
+              row.direction === 'in' ? (
+                <>
+                  {t('activity_from')}{' '}
+                  <ProfileLink name={row.counterparty}>@{row.counterparty}</ProfileLink>
+                </>
+              ) : (
+                <>
+                  {t('activity_to')}{' '}
+                  <ProfileLink name={row.counterparty}>@{row.counterparty}</ProfileLink>
+                </>
+              )
+            ) : null}
           </span>
           {row.memo ? (
             <span className="mt-1 block min-w-0 break-all text-caption text-muted">
@@ -338,6 +340,24 @@ export function ActivityRowContent({ row }: { row: ActivityRowView }) {
       return (
         <ActivityRowShell timestamp={row.timestamp}>
           {t('activity_market_limit')}: {row.amountToSell} → {row.minToReceive}
+        </ActivityRowShell>
+      );
+    case 'wallet_cancel_order':
+      return (
+        <ActivityRowShell timestamp={row.timestamp}>
+          {row.openPays
+            ? interpolateMessage(t('cancel_order'), { open_pays: row.openPays })
+            : t('cancel_limit_order')}
+        </ActivityRowShell>
+      );
+    case 'wallet_proposal_pay':
+      return (
+        <ActivityRowShell timestamp={row.timestamp}>
+          {interpolateMessage(
+            t(row.direction === 'in' ? 'proposal_payment_from' : 'proposal_payment_to'),
+            { steem_dao: row.payer, receiver: row.receiver },
+          )}{' '}
+          {row.amount}
         </ActivityRowShell>
       );
     case 'generic':
