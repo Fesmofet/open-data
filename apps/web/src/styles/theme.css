@@ -899,3 +899,35 @@ html[data-shell-mode='instagram'] .instagram-post-grid {
   --shell-right-width: 12rem;
   --spacing-card: 0.75rem;
 }
+
+/* Profile: light gray content band below primary nav (light theme only). */
+html[data-theme='light'] .shell-profile-content-band {
+  background-color: var(--color-surface-alt);
+}
+
+/* App top header: black bar on light theme only (logo/search chrome). */
+.app-top-header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+html[data-theme='light'] .app-top-header {
+  --color-nav-bg: #000000;
+  --color-nav-fg: #ffffff;
+  border-bottom: none;
+}
+
+html[data-theme='light'] .app-top-header .app-header-avatar-link {
+  color: var(--color-nav-fg);
+}
+
+/* Search field + dropdown keep light-surface tokens inside the dark header bar. */
+html[data-theme='light'] .app-header-search-surface {
+  --color-fg: rgb(0 0 0 / 0.84);
+  --color-fg-secondary: #99aab5;
+  --color-fg-tertiary: rgb(0 0 0 / 0.45);
+  --color-border: #e9e7e7;
+  --color-surface: #ffffff;
+  --color-surface-control: #ffffff;
+  --color-ghost-surface: rgb(0 0 0 / 0.04);
+  --color-heading: #333333;
+}

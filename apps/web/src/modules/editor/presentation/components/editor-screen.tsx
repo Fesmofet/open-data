@@ -565,7 +565,7 @@ export function EditorScreen({
   });
 
   return (
-    <main className="w-full min-w-0 pb-[calc(var(--shell-header-height,4rem)+0.75rem)]">
+    <main className="w-full min-w-0 py-section-y-sm pb-[calc(var(--shell-header-height,4rem)+0.75rem)]">
       <div
         className={[
           'grid w-full grid-cols-1 items-start gap-y-6',

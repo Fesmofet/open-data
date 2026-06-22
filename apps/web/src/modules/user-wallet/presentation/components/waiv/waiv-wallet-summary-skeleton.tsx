@@ -1,7 +1,7 @@
 export function WaivWalletSummarySkeleton() {
   return (
     <section
-      className="rounded-card border border-border bg-bg p-card-padding shadow-card"
+      className="rounded-card border border-border bg-surface p-card-padding shadow-card"
       aria-busy="true"
       aria-label="Loading WAIV wallet"
     >

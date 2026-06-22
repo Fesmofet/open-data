@@ -13,7 +13,7 @@ export function profileSectionTabClass(
     return `${base} border-accent text-accent`;
   }
 
-  return `${base} border-transparent text-fg-tertiary hover:border-border hover:text-fg`;
+  return `${base} border-transparent text-fg-tertiary hover:text-fg`;
 }
 
 /** Vertical section links (Twitter-style profile rail). */

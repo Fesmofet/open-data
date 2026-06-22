@@ -56,4 +56,31 @@ describe('AppShell', () => {
     expect(html).toContain('right');
     expect(html).toContain('content');
   });
+
+  it('wraps header in sticky slot without top inset by default', () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        AppShell,
+        { header: createElement('header', null, 'nav') },
+        createElement('span', null, 'main'),
+      ),
+    );
+    expect(html).toContain('sticky top-0');
+    expect(html).not.toContain('pt-section-y-sm');
+    expect(html).toContain('nav');
+  });
+
+  it('renders scroll-away top inset when headerTopInset is true', () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        AppShell,
+        {
+          header: createElement('header', null, 'nav'),
+          headerTopInset: true,
+        },
+        createElement('span', null, 'main'),
+      ),
+    );
+    expect(html).toContain('pt-section-y-sm');
+  });
 });

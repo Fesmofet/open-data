@@ -10,6 +10,8 @@ export type AppShellProps = {
   gridTemplateClassName?: string;
   /** Extra class on the outer page wrapper (e.g. vertical padding). */
   className?: string;
+  /** Scroll-away top inset above header (default false). */
+  headerTopInset?: boolean;
 };
 
 /** Exported for unit tests and tooling. */
@@ -41,30 +43,41 @@ export function AppShell({
   children,
   gridTemplateClassName,
   className = '',
+  headerTopInset,
 }: AppShellProps) {
   const hasLeft = Boolean(leftNav);
   const hasRight = Boolean(rightRail);
   const gridClass =
     gridTemplateClassName ?? gridClassForSlots(hasLeft, hasRight);
+  const showHeaderTopInset = headerTopInset === true;
 
   return (
-    <div
-      className={['mx-auto max-w-container-page px-gutter sm:px-gutter-sm', className].join(
-        ' ',
-      )}
-    >
-      {header}
+    <>
+      {header ? (
+        <>
+          {showHeaderTopInset ? (
+            <div className="pt-section-y-sm" aria-hidden />
+          ) : null}
+          <div className="sticky top-0 z-40 w-full">{header}</div>
+        </>
+      ) : null}
       <div
-        className={[
-          'mt-card-padding grid grid-cols-1 gap-card-padding',
-          gridClass,
-        ].join(' ')}
+        className={['mx-auto max-w-container-page px-gutter sm:px-gutter-sm', className].join(
+          ' ',
+        )}
       >
-        {leftNav}
-        <div className="min-h-[12rem] min-w-0">{children}</div>
-        {rightRail}
+        <div
+          className={[
+            'grid grid-cols-1 gap-card-padding',
+            gridClass,
+          ].join(' ')}
+        >
+          {leftNav}
+          <div className="min-h-[12rem] min-w-0">{children}</div>
+          {rightRail}
+        </div>
+        {bottomNav}
       </div>
-      {bottomNav}
-    </div>
+    </>
   );
 }

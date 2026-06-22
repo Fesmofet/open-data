@@ -2,13 +2,19 @@ import type { ReactNode } from 'react';
 
 import {
   FixedRegion,
+  FeedColumn,
   HiddenBelow,
 } from '@/shared/presentation/layout';
 import {
   RightSidebar,
   UserMenuVerticalRail,
+  UserProfileSubmenu,
 } from '@/modules/user-profile';
 
+/**
+ * Profile `(main)` shell — parity with {@link ObjectViewShell}.
+ * @see apps/web/src/modules/object/presentation/components/object-view-shell.tsx
+ */
 export default async function UserProfileMainShellLayout({
   children,
   leftSidebar,
@@ -39,7 +45,12 @@ export default async function UserProfileMainShellLayout({
         </div>
       </HiddenBelow>
 
-      <main className="min-h-[12rem] min-w-0">{children}</main>
+      <main className="min-h-[12rem] min-w-0">
+        <FeedColumn>
+          <UserProfileSubmenu accountName={accountName} />
+          {children}
+        </FeedColumn>
+      </main>
 
       <HiddenBelow breakpoint="lg" className="min-w-0">
         <div className="shell-hide-instagram lg:contents">

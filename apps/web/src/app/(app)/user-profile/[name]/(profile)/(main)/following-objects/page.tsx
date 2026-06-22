@@ -36,7 +36,7 @@ export default async function UserProfileFollowingObjectsPage({
   );
 
   return (
-    <div className="mx-auto max-w-container-content pb-section-y">
+    <div className="min-w-0 pb-section-y">
       <Suspense fallback={<div className="h-40 animate-pulse rounded-card bg-surface/80" aria-hidden />}>
         <UserSocialObjectsList
           key={sort}

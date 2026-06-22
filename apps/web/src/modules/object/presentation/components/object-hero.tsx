@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
+import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { shouldHideHero, useShellMode } from '@/shell-mode';
 
 export type ObjectHeroEditContext = {
@@ -123,10 +124,10 @@ export function ObjectHero({
   }
 
   return (
-    <header className="overflow-hidden rounded-card border border-border bg-bg shadow-card">
-      <div className="relative overflow-hidden rounded-t-card">
+    <header>
+      <ShellFullBleedBand className="relative overflow-hidden">
         {hasCoverPhoto && coverImageUrl ? (
-          <>
+          <div className="absolute inset-0">
             <Image
               src={coverImageUrl}
               alt=""
@@ -138,29 +139,15 @@ export function ObjectHero({
             />
             <div className="hero-cover-vignette absolute inset-0" aria-hidden />
             <div className="absolute inset-0 bg-nav-bg/65" aria-hidden />
-          </>
-        ) : null}
-        {canEditBackground ? (
-          <button
-            type="button"
-            onClick={() => setModalTarget('avatar-background')}
-            className={[
-              'absolute right-3 top-3 z-20 flex items-center gap-1 rounded-btn px-3 py-1.5 text-caption font-weight-label transition-colors',
-              hasCoverPhoto
-                ? 'border border-white/30 bg-black/30 text-white/90 backdrop-blur-sm hover:border-white/60 hover:bg-black/50 hover:text-white'
-                : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
-            ].join(' ')}
-            aria-label={t('object_detail_edit_background')}
-          >
-            <span className="text-base leading-none">+</span>
-            {t('object_detail_edit_background')}
-          </button>
-        ) : null}
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-nav-bg" aria-hidden />
+        )}
 
-        <div
+        <ShellInset
           className={[
-            'relative z-10 px-gutter pb-5 pt-6 sm:px-gutter-sm',
-            hasCoverPhoto ? 'gallery-chrome-text' : 'bg-nav-bg text-nav-fg',
+            'relative z-10 pb-5 pt-6',
+            hasCoverPhoto ? 'gallery-chrome-text' : 'text-nav-fg',
           ].join(' ')}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -301,7 +288,24 @@ export function ObjectHero({
               ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:pb-1">
+            <div className="flex shrink-0 flex-col items-end gap-2 self-end sm:pb-1">
+              {canEditBackground ? (
+                <button
+                  type="button"
+                  onClick={() => setModalTarget('avatar-background')}
+                  className={[
+                    'flex items-center gap-1 rounded-btn px-3 py-1.5 text-caption font-weight-label transition-colors',
+                    hasCoverPhoto
+                      ? 'border border-white/30 bg-black/30 text-white/90 backdrop-blur-sm hover:border-white/60 hover:bg-black/50 hover:text-white'
+                      : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
+                  ].join(' ')}
+                  aria-label={t('object_detail_edit_background')}
+                >
+                  <span className="text-base leading-none">+</span>
+                  {t('object_detail_edit_background')}
+                </button>
+              ) : null}
+              <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={onFollowToggle}
@@ -375,23 +379,26 @@ export function ObjectHero({
               >
                 <IconHeartFavorite filled={isFavorite} />
               </button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </ShellInset>
+      </ShellFullBleedBand>
 
-      <div className="border-t border-border bg-bg pb-3 pt-0">
-        <div
-          className={[
-            'shell-profile-grid shell-object-page-grid grid grid-cols-1 gap-card-padding',
-            'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
-          ].join(' ')}
-        >
-          <div className="shell-hide-instagram hidden lg:block" aria-hidden />
-          <div className="min-w-0">{primaryNav}</div>
-          <div className="shell-hide-instagram hidden lg:block" aria-hidden />
-        </div>
-      </div>
+      <ShellFullBleedBand className="border-t border-border bg-bg shadow-card">
+        <ShellInset className="pb-3 pt-0">
+          <div
+            className={[
+              'shell-profile-grid shell-object-page-grid grid grid-cols-1 gap-card-padding',
+              'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
+            ].join(' ')}
+          >
+            <div className="shell-hide-instagram hidden lg:block" aria-hidden />
+            <div className="min-w-0">{primaryNav}</div>
+            <div className="shell-hide-instagram hidden lg:block" aria-hidden />
+          </div>
+        </ShellInset>
+      </ShellFullBleedBand>
 
       {editContext && modalTarget ? (
         <AddUpdateModal

@@ -68,7 +68,7 @@ export function WaivWalletSummary({
     : null;
 
   return (
-    <section className="rounded-card border border-border bg-bg p-card-padding shadow-card">
+    <section className="rounded-card border border-border bg-surface p-card-padding shadow-card">
       <WaivWalletBalanceRow
         icon={<WaivTokenIcon />}
         iconFullBleed

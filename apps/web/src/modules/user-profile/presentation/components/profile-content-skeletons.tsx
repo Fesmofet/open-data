@@ -11,7 +11,7 @@ import { ProfileMapSidebarListSkeleton } from './profile-map-sidebar-list-skelet
 export function ProfileSocialListSkeleton() {
   return (
     <div
-      className="mx-auto max-w-container-content pb-section-y"
+      className="min-w-0 pb-section-y"
       aria-busy="true"
       aria-label="Loading social list"
     >

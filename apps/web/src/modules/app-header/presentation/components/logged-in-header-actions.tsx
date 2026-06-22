@@ -153,13 +153,16 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
         href="/editor"
         title={t('write_post')}
         aria-label={t('write_post')}
-        className="rounded-btn p-2 text-fg-secondary hover:bg-ghost-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className="rounded-btn p-2 text-nav-fg hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         suppressHydrationWarning
       >
         <WritePostIcon />
       </Link>
 
-      <NotificationBell username={user.username} />
+      <NotificationBell
+        username={user.username}
+        triggerClassName="relative rounded-btn p-2 text-nav-fg hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      />
 
       <div className="relative flex items-center gap-0.5">
         <Link
@@ -181,11 +184,11 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
           aria-label={t('app_header_account_menu_aria')}
           onClick={() => setMenuOpen((o) => !o)}
           className={[
-            'inline-flex shrink-0 rounded-btn p-1 text-fg',
-            'hover:bg-ghost-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+            'inline-flex shrink-0 rounded-btn p-1 text-nav-fg',
+            'hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
           ].join(' ')}
         >
-          <ChevronDownIcon className="text-accent" />
+          <ChevronDownIcon />
         </button>
 
         {menuOpen ? (

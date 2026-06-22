@@ -11,6 +11,7 @@ import {
 } from '@/modules/user-profile';
 import { getUserFollowingObjectsPageQuery } from '@/modules/user-social';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 
 export default async function ProfileGroupLayout({
   children,
@@ -55,7 +56,9 @@ export default async function ProfileGroupLayout({
             initialUser={profile}
             viewerUsername={viewer}
           />
-          {children}
+          <ShellFullBleedBand className="shell-profile-content-band">
+            <ShellInset className="pt-0">{children}</ShellInset>
+          </ShellFullBleedBand>
         </Suspense>
       </UserProfilePendingNavRoot>
     </UserProfileSocialCountsProvider>

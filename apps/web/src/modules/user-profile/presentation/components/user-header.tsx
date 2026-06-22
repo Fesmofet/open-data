@@ -1,9 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
+import { UserAvatar } from '@/shared/presentation';
 
 import type { UserProfileShellUser } from './types';
 
@@ -58,126 +56,104 @@ export function UserHeader({
   const hasCoverPhoto = Boolean(hasCover && coverImage);
 
   return (
-    <div className="relative">
-      <div
-        className={[
-          'relative h-36 w-full overflow-hidden rounded-t-card border-b border-border bg-surface',
-          hasCover && coverImage ? '' : 'bg-gradient-to-br from-accent/30 to-surface',
-        ].join(' ')}
-        aria-hidden={!hasCover}
-      >
-        {hasCover && coverImage ? (
-          <Image
-            src={coverImage}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-            unoptimized={shouldUnoptimizeRemoteImage(coverImage)}
-          />
-        ) : null}
-      </div>
+    <div className="relative -mt-12 flex flex-col gap-4 pb-4 sm:flex-row sm:items-end">
+      {isHeroLoading ? (
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-circle border-4 border-bg bg-bg shadow-card">
+          <span className="h-8 w-8 animate-pulse rounded-circle bg-surface" />
+        </div>
+      ) : (
+        <UserAvatar
+          username={username}
+          avatarUrl={user.avatarUrl}
+          displayName={user.displayName}
+          size={96}
+          className="text-body-lg font-weight-strong font-display"
+        />
+      )}
 
-      <div className="relative -mt-12 flex flex-col gap-4 px-gutter pb-4 sm:flex-row sm:items-end sm:px-gutter-sm">
+      <div className="min-w-0 flex-1 pb-1">
         {isHeroLoading ? (
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-circle border-4 border-bg bg-bg shadow-card">
-            <span className="h-8 w-8 animate-pulse rounded-circle bg-surface" />
+          <div className="space-y-2">
+            <div className="h-6 w-48 animate-pulse rounded-btn bg-surface" />
+            <div className="h-4 w-72 max-w-full animate-pulse rounded-btn bg-surface" />
           </div>
         ) : (
-          <UserAvatar
-            username={username}
-            avatarUrl={user.avatarUrl}
-            displayName={user.displayName}
-            size={96}
-            className="text-body-lg font-weight-strong font-display"
-          />
-        )}
-
-        <div className="min-w-0 flex-1 pb-1">
-          {isHeroLoading ? (
-            <div className="space-y-2">
-              <div className="h-6 w-48 animate-pulse rounded-btn bg-surface" />
-              <div className="h-4 w-72 max-w-full animate-pulse rounded-btn bg-surface" />
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1
-                  className={[
-                    'truncate text-section font-weight-strong font-display',
-                    hasCoverPhoto ? 'hero-on-photo-title' : 'text-fg',
-                  ].join(' ')}
-                >
-                  {user.displayName}
-                </h1>
-                <span
-                  className={[
-                    'text-body-sm',
-                    hasCoverPhoto ? 'hero-on-photo-muted' : 'text-muted',
-                  ].join(' ')}
-                >
-                  @{username}
-                </span>
-                {isGuest ? (
-                  <span className="rounded-btn bg-surface px-2 py-0.5 text-caption capitalize text-muted">
-                    {t('guest')}
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-1 line-clamp-2 text-body-sm text-muted">{user.bio}</p>
-              <p className="mt-2 text-caption text-muted">
-                {user.followerCount} {t('followers')} · {user.followingCount} {t('following')} ·{' '}
-                {user.postingCount} {t('posts')}
-              </p>
-            </>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:pb-1">
-          {!isHeroLoading && !isSameUser && !isGuest ? (
-            <>
-              <button
-                type="button"
-                onClick={onFollowClick}
-                disabled={followPending}
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1
                 className={[
-                  'group rounded-btn px-4 py-2 text-body-sm font-weight-label disabled:opacity-50',
-                  isFollowing
-                    ? 'hero-follow-active'
-                    : 'bg-accent text-accent-fg hover:opacity-90',
+                  'truncate text-section font-weight-strong font-display',
+                  hasCoverPhoto ? 'hero-on-photo-title' : 'text-fg',
                 ].join(' ')}
               >
-                <span className={isFollowing ? 'group-hover:hidden' : ''}>
-                  {isFollowing ? t('following') : t('follow')}
+                {user.displayName}
+              </h1>
+              <span
+                className={[
+                  'text-body-sm',
+                  hasCoverPhoto ? 'hero-on-photo-muted' : 'text-muted',
+                ].join(' ')}
+              >
+                @{username}
+              </span>
+              {isGuest ? (
+                <span className="rounded-btn bg-surface px-2 py-0.5 text-caption capitalize text-muted">
+                  {t('guest')}
                 </span>
-                {isFollowing ? (
-                  <span className="hidden group-hover:inline">{t('unfollow')}</span>
-                ) : null}
-              </button>
-              {isFollowing ? (
-                <button
-                  type="button"
-                  onClick={onBellToggle}
-                  className="rounded-btn border border-border bg-bg p-2 text-fg hover:bg-muted"
-                  aria-pressed={isBell}
-                  title={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
-                  aria-label={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
-                >
-                  <IconBell filled={isBell} />
-                </button>
               ) : null}
-            </>
-          ) : null}
-          {!isHeroLoading && isSameUser ? (
+            </div>
+            <p className="mt-1 line-clamp-2 text-body-sm text-muted">{user.bio}</p>
+            <p className="mt-2 text-caption text-muted">
+              {user.followerCount} {t('followers')} · {user.followingCount} {t('following')} ·{' '}
+              {user.postingCount} {t('posts')}
+            </p>
+          </>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 sm:pb-1">
+        {!isHeroLoading && !isSameUser && !isGuest ? (
+          <>
             <button
               type="button"
-              className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
+              onClick={onFollowClick}
+              disabled={followPending}
+              className={[
+                'group rounded-btn px-4 py-2 text-body-sm font-weight-label disabled:opacity-50',
+                isFollowing
+                  ? 'hero-follow-active'
+                  : 'bg-accent text-accent-fg hover:opacity-90',
+              ].join(' ')}
             >
-              {t('edit_profile')}
+              <span className={isFollowing ? 'group-hover:hidden' : ''}>
+                {isFollowing ? t('following') : t('follow')}
+              </span>
+              {isFollowing ? (
+                <span className="hidden group-hover:inline">{t('unfollow')}</span>
+              ) : null}
             </button>
-          ) : null}
-        </div>
+            {isFollowing ? (
+              <button
+                type="button"
+                onClick={onBellToggle}
+                className="rounded-btn border border-border bg-bg p-2 text-fg hover:bg-muted"
+                aria-pressed={isBell}
+                title={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
+                aria-label={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
+              >
+                <IconBell filled={isBell} />
+              </button>
+            ) : null}
+          </>
+        ) : null}
+        {!isHeroLoading && isSameUser ? (
+          <button
+            type="button"
+            className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
+          >
+            {t('edit_profile')}
+          </button>
+        ) : null}
       </div>
     </div>
   );

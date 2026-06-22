@@ -1,3 +1,5 @@
+import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
+
 import { ObjectViewShell } from './object-view-shell';
 
 function PulseBlock({ className }: { className: string }) {
@@ -6,28 +8,36 @@ function PulseBlock({ className }: { className: string }) {
 
 function ObjectPageHeroSkeleton() {
   return (
-    <div className="overflow-hidden rounded-card border border-border bg-surface shadow-whisper" aria-hidden>
-      <PulseBlock className="h-32 w-full rounded-none sm:h-40" />
-      <div className="relative px-card-padding pb-card-padding pt-12">
-        <div className="absolute -top-10 start-card-padding">
-          <PulseBlock className="size-20 rounded-circle border-4 border-surface" />
-        </div>
-        <div className="space-y-2 pt-2">
-          <PulseBlock className="h-7 max-w-[16rem]" />
-          <PulseBlock className="h-4 max-w-[10rem]" />
-          <PulseBlock className="h-4 max-w-[14rem]" />
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <PulseBlock className="h-9 w-24" />
-          <PulseBlock className="h-9 w-24" />
-          <PulseBlock className="h-9 w-9 rounded-circle" />
-        </div>
-        <div className="mt-4 flex gap-4 border-t border-border pt-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <PulseBlock key={i} className="h-4 w-16" />
-          ))}
-        </div>
-      </div>
+    <div aria-hidden>
+      <ShellFullBleedBand>
+        <PulseBlock className="h-32 w-full rounded-none sm:h-40" />
+      </ShellFullBleedBand>
+      <ShellFullBleedBand className="border-b border-border bg-surface shadow-whisper">
+        <ShellInset className="relative z-10 pt-32 pb-card-padding sm:pt-40">
+          <div className="absolute -top-10 start-0">
+            <PulseBlock className="size-20 rounded-circle border-4 border-surface" />
+          </div>
+          <div className="space-y-2 pt-2">
+            <PulseBlock className="h-7 max-w-[16rem]" />
+            <PulseBlock className="h-4 max-w-[10rem]" />
+            <PulseBlock className="h-4 max-w-[14rem]" />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <PulseBlock className="h-9 w-24" />
+            <PulseBlock className="h-9 w-24" />
+            <PulseBlock className="h-9 w-9 rounded-circle" />
+          </div>
+        </ShellInset>
+      </ShellFullBleedBand>
+      <ShellFullBleedBand className="bg-surface">
+        <ShellInset className="pb-3">
+          <div className="flex gap-4 border-t border-border pt-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <PulseBlock key={i} className="h-4 w-16" />
+            ))}
+          </div>
+        </ShellInset>
+      </ShellFullBleedBand>
     </div>
   );
 }

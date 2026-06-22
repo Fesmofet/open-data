@@ -30,9 +30,10 @@ function BellIcon({ className }: { className?: string }) {
 
 export type NotificationBellProps = {
   username: string;
+  triggerClassName?: string;
 };
 
-export function NotificationBell({ username }: NotificationBellProps) {
+export function NotificationBell({ username, triggerClassName }: NotificationBellProps) {
   const { t } = useI18n();
   const panelId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -80,7 +81,10 @@ export function NotificationBell({ username }: NotificationBellProps) {
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-btn p-2 text-fg-secondary hover:bg-ghost-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className={
+          triggerClassName ??
+          'relative rounded-btn p-2 text-fg-secondary hover:bg-ghost-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+        }
       >
         <BellIcon />
         {badgeLabel ? (

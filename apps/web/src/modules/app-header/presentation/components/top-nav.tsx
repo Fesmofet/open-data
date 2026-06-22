@@ -350,11 +350,11 @@ export function TopNav({ user: _user }: TopNavProps) {
       <div
         ref={searchShellRef}
         className={[
-          'relative min-w-0 flex-1',
+          'app-header-search-surface relative min-w-0 flex-1',
           !searchBarActive ? 'hidden lg:block' : 'block',
         ].join(' ')}
       >
-        <div className="relative flex w-full items-center gap-2 rounded-btn border border-border bg-surface-control px-3 py-1.5">
+        <div className="relative flex w-full items-center gap-2 rounded-btn border border-border bg-white px-3 py-1.5">
           <SearchIcon className="shrink-0 text-fg-secondary" />
           <input
             ref={inputRef}
@@ -425,7 +425,7 @@ export function TopNav({ user: _user }: TopNavProps) {
       <div className="ms-auto flex shrink-0 items-center gap-2 lg:ms-0">
         <button
           type="button"
-          className="rounded-btn p-2 text-fg-secondary hover:bg-ghost-surface hover:text-fg lg:hidden"
+          className="rounded-btn p-2 text-nav-fg hover:bg-white/10 lg:hidden"
           onClick={toggleMobileSearch}
           aria-expanded={searchBarActive}
           aria-label={

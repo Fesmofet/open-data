@@ -19,6 +19,10 @@ export { CollapsibleRegion } from './regions/collapsible-region';
 export type { CollapsibleRegionProps } from './regions/collapsible-region';
 export { DrawerRegion } from './regions/drawer-region';
 export type { DrawerRegionProps } from './regions/drawer-region';
+export { ShellInset } from './regions/shell-inset';
+export type { ShellInsetProps } from './regions/shell-inset';
+export { ShellFullBleedBand } from './regions/shell-full-bleed-band';
+export type { ShellFullBleedBandProps } from './regions/shell-full-bleed-band';
 
 export { FeedColumn } from './arrangements/feed-column';
 export type { FeedColumnProps } from './arrangements/feed-column';

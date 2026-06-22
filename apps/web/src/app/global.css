@@ -85,7 +85,7 @@
   }
 
   .app-header-avatar-link {
-    @apply inline-flex shrink-0 rounded-circle text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
+    @apply inline-flex shrink-0 rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
   }
 
   .app-header-menu-feed-link {
@@ -421,6 +421,8 @@ html {
   font-family: var(--font-body);
   line-height: var(--leading-body);
   tab-size: 4;
+  /* Full-bleed hero bands use viewport breakout; clip avoids horizontal scrollbar (100vw vs scrollbar). */
+  overflow-x: clip;
   /* scroll-behavior: smooth causes jank when programmatic scrolls happen during modal scroll */
   scroll-behavior: auto;
 }
@@ -495,4 +497,12 @@ pre {
   padding-right: 1rem;
   color: var(--color-fg);
   width: 100%;
+}
+
+/* Light theme: semi-transparent surface panels read as gray on surface-alt bands — solid white cards/rails. */
+html[data-theme='light'] .bg-surface\/60,
+html[data-theme='light'] .bg-surface\/80,
+html[data-theme='light'] .bg-surface-control\/40,
+html[data-theme='light'] .bg-surface-control\/60 {
+  background-color: var(--color-surface);
 }

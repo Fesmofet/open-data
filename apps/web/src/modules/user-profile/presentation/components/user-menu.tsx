@@ -19,12 +19,22 @@ import { UserProfileNavLink } from './user-profile-nav-link';
 
 export type UserMenuDirection = 'horizontal' | 'vertical';
 
+export type UserMenuRows = 'primary' | 'submenu' | 'all';
+
 type UserMenuProps = {
   accountName: string;
   direction?: UserMenuDirection;
+  /** Horizontal: split primary (hero) vs submenu (center column). Vertical rail always shows all. */
+  rows?: UserMenuRows;
 };
 
 const WALLET_TYPES = ['WAIV', 'HIVE', 'ENGINE'] as const;
+
+const HORIZONTAL_PRIMARY_NAV_ROW_CLASS =
+  'flex flex-wrap items-end gap-x-2 gap-y-1';
+
+const HORIZONTAL_SUB_NAV_ROW_CLASS =
+  'flex flex-wrap items-end gap-x-2 gap-y-1 border-b border-border';
 
 function isActive(
   rest: string[],
@@ -113,6 +123,7 @@ export function UserMenu(props: UserMenuProps) {
 function UserMenuInner({
   accountName,
   direction = 'horizontal',
+  rows = 'all',
 }: UserMenuProps) {
   const { t } = useI18n();
   const { resolvedMode } = useShellMode();
@@ -170,7 +181,10 @@ function UserMenuInner({
       {
         key: 'followers',
         href: `${base}/followers`,
-        label: t('followers'),
+        label:
+          socialCounts?.followerCount != null
+            ? `${t('followers')} ${socialCounts.followerCount}`
+            : t('followers'),
         active: isActive(rest, 'followers'),
       },
       {
@@ -193,6 +207,59 @@ function UserMenuInner({
     : items;
 
   const isVertical = direction === 'vertical';
+  const showPrimary = isVertical || rows === 'primary' || rows === 'all';
+  const showSubmenu = isVertical || rows === 'submenu' || rows === 'all';
+
+  const horizontalSubmenu =
+    submenuVariant === 'feed' && visibleMenuKeys == null ? (
+      <nav
+        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
+        aria-label={t('user_profile_submenu_feed_aria')}
+      >
+        <UserProfileNavLink href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), false)}>{t('posts')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), false)}>{t('threads')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), false)}>{t('comments')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), false)}>{t('mentions')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), false)}>{t('activity')}</UserProfileNavLink>
+      </nav>
+    ) : submenuVariant === 'wallet' ? (
+      <nav
+        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
+        aria-label={t('user_profile_submenu_wallet_aria')}
+      >
+        {WALLET_TYPES.map((type) => {
+          const href = `${base}/transfers?type=${type}`;
+          return (
+            <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, false)}>
+              {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
+            </UserProfileNavLink>
+          );
+        })}
+      </nav>
+    ) : submenuVariant === 'followers' ? (
+      <nav
+        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
+        aria-label={t('user_profile_submenu_followers_aria')}
+      >
+        <UserProfileNavLink href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)}>
+          <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
+        </UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', false)}>
+          <SocialSubmenuLinkLabel label={t('following')} count={socialCounts?.followingCount} />
+        </UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)}>
+          <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
+        </UserProfileNavLink>
+      </nav>
+    ) : submenuVariant === 'expertise' ? (
+      <nav
+        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
+        aria-label={t('user_profile_submenu_expertise_aria')}
+      >
+        <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)}>{t('hashtags')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)}>{t('objects')}</UserProfileNavLink>
+      </nav>
+    ) : null;
 
   if (isVertical) {
     return (
@@ -256,13 +323,40 @@ function UserMenuInner({
     );
   }
 
-  // Horizontal layout: both rows share a single centered block so the sub-menu's
-  // left edge aligns with the first item of the main menu.
+  if (rows === 'submenu') {
+    return horizontalSubmenu;
+  }
+
+  if (rows === 'primary') {
+    return (
+      <nav
+        className={HORIZONTAL_PRIMARY_NAV_ROW_CLASS}
+        aria-label={t('user_profile_nav_aria')}
+      >
+        {primaryItems.map((item) => (
+          <UserProfileNavLink
+            key={item.key}
+            href={item.href}
+            className={[
+              navLinkClass(item.active, false),
+              item.mobileOnly ? 'lg:hidden' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {item.label}
+          </UserProfileNavLink>
+        ))}
+      </nav>
+    );
+  }
+
+  // Horizontal: primary + submenu stacked in the center column.
   return (
-    <div className="border-t border-border pt-3">
-      <div className="mx-auto w-fit">
+    <div className="flex min-w-0 flex-col">
+      {showPrimary ? (
         <nav
-          className="flex flex-wrap gap-x-1 gap-y-1 border-b border-border"
+          className={HORIZONTAL_PRIMARY_NAV_ROW_CLASS}
           aria-label={t('user_profile_nav_aria')}
         >
           {primaryItems.map((item) => (
@@ -280,63 +374,8 @@ function UserMenuInner({
             </UserProfileNavLink>
           ))}
         </nav>
-
-        {submenuVariant === 'feed' && visibleMenuKeys == null ? (
-          <nav
-            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
-            aria-label={t('user_profile_submenu_feed_aria')}
-          >
-            <UserProfileNavLink href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), false)}>{t('posts')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), false)}>{t('threads')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), false)}>{t('comments')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), false)}>{t('mentions')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), false)}>{t('activity')}</UserProfileNavLink>
-          </nav>
-        ) : null}
-
-        {submenuVariant === 'wallet' ? (
-          <nav
-            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
-            aria-label={t('user_profile_submenu_wallet_aria')}
-          >
-            {WALLET_TYPES.map((type) => {
-              const href = `${base}/transfers?type=${type}`;
-              return (
-                <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, false)}>
-                  {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
-                </UserProfileNavLink>
-              );
-            })}
-          </nav>
-        ) : null}
-
-        {submenuVariant === 'followers' ? (
-          <nav
-            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
-            aria-label={t('user_profile_submenu_followers_aria')}
-          >
-            <UserProfileNavLink href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)}>
-              <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
-            </UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', false)}>
-              <SocialSubmenuLinkLabel label={t('following')} count={socialCounts?.followingCount} />
-            </UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)}>
-              <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
-            </UserProfileNavLink>
-          </nav>
-        ) : null}
-
-        {submenuVariant === 'expertise' ? (
-          <nav
-            className="mt-2 flex flex-wrap gap-x-2 gap-y-1 border-b border-border"
-            aria-label={t('user_profile_submenu_expertise_aria')}
-          >
-            <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)}>{t('hashtags')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)}>{t('objects')}</UserProfileNavLink>
-          </nav>
-        ) : null}
-      </div>
+      ) : null}
+      {showSubmenu ? horizontalSubmenu : null}
     </div>
   );
 }

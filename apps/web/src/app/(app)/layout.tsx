@@ -28,7 +28,7 @@ export default function AppRouteGroupLayout({
             </Suspense>
           }
           bottomNav={<BottomNav />}
-          className="py-section-y-sm"
+          className="pb-section-y-sm"
         >
           {children}
         </AppShell>

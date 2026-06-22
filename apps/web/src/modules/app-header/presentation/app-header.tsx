@@ -1,4 +1,6 @@
 import type { AppHeaderUser } from '../domain/app-header-user';
+import { ShellInset } from '@/shared/presentation/layout';
+
 import { TopNav } from './components/top-nav';
 
 export type AppHeaderProps = {
@@ -10,10 +12,10 @@ export type AppHeaderProps = {
  */
 export function AppHeader({ user }: AppHeaderProps) {
   return (
-    <header
-      className="app-header-blur sticky top-0 z-40 border-b border-border"
-    >
-      <TopNav user={user} />
+    <header className="app-top-header app-header-blur w-full">
+      <ShellInset>
+        <TopNav user={user} />
+      </ShellInset>
     </header>
   );
 }

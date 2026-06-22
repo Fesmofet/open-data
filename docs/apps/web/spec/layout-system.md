@@ -36,11 +36,12 @@ This spec describes **structural** layout only (zones, breakpoints, scroll/stick
 | `apps/web/src/app/(app)/layout.tsx` | `LayoutProvider` + `AppShell` + [`AppHeader`](app-header.md) / `BottomNav` |
 | `apps/web/src/app/(public)/layout.tsx` | `PublicShell` — centered narrow column |
 | `apps/web/src/app/(immersive)/layout.tsx` | `ImmersiveShell` — fullscreen, no chrome |
-| `apps/web/src/app/(app)/user-profile/[name]/layout.tsx` | Profile hero + `children` (no grid; grid lives in nested layouts) |
-| `apps/web/src/app/(app)/user-profile/[name]/(main)/layout.tsx` | Default profile: three-column **lg+** rail + main + rail |
-| `apps/web/src/app/(app)/user-profile/[name]/about/layout.tsx` | About: main + right rail only |
-| `apps/web/src/app/(app)/user-profile/[name]/map/layout.tsx` | Map: single column |
-| `apps/web/src/app/(app)/user-profile/[name]/transfers/waiv-table/layout.tsx` | Waiv table: single column |
+| `apps/web/src/app/(app)/user-profile/[name]/layout.tsx` | Validates `[name]` for all routes under the profile URL family |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/layout.tsx` | Profile hero, primary nav band, gray content band + nested `children` |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/(main)/layout.tsx` | Default profile tabs: three-column **lg+** rail + main (submenu + feed) + rail |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/about/layout.tsx` | About: main + right rail only |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/map/layout.tsx` | Map: single column |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/transfers/waiv-table/layout.tsx` | Waiv table: single column |
 
 Route groups `(app)`, `(public)`, `(immersive)` do **not** appear in URLs.
 
@@ -62,6 +63,12 @@ Override grid with `gridTemplateClassName` on `AppShell` when a route needs a no
 | `HiddenBelow` | `hidden` below breakpoint; visible from breakpoint up (`sm`–`xl`). No JS. |
 | `CollapsibleRegion` | Client: toggle on small screens; always visible on `lg+`. Optional `localStorage` via `storageKey`. |
 | `DrawerRegion` | Client: fixed overlay + panel; backdrop and `Escape` close. |
+| `ShellInset` | Constrained app column (`max-w-container-page` + `px-gutter`). Use for chrome and hero content that must align with the main grid. |
+| `ShellFullBleedBand` | Viewport-width background band; `breakout` (default) escapes a constrained parent for profile/object heroes; `breakout={false}` when already outside the page column (rare). Do not wrap in `overflow-hidden` ancestors — breakout is clipped. Inside an app column, do **not** nest `ShellInset` (content is already guttered). |
+
+### App header sticky slot
+
+`AppShell` renders an optional `header` **outside** `max-w-container-page`: `sticky top-0` wrapper (no top inset by default; pass `headerTopInset={true}` for scroll-away `pt-section-y-sm`). `AppHeader` is `w-full` at shell level with `ShellInset` for `TopNav`. Page content grid has no top margin — flush below the header.
 
 ## Content arrangements
 
@@ -116,7 +123,7 @@ Throws if used outside `LayoutProvider`.
 
 ## Tests
 
-Co-located `*.spec.ts` files cover `gridClassForSlots`, `HiddenBelow` classes, `buildCardGridClassName` (see `card-grid-classname.ts`), and `resolveShellMode`. `apps/web/jest.config.cts` extends the Nx preset with a `ts-jest` transform that includes `.tsx` so layout components can be imported in tests.
+Co-located `*.spec.ts` files cover `gridClassForSlots` (`app-shell`), `ShellInset`, `ShellFullBleedBand`, `HiddenBelow` classes, `buildCardGridClassName` (see `card-grid-classname.ts`), and `resolveShellMode`. `apps/web/jest.config.cts` extends the Nx preset with a `ts-jest` transform that includes `.tsx` so layout components can be imported in tests.
 
 ## Imports
 

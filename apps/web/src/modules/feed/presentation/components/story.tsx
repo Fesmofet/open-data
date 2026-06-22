@@ -220,17 +220,17 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                     href={objectPagePath(o.object_id)}
                     title={chipLabel}
                     ariaLabel={`View object: ${chipLabel}`}
-                    className="inline-flex rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    className="inline-flex rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
-                    <span className="flex size-9 items-center justify-center overflow-hidden rounded-pill border border-border bg-surface-control ring-1 ring-border/60">
+                    <span className="flex size-10 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface-control">
                       {chipImage ? (
                         <Image
                           src={chipImage}
                           alt=""
                           className="size-full object-cover"
-                          width={36}
-                          height={36}
-                          sizes="36px"
+                          width={40}
+                          height={40}
+                          sizes="40px"
                           unoptimized={shouldUnoptimizeRemoteImage(chipImage)}
                         />
                       ) : (
@@ -238,9 +238,9 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                           src={AVATAR_PLACEHOLDER_SRC}
                           alt=""
                           className="size-full object-cover"
-                          width={36}
-                          height={36}
-                          sizes="36px"
+                          width={40}
+                          height={40}
+                          sizes="40px"
                         />
                       )}
                     </span>
