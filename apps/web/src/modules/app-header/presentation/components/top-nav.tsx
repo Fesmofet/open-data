@@ -322,10 +322,10 @@ export function TopNav({ user: _user }: TopNavProps) {
   const hideActionsWhileMobileSearch = searchBarActive;
 
   return (
-    <div className="flex min-h-shell-header flex-wrap items-center gap-2 px-gutter py-2 sm:px-gutter-sm lg:flex-nowrap">
+    <div className="flex min-h-shell-header flex-wrap items-center gap-2 py-2 lg:flex-nowrap">
       <div
         className={[
-          'flex min-w-0 shrink-0 items-center -ms-1 me-4 sm:me-6 lg:-ms-2',
+          'flex min-w-0 shrink-0 items-center me-4 sm:me-6',
           hideActionsWhileMobileSearch ? 'hidden lg:flex' : 'flex',
         ].join(' ')}
       >
