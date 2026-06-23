@@ -1,9 +1,10 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import {
   buildProfilePostsHref,
@@ -47,7 +48,7 @@ export type ProfilePostFiltersProps = {
 
 export function ProfilePostFilters({ accountName, objectIds }: ProfilePostFiltersProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const [items, setItems] = useState<ProfilePostObjectFilterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -84,9 +85,10 @@ export function ProfilePostFilters({ accountName, objectIds }: ProfilePostFilter
 
   const pushObjectIds = useCallback(
     (nextObjectIds: string[]) => {
-      router.push(buildProfilePostsHref(accountName, nextObjectIds));
+      const href = buildProfilePostsHref(accountName, nextObjectIds);
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [router, accountName],
+    [accountName, navigateInstant],
   );
 
   const onToggle = useCallback(

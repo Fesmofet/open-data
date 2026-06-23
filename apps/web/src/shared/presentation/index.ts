@@ -55,4 +55,5 @@ export { PlaceholderSlot } from './components/placeholder-slot';
 export { ShellModeSwitcher } from './components/shell-mode-switcher';
 export { ThemeSwitcher } from './components/theme-switcher';
 
+export * from './navigation';
 export * from './layout';

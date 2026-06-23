@@ -1,9 +1,8 @@
 import { getSegmentsAfterAccount } from './profile-path';
 
-export type ProfileNavTarget = {
-  pathname: string;
-  search: string;
-};
+import type { NavTarget } from '@/shared/presentation';
+
+export type ProfileNavTarget = NavTarget;
 
 export const PENDING_NAV_TIMEOUT_MS = 10_000;
 

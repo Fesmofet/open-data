@@ -1,9 +1,10 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, type ChangeEvent } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 import {
   SortDropdown,
   type SortOption,
@@ -70,7 +71,7 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
     onAddUpdate,
   } = props;
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const mode = props.mode ?? 'url';
@@ -98,9 +99,10 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
       const u = new URLSearchParams(searchParams.toString());
       mutate(u);
       const next = u.toString();
-      router.replace(next.length > 0 ? `${pathname}?${next}` : pathname);
+      const href = next.length > 0 ? `${pathname}?${next}` : pathname;
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [mode, pathname, router, searchParams],
+    [mode, navigateInstant, pathname, searchParams],
   );
 
   const sortOptions: SortOption<ObjectUpdatesUrlFilters['sort']>[] = useMemo(

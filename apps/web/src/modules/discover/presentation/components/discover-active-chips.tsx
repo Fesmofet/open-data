@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildDiscoverHref, decodeTagFilter } from '../../domain/discover-url';
 import { ChipRemoveIcon } from './discover-chip-icons';
@@ -28,7 +28,7 @@ export function DiscoverActiveChips({
   sort,
 }: DiscoverActiveChipsProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const trimmedQ = q.trim();
 
   const activeCount = useMemo(
@@ -38,17 +38,16 @@ export function DiscoverActiveChips({
 
   const pushHref = useCallback(
     (nextTags: string[], nextQ = q) => {
-      router.push(
-        buildDiscoverHref({
-          users: usersMode,
-          type: objectType ?? undefined,
-          q: nextQ,
-          tags: nextTags,
-          sort,
-        }),
-      );
+      const href = buildDiscoverHref({
+        users: usersMode,
+        type: objectType ?? undefined,
+        q: nextQ,
+        tags: nextTags,
+        sort,
+      });
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [router, usersMode, objectType, q, sort],
+    [navigateInstant, usersMode, objectType, q, sort],
   );
 
   const removeQuery = useCallback(() => {

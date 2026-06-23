@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 import { SortDropdown } from '@/modules/user-social/presentation/components/sort-dropdown';
 
 import { buildDiscoverHref } from '../../domain/discover-url';
@@ -26,7 +26,7 @@ export function DiscoverSortSelect({
   sort,
 }: DiscoverSortSelectProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
 
   const options = useMemo(
     () => [
@@ -42,15 +42,14 @@ export function DiscoverSortSelect({
       value={sort}
       options={options}
       onChange={(next) => {
-        router.push(
-          buildDiscoverHref({
-            users: usersMode,
-            type: objectType ?? undefined,
-            q,
-            tags,
-            sort: next,
-          }),
-        );
+        const href = buildDiscoverHref({
+          users: usersMode,
+          type: objectType ?? undefined,
+          q,
+          tags,
+          sort: next,
+        });
+        navigateInstant({ href, method: 'replace', scroll: false });
       }}
     />
   );

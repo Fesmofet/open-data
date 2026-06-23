@@ -237,9 +237,31 @@ Object `seo.canonical_url` and object `json_ld` are **query-api owned** — web 
 
 - **`src/shared/`** uses the same layer idea as feature modules; import via **`@/shared`**.
 
+## Tab navigation (instant feel)
+
+On every tab click:
+
+1. URL updates immediately (`pushInstantUrl` / `replaceInstantUrl` from `@/shared/presentation`).
+2. Active tab updates immediately (optimistic state via `OptimisticNavProvider` + `useEffectiveNav`).
+3. Content shows skeleton, `loading.tsx`, or previous content with an in-flight indicator — shell chrome must not blank.
+4. Data/RSC load continues after UI feedback.
+5. Back/Forward must work (verify after changes).
+6. Direct URL open must select the correct tab (SSR + `useEffect` sync).
+
+| Tab type | Mechanism | Loading |
+|----------|-----------|---------|
+| Real routes (`/@name/threads`, `/object/id/reviews`) | `OptimisticNavLink` / `navigateInstant` + `router.push` | Route-segment `loading.tsx` on **content** slot |
+| Same-route query (`?type=`, `?tags=`, discover `?type=`) | `replaceInstantUrl` + `router.replace` in transition, or client fetch only (activity-filter style) | Inline skeleton in feed/list |
+| Pure UI sub-tabs (preview panels, modals) | `useState` only — no URL | Local pending state |
+
+**Never** `await fetch(...)` before URL or active-tab update in click handlers.
+
+**References:** `OptimisticNavLink`, `useInstantNavigation`, [`activity-filters-url.ts`](src/modules/user-activity/domain/activity-filters-url.ts), profile `loading.tsx`, object content skeleton.
+
 ## Loading UI
 
-- **`loading.tsx`**: not used broadly today — add only when a route segment genuinely needs a Suspense boundary, not by default.
+- Add `loading.tsx` at route segments that back tab navigation (profile center column, object tab content, discover feed).
+- Object/profile shells (hero, primary nav) must persist; only the content slot may skeleton.
 
 ## Server actions
 

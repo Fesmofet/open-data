@@ -2,8 +2,14 @@
 
 import type { ReactNode } from 'react';
 
-import { UserProfilePendingNavProvider } from './user-profile-pending-nav-context';
+import { OptimisticNavProvider } from '@/shared/presentation';
+
+import { isPendingNavReached } from './user-profile-pending-nav';
 
 export function UserProfilePendingNavRoot({ children }: { children: ReactNode }) {
-  return <UserProfilePendingNavProvider>{children}</UserProfilePendingNavProvider>;
+  return (
+    <OptimisticNavProvider isTargetReached={isPendingNavReached}>
+      {children}
+    </OptimisticNavProvider>
+  );
 }

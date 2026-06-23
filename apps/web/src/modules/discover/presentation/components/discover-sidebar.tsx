@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
+import { OptimisticNavLink, useEffectiveNav } from '@/shared/presentation';
 
-import { buildDiscoverHref } from '../../domain/discover-url';
+import { buildDiscoverHref, parseDiscoverPageState } from '../../domain/discover-url';
 import { listDiscoverObjectTypes } from '../../domain/discover-registry';
 
 const TYPES_INITIAL = 10;
@@ -18,13 +18,14 @@ export type DiscoverSidebarProps = {
   sort: 'newest' | 'oldest' | 'rank';
 };
 
-export function DiscoverSidebar({
-  usersMode,
-  objectType,
-  q,
-  sort,
-}: DiscoverSidebarProps) {
+export function DiscoverSidebar(_props: DiscoverSidebarProps) {
   const { t } = useI18n();
+  const effectiveNav = useEffectiveNav();
+  const { usersMode, objectType, q, sort } = useMemo(
+    () => parseDiscoverPageState(new URLSearchParams(effectiveNav.search)),
+    [effectiveNav.search],
+  );
+
   const types = useMemo(() => listDiscoverObjectTypes(), []);
   const [showAllTypes, setShowAllTypes] = useState(false);
 
@@ -54,7 +55,7 @@ export function DiscoverSidebar({
             const active = !usersMode && objectType === type;
             return (
               <li key={type}>
-                <Link
+                <OptimisticNavLink
                   href={buildDiscoverHref({ type, q, sort })}
                   suppressHydrationWarning
                   className={[
@@ -66,7 +67,7 @@ export function DiscoverSidebar({
                   aria-current={active ? 'page' : undefined}
                 >
                   {formatObjectTypeLabel(type)}
-                </Link>
+                </OptimisticNavLink>
               </li>
             );
           })}
@@ -87,7 +88,7 @@ export function DiscoverSidebar({
         </h2>
         <ul>
           <li>
-            <Link
+            <OptimisticNavLink
               href={buildDiscoverHref({ users: true, q, sort })}
               suppressHydrationWarning
               className={[
@@ -99,7 +100,7 @@ export function DiscoverSidebar({
               aria-current={usersMode ? 'page' : undefined}
             >
               {t('discover_all_users')}
-            </Link>
+            </OptimisticNavLink>
           </li>
         </ul>
       </section>

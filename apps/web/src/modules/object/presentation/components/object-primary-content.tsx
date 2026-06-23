@@ -1,10 +1,11 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { FeedColumn } from '@/shared/presentation/layout';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import type { ProjectedListItem, ProjectedSortCustom } from '../../domain/projected-list-item.types';
 import type { CatalogListSortOption } from './object-list-content';
@@ -204,7 +205,7 @@ export function ObjectPrimaryContent({
   relatedAlbumPreview = null,
   relatedAlbumInitialPage = null,
 }: ObjectPrimaryContentProps) {
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const searchParams = useSearchParams();
   const skipUrlSyncRef = useRef(false);
   const pendingStackUrlSyncRef = useRef<{
@@ -235,13 +236,9 @@ export function ObjectPrimaryContent({
       const qs = u.toString();
       const base = `/object/${encodeURIComponent(objectId)}`;
       const href = qs ? `${base}?${qs}` : base;
-      if (mode === 'replace') {
-        router.replace(href, { scroll: false });
-      } else {
-        router.push(href, { scroll: false });
-      }
+      navigateInstant({ href, method: mode, scroll: false });
     },
-    [objectId, router, searchParams],
+    [navigateInstant, objectId, searchParams],
   );
 
   type NestedStackUrlMode = 'push' | 'replace';

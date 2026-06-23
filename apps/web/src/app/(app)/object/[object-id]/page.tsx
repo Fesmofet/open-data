@@ -12,7 +12,6 @@ import {
 import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
 import { ObjectDescriptionBody } from '@/modules/object/presentation/components/object-description-body';
 import {
-  ObjectPageRightRailSkeleton,
   ObjectPageUpdatesFeedSkeleton,
 } from '@/modules/object/presentation/components/object-page-loading-skeleton';
 import {
@@ -22,7 +21,7 @@ import {
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
-import { buildObjectMetadata, JsonLdScript } from '@/seo';
+import { buildObjectMetadata } from '@/seo';
 
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
@@ -41,7 +40,6 @@ import {
 } from '@/modules/user-social';
 
 import { loadObjectPageModel } from './object-page-model.server';
-import { ObjectPageRightRailSection } from './object-page-right-rail-section.server';
 import { ObjectPageUpdatesFeedSection } from './object-page-updates-feed-section.server';
 import {
   firstSearchParam,
@@ -52,7 +50,8 @@ import {
   parseViewPathParam,
   sanitizeNestedStack,
 } from './object-page-search';
-import { ObjectPageClient } from './object-page-client';
+import { ObjectPageTabPane } from './object-page-tab-pane';
+import { ObjectPageInvalidPathFix } from './object-page-invalid-path-fix';
 
 const REF_LIST_PRIMARY_SEGMENTS = ['related', 'similar', 'add-on'] as const;
 
@@ -63,10 +62,6 @@ function objectTypeSupportsRefList(
   const registryEntry =
     OBJECT_TYPE_REGISTRY[objectTypeKey as keyof typeof OBJECT_TYPE_REGISTRY];
   return registryEntry?.supported_updates.includes(updateType) ?? false;
-}
-
-function objectFollowersCount(model: ObjectPageViewModel): number {
-  return model.primaryTabs.find((tab) => tab.segment === 'followers')?.count ?? 0;
 }
 
 function resolveInitialPrimarySegment(
@@ -334,7 +329,7 @@ export default async function ObjectDetailPage({
       : Promise.resolve(null),
   ]);
 
-  const followersTabCount = objectFollowersCount(model);
+  const invalidPathRequested = pathIds.length > 0 && initialNestedStack.length === 0;
 
   const updatesFeedSlot =
     initialPrimarySegment === 'updates' ? (
@@ -349,22 +344,12 @@ export default async function ObjectDetailPage({
       </Suspense>
     ) : null;
 
-  const rightRailSlot = (
-    <Suspense fallback={<ObjectPageRightRailSkeleton />}>
-      <ObjectPageRightRailSection
-        objectId={objectId}
-        objectTypeKey={model.objectTypeKey}
-        locale={locale}
-        viewerUsername={viewerUsername}
-        followersTabCount={followersTabCount}
-      />
-    </Suspense>
-  );
-
   return (
     <>
-      <JsonLdScript data={model.seo?.json_ld} />
-      <ObjectPageClient
+      {invalidPathRequested ? (
+        <ObjectPageInvalidPathFix objectId={objectId} />
+      ) : null}
+      <ObjectPageTabPane
         model={model}
         embeddedFollowersPage={embeddedFollowersPage}
         followersSort={followersSort}
@@ -375,8 +360,6 @@ export default async function ObjectDetailPage({
         embeddedSimilarPage={embeddedSimilarPage}
         embeddedAddOnPage={embeddedAddOnPage}
         viewerUsername={viewerUsername}
-        initialPrimarySegment={initialPrimarySegment}
-        initialGalleryAlbum={initialGalleryAlbum}
         relatedAlbumPreview={relatedAlbumPreview}
         relatedAlbumInitialPage={relatedAlbumInitialPage}
         initialNestedStack={initialNestedStack}
@@ -384,8 +367,6 @@ export default async function ObjectDetailPage({
         objectPageBody={objectPageBody}
         objectDescriptionBody={objectDescriptionBody}
         updatesFeedSlot={updatesFeedSlot}
-        rightRailSlot={rightRailSlot}
-        invalidPathRequested={pathIds.length > 0 && initialNestedStack.length === 0}
       />
     </>
   );

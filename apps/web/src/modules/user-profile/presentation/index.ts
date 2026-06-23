@@ -32,7 +32,6 @@ export { UserProfilePendingNavRoot } from './components/user-profile-pending-nav
 export { UserProfilePendingNavSync } from './components/user-profile-pending-nav-sync';
 export {
   useEffectiveProfileNav,
-  UserProfilePendingNavProvider,
 } from './components/user-profile-pending-nav-context';
 export { UserProfileNavLink } from './components/user-profile-nav-link';
 export {

@@ -1,12 +1,13 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
 import { decodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { DISCOVER_ACTIVE_CHIP_CLASS } from '@/modules/discover/presentation/components/discover-active-chips';
 import { ChipRemoveIcon } from '@/modules/discover/presentation/components/discover-chip-icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import {
   buildProfileShopHref,
@@ -21,7 +22,7 @@ export type ProfileShopFilterChipsProps = {
 
 export function ProfileShopFilterChips({ filters }: ProfileShopFilterChipsProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const pathname = usePathname();
 
   const activeCount = useMemo(
@@ -31,9 +32,10 @@ export function ProfileShopFilterChips({ filters }: ProfileShopFilterChipsProps)
 
   const pushFilters = useCallback(
     (next: ProfileShopFiltersState) => {
-      router.push(buildProfileShopHref(pathname, next));
+      const href = buildProfileShopHref(pathname, next);
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [router, pathname],
+    [navigateInstant, pathname],
   );
 
   const removeTag = useCallback(

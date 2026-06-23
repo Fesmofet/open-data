@@ -1,11 +1,12 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { encodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 import type { ProfileShopFiltersResponse } from '../../domain/profile-shop-filters-response.schema';
@@ -135,7 +136,7 @@ export function ProfileShopFilters({
   pathname,
 }: ProfileShopFiltersProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const [data, setData] = useState<ProfileShopFiltersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -218,9 +219,10 @@ export function ProfileShopFilters({
 
   const pushFilters = useCallback(
     (next: ProfileShopFiltersState) => {
-      router.push(buildProfileShopHref(pathname, next));
+      const href = buildProfileShopHref(pathname, next);
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [router, pathname],
+    [navigateInstant, pathname],
   );
 
   const onToggleTag = useCallback(

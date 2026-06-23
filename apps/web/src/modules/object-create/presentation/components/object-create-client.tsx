@@ -1,12 +1,13 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo } from 'react';
 import { flushSync } from 'react-dom';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import { useObjectCreateForm } from '../../application/use-object-create-form';
 import {
@@ -41,7 +42,7 @@ export function ObjectCreateClient({
   editorReturnPath = null,
 }: ObjectCreateClientProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const form = useObjectCreateForm({
@@ -68,14 +69,13 @@ export function ObjectCreateClient({
       );
       const qs = params.toString();
       const href = qs ? `${pathname}?${qs}` : pathname;
-      const nav = { scroll: false };
-      if (options?.replace) {
-        router.replace(href, nav);
-      } else {
-        router.push(href, nav);
-      }
+      navigateInstant({
+        href,
+        method: options?.replace ? 'replace' : 'push',
+        scroll: false,
+      });
     },
-    [pathname, router, searchParams],
+    [navigateInstant, pathname, searchParams],
   );
 
   const activeObjectType =

@@ -1,9 +1,10 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import {
   USER_SUBSCRIPTION_SORTS,
@@ -14,7 +15,7 @@ import { SortDropdown } from './sort-dropdown';
 
 export function UserSocialSubscriptionSort() {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -39,9 +40,10 @@ export function UserSocialSubscriptionSort() {
     (next: UserSubscriptionSort) => {
       const u = new URLSearchParams(searchParams.toString());
       u.set('sort', next);
-      router.replace(`${pathname}?${u.toString()}`);
+      const href = `${pathname}?${u.toString()}`;
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [pathname, router, searchParams],
+    [navigateInstant, pathname, searchParams],
   );
 
   return <SortDropdown value={sort} options={options} onChange={onChange} />;

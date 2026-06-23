@@ -1,11 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { DISCOVER_ACTIVE_CHIP_CLASS } from '@/modules/discover/presentation/components/discover-active-chips';
 import { ChipRemoveIcon } from '@/modules/discover/presentation/components/discover-chip-icons';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildProfilePostsHref } from '../../domain/profile-post-filters-url';
 import { fetchProfilePostObjectFilters } from '../../infrastructure/profile-post-filters.client';
@@ -17,7 +17,7 @@ export type ProfilePostFilterChipsProps = {
 
 export function ProfilePostFilterChips({ accountName, objectIds }: ProfilePostFilterChipsProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const [nameById, setNameById] = useState<Map<string, string>>(() => new Map());
 
   useEffect(() => {
@@ -40,9 +40,10 @@ export function ProfilePostFilterChips({ accountName, objectIds }: ProfilePostFi
 
   const pushObjectIds = useCallback(
     (nextObjectIds: string[]) => {
-      router.push(buildProfilePostsHref(accountName, nextObjectIds));
+      const href = buildProfilePostsHref(accountName, nextObjectIds);
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [router, accountName],
+    [accountName, navigateInstant],
   );
 
   const removeObject = useCallback(

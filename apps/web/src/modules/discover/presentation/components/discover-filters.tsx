@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildDiscoverHref, encodeTagFilter } from '../../domain/discover-url';
 import { getTagCategoryNamesForObjectType } from '../../domain/discover-registry';
@@ -86,7 +86,7 @@ export type DiscoverFiltersProps = {
 
 export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersProps) {
   const { t } = useI18n();
-  const router = useRouter();
+  const { navigateInstant } = useInstantNavigation();
   const [data, setData] = useState<DiscoverTagCategoriesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => new Set());
@@ -150,9 +150,10 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
 
   const pushTags = useCallback(
     (nextTags: string[]) => {
-      router.push(buildDiscoverHref({ type: objectType, q, tags: nextTags, sort }));
+      const href = buildDiscoverHref({ type: objectType, q, tags: nextTags, sort });
+      navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [router, objectType, q, sort],
+    [navigateInstant, objectType, q, sort],
   );
 
   const onToggleTag = useCallback(
