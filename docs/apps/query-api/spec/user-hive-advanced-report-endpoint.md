@@ -26,7 +26,7 @@ Multi-account Hive wallet table for `/@:name/transfers/table`.
 | `filterAccounts` | `string[]` | Min 1; used for mutual-transaction exclusion |
 | `startDate` | unix UTC | Inclusive lower bound |
 | `endDate` | unix UTC | Inclusive upper bound; must be `< now` |
-| `limit` | int 1–50 | Default 10 |
+| `limit` | int 1–50 | Default 50 |
 | `currency` | fiat code | One of `SUPPORTED_CURRENCIES` |
 | `viewer` | string? | Loads exemption `checked` flags for this viewer |
 

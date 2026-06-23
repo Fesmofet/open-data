@@ -1,7 +1,7 @@
 import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core/constants';
 import { z } from 'zod';
 
-export const ADVANCED_REPORT_PAGE_SIZE = 10;
+export const ADVANCED_REPORT_PAGE_SIZE = 50;
 
 export const advancedReportAccountSchema = z.object({
   name: z.string(),
