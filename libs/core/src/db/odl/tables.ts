@@ -72,6 +72,7 @@ export interface OdlDatabase {
   currency_rates: CurrencyRatesTable;
   currency_statistics: CurrencyStatisticsTable;
   hive_engine_rates: HiveEngineRatesTable;
+  wallet_exemptions: WalletExemptionsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -956,3 +957,17 @@ export interface HiveEngineRatesTable {
 export type HiveEngineRatesRow = Selectable<HiveEngineRatesTable>;
 export type NewHiveEngineRatesRow = Insertable<HiveEngineRatesTable>;
 export type HiveEngineRatesRowUpdate = Updateable<HiveEngineRatesTable>;
+
+// ---------------------------------------------------------------------------
+// wallet_exemptions (advanced report row exclusions per viewer)
+// ---------------------------------------------------------------------------
+
+export interface WalletExemptionsTable {
+  viewer: string;
+  account: string;
+  operation_index: number;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type WalletExemptionRow = Selectable<WalletExemptionsTable>;
+export type NewWalletExemptionRow = Insertable<WalletExemptionsTable>;

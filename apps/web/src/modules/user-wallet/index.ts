@@ -21,3 +21,6 @@ export { HiveWalletSummarySkeleton } from './presentation/components/hive/hive-w
 export { getWaivWalletSummaryQuery } from './application/queries/get-waiv-wallet-summary.query';
 export { getHiveWalletHistoryPageQuery } from './application/queries/get-hive-wallet-history-page.query';
 export { getHiveWalletSummaryQuery } from './application/queries/get-hive-wallet-summary.query';
+export { getHiveAdvancedReportQuery } from './application/queries/get-hive-advanced-report.query';
+export { buildInitialAdvancedReportRequest } from './domain/advanced-report-defaults';
+export { HiveAdvancedReportTable } from './presentation/components/hive/advanced-report/hive-advanced-report-table';

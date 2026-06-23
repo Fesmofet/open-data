@@ -22,6 +22,7 @@ import { DiscoverController } from './discover.controller';
 import { DiscoverModule } from '../domain/discover';
 import { WalletModule } from '../domain/wallet';
 import { UserWalletController } from './user-wallet.controller';
+import { HiveWalletAdvancedReportController } from './hive-wallet-advanced-report.controller';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { UserWalletController } from './user-wallet.controller';
     UserThreadsController,
     UserActivityController,
     UserWalletController,
+    HiveWalletAdvancedReportController,
     PostsController,
     UserPostDraftsController,
     CurrencyController,

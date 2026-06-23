@@ -120,5 +120,7 @@ export type {
   NewCurrencyStatisticsRow,
   HiveEngineRatesRow,
   NewHiveEngineRatesRow,
+  WalletExemptionRow,
+  NewWalletExemptionRow,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

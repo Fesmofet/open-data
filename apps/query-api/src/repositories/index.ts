@@ -31,6 +31,7 @@ export { UserFavoritesRepository } from './user-favorites.repository';
 export type { FavoritesScopeParams } from './user-favorites.repository';
 export { UserDelegationsRepository } from './user-delegations.repository';
 export { UserRcDelegationsRepository } from './user-rc-delegations.repository';
+export { WalletExemptionsRepository } from './wallet-exemptions.repository';
 export type {
   DiscoverObjectCandidateRow,
   DiscoverTagCategoryRow,

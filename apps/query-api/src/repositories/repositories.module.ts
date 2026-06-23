@@ -24,6 +24,7 @@ import { PostObjectRelatedImagesRepository } from './post-object-related-images.
 import { UserFavoritesRepository } from './user-favorites.repository';
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
+import { WalletExemptionsRepository } from './wallet-exemptions.repository';
 
 @Module({
   providers: [
@@ -52,6 +53,7 @@ import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
     UserFavoritesRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    WalletExemptionsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -79,6 +81,7 @@ import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
     UserFavoritesRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    WalletExemptionsRepository,
   ],
 })
 export class RepositoriesModule {}

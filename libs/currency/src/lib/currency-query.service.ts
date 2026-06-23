@@ -10,6 +10,10 @@ import {
   HBD_HIVE_SWAP_POOL,
   WAIV_HIVE_DIESEL_POOL_ID,
 } from './currency.constants';
+import {
+  buildDailyHiveTimeline,
+  resolveHiveHistoricalUsdByDates,
+} from './currency-historical-rates';
 import { CurrencyRepository } from './currency.repository';
 
 /** Chart window: days back + whether to read daily aggregates vs ordinary snapshots. */
@@ -460,17 +464,134 @@ export class CurrencyQueryService {
 
 
     return results;
-
-
   }
 
+  /** Daily HIVE/HBD USD prices keyed by UTC YYYY-MM-DD (today uses spot). */
+  async getHiveHistoricalUsdByDates(
+    datesYmd: readonly string[],
+  ): Promise<Map<string, { hiveUsd: number; hbdUsd: number }>> {
+    const unique = [...new Set(datesYmd.map((d) => d.trim()).filter(Boolean))].sort();
+    if (unique.length === 0) {
+      return new Map();
+    }
 
+    const today = utcYmd(new Date());
+    const min = unique[0]!;
+    const max = unique[unique.length - 1]!;
+    const startUtc = new Date(`${min}T00:00:00.000Z`);
+    const endUtc = new Date(`${utcYmdAddUtcDays(max, 1)}T00:00:00.000Z`);
 
+    const [rows, anchorBeforeMin] = await Promise.all([
+      this.repo.listDailyStatisticsBetween(startUtc, endUtc),
+      this.repo.getLatestDailyStatisticOnOrBefore(startUtc),
+    ]);
+
+    const timeline = buildDailyHiveTimeline(rows, anchorBeforeMin, today);
+    const dailyByYmd = new Map(
+      timeline.map((entry) => [entry.ymd, { hiveUsd: entry.hiveUsd, hbdUsd: entry.hbdUsd }]),
+    );
+
+    let todayRates: { hiveUsd: number; hbdUsd: number } | null = null;
+    if (unique.includes(today)) {
+      todayRates = await this.loadHiveSpotRates();
+    }
+
+    const out = resolveHiveHistoricalUsdByDates({
+      datesYmd: unique,
+      timeline,
+      todayYmd: today,
+      todayRates,
+      dailyByYmd,
+    });
+
+    for (const d of unique) {
+      if (d !== today && (out.get(d)?.hiveUsd ?? 0) <= 0) {
+        this.logger.warn(`getHiveHistoricalUsdByDates: no historical rate for ${d}`);
+      }
+    }
+
+    return out;
+  }
+
+  private async loadHiveSpotRates(): Promise<{ hiveUsd: number; hbdUsd: number }> {
+    const spot = await this.marketInfo({});
+    const hiveSpot = spot.current.hive as { usd?: number } | undefined;
+    const hbdSpot = spot.current.hive_dollar as { usd?: number } | undefined;
+    return {
+      hiveUsd: Number(hiveSpot?.usd ?? 0),
+      hbdUsd: Number(hbdSpot?.usd ?? 0),
+    };
+  }
+
+  /** USD → target fiat cross rate by UTC date (USD returns 1). */
+  async getFiatCrossRatesByDates(
+    datesYmd: readonly string[],
+    currency: string,
+  ): Promise<Map<string, number>> {
+    const target = currency.trim().toUpperCase();
+    const out = new Map<string, number>();
+    const unique = [...new Set(datesYmd.map((d) => d.trim()).filter(Boolean))].sort();
+    if (unique.length === 0) {
+      return out;
+    }
+    if (target === 'USD') {
+      for (const d of unique) {
+        out.set(d, 1);
+      }
+      return out;
+    }
+
+    const col = fiatIsoToRatesColumn(target);
+    const min = unique[0]!;
+    const max = unique[unique.length - 1]!;
+    const rows = await this.repo.listCurrencyRatesBetween('USD', min, max);
+    let latest = 0;
+
+    for (const row of rows) {
+      const ymd = String(row.date).slice(0, 10);
+      const rate = col
+        ? Number((row as unknown as Record<string, unknown>)[col] ?? 0)
+        : 0;
+      if (rate > 0) {
+        latest = rate;
+      }
+      out.set(ymd, rate > 0 ? rate : latest);
+    }
+
+    if (latest <= 0) {
+      const fallback = await this.legacyRateLatest('USD', target);
+      latest = Number(fallback[target] ?? 0);
+    }
+
+    for (const d of unique) {
+      if (!out.has(d) || !(out.get(d)! > 0)) {
+        out.set(d, latest);
+      }
+    }
+
+    return out;
+  }
 }
 
 
 function utcYmd(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+}
+
+function fiatIsoToRatesColumn(iso: string): string | null {
+  const map: Record<string, string> = {
+    CAD: 'cad',
+    EUR: 'eur',
+    AUD: 'aud',
+    MXN: 'mxn',
+    GBP: 'gbp',
+    JPY: 'jpy',
+    CNY: 'cny',
+    RUB: 'rub',
+    UAH: 'uah',
+    CHF: 'chf',
+  };
+  return map[iso] ?? null;
 }
 
 function utcYmdAddUtcDays(ymd: string, deltaDays: number): string {

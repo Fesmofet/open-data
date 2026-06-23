@@ -10,6 +10,10 @@ import {
 import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
 import { userActivityBodyFieldsSchema } from '../../domain/feed/schemas/user-activity.schema';
+import {
+  hiveAdvancedReportBodySchema,
+  hiveWalletExemptionBodySchema,
+} from '../../domain/wallet/schemas/hive-advanced-report.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
@@ -281,6 +285,34 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
       if (!result) {
         return toolError(`User not found: ${args.account}`);
       }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'post_hive_advanced_report',
+    {
+      description: catalogDescription('post_hive_advanced_report'),
+      inputSchema: hiveAdvancedReportBodySchema,
+    },
+    async (args) => {
+      try {
+        const result = await deps.getHiveAdvancedReport.execute(args);
+        return jsonToolResult(result);
+      } catch (e) {
+        return toolError((e as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'post_hive_wallet_exemption',
+    {
+      description: catalogDescription('post_hive_wallet_exemption'),
+      inputSchema: hiveWalletExemptionBodySchema,
+    },
+    async (args) => {
+      const result = await deps.upsertHiveWalletExemption.execute(args);
       return jsonToolResult(result);
     },
   );

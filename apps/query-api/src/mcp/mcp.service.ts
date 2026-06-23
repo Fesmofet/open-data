@@ -55,6 +55,8 @@ import {
   GetUserHiveHpDelegationsEndpoint,
   GetUserHiveRcDelegationsEndpoint,
   GetUserWaivWalletEndpoint,
+  GetHiveAdvancedReportEndpoint,
+  UpsertHiveWalletExemptionEndpoint,
 } from '../domain/wallet';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import type { McpToolDeps } from './mcp-tool.deps';
@@ -92,6 +94,8 @@ export class McpService {
     private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
     private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
     private readonly getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint,
+    private readonly getHiveAdvancedReport: GetHiveAdvancedReportEndpoint,
+    private readonly upsertHiveWalletExemption: UpsertHiveWalletExemptionEndpoint,
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
@@ -136,6 +140,8 @@ export class McpService {
       getUserEngineTokenDelegations: this.getUserEngineTokenDelegations,
       getUserHiveHpDelegations: this.getUserHiveHpDelegations,
       getUserHiveRcDelegations: this.getUserHiveRcDelegations,
+      getHiveAdvancedReport: this.getHiveAdvancedReport,
+      upsertHiveWalletExemption: this.upsertHiveWalletExemption,
       getUserFollowers: this.getUserFollowers,
       getUserFollowing: this.getUserFollowing,
       getUserFollowingObjects: this.getUserFollowingObjects,

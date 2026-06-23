@@ -181,6 +181,19 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-hive-wallet-endpoint.md',
   },
   {
+    name: 'post_hive_advanced_report',
+    description:
+      'Multi-account Hive L1 advanced wallet report with date range, mutual-transaction filter, and historical fiat.',
+    httpEquivalent: 'POST /query/v1/wallet/hive/advanced-report',
+    specPath: 'docs/apps/query-api/spec/user-hive-advanced-report-endpoint.md',
+  },
+  {
+    name: 'post_hive_wallet_exemption',
+    description: 'Toggle a viewer exemption for an advanced report row (excluded from totals).',
+    httpEquivalent: 'POST /query/v1/wallet/hive/exemptions',
+    specPath: 'docs/apps/query-api/spec/user-hive-advanced-report-endpoint.md',
+  },
+  {
     name: 'get_user_followers',
     description: 'Accounts following the user.',
     httpEquivalent: 'GET /query/v1/users/:name/followers',

@@ -20,3 +20,14 @@ export {
   type HiveHpDelegationsResponse,
   type HiveRcDelegationsResponse,
 } from './schemas/hive-wallet.schema';
+export {
+  hiveAdvancedReportBodySchema,
+  hiveWalletExemptionBodySchema,
+  type HiveAdvancedReportBody,
+  type HiveAdvancedReportResponse,
+  type HiveWalletExemptionBody,
+  type HiveWalletExemptionResponse,
+  type AdvancedReportRowDto,
+} from './schemas/hive-advanced-report.schema';
+export { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
+export { UpsertHiveWalletExemptionEndpoint } from './upsert-hive-wallet-exemption.endpoint';

@@ -413,4 +413,61 @@ export class CurrencyRepository {
     }
     return out;
   }
+
+  async getLatestDailyStatisticOnOrBefore(
+    beforeUtc: Date,
+  ): Promise<CurrencyStatisticsRow | null> {
+    try {
+      const row = await this.db
+        .selectFrom('currency_statistics')
+        .selectAll()
+        .where('is_daily', '=', true)
+        .where('created_at', '<', beforeUtc)
+        .orderBy('created_at', 'desc')
+        .executeTakeFirst();
+      return row ?? null;
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
+
+  async listDailyStatisticsBetween(
+    startUtc: Date,
+    endUtc: Date,
+  ): Promise<CurrencyStatisticsRow[]> {
+    try {
+      return await this.db
+        .selectFrom('currency_statistics')
+        .selectAll()
+        .where('is_daily', '=', true)
+        .where('created_at', '>=', startUtc)
+        .where('created_at', '<', endUtc)
+        .orderBy('created_at', 'asc')
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
+
+  async listCurrencyRatesBetween(
+    base: string,
+    startDateIso: string,
+    endDateIso: string,
+  ): Promise<CurrencyRatesRow[]> {
+    try {
+      return await this.db
+        .selectFrom('currency_rates')
+        .selectAll()
+        .where('base', '=', base)
+        .where('date', '>=', startDateIso as never)
+        .where('date', '<=', endDateIso as never)
+        .orderBy('date', 'asc')
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
 }

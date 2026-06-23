@@ -30,12 +30,7 @@ import * as path from 'path';
 import { pipeline as streamPipeline } from 'node:stream/promises';
 import { Writable } from 'node:stream';
 
-import type {
-  NewCurrencyRatesRow,
-  NewCurrencyStatisticsRow,
-  NewHiveEngineRatesRow,
-  OdlDatabase,
-} from '../../../libs/core/src/db';
+import { parseMongoCreatedAt } from '../objects/utils';
 import {
   FIAT_RATE_BASE_USD,
   USD_PAIR_TO_COLUMN,
@@ -59,12 +54,12 @@ function num(x: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function toDate(v: unknown): Date {
-  if (v instanceof Date && !Number.isNaN(v.valueOf())) {
-    return v;
-  }
-  const d = new Date(String(v));
-  return Number.isNaN(d.valueOf()) ? new Date() : d;
+function mongoDate(value: unknown, fallback?: Date): Date | undefined {
+  return parseMongoCreatedAt(value) ?? fallback;
+}
+
+function mongoDateOrNow(value: unknown): Date {
+  return parseMongoCreatedAt(value) ?? new Date();
 }
 
 function ymd(d: Date): string {
@@ -102,7 +97,10 @@ function mongoStatToRow(
     Boolean(d.is_daily) ||
     Boolean(d.isDaily) ||
     t.toLowerCase().includes('daily');
-  const ts = toDate(d.createdAt ?? d.updatedAt ?? d.created_at);
+  const ts = mongoDate(d.createdAt ?? d.updatedAt ?? d.created_at);
+  if (!ts) {
+    return null;
+  }
   return {
     is_daily: isDaily,
     hive_usd: hive.usd,
@@ -124,11 +122,11 @@ function mongoEngineToRow(
   const isDaily =
     Boolean(d.is_daily) || Boolean(d.isDaily) || String(d.period ?? '') === 'daily';
 
-  const dt = d.date ?? d.day ?? d.ymd;
+  const dt = d.date ?? d.day ?? d.ymd ?? d.dateString;
   const dateStr =
     typeof dt === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dt) ?
       dt.slice(0, 10)
-    : ymd(toDate(dt));
+    : ymd(mongoDateOrNow(dt));
 
   const rateHive = num(d.rate_hive ?? d.rateHive ?? d.hive);
   const rateUsd = num(d.rate_usd ?? d.rateUsd ?? d.usd);
@@ -149,7 +147,7 @@ function mongoEngineToRow(
       ch === undefined || ch === null ? null : (Number.isFinite(Number(ch)) ? Number(ch) : null),
     change_24h_usd:
       cu === undefined || cu === null ? null : (Number.isFinite(Number(cu)) ? Number(cu) : null),
-    created_at: toDate(d.createdAt ?? d.updatedAt ?? d.created_at),
+    created_at: mongoDateOrNow(d.createdAt ?? d.updatedAt ?? d.created_at),
   };
 }
 
@@ -158,20 +156,24 @@ function mongoFiatToRow(
 ): Omit<NewCurrencyRatesRow, 'id'> | null {
   const base =
     String(d.base ?? FIAT_RATE_BASE_USD).toUpperCase() || FIAT_RATE_BASE_USD;
-  const dt = d.date ?? d.day;
+  const dt = d.date ?? d.day ?? d.dateString;
   const dateStr =
     typeof dt === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dt) ?
       dt.slice(0, 10)
-    : ymd(toDate(dt ?? new Date()));
+    : ymd(mongoDateOrNow(dt));
 
   const out: Omit<NewCurrencyRatesRow, 'id'> = {
     base,
     date: dateStr,
     ...ZERO_FIAT_ROW,
-    created_at: toDate(d.createdAt ?? d.updatedAt ?? new Date()),
+    created_at: mongoDateOrNow(d.createdAt ?? d.updatedAt ?? new Date()),
   };
 
   const quotes = d.quotes && typeof d.quotes === 'object' ? d.quotes : null;
+  const rates =
+    d.rates && typeof d.rates === 'object' ?
+      (d.rates as Record<string, unknown>)
+    : null;
   const src: Record<string, unknown> =
     quotes ?? (typeof d === 'object' ? d : {});
 
@@ -187,6 +189,8 @@ function mongoFiatToRow(
       quotes && typeof quotes === 'object' ?
         (quotes as Record<string, unknown>)[k]
       : undefined;
+
+    raw ??= rates?.[alt] ?? rates?.[alt.toLowerCase()];
 
     if (typeof raw !== 'undefined' && raw !== null) {
       out[colName] = num(raw);
@@ -290,6 +294,7 @@ async function streamArrayIntoSink(
 type ParsedCli = {
   dryRun: boolean;
   only: Set<string>;
+  statsDailyOnly: boolean;
   statsPath?: string;
   enginePath?: string;
   fiatPath?: string;
@@ -297,6 +302,7 @@ type ParsedCli = {
 
 function parseArgs(argv: string[]): ParsedCli {
   const dryRun = argv.includes('--dry-run');
+  const statsDailyOnly = argv.includes('--stats-daily-only');
   const only = new Set<string>();
   let statsPath: string | undefined;
   let enginePath: string | undefined;
@@ -334,7 +340,7 @@ function parseArgs(argv: string[]): ParsedCli {
     pi++;
   }
 
-  return { dryRun, only, statsPath, enginePath, fiatPath };
+  return { dryRun, only, statsDailyOnly, statsPath, enginePath, fiatPath };
 }
 
 function wantBucket(only: Set<string>, name: string): boolean {
@@ -359,7 +365,7 @@ async function main(): Promise<void> {
     !(parsed.fiatPath?.trim())
   ) {
     fail(
-      'Usage: pnpm migrate:mongo-currency [--dry-run] [--only=stats,engine,fiat] [--stats=file.json] [--engine=file.json] [--fiat=file.json]\n' +
+      'Usage: pnpm migrate:mongo-currency [--dry-run] [--stats-daily-only] [--only=stats,engine,fiat] [--stats=file.json] [--engine=file.json] [--fiat=file.json]\n' +
         'Or pass up to three positional paths: stats-export.json [engine-export.json] [fiat-export.json]',
     );
   }
@@ -394,7 +400,7 @@ async function main(): Promise<void> {
                   const row = mongoStatToRow(
                     item.value as Record<string, unknown>,
                   );
-                  if (row) {
+                  if (row && (!parsed.statsDailyOnly || row.is_daily)) {
                     buf.push(row);
                   }
                 }

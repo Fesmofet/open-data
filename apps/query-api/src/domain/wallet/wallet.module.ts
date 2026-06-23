@@ -7,6 +7,10 @@ import { GetUserHiveHpDelegationsEndpoint } from './get-user-hive-hp-delegations
 import { GetUserHiveRcDelegationsEndpoint } from './get-user-hive-rc-delegations.endpoint';
 import { GetUserHiveWalletEndpoint } from './get-user-hive-wallet.endpoint';
 import { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
+import { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
+import { HiveAdvancedReportPagerService } from './hive-advanced-report-pager.service';
+import { UpsertHiveWalletExemptionEndpoint } from './upsert-hive-wallet-exemption.endpoint';
+import { WalletAdvancedReportPricingService } from './wallet-advanced-report-pricing.service';
 
 @Module({
   imports: [RepositoriesModule, FeedModule],
@@ -16,6 +20,10 @@ import { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
     GetUserHiveWalletEndpoint,
     GetUserHiveHpDelegationsEndpoint,
     GetUserHiveRcDelegationsEndpoint,
+    HiveAdvancedReportPagerService,
+    WalletAdvancedReportPricingService,
+    GetHiveAdvancedReportEndpoint,
+    UpsertHiveWalletExemptionEndpoint,
   ],
   exports: [
     GetUserWaivWalletEndpoint,
@@ -23,6 +31,8 @@ import { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
     GetUserHiveWalletEndpoint,
     GetUserHiveHpDelegationsEndpoint,
     GetUserHiveRcDelegationsEndpoint,
+    GetHiveAdvancedReportEndpoint,
+    UpsertHiveWalletExemptionEndpoint,
   ],
 })
 export class WalletModule {}

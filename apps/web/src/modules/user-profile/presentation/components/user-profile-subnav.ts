@@ -37,6 +37,9 @@ export function getSubmenuVariant(pathname: string): UserMenuSubmenuVariant {
   }
   const rest = getSegmentsAfterAccount(pathname);
   const head = rest[0] ?? '';
+  if (head === 'transfers' && (rest[1] ?? '') === 'table') {
+    return null;
+  }
   if (isFeedSectionActive(rest)) {
     return 'feed';
   }

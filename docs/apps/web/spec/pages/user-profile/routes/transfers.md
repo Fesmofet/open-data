@@ -24,7 +24,7 @@ Wallet tabs and transfer history under `/@:name/transfers/...`. Wallet primary n
 | Public URL | App Router file | Layout |
 |------------|-----------------|--------|
 | `/@:name/transfers` | `(main)/transfers/page.tsx` | main three-column |
-| `/@:name/transfers/table` | `(main)/transfers/table/page.tsx` | main |
+| `/@:name/transfers/table` | `(profile)/transfers/table/page.tsx` | single column (full width) — [advanced HIVE report](transfers-table.md) |
 | `/@:name/transfers/waiv-table` | `(profile)/transfers/waiv-table/page.tsx` | single column |
 | `/@:name/transfers/details` | `(main)/transfers/details/page.tsx` | main |
 | `/@:name/transfers/details/:reportId` | `(main)/transfers/details/[reportId]/page.tsx` | main |
@@ -58,8 +58,8 @@ Wallet transaction history is rendered only on this transfers page (not on `Hive
 
 `?type=ENGINE` remains stubbed.
 
-Shell hides left/right rails on `waiv-table` layout — see [profile-shell.md](../profile-shell.md).
+Shell hides left/right rails on `waiv-table` and `transfers/table` layouts — see [profile-shell.md](../profile-shell.md).
 
 ## Verification
 
-Manual: `/@:name/transfers?type=WAIV` or `?type=HIVE` from user menu wallet submenu.
+Manual: `/@:name/transfers?type=WAIV` or `?type=HIVE` from user menu wallet submenu. Advanced HIVE table: `/@:name/transfers/table` (link: `table_view` on HIVE wallet tab).

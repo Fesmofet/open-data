@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ActivityLoadError, ActivityPageView } from '@/modules/user-activity/domain/types/activity-row-view';
 
@@ -62,6 +64,14 @@ export function TransfersHiveWalletView({
           defaultAsset="HIVE"
         />
       ) : null}
+      <div className="mt-4 flex justify-end">
+        <Link
+          href={`/@${encodeURIComponent(accountName)}/transfers/table`}
+          className="text-link text-body-sm"
+        >
+          {t('table_view')}
+        </Link>
+      </div>
       <HiveWalletHistoryFeedClient
         accountName={accountName}
         initialPage={historyPage}
