@@ -9,9 +9,9 @@ import { PostRewardRatesCache } from './post-reward-rates.cache';
 
 describe('PostRewardRatesCache', () => {
   const currencyQuery: jest.Mocked<
-    Pick<CurrencyQueryService, 'engineCurrent' | 'legacyRateLatest'>
+    Pick<CurrencyQueryService, 'engineLatestStored' | 'legacyRateLatest'>
   > = {
-    engineCurrent: jest.fn().mockResolvedValue({ USD: 0.12, HIVE: 1.5 }),
+    engineLatestStored: jest.fn().mockResolvedValue({ USD: 0.12, HIVE: 1.5 }),
     legacyRateLatest: jest.fn().mockResolvedValue({ USD: 1, EUR: 0.92 }),
   };
 
@@ -30,7 +30,7 @@ describe('PostRewardRatesCache', () => {
       redisFactory,
     );
     jest.clearAllMocks();
-    currencyQuery.engineCurrent.mockResolvedValue({ USD: 0.12, HIVE: 1.5 });
+    currencyQuery.engineLatestStored.mockResolvedValue({ USD: 0.12, HIVE: 1.5 });
     currencyQuery.legacyRateLatest.mockResolvedValue({ USD: 1, EUR: 0.92 });
     redisGet.mockResolvedValue(null);
   });
@@ -39,7 +39,7 @@ describe('PostRewardRatesCache', () => {
     const snapshot = await cache.getSnapshot();
 
     expect(snapshot).toEqual({ waivUsdRate: 0.12, fiatRates: { USD: 1, EUR: 0.92 } });
-    expect(currencyQuery.engineCurrent).toHaveBeenCalledTimes(1);
+    expect(currencyQuery.engineLatestStored).toHaveBeenCalledTimes(1);
     expect(currencyQuery.legacyRateLatest).toHaveBeenCalledTimes(1);
     expect(redisSet).toHaveBeenCalledTimes(2);
     expect(redisSet).toHaveBeenCalledWith(
@@ -62,7 +62,7 @@ describe('PostRewardRatesCache', () => {
     const snapshot = await cache.getSnapshot();
 
     expect(snapshot).toEqual({ waivUsdRate: 0.25, fiatRates: { USD: 1, GBP: 0.8 } });
-    expect(currencyQuery.engineCurrent).not.toHaveBeenCalled();
+    expect(currencyQuery.engineLatestStored).not.toHaveBeenCalled();
     expect(currencyQuery.legacyRateLatest).not.toHaveBeenCalled();
   });
 
@@ -72,6 +72,6 @@ describe('PostRewardRatesCache', () => {
     const snapshot = await cache.getSnapshot();
 
     expect(snapshot.waivUsdRate).toBe(0.12);
-    expect(currencyQuery.engineCurrent).toHaveBeenCalledTimes(1);
+    expect(currencyQuery.engineLatestStored).toHaveBeenCalledTimes(1);
   });
 });

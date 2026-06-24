@@ -7,11 +7,13 @@ import { redisKey } from '../../constants/redis-keys';
 export type ActivityChainContextFields = {
   totalVestingShares: string;
   totalVestingFundSteem: string;
+  hbdInterestRatePercent: number;
 };
 
 const DEFAULT_CHAIN_CONTEXT: ActivityChainContextFields = {
   totalVestingShares: '0',
   totalVestingFundSteem: '0',
+  hbdInterestRatePercent: 0,
 };
 
 @Injectable()
@@ -27,7 +29,7 @@ export class HiveGlobalPropertiesCache {
     const key = redisKey.hiveGlobalProperties();
     const cached = await this.readRedisJson<ActivityChainContextFields>(key);
     if (cached != null) {
-      return cached;
+      return { ...DEFAULT_CHAIN_CONTEXT, ...cached };
     }
 
     const fields = await this.fetchFromHive();
@@ -47,6 +49,10 @@ export class HiveGlobalPropertiesCache {
         props.total_vesting_fund_hive ??
         props.total_vesting_fund_steem ??
         DEFAULT_CHAIN_CONTEXT.totalVestingFundSteem,
+      hbdInterestRatePercent:
+        typeof props.hbd_interest_rate === 'number'
+          ? props.hbd_interest_rate / 100
+          : DEFAULT_CHAIN_CONTEXT.hbdInterestRatePercent,
     };
   }
 

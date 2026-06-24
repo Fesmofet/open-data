@@ -252,6 +252,29 @@ export class CurrencyQueryService {
       : undefined;
   }
 
+  /**
+   * Latest stored WAIV/Hive + WAIV/USD rate from `hive_engine_rates` (no live RPC).
+   * Scheduler refreshes the ordinary row every ~5 min; use this on hot read paths
+   * (e.g. post-reward enrichment) where a slightly stale spot is acceptable and an
+   * external Hive Engine round-trip per request is not.
+   */
+  async engineLatestStored(
+    baseToken = ENGINE_BASE_WAIV,
+  ): Promise<Record<string, number> | undefined> {
+    const lastRow = (
+      await this.repo.listHiveEngineRates({
+        base: baseToken,
+        isDaily: false,
+        limit: 1,
+        orderAsc: false,
+      })
+    ).at(0);
+
+    return lastRow
+      ? { HIVE: Number(lastRow.rate_hive), USD: Number(lastRow.rate_usd) }
+      : undefined;
+  }
+
   async engineChart(periodRaw: string, baseToken = ENGINE_BASE_WAIV) {
     const win = normalizeChartWindow(periodRaw);
 

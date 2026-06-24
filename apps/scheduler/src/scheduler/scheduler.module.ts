@@ -18,6 +18,7 @@ import { SchedulerCronService } from './scheduler-cron.service';
 import { SchedulerDispatchService } from './scheduler-dispatch.service';
 import { SchedulerLockService } from './scheduler-lock.service';
 import { SchedulerWorkerService } from './scheduler-worker.service';
+import { HiveGlobalPropertiesWarmRunner } from '../jobs/hive-global-properties-warm.runner';
 import { SiteRegistryDailyRunner } from '../jobs/site-registry-daily.runner';
 import { PostRewardReconcileRunner } from '../jobs/post-reward-reconcile.runner';
 import { PostRewardsFinalizeRunner } from '../jobs/post-rewards-finalize.runner';
@@ -110,6 +111,7 @@ import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
   ],
   providers: [
     SiteRegistryDailyRunner,
+    HiveGlobalPropertiesWarmRunner,
     WaivPowerAvgRunner,
     PostRewardReconcileRunner,
     PostRewardsFinalizeRunner,

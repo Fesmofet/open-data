@@ -51,6 +51,7 @@ describe('GetUserHiveHpDelegationsEndpoint', () => {
     hiveGlobalProperties.getChainContextFields.mockResolvedValue({
       totalVestingShares: '1000000000.000000 VESTS',
       totalVestingFundSteem: '1000000.000000 STEEM',
+      hbdInterestRatePercent: 0,
     });
     userDelegations.findHpDelegationsFrom.mockResolvedValue([
       {

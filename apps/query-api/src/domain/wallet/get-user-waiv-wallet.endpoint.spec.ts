@@ -15,7 +15,7 @@ describe('GetUserWaivWalletEndpoint', () => {
       'findOneTokenBalanceStrict' | 'findTokenPendingUnstakesStrict'
     >
   >;
-  let currencyQuery: jest.Mocked<Pick<CurrencyQueryService, 'engineCurrent'>>;
+  let currencyQuery: jest.Mocked<Pick<CurrencyQueryService, 'engineLatestStored'>>;
 
   beforeEach(async () => {
     accounts = { findByName: jest.fn() };
@@ -23,7 +23,7 @@ describe('GetUserWaivWalletEndpoint', () => {
       findOneTokenBalanceStrict: jest.fn(),
       findTokenPendingUnstakesStrict: jest.fn(),
     };
-    currencyQuery = { engineCurrent: jest.fn() };
+    currencyQuery = { engineLatestStored: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -52,7 +52,7 @@ describe('GetUserWaivWalletEndpoint', () => {
       pendingUnstake: '0',
       pendingUndelegations: '0',
     } as never);
-    currencyQuery.engineCurrent.mockResolvedValue({ HIVE: 0.1, USD: 0.05 });
+    currencyQuery.engineLatestStored.mockResolvedValue({ HIVE: 0.1, USD: 0.05 });
 
     const result = await endpoint.execute('alice');
     expect(result?.account).toBe('alice');
@@ -64,7 +64,7 @@ describe('GetUserWaivWalletEndpoint', () => {
   it('returns zero balances when Hive Engine has no balance row', async () => {
     accounts.findByName.mockResolvedValue({ name: 'alice' } as never);
     hiveEngine.findOneTokenBalanceStrict.mockResolvedValue(null);
-    currencyQuery.engineCurrent.mockResolvedValue({ HIVE: 0.1, USD: 0.05 });
+    currencyQuery.engineLatestStored.mockResolvedValue({ HIVE: 0.1, USD: 0.05 });
 
     const result = await endpoint.execute('alice');
     expect(result?.balance.liquid).toBe('0');
@@ -81,7 +81,7 @@ describe('GetUserWaivWalletEndpoint', () => {
       pendingUnstake: '0.01',
       pendingUndelegations: '0',
     } as never);
-    currencyQuery.engineCurrent.mockResolvedValue({ HIVE: 1, USD: 1 });
+    currencyQuery.engineLatestStored.mockResolvedValue({ HIVE: 1, USD: 1 });
     hiveEngine.findTokenPendingUnstakesStrict.mockResolvedValue([
       { nextTransactionTimestamp: 2_000 } as never,
       { nextTransactionTimestamp: 1_000 } as never,

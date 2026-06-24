@@ -11,6 +11,7 @@ describe('GetHiveAdvancedReportEndpoint', () => {
   const chainContext = {
     totalVestingShares: '1000000 VESTS',
     totalVestingFundSteem: '1000.000 HIVE',
+    hbdInterestRatePercent: 0,
   };
 
   const row = (overrides: Partial<AdvancedReportRawRow>): AdvancedReportRawRow => ({

@@ -33,6 +33,7 @@ describe('GetUserActivityEndpoint', () => {
       getChainContextFields: jest.fn().mockResolvedValue({
         totalVestingShares: '100',
         totalVestingFundSteem: '50',
+        hbdInterestRatePercent: 0,
       }),
     };
     endpoint = new GetUserActivityEndpoint(
@@ -90,6 +91,7 @@ describe('GetUserActivityEndpoint', () => {
     hiveGlobalProperties.getChainContextFields.mockResolvedValue({
       totalVestingShares: '100',
       totalVestingFundSteem: '210616861.512 HIVE',
+      hbdInterestRatePercent: 0,
     });
     hiveClient.getAccountHistory.mockResolvedValue(hivePage([]));
 

@@ -57,7 +57,7 @@ Rates: one snapshot per `enrichFeedItems` / `buildReward` call via `PostRewardRa
 
 | Snapshot | Source | Redis TTL |
 |----------|--------|-----------|
-| WAIV + Hive/USD (`waivUsdRate`) | `CurrencyQueryService.engineCurrent()` | 10 min |
+| WAIV + Hive/USD (`waivUsdRate`) | `CurrencyQueryService.engineLatestStored()` (latest stored `hive_engine_rates` ordinary row, no live RPC; scheduler refreshes ~5 min) | 10 min |
 | Fiat crosses (`fiatRates`) | `legacyRateLatest('USD', …)` | 6 h |
 
 Keys: `query-api:cache:post-reward:waiv-hive-usd`, `query-api:cache:post-reward:fiat:USD`. On Redis miss or error, rates are fetched live and written with TTL; corrupt cache entries are ignored.

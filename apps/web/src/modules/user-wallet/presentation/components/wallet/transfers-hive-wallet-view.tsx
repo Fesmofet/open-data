@@ -68,6 +68,7 @@ export function TransfersHiveWalletView({
         <Link
           href={`/@${encodeURIComponent(accountName)}/transfers/table`}
           className="text-link text-body-sm"
+          suppressHydrationWarning
         >
           {t('table_view')}
         </Link>

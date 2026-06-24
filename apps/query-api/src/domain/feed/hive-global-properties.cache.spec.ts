@@ -27,10 +27,30 @@ describe('HiveGlobalPropertiesCache', () => {
     hiveClient.getDynamicGlobalProperties.mockResolvedValue({
       total_vesting_shares: '100 VESTS',
       total_vesting_fund_hive: '50 HIVE',
+      hbd_interest_rate: 1500,
     });
   });
 
-  it('returns cached chain context without calling Hive', async () => {
+  it('returns cached chain context (merged with defaults) without calling Hive', async () => {
+    redisGet.mockResolvedValueOnce(
+      JSON.stringify({
+        totalVestingShares: '200 VESTS',
+        totalVestingFundSteem: '75 HIVE',
+        hbdInterestRatePercent: 20,
+      }),
+    );
+
+    const fields = await cache.getChainContextFields();
+
+    expect(fields).toEqual({
+      totalVestingShares: '200 VESTS',
+      totalVestingFundSteem: '75 HIVE',
+      hbdInterestRatePercent: 20,
+    });
+    expect(hiveClient.getDynamicGlobalProperties).not.toHaveBeenCalled();
+  });
+
+  it('backfills hbdInterestRatePercent default for legacy cached entries', async () => {
     redisGet.mockResolvedValueOnce(
       JSON.stringify({
         totalVestingShares: '200 VESTS',
@@ -40,11 +60,7 @@ describe('HiveGlobalPropertiesCache', () => {
 
     const fields = await cache.getChainContextFields();
 
-    expect(fields).toEqual({
-      totalVestingShares: '200 VESTS',
-      totalVestingFundSteem: '75 HIVE',
-    });
-    expect(hiveClient.getDynamicGlobalProperties).not.toHaveBeenCalled();
+    expect(fields.hbdInterestRatePercent).toBe(0);
   });
 
   it('fetches from Hive on cache miss and writes Redis with TTL', async () => {
@@ -53,6 +69,7 @@ describe('HiveGlobalPropertiesCache', () => {
     expect(fields).toEqual({
       totalVestingShares: '100 VESTS',
       totalVestingFundSteem: '50 HIVE',
+      hbdInterestRatePercent: 15,
     });
     expect(hiveClient.getDynamicGlobalProperties).toHaveBeenCalledTimes(1);
     expect(redisSet).toHaveBeenCalledWith(
@@ -60,6 +77,7 @@ describe('HiveGlobalPropertiesCache', () => {
       JSON.stringify({
         totalVestingShares: '100 VESTS',
         totalVestingFundSteem: '50 HIVE',
+        hbdInterestRatePercent: 15,
       }),
       HIVE_GLOBAL_PROPERTIES_CACHE_TTL_SEC,
     );
@@ -84,6 +102,7 @@ describe('HiveGlobalPropertiesCache', () => {
     expect(fields).toEqual({
       totalVestingShares: '0',
       totalVestingFundSteem: '0',
+      hbdInterestRatePercent: 0,
     });
   });
 

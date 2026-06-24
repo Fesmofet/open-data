@@ -58,11 +58,7 @@ export class GetUserHiveWalletEndpoint {
         throw new HiveNodeUnavailableError('Hive account not found on chain');
       }
 
-      const globalProps = await this.hiveClient.getDynamicGlobalPropertiesStrict();
-      const hbdInterestRatePercent =
-        typeof globalProps.hbd_interest_rate === 'number'
-          ? globalProps.hbd_interest_rate / 100
-          : 0;
+      const hbdInterestRatePercent = chainContext.hbdInterestRatePercent;
 
       const rcRow = rcAccounts[0];
       const rcMax =

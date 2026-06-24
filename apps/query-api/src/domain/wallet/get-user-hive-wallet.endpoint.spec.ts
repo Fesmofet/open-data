@@ -9,7 +9,6 @@ describe('GetUserHiveWalletEndpoint', () => {
     getAccountsStrict: jest.fn(),
     findRcAccountsStrict: jest.fn(),
     getSavingsWithdrawFromStrict: jest.fn(),
-    getDynamicGlobalPropertiesStrict: jest.fn(),
   };
   const hiveGlobalProperties = { getChainContextFields: jest.fn() };
   const currencyQuery = { marketInfo: jest.fn() };
@@ -61,14 +60,12 @@ describe('GetUserHiveWalletEndpoint', () => {
     hiveGlobalProperties.getChainContextFields.mockResolvedValue({
       totalVestingShares: '1000000000 VESTS',
       totalVestingFundSteem: '500000000 HIVE',
+      hbdInterestRatePercent: 20,
     });
     hiveClient.findRcAccountsStrict.mockResolvedValue([
       { max_rc: '1000000000' },
     ]);
     hiveClient.getSavingsWithdrawFromStrict.mockResolvedValue([]);
-    hiveClient.getDynamicGlobalPropertiesStrict.mockResolvedValue({
-      hbd_interest_rate: 2000,
-    });
     currencyQuery.marketInfo.mockResolvedValue({
       current: {
         hive: { usd: 0.25 },

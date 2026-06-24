@@ -30,7 +30,7 @@ export class GetUserWaivWalletEndpoint {
           account: profileAccountName,
           symbol: WAIV_SYMBOL,
         }),
-        this.currencyQuery.engineCurrent(WAIV_SYMBOL),
+        this.currencyQuery.engineLatestStored(WAIV_SYMBOL),
       ]);
 
       const balance = mapTokenBalanceRow(balanceRow);

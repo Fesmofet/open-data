@@ -17,7 +17,7 @@ related:
 
 ### `GET /query/v1/users/{name}/wallet/waiv`
 
-Returns live WAIV balances from Hive Engine `tokens.balances`, optional pending unstake metadata, and USD estimate from `CurrencyQueryService.engineCurrent('WAIV')`.
+Returns live WAIV balances from Hive Engine `tokens.balances`, optional pending unstake metadata, and USD estimate from `CurrencyQueryService.engineLatestStored('WAIV')` (latest stored `hive_engine_rates` ordinary row; scheduler refreshes ~5 min — no live Hive Engine RPC on the read path).
 
 ### `GET /query/v1/users/{name}/wallet/engine/{symbol}/delegations`
 
@@ -36,7 +36,7 @@ Incoming (`to = name`) and outgoing (`from = name`) rows from Hive Engine `token
 | `flags.showDelegationsRow` | Net delegations non-zero or pending undelegations |
 | `flags.showPowerDownRow` | `pendingUnstake > 0` |
 | `powerDown.nextUnstakeAt` | Unix **milliseconds** — minimum `nextTransactionTimestamp` from `tokens.pendingUnstakes` when power down active |
-| `rates.waivHive` / `rates.waivUsd` | From `engineCurrent`; `0` when rates missing |
+| `rates.waivHive` / `rates.waivUsd` | From `engineLatestStored` (DB); `0` when rates missing |
 
 `powerDown` is omitted when `showPowerDownRow` is false.
 

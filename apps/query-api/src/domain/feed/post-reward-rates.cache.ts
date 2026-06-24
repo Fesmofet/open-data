@@ -40,7 +40,7 @@ export class PostRewardRatesCache {
       return cached;
     }
 
-    const waivRates = await this.currencyQuery.engineCurrent();
+    const waivRates = await this.currencyQuery.engineLatestStored();
     const rate = waivRates?.USD ?? 0;
     await this.writeRedisNumber(key, rate, POST_REWARD_WAIV_HIVE_RATE_CACHE_TTL_SEC);
     return rate;
