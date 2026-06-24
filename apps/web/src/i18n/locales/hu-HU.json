@@ -144,6 +144,12 @@
   "admin_rules": "A rendszergazdáknak döntési joguk van az objektumfrissítések jóváhagyására vagy elutasítására a webhelyen. Ha több rendszergazda szavaz ugyanazon frissítésről, csak az utolsó szavazat áll meg.",
   "administrative": "Közigazgatási",
   "advance_settings": "További beállítások",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "elfogadom",
   "agree_to_pay_following_commissions_waivio": "Beleegyezem, hogy a következő jutalékokat fizessem a Waivio-nak és partnereinek",
   "agree_to_pay_following_commissions_waivio)": "Beleegyezem, hogy a következő jutalékokat fizessem a Waivio-nak és partnereinek",
@@ -2118,5 +2124,6 @@
   "your_reward": "Jutalmad",
   "your_vote": "A szavazatod",
   "your_vote_placeholder": "Az Ön szavazata (nem kötelező)",
-  "СЃommunity_actions": "Közösségi fellépések"
+  "СЃommunity_actions": "Közösségi fellépések",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

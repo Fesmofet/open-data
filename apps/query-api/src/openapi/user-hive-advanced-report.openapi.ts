@@ -18,6 +18,20 @@ const serviceUnavailableSchema = z.object({
   error: z.string(),
 });
 
+const unauthorizedSchema = z.object({
+  statusCode: z.literal(401),
+  message: z.string(),
+  error: z.string(),
+});
+
+const forbiddenSchema = z.object({
+  statusCode: z.literal(403),
+  message: z.string(),
+  error: z.string(),
+});
+
+const bearerSecurity = [{ bearerAuth: [] }];
+
 const advancedReportRowSchema = z.object({
   userName: z.string(),
   operationIndex: z.number().int(),
@@ -76,7 +90,8 @@ registry.registerPath({
   path: '/query/v1/wallet/hive/advanced-report',
   summary: 'Hive L1 advanced wallet report',
   description:
-    'Multi-account Hive wallet table with date range, mutual-transaction filtering, historical fiat pricing, and exemption preload.',
+    'Multi-account Hive wallet table with date range, mutual-transaction filtering, historical fiat pricing, and exemption preload. Requires Bearer access JWT; optional `viewer` must match token `sub`.',
+  security: bearerSecurity,
   request: {
     body: {
       content: {
@@ -102,6 +117,14 @@ registry.registerPath({
           schema: badRequestSchema,
         },
       },
+    },
+    401: {
+      description: 'Missing or invalid Bearer token.',
+      content: { 'application/json': { schema: unauthorizedSchema } },
+    },
+    403: {
+      description: '`viewer` does not match token subject.',
+      content: { 'application/json': { schema: forbiddenSchema } },
     },
     503: {
       description: 'Hive node unavailable.',
@@ -129,7 +152,8 @@ registry.registerPath({
   path: '/query/v1/wallet/hive/exemptions',
   summary: 'Toggle Hive advanced report exemption',
   description:
-    'Persist or remove a viewer exemption for a wallet operation row (excluded from deposit/withdraw totals).',
+    'Persist or remove a viewer exemption for a wallet operation row (excluded from deposit/withdraw totals). Requires Bearer access JWT; `viewer` must match token `sub`.',
+  security: bearerSecurity,
   request: {
     body: {
       content: {
@@ -155,6 +179,14 @@ registry.registerPath({
           schema: badRequestSchema,
         },
       },
+    },
+    401: {
+      description: 'Missing or invalid Bearer token.',
+      content: { 'application/json': { schema: unauthorizedSchema } },
+    },
+    403: {
+      description: '`viewer` does not match token subject.',
+      content: { 'application/json': { schema: forbiddenSchema } },
     },
   },
 });

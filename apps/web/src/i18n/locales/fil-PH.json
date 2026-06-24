@@ -144,6 +144,12 @@
   "admin_rules": "Ang mga administrator ay may karapatang magpasya upang aprubahan o tanggihan ang mga pag-update ng object sa website. Kung maraming mga tagapamahala ang bumoto sa parehong pag-update, ang huling boto lamang ang tumayo.",
   "administrative": "Pang-administratibo",
   "advance_settings": "Mga advanced na setting",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "Sumasang-ayon ako sang",
   "agree_to_pay_following_commissions_waivio": "Sumasang-ayon ako na bayaran ang mga sumusunod na komisyon sa Waivio at mga kasosyo",
   "agree_to_pay_following_commissions_waivio)": "Sumasang-ayon ako na bayaran ang mga sumusunod na komisyon sa Waivio at mga kasosyo",
@@ -2117,5 +2123,6 @@
   "your_reward": "Ang Iyong Gantimpala",
   "your_vote": "Ang iyong boto",
   "your_vote_placeholder": "Ang iyong boto (opsyonal)",
-  "СЃommunity_actions": "Mga aksyon sa pamayanan"
+  "СЃommunity_actions": "Mga aksyon sa pamayanan",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

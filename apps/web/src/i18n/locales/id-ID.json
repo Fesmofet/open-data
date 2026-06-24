@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "Ketika mengintegrasikan kode AdSense ke situs web Anda, Anda dapat memilih tingkat intensitas iklan, sehingga Anda dapat mengendalikan sejauh mana iklan ditampilkan. Cukup tambahkan kode dari Google AdSense dan pilih tingkat intensitas yang diinginkan di platform kami.",
   "adsense_advertisements_txt_note": "Teks ini akan ditambahkan ke ads.txt di situs Anda.",
   "advance_settings": "Pengaturan Lanjutan",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Tidak ada kode afiliasi yang ditambahkan.",
   "affiliate": "Afiliasi",
   "affiliate_code_field_name": "Kode afiliasi",
@@ -2855,5 +2861,6 @@
   "your_vote": "Suara Anda",
   "your_vote_placeholder": "Suara Anda (opsional)",
   "zoom": "Perbesar",
-  "СЃommunity_actions": "Tindakan Komunitas"
+  "СЃommunity_actions": "Tindakan Komunitas",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

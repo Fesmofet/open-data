@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "При інтеграції коду AdSense на свій веб-сайт, ви можете вибрати рівень інтенсивності реклами, що дозволяє вам контролювати, наскільки помітно відображаються оголошення. Просто додайте код від Google AdSense та виберіть бажаний рівень інтенсивності на нашій платформі.",
   "adsense_advertisements_txt_note": "Цей текст буде додано до файлу ads.txt на вашому сайті.",
   "advance_settings": "Розширені налаштування",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Не додано жодних партнерських кодів.",
   "affiliate": "Партнерська",
   "affiliate_code_field_name": "Код афіліата",
@@ -2855,5 +2861,6 @@
   "your_vote": "Ваш голос",
   "your_vote_placeholder": "Ваш голос (необов'язково)",
   "zoom": "Збільшити",
-  "СЃommunity_actions": "Дії спільноти"
+  "СЃommunity_actions": "Дії спільноти",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

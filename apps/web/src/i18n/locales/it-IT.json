@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "Quando integri il codice AdSense nel tuo sito web, puoi scegliere il livello di intensità degli annunci, consentendoti di controllare quanto prominentemente vengono visualizzati gli annunci. Aggiungi semplicemente il codice da Google AdSense e seleziona il livello di intensità desiderato sulla nostra piattaforma.",
   "adsense_advertisements_txt_note": "Questo testo verrà aggiunto a ads.txt del tuo sito.",
   "advance_settings": "Impostazioni avanzate",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Nessun codice affiliato aggiunto.",
   "affiliate": "Affiliato",
   "affiliate_code_field_name": "Codice di affiliazione",
@@ -2856,5 +2862,6 @@
   "your_vote": "Il tuo voto",
   "your_vote_placeholder": "Il tuo voto (opzionale)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Azioni della comunità"
+  "СЃommunity_actions": "Azioni della comunità",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

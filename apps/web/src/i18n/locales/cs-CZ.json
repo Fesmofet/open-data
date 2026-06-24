@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "Při integrování kódu AdSense do vašeho webu můžete vybrat úroveň intenzity reklam, což vám umožní kontrolovat, jak výrazně jsou reklamy zobrazovány. Stačí přidat kód z Google AdSense a vybrat požadovanou úroveň intenzity na naší platformě.",
   "adsense_advertisements_txt_note": "Tento text bude přidán do souboru ads.txt na vašem webu.",
   "advance_settings": "Pokročilé nastavení",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Nebyly přidány žádné propagační kódy.",
   "affiliate": "Affiliate",
   "affiliate_code_field_name": "Kód partnerského programu",
@@ -2855,5 +2861,6 @@
   "your_vote": "Váš hlas",
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
-  "СЃommunity_actions": "Akce komunity"
+  "СЃommunity_actions": "Akce komunity",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

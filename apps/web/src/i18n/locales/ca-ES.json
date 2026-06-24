@@ -144,6 +144,12 @@
   "admin_rules": "Els administradors tenen el dret decisiu d’aprovar o rebutjar les actualitzacions d’objectes al lloc web. Si diversos administradors voten la mateixa actualització, només es mantindrà l'última votació.",
   "administrative": "Administratiu",
   "advance_settings": "Configuració avançada",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "Hi estic d'acord",
   "agree_to_pay_following_commissions_waivio": "Accepto pagar les comissions següents a Waivio i socis",
   "agree_to_pay_following_commissions_waivio)": "Accepto pagar les comissions següents a Waivio i socis",
@@ -2117,5 +2123,6 @@
   "your_reward": "La vostra recompensa",
   "your_vote": "El vostre vot",
   "your_vote_placeholder": "El vostre vot (opcional)",
-  "СЃommunity_actions": "Accions comunitàries"
+  "СЃommunity_actions": "Accions comunitàries",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

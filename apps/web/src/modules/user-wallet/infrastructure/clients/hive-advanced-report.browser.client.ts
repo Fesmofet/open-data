@@ -19,6 +19,9 @@ export async function fetchHiveAdvancedReportClient(
       cache: 'no-store',
       signal,
     });
+    if (res.status === 401 || res.status === 403) {
+      return { report: null, error: 'unauthorized' };
+    }
     if (!res.ok) {
       return { report: null, error: 'unavailable' };
     }

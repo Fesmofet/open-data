@@ -1,7 +1,9 @@
 import { z } from 'zod';
-import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core';
-
-export const ADVANCED_REPORT_DEFAULT_PAGE_SIZE = 50;
+import {
+  ADVANCED_REPORT_DEFAULT_PAGE_SIZE,
+  ADVANCED_REPORT_MAX_PAGE_SIZE,
+  SUPPORTED_CURRENCIES,
+} from '@opden-data-layer/core';
 
 export const hiveAdvancedReportAccountSchema = z.object({
   name: z.string().min(1),
@@ -13,7 +15,12 @@ export const hiveAdvancedReportBodySchema = z.object({
   filterAccounts: z.array(z.string().min(1)).min(1),
   startDate: z.coerce.number().int(),
   endDate: z.coerce.number().int(),
-  limit: z.coerce.number().int().min(1).max(50).default(ADVANCED_REPORT_DEFAULT_PAGE_SIZE),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(ADVANCED_REPORT_MAX_PAGE_SIZE)
+    .default(ADVANCED_REPORT_DEFAULT_PAGE_SIZE),
   currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
   viewer: z.string().min(1).optional(),
 });

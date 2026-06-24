@@ -11,11 +11,14 @@ import { fetchHiveAdvancedReport } from '../../infrastructure/clients/hive-advan
 export async function getHiveAdvancedReportQuery(
   body: HiveAdvancedReportRequest,
 ): Promise<HiveAdvancedReportQueryResult> {
-  const raw = await fetchHiveAdvancedReport(body);
-  if (!raw) {
-    return { report: null, error: 'unavailable' };
+  const fetched = await fetchHiveAdvancedReport(body);
+  if (!fetched.ok) {
+    return {
+      report: null,
+      error: fetched.reason === 'unauthorized' ? 'unauthorized' : 'unavailable',
+    };
   }
-  const parsed = hiveAdvancedReportResponseSchema.safeParse(raw);
+  const parsed = hiveAdvancedReportResponseSchema.safeParse(fetched.data);
   if (!parsed.success) {
     return { report: null, error: 'invalid_response' };
   }

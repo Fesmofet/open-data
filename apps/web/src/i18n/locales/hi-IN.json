@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "जब आप अपनी वेबसाइट में एडसेंस कोड को एकीकृत करते हैं, तो आप विज्ञापन की मात्रा को कितना प्रमुख रूप से प्रदर्शित किया जाएगा, उसे नियंत्रित कर सकते हैं। केवल Google AdSense से कोड जोड़ें और हमारे प्लेटफ़ॉर्म पर चयनित प्रमुखता स्तर का चयन करें।",
   "adsense_advertisements_txt_note": "इस टेक्स्ट को आपकी साइट के ads.txt में जोड़ा जाएगा।",
   "advance_settings": "उन्नत सेटिंग्स",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "कोई सहायक कोड नहीं जोड़े गए।",
   "affiliate": "सहायक",
   "affiliate_code_field_name": "सहायक कोड",
@@ -2855,5 +2861,6 @@
   "your_vote": "आपका वोट",
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
-  "СЃommunity_actions": "समुदाय क्रियाएँ"
+  "СЃommunity_actions": "समुदाय क्रियाएँ",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

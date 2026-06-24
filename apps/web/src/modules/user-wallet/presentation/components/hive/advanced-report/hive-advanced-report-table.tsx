@@ -110,6 +110,7 @@ export function HiveAdvancedReportTable({
   const [accountsError, setAccountsError] = useState(false);
   const [loadingReport, setLoadingReport] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
+  const [truncated, setTruncated] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -131,6 +132,7 @@ export function HiveAdvancedReportTable({
     setWallet([]);
     setReportMeta({ accounts: [], hasMore: false, deposits: 0, withdrawals: 0 });
     setLoadError(null);
+    setTruncated(false);
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -164,6 +166,7 @@ export function HiveAdvancedReportTable({
         }
         setLoadError(finalResult.error);
         if (finalResult.report) {
+          setTruncated(finalResult.report.truncated === true);
           setWallet(finalResult.report.wallet);
           setReportMeta({
             accounts: finalResult.report.accounts,
@@ -281,9 +284,11 @@ export function HiveAdvancedReportTable({
     ? t('totals_calculated')
     : loadingReport
       ? reportMeta.hasMore
-        ? `Loading… ${wallet.length}+`
-        : 'Loading…'
-      : `Completed (${wallet.length})`;
+        ? t('advanced_report_loading_count').replace('{count}', String(wallet.length))
+        : t('advanced_report_loading')
+      : truncated
+        ? t('advanced_report_partial').replace('{count}', String(wallet.length))
+        : t('advanced_report_completed_count').replace('{count}', String(wallet.length));
 
   return (
     <div className="w-full min-w-0">
@@ -304,7 +309,11 @@ export function HiveAdvancedReportTable({
 
       {loadError ? (
         <p className="mb-4 rounded-card border border-border bg-bg p-card-padding text-body-sm text-muted">
-          {loadError === 'invalid_response' ? t('activity_error') : t('unavailable')}
+          {loadError === 'invalid_response'
+            ? t('activity_error')
+            : loadError === 'unauthorized'
+              ? t('advanced_report_unauthorized')
+              : t('unavailable')}
         </p>
       ) : null}
 
@@ -320,7 +329,7 @@ export function HiveAdvancedReportTable({
           disabled={(wallet.length === 0 && !loadingReport) || exportingCsv}
           onClick={() => void onExportCsv()}
         >
-          {exportingCsv ? 'Exporting…' : 'Export to .CSV'}
+          {exportingCsv ? t('advanced_report_exporting') : t('advanced_report_export_csv')}
         </button>
       </p>
 

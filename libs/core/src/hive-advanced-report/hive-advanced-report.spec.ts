@@ -1,5 +1,7 @@
 import { HIVE_OP } from '../hive-account-history/operation-types';
 import {
+  ADVANCED_REPORT_DEFAULT_PAGE_SIZE,
+  ADVANCED_REPORT_MAX_PAGE_SIZE,
   calcDepositWithdrawals,
   classifyWithdrawDeposit,
   isAdvancedReportOperation,
@@ -7,6 +9,13 @@ import {
 } from './index';
 
 describe('hive-advanced-report', () => {
+  it('page size constants', () => {
+    expect(ADVANCED_REPORT_DEFAULT_PAGE_SIZE).toBe(50);
+    expect(ADVANCED_REPORT_DEFAULT_PAGE_SIZE).toBeLessThanOrEqual(
+      ADVANCED_REPORT_MAX_PAGE_SIZE,
+    );
+  });
+
   const filterAccounts = ['alice', 'bob'];
 
   it('includes expected hive ops', () => {

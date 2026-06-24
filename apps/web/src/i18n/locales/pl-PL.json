@@ -144,6 +144,12 @@
   "admin_rules": "Administratorzy mają decydujące prawo do zatwierdzania lub odrzucania aktualizacji obiektów w serwisie. Jeśli kilku administratorów zagłosuje na tę samą aktualizację, pozostaje tylko ostatni głos.",
   "administrative": "Administracyjny",
   "advance_settings": "Zaawansowane ustawienia",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "Zgadzam się",
   "agree_to_pay_following_commissions_waivio": "Zgadzam się płacić następujące prowizje firmie Waivio i partnerom",
   "agree_to_pay_following_commissions_waivio)": "Zgadzam się płacić następujące prowizje firmie Waivio i partnerom",
@@ -2116,5 +2122,6 @@
   "your_reward": "Twoja nagroda",
   "your_vote": "Twój głos",
   "your_vote_placeholder": "Twój głos (opcjonalnie)",
-  "СЃommunity_actions": "Działania społecznościowe"
+  "СЃommunity_actions": "Działania społecznościowe",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

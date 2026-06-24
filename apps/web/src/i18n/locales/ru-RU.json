@@ -186,6 +186,12 @@
   "adsense_advertisements_text_part2": "Интегрируя код AdSense в ваш сайт, вы можете выбрать уровень интенсивности рекламы, что позволяет контролировать, насколько заметно они будут отображаться. Просто добавьте код из Google AdSense и выберите желаемый уровень интенсивности на нашей платформе.",
   "adsense_advertisements_txt_note": "Этот текст будет добавлен в файл ads.txt на вашем сайте.",
   "advance_settings": "Расширенные настройки",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Партнерские коды не добавлены.",
   "affiliate": "Партнерская программа",
   "affiliate_code_field_name": "Партнерский код",
@@ -2963,5 +2969,6 @@
   "your_vote": "Ваш голос ",
   "your_vote_placeholder": "Ваш голос (необязательно)",
   "zoom": "Увеличить",
-  "СЃommunity_actions": "Действия сообщества"
+  "СЃommunity_actions": "Действия сообщества",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

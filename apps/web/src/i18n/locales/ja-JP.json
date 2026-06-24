@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "AdSenseコードをウェブサイトに統合すると、広告の表示強度のレベルを選択できます。Google AdSenseからコードを追加し、当社のプラットフォームで希望の表示強度レベルを選択するだけで、広告の表示方法を制御できます。",
   "adsense_advertisements_txt_note": "このテキストは、ads.txtにサイトが追加されます。",
   "advance_settings": "高度な設定",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "追加されたアフィリエイトコードはありません。",
   "affiliate": "アフィリエイト",
   "affiliate_code_field_name": "アフィリエイトコード",
@@ -2855,5 +2861,6 @@
   "your_vote": "あなたの投票",
   "your_vote_placeholder": "あなたの投票（オプション）",
   "zoom": "ズーム",
-  "СЃommunity_actions": "コミュニティのアクション"
+  "СЃommunity_actions": "コミュニティのアクション",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

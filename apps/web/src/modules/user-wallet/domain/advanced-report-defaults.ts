@@ -1,6 +1,6 @@
 import type { SupportedCurrency } from '@opden-data-layer/core/constants';
+import { ADVANCED_REPORT_DEFAULT_PAGE_SIZE } from '@opden-data-layer/core/hive-advanced-report';
 
-import { ADVANCED_REPORT_PAGE_SIZE } from '../application/dto/hive-advanced-report-api.schema';
 import type { HiveAdvancedReportRequest } from '../application/dto/hive-advanced-report-api.schema';
 
 const DAY_SEC = 86_400;
@@ -39,7 +39,7 @@ export function buildInitialAdvancedReportRequest(params: {
     filterAccounts: uniqueAccounts,
     startDate,
     endDate,
-    limit: ADVANCED_REPORT_PAGE_SIZE,
+    limit: ADVANCED_REPORT_DEFAULT_PAGE_SIZE,
     currency: params.currency ?? 'USD',
     viewer: params.viewer?.trim().toLowerCase() || undefined,
   };

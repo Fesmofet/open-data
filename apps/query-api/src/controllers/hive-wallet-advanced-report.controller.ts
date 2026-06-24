@@ -1,5 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 
+import { JwtAccessGuard, ViewerMatchesJwtGuard } from '../auth';
 import { ZodBodyPipe } from '../pipes';
 import {
   GetHiveAdvancedReportEndpoint,
@@ -20,6 +21,7 @@ export class HiveWalletAdvancedReportController {
   ) {}
 
   @Post('advanced-report')
+  @UseGuards(JwtAccessGuard, ViewerMatchesJwtGuard)
   async advancedReport(
     @Body(new ZodBodyPipe(hiveAdvancedReportBodySchema)) body: HiveAdvancedReportBody,
   ): Promise<HiveAdvancedReportResponse> {
@@ -27,6 +29,7 @@ export class HiveWalletAdvancedReportController {
   }
 
   @Post('exemptions')
+  @UseGuards(JwtAccessGuard, ViewerMatchesJwtGuard)
   async exemptions(
     @Body(new ZodBodyPipe(hiveWalletExemptionBodySchema)) body: HiveWalletExemptionBody,
   ): Promise<HiveWalletExemptionResponse> {

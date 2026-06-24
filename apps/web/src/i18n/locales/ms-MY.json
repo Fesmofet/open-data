@@ -144,6 +144,12 @@
   "admin_rules": "Pentadbir mempunyai hak memutuskan untuk menyetujui atau menolak kemas kini objek di laman web. Sekiranya beberapa pentadbir memilih untuk kemas kini yang sama, hanya undian terakhir yang berlaku.",
   "administrative": "Pentadbiran",
   "advance_settings": "Tetapan lanjutan",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "Saya bersetuju untuk",
   "agree_to_pay_following_commissions_waivio": "Saya bersetuju untuk membayar komisen berikut kepada Waivio dan rakan kongsi",
   "agree_to_pay_following_commissions_waivio)": "Saya bersetuju untuk membayar komisen berikut kepada Waivio dan rakan kongsi",
@@ -2115,5 +2121,6 @@
   "your_reward": "Ganjaran Anda",
   "your_vote": "Undian anda",
   "your_vote_placeholder": "Undian anda (pilihan)",
-  "СЃommunity_actions": "Tindakan masyarakat"
+  "СЃommunity_actions": "Tindakan masyarakat",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

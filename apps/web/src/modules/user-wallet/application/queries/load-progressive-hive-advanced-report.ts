@@ -48,6 +48,7 @@ function buildPageUpdate(
 function finalizeProgressiveReport(
   wallet: AdvancedReportRowApi[],
   accounts: HiveAdvancedReportResponseApi['accounts'],
+  truncated = false,
 ): HiveAdvancedReportQueryResult {
   const totals = totalsFromAdvancedReportWallet(wallet);
   return {
@@ -57,6 +58,7 @@ function finalizeProgressiveReport(
       hasMore: false,
       deposits: totals.deposits,
       withdrawals: totals.withdrawals,
+      ...(truncated ? { truncated: true } : {}),
     },
     error: null,
   };
@@ -106,5 +108,5 @@ export async function loadProgressiveHiveAdvancedReport(
     };
   }
 
-  return finalizeProgressiveReport(wallet, accounts);
+  return finalizeProgressiveReport(wallet, accounts, true);
 }

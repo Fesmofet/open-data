@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "Wanneer jy die AdSense-kode in jou webwerf integreer, kan jy die vlak van advertensie-intensiteit kies, wat jou in staat stel om te beheer hoe opvallend die advertensies vertoon word. Voeg eenvoudig die kode van Google AdSense by en kies die gewenste intensiteit op ons platform.",
   "adsense_advertisements_txt_note": "Hierdie teks sal by ads.txt tot jou webwerf gevoeg word.",
   "advance_settings": "Gevorderde instellings",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Geen affiliasie-kodes bygevoeg nie.",
   "affiliate": "Affiliasie",
   "affiliate_code_field_name": "Affiliasiekode",
@@ -2855,5 +2861,6 @@
   "your_vote": "Jou stem",
   "your_vote_placeholder": "Jou stem (opsioneel)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Gemeenskapsaksies"
+  "СЃommunity_actions": "Gemeenskapsaksies",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

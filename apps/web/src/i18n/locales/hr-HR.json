@@ -144,6 +144,12 @@
   "admin_rules": "Administratori imaju pravo odlučivanja o odobravanju ili odbijanju ažuriranja objekata na web mjestu. Ako nekoliko administratora glasa za isto ažuriranje, vrijedi samo zadnji glas.",
   "administrative": "Upravni",
   "advance_settings": "Napredne postavke",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "Pristajem",
   "agree_to_pay_following_commissions_waivio": "Pristajem platiti sljedeće provizije tvrtki Waivio i partnerima",
   "agree_to_pay_following_commissions_waivio)": "Pristajem platiti sljedeće provizije tvrtki Waivio i partnerima",
@@ -2117,5 +2123,6 @@
   "your_reward": "Vaša nagrada",
   "your_vote": "Vaš glas",
   "your_vote_placeholder": "Vaš glas (neobavezno)",
-  "СЃommunity_actions": "Akcije zajednice"
+  "СЃommunity_actions": "Akcije zajednice",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

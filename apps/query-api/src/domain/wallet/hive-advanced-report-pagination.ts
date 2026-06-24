@@ -10,6 +10,9 @@ export type AdvancedReportAccountCursor = {
  * Legacy `accumulateHiveAcc` parity:
  * - `filterWallet` = account rows not present in the global limited page
  * - next cursor = newest remaining op index, or oldest-in-batch - 1 when none remain
+ *
+ * Invariant: `fetched` / `pagingRows` from the pager are **newest-first** (see
+ * `HiveAdvancedReportPagerService` / `batchNewestFirst`).
  */
 export function buildAdvancedReportAccountCursor(params: {
   accountName: string;

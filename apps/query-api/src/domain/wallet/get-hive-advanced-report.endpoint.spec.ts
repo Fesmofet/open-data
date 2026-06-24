@@ -116,4 +116,97 @@ describe('GetHiveAdvancedReportEndpoint', () => {
       expect.objectContaining({ filterAccounts: ['alice', 'bob'] }),
     );
   });
+
+  it('sets global hasMore when merged page is full but more rows exist', async () => {
+    const manyRows = Array.from({ length: 11 }, (_, i) =>
+      row({ operationIndex: 100 - i, timestamp: 200 - i }),
+    );
+    pager.collectForAccount.mockResolvedValueOnce({
+      rows: manyRows.slice(0, 10),
+      pagingRows: manyRows,
+      hasMore: true,
+    });
+    pricing.enrichRows.mockResolvedValue([]);
+    pricing.calcTotals.mockReturnValue({ deposits: 0, withdrawals: 0 });
+
+    const now = Math.floor(Date.now() / 1000);
+    const result = await endpoint.execute({
+      accounts: [{ name: 'alice' }],
+      filterAccounts: ['alice'],
+      startDate: now - 86_400 * 30,
+      endDate: now - 86_400,
+      limit: 10,
+      currency: 'USD',
+    });
+
+    expect(result.hasMore).toBe(true);
+    expect(result.wallet).toHaveLength(0);
+  });
+
+  it('omits exhausted accounts from response accounts array', async () => {
+    pager.collectForAccount
+      .mockResolvedValueOnce({
+        rows: [row({ operationIndex: 11, timestamp: 2 })],
+        pagingRows: [row({ operationIndex: 11, timestamp: 2 })],
+        hasMore: false,
+      })
+      .mockResolvedValueOnce({
+        rows: [row({ userName: 'bob', operationIndex: 9, timestamp: 1 })],
+        pagingRows: [row({ userName: 'bob', operationIndex: 9, timestamp: 1 })],
+        hasMore: false,
+      });
+
+    pricing.enrichRows.mockResolvedValue([]);
+    pricing.calcTotals.mockReturnValue({ deposits: 0, withdrawals: 0 });
+
+    const now = Math.floor(Date.now() / 1000);
+    const result = await endpoint.execute({
+      accounts: [{ name: 'alice' }, { name: 'bob' }],
+      filterAccounts: ['alice', 'bob'],
+      startDate: now - 86_400 * 30,
+      endDate: now - 86_400,
+      limit: 10,
+      currency: 'USD',
+    });
+
+    expect(result.accounts).toEqual([]);
+    expect(result.hasMore).toBe(false);
+  });
+
+  it('returns per-account cursors for accounts still paging', async () => {
+    const alicePaging = [
+      row({ operationIndex: 20, timestamp: 100 }),
+      row({ operationIndex: 19, timestamp: 99 }),
+      row({ operationIndex: 18, timestamp: 98 }),
+    ];
+    pager.collectForAccount
+      .mockResolvedValueOnce({
+        rows: alicePaging.slice(0, 2),
+        pagingRows: alicePaging,
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        rows: [row({ userName: 'bob', operationIndex: 50, timestamp: 200 })],
+        pagingRows: [row({ userName: 'bob', operationIndex: 50, timestamp: 200 })],
+        hasMore: false,
+      });
+
+    pricing.enrichRows.mockResolvedValue([]);
+    pricing.calcTotals.mockReturnValue({ deposits: 0, withdrawals: 0 });
+
+    const now = Math.floor(Date.now() / 1000);
+    const result = await endpoint.execute({
+      accounts: [{ name: 'alice' }, { name: 'bob' }],
+      filterAccounts: ['alice', 'bob'],
+      startDate: now - 86_400 * 30,
+      endDate: now - 86_400,
+      limit: 2,
+      currency: 'USD',
+    });
+
+    expect(result.accounts).toEqual([
+      expect.objectContaining({ name: 'alice', hasMore: true, cursor: 19 }),
+    ]);
+    expect(result.hasMore).toBe(true);
+  });
 });

@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "在将AdSense代码集成到您的网站时，您可以选择广告强度的级别，从而控制广告的显示程度。只需在我们的平台上添加来自Google AdSense的代码并选择所需的强度级别。",
   "adsense_advertisements_txt_note": "此文本将添加到您站点的ads.txt文件中。",
   "advance_settings": "高级设置",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "未添加联盟代码。",
   "affiliate": "联盟",
   "affiliate_code_field_name": "联盟代码",
@@ -2836,5 +2842,6 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

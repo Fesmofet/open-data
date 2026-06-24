@@ -144,6 +144,12 @@
   "admin_rules": "Os administradores têm o direito de decidir aprovar ou rejeitar atualizações de objetos no site. Se vários administradores votarem na mesma atualização, apenas a última votação permanece.",
   "administrative": "Administrativo",
   "advance_settings": "Configurações avançadas",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "eu concordo",
   "agree_to_pay_following_commissions_waivio": "Eu concordo em pagar as seguintes comissões para Waivio e parceiros",
   "agree_to_pay_following_commissions_waivio)": "Eu concordo em pagar as seguintes comissões para Waivio e parceiros",
@@ -2116,5 +2122,6 @@
   "your_reward": "Your Reward",
   "your_vote": "Seu voto",
   "your_vote_placeholder": "Seu voto (opcional)",
-  "СЃommunity_actions": "Ações comunitárias"
+  "СЃommunity_actions": "Ações comunitárias",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

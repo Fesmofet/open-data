@@ -184,6 +184,12 @@
   "adsense_advertisements_text_part2": "Bei der Integration des AdSense-Codes in Ihre Website können Sie das Maß an Anzeigenintensität auswählen, um zu steuern, wie prominent die Anzeigen angezeigt werden. Fügen Sie einfach den Code von Google AdSense hinzu und wählen Sie den gewünschten Intensitätsgrad auf unserer Plattform aus.",
   "adsense_advertisements_txt_note": "Dieser Text wird zu ads.txt auf Ihrer Website hinzugefügt.",
   "advance_settings": "Erweiterte Einstellungen",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "aff_codes_empty": "Keine Affiliate-Codes hinzugefügt.",
   "affiliate": "Affiliate",
   "affiliate_code_field_name": "Affiliate-Code",
@@ -2855,5 +2861,6 @@
   "your_reward_new": "deine Belohnung",
   "your_vote": "Ihr Vote",
   "your_vote_placeholder": "Ihr Vote (optional)",
-  "zoom": "Zoom"
+  "zoom": "Zoom",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }

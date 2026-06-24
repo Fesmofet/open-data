@@ -144,6 +144,12 @@
   "admin_rules": "Administratorer har en afgørende ret til at godkende eller afvise opdateringer af objekter på webstedet. Hvis flere administratorer stemmer om den samme opdatering, er kun den sidste afstemning.",
   "administrative": "Administrativt",
   "advance_settings": "Avancerede indstillinger",
+  "advanced_report_completed_count": "Completed ({count})",
+  "advanced_report_export_csv": "Export to .CSV",
+  "advanced_report_exporting": "Exporting…",
+  "advanced_report_loading": "Loading…",
+  "advanced_report_loading_count": "Loading… {count}+",
+  "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "agree_to": "Jeg er enig i",
   "agree_to_pay_following_commissions_waivio": "Jeg accepterer at betale følgende provisioner til Waivio og partnere",
   "agree_to_pay_following_commissions_waivio)": "Jeg accepterer at betale følgende provisioner til Waivio og partnere",
@@ -2117,5 +2123,6 @@
   "your_reward": "Din belønning",
   "your_vote": "Din stemme",
   "your_vote_placeholder": "Din stemme (valgfri)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "advanced_report_unauthorized": "Please log in to view the advanced report."
 }
