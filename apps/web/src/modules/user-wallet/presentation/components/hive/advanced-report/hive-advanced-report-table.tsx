@@ -60,6 +60,8 @@ type ReportMeta = {
   hasMore: boolean;
   deposits: number;
   withdrawals: number;
+  /** Currency used for loaded rows and totals; updated on submit/page load, not on filter change. */
+  currency: SupportedCurrency;
 };
 
 function filtersFromRequest(request: HiveAdvancedReportRequest): AdvancedReportFiltersState {
@@ -91,6 +93,7 @@ function buildBrowseRequest(
 
 function applyPageResult(
   result: HiveAdvancedReportQueryResult,
+  currency: SupportedCurrency,
   setWallet: (rows: AdvancedReportRowApi[]) => void,
   setReportMeta: (meta: ReportMeta) => void,
   setLoadError: (error: HiveAdvancedReportQueryResult['error']) => void,
@@ -105,6 +108,7 @@ function applyPageResult(
     hasMore: result.report.hasMore,
     deposits: result.report.deposits,
     withdrawals: result.report.withdrawals,
+    currency,
   });
 }
 
@@ -130,12 +134,16 @@ function requestFromFilters(
   };
 }
 
-function initialReportMeta(result: HiveAdvancedReportQueryResult): ReportMeta {
+function initialReportMeta(
+  result: HiveAdvancedReportQueryResult,
+  currency: SupportedCurrency,
+): ReportMeta {
   return {
     accounts: result.report?.accounts ?? [],
     hasMore: result.report?.hasMore ?? false,
     deposits: result.report?.deposits ?? 0,
     withdrawals: result.report?.withdrawals ?? 0,
+    currency,
   };
 }
 
@@ -152,7 +160,9 @@ export function HiveAdvancedReportTable({
   const [wallet, setWallet] = useState<AdvancedReportRowApi[]>(
     () => initialResult.report?.wallet ?? [],
   );
-  const [reportMeta, setReportMeta] = useState(() => initialReportMeta(initialResult));
+  const [reportMeta, setReportMeta] = useState(() =>
+    initialReportMeta(initialResult, initialRequest.currency as SupportedCurrency),
+  );
   const [loadError, setLoadError] = useState(initialResult.error);
   const [dateEstablished, setDateEstablished] = useState(false);
   const [accountsError, setAccountsError] = useState(false);
@@ -196,7 +206,13 @@ export function HiveAdvancedReportTable({
         if (controller.signal.aborted) {
           return;
         }
-        applyPageResult(result, setWallet, setReportMeta, setLoadError);
+        applyPageResult(
+          result,
+          initialRequest.currency as SupportedCurrency,
+          setWallet,
+          setReportMeta,
+          setLoadError,
+        );
       })
       .finally(() => {
         if (abortRef.current === controller) {
@@ -230,7 +246,13 @@ export function HiveAdvancedReportTable({
     setDateRangeError(null);
     setDateEstablished(true);
     setWallet([]);
-    setReportMeta({ accounts: [], hasMore: false, deposits: 0, withdrawals: 0 });
+    setReportMeta({
+      accounts: [],
+      hasMore: false,
+      deposits: 0,
+      withdrawals: 0,
+      currency: filters.currency,
+    });
     setLoadError(null);
     setTruncated(false);
     abortRef.current?.abort();
@@ -257,6 +279,7 @@ export function HiveAdvancedReportTable({
           hasMore: update.hasMore,
           deposits: update.deposits,
           withdrawals: update.withdrawals,
+          currency: filters.currency,
         });
       },
     })
@@ -273,6 +296,7 @@ export function HiveAdvancedReportTable({
             hasMore: false,
             deposits: finalResult.report.deposits,
             withdrawals: finalResult.report.withdrawals,
+            currency: filters.currency,
           });
         }
       })
@@ -301,7 +325,7 @@ export function HiveAdvancedReportTable({
         profileAccount,
         viewerUsername,
         initialRequest.limit,
-        filters.currency,
+        reportMeta.currency,
         nextAccounts,
       ),
     };
@@ -312,7 +336,13 @@ export function HiveAdvancedReportTable({
         if (controller.signal.aborted) {
           return;
         }
-        applyPageResult(result, setWallet, setReportMeta, setLoadError);
+        applyPageResult(
+          result,
+          reportMeta.currency,
+          setWallet,
+          setReportMeta,
+          setLoadError,
+        );
       })
       .finally(() => {
         if (abortRef.current === controller) {
@@ -321,10 +351,10 @@ export function HiveAdvancedReportTable({
       });
   }, [
     dateEstablished,
-    filters.currency,
     initialRequest.limit,
     profileAccount,
     reportMeta.accounts,
+    reportMeta.currency,
     viewerUsername,
     wallet,
   ]);
@@ -401,12 +431,15 @@ export function HiveAdvancedReportTable({
       let withdrawals = reportMeta.withdrawals;
 
       if (dateEstablished && (loadingReport || reportMeta.hasMore)) {
-        const body = requestFromFilters(
-          filters,
-          profileAccount,
-          viewerUsername,
-          initialRequest.limit,
-        );
+        const body = {
+          ...requestFromFilters(
+            filters,
+            profileAccount,
+            viewerUsername,
+            initialRequest.limit,
+          ),
+          currency: reportMeta.currency,
+        };
         const fullResult = await loadFullHiveAdvancedReport(body);
         if (fullResult.error || !fullResult.report) {
           return;
@@ -419,7 +452,7 @@ export function HiveAdvancedReportTable({
       const rows = exportWallet.map(buildAdvancedReportRowView);
       const csv = buildAdvancedReportCsv(
         rows,
-        filters.currency,
+        reportMeta.currency,
         dateEstablished ? deposits : null,
         dateEstablished ? withdrawals : null,
       );
@@ -439,6 +472,7 @@ export function HiveAdvancedReportTable({
     initialRequest.limit,
     loadingReport,
     profileAccount,
+    reportMeta.currency,
     reportMeta.deposits,
     reportMeta.hasMore,
     reportMeta.withdrawals,
@@ -446,12 +480,12 @@ export function HiveAdvancedReportTable({
     wallet,
   ]);
 
-  const currency = filters.currency;
+  const reportCurrency = reportMeta.currency;
   const depositsDisplay = dateEstablished
-    ? formatAdvancedReportTotal(reportMeta.deposits, currency)
+    ? formatAdvancedReportTotal(reportMeta.deposits, reportCurrency)
     : '-';
   const withdrawalsDisplay = dateEstablished
-    ? formatAdvancedReportTotal(reportMeta.withdrawals, currency)
+    ? formatAdvancedReportTotal(reportMeta.withdrawals, reportCurrency)
     : '-';
   const statusLabel = !dateEstablished
     ? t('totals_calculated')
@@ -553,10 +587,10 @@ export function HiveAdvancedReportTable({
                 {t('table_HBD')}
               </div>
               <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
-                {`HIVE/${currency}`}
+                {`HIVE/${reportCurrency}`}
               </div>
               <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
-                {`HBD/${currency}`}
+                {`HBD/${reportCurrency}`}
               </div>
               <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
                 ±
