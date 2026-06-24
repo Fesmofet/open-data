@@ -3,7 +3,6 @@
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import type { ActivityLoadError, ActivityPageView } from '@/modules/user-activity/domain/types/activity-row-view';
 
 import type { HiveWalletLoadError, HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
 import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
@@ -17,15 +16,6 @@ export type TransfersHiveWalletViewProps = {
   waivSummary: WaivWalletSummaryView | null;
   hiveSummary: HiveWalletSummaryView | null;
   hiveError: HiveWalletLoadError | null;
-  historyPage?: ActivityPageView;
-  historyError?: ActivityLoadError | null;
-};
-
-const EMPTY_HISTORY_PAGE: ActivityPageView = {
-  items: [],
-  cursor: null,
-  hasMore: false,
-  chainContext: { totalVestingShares: '0', totalVestingFundSteem: '0' },
 };
 
 export function TransfersHiveWalletView({
@@ -34,8 +24,6 @@ export function TransfersHiveWalletView({
   waivSummary,
   hiveSummary,
   hiveError,
-  historyPage = EMPTY_HISTORY_PAGE,
-  historyError = null,
 }: TransfersHiveWalletViewProps) {
   const { t } = useI18n();
   const canManageWallet =
@@ -73,11 +61,7 @@ export function TransfersHiveWalletView({
           {t('table_view')}
         </Link>
       </div>
-      <HiveWalletHistoryFeedClient
-        accountName={accountName}
-        initialPage={historyPage}
-        initialError={historyError}
-      />
+      <HiveWalletHistoryFeedClient accountName={accountName} />
     </UnifiedWalletModalHost>
   );
 }

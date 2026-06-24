@@ -8,6 +8,7 @@ import {
 import {
   RightSidebar,
   UserMenuVerticalRail,
+  UserProfileMainContentPendingShell,
   UserProfileSubmenu,
 } from '@/modules/user-profile';
 
@@ -48,7 +49,9 @@ export default async function UserProfileMainShellLayout({
       <main className="min-h-[12rem] min-w-0">
         <FeedColumn>
           <UserProfileSubmenu accountName={accountName} />
-          {children}
+          <UserProfileMainContentPendingShell>
+            {children}
+          </UserProfileMainContentPendingShell>
         </FeedColumn>
       </main>
 

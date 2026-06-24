@@ -49,4 +49,5 @@ export { ProfileMapSidebarListSkeleton } from './components/profile-map-sidebar-
 export { UserMenuVerticalRail } from './components/user-menu-vertical-rail';
 export { UserProfileSubmenu } from './components/user-profile-submenu';
 export type { UserProfileSubmenuProps } from './components/user-profile-submenu';
+export { UserProfileMainContentPendingShell } from './components/user-profile-main-content-pending-shell';
 export type { UserProfileShellUser } from './components/types';
