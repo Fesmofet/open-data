@@ -5,6 +5,7 @@ import {
   getHiveWalletHistoryPageQuery,
   getHiveWalletSummaryQuery,
   getWaivWalletSummaryQuery,
+  TransfersWalletPageClient,
   TransfersWalletShell,
 } from '@/modules/user-wallet';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
@@ -61,17 +62,19 @@ export default async function UserProfileTransfersPage({
 
   if (walletType === 'HIVE' || walletType === 'WAIV') {
     return (
-      <TransfersWalletShell
-        accountName={accountName}
-        viewerUsername={user?.username ?? null}
-        walletType={walletType}
-        waivSummary={waiv.summary}
-        waivError={waiv.error}
-        hiveSummary={hive.summary}
-        hiveError={hive.error}
-        hiveHistoryPage={hiveHistory.page}
-        hiveHistoryError={hiveHistory.error}
-      />
+      <TransfersWalletPageClient>
+        <TransfersWalletShell
+          accountName={accountName}
+          viewerUsername={user?.username ?? null}
+          walletType={walletType}
+          waivSummary={waiv.summary}
+          waivError={waiv.error}
+          hiveSummary={hive.summary}
+          hiveError={hive.error}
+          hiveHistoryPage={hiveHistory.page}
+          hiveHistoryError={hiveHistory.error}
+        />
+      </TransfersWalletPageClient>
     );
   }
 

@@ -62,7 +62,7 @@ export const currencyCoinGeckoDailyJob: CronJobDefinition = {
 /** Persist FX fiat columns into `currency_rates` (daily). */
 export const currencyFxDailyJob: CronJobDefinition = {
   name: 'currency-fx-daily',
-  schedule: '5 1 * * *',
+  schedule: '00 17 * * *',
   category: 'light',
   enabled: true,
   timeoutMs: DAILY_TIMEOUT_MS,

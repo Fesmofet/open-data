@@ -14,6 +14,11 @@ export type {
 } from './domain/types/hive-wallet-view';
 
 export { TransfersWalletShell } from './presentation/components/wallet/transfers-wallet-shell';
+export {
+  TransfersWalletLoadingFallback,
+  TransfersWalletLoadingSkeleton,
+} from './presentation/components/wallet/transfers-wallet-loading-skeleton';
+export { TransfersWalletPageClient } from './presentation/components/wallet/transfers-wallet-page-client';
 export { WaivWalletTab } from './presentation/components/waiv/waiv-wallet-tab';
 export { WaivWalletSummarySkeleton } from './presentation/components/waiv/waiv-wallet-summary-skeleton';
 export { HiveWalletTab } from './presentation/components/hive/hive-wallet-tab';

@@ -230,7 +230,12 @@ function UserMenuInner({
         {WALLET_TYPES.map((type) => {
           const href = `${base}/transfers?type=${type}`;
           return (
-            <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, false)}>
+            <UserProfileNavLink
+              key={type}
+              href={href}
+              method="replace"
+              className={subNavLinkClass(walletType === type, false)}
+            >
               {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
             </UserProfileNavLink>
           );
@@ -291,7 +296,12 @@ function UserMenuInner({
             {WALLET_TYPES.map((type) => {
               const href = `${base}/transfers?type=${type}`;
               return (
-                <UserProfileNavLink key={type} href={href} className={subNavLinkClass(walletType === type, true)}>
+                <UserProfileNavLink
+                  key={type}
+                  href={href}
+                  method="replace"
+                  className={subNavLinkClass(walletType === type, true)}
+                >
                   {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
                 </UserProfileNavLink>
               );
