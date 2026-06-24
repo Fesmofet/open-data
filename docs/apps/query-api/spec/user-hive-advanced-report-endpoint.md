@@ -91,6 +91,31 @@ Optional env `HIVE_SWAP_ACCOUNT` (default `honey-swap`, legacy `SWAP_HIVE_ACC`):
 | 403 | `viewer` does not match token subject |
 | 503 | Hive RPC unavailable |
 
+## `POST /query/v1/wallet/hive/account-created-dates`
+
+Resolves Hive account creation dates for advanced report **From account creation** preset. **No auth** (public chain data).
+
+### Request body
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `accounts` | `string[]` | Min 1, max 20; trim + lowercase + dedupe |
+
+### Response
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `dates` | `Record<string, string \| null>` | Per-account UTC `YYYY-MM-DD`; `null` when unresolved |
+| `startDateYmd` | `string \| null` | Earliest non-null date across `accounts` (min) |
+
+### Resolution (per account)
+
+1. **`accounts_current.created`** when indexed and parseable.
+2. **`condenser_api.get_accounts`** → `created`.
+3. **`get_account_history`** with `start=-1`, `limit=1`, bitmask for virtual op **`account_created`** (protocol index 94); validate `new_account_name`.
+
+Web BFF: `POST /api/wallet/hive/account-created-dates` (no session required).
+
 ## `POST /query/v1/wallet/hive/exemptions`
 
 Toggle a viewer exemption (excluded from deposit/withdraw totals).

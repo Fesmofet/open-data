@@ -2521,6 +2521,8 @@
   "table_back": "पीछे",
   "table_date": "तिथि",
   "table_date_from": "से:",
+  "table_from_account_creation": "खाता निर्माण से",
+  "table_from_account_creation_failed": "खाता निर्माण तिथि निर्धारित नहीं हो सकी",
   "table_date_till": "तक:",
   "table_description": "विवरण",
   "table_end_date_picker": "समाप्ति तिथि का चयन करें",
@@ -2862,5 +2864,6 @@
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
   "СЃommunity_actions": "समुदाय क्रियाएँ",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

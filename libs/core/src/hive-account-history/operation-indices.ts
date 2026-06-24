@@ -36,6 +36,8 @@ export const HIVE_OPERATION_INDEX = {
   fill_transfer_from_savings: 59,
   proposal_pay: 66,
   transfer_to_vesting_completed: 78,
+  /** Virtual op; filterHigh bit `0x40000000`. */
+  account_created: 94,
   fill_collateralized_convert_request: 82,
 } as const;
 

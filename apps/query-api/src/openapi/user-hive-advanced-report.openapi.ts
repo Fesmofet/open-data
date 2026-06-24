@@ -4,6 +4,10 @@ import {
   hiveAdvancedReportBodySchema,
   hiveWalletExemptionBodySchema,
 } from '../domain/wallet/schemas/hive-advanced-report.schema';
+import {
+  hiveAccountCreatedDatesBodySchema,
+  hiveAccountCreatedDatesResponseSchema,
+} from '../domain/wallet/schemas/hive-account-created-dates.schema';
 import { registry } from './registry';
 
 const badRequestSchema = z.object({
@@ -131,6 +135,51 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: serviceUnavailableSchema,
+        },
+      },
+    },
+  },
+});
+
+const accountCreatedDatesBodyOpenApi = registry.register(
+  'HiveAccountCreatedDatesBody',
+  hiveAccountCreatedDatesBodySchema,
+);
+
+const accountCreatedDatesResponseOpenApi = registry.register(
+  'HiveAccountCreatedDatesResponse',
+  hiveAccountCreatedDatesResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/wallet/hive/account-created-dates',
+  summary: 'Hive account creation dates',
+  description:
+    'Resolves UTC creation dates for one or more Hive accounts (DB → get_accounts → account_created history). Returns per-account YMD and earliest `startDateYmd` for advanced report From preset. Public read; no auth.',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: accountCreatedDatesBodyOpenApi,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Creation dates (nullable per account when unresolved).',
+      content: {
+        'application/json': {
+          schema: accountCreatedDatesResponseOpenApi,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid body.',
+      content: {
+        'application/json': {
+          schema: badRequestSchema,
         },
       },
     },

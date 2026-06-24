@@ -29,5 +29,12 @@ export {
   type HiveWalletExemptionResponse,
   type AdvancedReportRowDto,
 } from './schemas/hive-advanced-report.schema';
+export {
+  hiveAccountCreatedDatesBodySchema,
+  hiveAccountCreatedDatesResponseSchema,
+  type HiveAccountCreatedDatesBody,
+  type HiveAccountCreatedDatesResponse,
+} from './schemas/hive-account-created-dates.schema';
 export { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
+export { GetHiveAccountCreatedDatesEndpoint } from './get-hive-account-created-dates.endpoint';
 export { UpsertHiveWalletExemptionEndpoint } from './upsert-hive-wallet-exemption.endpoint';

@@ -1848,6 +1848,8 @@
   "table_back": "عودة",
   "table_date": "تاريخ",
   "table_date_from": "من عند:",
+  "table_from_account_creation": "من تاريخ إنشاء الحساب",
+  "table_from_account_creation_failed": "تعذر تحديد تاريخ إنشاء الحساب",
   "table_date_till": "حتى:",
   "table_description": "وصف",
   "table_end_date_picker": "حدد تاريخ الانتهاء",
@@ -2123,5 +2125,6 @@
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
   "СЃommunity_actions": "إجراءات المجتمع",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

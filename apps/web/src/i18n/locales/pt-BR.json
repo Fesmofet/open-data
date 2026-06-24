@@ -1848,6 +1848,8 @@
   "table_back": "Voltar",
   "table_date": "Data",
   "table_date_from": "A partir de:",
+  "table_from_account_creation": "Desde a criação da conta",
+  "table_from_account_creation_failed": "Não foi possível determinar a data de criação da conta",
   "table_date_till": "Até:",
   "table_description": "Descrição",
   "table_end_date_picker": "Selecione a data de término",
@@ -2123,5 +2125,6 @@
   "your_vote": "Seu voto",
   "your_vote_placeholder": "Seu voto (opcional)",
   "СЃommunity_actions": "Ações comunitárias",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

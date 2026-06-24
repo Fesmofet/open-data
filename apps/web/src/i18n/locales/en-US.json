@@ -2850,6 +2850,8 @@
   "table_back": "Back",
   "table_date": "Date",
   "table_date_from": "From:",
+  "table_from_account_creation": "From account creation",
+  "table_from_account_creation_failed": "Could not resolve account creation date",
   "table_date_till": "Till:",
   "table_description": "Description",
   "table_end_date_picker": "Select end date",
@@ -3241,5 +3243,6 @@
   "your_vote_placeholder": "Your vote(optional)",
   "zoom": "Zoom",
   "СЃommunity_actions": "Community actions",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

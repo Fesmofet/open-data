@@ -1849,6 +1849,8 @@
   "table_back": "Bumalik",
   "table_date": "Petsa",
   "table_date_from": "Mula sa:",
+  "table_from_account_creation": "Mula sa paglikha ng account",
+  "table_from_account_creation_failed": "Hindi matukoy ang petsa ng paglikha ng account",
   "table_date_till": "Hanggang:",
   "table_description": "Paglalarawan",
   "table_end_date_picker": "Piliin ang petsa ng pagtatapos",
@@ -2124,5 +2126,6 @@
   "your_vote": "Ang iyong boto",
   "your_vote_placeholder": "Ang iyong boto (opsyonal)",
   "СЃommunity_actions": "Mga aksyon sa pamayanan",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

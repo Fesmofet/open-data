@@ -1849,6 +1849,8 @@
   "table_back": "Esquena",
   "table_date": "Datar",
   "table_date_from": "Des de:",
+  "table_from_account_creation": "Des de la creació del compte",
+  "table_from_account_creation_failed": "No s'ha pogut determinar la data de creació del compte",
   "table_date_till": "Fins a:",
   "table_description": "Descripció",
   "table_end_date_picker": "Seleccioneu la data de finalització",
@@ -2124,5 +2126,6 @@
   "your_vote": "El vostre vot",
   "your_vote_placeholder": "El vostre vot (opcional)",
   "СЃommunity_actions": "Accions comunitàries",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

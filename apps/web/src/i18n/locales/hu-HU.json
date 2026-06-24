@@ -1849,6 +1849,8 @@
   "table_back": "Vissza",
   "table_date": "Dátum",
   "table_date_from": "Tól től:",
+  "table_from_account_creation": "A fiók létrehozásától",
+  "table_from_account_creation_failed": "Nem sikerült meghatározni a fiók létrehozásának dátumát",
   "table_date_till": "Amíg:",
   "table_description": "Leírás",
   "table_end_date_picker": "Válassza ki a befejezés dátumát",
@@ -2125,5 +2127,6 @@
   "your_vote": "A szavazatod",
   "your_vote_placeholder": "Az Ön szavazata (nem kötelező)",
   "СЃommunity_actions": "Közösségi fellépések",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

@@ -10,20 +10,38 @@ export const hiveAdvancedReportAccountSchema = z.object({
   cursor: z.coerce.number().int().optional(),
 });
 
-export const hiveAdvancedReportBodySchema = z.object({
-  accounts: z.array(hiveAdvancedReportAccountSchema).min(1),
-  filterAccounts: z.array(z.string().min(1)).min(1),
-  startDate: z.coerce.number().int(),
-  endDate: z.coerce.number().int(),
-  limit: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(ADVANCED_REPORT_MAX_PAGE_SIZE)
-    .default(ADVANCED_REPORT_DEFAULT_PAGE_SIZE),
-  currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
-  viewer: z.string().min(1).optional(),
-});
+export const hiveAdvancedReportBodySchema = z
+  .object({
+    accounts: z.array(hiveAdvancedReportAccountSchema).min(1),
+    filterAccounts: z.array(z.string().min(1)).min(1),
+    startDate: z.coerce.number().int(),
+    endDate: z.coerce.number().int(),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(ADVANCED_REPORT_MAX_PAGE_SIZE)
+      .default(ADVANCED_REPORT_DEFAULT_PAGE_SIZE),
+    currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+    viewer: z.string().min(1).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.startDate > data.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'startDate must be <= endDate',
+        path: ['endDate'],
+      });
+    }
+    const now = Math.floor(Date.now() / 1000);
+    if (data.endDate >= now) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'endDate must be in the past',
+        path: ['endDate'],
+      });
+    }
+  });
 
 export type HiveAdvancedReportBody = z.output<typeof hiveAdvancedReportBodySchema>;
 

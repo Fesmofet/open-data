@@ -66,7 +66,7 @@ export const HiveAdvancedReportRow = memo(function HiveAdvancedReportRow({
         {row.withdrawDeposit}
       </td>
       <td className="px-2 py-2 align-top">
-        <Link href={`/@${row.userName}`} className="text-link">
+        <Link href={`/@${row.userName}`} className="text-link" suppressHydrationWarning>
           @{row.userName}
         </Link>
       </td>

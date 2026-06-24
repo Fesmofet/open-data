@@ -1846,6 +1846,8 @@
   "table_back": "Belakang",
   "table_date": "Tarikh",
   "table_date_from": "Dari:",
+  "table_from_account_creation": "Dari penciptaan akaun",
+  "table_from_account_creation_failed": "Tidak dapat menentukan tarikh penciptaan akaun",
   "table_date_till": "Hingga:",
   "table_description": "Penerangan",
   "table_end_date_picker": "Pilih tarikh akhir",
@@ -2122,5 +2124,6 @@
   "your_vote": "Undian anda",
   "your_vote_placeholder": "Undian anda (pilihan)",
   "СЃommunity_actions": "Tindakan masyarakat",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

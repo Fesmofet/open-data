@@ -2502,6 +2502,8 @@
   "table_back": "返回",
   "table_date": "日期",
   "table_date_from": "从：",
+  "table_from_account_creation": "从帐户创建日起",
+  "table_from_account_creation_failed": "无法确定帐户创建日期",
   "table_date_till": "至：",
   "table_description": "描述",
   "table_end_date_picker": "选择结束日期",
@@ -2843,5 +2845,6 @@
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
   "СЃommunity_actions": "社区活动",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

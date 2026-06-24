@@ -2521,6 +2521,8 @@
   "table_back": "Zpět",
   "table_date": "Datum",
   "table_date_from": "Od:",
+  "table_from_account_creation": "Od vytvoření účtu",
+  "table_from_account_creation_failed": "Nepodařilo se zjistit datum vytvoření účtu",
   "table_date_till": "Do:",
   "table_description": "Popis",
   "table_end_date_picker": "Vyberte datum ukončení",
@@ -2862,5 +2864,6 @@
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
   "СЃommunity_actions": "Akce komunity",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

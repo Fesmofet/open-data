@@ -8,7 +8,9 @@ import { GetUserHiveRcDelegationsEndpoint } from './get-user-hive-rc-delegations
 import { GetUserHiveWalletEndpoint } from './get-user-hive-wallet.endpoint';
 import { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
 import { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
+import { GetHiveAccountCreatedDatesEndpoint } from './get-hive-account-created-dates.endpoint';
 import { HiveAdvancedReportPagerService } from './hive-advanced-report-pager.service';
+import { HiveAccountCreationDateService } from './hive-account-creation-date.service';
 import { UpsertHiveWalletExemptionEndpoint } from './upsert-hive-wallet-exemption.endpoint';
 import { WalletAdvancedReportPricingService } from './wallet-advanced-report-pricing.service';
 
@@ -22,7 +24,9 @@ import { WalletAdvancedReportPricingService } from './wallet-advanced-report-pri
     GetUserHiveRcDelegationsEndpoint,
     HiveAdvancedReportPagerService,
     WalletAdvancedReportPricingService,
+    HiveAccountCreationDateService,
     GetHiveAdvancedReportEndpoint,
+    GetHiveAccountCreatedDatesEndpoint,
     UpsertHiveWalletExemptionEndpoint,
   ],
   exports: [
@@ -32,6 +36,7 @@ import { WalletAdvancedReportPricingService } from './wallet-advanced-report-pri
     GetUserHiveHpDelegationsEndpoint,
     GetUserHiveRcDelegationsEndpoint,
     GetHiveAdvancedReportEndpoint,
+    GetHiveAccountCreatedDatesEndpoint,
     UpsertHiveWalletExemptionEndpoint,
   ],
 })

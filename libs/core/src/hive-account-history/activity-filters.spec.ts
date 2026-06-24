@@ -44,6 +44,13 @@ describe('makeOperationBitMask', () => {
     });
   });
 
+  it('sets account_created virtual op in filterHigh', () => {
+    expect(makeOperationBitMask([HIVE_OPERATION_INDEX.account_created])).toEqual({
+      filterLow: 0,
+      filterHigh: 0x4000_0000,
+    });
+  });
+
   it('unions savings and reward indices without JS shift corruption', () => {
     const mask = makeOperationBitMask([
       HIVE_OPERATION_INDEX.transfer_to_savings,

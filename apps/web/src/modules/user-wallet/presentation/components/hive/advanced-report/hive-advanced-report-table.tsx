@@ -21,11 +21,17 @@ import { loadFullHiveAdvancedReport } from '../../../../application/queries/load
 import { totalsFromAdvancedReportWallet } from '../../../../application/queries/load-full-hive-advanced-report.helpers';
 import { loadProgressiveHiveAdvancedReport } from '../../../../application/queries/load-progressive-hive-advanced-report';
 import { postHiveWalletExemptionClient } from '../../../../infrastructure/clients/hive-advanced-report.browser.client';
+import { fetchHiveAccountCreatedDatesClient } from '../../../../infrastructure/clients/hive-account-created-dates.browser.client';
 import {
-  HiveAdvancedReportFilters,
+  maxAdvancedReportTillYmd,
   unixToYmd,
+  validateAdvancedReportDateRange,
   ymdToUnixEnd,
   ymdToUnixStart,
+  type AdvancedReportDateRangeError,
+} from '../../../../domain/advanced-report-date-range';
+import {
+  HiveAdvancedReportFilters,
   type AdvancedReportFiltersState,
 } from './hive-advanced-report-filters';
 import { buildAdvancedReportCsv } from './hive-advanced-report-row';
@@ -108,7 +114,13 @@ export function HiveAdvancedReportTable({
   const [loadError, setLoadError] = useState(initialResult.error);
   const [dateEstablished, setDateEstablished] = useState(false);
   const [accountsError, setAccountsError] = useState(false);
+  const [dateRangeError, setDateRangeError] = useState<AdvancedReportDateRangeError | null>(
+    null,
+  );
+  const maxTillDate = maxAdvancedReportTillYmd();
   const [loadingReport, setLoadingReport] = useState(false);
+  const [loadingCreation, setLoadingCreation] = useState(false);
+  const [creationError, setCreationError] = useState(false);
   const [exportingCsv, setExportingCsv] = useState(false);
   const [truncated, setTruncated] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -128,6 +140,16 @@ export function HiveAdvancedReportTable({
       return;
     }
     setAccountsError(false);
+
+    const rangeError = validateAdvancedReportDateRange(
+      filters.startDate,
+      filters.endDate,
+    );
+    if (rangeError) {
+      setDateRangeError(rangeError);
+      return;
+    }
+    setDateRangeError(null);
     setDateEstablished(true);
     setWallet([]);
     setReportMeta({ accounts: [], hasMore: false, deposits: 0, withdrawals: 0 });
@@ -182,6 +204,31 @@ export function HiveAdvancedReportTable({
         }
       });
   }, [filters, initialRequest.limit, profileAccount, viewerUsername]);
+
+  const onFromAccountCreation = useCallback(() => {
+    const accountNames =
+      filters.filterAccounts.length > 0
+        ? [...new Set(filters.filterAccounts.map((name) => name.trim().toLowerCase()))]
+        : [profileAccount.trim().toLowerCase()];
+
+    setCreationError(false);
+    setLoadingCreation(true);
+    void fetchHiveAccountCreatedDatesClient({ accounts: accountNames })
+      .then((result) => {
+        if (!result.ok || !result.data.startDateYmd) {
+          setCreationError(true);
+          return;
+        }
+        setFilters((prev) => ({
+          ...prev,
+          startDate: result.data.startDateYmd!,
+        }));
+        setDateRangeError(null);
+      })
+      .finally(() => {
+        setLoadingCreation(false);
+      });
+  }, [filters.filterAccounts, profileAccount]);
 
   const onToggleExemption = useCallback(
     (row: AdvancedReportRowView, checked: boolean) => {
@@ -294,17 +341,26 @@ export function HiveAdvancedReportTable({
     <div className="w-full min-w-0">
       <div className="mb-4 flex items-start justify-between gap-4">
         <h1 className="text-heading-sm font-weight-strong">{t('table_view')}</h1>
-        <Link href={backHref} className="text-link text-body-sm">
+        <Link href={backHref} className="text-link text-body-sm" suppressHydrationWarning>
           {t('table_back')}
         </Link>
       </div>
 
       <HiveAdvancedReportFilters
         value={filters}
-        onChange={setFilters}
+        onChange={(next) => {
+          setFilters(next);
+          setDateRangeError(null);
+          setCreationError(false);
+        }}
         onSubmit={onSubmit}
+        onFromAccountCreation={onFromAccountCreation}
         submitting={loadingReport}
+        loadingCreation={loadingCreation}
+        creationError={creationError}
         accountsError={accountsError}
+        dateRangeError={dateRangeError}
+        maxTillDate={maxTillDate}
       />
 
       {loadError ? (
@@ -344,7 +400,7 @@ export function HiveAdvancedReportTable({
 
       <div
         ref={scrollRef}
-        className="max-h-[calc(100dvh-var(--shell-header-height,3.5rem)-16rem)] w-full overflow-auto rounded-card border border-border"
+        className="scrollbar-hide max-h-[calc(100dvh-var(--shell-header-height,3.5rem)-16rem)] w-full overflow-auto rounded-card border border-border"
       >
         <table className="w-full min-w-[960px] table-fixed border-separate border-spacing-0 text-left text-body-sm">
           <thead>

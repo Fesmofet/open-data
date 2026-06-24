@@ -414,6 +414,15 @@
   .scrollbar-minimal::-webkit-scrollbar-corner {
     background: transparent;
   }
+
+  /** Scrollable region without visible scrollbar (virtual lists, etc.). */
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 html {

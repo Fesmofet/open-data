@@ -2606,6 +2606,8 @@
   "table_back": "Atrás",
   "table_date": "Fecha",
   "table_date_from": "Desde:",
+  "table_from_account_creation": "Desde la creación de la cuenta",
+  "table_from_account_creation_failed": "No se pudo determinar la fecha de creación de la cuenta",
   "table_date_till": "Hasta:",
   "table_description": "Descripción",
   "table_end_date_picker": "Seleccionar fecha de finalización",
@@ -2954,5 +2956,6 @@
   "your_vote_placeholder": "Tu voto (opcional)",
   "zoom": "Zoom",
   "СЃommunity_actions": "Acciones de la comunidad",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

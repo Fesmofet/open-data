@@ -35,6 +35,7 @@ Fiat amounts come from query-api only — no client-side rate math.
 ## UI
 
 - Filters: start/till date, **user search** (multi-account chips), base currency
+- **From account creation** link under From date — sets start to earliest creation date among selected filter accounts (or profile account when none selected); BFF `POST /api/wallet/hive/account-created-dates` → query-api tiered resolve (DB → `get_accounts` → `account_created` history)
 - Submit loads **all pages automatically** until `hasMore` is false (legacy parity; no manual Show more)
 - Page size **50** (shared `@opden-data-layer/core` constant)
 - Virtual scroll tbody (`@tanstack/react-virtual`, sticky header)

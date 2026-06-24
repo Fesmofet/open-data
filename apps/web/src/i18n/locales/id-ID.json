@@ -2521,6 +2521,8 @@
   "table_back": "Kembali",
   "table_date": "Tanggal",
   "table_date_from": "Dari:",
+  "table_from_account_creation": "Dari pembuatan akun",
+  "table_from_account_creation_failed": "Tidak dapat menentukan tanggal pembuatan akun",
   "table_date_till": "Sampai:",
   "table_description": "Deskripsi",
   "table_end_date_picker": "Pilih tanggal akhir",
@@ -2862,5 +2864,6 @@
   "your_vote_placeholder": "Suara Anda (opsional)",
   "zoom": "Perbesar",
   "СЃommunity_actions": "Tindakan Komunitas",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

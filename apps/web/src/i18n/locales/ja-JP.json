@@ -2521,6 +2521,8 @@
   "table_back": "戻る",
   "table_date": "日付",
   "table_date_from": "開始日:",
+  "table_from_account_creation": "アカウント作成日から",
+  "table_from_account_creation_failed": "アカウント作成日を取得できませんでした",
   "table_date_till": "終了日:",
   "table_description": "説明",
   "table_end_date_picker": "終了日を選択",
@@ -2862,5 +2864,6 @@
   "your_vote_placeholder": "あなたの投票（オプション）",
   "zoom": "ズーム",
   "СЃommunity_actions": "コミュニティのアクション",
-  "advanced_report_unauthorized": "Please log in to view the advanced report."
+  "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "table_till_before_from_validation": "Till date must be on or after From date"
 }

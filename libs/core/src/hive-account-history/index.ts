@@ -26,6 +26,7 @@ export {
   type ActivityFilterKey,
 } from './activity-filter-keys';
 export { HIVE_OPERATION_INDEX, type HiveOperationIndex } from './operation-indices';
+export { hiveTimestampToYmd, minYmd } from './hive-timestamp-to-ymd';
 export {
   makeOperationBitMask,
   type OperationBitMask,

@@ -52,25 +52,43 @@ export type HiveAdvancedReportResponseApi = z.infer<
   typeof hiveAdvancedReportResponseSchema
 >;
 
-export const hiveAdvancedReportRequestSchema = z.object({
-  accounts: z.array(
-    z.object({
-      name: z.string().min(1),
-      cursor: z.number().int().optional(),
-    }),
-  ),
-  filterAccounts: z.array(z.string().min(1)).min(1),
-  startDate: z.number().int(),
-  endDate: z.number().int(),
-  limit: z
-    .number()
-    .int()
-    .min(1)
-    .max(ADVANCED_REPORT_MAX_PAGE_SIZE)
-    .default(ADVANCED_REPORT_DEFAULT_PAGE_SIZE),
-  currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
-  viewer: z.string().min(1).optional(),
-});
+export const hiveAdvancedReportRequestSchema = z
+  .object({
+    accounts: z.array(
+      z.object({
+        name: z.string().min(1),
+        cursor: z.number().int().optional(),
+      }),
+    ),
+    filterAccounts: z.array(z.string().min(1)).min(1),
+    startDate: z.number().int(),
+    endDate: z.number().int(),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(ADVANCED_REPORT_MAX_PAGE_SIZE)
+      .default(ADVANCED_REPORT_DEFAULT_PAGE_SIZE),
+    currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+    viewer: z.string().min(1).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.startDate > data.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'startDate must be <= endDate',
+        path: ['endDate'],
+      });
+    }
+    const now = Math.floor(Date.now() / 1000);
+    if (data.endDate >= now) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'endDate must be in the past',
+        path: ['endDate'],
+      });
+    }
+  });
 
 export type HiveAdvancedReportRequest = z.infer<
   typeof hiveAdvancedReportRequestSchema
