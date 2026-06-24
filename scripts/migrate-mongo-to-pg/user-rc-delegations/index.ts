@@ -1,6 +1,9 @@
 /**
  * Stream MongoDB `user_rc_delegations` JSON array export into `user_rc_delegations`.
- * Usage: pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json>
+ * Usage: pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json> [--skip-indexes]
+ *
+ * --skip-indexes  Drop secondary index on `user_rc_delegations` before bulk insert;
+ *                 recreate after.
  */
 
 import * as fs from 'fs';
@@ -10,7 +13,7 @@ import { Writable } from 'node:stream';
 
 import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 import type { NewUserRcDelegation, OdlDatabase } from '../../../libs/core/src/db';
-import { Kysely, PostgresDialect } from 'kysely';
+import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
@@ -111,13 +114,31 @@ class MongoUserRcDelegationsMigrator {
   }
 }
 
-async function migrateFile(filePath: string): Promise<void> {
+async function dropRcDelegationsBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Dropping user_rc_delegations indexes...');
+  await sql`DROP INDEX IF EXISTS idx_user_rc_delegations_delegatee`.execute(db);
+  console.log('Indexes dropped.');
+}
+
+async function recreateRcDelegationsBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Recreating user_rc_delegations indexes...');
+  await sql`
+    CREATE INDEX idx_user_rc_delegations_delegatee ON user_rc_delegations (delegatee)
+  `.execute(db);
+  console.log('Indexes recreated.');
+}
+
+async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void> {
   const resolved = path.resolve(filePath);
   if (!fs.existsSync(resolved)) {
     fail(`File not found: ${resolved}`);
   }
 
   const migrator = new MongoUserRcDelegationsMigrator(resolveConnectionString());
+
+  if (skipIndexes) {
+    await dropRcDelegationsBulkIndexes(migrator.db);
+  }
 
   try {
     const sink = new Writable({
@@ -150,18 +171,25 @@ async function migrateFile(filePath: string): Promise<void> {
 
     await migrator.flushAll();
   } finally {
+    if (skipIndexes) {
+      await recreateRcDelegationsBulkIndexes(migrator.db);
+    }
     await migrator.destroy();
   }
 
   console.log('RC delegation migration stats:', migrator.stats);
 }
 
-const filePath = process.argv[2];
+const args = process.argv.slice(2);
+const filePath = args.find((a) => !a.startsWith('--'));
+const skipIndexes = args.includes('--skip-indexes');
 if (!filePath) {
-  fail('Usage: pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json>');
+  fail(
+    'Usage: pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json> [--skip-indexes]',
+  );
 }
 
-void migrateFile(filePath).catch((err: unknown) => {
+void migrateFile(filePath, skipIndexes).catch((err: unknown) => {
   console.error(err);
   process.exit(1);
 });

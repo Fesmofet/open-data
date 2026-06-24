@@ -1,6 +1,9 @@
 /**
  * Stream MongoDB `delegations` JSON array export into `user_delegations`.
- * Usage: pnpm migrate:mongo-delegations <path-to-delegations.json>
+ * Usage: pnpm migrate:mongo-delegations <path-to-delegations.json> [--skip-indexes]
+ *
+ * --skip-indexes  Drop secondary indexes on `user_delegations` before bulk insert;
+ *                 recreate after.
  */
 
 import * as fs from 'fs';
@@ -10,7 +13,7 @@ import { Writable } from 'node:stream';
 
 import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 import type { NewUserDelegation, OdlDatabase } from '../../../libs/core/src/db';
-import { Kysely, PostgresDialect } from 'kysely';
+import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
@@ -111,13 +114,35 @@ class MongoDelegationsMigrator {
   }
 }
 
-async function migrateFile(filePath: string): Promise<void> {
+async function dropDelegationsBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Dropping user_delegations indexes...');
+  await sql`DROP INDEX IF EXISTS idx_user_delegations_delegatee`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_user_delegations_delegator`.execute(db);
+  console.log('Indexes dropped.');
+}
+
+async function recreateDelegationsBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Recreating user_delegations indexes...');
+  await sql`
+    CREATE INDEX idx_user_delegations_delegatee ON user_delegations (delegatee)
+  `.execute(db);
+  await sql`
+    CREATE INDEX idx_user_delegations_delegator ON user_delegations (delegator)
+  `.execute(db);
+  console.log('Indexes recreated.');
+}
+
+async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void> {
   const resolved = path.resolve(filePath);
   if (!fs.existsSync(resolved)) {
     fail(`File not found: ${resolved}`);
   }
 
   const migrator = new MongoDelegationsMigrator(resolveConnectionString());
+
+  if (skipIndexes) {
+    await dropDelegationsBulkIndexes(migrator.db);
+  }
 
   try {
     const sink = new Writable({
@@ -150,18 +175,23 @@ async function migrateFile(filePath: string): Promise<void> {
 
     await migrator.flushAll();
   } finally {
+    if (skipIndexes) {
+      await recreateDelegationsBulkIndexes(migrator.db);
+    }
     await migrator.destroy();
   }
 
   console.log('Delegation migration stats:', migrator.stats);
 }
 
-const filePath = process.argv[2];
+const args = process.argv.slice(2);
+const filePath = args.find((a) => !a.startsWith('--'));
+const skipIndexes = args.includes('--skip-indexes');
 if (!filePath) {
-  fail('Usage: pnpm migrate:mongo-delegations <path-to-delegations.json>');
+  fail('Usage: pnpm migrate:mongo-delegations <path-to-delegations.json> [--skip-indexes]');
 }
 
-void migrateFile(filePath).catch((err: unknown) => {
+void migrateFile(filePath, skipIndexes).catch((err: unknown) => {
   console.error(err);
   process.exit(1);
 });

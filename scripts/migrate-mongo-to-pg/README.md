@@ -9,6 +9,8 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 
 ## Commands
 
+All bulk importers accept `--skip-indexes` (drops secondary indexes before insert, recreates after).
+
 | Script | Input | Target tables |
 |--------|--------|----------------|
 | `pnpm migrate:mongo-objects` | Wobject array JSON | `objects_core`, `object_updates`, `validity_votes`, `object_authority` |
@@ -18,6 +20,9 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 | `pnpm migrate:mongo-mutes` | Mute / ignore pair array JSON | `user_account_mutes` |
 | `pnpm migrate:mongo-delegations` | `delegations` collection JSON | `user_delegations` |
 | `pnpm migrate:mongo-rc-delegations` | `user_rc_delegations` collection JSON | `user_rc_delegations` |
+| `pnpm migrate:mongo-currency-statistics` | `currency_statistics` collection JSON | `currency_statistics` |
+| `pnpm migrate:mongo-hive-engine-rates` | `hive_engine_rates` collection JSON | `hive_engine_rates` |
+| `pnpm migrate:mongo-currency-rates` | `currency_rates` collection JSON | `currency_rates` |
 
 ### Objects (wobjects)
 
@@ -56,7 +61,7 @@ pnpm migrate:mongo-mutes <path-to-mutes.json>
 ### HP delegations (`delegations` collection)
 
 ```bash
-pnpm migrate:mongo-delegations <path-to-delegations.json>
+pnpm migrate:mongo-delegations <path-to-delegations.json> [--skip-indexes]
 ```
 
 Mongo export:
@@ -68,7 +73,7 @@ mongoexport --collection=delegations --out=delegations.json --jsonArray
 ### RC delegations (`user_rc_delegations` collection)
 
 ```bash
-pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json>
+pnpm migrate:mongo-rc-delegations <path-to-user_rc_delegations.json> [--skip-indexes]
 ```
 
 Mongo export:
@@ -81,27 +86,28 @@ Each document: `delegator`, `delegatee`, `rc` (numeric, raw chain units).
 
 ### Currency (legacy currency-service collections)
 
-Each input file must be a **top-level JSON array** of Mongo documents (same `stream-json` streaming format as objects/posts).
+Each input file must be a **top-level JSON array** of Mongo documents (same `stream-json` streaming format as objects/posts). Run **one script per collection**:
 
 ```bash
-pnpm migrate:mongo-currency [--dry-run] [--only=stats,engine,fiat] \
-  [--stats=currency_statistics.json] [--engine=hive_engine_rates.json] [--fiat=currency_rates.json]
+pnpm migrate:mongo-currency-statistics <path-to-currency_statistics.json> [--dry-run] [--stats-daily-only] [--skip-indexes]
+pnpm migrate:mongo-hive-engine-rates <path-to-hive_engine_rates.json> [--dry-run] [--skip-indexes]
+pnpm migrate:mongo-currency-rates <path-to-currency_rates.json> [--dry-run] [--skip-indexes]
 ```
 
-Or three positionals in order: `stats.json` `engine.json` `fiat.json` (omit files for buckets you are not importing). Field mapping is implemented in [`currency/index.ts`](currency/index.ts) (`hive` / `hive_dollar` blocks for statistics; Hive Engine WAIV-style rows; fiat columns or `quotes`).
+`--skip-indexes` drops secondary indexes on the target table before bulk insert and recreates them after (use for large files).
 
-**Docker** (same pattern as other migrator one-shots: mount each export under `/data`, then pass those paths as positionals — **stats, engine, fiat**):
+Field mapping lives in [`currency/shared.ts`](currency/shared.ts) (`hive` / `hive_dollar` blocks for statistics; Hive Engine WAIV-style rows; fiat columns or `quotes`).
+
+**Docker** (mount one export per run):
 
 ```bash
 sudo docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml --profile tools run --rm \
-  -v /home/waivio/currency_statistics.json:/data/currency_statistics.json \
   -v /home/waivio/hive_engine_rates.json:/data/hive_engine_rates.json \
-  -v /home/waivio/currency_rates.json:/data/currency_rates.json \
   migrator \
-  pnpm migrate:mongo-currency /data/currency_statistics.json /data/hive_engine_rates.json /data/currency_rates.json
+  pnpm migrate:mongo-hive-engine-rates /data/hive_engine_rates.json
 ```
 
-Optionally add `--dry-run` or `--only=stats,engine,fiat` anywhere among the arguments. Host paths (`/home/waivio/...`) should match where your `mongoexport` JSON files live.
+Repeat for `currency_statistics.json` and `currency_rates.json` with the matching script. Host paths should match where your `mongoexport` JSON files live.
 
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 

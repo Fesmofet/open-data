@@ -70,7 +70,7 @@ Per-row fiat uses the operation **UTC calendar date** (`timestamp` → `YYYY-MM-
 
 If no daily rate can be resolved for a past date, `hiveUsd` / `hbdUsd` are `0` and a server warning is logged — **current spot is never used as a fallback for historical dates**.
 
-**Data dependency:** accurate totals for multi-year ranges require daily `currency_statistics` history (legacy Mongo export via `pnpm migrate:mongo-currency`, plus scheduler `currency-coingecko-daily` going forward). Without backfilled daily rows, totals will be understated.
+**Data dependency:** accurate totals for multi-year ranges require daily `currency_statistics` history (legacy Mongo export via `pnpm migrate:mongo-currency-statistics`, plus scheduler `currency-coingecko-daily` going forward). Without backfilled daily rows, totals will be understated.
 
 Existing indexes are sufficient for range lookups: `currency_statistics (is_daily, created_at)` and `currency_rates (base, date)`.
 
