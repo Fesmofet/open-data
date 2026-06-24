@@ -37,23 +37,30 @@ function filterFromTo(
  */
 export function isMutualTransaction(params: IsMutualTransactionParams): boolean {
   const { record, userName, filterAccounts } = params;
+
+  if (!MUTUAL_FILTER_TYPES.has(record.type)) {
+    return false;
+  }
+
+  if (record.type === HIVE_OP.TRANSFER) {
+    const from = normalizeAccount(record.from);
+    const to = normalizeAccount(record.to);
+    if (from === to) {
+      return true;
+    }
+  }
+
   const others = filterAccounts
     .map(normalizeAccount)
     .filter((account) => account !== normalizeAccount(userName));
 
-  if (others.length === 0 || !MUTUAL_FILTER_TYPES.has(record.type)) {
+  if (others.length === 0) {
     return false;
   }
 
   switch (record.type) {
-    case HIVE_OP.TRANSFER: {
-      const from = normalizeAccount(record.from);
-      const to = normalizeAccount(record.to);
-      if (from === to) {
-        return true;
-      }
+    case HIVE_OP.TRANSFER:
       return filterFromTo(others, [record.from, record.to]);
-    }
     case HIVE_OP.TRANSFER_TO_VESTING:
     case HIVE_OP.FILL_VESTING_WITHDRAW:
       return filterFromTo(others, [record.from, record.to]);

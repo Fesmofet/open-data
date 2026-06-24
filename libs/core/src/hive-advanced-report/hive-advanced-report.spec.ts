@@ -69,6 +69,14 @@ describe('hive-advanced-report', () => {
         filterAccounts: ['alice', 'carol'],
       }),
     ).toBe('');
+    expect(
+      classifyWithdrawDeposit({
+        type: HIVE_OP.TRANSFER,
+        record: { type: HIVE_OP.TRANSFER, from: 'alice', to: 'alice' },
+        userName: 'alice',
+        filterAccounts: ['alice'],
+      }),
+    ).toBe('');
   });
 
   it('calcDepositWithdrawals skips checked and empty withdrawDeposit', () => {

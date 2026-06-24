@@ -12,6 +12,9 @@ import {
 } from './currency.constants';
 import {
   buildDailyHiveTimeline,
+  currencyRatesRowYmd,
+  parseCurrencyRateValue,
+  resolveFiatCrossByDates,
   resolveHiveHistoricalUsdByDates,
 } from './currency-historical-rates';
 import { CurrencyRepository } from './currency.repository';
@@ -523,53 +526,55 @@ export class CurrencyQueryService {
     };
   }
 
-  /** USD → target fiat cross rate by UTC date (USD returns 1). */
+  /**
+   * USD → target fiat cross rate by UTC calendar date.
+   * Legacy parity (`getCurrencyRates` + `calcWalletRecordRate` on UTC prod):
+   * exact `currency_rates.date` match only; missing/zero row → `0` (no carry-back).
+   * Today with no stored row falls back to the latest stored USD-base rate (legacy `includeToday`).
+   */
   async getFiatCrossRatesByDates(
     datesYmd: readonly string[],
     currency: string,
   ): Promise<Map<string, number>> {
     const target = currency.trim().toUpperCase();
-    const out = new Map<string, number>();
     const unique = [...new Set(datesYmd.map((d) => d.trim()).filter(Boolean))].sort();
     if (unique.length === 0) {
-      return out;
+      return new Map();
     }
     if (target === 'USD') {
-      for (const d of unique) {
-        out.set(d, 1);
-      }
-      return out;
+      return new Map(unique.map((d) => [d, 1]));
     }
 
     const col = fiatIsoToRatesColumn(target);
-    const min = unique[0]!;
-    const max = unique[unique.length - 1]!;
-    const rows = await this.repo.listCurrencyRatesBetween('USD', min, max);
-    let latest = 0;
+    if (!col) {
+      return new Map(unique.map((d) => [d, 0]));
+    }
 
+    const today = utcYmd(new Date());
+    const rows = await this.repo.listCurrencyRatesByDates('USD', unique);
+
+    const exactByYmd = new Map<string, number>();
     for (const row of rows) {
-      const ymd = String(row.date).slice(0, 10);
-      const rate = col
-        ? Number((row as unknown as Record<string, unknown>)[col] ?? 0)
-        : 0;
-      if (rate > 0) {
-        latest = rate;
-      }
-      out.set(ymd, rate > 0 ? rate : latest);
+      const ymd = currencyRatesRowYmd(row.date);
+      const rate = parseCurrencyRateValue((row as unknown as Record<string, unknown>)[col]);
+      exactByYmd.set(ymd, rate);
     }
 
-    if (latest <= 0) {
-      const fallback = await this.legacyRateLatest('USD', target);
-      latest = Number(fallback[target] ?? 0);
-    }
-
-    for (const d of unique) {
-      if (!out.has(d) || !(out.get(d)! > 0)) {
-        out.set(d, latest);
+    let todaySpot: number | null = null;
+    if (unique.includes(today) && !exactByYmd.has(today)) {
+      const latest = await this.legacyRateLatest('USD', target);
+      const spot = Number(latest[target] ?? 0);
+      if (spot > 0) {
+        todaySpot = spot;
       }
     }
 
-    return out;
+    return resolveFiatCrossByDates({
+      datesYmd: unique,
+      todayYmd: today,
+      todaySpot,
+      exactByYmd,
+    });
   }
 }
 

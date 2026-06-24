@@ -9,6 +9,7 @@ function rawRow(operationIndex: number, userName = 'flowmaster'): AdvancedReport
     userName,
     operationIndex,
     timestamp: operationIndex,
+    dateYmd: '2020-01-01',
     type: 'transfer',
     from: userName,
     to: 'bob',

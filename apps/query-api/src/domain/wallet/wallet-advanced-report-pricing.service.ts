@@ -11,11 +11,6 @@ import type { AdvancedReportRawRow } from './hive-advanced-report-pager.service'
 import type { AdvancedReportRowDto } from './schemas/hive-advanced-report.schema';
 import { splitAdvancedReportDisplayAmounts, toVestPayload } from './split-advanced-report-display-amounts';
 
-function utcYmdFromUnix(unix: number): string {
-  const d = new Date(unix * 1000);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-}
-
 function parseAssetAmount(
   asset: string,
 ): { amount: number; currency: string } | null {
@@ -34,6 +29,28 @@ function asString(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
+/** Legacy `new BigNumber(USD).times(rate).toNumber()`. */
+function usdTimesFiatCross(usd: number, crossRate: number): number {
+  if (!Number.isFinite(usd) || !Number.isFinite(crossRate)) {
+    return 0;
+  }
+  return usd * crossRate;
+}
+
+function fiatCrossForRow(
+  currency: SupportedCurrency,
+  ymd: string,
+  fiatCrossByDate: ReadonlyMap<string, number>,
+): number {
+  if (currency === 'USD') {
+    return 1;
+  }
+  if (ymd.length === 0) {
+    return 0;
+  }
+  return fiatCrossByDate.get(ymd) ?? 0;
+}
+
 @Injectable()
 export class WalletAdvancedReportPricingService {
   constructor(private readonly currencyQuery: CurrencyQueryService) {}
@@ -45,17 +62,19 @@ export class WalletAdvancedReportPricingService {
     checkedKeys: ReadonlySet<string>;
     chainContext: { totalVestingShares: string; totalVestingFundSteem: string };
   }): Promise<AdvancedReportRowDto[]> {
-    const dates = params.rows.map((row) => utcYmdFromUnix(row.timestamp));
+    const dates = params.rows
+      .map((row) => row.dateYmd)
+      .filter((ymd) => ymd.length > 0);
     const [hiveUsdByDate, fiatCrossByDate] = await Promise.all([
       this.currencyQuery.getHiveHistoricalUsdByDates(dates),
       this.currencyQuery.getFiatCrossRatesByDates(dates, params.currency),
     ]);
 
     return params.rows.map((row) => {
-      const ymd = utcYmdFromUnix(row.timestamp);
+      const ymd = row.dateYmd;
       const hiveUsd = hiveUsdByDate.get(ymd)?.hiveUsd ?? 0;
       const hbdUsd = hiveUsdByDate.get(ymd)?.hbdUsd ?? 0;
-      const fiatCross = fiatCrossByDate.get(ymd) ?? 1;
+      const fiatCross = fiatCrossForRow(params.currency, ymd, fiatCrossByDate);
       const withdrawDeposit = classifyWithdrawDeposit({
         type: row.type,
         record: { type: row.type, from: row.from, to: row.to },
@@ -67,7 +86,7 @@ export class WalletAdvancedReportPricingService {
       );
 
       const usd = this.computeUsd(row, hiveUsd, hbdUsd, params.chainContext);
-      const totalFiat = usd * fiatCross;
+      const totalFiat = usdTimesFiatCross(usd, fiatCross);
       const hiveRateFiat = hiveUsd * fiatCross;
       const hbdRateFiat = hbdUsd * fiatCross;
       const hiveFiat = this.assetFiat(row.amount, hiveUsd, hbdUsd, fiatCross, 'HIVE');

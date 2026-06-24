@@ -451,18 +451,20 @@ export class CurrencyRepository {
     }
   }
 
-  async listCurrencyRatesBetween(
+  async listCurrencyRatesByDates(
     base: string,
-    startDateIso: string,
-    endDateIso: string,
+    datesYmd: readonly string[],
   ): Promise<CurrencyRatesRow[]> {
+    const unique = [...new Set(datesYmd.map((d) => d.trim()).filter(Boolean))];
+    if (unique.length === 0) {
+      return [];
+    }
     try {
       return await this.db
         .selectFrom('currency_rates')
         .selectAll()
         .where('base', '=', base)
-        .where('date', '>=', startDateIso as never)
-        .where('date', '<=', endDateIso as never)
+        .where('date', 'in', unique as never)
         .orderBy('date', 'asc')
         .execute();
     } catch (e) {

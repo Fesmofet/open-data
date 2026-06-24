@@ -20,6 +20,8 @@ export type AdvancedReportRawRow = {
   userName: string;
   operationIndex: number;
   timestamp: number;
+  /** UTC calendar date for rate lookup (legacy moment.unix on UTC prod). */
+  dateYmd: string;
   type: string;
   from: string;
   to: string;
@@ -48,6 +50,12 @@ function unixFromIso(timestamp: string): number {
   const trimmed = timestamp.trim();
   const iso = trimmed.endsWith('Z') ? trimmed : `${trimmed}Z`;
   return Math.floor(Date.parse(iso) / 1000);
+}
+
+/** Legacy `moment.unix(ts).format('YYYY-MM-DD')` on UTC servers. */
+function utcYmdFromUnix(unix: number): string {
+  const d = new Date(unix * 1000);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
 
 function asString(value: unknown): string {
@@ -85,10 +93,12 @@ function normalizeRow(
     amount = `${asString(p.open_pays)} / ${asString(p.current_pays)}`.trim();
   }
 
+  const unix = unixFromIso(item.timestamp);
   return {
     userName,
     operationIndex: item.operationIndex,
-    timestamp: unixFromIso(item.timestamp),
+    timestamp: unix,
+    dateYmd: utcYmdFromUnix(unix),
     type: item.type,
     from,
     to,

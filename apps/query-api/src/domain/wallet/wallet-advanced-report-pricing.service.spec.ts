@@ -34,6 +34,7 @@ describe('WalletAdvancedReportPricingService', () => {
     userName: 'alice',
     operationIndex: 1,
     timestamp: 1_700_000_000,
+    dateYmd: '2023-11-14',
     type: HIVE_OP.TRANSFER,
     from: 'bob',
     to: 'alice',
@@ -78,8 +79,8 @@ describe('WalletAdvancedReportPricingService', () => {
 
     const rows = await service.enrichRows({
       rows: [
-        rawRow({ timestamp: 1_592_899_200, amount: '10.000 HIVE' }),
-        rawRow({ timestamp: 1_636_848_000, amount: '10.000 HIVE', operationIndex: 2 }),
+        rawRow({ timestamp: 1_592_899_200, dateYmd: '2020-06-23', amount: '10.000 HIVE' }),
+        rawRow({ timestamp: 1_636_848_000, dateYmd: '2021-11-14', amount: '10.000 HIVE', operationIndex: 2 }),
       ],
       filterAccounts: ['alice'],
       currency: 'USD',

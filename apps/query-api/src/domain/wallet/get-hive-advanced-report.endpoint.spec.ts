@@ -17,6 +17,7 @@ describe('GetHiveAdvancedReportEndpoint', () => {
     userName: 'alice',
     operationIndex: 10,
     timestamp: 1_700_000_000,
+    dateYmd: '2023-11-14',
     type: 'transfer',
     from: 'bob',
     to: 'alice',

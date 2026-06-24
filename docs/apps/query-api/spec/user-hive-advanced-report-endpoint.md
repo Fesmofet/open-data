@@ -61,16 +61,16 @@ Table columns `HIVE/{currency}` and `HBD/{currency}` display **unit exchange rat
 
 ### Historical pricing
 
-Per-row fiat uses the operation **UTC calendar date** (`timestamp` → `YYYY-MM-DD`):
+Per-row fiat uses the operation UTC calendar date (`dateYmd` from chain timestamp via `moment.unix` on UTC prod):
 
 1. **HIVE / HBD USD** — `currency_statistics` daily rows (`is_daily = true`), keyed by `(created_at AT TIME ZONE 'UTC')::date`.
 2. **Exact day missing** — nearest prior daily rate (carry-back); if the date is before the first daily row, nearest next daily rate (carry-forward).
 3. **Today** — current spot from `CurrencyQueryService.marketInfo` (not the daily aggregate row).
-4. **Fiat cross** — `currency_rates` for `base = USD`, with forward-fill for gaps (same pattern as legacy campaigns-api).
+4. **Fiat cross** — `currency_rates` for `base = USD`, **exact UTC date match only** (legacy `getCurrencyRates` / `calcWalletRecordRate`; no carry-back). Missing/zero day → cross rate `0`. Today with no stored row falls back to the latest stored USD-base rate. `DATE` columns are read as raw `YYYY-MM-DD` strings (pg type parser) to avoid local-timezone day shift.
 
 If no daily rate can be resolved for a past date, `hiveUsd` / `hbdUsd` are `0` and a server warning is logged — **current spot is never used as a fallback for historical dates**.
 
-**Data dependency:** accurate totals for multi-year ranges require daily `currency_statistics` history (legacy Mongo export via `pnpm migrate:mongo-currency-statistics`, plus scheduler `currency-coingecko-daily` going forward). Without backfilled daily rows, totals will be understated.
+**Data dependency:** accurate totals for multi-year ranges require daily `currency_statistics` history (legacy Mongo export via `pnpm migrate:mongo-currency`, plus scheduler `currency-coingecko-daily` going forward). Without backfilled daily rows, totals will be understated.
 
 Existing indexes are sufficient for range lookups: `currency_statistics (is_daily, created_at)` and `currency_rates (base, date)`.
 

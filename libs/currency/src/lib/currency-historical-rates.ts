@@ -8,6 +8,59 @@ export function utcYmdFromDate(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
 
+/** Legacy `moment.unix(ts).format('YYYY-MM-DD')` on UTC servers (Hive chain timestamps). */
+export function utcYmdFromUnix(unix: number): string {
+  return utcYmdFromDate(new Date(unix * 1000));
+}
+
+/** PG `currency_rates.date` may arrive as ISO string or JS Date from node-pg. */
+export function currencyRatesRowYmd(date: string | Date): string {
+  if (typeof date === 'string') {
+    return date.slice(0, 10);
+  }
+  return utcYmdFromDate(date);
+}
+
+export function parseCurrencyRateValue(raw: unknown): number {
+  if (raw === null || raw === undefined) {
+    return 0;
+  }
+  const n = typeof raw === 'number' ? raw : Number(String(raw));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+/**
+ * Legacy `getCurrencyRates` + `calcWalletRecordRate`: exact `currency_rates.date` /
+ * Mongo `dateString` match only. Missing/zero day → `0` (no carry-back). Today with no
+ * stored row uses the latest stored rate (`includeToday`).
+ */
+export function resolveFiatCrossByDates(params: {
+  datesYmd: readonly string[];
+  todayYmd: string;
+  todaySpot: number | null;
+  exactByYmd: ReadonlyMap<string, number>;
+}): Map<string, number> {
+  const unique = [...new Set(params.datesYmd.map((d) => d.trim()).filter(Boolean))].sort();
+  const out = new Map<string, number>();
+
+  for (const d of unique) {
+    const exact = params.exactByYmd.get(d);
+    if (exact && exact > 0) {
+      out.set(d, exact);
+      continue;
+    }
+
+    if (d === params.todayYmd && params.todaySpot && params.todaySpot > 0) {
+      out.set(d, params.todaySpot);
+      continue;
+    }
+
+    out.set(d, 0);
+  }
+
+  return out;
+}
+
 export function dailyRateFromStatisticRow(row: {
   created_at: Date;
   hive_usd: number;
