@@ -33,6 +33,11 @@ describe('buildAdvancedReportRowView', () => {
     expect(view.hiveRateFiat).toBe(0.2);
     expect(view.hbdRateFiat).toBe(1);
     expect(view.totalFiat).toBe(0.6);
-    expect(view.description).toContain('bob');
+    expect(view.description).toBe('Received from @bob');
+    expect(view.descriptionView).toEqual({
+      kind: 'withAccount',
+      label: 'Received from',
+      account: 'bob',
+    });
   });
 });

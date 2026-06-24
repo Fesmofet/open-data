@@ -8,7 +8,58 @@ import {
   buildAdvancedReportRowView,
   type AdvancedReportRowView,
 } from '../../../../application/mappers/build-advanced-report-row-view';
+import {
+  ADVANCED_REPORT_TABLE_CELL,
+  advancedReportTableGridStyle,
+} from './advanced-report-table-layout';
 import { formatAdvancedReportTotal } from './format-advanced-report-total';
+
+function AdvancedReportTruncatedText({
+  text,
+  className = '',
+}: {
+  text: string;
+  className?: string;
+}) {
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <span className={`block truncate ${className}`.trim()} title={text}>
+      {text}
+    </span>
+  );
+}
+
+function AdvancedReportMemoCell({ memo }: { memo: string }) {
+  return <AdvancedReportTruncatedText text={memo} />;
+}
+
+function AdvancedReportDescriptionCell({
+  descriptionView,
+}: {
+  descriptionView: AdvancedReportRowView['descriptionView'];
+}) {
+  if (descriptionView.kind === 'plain') {
+    return <AdvancedReportTruncatedText text={descriptionView.text} />;
+  }
+
+  const fullText = `${descriptionView.label} @${descriptionView.account}`;
+
+  return (
+    <div className="min-w-0" title={fullText}>
+      <div className="truncate">{descriptionView.label}</div>
+      <Link
+        href={`/@${descriptionView.account}`}
+        className="block truncate text-link"
+        suppressHydrationWarning
+      >
+        @{descriptionView.account}
+      </Link>
+    </div>
+  );
+}
 
 type HiveAdvancedReportRowProps = {
   rowApi: AdvancedReportRowApi;
@@ -37,13 +88,14 @@ export const HiveAdvancedReportRow = memo(function HiveAdvancedReportRow({
   const row = useMemo(() => buildAdvancedReportRowView(rowApi), [rowApi]);
 
   return (
-    <tr
+    <div
       ref={measureRef}
+      role="row"
       data-index={dataIndex}
-      style={style}
+      style={{ ...advancedReportTableGridStyle, ...style }}
       className="border-b border-border text-body-sm even:bg-surface-control/40"
     >
-      <td className="px-2 py-2 align-top">
+      <div role="cell" className={ADVANCED_REPORT_TABLE_CELL}>
         {canToggleExemption ? (
           <input
             type="checkbox"
@@ -52,27 +104,41 @@ export const HiveAdvancedReportRow = memo(function HiveAdvancedReportRow({
             onChange={(e) => onToggleExemption(row, e.target.checked)}
           />
         ) : null}
-      </td>
-      <td className="px-2 py-2 align-top whitespace-nowrap tabular-nums">
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} whitespace-nowrap tabular-nums`}>
         <div>{row.dateLabel}</div>
         <div className="text-muted">{row.timeLabel}</div>
-      </td>
-      <td className="px-2 py-2 align-top tabular-nums">{row.hiveAmount}</td>
-      <td className="px-2 py-2 align-top tabular-nums">{row.hpAmount}</td>
-      <td className="px-2 py-2 align-top tabular-nums">{row.hbdAmount}</td>
-      <td className="px-2 py-2 align-top tabular-nums">{formatAmount(row.hiveRateFiat)}</td>
-      <td className="px-2 py-2 align-top tabular-nums">{formatAmount(row.hbdRateFiat)}</td>
-      <td className="px-2 py-2 align-top uppercase text-muted">
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} tabular-nums`}>
+        {row.hiveAmount}
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} tabular-nums`}>
+        {row.hpAmount}
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} tabular-nums`}>
+        {row.hbdAmount}
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} tabular-nums`}>
+        {formatAmount(row.hiveRateFiat)}
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} tabular-nums`}>
+        {formatAmount(row.hbdRateFiat)}
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} uppercase text-muted`}>
         {row.withdrawDeposit}
-      </td>
-      <td className="px-2 py-2 align-top">
+      </div>
+      <div role="cell" className={ADVANCED_REPORT_TABLE_CELL}>
         <Link href={`/@${row.userName}`} className="text-link" suppressHydrationWarning>
           @{row.userName}
         </Link>
-      </td>
-      <td className="px-2 py-2 align-top">{row.description}</td>
-      <td className="px-2 py-2 align-top break-all text-muted">{row.memo}</td>
-    </tr>
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} min-w-0 overflow-hidden`}>
+        <AdvancedReportDescriptionCell descriptionView={row.descriptionView} />
+      </div>
+      <div role="cell" className={`${ADVANCED_REPORT_TABLE_CELL} min-w-0 overflow-hidden text-muted`}>
+        <AdvancedReportMemoCell memo={row.memo} />
+      </div>
+    </div>
   );
 });
 

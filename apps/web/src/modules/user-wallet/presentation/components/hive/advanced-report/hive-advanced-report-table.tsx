@@ -19,9 +19,14 @@ import {
 } from '../../../../application/mappers/build-advanced-report-row-view';
 import { loadFullHiveAdvancedReport } from '../../../../application/queries/load-full-hive-advanced-report';
 import { totalsFromAdvancedReportWallet } from '../../../../application/queries/load-full-hive-advanced-report.helpers';
+import {
+  accountsForNextAdvancedReportRequest,
+  loadHiveAdvancedReportPage,
+} from '../../../../application/queries/load-hive-advanced-report-page';
 import { loadProgressiveHiveAdvancedReport } from '../../../../application/queries/load-progressive-hive-advanced-report';
 import { postHiveWalletExemptionClient } from '../../../../infrastructure/clients/hive-advanced-report.browser.client';
 import { fetchHiveAccountCreatedDatesClient } from '../../../../infrastructure/clients/hive-account-created-dates.browser.client';
+import { defaultAdvancedReportDateRange } from '../../../../domain/advanced-report-defaults';
 import {
   maxAdvancedReportTillYmd,
   unixToYmd,
@@ -36,6 +41,10 @@ import {
 } from './hive-advanced-report-filters';
 import { buildAdvancedReportCsv } from './hive-advanced-report-row';
 import { formatAdvancedReportTotal } from './format-advanced-report-total';
+import {
+  ADVANCED_REPORT_TABLE_HEAD_CELL,
+  advancedReportTableGridStyle,
+} from './advanced-report-table-layout';
 import { HiveAdvancedReportVirtualTbody } from './hive-advanced-report-virtual-tbody';
 
 type HiveAdvancedReportTableProps = {
@@ -53,17 +62,50 @@ type ReportMeta = {
   withdrawals: number;
 };
 
-/** Sticky thead cells — needs solid bg + border-separate on the table. */
-const ADVANCED_REPORT_TABLE_HEAD_CELL =
-  'sticky top-0 z-10 bg-surface-control px-2 py-2 shadow-[inset_0_-1px_0_var(--color-border)]';
-
 function filtersFromRequest(request: HiveAdvancedReportRequest): AdvancedReportFiltersState {
+  const defaults = defaultAdvancedReportDateRange();
   return {
-    startDate: unixToYmd(request.startDate),
-    endDate: unixToYmd(request.endDate),
+    startDate: unixToYmd(request.startDate ?? defaults.startDate),
+    endDate: unixToYmd(request.endDate ?? defaults.endDate),
     filterAccounts: [...request.filterAccounts],
     currency: request.currency as SupportedCurrency,
   };
+}
+
+function buildBrowseRequest(
+  profileAccount: string,
+  viewerUsername: string | null,
+  limit: number,
+  currency: SupportedCurrency,
+  accounts?: HiveAdvancedReportRequest['accounts'],
+): HiveAdvancedReportRequest {
+  const name = profileAccount.trim().toLowerCase();
+  return {
+    accounts: accounts ?? [{ name }],
+    filterAccounts: [name],
+    limit,
+    currency,
+    viewer: viewerUsername?.trim().toLowerCase() || undefined,
+  };
+}
+
+function applyPageResult(
+  result: HiveAdvancedReportQueryResult,
+  setWallet: (rows: AdvancedReportRowApi[]) => void,
+  setReportMeta: (meta: ReportMeta) => void,
+  setLoadError: (error: HiveAdvancedReportQueryResult['error']) => void,
+): void {
+  setLoadError(result.error);
+  if (!result.report) {
+    return;
+  }
+  setWallet(result.report.wallet);
+  setReportMeta({
+    accounts: result.report.accounts,
+    hasMore: result.report.hasMore,
+    deposits: result.report.deposits,
+    withdrawals: result.report.withdrawals,
+  });
 }
 
 function requestFromFilters(
@@ -130,6 +172,42 @@ export function HiveAdvancedReportTable({
       abortRef.current?.abort();
     };
   }, []);
+
+  useEffect(() => {
+    if (!viewerUsername) {
+      return;
+    }
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const body = buildBrowseRequest(
+      profileAccount,
+      viewerUsername,
+      initialRequest.limit,
+      initialRequest.currency as SupportedCurrency,
+    );
+
+    setLoadingReport(true);
+    setLoadError(null);
+    void loadHiveAdvancedReportPage(body, [], controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        applyPageResult(result, setWallet, setReportMeta, setLoadError);
+      })
+      .finally(() => {
+        if (abortRef.current === controller) {
+          setLoadingReport(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, [profileAccount, viewerUsername, initialRequest.limit, initialRequest.currency]);
 
   const canToggleExemption =
     viewerUsername?.trim().toLowerCase() === profileAccount.trim().toLowerCase();
@@ -205,6 +283,52 @@ export function HiveAdvancedReportTable({
       });
   }, [filters, initialRequest.limit, profileAccount, viewerUsername]);
 
+  const onShowMore = useCallback(() => {
+    if (dateEstablished) {
+      return;
+    }
+    const nextAccounts = accountsForNextAdvancedReportRequest(reportMeta.accounts);
+    if (nextAccounts.length === 0) {
+      return;
+    }
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const body = {
+      ...buildBrowseRequest(
+        profileAccount,
+        viewerUsername,
+        initialRequest.limit,
+        filters.currency,
+        nextAccounts,
+      ),
+    };
+
+    setLoadingReport(true);
+    void loadHiveAdvancedReportPage(body, wallet, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        applyPageResult(result, setWallet, setReportMeta, setLoadError);
+      })
+      .finally(() => {
+        if (abortRef.current === controller) {
+          setLoadingReport(false);
+        }
+      });
+  }, [
+    dateEstablished,
+    filters.currency,
+    initialRequest.limit,
+    profileAccount,
+    reportMeta.accounts,
+    viewerUsername,
+    wallet,
+  ]);
+
   const onFromAccountCreation = useCallback(() => {
     const accountNames =
       filters.filterAccounts.length > 0
@@ -245,12 +369,14 @@ export function HiveAdvancedReportTable({
         }
         const next = prev.slice();
         next[index] = { ...next[index], checked };
-        const totals = totalsFromAdvancedReportWallet(next);
-        setReportMeta((meta) => ({
-          ...meta,
-          deposits: totals.deposits,
-          withdrawals: totals.withdrawals,
-        }));
+        if (dateEstablished) {
+          const totals = totalsFromAdvancedReportWallet(next);
+          setReportMeta((meta) => ({
+            ...meta,
+            deposits: totals.deposits,
+            withdrawals: totals.withdrawals,
+          }));
+        }
         return next;
       });
       void postHiveWalletExemptionClient({
@@ -260,7 +386,7 @@ export function HiveAdvancedReportTable({
         checked,
       });
     },
-    [viewerUsername],
+    [viewerUsername, dateEstablished],
   );
 
   const onExportCsv = useCallback(async () => {
@@ -274,7 +400,7 @@ export function HiveAdvancedReportTable({
       let deposits = reportMeta.deposits;
       let withdrawals = reportMeta.withdrawals;
 
-      if (loadingReport || reportMeta.hasMore) {
+      if (dateEstablished && (loadingReport || reportMeta.hasMore)) {
         const body = requestFromFilters(
           filters,
           profileAccount,
@@ -402,30 +528,71 @@ export function HiveAdvancedReportTable({
         ref={scrollRef}
         className="scrollbar-hide max-h-[calc(100dvh-var(--shell-header-height,3.5rem)-16rem)] w-full overflow-auto rounded-card border border-border"
       >
-        <table className="w-full min-w-[960px] table-fixed border-separate border-spacing-0 text-left text-body-sm">
-          <thead>
-            <tr>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-10`}>X</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-28`}>{t('table_date')}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-20`}>{t('table_HIVE')}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-20`}>{t('table_HP')}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-20`}>{t('table_HBD')}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-24`}>{`HIVE/${currency}`}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-24`}>{`HBD/${currency}`}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-10`}>±</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-28`}>{t('account')}</th>
-              <th className={`${ADVANCED_REPORT_TABLE_HEAD_CELL} w-40`}>{t('details')}</th>
-              <th className={ADVANCED_REPORT_TABLE_HEAD_CELL}>{t('memo')}</th>
-            </tr>
-          </thead>
+        <div
+          role="table"
+          className="w-full min-w-[960px] text-left text-body-sm"
+        >
+          <div
+            role="rowgroup"
+            className="sticky top-0 z-10 border-b border-border bg-surface-control shadow-[inset_0_-1px_0_var(--color-border)]"
+          >
+            <div role="row" style={advancedReportTableGridStyle}>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                X
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('table_date')}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('table_HIVE')}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('table_HP')}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('table_HBD')}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {`HIVE/${currency}`}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {`HBD/${currency}`}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                ±
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('account')}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('table_description')}
+              </div>
+              <div role="columnheader" className={ADVANCED_REPORT_TABLE_HEAD_CELL}>
+                {t('memo')}
+              </div>
+            </div>
+          </div>
           <HiveAdvancedReportVirtualTbody
             wallet={wallet}
             scrollRef={scrollRef}
             canToggleExemption={canToggleExemption}
             onToggleExemption={onToggleExemption}
           />
-        </table>
+        </div>
       </div>
+
+      {!dateEstablished && reportMeta.hasMore ? (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            className="rounded-button border border-border bg-surface-control px-5 py-2 text-body-sm font-weight-strong disabled:opacity-60"
+            disabled={loadingReport}
+            onClick={onShowMore}
+          >
+            {loadingReport ? t('activity_loading') : t('show_more')}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

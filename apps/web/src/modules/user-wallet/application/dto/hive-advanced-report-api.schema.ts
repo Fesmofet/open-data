@@ -61,8 +61,8 @@ export const hiveAdvancedReportRequestSchema = z
       }),
     ),
     filterAccounts: z.array(z.string().min(1)).min(1),
-    startDate: z.number().int(),
-    endDate: z.number().int(),
+    startDate: z.number().int().optional(),
+    endDate: z.number().int().optional(),
     limit: z
       .number()
       .int()
@@ -73,7 +73,24 @@ export const hiveAdvancedReportRequestSchema = z
     viewer: z.string().min(1).optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.startDate > data.endDate) {
+    const hasStart = data.startDate !== undefined;
+    const hasEnd = data.endDate !== undefined;
+    if (hasStart !== hasEnd) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'startDate and endDate must both be set or both omitted',
+        path: hasStart ? ['endDate'] : ['startDate'],
+      });
+      return;
+    }
+    if (!hasStart || !hasEnd) {
+      return;
+    }
+    const { startDate, endDate } = data;
+    if (startDate === undefined || endDate === undefined) {
+      return;
+    }
+    if (startDate > endDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'startDate must be <= endDate',
@@ -81,7 +98,7 @@ export const hiveAdvancedReportRequestSchema = z
       });
     }
     const now = Math.floor(Date.now() / 1000);
-    if (data.endDate >= now) {
+    if (endDate >= now) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'endDate must be in the past',

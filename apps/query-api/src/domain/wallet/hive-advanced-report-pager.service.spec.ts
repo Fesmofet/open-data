@@ -100,6 +100,24 @@ describe('HiveAdvancedReportPagerService', () => {
     expect(result.rows[0]?.operationIndex).toBe(1);
   });
 
+  it('includes ops outside a date window when dates are omitted (browse mode)', async () => {
+    hiveClient.getAccountHistory.mockResolvedValue(
+      hivePage([
+        transferOp(3, '2025-02-01T12:00:00'),
+        transferOp(4, '2024-01-10T12:00:00'),
+      ]),
+    );
+
+    const result = await pager.collectForAccount({
+      account: 'alice',
+      cursor: -1,
+      targetCount: 10,
+    });
+
+    expect(result.rows).toHaveLength(2);
+    expect(result.rows.map((r) => r.operationIndex).sort((a, b) => a - b)).toEqual([3, 4]);
+  });
+
   it('orders pagingRows newest-first', async () => {
     hiveClient.getAccountHistory.mockResolvedValue(
       hivePage([

@@ -31,8 +31,8 @@ export type AdvancedReportRawRow = {
 export type CollectAdvancedReportAccountParams = {
   account: string;
   cursor: number;
-  startDate: number;
-  endDate: number;
+  startDate?: number;
+  endDate?: number;
   targetCount: number;
   swapAccount?: string;
 };
@@ -181,10 +181,10 @@ export class HiveAdvancedReportPagerService {
           continue;
         }
         const ts = unixFromIso(item.timestamp);
-        if (ts > endDate) {
+        if (endDate !== undefined && ts > endDate) {
           continue;
         }
-        if (ts < startDate) {
+        if (startDate !== undefined && ts < startDate) {
           reachedStartDate = true;
           break;
         }

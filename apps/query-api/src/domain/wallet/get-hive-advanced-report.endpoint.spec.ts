@@ -209,4 +209,32 @@ describe('GetHiveAdvancedReportEndpoint', () => {
     ]);
     expect(result.hasMore).toBe(true);
   });
+
+  it('accepts browse mode without startDate/endDate', async () => {
+    pager.collectForAccount.mockResolvedValueOnce({
+      rows: [row({ operationIndex: 11, timestamp: 2 })],
+      pagingRows: [row({ operationIndex: 11, timestamp: 2 })],
+      hasMore: true,
+    });
+    pricing.enrichRows.mockResolvedValue([]);
+    pricing.calcTotals.mockReturnValue({ deposits: 0, withdrawals: 0 });
+
+    const result = await endpoint.execute({
+      accounts: [{ name: 'alice' }],
+      filterAccounts: ['alice'],
+      limit: 10,
+      currency: 'USD',
+    });
+
+    expect(result.wallet).toEqual([]);
+    expect(result.hasMore).toBe(true);
+    expect(pager.collectForAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        account: 'alice',
+      }),
+    );
+    const callArg = pager.collectForAccount.mock.calls[0]?.[0];
+    expect(callArg).not.toHaveProperty('startDate');
+    expect(callArg).not.toHaveProperty('endDate');
+  });
 });

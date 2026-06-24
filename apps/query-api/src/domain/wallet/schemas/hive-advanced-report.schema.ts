@@ -14,8 +14,8 @@ export const hiveAdvancedReportBodySchema = z
   .object({
     accounts: z.array(hiveAdvancedReportAccountSchema).min(1),
     filterAccounts: z.array(z.string().min(1)).min(1),
-    startDate: z.coerce.number().int(),
-    endDate: z.coerce.number().int(),
+    startDate: z.coerce.number().int().optional(),
+    endDate: z.coerce.number().int().optional(),
     limit: z.coerce
       .number()
       .int()
@@ -26,6 +26,19 @@ export const hiveAdvancedReportBodySchema = z
     viewer: z.string().min(1).optional(),
   })
   .superRefine((data, ctx) => {
+    const hasStart = data.startDate !== undefined;
+    const hasEnd = data.endDate !== undefined;
+    if (hasStart !== hasEnd) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'startDate and endDate must both be set or both omitted',
+        path: hasStart ? ['endDate'] : ['startDate'],
+      });
+      return;
+    }
+    if (!hasStart || !hasEnd) {
+      return;
+    }
     if (data.startDate > data.endDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

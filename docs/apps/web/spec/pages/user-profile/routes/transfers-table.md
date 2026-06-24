@@ -26,9 +26,10 @@ Report fetch requires a logged-in session. BFF `POST /api/wallet/hive/advanced-r
 
 ## Data flow
 
-1. RSC page builds default request (profile account, last 30 UTC days, USD); initial table state is empty until Submit.
-2. Client table posts to BFF `POST /api/wallet/hive/advanced-report` for filter submit and progressive pagination.
-3. Exemption toggles post to `POST /api/wallet/hive/exemptions` (auth required; viewer must match session).
+1. RSC page builds default filter state (profile account, last 30 UTC days in form, USD).
+2. **Browse mode (initial):** on mount, client fetches **one page** without `startDate`/`endDate` (newest wallet ops for profile account). Totals show `-`; **Show more** loads the next page manually.
+3. **Submit mode:** client posts with From/Till dates and **auto-loads all pages** until `hasMore` is false; totals calculated.
+4. BFF `POST /api/wallet/hive/advanced-report` for both modes; exemption toggles post to `POST /api/wallet/hive/exemptions` (auth required).
 
 Fiat amounts come from query-api only — no client-side rate math.
 
@@ -36,7 +37,8 @@ Fiat amounts come from query-api only — no client-side rate math.
 
 - Filters: start/till date, **user search** (multi-account chips), base currency
 - **From account creation** link under From date — sets start to earliest creation date among selected filter accounts (or profile account when none selected); BFF `POST /api/wallet/hive/account-created-dates` → query-api tiered resolve (DB → `get_accounts` → `account_created` history)
-- Submit loads **all pages automatically** until `hasMore` is false (legacy parity; no manual Show more)
+- **Browse:** auto first batch on page load (no date filter on API); **Show more** for next pages; totals `-` until Submit
+- **Submit:** loads **all pages automatically** until `hasMore` is false; totals calculated
 - Page size **50** (shared `@opden-data-layer/core` constant)
 - Virtual scroll tbody (`@tanstack/react-virtual`, sticky header)
 - Partial-load warning when client page cap (`MAX_PROGRESSIVE_PAGES`) is hit (`truncated` flag)

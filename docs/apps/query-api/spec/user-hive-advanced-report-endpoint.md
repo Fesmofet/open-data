@@ -30,8 +30,8 @@ Optional body field **`viewer`** loads exemption `checked` flags for that viewer
 |-------|------|-------|
 | `accounts` | `{ name, cursor? }[]` | Min 1; only accounts with `hasMore: true` from the previous response should be sent on the next request |
 | `filterAccounts` | `string[]` | Min 1; used for mutual-transaction exclusion |
-| `startDate` | unix UTC | Inclusive lower bound |
-| `endDate` | unix UTC | Inclusive upper bound; must be `< now` |
+| `startDate` | unix UTC? | Inclusive lower bound; **omit with `endDate` for browse mode** (no date filter) |
+| `endDate` | unix UTC? | Inclusive upper bound; must be `< now` when set; **both dates required together** |
 | `limit` | int 1–50 | Default 50 |
 | `currency` | fiat code | One of `SUPPORTED_CURRENCIES` |
 | `viewer` | string? | Loads exemption `checked` flags for this viewer (must match JWT `sub` when set) |

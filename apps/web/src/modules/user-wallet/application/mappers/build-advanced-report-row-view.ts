@@ -2,6 +2,10 @@ import { HIVE_OP } from '@opden-data-layer/core/hive-account-history';
 
 import type { AdvancedReportRowApi } from '../dto/hive-advanced-report-api.schema';
 
+export type AdvancedReportDescriptionView =
+  | { kind: 'plain'; text: string }
+  | { kind: 'withAccount'; label: string; account: string };
+
 export type AdvancedReportRowView = {
   id: string;
   userName: string;
@@ -23,6 +27,7 @@ export type AdvancedReportRowView = {
   withdrawDeposit: '' | 'd' | 'w';
   checked: boolean;
   description: string;
+  descriptionView: AdvancedReportDescriptionView;
   memo: string;
 };
 
@@ -33,40 +38,48 @@ function formatUtcDate(unix: number): { date: string; time: string } {
   return { date, time };
 }
 
-function buildDescription(row: AdvancedReportRowApi): string {
+export function formatAdvancedReportDescription(view: AdvancedReportDescriptionView): string {
+  if (view.kind === 'plain') {
+    return view.text;
+  }
+  return `${view.label} @${view.account}`;
+}
+
+function buildDescriptionView(row: AdvancedReportRowApi): AdvancedReportDescriptionView {
   switch (row.type) {
     case HIVE_OP.TRANSFER:
       return row.withdrawDeposit === 'd'
-        ? `Received from @${row.from}`
-        : `Sent to @${row.to}`;
+        ? { kind: 'withAccount', label: 'Received from', account: row.from }
+        : { kind: 'withAccount', label: 'Sent to', account: row.to };
     case HIVE_OP.TRANSFER_TO_VESTING:
       if (row.from === row.to) {
-        return 'Power up';
+        return { kind: 'plain', text: 'Power up' };
       }
       return row.withdrawDeposit === 'd'
-        ? `Power up from @${row.from}`
-        : `Power up to @${row.to}`;
+        ? { kind: 'withAccount', label: 'Power up from', account: row.from }
+        : { kind: 'withAccount', label: 'Power up to', account: row.to };
     case HIVE_OP.FILL_VESTING_WITHDRAW:
       return row.withdrawDeposit === 'd'
-        ? `Power down from @${row.from}`
-        : `Power down to @${row.to}`;
+        ? { kind: 'withAccount', label: 'Power down from', account: row.from }
+        : { kind: 'withAccount', label: 'Power down to', account: row.to };
     case HIVE_OP.CLAIM_REWARD_BALANCE:
-      return 'Claim rewards';
+      return { kind: 'plain', text: 'Claim rewards' };
     case HIVE_OP.INTEREST:
-      return 'HBD savings interest';
+      return { kind: 'plain', text: 'HBD savings interest' };
     case HIVE_OP.PROPOSAL_PAY:
-      return 'Proposal pay';
+      return { kind: 'plain', text: 'Proposal pay' };
     case HIVE_OP.FILL_ORDER:
-      return 'Market order filled';
+      return { kind: 'plain', text: 'Market order filled' };
     case HIVE_OP.LIMIT_ORDER_CANCEL:
-      return 'Limit order canceled';
+      return { kind: 'plain', text: 'Limit order canceled' };
     default:
-      return row.type;
+      return { kind: 'plain', text: row.type };
   }
 }
 
 export function buildAdvancedReportRowView(row: AdvancedReportRowApi): AdvancedReportRowView {
   const { date, time } = formatUtcDate(row.timestamp);
+  const descriptionView = buildDescriptionView(row);
 
   return {
     id: `${row.userName}:${row.operationIndex}`,
@@ -88,7 +101,8 @@ export function buildAdvancedReportRowView(row: AdvancedReportRowApi): AdvancedR
     totalFiat: row.totalFiat,
     withdrawDeposit: row.withdrawDeposit,
     checked: row.checked,
-    description: buildDescription(row),
+    description: formatAdvancedReportDescription(descriptionView),
+    descriptionView,
     memo: row.memo,
   };
 }

@@ -94,7 +94,7 @@ registry.registerPath({
   path: '/query/v1/wallet/hive/advanced-report',
   summary: 'Hive L1 advanced wallet report',
   description:
-    'Multi-account Hive wallet table with date range, mutual-transaction filtering, historical fiat pricing, and exemption preload. Requires Bearer access JWT; optional `viewer` must match token `sub`.',
+    'Multi-account Hive wallet table with mutual-transaction filtering, historical fiat pricing, and exemption preload. Optional `startDate`/`endDate` (both or neither): omit for browse mode (newest ops, no date filter); set both for filtered report. Requires Bearer access JWT; optional `viewer` must match token `sub`.',
   security: bearerSecurity,
   request: {
     body: {

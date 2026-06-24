@@ -21,12 +21,16 @@ export class GetHiveAdvancedReportEndpoint {
   ) {}
 
   async execute(body: HiveAdvancedReportBody): Promise<HiveAdvancedReportResponse> {
-    const now = Math.floor(Date.now() / 1000);
-    if (body.endDate >= now) {
-      throw new BadRequestException('endDate must be in the past');
-    }
-    if (body.startDate > body.endDate) {
-      throw new BadRequestException('startDate must be <= endDate');
+    const hasDateRange =
+      body.startDate !== undefined && body.endDate !== undefined;
+    if (hasDateRange) {
+      const now = Math.floor(Date.now() / 1000);
+      if (body.endDate! >= now) {
+        throw new BadRequestException('endDate must be in the past');
+      }
+      if (body.startDate! > body.endDate!) {
+        throw new BadRequestException('startDate must be <= endDate');
+      }
     }
 
     const filterAccounts = body.filterAccounts.map((name) =>
@@ -43,8 +47,9 @@ export class GetHiveAdvancedReportEndpoint {
         const result = await this.pager.collectForAccount({
           account: name,
           cursor: account.cursor ?? -1,
-          startDate: body.startDate,
-          endDate: body.endDate,
+          ...(hasDateRange
+            ? { startDate: body.startDate, endDate: body.endDate }
+            : {}),
           targetCount: perAccountLimit,
           swapAccount,
         });

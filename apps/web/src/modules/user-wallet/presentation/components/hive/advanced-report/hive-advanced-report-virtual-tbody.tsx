@@ -37,7 +37,8 @@ export function HiveAdvancedReportVirtualTbody({
   }
 
   return (
-    <tbody
+    <div
+      role="rowgroup"
       style={{
         height: `${rowVirtualizer.getTotalSize()}px`,
         position: 'relative',
@@ -69,6 +70,6 @@ export function HiveAdvancedReportVirtualTbody({
           />
         );
       })}
-    </tbody>
+    </div>
   );
 }
