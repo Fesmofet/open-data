@@ -5,6 +5,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
 import type { WaivWalletLoadError, WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
 import { WaivWalletSummary } from '../waiv/waiv-wallet-summary';
+import { WaivWalletHistoryFeedClient } from '../waiv/history/waiv-wallet-history-feed-client';
 import { UnifiedWalletModalHost } from './unified-wallet-modal-host';
 
 export type TransfersWaivWalletViewProps = {
@@ -25,29 +26,30 @@ export function TransfersWaivWalletView({
   const { t } = useI18n();
   const canManageWallet =
     viewerUsername?.trim().toLowerCase() === accountName.trim().toLowerCase();
-
-  if (waivError) {
-    return (
-      <p className="rounded-card border border-border bg-bg p-card-padding text-body-sm text-muted">
-        {waivError === 'invalid_response'
-          ? t('activity_error')
-          : t('unavailable')}
-      </p>
-    );
-  }
+  const summaryAvailable = waivError === null;
+  const canManageWithSummary = canManageWallet && summaryAvailable;
 
   return (
     <UnifiedWalletModalHost
       account={accountName}
-      viewerUsername={viewerUsername}
+      viewerUsername={summaryAvailable ? viewerUsername : null}
       waivSummary={waivSummary}
       hiveSummary={hiveSummary}
     >
-      <WaivWalletSummary
-        summary={waivSummary}
-        canManageWallet={canManageWallet}
-        defaultAsset="WAIV"
-      />
+      {waivError ? (
+        <p className="rounded-card border border-border bg-bg p-card-padding text-body-sm text-muted">
+          {waivError === 'invalid_response'
+            ? t('activity_error')
+            : t('unavailable')}
+        </p>
+      ) : (
+        <WaivWalletSummary
+          summary={waivSummary}
+          canManageWallet={canManageWithSummary}
+          defaultAsset="WAIV"
+        />
+      )}
+      <WaivWalletHistoryFeedClient accountName={accountName} />
     </UnifiedWalletModalHost>
   );
 }

@@ -3,6 +3,8 @@ import {
   Get,
   NotFoundException,
   Param,
+  Post,
+  Body,
 } from '@nestjs/common';
 import {
   GetUserEngineTokenDelegationsEndpoint,
@@ -10,17 +12,23 @@ import {
   GetUserHiveRcDelegationsEndpoint,
   GetUserHiveWalletEndpoint,
   GetUserWaivWalletEndpoint,
+  GetUserWaivWalletHistoryEndpoint,
   type EngineTokenDelegationsResponse,
   type HiveHpDelegationsResponse,
   type HiveRcDelegationsResponse,
   type HiveWalletResponse,
   type WaivWalletResponse,
+  type WaivWalletHistoryResponse,
+  waivWalletHistoryBodySchema,
+  type WaivWalletHistoryBody,
 } from '../domain/wallet';
+import { ZodBodyPipe } from '../pipes';
 
 @Controller({ path: 'users', version: '1' })
 export class UserWalletController {
   constructor(
     private readonly getUserWaivWallet: GetUserWaivWalletEndpoint,
+    private readonly getUserWaivWalletHistory: GetUserWaivWalletHistoryEndpoint,
     private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
     private readonly getUserHiveWallet: GetUserHiveWalletEndpoint,
     private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
@@ -32,6 +40,18 @@ export class UserWalletController {
     @Param('name') name: string,
   ): Promise<WaivWalletResponse> {
     const result = await this.getUserWaivWallet.execute(name);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/wallet/waiv/history')
+  async getWaivWalletHistory(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(waivWalletHistoryBodySchema)) body: WaivWalletHistoryBody,
+  ): Promise<WaivWalletHistoryResponse> {
+    const result = await this.getUserWaivWalletHistory.execute(name, body);
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);
     }

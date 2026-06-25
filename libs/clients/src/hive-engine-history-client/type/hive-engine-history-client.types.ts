@@ -17,4 +17,13 @@ export type HiveEngineAccountHistoryEntry = {
   timestamp: number;
   transactionId?: string;
   blockNumber?: number;
+  to?: string;
+  from?: string;
+  memo?: string;
+  price?: string | number;
+  orderType?: string;
+  quantityHive?: string | number;
+  quantityTokens?: string | number;
+  quantityLocked?: string | number;
+  [key: string]: unknown;
 };

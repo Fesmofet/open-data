@@ -55,6 +55,7 @@ import {
   GetUserHiveHpDelegationsEndpoint,
   GetUserHiveRcDelegationsEndpoint,
   GetUserWaivWalletEndpoint,
+  GetUserWaivWalletHistoryEndpoint,
   GetHiveAdvancedReportEndpoint,
   UpsertHiveWalletExemptionEndpoint,
 } from '../domain/wallet';
@@ -91,6 +92,7 @@ export class McpService {
     private readonly getUserCommentsFeed: GetUserCommentsFeedEndpoint,
     private readonly getUserActivity: GetUserActivityEndpoint,
     private readonly getUserWaivWallet: GetUserWaivWalletEndpoint,
+    private readonly getUserWaivWalletHistory: GetUserWaivWalletHistoryEndpoint,
     private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
     private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
     private readonly getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint,
@@ -137,6 +139,7 @@ export class McpService {
       getUserCommentsFeed: this.getUserCommentsFeed,
       getUserActivity: this.getUserActivity,
       getUserWaivWallet: this.getUserWaivWallet,
+      getUserWaivWalletHistory: this.getUserWaivWalletHistory,
       getUserEngineTokenDelegations: this.getUserEngineTokenDelegations,
       getUserHiveHpDelegations: this.getUserHiveHpDelegations,
       getUserHiveRcDelegations: this.getUserHiveRcDelegations,

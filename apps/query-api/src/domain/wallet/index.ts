@@ -1,5 +1,6 @@
 export { WalletModule } from './wallet.module';
 export { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
+export { GetUserWaivWalletHistoryEndpoint } from './get-user-waiv-wallet-history.endpoint';
 export { GetUserEngineTokenDelegationsEndpoint } from './get-user-engine-token-delegations.endpoint';
 export { GetUserHiveWalletEndpoint } from './get-user-hive-wallet.endpoint';
 export { GetUserHiveHpDelegationsEndpoint } from './get-user-hive-hp-delegations.endpoint';
@@ -8,6 +9,12 @@ export {
   waivWalletResponseSchema,
   type WaivWalletResponse,
 } from './schemas/waiv-wallet.schema';
+export {
+  waivWalletHistoryBodySchema,
+  waivWalletHistoryResponseSchema,
+  type WaivWalletHistoryBody,
+  type WaivWalletHistoryResponse,
+} from './schemas/waiv-wallet-history.schema';
 export {
   engineTokenDelegationsResponseSchema,
   type EngineTokenDelegationsResponse,

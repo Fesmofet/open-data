@@ -32,6 +32,8 @@ export type { FavoritesScopeParams } from './user-favorites.repository';
 export { UserDelegationsRepository } from './user-delegations.repository';
 export { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 export { WalletExemptionsRepository } from './wallet-exemptions.repository';
+export { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
+export { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';
 export type {
   DiscoverObjectCandidateRow,
   DiscoverTagCategoryRow,

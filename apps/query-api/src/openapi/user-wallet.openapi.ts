@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 import { waivWalletResponseSchema } from '../domain/wallet/schemas/waiv-wallet.schema';
+import { waivWalletHistoryResponseSchema } from '../domain/wallet/schemas/waiv-wallet-history.schema';
+import { waivWalletHistoryBodySchema } from '../domain/wallet/schemas/waiv-wallet-history.schema';
 import { engineTokenDelegationsResponseSchema } from '../domain/wallet/schemas/engine-token-delegations.schema';
 import {
   hiveHpDelegationsResponseSchema,
@@ -63,6 +65,68 @@ registry.registerPath({
     },
     503: {
       description: 'Hive Engine unavailable.',
+      content: {
+        'application/json': {
+          schema: serviceUnavailableSchema,
+        },
+      },
+    },
+  },
+});
+
+const waivWalletHistoryBodyOpenApi = registry.register(
+  'WaivWalletHistoryBody',
+  waivWalletHistoryBodySchema,
+);
+
+const waivWalletHistoryResponseOpenApi = registry.register(
+  'WaivWalletHistoryResponse',
+  waivWalletHistoryResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/wallet/waiv/history',
+  summary: 'User WAIV wallet transaction history',
+  description:
+    'Paginated WAIV wallet history merged from Hive Engine accountHistory RPC, indexed swaps, and WAIV airdrops.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: {
+      content: {
+        'application/json': {
+          schema: waivWalletHistoryBodyOpenApi,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'WAIV wallet history page.',
+      content: {
+        'application/json': {
+          schema: waivWalletHistoryResponseOpenApi,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid cursor or body.',
+      content: {
+        'application/json': {
+          schema: badRequestSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+    503: {
+      description: 'Hive Engine history unavailable.',
       content: {
         'application/json': {
           schema: serviceUnavailableSchema,

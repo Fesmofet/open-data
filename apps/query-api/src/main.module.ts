@@ -4,6 +4,7 @@ import {
   ExchangeRateClientModule,
   HiveClientModule,
   HiveEngineClientModule,
+  HiveEngineHistoryClientModule,
   type HiveEngineClientModuleOptions,
   HIVE_RPC_NODES,
   RedisClientModule,
@@ -55,6 +56,23 @@ import { RepositoriesModule } from './repositories';
       imports: [ConfigModule],
       useFactory: (config: ConfigService): HiveEngineClientModuleOptions =>
         config.getOrThrow<HiveEngineClientModuleOptions>('hiveEngine.client'),
+      inject: [ConfigService],
+    }),
+    HiveEngineHistoryClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        const client = config.get<{
+          nodes: string[];
+          cachePrefix?: string;
+          cacheTtlSeconds?: number;
+          maxResponseTimeMs?: number;
+          urlRotationDb?: number;
+        }>('hiveEngine.historyClient');
+        if (!client?.nodes?.length) {
+          throw new Error('query-api: hiveEngine.historyClient.nodes is missing or empty');
+        }
+        return client;
+      },
       inject: [ConfigService],
     }),
     RepositoriesModule,

@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
+import { HIVE_ENGINE_HISTORY_NODES, HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
 
 const DEFAULT_HIVE_ENGINE_NODES = [...HIVE_ENGINE_NODES];
+const DEFAULT_HIVE_ENGINE_HISTORY_NODES = [...HIVE_ENGINE_HISTORY_NODES];
 
 export const queryApiConfigSchema = z.object({
   REDIS_URI: z.string().optional().default('redis://localhost:6379'),
@@ -50,6 +51,25 @@ export const queryApiConfigSchema = z.object({
         .filter(Boolean);
       return parsed.length > 0 ? parsed : [...DEFAULT_HIVE_ENGINE_NODES];
     }),
+  HIVE_ENGINE_HISTORY_NODES: z
+    .string()
+    .optional()
+    .transform((s) => {
+      if (!s || s.trim().length === 0) {
+        return [...DEFAULT_HIVE_ENGINE_HISTORY_NODES];
+      }
+      const parsed = s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+      return parsed.length > 0 ? parsed : [...DEFAULT_HIVE_ENGINE_HISTORY_NODES];
+    }),
+  HIVE_ENGINE_HISTORY_CACHE_PREFIX: z
+    .string()
+    .optional()
+    .default('query-api:hive-engine-history'),
+  HIVE_ENGINE_HISTORY_MAX_RESPONSE_TIME_MS: z.coerce.number().optional().default(8000),
+  HIVE_ENGINE_HISTORY_URL_ROTATION_DB: z.coerce.number().optional().default(0),
   CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(12_000),
 });
 

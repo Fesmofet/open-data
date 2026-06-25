@@ -239,6 +239,33 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_waiv_wallet_history',
+    {
+      description: catalogDescription('get_user_waiv_wallet_history'),
+      inputSchema: z.object({
+        ...accountField,
+        limit: z.number().int().min(1).max(500).optional().describe('Page size (default 20)'),
+        cursor: z.string().optional().describe('Pagination cursor from previous response'),
+        showRewards: z
+          .boolean()
+          .optional()
+          .describe('Include author/curation/beneficiary reward rows (default false)'),
+      }),
+    },
+    async (args) => {
+      const result = await deps.getUserWaivWalletHistory.execute(args.account, {
+        limit: args.limit,
+        cursor: args.cursor,
+        showRewards: args.showRewards,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_engine_token_delegations',
     {
       description: catalogDescription('get_user_engine_token_delegations'),

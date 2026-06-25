@@ -25,6 +25,8 @@ import { UserFavoritesRepository } from './user-favorites.repository';
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 import { WalletExemptionsRepository } from './wallet-exemptions.repository';
+import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
+import { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';
 
 @Module({
   providers: [
@@ -54,6 +56,8 @@ import { WalletExemptionsRepository } from './wallet-exemptions.repository';
     UserDelegationsRepository,
     UserRcDelegationsRepository,
     WalletExemptionsRepository,
+    HiveEngineSwapsRepository,
+    HiveEngineWaivAirdropsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -82,6 +86,8 @@ import { WalletExemptionsRepository } from './wallet-exemptions.repository';
     UserDelegationsRepository,
     UserRcDelegationsRepository,
     WalletExemptionsRepository,
+    HiveEngineSwapsRepository,
+    HiveEngineWaivAirdropsRepository,
   ],
 })
 export class RepositoriesModule {}

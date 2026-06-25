@@ -52,6 +52,13 @@ export default () => {
         maxResponseTimeMs: 8000,
         urlRotationDb: 0,
       },
+      historyClient: {
+        nodes: env.HIVE_ENGINE_HISTORY_NODES,
+        cachePrefix: env.HIVE_ENGINE_HISTORY_CACHE_PREFIX,
+        cacheTtlSeconds: 1200,
+        maxResponseTimeMs: env.HIVE_ENGINE_HISTORY_MAX_RESPONSE_TIME_MS,
+        urlRotationDb: env.HIVE_ENGINE_HISTORY_URL_ROTATION_DB,
+      },
     },
   };
 };

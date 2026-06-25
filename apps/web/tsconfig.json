@@ -26,6 +26,9 @@
       "@opden-data-layer/core/constants": [
         "../../libs/core/src/constants/index.ts"
       ],
+      "@opden-data-layer/core/utils/numeric-string": [
+        "../../libs/core/src/utils/numeric-string.ts"
+      ],
       "@opden-data-layer/migrations": ["../../libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["../../libs/clients/src/index.ts"],
       "@opden-data-layer/objects-domain": ["../../libs/objects-domain/src/index.ts"],

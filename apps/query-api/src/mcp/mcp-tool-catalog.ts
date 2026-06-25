@@ -163,6 +163,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-waiv-wallet-endpoint.md',
   },
   {
+    name: 'get_user_waiv_wallet_history',
+    description:
+      'Paginated WAIV wallet transaction history (Hive Engine RPC + indexed swaps and airdrops).',
+    httpEquivalent: 'POST /query/v1/users/:name/wallet/waiv/history',
+    specPath: 'docs/apps/query-api/spec/user-waiv-wallet-endpoint.md',
+  },
+  {
     name: 'get_user_engine_token_delegations',
     description: 'Incoming and outgoing Hive Engine token delegations for a user.',
     httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/:symbol/delegations',

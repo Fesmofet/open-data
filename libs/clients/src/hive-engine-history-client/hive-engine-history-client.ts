@@ -3,7 +3,7 @@ import { UrlRotationManager, UrlRotationService } from '../redis-client';
 import { ACCOUNT_HISTORY_PATH } from './constants';
 import { HIVE_ENGINE_HISTORY_CLIENT_MODULE_OPTIONS } from './hive-engine-history-client.options';
 import type { HiveEngineHistoryClientModuleOptions } from './hive-engine-history-client.options';
-import type { HiveEngineHistoryClientInterface } from './interface';
+import type { HiveEngineHistoryClientInterface, HiveEngineAccountHistoryResult } from './interface';
 import type {
   HiveEngineAccountHistoryEntry,
   HiveEngineAccountHistoryParams,
@@ -91,6 +91,13 @@ export class HiveEngineHistoryClient implements HiveEngineHistoryClientInterface
   async accountHistory(
     params: HiveEngineAccountHistoryParams,
   ): Promise<HiveEngineAccountHistoryEntry[]> {
+    const result = await this.accountHistoryWithStatus(params);
+    return result.entries;
+  }
+
+  async accountHistoryWithStatus(
+    params: HiveEngineAccountHistoryParams,
+  ): Promise<HiveEngineAccountHistoryResult> {
     const node = await this.pickNode();
     const requestUrl = this.buildAccountHistoryUrl(node, params);
     const start = Date.now();
@@ -111,7 +118,7 @@ export class HiveEngineHistoryClient implements HiveEngineHistoryClientInterface
         this.logger.warn(
           `accountHistory HTTP ${resp.status} from ${this.normalizeNodeBase(node)}`,
         );
-        return [];
+        return { entries: [], unavailable: true };
       }
 
       const data = (await resp.json()) as
@@ -119,17 +126,17 @@ export class HiveEngineHistoryClient implements HiveEngineHistoryClientInterface
         | { result?: HiveEngineAccountHistoryEntry[]; error?: unknown };
 
       if (Array.isArray(data)) {
-        return data;
+        return { entries: data, unavailable: false };
       }
       if (data?.error) {
         hasError = true;
-        return [];
+        return { entries: [], unavailable: true };
       }
-      return data?.result ?? [];
+      return { entries: data?.result ?? [], unavailable: false };
     } catch (error) {
       this.logger.error(error instanceof Error ? error.message : String(error));
       hasError = true;
-      return [];
+      return { entries: [], unavailable: true };
     } finally {
       clearTimeout(timeoutId);
       const responseTime = Date.now() - start;
