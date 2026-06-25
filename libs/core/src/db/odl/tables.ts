@@ -988,7 +988,6 @@ export interface HiveEngineSwapsTable {
   symbol_in: string;
   symbol_out_quantity: string;
   symbol_in_quantity: string;
-  pool_id: number | null;
   symbols: Generated<string[]>;
   created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }

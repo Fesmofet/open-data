@@ -68,7 +68,6 @@ export class MarketpoolsSwapParser implements HiveEngineSubParser {
         symbol_in: parsed.symbolIn,
         symbol_out_quantity: parsed.symbolOutQuantity,
         symbol_in_quantity: parsed.symbolInQuantity,
-        pool_id: parsed.poolId,
       });
     }
 

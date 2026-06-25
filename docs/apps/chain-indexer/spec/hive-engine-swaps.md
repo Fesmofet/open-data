@@ -27,7 +27,7 @@ chain-indexer writes the same atomic shape to Postgres table `hive_engine_swaps`
 - **Contract:** `marketpools`
 - **Action:** `swapTokens`
 - **Log events required:**
-  - `swapTokens` → `symbolIn`, `symbolOut`, optional `poolId`
+  - `swapTokens` → `symbolIn`, `symbolOut`
   - `transferFromContract` → `symbolOutQuantity` (legacy mapping)
   - `transferToContract` → `symbolInQuantity`
 
@@ -46,7 +46,6 @@ Implementation: [`MarketpoolsSwapParser`](../../../../apps/chain-indexer/src/dom
 | `block_timestamp` | HE block time |
 | `symbol_out`, `symbol_in` | Swap pair from `swapTokens` event |
 | `symbol_out_quantity`, `symbol_in_quantity` | Exact string quantities from transfer events |
-| `pool_id` | Optional pool id from logs |
 | `symbols` | Generated `ARRAY[symbol_in, symbol_out]` for GIN filtering |
 
 **Unique:** `(transaction_id, account)` — idempotent re-parse and Mongo import.

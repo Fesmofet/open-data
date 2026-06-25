@@ -9,5 +9,4 @@ export type MongoEngineAccountHistorySwap = {
   symbolOutQuantity?: string;
   symbolInQuantity?: string;
   operation?: string;
-  poolId?: number;
 };

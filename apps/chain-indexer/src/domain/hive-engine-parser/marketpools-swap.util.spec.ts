@@ -15,7 +15,6 @@ const SWAP_EVENTS = [
     data: {
       symbolOut: 'SWAP.HIVE',
       symbolIn: 'DEC',
-      poolId: 13,
     },
   },
   {
@@ -52,7 +51,6 @@ describe('extractSwapFromTransaction', () => {
       symbolIn: 'DEC',
       symbolOutQuantity: '0.25171831',
       symbolInQuantity: '148.48',
-      poolId: 13,
     });
   });
 
@@ -73,16 +71,6 @@ describe('extractSwapFromTransaction', () => {
       : e,
     );
     expect(extractSwapFromTransaction(TX_BASE, 1, 1, events)).toBeNull();
-  });
-
-  it('accepts swap without poolId', () => {
-    const events = SWAP_EVENTS.map((e) =>
-      e.event === 'swapTokens' ?
-        { ...e, data: { symbolOut: 'SWAP.HIVE', symbolIn: 'WAIV' } }
-      : e,
-    );
-    const result = extractSwapFromTransaction(TX_BASE, 1, 1, events);
-    expect(result?.poolId).toBeNull();
   });
 });
 

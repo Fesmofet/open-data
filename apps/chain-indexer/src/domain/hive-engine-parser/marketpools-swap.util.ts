@@ -8,7 +8,6 @@ export type ParsedMarketpoolsSwap = {
   symbolIn: string;
   symbolOutQuantity: string;
   symbolInQuantity: string;
-  poolId: number | null;
 };
 
 export const MARKETPOOLS_CONTRACT = 'marketpools';
@@ -20,15 +19,6 @@ const TRANSFER_TO_CONTRACT_EVENT = 'transferToContract';
 
 function str(value: unknown): string {
   return String(value ?? '').trim();
-}
-
-function parsePoolId(data: Record<string, unknown>): number | null {
-  const raw = data.poolId ?? data.pool_id;
-  if (raw === undefined || raw === null || raw === '') {
-    return null;
-  }
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : null;
 }
 
 function findEvent(
@@ -86,6 +76,5 @@ export function extractSwapFromTransaction(
     symbolIn,
     symbolOutQuantity,
     symbolInQuantity,
-    poolId: parsePoolId(swapTokens.data),
   };
 }

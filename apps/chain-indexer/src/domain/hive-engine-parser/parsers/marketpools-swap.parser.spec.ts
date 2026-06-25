@@ -38,7 +38,7 @@ describe('MarketpoolsSwapParser', () => {
             {
               contract: 'marketpools',
               event: 'swapTokens',
-              data: { symbolOut: 'SWAP.HIVE', symbolIn: 'DEC', poolId: 13 },
+              data: { symbolOut: 'SWAP.HIVE', symbolIn: 'DEC' },
             },
             {
               contract: 'tokens',
@@ -66,7 +66,6 @@ describe('MarketpoolsSwapParser', () => {
         symbol_in: 'DEC',
         symbol_out_quantity: '0.25171831',
         symbol_in_quantity: '148.48',
-        pool_id: 13,
       }),
     ]);
   });

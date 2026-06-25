@@ -609,7 +609,6 @@ CREATE TABLE hive_engine_swaps (
   symbol_in               TEXT NOT NULL,
   symbol_out_quantity     TEXT NOT NULL,
   symbol_in_quantity      TEXT NOT NULL,
-  pool_id                 INTEGER NULL,
   symbols                 TEXT[] GENERATED ALWAYS AS (ARRAY[symbol_in, symbol_out]) STORED,
   created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (transaction_id, account)

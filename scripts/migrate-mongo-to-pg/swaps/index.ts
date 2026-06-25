@@ -78,7 +78,6 @@ function mongoSwapToRow(
     symbol_in: symbolIn,
     symbol_out_quantity: symbolOutQuantity,
     symbol_in_quantity: symbolInQuantity,
-    pool_id: num(doc.poolId),
   };
 }
 
