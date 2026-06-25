@@ -58,7 +58,6 @@ function mongoSwapToRow(
     !account ||
     !transactionId ||
     blockNumber === null ||
-    refHiveBlockNumber === null ||
     timestampUnix === null ||
     !symbolOut ||
     !symbolIn ||

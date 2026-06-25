@@ -983,7 +983,7 @@ export interface HiveEngineSwapsTable {
   account: string;
   transaction_id: string;
   block_number: number;
-  ref_hive_block_number: number;
+  ref_hive_block_number: number | null;
   block_timestamp: ColumnType<Date, Date | string, Date | string>;
   symbol_out: string;
   symbol_in: string;

@@ -42,7 +42,7 @@ Implementation: [`MarketpoolsSwapParser`](../../../../apps/chain-indexer/src/dom
 | `account` | Swap sender (`transaction.sender`) |
 | `transaction_id` | HE transaction id |
 | `block_number` | HE block number |
-| `ref_hive_block_number` | Referenced Hive L1 block |
+| `ref_hive_block_number` | Referenced Hive L1 block; NULL for legacy tribaldex Mongo backfill |
 | `block_timestamp` | HE block time |
 | `symbol_out`, `symbol_in` | Swap pair from `swapTokens` event |
 | `symbol_out_quantity`, `symbol_in_quantity` | Exact string quantities from transfer events |
@@ -50,7 +50,7 @@ Implementation: [`MarketpoolsSwapParser`](../../../../apps/chain-indexer/src/dom
 
 **Unique:** `(transaction_id, account)` — idempotent re-parse and Mongo import.
 
-Migration: `00027_hive_engine_swaps`.
+Migrations: `00027_hive_engine_swaps`, `00030_hive_engine_swaps_ref_hive_block_nullable`.
 
 ## Query patterns
 

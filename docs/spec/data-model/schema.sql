@@ -603,7 +603,7 @@ CREATE TABLE hive_engine_swaps (
   account                 TEXT NOT NULL,
   transaction_id          TEXT NOT NULL,
   block_number            INTEGER NOT NULL,
-  ref_hive_block_number   INTEGER NOT NULL,
+  ref_hive_block_number   INTEGER NULL,
   block_timestamp         TIMESTAMPTZ NOT NULL,
   symbol_out              TEXT NOT NULL,
   symbol_in               TEXT NOT NULL,
