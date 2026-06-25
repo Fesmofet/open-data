@@ -123,6 +123,9 @@ export type {
   HiveEngineSwap,
   NewHiveEngineSwap,
   HiveEngineSwapUpdate,
+  HiveEngineWaivAirdrop,
+  NewHiveEngineWaivAirdrop,
+  HiveEngineWaivAirdropUpdate,
   WalletExemptionRow,
   NewWalletExemptionRow,
 } from './odl/tables';

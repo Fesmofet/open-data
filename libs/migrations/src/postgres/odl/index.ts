@@ -26,6 +26,7 @@ import * as m00025 from './00025_user_delegations';
 import * as m00026 from './00026_wallet_exemptions';
 import * as m00027 from './00027_hive_engine_swaps';
 import * as m00028 from './00028_hive_engine_swaps_drop_pool_id';
+import * as m00029 from './00029_hive_engine_waiv_airdrops';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -61,4 +62,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00026_wallet_exemptions': { up: m00026.up, down: m00026.down },
   '00027_hive_engine_swaps': { up: m00027.up, down: m00027.down },
   '00028_hive_engine_swaps_drop_pool_id': { up: m00028.up, down: m00028.down },
+  '00029_hive_engine_waiv_airdrops': { up: m00029.up, down: m00029.down },
 };

@@ -24,6 +24,7 @@ All bulk importers accept `--skip-indexes` (drops secondary indexes before inser
 | `pnpm migrate:mongo-hive-engine-rates` | `hive_engine_rates` collection JSON | `hive_engine_rates` |
 | `pnpm migrate:mongo-currency-rates` | `currency_rates` collection JSON | `currency_rates` |
 | `pnpm migrate:mongo-hive-engine-swaps` | `EngineAccountHistory` swap rows JSON | `hive_engine_swaps` |
+| `pnpm migrate:mongo-hive-engine-waiv-airdrops` | `EngineAccountHistory` WAIV airdrop rows JSON | `hive_engine_waiv_airdrops` |
 
 ### Objects (wobjects)
 
@@ -125,6 +126,22 @@ mongoexport --collection=engineaccounthistories \
 ```
 
 Maps legacy fields (`symbolOut`, `symbolIn`, quantities, unix `timestamp`) into `hive_engine_swaps`. Re-runs are idempotent via `ON CONFLICT (transaction_id, account) DO NOTHING`.
+
+### Historical WAIV airdrops (`EngineAccountHistory` collection)
+
+```bash
+pnpm migrate:mongo-hive-engine-waiv-airdrops <path-to-waiv_airdrops.json> [--dry-run] [--skip-indexes]
+```
+
+Mongo export (WAIV airdrop rows only):
+
+```bash
+mongoexport --collection=engineaccounthistories \
+  --query='{"operation":"airdrops_newAirdrop","symbol":"WAIV"}' \
+  --out=waiv_airdrops.json --jsonArray
+```
+
+Maps legacy fields into `hive_engine_waiv_airdrops` (one-time historical data; no chain-indexer parser). See [`docs/spec/data-model/hive-engine-waiv-airdrops.md`](../../docs/spec/data-model/hive-engine-waiv-airdrops.md).
 
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 

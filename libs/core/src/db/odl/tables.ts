@@ -74,6 +74,7 @@ export interface OdlDatabase {
   hive_engine_rates: HiveEngineRatesTable;
   wallet_exemptions: WalletExemptionsTable;
   hive_engine_swaps: HiveEngineSwapsTable;
+  hive_engine_waiv_airdrops: HiveEngineWaivAirdropsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -995,3 +996,23 @@ export interface HiveEngineSwapsTable {
 export type HiveEngineSwap = Selectable<HiveEngineSwapsTable>;
 export type NewHiveEngineSwap = Insertable<HiveEngineSwapsTable>;
 export type HiveEngineSwapUpdate = Updateable<HiveEngineSwapsTable>;
+
+// ---------------------------------------------------------------------------
+// hive_engine_waiv_airdrops (historical WAIV airdrops; Mongo import only)
+// ---------------------------------------------------------------------------
+
+export interface HiveEngineWaivAirdropsTable {
+  id: Generated<bigint>;
+  account: string;
+  transaction_id: string;
+  block_number: number;
+  ref_hive_block_number: number;
+  block_timestamp: ColumnType<Date, Date | string, Date | string>;
+  quantity: string;
+  token_state: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type HiveEngineWaivAirdrop = Selectable<HiveEngineWaivAirdropsTable>;
+export type NewHiveEngineWaivAirdrop = Insertable<HiveEngineWaivAirdropsTable>;
+export type HiveEngineWaivAirdropUpdate = Updateable<HiveEngineWaivAirdropsTable>;

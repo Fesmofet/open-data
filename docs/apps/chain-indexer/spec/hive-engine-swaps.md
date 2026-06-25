@@ -33,7 +33,7 @@ chain-indexer writes the same atomic shape to Postgres table `hive_engine_swaps`
 
 Implementation: [`MarketpoolsSwapParser`](../../../../apps/chain-indexer/src/domain/hive-engine-parser/parsers/marketpools-swap.parser.ts), util [`marketpools-swap.util.ts`](../../../../apps/chain-indexer/src/domain/hive-engine-parser/marketpools-swap.util.ts).
 
-**Out of scope:** `balanceBeforeRebalancing` rows, airdrops, grey-list side effects.
+**Out of scope:** `balanceBeforeRebalancing` rows, grey-list side effects. Historical WAIV airdrops: [`hive-engine-waiv-airdrops.md`](../../../spec/data-model/hive-engine-waiv-airdrops.md) (Mongo import only, no parser).
 
 ## Table: `hive_engine_swaps`
 

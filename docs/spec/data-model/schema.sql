@@ -619,3 +619,22 @@ CREATE INDEX idx_hes_account_ts_id
 
 CREATE INDEX idx_hes_symbols_gin
   ON hive_engine_swaps USING GIN (symbols);
+
+-- ---------------------------------------------------------------------------
+-- hive_engine_waiv_airdrops (historical WAIV airdrops; Mongo import only)
+-- ---------------------------------------------------------------------------
+CREATE TABLE hive_engine_waiv_airdrops (
+  id                      BIGSERIAL PRIMARY KEY,
+  account                 TEXT NOT NULL,
+  transaction_id          TEXT NOT NULL,
+  block_number            INTEGER NOT NULL,
+  ref_hive_block_number   INTEGER NOT NULL,
+  block_timestamp         TIMESTAMPTZ NOT NULL,
+  quantity                TEXT NOT NULL,
+  token_state             TEXT NOT NULL,
+  created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (transaction_id, account)
+);
+
+CREATE INDEX idx_hewa_account_ts_id
+  ON hive_engine_waiv_airdrops (account, block_timestamp DESC, id DESC);
