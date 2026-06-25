@@ -30,6 +30,9 @@ const messages: Record<string, string> = {
   power_down_stopped: 'Power down',
   delegated_to: 'Delegated to',
   activity_to: 'to',
+  activity_received: 'Received',
+  activity_from: 'from',
+  activity_transferred: 'Transferred',
 };
 
 function renderRow(row: WaivWalletHistoryRowView) {
@@ -104,5 +107,24 @@ describe('WaivWalletHistoryRow', () => {
     renderRow(row);
     expect(screen.getByText(/Delegated to/)).toBeInTheDocument();
     expect(screen.getByText('- 10 WP')).toBeInTheDocument();
+  });
+
+  it('renders transfer with grouped thousands amount', () => {
+    const row: WaivWalletHistoryRowView = {
+      kind: 'transfer',
+      id: '4',
+      timestamp: '2024-01-01T00:00:03Z',
+      direction: 'in',
+      amountView: {
+        amount: '1,000',
+        currency: 'WAIV',
+        tone: 'positive',
+        sign: '+',
+      },
+      counterparty: 'waivio',
+      memo: '',
+    };
+    renderRow(row);
+    expect(screen.getByText('+ 1,000 WAIV')).toBeInTheDocument();
   });
 });

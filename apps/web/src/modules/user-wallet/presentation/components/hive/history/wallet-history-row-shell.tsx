@@ -3,8 +3,15 @@
 import type { ReactNode } from 'react';
 
 import type { WaivAmountView } from '@/modules/user-wallet/domain/types/waiv-wallet-history-view';
-import { formatWalletHistoryAmountLabel } from '@/modules/user-wallet/domain/waiv-wallet-history-amount-format';
 import { ActivityTimestamp } from '@/modules/user-activity/presentation/components/activity-timestamp';
+
+/** Display label for pre-formatted {@link WaivAmountView.amount} — do not re-run quantity formatting. */
+export function formatWaivAmountViewLabel(view: WaivAmountView): string {
+  if (!view.amount) {
+    return view.currency;
+  }
+  return view.currency ? `${view.amount} ${view.currency}` : view.amount;
+}
 
 type WalletHistoryRowShellProps = {
   icon?: ReactNode;
@@ -88,7 +95,7 @@ export function WalletAmount({
 }
 
 export function WaivWalletAmount({ view }: { view: WaivAmountView }) {
-  const label = formatWalletHistoryAmountLabel(view.amount, view.currency);
+  const label = formatWaivAmountViewLabel(view);
   const colorClass =
     view.tone === 'positive'
       ? 'text-success'

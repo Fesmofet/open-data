@@ -105,18 +105,19 @@ export function formatWalletHistoryQuantity(value: unknown): string {
     return trimmed;
   }
 
-  const parsed = Number.parseFloat(trimmed);
+  const normalized = trimmed.replace(/,/g, '');
+  const parsed = Number.parseFloat(normalized);
   if (!Number.isFinite(parsed)) {
     return trimmed;
   }
 
   const decimals = resolveQuantityDecimals(parsed);
-  if (PLAIN_NUMERIC.test(trimmed)) {
+  if (PLAIN_NUMERIC.test(normalized)) {
     if (Math.abs(parsed) < 1 && parsed !== 0) {
-      return formatSubUnitNumericString(trimmed);
+      return formatSubUnitNumericString(normalized);
     }
 
-    const truncatedString = truncateNumericString(trimmed, decimals);
+    const truncatedString = truncateNumericString(normalized, decimals);
     const truncatedParsed = Number.parseFloat(truncatedString);
     if (!Number.isFinite(truncatedParsed)) {
       return trimmed;

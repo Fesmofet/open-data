@@ -21,6 +21,7 @@ describe('formatWalletHistoryQuantity', () => {
   it('formats integers with grouping', () => {
     expect(formatWalletHistoryQuantity('100')).toBe('100');
     expect(formatWalletHistoryQuantity('2506')).toBe('2,506');
+    expect(formatWalletHistoryQuantity('1000.00000000')).toBe('1,000');
   });
 
   it('compact-formats sub-unit values with leading zeros (curation rewards)', () => {

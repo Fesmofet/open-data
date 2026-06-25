@@ -31,8 +31,28 @@ describe('buildWaivWalletHistoryRowView', () => {
       kind: 'transfer',
       direction: 'in',
       memo: 'hello',
-      amountView: { tone: 'positive', sign: '+', currency: 'WAIV' },
+      amountView: { tone: 'positive', sign: '+', currency: 'WAIV', amount: '5' },
     });
+  });
+
+  it('formats thousand-token transfer quantity', () => {
+    const view = buildWaivWalletHistoryRowView(
+      item({
+        kind: 'transfer',
+        operation: 'tokens_transfer',
+        payload: {
+          from: 'waivio',
+          to: 'alice',
+          quantity: '1000.00000000',
+          symbol: 'WAIV',
+        },
+      }),
+      'alice',
+    );
+    if (view.kind !== 'transfer') {
+      throw new Error('expected transfer');
+    }
+    expect(view.amountView.amount).toBe('1,000');
   });
 
   it('maps market buy with rate label from string price', () => {

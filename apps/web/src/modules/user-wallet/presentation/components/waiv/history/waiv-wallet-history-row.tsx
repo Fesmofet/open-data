@@ -8,13 +8,13 @@ import type {
   WaivWalletHistoryRowView,
 } from '@/modules/user-wallet/domain/types/waiv-wallet-history-view';
 import { parseAuthorPermlink } from '@/modules/user-wallet/application/mappers/build-waiv-wallet-history-row-view';
-import { formatWalletHistoryAmountLabel } from '@/modules/user-wallet/domain/waiv-wallet-history-amount-format';
 import { UserAvatar } from '@/shared/presentation';
 
 import {
   WaivWalletAmount,
   WalletDualAmount,
   WalletHistoryRowShell,
+  formatWaivAmountViewLabel,
 } from '../../hive/history/wallet-history-row-shell';
 import {
   ConvertIcon,
@@ -210,14 +210,8 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
           }
           amount={
             <WalletDualAmount
-              transfer={formatWalletHistoryAmountLabel(
-                row.tokenAmount.amount,
-                row.tokenAmount.currency,
-              )}
-              received={formatWalletHistoryAmountLabel(
-                row.hiveAmount.amount,
-                row.hiveAmount.currency,
-              )}
+              transfer={formatWaivAmountViewLabel(row.tokenAmount)}
+              received={formatWaivAmountViewLabel(row.hiveAmount)}
               transferTone={row.tokenAmount.tone}
               receivedTone={row.hiveAmount.tone}
               transferSign={row.tokenAmount.sign}
@@ -394,8 +388,8 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
           icon={<SwapIcon />}
           amount={
             <WalletDualAmount
-              transfer={formatWalletHistoryAmountLabel(row.quantityIn, row.symbolIn)}
-              received={formatWalletHistoryAmountLabel(row.quantityOut, row.symbolOut)}
+              transfer={`${row.quantityIn} ${row.symbolIn}`}
+              received={`${row.quantityOut} ${row.symbolOut}`}
             />
           }
         >
