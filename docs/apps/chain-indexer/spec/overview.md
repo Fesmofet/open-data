@@ -31,7 +31,7 @@ The **chain-indexer** application is the **Hive write path**: it reads blocks in
 | Runtime | NestJS `ApplicationContext` (no HTTP server) |
 | Chain access | `@hiveio/dhive` via `@opden-data-layer/clients` (`HiveClient`) |
 | Block loop | `HiveProcessorService` in `@opden-data-layer/hive-processor` |
-| Hive Engine | `HiveEngineProcessorService` + `WaivStakeParser` (`@opden-data-layer/hive-engine-processor`); Redis cursor for Engine block number |
+| Hive Engine | `HiveEngineProcessorService` + sub-parsers (`WaivStakeParser`, `WaivPostRewardParser`, `MarketpoolsSwapParser`); Redis cursor for Engine block number |
 | Cursor | Redis (`BlockCacheService`) |
 | Persistence | Kysely + PostgreSQL (app repositories under `apps/chain-indexer/src/repositories/`) |
 | Large imports | Optional IPFS (`batch_import` → `BatchImportWorker`) |
@@ -86,6 +86,7 @@ flowchart LR
 | [Object categories](object-categories.md) | Materialized `category` per object + scoped `object_categories_related` for shop navigation queues |
 | [Object status](object-status.md) | `objects_core.status`; admin-only updates via governance cache; query-api exposes `active` only |
 | [WAIV post reward](waiv-post-reward.md) | Root-post WAIV fields from HE `comments` parser; reconcile + finalize in scheduler |
+| [Hive Engine swaps](hive-engine-swaps.md) | Atomic `marketpools/swapTokens` rows in `hive_engine_swaps` from HE logs |
 
 **WAIV voting weight:** [waiv-power.md](../../../spec/waiv-power.md) — `user_object_powers`, ODL-triggered create events, Hive Engine stake/delegate increments.
 

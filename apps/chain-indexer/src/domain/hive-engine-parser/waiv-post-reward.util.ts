@@ -4,6 +4,7 @@ import {
   WAIV_HE_REWARD_EVENTS,
   WAIV_HE_VOTE_EVENTS,
 } from '../../constants/waiv-reward.constants';
+import { parseHiveEngineLogs } from './hive-engine-log.util';
 import type { WaivEngineRewardEvent, WaivEngineVoteEvent } from './waiv-post-reward.types';
 
 export function parseAuthorPerm(
@@ -48,15 +49,6 @@ export function computeNetRsharesWaiv(
   return currentNet - previousRshares + newRshares;
 }
 
-function parseLogs(tx: HiveEngineTransaction): HiveEngineTokensLogEvent[] {
-  try {
-    const logs = JSON.parse(tx.logs) as { events?: HiveEngineTokensLogEvent[] };
-    return logs.events ?? [];
-  } catch {
-    return [];
-  }
-}
-
 function parseVotePayload(tx: HiveEngineTransaction): Record<string, unknown> {
   try {
     return JSON.parse(tx.payload) as Record<string, unknown>;
@@ -81,7 +73,7 @@ export function extractWaivEventsFromTransactions(
     const voter = String(payload.voter ?? '').trim();
     const weight = Number(payload.weight ?? 0);
 
-    for (const ev of parseLogs(tx)) {
+    for (const ev of parseHiveEngineLogs(tx)) {
       const symbol = String(ev.data.symbol ?? '');
       if (symbol !== WAIV_TOKEN.SYMBOL) {
         continue;

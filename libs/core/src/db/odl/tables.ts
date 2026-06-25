@@ -73,6 +73,7 @@ export interface OdlDatabase {
   currency_statistics: CurrencyStatisticsTable;
   hive_engine_rates: HiveEngineRatesTable;
   wallet_exemptions: WalletExemptionsTable;
+  hive_engine_swaps: HiveEngineSwapsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -971,3 +972,27 @@ export interface WalletExemptionsTable {
 
 export type WalletExemptionRow = Selectable<WalletExemptionsTable>;
 export type NewWalletExemptionRow = Insertable<WalletExemptionsTable>;
+
+// ---------------------------------------------------------------------------
+// hive_engine_swaps (atomic marketpools swapTokens from HE logs)
+// ---------------------------------------------------------------------------
+
+export interface HiveEngineSwapsTable {
+  id: Generated<bigint>;
+  account: string;
+  transaction_id: string;
+  block_number: number;
+  ref_hive_block_number: number;
+  block_timestamp: ColumnType<Date, Date | string, Date | string>;
+  symbol_out: string;
+  symbol_in: string;
+  symbol_out_quantity: string;
+  symbol_in_quantity: string;
+  pool_id: number | null;
+  symbols: Generated<string[]>;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type HiveEngineSwap = Selectable<HiveEngineSwapsTable>;
+export type NewHiveEngineSwap = Insertable<HiveEngineSwapsTable>;
+export type HiveEngineSwapUpdate = Updateable<HiveEngineSwapsTable>;

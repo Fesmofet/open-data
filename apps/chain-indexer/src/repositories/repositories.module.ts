@@ -26,6 +26,7 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
 import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
+import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 
 @Module({
   providers: [
@@ -56,6 +57,7 @@ import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
     PostObjectRelatedImagesRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    HiveEngineSwapsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -85,6 +87,7 @@ import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
     PostObjectRelatedImagesRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    HiveEngineSwapsRepository,
   ],
 })
 export class RepositoriesModule {}

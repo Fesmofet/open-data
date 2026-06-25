@@ -120,6 +120,9 @@ export type {
   NewCurrencyStatisticsRow,
   HiveEngineRatesRow,
   NewHiveEngineRatesRow,
+  HiveEngineSwap,
+  NewHiveEngineSwap,
+  HiveEngineSwapUpdate,
   WalletExemptionRow,
   NewWalletExemptionRow,
 } from './odl/tables';

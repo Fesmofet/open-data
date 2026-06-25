@@ -594,3 +594,29 @@ CREATE UNIQUE INDEX idx_user_post_drafts_author_permlink_unique
 
 CREATE INDEX idx_user_post_drafts_author_last_updated
   ON user_post_drafts (author, last_updated DESC, draft_id DESC);
+
+-- ---------------------------------------------------------------------------
+-- hive_engine_swaps (chain-indexer: atomic marketpools swapTokens)
+-- ---------------------------------------------------------------------------
+CREATE TABLE hive_engine_swaps (
+  id                      BIGSERIAL PRIMARY KEY,
+  account                 TEXT NOT NULL,
+  transaction_id          TEXT NOT NULL,
+  block_number            INTEGER NOT NULL,
+  ref_hive_block_number   INTEGER NOT NULL,
+  block_timestamp         TIMESTAMPTZ NOT NULL,
+  symbol_out              TEXT NOT NULL,
+  symbol_in               TEXT NOT NULL,
+  symbol_out_quantity     TEXT NOT NULL,
+  symbol_in_quantity      TEXT NOT NULL,
+  pool_id                 INTEGER NULL,
+  symbols                 TEXT[] GENERATED ALWAYS AS (ARRAY[symbol_in, symbol_out]) STORED,
+  created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (transaction_id, account)
+);
+
+CREATE INDEX idx_hes_account_ts_id
+  ON hive_engine_swaps (account, block_timestamp DESC, id DESC);
+
+CREATE INDEX idx_hes_symbols_gin
+  ON hive_engine_swaps USING GIN (symbols);

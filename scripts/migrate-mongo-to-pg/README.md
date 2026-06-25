@@ -23,6 +23,7 @@ All bulk importers accept `--skip-indexes` (drops secondary indexes before inser
 | `pnpm migrate:mongo-currency-statistics` | `currency_statistics` collection JSON | `currency_statistics` |
 | `pnpm migrate:mongo-hive-engine-rates` | `hive_engine_rates` collection JSON | `hive_engine_rates` |
 | `pnpm migrate:mongo-currency-rates` | `currency_rates` collection JSON | `currency_rates` |
+| `pnpm migrate:mongo-hive-engine-swaps` | `EngineAccountHistory` swap rows JSON | `hive_engine_swaps` |
 
 ### Objects (wobjects)
 
@@ -108,6 +109,22 @@ sudo docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml -
 ```
 
 Repeat for `currency_statistics.json` and `currency_rates.json` with the matching script. Host paths should match where your `mongoexport` JSON files live.
+
+### Hive Engine swaps (`EngineAccountHistory` collection)
+
+```bash
+pnpm migrate:mongo-hive-engine-swaps <path-to-engine_swaps.json> [--dry-run] [--skip-indexes]
+```
+
+Mongo export (swap rows only):
+
+```bash
+mongoexport --collection=engineaccounthistories \
+  --query='{"operation":"marketpools_swapTokens"}' \
+  --out=engine_swaps.json --jsonArray
+```
+
+Maps legacy fields (`symbolOut`, `symbolIn`, quantities, unix `timestamp`) into `hive_engine_swaps`. Re-runs are idempotent via `ON CONFLICT (transaction_id, account) DO NOTHING`.
 
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 
