@@ -1,8 +1,15 @@
 ---
 id: query-api-user-waiv-advanced-report-endpoint
 title: WAIV advanced report endpoint
-parent: query-api-overview
+description: "Multi-account WAIV advanced wallet report with Hive Engine history, historical fiat, and shared viewer exemptions."
+type: spec
+status: active
+scope: query-api
 tags: [query-api, wallet, waiv, advanced-report]
+updated_at: 2026-06-26
+related:
+  - docs/apps/query-api/spec/user-hive-advanced-report-endpoint.md
+parent: query-api-overview
 ---
 
 # WAIV advanced report endpoint

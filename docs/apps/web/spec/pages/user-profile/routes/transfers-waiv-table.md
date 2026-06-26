@@ -1,8 +1,13 @@
 ---
 id: web-transfers-waiv-table
 title: WAIV transfers table (advanced reports)
-parent: web-user-profile-transfers
+description: "WAIV advanced report table at /@:name/transfers/waiv-table with exemption toggles and CSV export."
+type: spec
+status: active
+scope: web
 tags: [web, user-profile, wallet, waiv, advanced-report]
+updated_at: 2026-06-26
+parent: web-user-profile-transfers
 see_also:
   - docs/apps/web/spec/pages/user-profile/routes/transfers-table.md
   - docs/apps/query-api/spec/user-waiv-advanced-report-endpoint.md
