@@ -2,7 +2,7 @@
 id: docs-spec-data-model-hive-engine-waiv-airdrops
 title: hive_engine_waiv_airdrops
 description: Historical one-time WAIV airdrops imported from legacy Mongo EngineAccountHistory.
-type: data-model
+type: spec
 status: active
 scope: shared
 tags: [hive-engine, wallet, waiv, airdrops]

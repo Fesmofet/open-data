@@ -2,7 +2,7 @@
 id: docs-apps-chain-indexer-spec-hive-engine-swaps
 title: Hive Engine swaps
 description: Indexes atomic marketpools swapTokens rows from HE transaction logs into hive_engine_swaps.
-type: feature
+type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, hive-engine, swaps, wallet]
