@@ -2133,5 +2133,8 @@
   "your_reward": "Sinu preemia",
   "your_vote": "Teie hääl",
   "your_vote_placeholder": "Teie hääl (valikuline)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

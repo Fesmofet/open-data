@@ -2131,5 +2131,8 @@
   "your_reward": "Ganjaran Anda",
   "your_vote": "Undian anda",
   "your_vote_placeholder": "Undian anda (pilihan)",
-  "СЃommunity_actions": "Tindakan masyarakat"
+  "СЃommunity_actions": "Tindakan masyarakat",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

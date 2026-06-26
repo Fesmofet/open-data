@@ -159,3 +159,25 @@ export function resolveHiveHistoricalUsdByDates(params: {
 
   return out;
 }
+
+/** Exact daily WAIV/USD from engine rate rows (legacy HiveEngineRate daily lookup). */
+export function resolveEngineHistoricalUsdByDates(params: {
+  datesYmd: readonly string[];
+  todayYmd: string;
+  todayWaivUsd: number | null;
+  dailyByYmd: ReadonlyMap<string, number>;
+}): Map<string, number> {
+  const unique = [...new Set(params.datesYmd.map((d) => d.trim()).filter(Boolean))].sort();
+  const out = new Map<string, number>();
+
+  for (const d of unique) {
+    if (d === params.todayYmd) {
+      const today = params.todayWaivUsd;
+      out.set(d, today && today > 0 ? today : 0);
+      continue;
+    }
+    out.set(d, params.dailyByYmd.get(d) ?? 0);
+  }
+
+  return out;
+}

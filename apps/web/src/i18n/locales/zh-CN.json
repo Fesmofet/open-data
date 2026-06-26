@@ -2852,5 +2852,8 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

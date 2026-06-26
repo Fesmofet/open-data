@@ -43,5 +43,12 @@ export {
   type HiveAccountCreatedDatesResponse,
 } from './schemas/hive-account-created-dates.schema';
 export { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
+export { GetWaivAdvancedReportEndpoint } from './get-waiv-advanced-report.endpoint';
 export { GetHiveAccountCreatedDatesEndpoint } from './get-hive-account-created-dates.endpoint';
 export { UpsertHiveWalletExemptionEndpoint } from './upsert-hive-wallet-exemption.endpoint';
+export {
+  waivAdvancedReportBodySchema,
+  type WaivAdvancedReportBody,
+  type WaivAdvancedReportResponse,
+  type WaivAdvancedReportRowDto,
+} from './schemas/waiv-advanced-report.schema';

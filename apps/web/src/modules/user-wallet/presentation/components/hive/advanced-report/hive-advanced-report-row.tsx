@@ -99,6 +99,7 @@ export const HiveAdvancedReportRow = memo(function HiveAdvancedReportRow({
         {canToggleExemption ? (
           <input
             type="checkbox"
+            className="size-4 shrink-0 rounded-btn border border-border accent-accent"
             checked={row.checked}
             aria-label="Exclude from totals"
             onChange={(e) => onToggleExemption(row, e.target.checked)}

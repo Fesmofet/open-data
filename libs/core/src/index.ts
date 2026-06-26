@@ -13,4 +13,5 @@ export * from './object-type-registry';
 export * from './hive-account-history';
 export * from './hive-engine-history';
 export * from './hive-advanced-report';
+export * from './waiv-advanced-report';
 export * from './hive';

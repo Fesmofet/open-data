@@ -16,6 +16,7 @@ import {
   parseCurrencyRateValue,
   resolveFiatCrossByDates,
   resolveHiveHistoricalUsdByDates,
+  resolveEngineHistoricalUsdByDates,
 } from './currency-historical-rates';
 import { CurrencyRepository } from './currency.repository';
 
@@ -533,6 +534,70 @@ export class CurrencyQueryService {
     for (const d of unique) {
       if (d !== today && (out.get(d)?.hiveUsd ?? 0) <= 0) {
         this.logger.warn(`getHiveHistoricalUsdByDates: no historical rate for ${d}`);
+      }
+    }
+
+    return out;
+  }
+
+  /** Daily WAIV/USD keyed by UTC YYYY-MM-DD (today uses ordinary-row average or latest stored). */
+  async getEngineHistoricalUsdByDates(
+    datesYmd: readonly string[],
+    baseToken = ENGINE_BASE_WAIV,
+  ): Promise<Map<string, number>> {
+    const unique = [...new Set(datesYmd.map((d) => d.trim()).filter(Boolean))].sort();
+    if (unique.length === 0) {
+      return new Map();
+    }
+
+    const today = utcYmd(new Date());
+    const min = unique[0]!;
+    const max = unique[unique.length - 1]!;
+
+    const dailyRows = await this.repo.listHiveEngineRates({
+      base: baseToken,
+      isDaily: true,
+      sinceDateInclusive: min,
+      limit: undefined,
+      orderAsc: true,
+    });
+
+    const dailyByYmd = new Map<string, number>();
+    for (const row of dailyRows) {
+      const ymd = String(row.date).slice(0, 10);
+      if (ymd < min || ymd > max) {
+        continue;
+      }
+      const usd = Number(row.rate_usd);
+      if (Number.isFinite(usd) && usd > 0) {
+        dailyByYmd.set(ymd, usd);
+      }
+    }
+
+    let todayWaivUsd: number | null = null;
+    if (unique.includes(today)) {
+      const avg = await this.repo.avgOrdinaryHiveRatesForDay({
+        base: baseToken,
+        dateIso: today,
+      });
+      if (avg && avg.rate_usd > 0) {
+        todayWaivUsd = avg.rate_usd;
+      } else {
+        const latest = await this.engineLatestStored(baseToken);
+        todayWaivUsd = latest?.USD && latest.USD > 0 ? latest.USD : null;
+      }
+    }
+
+    const out = resolveEngineHistoricalUsdByDates({
+      datesYmd: unique,
+      todayYmd: today,
+      todayWaivUsd,
+      dailyByYmd,
+    });
+
+    for (const d of unique) {
+      if (d !== today && (out.get(d) ?? 0) <= 0) {
+        this.logger.warn(`getEngineHistoricalUsdByDates: no historical rate for ${d}`);
       }
     }
 

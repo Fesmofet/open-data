@@ -2133,5 +2133,8 @@
   "your_reward": "La vostra recompensa",
   "your_vote": "El vostre vot",
   "your_vote_placeholder": "El vostre vot (opcional)",
-  "СЃommunity_actions": "Accions comunitàries"
+  "СЃommunity_actions": "Accions comunitàries",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

@@ -1,4 +1,5 @@
 import {
+  buildRpcHistoryTieId,
   mapAirdropRow,
   mapRpcHistoryEntry,
   mapSwapRow,
@@ -87,5 +88,41 @@ describe('waiv-wallet-history-item-dtos', () => {
     });
     expect(item.kind).toBe('airdrop');
     expect(item.payload.tokenState).toBe('liquid');
+  });
+
+  it('buildRpcHistoryTieId disambiguates reward rows in the same transaction', () => {
+    const base = {
+      account: 'grampo',
+      symbol: 'WAIV',
+      operation: 'comments_curationReward',
+      timestamp: 1_700_000_000,
+      transactionId: 'tx-reward',
+    };
+    const a = buildRpcHistoryTieId({
+      ...base,
+      authorperm: '@author/post-a',
+      quantity: '0.16709602',
+    });
+    const b = buildRpcHistoryTieId({
+      ...base,
+      authorperm: '@author/post-b',
+      quantity: '0.16711291',
+    });
+    expect(a).not.toBe(b);
+  });
+
+  it('buildRpcHistoryTieId disambiguates same-amount transfers in one transaction', () => {
+    const base = {
+      account: 'grampo',
+      symbol: 'WAIV',
+      operation: 'tokens_transfer',
+      timestamp: 1_700_000_000,
+      transactionId: 'tx-batch',
+      quantity: '1500',
+      from: 'grampo',
+    };
+    const a = buildRpcHistoryTieId({ ...base, to: 'jeffjagoe' });
+    const b = buildRpcHistoryTieId({ ...base, to: 'gmamba13' });
+    expect(a).not.toBe(b);
   });
 });

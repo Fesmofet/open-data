@@ -2871,5 +2871,8 @@
   "your_vote": "Váš hlas",
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
-  "СЃommunity_actions": "Akce komunity"
+  "СЃommunity_actions": "Akce komunity",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

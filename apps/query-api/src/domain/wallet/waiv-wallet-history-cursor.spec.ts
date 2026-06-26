@@ -1,4 +1,5 @@
 import {
+  compareWaivHistoryCursorsDesc,
   decodeWaivWalletHistoryCursor,
   encodeWaivWalletHistoryCursor,
   isWaivHistoryRowOlderThan,
@@ -17,5 +18,22 @@ describe('waiv-wallet-history-cursor', () => {
     const older = rowCursorFromParts(99, '9', 'airdrop');
     expect(isWaivHistoryRowOlderThan(older, newer)).toBe(true);
     expect(isWaivHistoryRowOlderThan(newer, older)).toBe(false);
+  });
+
+  it('keeps same-timestamp transfer order aligned with pagination cursor', () => {
+    const ts = 1_700_000_000;
+    const jeff = rowCursorFromParts(
+      ts,
+      'tx-batch:tokens_transfer:grampo:jeffjagoe:1500',
+      'rpc',
+    );
+    const gmamba = rowCursorFromParts(
+      ts,
+      'tx-batch:tokens_transfer:grampo:gmamba13:1500',
+      'rpc',
+    );
+    expect(compareWaivHistoryCursorsDesc(jeff, gmamba)).toBeLessThan(0);
+    expect(isWaivHistoryRowOlderThan(gmamba, jeff)).toBe(true);
+    expect(isWaivHistoryRowOlderThan(jeff, gmamba)).toBe(false);
   });
 });

@@ -14,6 +14,7 @@ export class HiveEngineSwapsRepository {
     account: string,
     limit: number,
     maxTimestampSeconds: number | null,
+    dateRange?: { startDate: number; endDate: number },
   ): Promise<HiveEngineSwap[]> {
     try {
       let query = this.db
@@ -33,6 +34,20 @@ export class HiveEngineSwapsRepository {
           '<=',
           new Date(maxTimestampSeconds * 1000),
         );
+      }
+
+      if (dateRange) {
+        query = query
+          .where(
+            'block_timestamp',
+            '>=',
+            new Date(dateRange.startDate * 1000),
+          )
+          .where(
+            'block_timestamp',
+            '<=',
+            new Date(dateRange.endDate * 1000),
+          );
       }
 
       return await query

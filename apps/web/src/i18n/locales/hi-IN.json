@@ -2871,5 +2871,8 @@
   "your_vote": "आपका वोट",
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
-  "СЃommunity_actions": "समुदाय क्रियाएँ"
+  "СЃommunity_actions": "समुदाय क्रियाएँ",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

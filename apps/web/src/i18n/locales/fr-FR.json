@@ -2871,5 +2871,8 @@
   "your_vote": "Votre vote",
   "your_vote_placeholder": "Votre vote (facultatif)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Actions communautaires"
+  "СЃommunity_actions": "Actions communautaires",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

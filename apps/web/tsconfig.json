@@ -23,6 +23,12 @@
       "@opden-data-layer/core/hive-advanced-report": [
         "../../libs/core/src/hive-advanced-report/index.ts"
       ],
+      "@opden-data-layer/core/waiv-advanced-report": [
+        "../../libs/core/src/waiv-advanced-report/index.ts"
+      ],
+      "@opden-data-layer/core/hive-engine-history": [
+        "../../libs/core/src/hive-engine-history/index.ts"
+      ],
       "@opden-data-layer/core/constants": [
         "../../libs/core/src/constants/index.ts"
       ],

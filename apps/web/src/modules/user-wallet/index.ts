@@ -27,5 +27,7 @@ export { getWaivWalletSummaryQuery } from './application/queries/get-waiv-wallet
 export { getHiveWalletHistoryPageQuery } from './application/queries/get-hive-wallet-history-page.query';
 export { getHiveWalletSummaryQuery } from './application/queries/get-hive-wallet-summary.query';
 export { getHiveAdvancedReportQuery } from './application/queries/get-hive-advanced-report.query';
-export { buildInitialAdvancedReportRequest } from './domain/advanced-report-defaults';
+export { getWaivAdvancedReportQuery } from './application/queries/get-waiv-advanced-report.query';
+export { buildInitialAdvancedReportRequest, buildInitialWaivAdvancedReportRequest } from './domain/advanced-report-defaults';
 export { HiveAdvancedReportTable } from './presentation/components/hive/advanced-report/hive-advanced-report-table';
+export { WaivAdvancedReportTable } from './presentation/components/waiv/advanced-report/waiv-advanced-report-table';

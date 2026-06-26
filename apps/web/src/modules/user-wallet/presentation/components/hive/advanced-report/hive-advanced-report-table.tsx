@@ -225,8 +225,7 @@ export function HiveAdvancedReportTable({
     };
   }, [profileAccount, viewerUsername, initialRequest.limit, initialRequest.currency]);
 
-  const canToggleExemption =
-    viewerUsername?.trim().toLowerCase() === profileAccount.trim().toLowerCase();
+  const canToggleExemption = Boolean(viewerUsername?.trim());
 
   const onSubmit = useCallback(() => {
     if (filters.filterAccounts.length === 0) {

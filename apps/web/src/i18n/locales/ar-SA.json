@@ -2132,5 +2132,8 @@
   "your_reward": "مكافأتك",
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
-  "СЃommunity_actions": "إجراءات المجتمع"
+  "СЃommunity_actions": "إجراءات المجتمع",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

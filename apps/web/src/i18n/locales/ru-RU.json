@@ -2979,5 +2979,8 @@
   "your_vote": "Ваш голос ",
   "your_vote_placeholder": "Ваш голос (необязательно)",
   "zoom": "Увеличить",
-  "СЃommunity_actions": "Действия сообщества"
+  "СЃommunity_actions": "Действия сообщества",
+  "generated_tab": "Generated",
+  "generated_tab_coming_soon": "Generated reports will be available here in a future release.",
+  "exclude_swaps_and_trades": "Exclude swaps and trades records"
 }

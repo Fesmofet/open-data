@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
@@ -49,6 +51,15 @@ export function TransfersWaivWalletView({
           defaultAsset="WAIV"
         />
       )}
+      <div className="mt-4 flex justify-end">
+        <Link
+          href={`/@${encodeURIComponent(accountName)}/transfers/waiv-table`}
+          className="text-link text-body-sm"
+          suppressHydrationWarning
+        >
+          {t('table_view')}
+        </Link>
+      </div>
       <WaivWalletHistoryFeedClient accountName={accountName} />
     </UnifiedWalletModalHost>
   );

@@ -30,20 +30,28 @@ export function decodeWaivWalletHistoryCursor(
   }
 }
 
+/** Positive when `left` should appear before `right` in the descending feed. */
+export function compareWaivHistoryCursorsDesc(
+  left: WaivWalletHistoryCursorPayload,
+  right: WaivWalletHistoryCursorPayload,
+): number {
+  if (left.timestamp !== right.timestamp) {
+    return right.timestamp - left.timestamp;
+  }
+  if (left.source !== right.source) {
+    const rank = (source: WaivWalletHistorySource) =>
+      source === 'rpc' ? 2 : source === 'swap' ? 1 : 0;
+    return rank(right.source) - rank(left.source);
+  }
+  return right.tieId.localeCompare(left.tieId);
+}
+
 /** True when `left` is strictly older than `right` in descending feed order. */
 export function isWaivHistoryRowOlderThan(
   left: WaivWalletHistoryCursorPayload,
   right: WaivWalletHistoryCursorPayload,
 ): boolean {
-  if (left.timestamp !== right.timestamp) {
-    return left.timestamp < right.timestamp;
-  }
-  if (left.source !== right.source) {
-    const rank = (source: WaivWalletHistorySource) =>
-      source === 'rpc' ? 2 : source === 'swap' ? 1 : 0;
-    return rank(left.source) < rank(right.source);
-  }
-  return left.tieId < right.tieId;
+  return compareWaivHistoryCursorsDesc(left, right) > 0;
 }
 
 export function rowCursorFromParts(

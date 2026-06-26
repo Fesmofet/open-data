@@ -32,9 +32,67 @@ function toIsoTimestampFromDate(value: Date | string): string {
   return date.toISOString();
 }
 
+function asTrimmedString(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function buildRpcHistoryTieIdParts(params: {
+  transactionId: string;
+  operation: string;
+  authorperm?: string;
+  quantity?: string;
+  from?: string;
+  to?: string;
+}): string {
+  const txId = params.transactionId || 'unknown';
+  const op = params.operation;
+  const authorperm = asTrimmedString(params.authorperm);
+  const quantity = asTrimmedString(params.quantity);
+  const from = asTrimmedString(params.from);
+  const to = asTrimmedString(params.to);
+  if (authorperm) {
+    return `${txId}:${op}:${authorperm}:${quantity}`;
+  }
+  if (from || to) {
+    return `${txId}:${op}:${from}:${to}:${quantity}`;
+  }
+  if (quantity) {
+    return `${txId}:${op}:${quantity}`;
+  }
+  return `${txId}:${op}`;
+}
+
+/**
+ * Unique per Hive Engine history row. Reward ops often share transactionId + operation
+ * within one block — include authorperm and quantity. Transfers can share amount in one tx.
+ */
+export function buildRpcHistoryTieId(entry: HiveEngineAccountHistoryEntry): string {
+  return buildRpcHistoryTieIdParts({
+    transactionId: entry.transactionId ?? 'unknown',
+    operation: entry.operation,
+    authorperm: asTrimmedString(entry.authorperm),
+    quantity: asTrimmedString(entry.quantity),
+    from: asTrimmedString(entry.from),
+    to: asTrimmedString(entry.to),
+  });
+}
+
+function rpcTieIdFromPayload(
+  operation: string,
+  payload: Record<string, unknown>,
+): string {
+  return buildRpcHistoryTieIdParts({
+    transactionId: asTrimmedString(payload.transactionId) || 'unknown',
+    operation,
+    authorperm: asTrimmedString(payload.authorperm),
+    quantity: asTrimmedString(payload.quantity),
+    from: asTrimmedString(payload.from),
+    to: asTrimmedString(payload.to),
+  });
+}
+
 function rpcTieId(entry: HiveEngineAccountHistoryEntry): string {
-  const txId = entry.transactionId ?? 'unknown';
-  return `${txId}:${entry.operation}`;
+  return buildRpcHistoryTieId(entry);
 }
 
 const MARKET_TRADE_PRICE_OPS = new Set([
@@ -221,13 +279,9 @@ export function itemCursorParts(
 ): { timestamp: number; tieId: string; source: WaivWalletHistorySource } {
   const timestamp = Math.floor(new Date(item.timestamp).getTime() / 1000);
   if (item.source === 'rpc') {
-    const txId =
-      typeof item.payload.transactionId === 'string'
-        ? item.payload.transactionId
-        : 'unknown';
     return {
       timestamp,
-      tieId: `${txId}:${item.operation}`,
+      tieId: rpcTieIdFromPayload(item.operation, item.payload),
       source: 'rpc',
     };
   }

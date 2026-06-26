@@ -2,6 +2,7 @@ import type { SupportedCurrency } from '@opden-data-layer/core/constants';
 import { ADVANCED_REPORT_DEFAULT_PAGE_SIZE } from '@opden-data-layer/core/hive-advanced-report';
 
 import type { HiveAdvancedReportRequest } from '../application/dto/hive-advanced-report-api.schema';
+import type { WaivAdvancedReportRequest } from '../application/dto/waiv-advanced-report-api.schema';
 
 const DAY_SEC = 86_400;
 
@@ -42,5 +43,30 @@ export function buildInitialAdvancedReportRequest(params: {
     limit: ADVANCED_REPORT_DEFAULT_PAGE_SIZE,
     currency: params.currency ?? 'USD',
     viewer: params.viewer?.trim().toLowerCase() || undefined,
+  };
+}
+
+export function buildInitialWaivAdvancedReportRequest(params: {
+  profileAccount: string;
+  filterAccounts?: readonly string[];
+  currency?: SupportedCurrency;
+  viewer?: string | null;
+}): WaivAdvancedReportRequest {
+  const account = params.profileAccount.trim().toLowerCase();
+  const filterAccounts = (
+    params.filterAccounts?.length ? params.filterAccounts : [account]
+  ).map((name) => name.trim().toLowerCase());
+  const uniqueAccounts = [...new Set(filterAccounts)];
+  const { startDate, endDate } = defaultAdvancedReportDateRange();
+
+  return {
+    accounts: uniqueAccounts.map((name) => ({ name })),
+    filterAccounts: uniqueAccounts,
+    startDate,
+    endDate,
+    limit: ADVANCED_REPORT_DEFAULT_PAGE_SIZE,
+    currency: params.currency ?? 'USD',
+    viewer: params.viewer?.trim().toLowerCase() || undefined,
+    includeSwapsAndTrades: false,
   };
 }
