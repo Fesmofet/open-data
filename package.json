@@ -92,6 +92,7 @@
     "sharp": "^0.34.5",
     "stream-chain": "^3.6.0",
     "stream-json": "^2.0.0",
+    "swagger-ui-dist": "^5.32.8",
     "tslib": "^2.3.0",
     "ws": "^8.21.0",
     "zod": "^4.3.6"

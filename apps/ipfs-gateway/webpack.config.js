@@ -12,6 +12,9 @@ module.exports = {
       devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     }),
   },
+  externals: {
+    'swagger-ui-dist/package.json': 'commonjs swagger-ui-dist/package.json',
+  },
   plugins: [
     ...nestOptionalIgnorePlugins(),
     new NxAppWebpackPlugin({
@@ -24,7 +27,7 @@ module.exports = {
       outputHashing: 'none',
       generatePackageJson: true,
       sourceMap: !isProd,
-      externalDependencies: ['sharp'],
+      externalDependencies: ['sharp', 'swagger-ui-dist'],
     }),
   ],
 };
