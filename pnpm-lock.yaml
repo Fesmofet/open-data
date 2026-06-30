@@ -413,6 +413,9 @@ importers:
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
+      swagger-ui-dist:
+        specifier: ^5.32.8
+        version: 5.32.8
 
   apps/knowledge-api:
     dependencies:
@@ -445,6 +448,9 @@ importers:
       secp256k1:
         specifier: ^3.8.1
         version: 3.8.1
+      swagger-ui-dist:
+        specifier: ^5.32.8
+        version: 5.32.8
 
   apps/scheduler:
     dependencies:
