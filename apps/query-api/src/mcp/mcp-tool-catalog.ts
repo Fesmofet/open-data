@@ -49,9 +49,10 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   },
   {
     name: 'resolve_nested_objects',
-    description: 'Batch lightweight object projections by id list.',
+    description:
+      'Batch lightweight object projections by id list; optional update_types (omit or empty = nested defaults: listItem, sortCustom, pageContent, name).',
     httpEquivalent: 'POST /query/v1/objects/resolve-nested',
-    specPath: 'docs/apps/query-api/spec/objects-resolve.md',
+    specPath: 'docs/apps/query-api/spec/objects-resolve-nested.md',
   },
   {
     name: 'check_object_exists',

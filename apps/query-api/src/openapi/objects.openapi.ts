@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { resolveObjectBodySchema } from '../domain/objects/schemas/resolve-object.schema';
+import { resolveNestedObjectsBodySchema } from '../domain/objects/schemas/resolve-nested-objects.schema';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import {
   paginatedUserFollowListOpenApiSchema,
   subscriptionSortEnum,
 } from './users-social.openapi';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const projectedObjectWithCountsSchema = registry.register(
   'ProjectedObjectWithCounts',
@@ -37,6 +39,7 @@ const resolveObjectRequestSchema = registry.register('ResolveObjectBody', resolv
 registry.registerPath({
   method: 'post',
   path: '/query/v1/objects/resolve',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'Resolve projected object by id',
   description:
     'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Includes `followers_count` from `user_object_follows`, `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, and `administrative_count` / `ownership_count` from `object_authority` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
@@ -95,6 +98,82 @@ registry.registerPath({
   },
 });
 
+const nestedObjectViewSchema = registry.register(
+  'NestedObjectView',
+  z.object({
+    object_id: z.string(),
+    object_type: z.string(),
+    fields: z.record(z.string(), z.unknown()).openapi({
+      description: 'Projected fields keyed by update type id.',
+    }),
+  }),
+);
+
+const resolveNestedObjectsResponseSchema = registry.register(
+  'ResolveNestedObjectsResponse',
+  z.object({
+    items: z.array(nestedObjectViewSchema),
+  }),
+);
+
+const resolveNestedObjectsRequestSchema = registry.register(
+  'ResolveNestedObjectsBody',
+  resolveNestedObjectsBodySchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/objects/resolve-nested',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Batch lightweight nested object projections',
+  description:
+    'Resolves up to 32 objects with a lightweight `NestedObjectView` shape (`object_id`, `object_type`, `fields` only — no authority flags, SEO, or counts). When `update_types` is omitted or an empty array, resolves the nested navigation defaults: `listItem`, `sortCustom`, `pageContent`, `name`. When `update_types` is a non-empty array, only those registry update types are resolved. `object_ref` targets inside resolved fields are expanded using the internal ref-summary set (not controlled by this parameter).',
+  request: {
+    headers: z.object({
+      'accept-language': z.string().optional().openapi({
+        example: 'en-US',
+        description: 'Preferred locale (first BCP-47 tag is used).',
+      }),
+      'x-locale': z.string().optional().openapi({
+        description: 'When valid, overrides `Accept-Language`.',
+      }),
+      'x-governance-object-id': z.string().optional().openapi({
+        description:
+          'Optional governance object ID; resolved and merged with platform governance from `GOVERNANCE_OBJECT_ID`.',
+      }),
+      'x-viewer': z.string().optional().openapi({
+        description: 'Optional Hive account for governance masking and ref expansion.',
+      }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: resolveNestedObjectsRequestSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      description: 'Lightweight projected objects in request id order (missing ids omitted).',
+      content: {
+        'application/json': {
+          schema: resolveNestedObjectsResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Request body validation failed (Zod).',
+      content: {
+        'application/json': {
+          schema: badRequestSchema,
+        },
+      },
+    },
+  },
+});
+
 const objectExistsResponseSchema = registry.register(
   'ObjectExistsResponse',
   z.object({
@@ -107,6 +186,7 @@ const objectExistsResponseSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/exists',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'Check whether an object id is already taken',
   description:
     'Returns `{ exists: true }` when `objects_core` has an active row for `object_id`; otherwise `{ exists: false }`. Used by the object-create workspace for availability checks.',
@@ -133,6 +213,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/followers',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'List accounts that follow the object',
   description:
     'Joins `user_object_follows` (where `object_id` matches an active object) with `accounts_current`. Sort options match user-profile followers (`rank`, `followers`, `a-z`, `recency` on follow edge or account fields). Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
@@ -182,6 +263,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/authority',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'List accounts with administrative or ownership authority on the object',
   description:
     'Joins `object_authority` (for an active object) with `accounts_current`. Filter rows with `authority_type` (`administrative` | `ownership`). Sort options match user-profile followers (`rank`, `followers`, `a-z`, `recency` on authority edge or account fields). Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
@@ -270,6 +352,7 @@ function registerObjectRefListPath(
   registry.registerPath({
     method: 'get',
     path: `/query/v1/objects/{objectId}/${pathSuffix}`,
+    tags: [queryApiOpenApiTags.objects],
     summary,
     description,
     request: {
@@ -368,6 +451,7 @@ const relatedAlbumHeaders = z.object({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/gallery/related/preview',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'Related album preview',
   description:
     'Preview images for the virtual Related gallery (post `json_metadata.image` URLs linked via `post_objects`). Excludes posts listed in object `remove` updates. Default preview size 4.',
@@ -402,6 +486,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/gallery/related',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'Related album images',
   description:
     'Paginated images for the virtual Related gallery. Offset `cursor` (numeric string). Excludes posts in object `remove` updates.',

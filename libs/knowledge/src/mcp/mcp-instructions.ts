@@ -21,6 +21,7 @@ Key paths:
 - docs/getting-started.md — local dev (Docker, migrate, pnpm nx serve)
 - docs/skills/hive-account-signup.md — new Hive account
 - docs/skills/hive-blockchain-broadcast.md — sign and broadcast chain ops
+- docs/skills/build-tenant-site.md — create web project; fork apps/web; object-menu or custom UI + query-api
 - docs/apps/<app>/spec/ — feature specs
 
 Chain payloads: use get_object_type and get_update_schema, not search_knowledge.

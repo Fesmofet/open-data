@@ -275,6 +275,7 @@ export class ObjectsController {
   ): Promise<ResolveNestedObjectsResponse> {
     return this.getNestedObjects.execute({
       ids: body.ids,
+      updateTypes: body.update_types,
       locale,
       governanceObjectIdFromHeader,
       viewerAccount: viewer,

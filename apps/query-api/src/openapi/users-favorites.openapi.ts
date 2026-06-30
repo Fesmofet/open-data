@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { userFavoritesMapBodySchema } from '../domain/favorites/post-user-favorites-map.schema';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 import { accountNameParam, paginatedProjectedObjectsSchema } from './users-social.openapi';
 
 const favoritesLocaleHeader = z.string().optional().openapi({
@@ -34,6 +35,7 @@ const userFavoritesMapResponseSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/favorites/types',
+  tags: [queryApiOpenApiTags.users],
   summary: 'List object types in user favorites',
   description:
     'Distinct `object_type` values from favorites scope (administrative authority ∪ post-linked), sorted by count descending. Returns `{ types: [] }` for unknown or blank account names (no 404).',
@@ -56,6 +58,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/favorites',
+  tags: [queryApiOpenApiTags.users],
   summary: 'List user favorite objects',
   description:
     'Paginated favorites: `object_authority` (administrative) ∪ optional `post_objects`, filtered by `FAVORITES_OBJECT_TYPES`, `user_shop_deselect`, and `hide_favorite_objects`. Unknown account names return an empty page (`items: []`, `total: 0`) rather than 404. Blank `name` returns `null` body.',
@@ -91,6 +94,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/favorites/map',
+  tags: [queryApiOpenApiTags.users],
   summary: 'Geo-filtered user favorites for profile map',
   description:
     'Favorites scope intersected with `MAP_GEO_OBJECT_TYPES` and objects whose latest `geo` update falls inside `box`. Returns projected objects with `fields.geo` when available. Unknown users get `{ items: [], hasMore: false }`.',

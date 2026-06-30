@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const discoverTagCategoryItemSchema = registry.register(
   'DiscoverTagCategoryItemDto',
@@ -27,6 +28,7 @@ const discoverTagCategoriesResponseSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/discover/tag-categories',
+  tags: [queryApiOpenApiTags.discover],
   summary: 'Tag category facets for discover filters',
   request: {
     query: z.object({

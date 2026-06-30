@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 import { userCategoriesQuerySchema } from '../domain/categories/categories-query.schema';
 
 const itemSchema = registry.register(
@@ -28,6 +29,7 @@ const badRequestSchema = z.object({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/categories',
+  tags: [queryApiOpenApiTags.users],
   summary: 'Shop departments for a user (authority + optional post-linked scope)',
   description:
     'Returns pre-aggregated categories from `object_categories_related` (`scope_type=user`) keyed by `scope_key=buildUserScopeKey(name, types)` (default types `book`,`product`). Root list when `name` query is omitted; drill-down when `name` and optional `path` are set.',

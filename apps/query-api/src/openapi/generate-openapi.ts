@@ -1,5 +1,6 @@
 import { OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './registry';
+import { queryApiOpenApiTagDefinitions } from './tags';
 import './objects.openapi';
 import './object-updates.openapi';
 import './users.openapi';
@@ -28,6 +29,7 @@ export function generateOpenApiDocument() {
         'Read-side API: resolved object views, user profile reads, currency market/engine/FX reads, and authenticated post drafts.',
     },
     servers: [{ url: '/' }],
+    tags: [...queryApiOpenApiTagDefinitions],
   });
   return {
     ...base,

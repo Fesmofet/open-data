@@ -41,6 +41,27 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     keywords: ['broadcast', 'custom_json', 'sign transaction', 'dhive', 'blockchain broadcast'],
     reason: 'curated:hive-broadcast',
   },
+  {
+    path: 'docs/skills/build-tenant-site.md',
+    keywords: [
+      'create project',
+      'create a project',
+      'new project',
+      'build project',
+      'build site',
+      'build tenant site',
+      'tenant site',
+      'new website',
+      'new site',
+      'object menu',
+      'fork project',
+      'custom website',
+      'site builder',
+      'создать проект',
+      'создадим проект',
+    ],
+    reason: 'curated:build-tenant-site',
+  },
 ];
 
 export function matchCuratedRoutes(topic: string, scope?: string): Array<CuratedRoute & { confidence: number }> {

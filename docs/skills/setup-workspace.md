@@ -12,6 +12,7 @@ related:
   - docs/getting-started.md
   - docs/skills/hive-account-signup.md
   - docs/skills/hive-blockchain-broadcast.md
+  - docs/skills/build-tenant-site.md
   - docs/apps/knowledge-api/spec/overview.md
   - docs/standards/docs-standards.md
 ---
@@ -34,6 +35,7 @@ This skill is for a **sidecar agent without a repo checkout**: clone the monorep
 - You only need markdown specs — knowledge-api is enough; no clone required.
 - The user wants to **run the stack locally** (Docker, migrations, `pnpm nx serve`) — use [Getting started](../getting-started.md), not this skill.
 - The environment has **no shell** (MCP-only, no git) — use [GitHub fetch fallback](#github-fetch-fallback-no-clone) instead.
+- The user wants a **client-owned project fork with commits** (new site / tenant frontend) — use [Build project](build-tenant-site.md), not this read-only clone skill.
 
 ## Repository
 
@@ -145,4 +147,5 @@ test -f apps/web/src/app/layout.tsx && echo OK
 - [Documentation index](../README.md)
 - [Getting started](../getting-started.md) — full dev environment
 - [Knowledge-api](../apps/knowledge-api/spec/overview.md) — MCP tools for specs
+- [Build tenant site](build-tenant-site.md) — create web project; fork apps/web on shared query-api
 - [Web page specs](../apps/web/spec/pages/index.md) — route/site map for frontend rebuild

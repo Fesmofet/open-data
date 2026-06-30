@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const searchObjectResultSchema = registry.register(
   'SearchObjectResult',
@@ -47,6 +48,7 @@ const searchCountsResponseDtoSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/search',
+  tags: [queryApiOpenApiTags.search],
   summary: 'Predictive search (objects + users)',
   description:
     'Objects: autocomplete FTS on `name`, `title`, or `description` updates (`search_vector`), or optional substring on `object_id` when id-shaped; `status = active`; collapsed to one hit per `meta_group_id` (highest `weight`). Results are projected via `ObjectProjectionService` (`name`, `image`, `parent`). Users: prefix btree range on `accounts_current.name`, sorted by Waiv object weight and followers (max 5). Optional `X-Viewer` sets `is_following` via `user_subscriptions`. Respects `X-Governance-Object-Id` and locale like other read endpoints. Tab counts: use `GET /search/counts`.',
@@ -92,6 +94,7 @@ const searchObjectsByIdsResponseSchema = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/search/objects-by-ids',
+  tags: [queryApiOpenApiTags.search],
   summary: 'Resolve object card display by ids',
   description:
     'Loads active objects by primary key (`object_id`) via `AggregatedObjectRepository.loadByObjectIds`, then projects `name`, `image`, and `parent` like `GET /search`. No FTS or `meta_group_id` dedup. Missing or inactive ids are omitted. Used by the post editor to hydrate linked objects after draft reload.',
@@ -133,6 +136,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/search/counts',
+  tags: [queryApiOpenApiTags.search],
   summary: 'Predictive search global counts',
   description:
     'Returns global `type_counts` (unique active objects per `object_type`, meta_group deduped) and `total_users` for query `q`. Same FTS / id-substring / name-prefix rules as `GET /search`. Intended for header tab badges loaded after the main search response.',

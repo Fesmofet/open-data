@@ -9,7 +9,9 @@ updated_at: 2026-06-11
 related:
   - docs/apps/query-api/spec/mcp.md
   - docs/apps/query-api/spec/overview.md
+  - docs/apps/query-api/spec/objects-resolve-nested.md
   - docs/skills/knowledge-api-routing.md
+  - docs/skills/build-tenant-site.md
   - docs/README.md
 ---
 
@@ -41,6 +43,7 @@ related:
 | Header / quick lookup | `search`, `search_counts` |
 | Discover browse by type/tags | `discover_objects`, `discover_tag_categories` |
 | Object detail projection | `resolve_object` |
+| Nested menu / catalog items (batch) | `resolve_nested_objects` |
 | Related / similar / add-on rails | `get_object_related`, `get_object_similar`, `get_object_add_on` |
 | Object gallery Related album | `get_object_related_album_preview`, `get_object_related_album` |
 | Object update history | `get_object_updates` |

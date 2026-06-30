@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { feedStoryItemSchema, postRewardSchema } from './feed.openapi';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const notFoundSchema = z.object({
   statusCode: z.literal(404),
@@ -96,6 +97,7 @@ const permlinkParam = z
 registry.registerPath({
   method: 'get',
   path: '/query/v1/posts/{author}/{permlink}',
+  tags: [queryApiOpenApiTags.posts],
   summary: 'Single post by author and permlink',
   description:
     'Full post body plus tagged objects (resolved fields for linked-object cards when available) and active vote summary. Optional `X-Viewer` sets administrative heart state per object. Not found when the post row is missing.',
@@ -214,6 +216,7 @@ const votersCursorQuery = z.string().optional().openapi({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/posts/{author}/{permlink}/voters',
+  tags: [queryApiOpenApiTags.posts],
   summary: 'Paginated voters for a post or thread',
   description:
     'On-demand voter list for the reactions modal: per-voter profile, vote weight %, and USD value. Uses `post_active_votes` (or `thread_active_votes` when `contentType=thread`); falls back to Hive `get_active_votes` when the DB has no rows.',
@@ -250,6 +253,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/posts/{author}/{permlink}/discussion',
+  tags: [queryApiOpenApiTags.posts],
   summary: 'Post discussion thread (Hive bridge)',
   description:
     'Full comment tree for a post via `bridge.get_discussion`. No ODL DB merge for comment bodies in v1.',

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { objectUpdatesFeedQuerySchema } from '../domain/object-updates/schemas/object-updates-feed.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const objectUpdateFeedItemSchema = registry.register(
   'ObjectUpdateFeedItem',
@@ -60,6 +61,7 @@ const notFoundSchema = z.object({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/updates',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'Paginated object updates with approval percent and vote counts',
   description:
     'Lists `object_updates` for an active object with `approve_percent` from governance + `computeApprovePercent`, community for/against counts, and the viewer’s latest validity vote when `X-Viewer` is set. Sort `recency` uses keyset cursor; sort `approval` loads up to 1000 matching rows then sorts in memory (offset cursor).',
@@ -140,6 +142,7 @@ const updateVotersResponseSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/updates/{updateId}/voters',
+  tags: [queryApiOpenApiTags.objects],
   summary: 'Validity voters for a single object update',
   description:
     'Lists usernames who approved or rejected an update (latest vote per voter). Used by the web vote report modal.',

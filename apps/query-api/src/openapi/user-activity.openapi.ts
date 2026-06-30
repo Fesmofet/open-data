@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { userActivityBodySchema as userActivityBodyZod } from '../domain/feed/schemas/user-activity.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const notFoundSchema = z.object({
   statusCode: z.literal(404),
@@ -50,6 +51,7 @@ const userActivityResponseSchema = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/activity',
+  tags: [queryApiOpenApiTags.userActivity],
   summary: 'User profile activity (Hive account history)',
   description:
     'Thin proxy over `condenser_api.get_account_history` for the profile activity tab. Optional `filters` apply Hive operation bitmasks plus server-side semantic matching (vote direction, transfer direction, custom_json follow/reblog, wallet history via `wallet`). `effective_comment_vote` operations are excluded. Cursor encodes the next Hive `from` operation index only (filters travel in body/URL, not cursor).',

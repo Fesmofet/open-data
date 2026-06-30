@@ -49,6 +49,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [User post drafts](user-post-drafts-endpoint.md) | Draft CRUD (Bearer JWT, same `JWT_SECRET` as auth-api) |
 | [Search](search.md) | `GET /query/v1/search`, `GET /query/v1/search/counts` |
 | [Objects resolve](objects-resolve.md) | `POST /query/v1/objects/resolve` (`aggregateRating` semantics) |
+| [Objects resolve-nested](objects-resolve-nested.md) | `POST /query/v1/objects/resolve-nested` (optional `update_types`) |
 | [Object avatar fallback](object-avatar-fallback.md) | `fields.image` from parent when child has no `image` |
 | [Object ref lists](object-ref-list-endpoints.md) | `GET .../related`, `/similar`, `/add-on` |
 | [Object Related album](object-related-album.md) | `GET .../gallery/related/preview`, `GET .../gallery/related` |

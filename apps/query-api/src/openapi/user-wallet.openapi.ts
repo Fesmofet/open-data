@@ -10,6 +10,7 @@ import {
   hiveWalletResponseSchema,
 } from '../domain/wallet/schemas/hive-wallet.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const badRequestSchema = z.object({
   statusCode: z.literal(400),
@@ -40,6 +41,7 @@ const waivWalletResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/wallet/waiv',
+  tags: [queryApiOpenApiTags.userWallet],
   summary: 'User WAIV wallet summary',
   description:
     'Live Hive Engine WAIV balance snapshot with legacy display fields and USD estimate via currency engine rates.',
@@ -87,6 +89,7 @@ const waivWalletHistoryResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/wallet/waiv/history',
+  tags: [queryApiOpenApiTags.userWallet],
   summary: 'User WAIV wallet transaction history',
   description:
     'Paginated WAIV wallet history merged from Hive Engine accountHistory RPC, indexed swaps, and WAIV airdrops.',
@@ -144,6 +147,7 @@ const hiveWalletResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/wallet/hive',
+  tags: [queryApiOpenApiTags.userWallet],
   summary: 'User HIVE wallet summary',
   description:
     'Live Hive L1 wallet snapshot: liquid HIVE, HP, delegations net, RC, savings, HBD, interest, and USD estimate.',
@@ -186,6 +190,7 @@ const hiveHpDelegationsOpenApi = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/wallet/hive/delegations',
+  tags: [queryApiOpenApiTags.userWallet],
   summary: 'Hive HP delegations for a user',
   description:
     'Incoming and outgoing HP delegations from indexed `user_delegations`; pending undelegations from chain RPC.',
@@ -228,6 +233,7 @@ const hiveRcDelegationsOpenApi = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/wallet/hive/rc-delegations',
+  tags: [queryApiOpenApiTags.userWallet],
   summary: 'Hive RC delegations for a user',
   description:
     'Incoming RC delegations from indexed `user_rc_delegations`; outgoing from `rc_api.list_rc_direct_delegations`.',
@@ -270,6 +276,7 @@ const engineTokenDelegationsOpenApi = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/wallet/engine/{symbol}/delegations',
+  tags: [queryApiOpenApiTags.userWallet],
   summary: 'Hive Engine token delegations for a user',
   description:
     'Incoming and outgoing `tokens.delegations` rows for the profile account and symbol.',

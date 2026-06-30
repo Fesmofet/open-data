@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const shopTagCategoryItemSchema = registry.register(
   'UserShopTagCategoryItemDto',
@@ -30,6 +31,7 @@ const userShopFiltersResponseSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/shop/filters',
+  tags: [queryApiOpenApiTags.users],
   summary: 'Shop tag and rating filter facets for a user catalog',
   description:
     'Returns tag category facets scoped to the user shop membership (authority ∪ post-linked − deselect) and optional categoryPath. Ratings are static thresholds.',

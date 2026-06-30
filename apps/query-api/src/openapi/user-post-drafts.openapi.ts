@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const forbiddenSchema = z.object({
   statusCode: z.literal(403),
@@ -64,6 +65,7 @@ const bearerSecurity = [{ bearerAuth: [] }];
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{author}/drafts',
+  tags: [queryApiOpenApiTags.userPostDrafts],
   summary: 'Get draft list or a single draft',
   description:
     'Without `draftId`/`permlink`: paginated list (`limit`, `cursor`). With exactly one of `draftId` or `permlink`: one draft; for `permlink`, creates a draft from chain post if missing.',
@@ -115,6 +117,7 @@ const bulkDeleteResultSchema = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{author}/drafts/bulk-delete',
+  tags: [queryApiOpenApiTags.userPostDrafts],
   summary: 'Delete multiple drafts',
   description:
     'Deletes drafts owned by `author` whose `draft_id` is in `draftIds`. Unknown ids are ignored; `deleted` is the number of rows removed.',
@@ -150,6 +153,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{author}/drafts',
+  tags: [queryApiOpenApiTags.userPostDrafts],
   summary: 'Create a draft',
   security: bearerSecurity,
   request: {
@@ -204,6 +208,7 @@ const patchBody = z.object({
 registry.registerPath({
   method: 'patch',
   path: '/query/v1/users/{author}/drafts',
+  tags: [queryApiOpenApiTags.userPostDrafts],
   summary: 'Update a draft',
   security: bearerSecurity,
   request: {
@@ -236,6 +241,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'put',
   path: '/query/v1/users/{author}/drafts',
+  tags: [queryApiOpenApiTags.userPostDrafts],
   summary: 'Update a draft (same as PATCH)',
   security: bearerSecurity,
   request: {
@@ -268,6 +274,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'delete',
   path: '/query/v1/users/{author}/drafts',
+  tags: [queryApiOpenApiTags.userPostDrafts],
   summary: 'Delete a draft',
   security: bearerSecurity,
   request: {

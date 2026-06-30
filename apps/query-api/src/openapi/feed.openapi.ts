@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const notFoundSchema = z.object({
   statusCode: z.literal(404),
@@ -196,6 +197,7 @@ const accountNameParam = z
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/blog/object-filters',
+  tags: [queryApiOpenApiTags.users],
   summary: 'User blog post object filters (facets)',
   description:
     'Lists objects appearing on the profile blog feed (own root posts + reblogs) with post counts. When `objects` query params are set, facets and counts reflect posts that contain all active filters (AND). Names come from object projection with `object_id` fallback.',
@@ -232,6 +234,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/blog',
+  tags: [queryApiOpenApiTags.users],
   summary: 'User blog feed (posts and reblogs)',
   description:
     'Paginated newest-first feed: root posts by author plus reblogs, merged by time. Cursor is opaque (base64url JSON). Optional `object_ids` filters posts that link to every id (AND) via `post_objects`.',
@@ -279,6 +282,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/mentions',
+  tags: [queryApiOpenApiTags.users],
   summary: 'User profile mentions feed',
   description:
     'Paginated newest-first posts where `post_mentions.account` matches the profile (case-insensitive). Posts authored by the profile account are excluded (no self-posts, including self-mentions). Same response shape as blog feed; authors muted by `X-Viewer` are excluded.',
@@ -326,6 +330,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/comments',
+  tags: [queryApiOpenApiTags.userThreads],
   summary: 'User profile comments feed (Hive)',
   description:
     'Paginated feed of comments authored by the profile via `condenser_api.get_discussions_by_comments`. No DB merge. Leo Threads replies are excluded; the API may perform multiple Hive round-trips per page to fill `limit`. Body matches threads (`sort` is ignored). Item `title` falls back to Hive `root_title` when the comment `title` is empty.',
@@ -373,6 +378,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/query/v1/users/{name}/threads',
+  tags: [queryApiOpenApiTags.userThreads],
   summary: 'User profile threads feed (Leo/Ecency)',
   description:
     'Paginated feed of thread rows for a profile: threads that mention the profile or authored by them (excluding bulk_message). Respects viewer mutes (X-Viewer). Cursor matches blog feed encoding.',

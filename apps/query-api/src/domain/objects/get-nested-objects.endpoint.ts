@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UPDATE_TYPES } from '@opden-data-layer/core';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository, ObjectAuthorityRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
@@ -8,21 +7,18 @@ import { expandObjectRefs } from '../object-projection/object-ref-expansion';
 import { ListItemsRecursiveCountService } from '../object-projection/list-items-recursive-count.service';
 import { collectObjectRefIdsFromView, projectObjectCore } from '../object-projection/project-object';
 import { emptyRankVoteProjection } from '../object-projection/projected-object.types';
+import {
+  effectiveUpdateTypes,
+  NESTED_OBJECT_UPDATE_TYPES,
+} from './nested-object.constants';
 import type {
   NestedObjectView,
   ResolveNestedObjectsResponse,
 } from './schemas/resolve-nested-objects.schema';
 
-/** Update types needed for nested catalog navigation (list items, sort, page body). */
-const NESTED_OBJECT_UPDATE_TYPES: readonly string[] = [
-  UPDATE_TYPES.LIST_ITEM,
-  UPDATE_TYPES.SORT_CUSTOM,
-  UPDATE_TYPES.PAGE_CONTENT,
-  UPDATE_TYPES.NAME,
-];
-
 export interface GetNestedObjectsInput {
   ids: string[];
+  updateTypes?: string[];
   locale: string;
   governanceObjectIdFromHeader?: string;
   viewerAccount?: string;
@@ -55,7 +51,7 @@ export class GetNestedObjectsEndpoint {
     });
 
     const views = this.objectViewService.resolve(objects, voterWaivPowers, {
-      update_types: [...NESTED_OBJECT_UPDATE_TYPES],
+      update_types: effectiveUpdateTypes(input.updateTypes, NESTED_OBJECT_UPDATE_TYPES),
       locale: input.locale,
       include_rejected: false,
       governance,

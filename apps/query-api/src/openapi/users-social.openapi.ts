@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const notFoundSchema = z.object({
   statusCode: z.literal(404),
@@ -69,6 +70,7 @@ export { accountNameParam, paginatedProjectedObjectsSchema };
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/followers',
+  tags: [queryApiOpenApiTags.users],
   summary: 'List accounts that follow the profile',
   description:
     'Joins `user_subscriptions` (where `following` = name) with `accounts_current` for display fields. Optional `X-Viewer` populates `isCurrentFollowing`.',
@@ -100,6 +102,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/following',
+  tags: [queryApiOpenApiTags.users],
   summary: 'List accounts the profile follows',
   description:
     'Joins `user_subscriptions` (where `follower` = name) with `accounts_current`. Optional `X-Viewer` populates `isCurrentFollowing`.',
@@ -128,6 +131,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/following-objects',
+  tags: [queryApiOpenApiTags.users],
   summary: 'List objects the profile follows',
   description:
     'Reads `user_object_follows` joined with `objects_core`, resolves `name` and `image` updates, returns `ProjectedObject` JSON (including `weight`).',

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const currencyTokenPricesSchema = registry.register(
   'CurrencyTokenPrices',
@@ -98,6 +99,7 @@ const currencyPoolUsdListSchema = registry.register(
 registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/market',
+  tags: [queryApiOpenApiTags.currency],
   summary: 'HIVE / HBD market snapshot and trailing daily rows',
   description:
     'Spot and weekly history from Postgres `currency_statistics` (ordinary + daily aggregates). Optional `ids` / `vs_currencies` are accepted for legacy compatibility but do not change the stored HIVE/HBD shape.',
@@ -134,6 +136,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/rates/{base}/latest',
+  tags: [queryApiOpenApiTags.currency],
   summary: 'Latest persisted fiat crosses for a base (e.g. USD)',
   description:
     'Reads the newest `currency_rates` row for `base` and returns requested ISO symbols (from `symbols` comma-list) plus base=1.',
@@ -166,6 +169,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/engine/rates',
+  tags: [queryApiOpenApiTags.currency],
   summary: 'WAIV (or base) Hive Engine: current head + weekly daily window',
   request: {
     query: z.object({
@@ -190,6 +194,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/engine/current',
+  tags: [queryApiOpenApiTags.currency],
   summary: 'WAIV (or base) current HIVE / USD rates from pool × HIVE/USD',
   request: {
     query: z.object({
@@ -214,6 +219,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/engine/chart',
+  tags: [queryApiOpenApiTags.currency],
   summary: 'WAIV (or base) chart series and range metadata',
   request: {
     query: z.object({
@@ -241,6 +247,7 @@ registry.registerPath({
 registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/engine/pools/usd',
+  tags: [queryApiOpenApiTags.currency],
   summary: 'Map swap pool symbols to USD (via HIVE and HBD/HIVE pool)',
   request: {
     query: z.object({

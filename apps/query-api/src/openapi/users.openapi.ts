@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const notFoundSchema = z.object({
   statusCode: z.literal(404),
@@ -55,6 +56,7 @@ const accountNameParam = z
 registry.registerPath({
   method: 'get',
   path: '/query/v1/users/{name}/profile',
+  tags: [queryApiOpenApiTags.users],
   summary: 'Get user profile by account name',
   description:
     'Loads `accounts_current` by `name`, maps display fields from `alias`, `profile_image`, and parsed `posting_json_metadata`. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_subscriptions`.',

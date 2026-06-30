@@ -56,6 +56,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
       const ctx = pickMcpContext(args);
       const result = await deps.getNestedObjects.execute({
         ids: args.ids,
+        updateTypes: args.update_types,
         locale: ctx.locale,
         governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
         viewerAccount: ctx.viewerAccount,

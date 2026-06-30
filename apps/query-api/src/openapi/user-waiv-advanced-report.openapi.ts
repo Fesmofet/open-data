@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { waivAdvancedReportBodySchema } from '../domain/wallet/schemas/waiv-advanced-report.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const badRequestSchema = z.object({
   statusCode: z.literal(400),
@@ -71,6 +72,7 @@ const waivAdvancedReportResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/wallet/waiv/advanced-report',
+  tags: [queryApiOpenApiTags.waivWalletAdvanced],
   summary: 'WAIV advanced wallet report',
   description:
     'Multi-account WAIV wallet table (Hive Engine RPC + PG swaps/airdrops merge). `includeSwapsAndTrades` defaults to false (exclude swaps/trades). Optional date range for filtered report. Requires Bearer access JWT; optional `viewer` must match token `sub`.',
@@ -118,5 +120,4 @@ registry.registerPath({
       },
     },
   },
-  tags: ['Wallet'],
 });

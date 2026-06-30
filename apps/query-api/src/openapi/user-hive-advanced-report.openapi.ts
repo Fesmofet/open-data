@@ -9,6 +9,7 @@ import {
   hiveAccountCreatedDatesResponseSchema,
 } from '../domain/wallet/schemas/hive-account-created-dates.schema';
 import { registry } from './registry';
+import { queryApiOpenApiTags } from './tags';
 
 const badRequestSchema = z.object({
   statusCode: z.literal(400),
@@ -92,6 +93,7 @@ const advancedReportResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/wallet/hive/advanced-report',
+  tags: [queryApiOpenApiTags.hiveWalletAdvanced],
   summary: 'Hive L1 advanced wallet report',
   description:
     'Multi-account Hive wallet table with mutual-transaction filtering, historical fiat pricing, and exemption preload. Optional `startDate`/`endDate` (both or neither): omit for browse mode (newest ops, no date filter); set both for filtered report. Requires Bearer access JWT; optional `viewer` must match token `sub`.',
@@ -154,6 +156,7 @@ const accountCreatedDatesResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/wallet/hive/account-created-dates',
+  tags: [queryApiOpenApiTags.hiveWalletAdvanced],
   summary: 'Hive account creation dates',
   description:
     'Resolves UTC creation dates for one or more Hive accounts (DB → get_accounts → account_created history). Returns per-account YMD and earliest `startDateYmd` for advanced report From preset. Public read; no auth.',
@@ -199,6 +202,7 @@ const exemptionResponseOpenApi = registry.register(
 registry.registerPath({
   method: 'post',
   path: '/query/v1/wallet/hive/exemptions',
+  tags: [queryApiOpenApiTags.hiveWalletAdvanced],
   summary: 'Toggle Hive advanced report exemption',
   description:
     'Persist or remove a viewer exemption for a wallet operation row (excluded from deposit/withdraw totals). Requires Bearer access JWT; `viewer` must match token `sub`.',
