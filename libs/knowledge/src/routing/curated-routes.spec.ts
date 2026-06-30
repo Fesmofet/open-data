@@ -19,7 +19,7 @@ describe('curated-routes', () => {
   });
 
   it('matches create project intent', () => {
-    const hits = matchCuratedRoutes('давай создадим проект');
+    const hits = matchCuratedRoutes("let's create a project");
     expect(hits[0]?.path).toBe('docs/skills/build-tenant-site.md');
     expect(hits[0]?.confidence).toBeGreaterThan(0);
   });

@@ -1,7 +1,7 @@
 ---
 id: docs-skills-build-tenant-site
 title: Build project (tenant site) on ODL
-description: Create a new web project — fork apps/web, connect to shared query-api. Fast path from a root object menu, or detailed custom routes and UI from user requirements.
+description: Create a new web project — fork apps/web (Next.js), connect to shared query-api. Never deliver a standalone .html prototype. Object-menu or custom routes inside apps/web only.
 type: skill
 status: active
 scope: platform
@@ -39,6 +39,40 @@ Content can live in ODL objects on chain; the web app projects them via HTTP. Yo
 
 **Out of scope for this skill:** full infrastructure clone (chain-indexer, Postgres, Redis), thin starter repo extraction, platform env hooks (`SITE_ROOT_OBJECT_ID`) — document manual steps below until those exist.
 
+## Deliverable (mandatory — read before coding)
+
+The user asked for a **project**, not a mockup. The only acceptable output is a **forked monorepo** with real changes under **`apps/web/`** that run via:
+
+```bash
+pnpm install
+pnpm nx dev web
+```
+
+| Required | Forbidden |
+|----------|-----------|
+| Git fork (or existing fork) with commits on a branch | Single `.html` / `.htm` file, CodePen, or “paste this in browser” artifact |
+| Next.js App Router routes under `apps/web/src/app/` | Vanilla HTML/CSS/JS app outside the monorepo |
+| Server-side query-api fetch (`queryApiFetch`, `fetch-*-*.server.ts`) | `fetch('https://…/query/v1/…')` from client `<script>` or Client Components |
+| Live projection on each request (SSR/RSC) or agreed client refetch via existing patterns | Hardcoding entire `CATEGORIES` / `CHECKLIST` arrays copied once from MCP into source |
+| `pnpm typecheck:web` passes on changed code | “Prototype first, fork later” without explicit user opt-in |
+| i18n keys in `src/i18n/locales/*.json` for user-visible copy (unless content is 100% from `pageContent`) | Inline marketing copy only in a throwaway file |
+
+**If you cannot write to a repo** (read-only sidecar): stop and follow [Setup agent workspace](setup-workspace.md) to get a clone with push access — do **not** substitute a standalone HTML file.
+
+### Anti-pattern — “pretty HTML with API sprinkled in”
+
+Agents often build a self-contained `Something.html` with embedded CSS, hero, tabs, and a `<script>` that calls query-api once for modals while **snapshotting** menu/catalog data into `const CATEGORIES = [...]`. That is **not** this skill.
+
+| Wrong (reject) | Right |
+|--------------|-------|
+| One file dropped in Downloads / chat | `apps/web/src/app/(app)/…` routes + `src/modules/<tenant>/` |
+| Browser `fetch` to `QUERY_API_URL` | Server Components / `infrastructure/clients/` calling query-api |
+| Shop grid from pasted MCP JSON | `resolve-nested` or `resolve` in server fetcher; map to `ObjectCard` or tenant components |
+| Footer links to `#` Map / About | Real routes or omit until implemented |
+| “Powered by ODL” static microsite | Branded Next app using `theme.css`, layout shell, env from `.env` |
+
+**Custom multi-section sites** (e.g. landing + gear shop + packing checklist): still **Phase 2b** — one route or section per feature, each backed by named object ids and server fetchers; shared layout in `(app)/layout.tsx`. Prototype data shapes with MCP in Phase 0, then implement in TypeScript modules.
+
 ## When to use
 
 - User asks to **create / build a project**, **new site**, or **tenant frontend** on **shared query-api**.
@@ -50,6 +84,7 @@ Content can live in ODL objects on chain; the web app projects them via HTTP. Yo
 
 ## When not to use
 
+- **Quick visual mockup only** — user wants a Figma-like HTML demo with no repo; say so explicitly and do not use this skill (this skill always means `apps/web` fork).
 - **Full stack locally** — [Getting started](../getting-started.md) (Docker, migrations, all apps).
 - **Sidecar agent without checkout** — [Setup agent workspace](setup-workspace.md) first (clone path contract only).
 - **Read-only spec exploration** — knowledge-api `get_file` / `search_knowledge`; no fork required.
@@ -148,6 +183,8 @@ Open the **web spec hub** first: [web overview](../apps/web/spec/overview.md) �
 ---
 
 ## Phase 1 — Bootstrap
+
+**Gate:** do not create UI files until the fork is cloned, `pnpm install` succeeds, and you have confirmed `apps/web` paths from [pages/index.md](../apps/web/spec/pages/index.md). Skipping the fork is a skill violation.
 
 ### Environment (`apps/web/.env` — gitignored)
 
@@ -334,6 +371,26 @@ When the user describes the site explicitly (no single root menu object):
 2. Phase 1: fork + env + `pnpm nx dev web`.
 3. Phase 2b: implement `src/modules/<tenant>/` + routes; wire fetchers; theme + i18n.
 4. Verify each route against requirements; `pnpm typecheck:web`.
+
+### Example — branded site with shop + checklist (custom path)
+
+User wants a camping brand: hero landing, category shop, interactive checklist — **not** the stock `/object/[object-id]` shell.
+
+| User-facing area | Route (example) | Data source | Server call |
+|------------------|-----------------|-------------|-------------|
+| Landing | `/` | Static or minimal resolve for hero object | optional `resolve` for `name` / `image` |
+| Gear shop | `/shop` or `/gear` | Shop object + category `listItem` children | `resolve-nested` on shop id; per-category `resolve` or nested batch |
+| Checklist | `/checklist` | Page object `pageContent` or structured list | `resolve` with `update_types: ['pageContent']` or parse list items |
+| Map (if requested) | `/map` | Geo objects | `@/modules/map` + discover/resolve with `geo` |
+
+Implementation sketch (files must live in the fork):
+
+- `apps/web/src/modules/<tenant>/infrastructure/fetch-shop-categories.server.ts`
+- `apps/web/src/modules/<tenant>/infrastructure/fetch-checklist.server.ts`
+- `apps/web/src/app/(app)/shop/page.tsx` — Server Component loads categories, renders tenant presentation components
+- `apps/web/src/app/(app)/checklist/page.tsx` — checklist UI; client state for checkboxes only, not for catalog data
+
+**Do not** ship the above as one `.html` file with `const CATEGORIES = [...]` — that skips the fork, SSR, i18n, and upstream merge path.
 
 ---
 

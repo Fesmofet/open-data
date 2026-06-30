@@ -75,7 +75,7 @@ related:
 | `docs/skills/setup-workspace.md` | Sidecar agent: clone repo, path contract |
 | `docs/skills/hive-account-signup.md` | Create a new Hive account |
 | `docs/skills/hive-blockchain-broadcast.md` | Sign and broadcast ODL / Hive ops |
-| `docs/skills/build-tenant-site.md` | Create a web project: fork apps/web; object-menu or custom UI on query-api |
+| `docs/skills/build-tenant-site.md` | Create a web project: fork apps/web (Next.js); never standalone HTML; object-menu or custom routes on query-api |
 
 ## Verification
 
