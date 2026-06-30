@@ -10,6 +10,7 @@ const explicit = (process.env.APPS_EXPLICIT || '').trim();
 const ALLOWED = new Set([
   'chain-indexer',
   'query-api',
+  'knowledge-api',
   'auth-api',
   'notifications',
   'scheduler',
