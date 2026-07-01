@@ -46,7 +46,7 @@ related:
 | Local dev: Docker, migrate, serve | overview | `docs/getting-started.md` |
 | New Hive account | skill | `docs/skills/hive-account-signup.md` |
 | Sign/broadcast Hive/ODL txs | skill | `docs/skills/hive-blockchain-broadcast.md` |
-| Create project / tenant site (fork web + query-api) | skill | `docs/skills/build-tenant-site.md` |
+| Build a user's web project (default: waivio-pages-starter → GitHub Pages; server variant: fork apps/web) | skill | `docs/skills/build-tenant-site.md` |
 | App feature behavior | spec / overview | `docs/apps/<app>/spec/` or `overview.md` |
 | Live platform data (objects, feeds, posts) | skill | `docs/skills/query-api-mcp-routing.md` → query-api MCP |
 | Domain rules (votes, governance) | spec | `docs/spec/README.md` |
@@ -75,7 +75,7 @@ related:
 | `docs/skills/setup-workspace.md` | Sidecar agent: clone repo, path contract |
 | `docs/skills/hive-account-signup.md` | Create a new Hive account |
 | `docs/skills/hive-blockchain-broadcast.md` | Sign and broadcast ODL / Hive ops |
-| `docs/skills/build-tenant-site.md` | Create a web project: fork apps/web (Next.js); never standalone HTML; object-menu or custom routes on query-api |
+| `docs/skills/build-tenant-site.md` | Build a web project. Default: start from waivio-pages-starter (static Next.js, GitHub Pages, Keychain, query-api client); agent uses its own GitHub account to fork/iterate/deploy. Server variant: fork apps/web from the monorepo. |
 
 ## Verification
 

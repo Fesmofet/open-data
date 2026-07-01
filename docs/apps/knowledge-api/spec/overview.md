@@ -149,7 +149,7 @@ MCP skill discovery is covered by `apps/knowledge-api-e2e` (real HTTP, no transp
 | Knowledge API routing | `docs/skills/knowledge-api-routing.md` |
 | Hive account signup | `docs/skills/hive-account-signup.md` |
 | Agent workspace (sidecar / clone) | `docs/skills/setup-workspace.md` |
-| Create project / tenant site | `docs/skills/build-tenant-site.md` |
+| Build a web project (default: waivio-pages-starter → GitHub Pages) | `docs/skills/build-tenant-site.md` |
 | Local dev environment | `docs/getting-started.md` |
 | App spec (chain-indexer) | `docs/apps/chain-indexer/spec/vote-ingestion.md` |
 
