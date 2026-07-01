@@ -20,6 +20,7 @@ async function bootstrap() {
       'Accept-Language',
       'X-Locale',
       'X-Governance-Object-Id',
+      'X-Viewer',
     ],
   });
   setupSwagger(app);
