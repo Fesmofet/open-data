@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, user-profile, wallet, waiv, advanced-report]
-updated_at: 2026-06-26
+updated_at: 2026-07-01
 parent: web-user-profile-transfers
 see_also:
   - docs/apps/web/spec/pages/user-profile/routes/transfers-table.md
@@ -22,7 +22,7 @@ Route: `/@:name/transfers/waiv-table` — single-column shell (rails hidden).
 | Query `tab` | Behavior |
 |-------------|----------|
 | `standard` (default) | Live WAIV advanced report |
-| `generate` | Empty placeholder (generated reports — future) |
+| `generate` | Generated reports list + async jobs; detail via `reportId` query param |
 
 ## Standard tab
 
@@ -54,6 +54,24 @@ Session required; BFF `POST /api/wallet/waiv/advanced-report` forwards Bearer JW
 2. Toggle off → reload → unchecked; deposits/withdrawals totals update
 3. Logged-out → checkbox column hidden/disabled
 
+## Generated tab
+
+Route: `?tab=generate` — list + generate form (requires login).
+
+Detail: `?tab=generate&reportId={uuid}` — stored report table only (no list below). Back link returns to list.
+
+List shows **all reports for the logged-in owner** (`owner === session`), regardless of profile URL in the route.
+
+List table columns: from, till, **accounts**, status, deposits, withdrawals, rows, actions (Details, Export to CSV, Delete with confirm modal).
+
+BFF routes under `apps/web/src/app/api/wallet/waiv/generated-reports/` require session via `requireGeneratedReportSession()` (401 when logged out).
+
+Filters match Standard tab plus **Merge author and curation rewards** (`mergeRewards`, default ON) — legacy 30-day consecutive-reward fold.
+
+BFF: `apps/web/src/app/api/wallet/waiv/generated-reports/`
+
+See [query-api WAIV generated spec](../../../../query-api/spec/user-waiv-generated-report-endpoint.md).
+
 ## Code map
 
 | Piece | Path |
@@ -68,4 +86,6 @@ Session required; BFF `POST /api/wallet/waiv/advanced-report` forwards Bearer JW
 ```bash
 pnpm nx run web:typecheck
 pnpm nx test web --testPathPatterns=waiv-advanced-report
+pnpm nx test web --testPathPatterns=load-waiv-generated-report-rows
+pnpm nx test query-api --testPathPatterns=waiv-generated-report
 ```

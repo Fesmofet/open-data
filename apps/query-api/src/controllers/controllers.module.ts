@@ -24,6 +24,7 @@ import { WalletModule } from '../domain/wallet';
 import { UserWalletController } from './user-wallet.controller';
 import { HiveWalletAdvancedReportController } from './hive-wallet-advanced-report.controller';
 import { WaivWalletAdvancedReportController } from './waiv-wallet-advanced-report.controller';
+import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-report.controller';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { WaivWalletAdvancedReportController } from './waiv-wallet-advanced-repor
     UserWalletController,
     HiveWalletAdvancedReportController,
     WaivWalletAdvancedReportController,
+    WaivWalletGeneratedReportController,
     PostsController,
     UserPostDraftsController,
     CurrencyController,

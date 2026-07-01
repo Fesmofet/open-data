@@ -52,3 +52,12 @@ export {
   type WaivAdvancedReportResponse,
   type WaivAdvancedReportRowDto,
 } from './schemas/waiv-advanced-report.schema';
+export {
+  waivGeneratedReportCreateBodySchema,
+  waivGeneratedReportListQuerySchema,
+  waivGeneratedReportRowsQuerySchema,
+  waivGeneratedReportToggleRowBodySchema,
+  type WaivGeneratedReportCreateBody,
+  type WaivGeneratedReportSummaryDto,
+} from './schemas/waiv-generated-report.schema';
+export { WaivGeneratedReportsService } from './waiv-generated-reports.service';

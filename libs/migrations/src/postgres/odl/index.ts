@@ -28,6 +28,8 @@ import * as m00027 from './00027_hive_engine_swaps';
 import * as m00028 from './00028_hive_engine_swaps_drop_pool_id';
 import * as m00029 from './00029_hive_engine_waiv_airdrops';
 import * as m00030 from './00030_hive_engine_swaps_ref_hive_block_nullable';
+import * as m00031 from './00031_waiv_generated_reports';
+import * as m00032 from './00032_waiv_generated_reports_merge_fold';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -68,4 +70,6 @@ export const MIGRATIONS: Record<string, Migration> = {
     up: m00030.up,
     down: m00030.down,
   },
+  '00031_waiv_generated_reports': { up: m00031.up, down: m00031.down },
+  '00032_waiv_generated_reports_merge_fold': { up: m00032.up, down: m00032.down },
 };

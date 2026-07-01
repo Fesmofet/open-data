@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   ExchangeRateClientModule,
   HiveClientModule,
@@ -25,6 +26,7 @@ import { RepositoriesModule } from './repositories';
       envFilePath: ['apps/query-api/.env', '.env'],
       load: [queryApiConfig],
     }),
+    ScheduleModule.forRoot(),
     RedisClientModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

@@ -3,6 +3,11 @@ export {
   ADVANCED_REPORT_MAX_PAGE_SIZE,
 } from '../hive-advanced-report/advanced-report.constants';
 export {
+  WAIV_GENERATED_REPORT_ROWS_MAX_LIMIT,
+  WAIV_GENERATED_REPORT_ROWS_PAGE_SIZE,
+  WAIV_GENERATED_REPORT_WORKER_BATCH_SIZE,
+} from './waiv-generated-report.constants';
+export {
   calcDepositWithdrawals,
   type AdvancedReportTotalsRow,
   type DepositWithdrawalsTotals,
@@ -30,3 +35,14 @@ export {
   stableOperationIndex,
   stableWaivAdvancedReportOperationIndex,
 } from './stable-operation-index';
+export {
+  mergeWaivRewardRows,
+  mergeWaivRewardRowsInStream,
+  flushMergeRewardFold,
+  parseWaivMergeRewardFoldState,
+  isWaivAdvancedReportRewardOp,
+  WAIV_MERGE_REWARDS_WINDOW_SEC,
+  type MergeWaivRewardRowInput,
+  type WaivMergeRewardFoldState,
+  type MergeWaivRewardRowsStreamResult,
+} from './merge-waiv-reward-rows';

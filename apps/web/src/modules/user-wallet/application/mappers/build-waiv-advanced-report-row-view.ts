@@ -71,6 +71,8 @@ function buildDescriptionView(row: WaivAdvancedReportRowApi): WaivAdvancedReport
       return { kind: 'plain', text: 'Market sell' };
     case 'airdrops_newAirdrop':
       return { kind: 'plain', text: 'Airdrop' };
+    case 'merged_rewards':
+      return { kind: 'plain', text: 'Merged rewards' };
     default:
       return { kind: 'plain', text: row.type };
   }

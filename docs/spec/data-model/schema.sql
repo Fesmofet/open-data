@@ -638,3 +638,47 @@ CREATE TABLE hive_engine_waiv_airdrops (
 
 CREATE INDEX idx_hewa_account_ts_id
   ON hive_engine_waiv_airdrops (account, block_timestamp DESC, id DESC);
+
+-- ---------------------------------------------------------------------------
+-- waiv_generated_reports (async WAIV advanced report jobs)
+-- ---------------------------------------------------------------------------
+CREATE TABLE waiv_generated_reports (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner                    TEXT NOT NULL,
+  profile_account          TEXT NOT NULL,
+  status                   TEXT NOT NULL,
+  currency                 TEXT NOT NULL,
+  start_date_ts            INTEGER NOT NULL,
+  end_date_ts              INTEGER NOT NULL,
+  filter_accounts          TEXT[] NOT NULL,
+  include_swaps_and_trades BOOLEAN NOT NULL DEFAULT false,
+  merge_rewards            BOOLEAN NOT NULL DEFAULT true,
+  accounts_progress        JSONB NOT NULL DEFAULT '[]'::jsonb,
+  merge_reward_fold        JSONB,
+  deposits                 NUMERIC(20, 4) NOT NULL DEFAULT 0,
+  withdrawals              NUMERIC(20, 4) NOT NULL DEFAULT 0,
+  row_count                INTEGER NOT NULL DEFAULT 0,
+  error_message            TEXT,
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at             TIMESTAMPTZ
+);
+
+CREATE INDEX idx_waiv_generated_reports_owner_created
+  ON waiv_generated_reports (owner, created_at DESC);
+
+CREATE TABLE waiv_generated_report_rows (
+  id              BIGSERIAL PRIMARY KEY,
+  report_id       UUID NOT NULL REFERENCES waiv_generated_reports (id) ON DELETE CASCADE,
+  operation_index INTEGER NOT NULL,
+  timestamp       INTEGER NOT NULL,
+  user_name       TEXT NOT NULL,
+  checked         BOOLEAN NOT NULL DEFAULT false,
+  row             JSONB NOT NULL
+);
+
+CREATE UNIQUE INDEX uq_waiv_generated_report_rows_report_operation
+  ON waiv_generated_report_rows (report_id, operation_index);
+
+CREATE INDEX idx_waiv_generated_report_rows_report_ts
+  ON waiv_generated_report_rows (report_id, timestamp DESC, id DESC);

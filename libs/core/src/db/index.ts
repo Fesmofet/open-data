@@ -128,5 +128,12 @@ export type {
   HiveEngineWaivAirdropUpdate,
   WalletExemptionRow,
   NewWalletExemptionRow,
+  WaivGeneratedReport,
+  NewWaivGeneratedReport,
+  WaivGeneratedReportUpdate,
+  WaivGeneratedReportStoredRow,
+  NewWaivGeneratedReportStoredRow,
+  WaivGeneratedReportStatus,
+  WaivGeneratedReportAccountProgress,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

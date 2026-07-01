@@ -75,6 +75,8 @@ export interface OdlDatabase {
   wallet_exemptions: WalletExemptionsTable;
   hive_engine_swaps: HiveEngineSwapsTable;
   hive_engine_waiv_airdrops: HiveEngineWaivAirdropsTable;
+  waiv_generated_reports: WaivGeneratedReportsTable;
+  waiv_generated_report_rows: WaivGeneratedReportRowsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -1016,3 +1018,63 @@ export interface HiveEngineWaivAirdropsTable {
 export type HiveEngineWaivAirdrop = Selectable<HiveEngineWaivAirdropsTable>;
 export type NewHiveEngineWaivAirdrop = Insertable<HiveEngineWaivAirdropsTable>;
 export type HiveEngineWaivAirdropUpdate = Updateable<HiveEngineWaivAirdropsTable>;
+
+// ---------------------------------------------------------------------------
+// waiv_generated_reports (async WAIV advanced report jobs)
+// ---------------------------------------------------------------------------
+
+export type WaivGeneratedReportStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'completed'
+  | 'failed'
+  | 'stopped';
+
+export type WaivGeneratedReportAccountProgress = {
+  name: string;
+  cursor: string | null;
+  hasMore: boolean;
+};
+
+export interface WaivGeneratedReportsTable {
+  id: Generated<string>;
+  owner: string;
+  profile_account: string;
+  status: WaivGeneratedReportStatus;
+  currency: string;
+  start_date_ts: number;
+  end_date_ts: number;
+  filter_accounts: string[];
+  include_swaps_and_trades: boolean;
+  merge_rewards: boolean;
+  accounts_progress: ColumnType<
+    WaivGeneratedReportAccountProgress[],
+    JsonValue | WaivGeneratedReportAccountProgress[],
+    JsonValue | WaivGeneratedReportAccountProgress[]
+  >;
+  merge_reward_fold: ColumnType<JsonValue | null, JsonValue | null, JsonValue | null>;
+  deposits: ColumnType<string, number | string, number | string>;
+  withdrawals: ColumnType<string, number | string, number | string>;
+  row_count: number;
+  error_message: string | null;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+  updated_at: ColumnType<Date, Date | string | undefined, Date | string>;
+  completed_at: ColumnType<Date | null, Date | string | null | undefined, Date | string | null>;
+}
+
+export type WaivGeneratedReport = Selectable<WaivGeneratedReportsTable>;
+export type NewWaivGeneratedReport = Insertable<WaivGeneratedReportsTable>;
+export type WaivGeneratedReportUpdate = Updateable<WaivGeneratedReportsTable>;
+
+export interface WaivGeneratedReportRowsTable {
+  id: Generated<bigint>;
+  report_id: string;
+  operation_index: number;
+  timestamp: number;
+  user_name: string;
+  checked: boolean;
+  row: ColumnType<JsonValue, JsonValue, JsonValue>;
+}
+
+export type WaivGeneratedReportStoredRow = Selectable<WaivGeneratedReportRowsTable>;
+export type NewWaivGeneratedReportStoredRow = Insertable<WaivGeneratedReportRowsTable>;

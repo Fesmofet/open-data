@@ -10,6 +10,8 @@ import { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
 import { GetUserWaivWalletHistoryEndpoint } from './get-user-waiv-wallet-history.endpoint';
 import { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
 import { GetWaivAdvancedReportEndpoint } from './get-waiv-advanced-report.endpoint';
+import { WaivGeneratedReportsService } from './waiv-generated-reports.service';
+import { WaivGeneratedReportWorkerService } from './waiv-generated-report-worker.service';
 import { GetHiveAccountCreatedDatesEndpoint } from './get-hive-account-created-dates.endpoint';
 import { HiveAdvancedReportPagerService } from './hive-advanced-report-pager.service';
 import { WaivAdvancedReportPagerService } from './waiv-advanced-report-pager.service';
@@ -36,6 +38,8 @@ import { WaivWalletHistoryPagerService } from './waiv-wallet-history-pager.servi
     HiveAccountCreationDateService,
     GetHiveAdvancedReportEndpoint,
     GetWaivAdvancedReportEndpoint,
+    WaivGeneratedReportsService,
+    WaivGeneratedReportWorkerService,
     GetHiveAccountCreatedDatesEndpoint,
     UpsertHiveWalletExemptionEndpoint,
   ],
@@ -48,6 +52,7 @@ import { WaivWalletHistoryPagerService } from './waiv-wallet-history-pager.servi
     GetUserHiveRcDelegationsEndpoint,
     GetHiveAdvancedReportEndpoint,
     GetWaivAdvancedReportEndpoint,
+    WaivGeneratedReportsService,
     GetHiveAccountCreatedDatesEndpoint,
     UpsertHiveWalletExemptionEndpoint,
   ],

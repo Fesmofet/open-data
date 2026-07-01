@@ -34,6 +34,7 @@ export { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 export { WalletExemptionsRepository } from './wallet-exemptions.repository';
 export { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 export { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';
+export { WaivGeneratedReportsRepository } from './waiv-generated-reports.repository';
 export type {
   DiscoverObjectCandidateRow,
   DiscoverTagCategoryRow,

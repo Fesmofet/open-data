@@ -27,8 +27,7 @@ import {
   type WaivWalletHistoryItemDto,
 } from './waiv-wallet-history-item-dtos';
 import { WAIV_SYMBOL } from './schemas/waiv-wallet.schema';
-
-const RPC_MAX_ROUND_TRIPS = 20;
+import { collectWaivEngineRpcHistory } from './collect-waiv-engine-rpc-history';
 
 export type CollectWaivWalletHistoryParams = {
   account: string;
@@ -129,50 +128,28 @@ export class WaivWalletHistoryPagerService {
     cursor: WaivWalletHistoryCursorPayload | null;
   }): Promise<{ entries: HiveEngineAccountHistoryEntry[]; unavailable: boolean }> {
     const ops = buildWaivWalletHistoryRpcOps(params.showRewards);
-    const collected: HiveEngineAccountHistoryEntry[] = [];
-    let timestampEnd = params.cursor?.timestamp;
-    let unavailable = false;
+    const timestampEnd = params.cursor?.timestamp;
 
-    for (let round = 0; round < RPC_MAX_ROUND_TRIPS; round++) {
-      if (collected.length >= params.limit) {
-        break;
-      }
+    const result = await collectWaivEngineRpcHistory({
+      limit: params.limit,
+      timestampStart: 1,
+      initialTimestampEnd: timestampEnd,
+      fetchBatch: async (batchLimit, tsEnd, tsStart, offset) => {
+        return this.historyClient.accountHistoryWithStatus({
+          account: params.account,
+          symbol: WAIV_SYMBOL,
+          ops,
+          limit: batchLimit,
+          ...(tsEnd !== undefined && {
+            timestampEnd: tsEnd,
+            timestampStart: tsStart,
+          }),
+          ...(offset > 0 ? { offset } : {}),
+        });
+      },
+    });
 
-      const batchLimit = params.limit - collected.length;
-      const result = await this.historyClient.accountHistoryWithStatus({
-        account: params.account,
-        symbol: WAIV_SYMBOL,
-        ops,
-        limit: batchLimit,
-        ...(timestampEnd !== undefined && {
-          timestampEnd,
-          timestampStart: 1,
-        }),
-      });
-
-      if (result.unavailable) {
-        unavailable = true;
-        break;
-      }
-
-      if (result.entries.length === 0) {
-        break;
-      }
-
-      collected.push(...result.entries);
-
-      if (result.entries.length < batchLimit) {
-        break;
-      }
-
-      const oldest = result.entries[result.entries.length - 1];
-      if (oldest.timestamp === timestampEnd) {
-        break;
-      }
-      timestampEnd = oldest.timestamp;
-    }
-
-    return { entries: collected, unavailable };
+    return { entries: result.entries, unavailable: result.unavailable };
   }
 }
 

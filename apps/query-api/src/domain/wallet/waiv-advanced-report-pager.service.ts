@@ -30,9 +30,8 @@ import {
   mapSwapRow,
   type WaivWalletHistoryItemDto,
 } from './waiv-wallet-history-item-dtos';
+import { collectWaivEngineRpcHistory } from './collect-waiv-engine-rpc-history';
 import { WAIV_SYMBOL } from './schemas/waiv-wallet.schema';
-
-const RPC_MAX_ROUND_TRIPS = 20;
 
 function utcYmdFromUnix(unix: number): string {
   const d = new Date(unix * 1000);
@@ -270,61 +269,29 @@ export class WaivAdvancedReportPagerService {
     hasMore: boolean;
   }> {
     const ops = buildWaivAdvancedReportRpcOps(params.includeSwapsAndTrades);
-    const collected: HiveEngineAccountHistoryEntry[] = [];
-    let unavailable = false;
-    let hasMore = false;
+    const timestampStart = params.dateRange?.startDate ?? 1;
+    const initialTimestampEnd = params.dateRange
+      ? (params.cursor?.timestamp ?? params.dateRange.endDate)
+      : params.cursor?.timestamp;
 
-    let timestampStart = 1;
-    let timestampEnd: number | undefined;
-    if (params.dateRange) {
-      timestampStart = params.dateRange.startDate;
-      // Continue within the range from the cursor — not from endDate every page.
-      timestampEnd = params.cursor?.timestamp ?? params.dateRange.endDate;
-    } else {
-      timestampEnd = params.cursor?.timestamp;
-    }
-
-    for (let round = 0; round < RPC_MAX_ROUND_TRIPS; round++) {
-      if (collected.length >= params.limit) {
-        hasMore = true;
-        break;
-      }
-
-      const batchLimit = params.limit - collected.length;
-      const result = await this.historyClient.accountHistoryWithStatus({
-        account: params.account,
-        symbol: WAIV_SYMBOL,
-        ops,
-        limit: batchLimit,
-        ...(timestampEnd !== undefined
-          ? { timestampEnd, timestampStart }
-          : {}),
-      });
-
-      if (result.unavailable) {
-        unavailable = true;
-        break;
-      }
-
-      if (result.entries.length === 0) {
-        break;
-      }
-
-      collected.push(...result.entries);
-
-      if (result.entries.length < batchLimit) {
-        break;
-      }
-
-      const oldest = result.entries[result.entries.length - 1];
-      if (oldest.timestamp === timestampEnd) {
-        break;
-      }
-      timestampEnd = oldest.timestamp;
-      hasMore = true;
-    }
-
-    return { entries: collected, unavailable, hasMore };
+    return collectWaivEngineRpcHistory({
+      limit: params.limit,
+      timestampStart,
+      initialTimestampEnd,
+      fetchBatch: async (batchLimit, timestampEnd, tsStart, offset) => {
+        const result = await this.historyClient.accountHistoryWithStatus({
+          account: params.account,
+          symbol: WAIV_SYMBOL,
+          ops,
+          limit: batchLimit,
+          ...(timestampEnd !== undefined
+            ? { timestampEnd, timestampStart: tsStart }
+            : {}),
+          ...(offset > 0 ? { offset } : {}),
+        });
+        return result;
+      },
+    });
   }
 }
 

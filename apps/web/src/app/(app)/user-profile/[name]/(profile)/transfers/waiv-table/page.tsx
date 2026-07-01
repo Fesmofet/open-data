@@ -8,7 +8,7 @@ import { WaivAdvancedReportTabs } from '@/modules/user-wallet/presentation/compo
 
 type UserProfileWaivTablePageProps = {
   params: Promise<{ name: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; reportId?: string }>;
 };
 
 function resolveTab(raw: string | undefined): 'standard' | 'generate' {
@@ -20,7 +20,7 @@ export default async function UserProfileWaivTablePage({
   searchParams,
 }: UserProfileWaivTablePageProps) {
   const { name } = await params;
-  const { tab: tabRaw } = await searchParams;
+  const { tab: tabRaw, reportId } = await searchParams;
   const tab = resolveTab(tabRaw);
   const accountName = decodeURIComponent(name);
   const auth = createCookieAuthContextProvider();
@@ -36,7 +36,12 @@ export default async function UserProfileWaivTablePage({
       <WaivAdvancedReportTabs basePath={basePath} activeTab={tab} />
 
       {tab === 'generate' ? (
-        <WaivAdvancedReportGeneratedTab />
+        <WaivAdvancedReportGeneratedTab
+          basePath={basePath}
+          profileAccount={accountName}
+          viewerUsername={user?.username ?? null}
+          reportId={reportId ?? null}
+        />
       ) : (
         <WaivAdvancedReportTable
           profileAccount={accountName}
