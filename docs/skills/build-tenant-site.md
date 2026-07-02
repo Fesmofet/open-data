@@ -44,10 +44,24 @@ The agent operates its **own GitHub account** and a **Personal Access Token (key
 | Requirement | Purpose |
 |-------------|---------|
 | **GitHub account (agent-owned)** | Owns the project repo used to iterate and publish |
-| **GitHub PAT / token** (repo + pages/admin scope) | Create repo, push, set repo variables, enable GitHub Pages via API/CLI |
+| **GitHub PAT (Fine-grained)** | Create repo, push, set repo variables, enable GitHub Pages via API/CLI — see settings below |
 | **query-api base URL** | Data source; the site calls `{QUERY_API_URL}/query/v1/...` from the browser |
 | **Hive Keychain** (end user's browser) | Signing/broadcast happens client-side; the agent does not hold user keys |
 | Hive account + key (agent, optional) | Only if the agent must seed on-chain ODL content during setup — see [Hive broadcast](hive-blockchain-broadcast.md) |
+
+**GitHub token — use a Fine-grained PAT** (not classic):
+
+| Setting | Value |
+|---------|-------|
+| Repository access | All repositories |
+| Expiration | 30–90 days |
+| Permissions → Administration | Read and write |
+| Permissions → Contents | Read and write |
+| Permissions → Pages | Read and write |
+| Permissions → Workflows | Read and write |
+| Permissions → Actions | Read and write |
+
+`Administration: write` is required to create the repo and enable Pages; `Workflows`/`Actions: write` let the deploy workflow (`.github/workflows/deploy.yml`) run. Never commit the token — store it in the agent's secret store / CLI auth only.
 
 The site itself has **no backend**: reads go straight to query-api from the browser; writes go through the user's Keychain extension. No secrets are baked into the static build (config is `NEXT_PUBLIC_*` at build time).
 
