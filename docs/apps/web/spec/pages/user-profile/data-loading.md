@@ -59,8 +59,16 @@ HTTP call (via `queryApiFetch` in `apps/web/src/modules/user-profile/infrastruct
 | `followingCount` | `followingCount` |
 | `postingCount` | `postingCount` |
 | `reputation` | *(not shown in shell yet)* |
+| `wobjectsWeight` | `wobjectsWeight` (expertise badge in hero) |
 
 Validation: Zod `userProfileViewSchema` in `apps/web/src/modules/user-profile/application/dto/user-profile.dto.ts` (used by the HTTP repository).
+
+## Deploy order and cache
+
+- **Deploy query-api before (or with) web** so `GET .../profile` includes `wobjectsWeight`. The web schema requires this field; an older API causes profile routes to fail validation.
+- Profile responses are cached by Next.js Data Cache (`revalidate: 60`). If a cached JSON predates `wobjectsWeight`, `user-profile.repository.ts` issues one uncached refetch (`QUERY_API_LIVE_INIT`) and normalizes snake_case `wobjects_weight` when present.
+- After upgrading query-api in dev, clear stale routes if needed: `Remove-Item -Recurse -Force apps/web/.next`, then restart `pnpm run dev:web`.
+- Feed and search/discover user rows use defensive `?? 0` / Zod `.default(0)` for `wobjects_weight` — a stale feed/search API may show `0.00` expertise without throwing; profile shell does not mask a missing field.
 
 ## Backend contract
 

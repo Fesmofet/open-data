@@ -39,6 +39,7 @@ const singlePostViewSchema = registry.register(
       displayName: z.string().nullable(),
       avatarUrl: z.string().nullable(),
       reputation: z.number(),
+      wobjectsWeight: z.number(),
     }),
     objects: z.array(projectedObjectOpenApiSchema),
     votes: z.object({

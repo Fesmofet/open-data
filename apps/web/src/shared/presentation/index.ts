@@ -44,6 +44,8 @@ export {
   APP_MODAL_Z_INDEX as MODAL_Z_INDEX_APP,
 } from './components/modal-shell.constants';
 export { HydrationSafeAnchor } from './components/hydration-safe-anchor';
+export { StatHoverTooltip } from './components/stat-hover-tooltip';
+export type { StatHoverTooltipProps } from './components/stat-hover-tooltip';
 export { NavMenu } from './components/nav-menu';
 export type { NavMenuItem, NavMenuProps } from './components/nav-menu';
 export {

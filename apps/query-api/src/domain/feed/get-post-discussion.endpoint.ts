@@ -20,6 +20,10 @@ import {
 import { enrichDiscussionCommentsRewards } from './enrich-discussion-comments-rewards';
 import { PostRewardService } from './post-reward.service';
 import { viewerHasReblogged } from './viewer-reblog-state';
+import {
+  toFeedAuthorProfileFallback,
+  toFeedAuthorProfileFromUserProfile,
+} from './to-feed-author-profile';
 
 @Injectable()
 export class GetPostDiscussionEndpoint {
@@ -74,15 +78,7 @@ export class GetPostDiscussionEndpoint {
     const profileByName = new Map<string, FeedStoryItemDto['authorProfile']>(
       accountRows.map((row) => {
         const profile = mapAccountToUserProfileView(row);
-        return [
-          row.name,
-          {
-            name: profile.name,
-            displayName: profile.displayName,
-            avatarUrl: profile.avatarUrl,
-            reputation: profile.reputation,
-          },
-        ];
+        return [row.name, toFeedAuthorProfileFromUserProfile(profile)];
       }),
     );
 
@@ -98,12 +94,13 @@ export class GetPostDiscussionEndpoint {
         const displayName = metaName !== '' ? metaName : ha.name;
         const avatarFromMeta = meta?.profile.profile_image?.trim() ?? '';
         const avatarUrl = avatarFromMeta !== '' ? avatarFromMeta : null;
-        profileByName.set(ha.name, {
-          name: ha.name,
-          displayName,
-          avatarUrl,
-          reputation: 0,
-        });
+        profileByName.set(
+          ha.name,
+          toFeedAuthorProfileFallback(ha.name, {
+            displayName,
+            avatarUrl,
+          }),
+        );
       }
     }
 
@@ -115,12 +112,9 @@ export class GetPostDiscussionEndpoint {
       }
       const authorProfile: FeedStoryItemDto['authorProfile'] = profileByName.get(
         node.author,
-      ) ?? {
-        name: node.author,
-        displayName: null,
-        avatarUrl: null,
+      ) ?? toFeedAuthorProfileFallback(node.author, {
         reputation: Number(node.author_reputation ?? 0),
-      };
+      });
       comments[id] = mapHiveContentToDiscussionCommentDto(
         node,
         authorProfile,

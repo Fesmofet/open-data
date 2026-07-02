@@ -96,6 +96,7 @@ export interface FeedStoryItemDto {
     displayName: string | null;
     avatarUrl: string | null;
     reputation: number;
+    wobjectsWeight: number;
   };
   objects: ProjectedObject[];
   votes: FeedVoteSummaryDto;

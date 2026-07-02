@@ -12,6 +12,7 @@ export const searchUserResultSchema = z.object({
   name: z.string(),
   profile_image: z.string().nullable(),
   reputation: z.number(),
+  wobjects_weight: z.number().nullish().default(0),
   followers_count: z.number(),
   is_following: z.boolean(),
 });

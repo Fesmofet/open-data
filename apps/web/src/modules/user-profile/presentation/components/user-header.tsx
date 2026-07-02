@@ -1,7 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { UserAvatar } from '@/shared/presentation';
+import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { UserProfileShellUser } from './types';
 
@@ -101,11 +101,21 @@ export function UserHeader({
                   {t('guest')}
                 </span>
               ) : null}
+              <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+                <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
+                  {user.wobjectsWeight.toFixed(2)}
+                </span>
+              </StatHoverTooltip>
             </div>
             <p className="mt-1 line-clamp-2 text-body-sm text-muted">{user.bio}</p>
             <p className="mt-2 text-caption text-muted">
-              {user.followerCount} {t('followers')} · {user.followingCount} {t('following')} ·{' '}
-              {user.postingCount} {t('posts')}
+              <StatHoverTooltip content={t('stat_user_followers_tooltip')}>
+                <span>
+                  {user.followerCount} {t('followers')}
+                </span>
+              </StatHoverTooltip>
+              {' · '}
+              {user.followingCount} {t('following')} · {user.postingCount} {t('posts')}
             </p>
           </>
         )}

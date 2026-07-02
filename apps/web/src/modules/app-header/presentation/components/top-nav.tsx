@@ -415,6 +415,8 @@ export function TopNav({ user: _user }: TopNavProps) {
                   tabUsers: t('search_tab_users'),
                   following: t('search_user_following'),
                   discoverChipsAria: t('search_discover_chips_aria'),
+                  userExpertiseTooltip: t('stat_user_expertise_tooltip'),
+                  userFollowersTooltip: t('stat_user_followers_tooltip'),
                 }}
               />
             ) : null}

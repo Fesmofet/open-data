@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { StatHoverTooltip } from '@/shared/presentation';
+
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import type { SearchFlatEntry } from '../../domain/search-nav-list';
 import { buildDiscoverHrefFromSearch, formatObjectTypeLabel } from '../../domain/search-nav-list';
@@ -29,6 +31,8 @@ export type SearchDropdownProps = {
     tabUsers: string;
     following: string;
     discoverChipsAria: string;
+    userExpertiseTooltip: string;
+    userFollowersTooltip: string;
   };
   onClose: () => void;
 };
@@ -280,11 +284,21 @@ export function SearchDropdown({
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="flex flex-wrap items-center gap-2">
+                        <span className="flex flex-wrap items-center gap-1.5">
                           <span className="font-weight-label text-fg">{u.name}</span>
-                          <span className="rounded border border-border px-1.5 py-0.5 text-caption text-fg-secondary">
-                            {u.reputation.toFixed(2)} · {u.followers_count}
+                          <StatHoverTooltip content={messages.userExpertiseTooltip}>
+                            <span className="rounded border border-border bg-surface-control px-1.5 py-0.5 font-mono text-caption text-fg">
+                              {(u.wobjects_weight ?? 0).toFixed(2)}
+                            </span>
+                          </StatHoverTooltip>
+                          <span aria-hidden className="text-caption text-fg-secondary">
+                            ·
                           </span>
+                          <StatHoverTooltip content={messages.userFollowersTooltip}>
+                            <span className="text-caption text-fg-secondary">
+                              {u.followers_count}
+                            </span>
+                          </StatHoverTooltip>
                         </span>
                       </span>
                       {u.is_following ? (

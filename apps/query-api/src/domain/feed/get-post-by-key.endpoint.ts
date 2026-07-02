@@ -18,6 +18,10 @@ import { mapHiveContentToSinglePostView } from './map-hive-content-to-single-pos
 import { ObjectProjectionService, emptyRankVoteProjection } from '../object-projection';
 import { buildPostRewardInputFromPostRow, buildPostRewardInputFromHiveContent } from './build-post-reward-input';
 import type { SinglePostViewDto } from './feed-story-dtos';
+import {
+  toFeedAuthorProfileFallback,
+  toFeedAuthorProfileFromUserProfile,
+} from './to-feed-author-profile';
 import { PostRewardService } from './post-reward.service';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
@@ -113,34 +117,22 @@ export class GetPostByKeyEndpoint {
     const accountRow = await this.accounts.findByName(author);
     if (accountRow) {
       const profile = mapAccountToUserProfileView(accountRow);
-      return {
-        name: profile.name,
-        displayName: profile.displayName,
-        avatarUrl: profile.avatarUrl,
-        reputation: profile.reputation,
-      };
+      return toFeedAuthorProfileFromUserProfile(profile);
     }
     const hiveAccounts = await this.hiveClient.getAccounts([author]);
     const ha = hiveAccounts[0];
     if (!ha) {
-      return {
-        name: author,
-        displayName: null,
-        avatarUrl: null,
-        reputation: 0,
-      };
+      return toFeedAuthorProfileFallback(author);
     }
     const meta = parsePostingMetadata(ha.posting_json_metadata);
     const metaName = meta?.profile.name?.trim() ?? '';
     const displayName = metaName !== '' ? metaName : ha.name;
     const avatarFromMeta = meta?.profile.profile_image?.trim() ?? '';
     const avatarUrl = avatarFromMeta !== '' ? avatarFromMeta : null;
-    return {
-      name: ha.name,
+    return toFeedAuthorProfileFallback(ha.name, {
       displayName,
       avatarUrl,
-      reputation: 0,
-    };
+    });
   }
 
   private async mapPostToSingleView(
@@ -156,18 +148,8 @@ export class GetPostByKeyEndpoint {
     const accountRow = await this.accounts.findByName(post.author);
     const profile = accountRow ? mapAccountToUserProfileView(accountRow) : null;
     const authorProfile = profile
-      ? {
-          name: profile.name,
-          displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl,
-          reputation: profile.reputation,
-        }
-      : {
-          name: post.author,
-          displayName: null,
-          avatarUrl: null,
-          reputation: 0,
-        };
+      ? toFeedAuthorProfileFromUserProfile(profile)
+      : toFeedAuthorProfileFallback(post.author);
 
     const excerpt = truncateExcerpt(stripHtmlForExcerpt(post.body ?? ''));
     const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [], voted: false };

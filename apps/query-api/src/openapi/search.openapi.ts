@@ -19,6 +19,7 @@ const searchUserResultSchema = registry.register(
     name: z.string(),
     profile_image: z.string().nullable(),
     reputation: z.number(),
+    wobjects_weight: z.number(),
     followers_count: z.number().int(),
     is_following: z.boolean(),
   }),

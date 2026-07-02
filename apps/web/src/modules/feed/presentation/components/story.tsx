@@ -10,6 +10,7 @@ import { isThreeSpeakEmbedUrl } from '@/shared/infrastructure/three-speak-previe
 import {
   AVATAR_PLACEHOLDER_SRC,
   shouldUnoptimizeRemoteImage,
+  StatHoverTooltip,
   UserAvatar,
 } from '@/shared/presentation';
 import { objectPagePath } from '@/shared/routes/object-page-path';
@@ -115,11 +116,11 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
   const [previewMediaFailed, setPreviewMediaFailed] = useState(false);
   const [previewMediaLandscape, setPreviewMediaLandscape] = useState(true);
   const [commentsExpanded, setCommentsExpanded] = useState(false);
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
-  const repLabel = formatReputation(story.authorReputation, locale);
+  const repLabel = formatReputation(story.authorWobjectsWeight, locale);
   const taggedObjects =
     story.objects && story.objects.length > 0
       ? story.objects.slice(0, FEED_STORY_TAGGED_OBJECT_MAX)
@@ -189,9 +190,11 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
               {displayAuthor}
             </Link>
             {repLabel != null ? (
-              <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
-                {repLabel}
-              </span>
+              <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+                <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
+                  {repLabel}
+                </span>
+              </StatHoverTooltip>
             ) : null}
             <span className="text-caption text-muted">·</span>
             <time className="text-caption text-fg-tertiary" dateTime={displayTimeIso}>

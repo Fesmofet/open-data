@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { PaginatedUserFollowListView } from '@/modules/user-social/application/dto/user-social.dto';
-import { UserAvatar } from '@/shared/presentation';
+import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import { buildObjectFollowersPath } from '../../domain/object-page-url.constants';
 
@@ -43,9 +43,11 @@ export function ObjectRightFollowersSection({
               <p className="min-w-0 flex-1 truncate text-body-sm font-weight-label leading-body text-fg">
                 {row.name}
               </p>
-              <span className="shrink-0 rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
-                {row.wobjectsWeight.toFixed(2)}
-              </span>
+              <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+                <span className="shrink-0 rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
+                  {row.wobjectsWeight.toFixed(2)}
+                </span>
+              </StatHoverTooltip>
             </Link>
           </li>
         ))}

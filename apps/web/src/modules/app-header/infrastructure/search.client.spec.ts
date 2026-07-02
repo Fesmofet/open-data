@@ -23,6 +23,7 @@ function user(partial: Partial<SearchUserResult> & Pick<SearchUserResult, 'name'
   return {
     profile_image: null,
     reputation: 1,
+    wobjects_weight: 0,
     followers_count: 0,
     is_following: false,
     ...partial,

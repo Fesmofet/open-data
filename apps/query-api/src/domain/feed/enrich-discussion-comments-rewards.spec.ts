@@ -33,6 +33,7 @@ describe('enrichDiscussionCommentsRewards', () => {
           displayName: null,
           avatarUrl: null,
           reputation: 25,
+          wobjectsWeight: 0,
         },
         objects: [],
         votes: { totalCount: 0, previewVoters: [], voted: false },

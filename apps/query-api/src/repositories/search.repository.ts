@@ -18,6 +18,7 @@ export interface SearchUserRow {
   name: string;
   profile_image: string | null;
   object_reputation: number;
+  wobjects_weight: number;
   followers_count: number;
   is_following: boolean;
 }
@@ -186,6 +187,7 @@ export class SearchRepository {
           'name',
           'profile_image',
           'object_reputation',
+          'wobjects_weight',
           'followers_count',
           viewerTrimmed.length === 0
             ? sql<boolean>`false`.as('is_following')
@@ -206,6 +208,7 @@ export class SearchRepository {
         name: r.name,
         profile_image: r.profile_image,
         object_reputation: r.object_reputation,
+        wobjects_weight: r.wobjects_weight ?? 0,
         followers_count: r.followers_count,
         is_following: Boolean(r.is_following),
       }));

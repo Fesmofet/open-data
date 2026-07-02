@@ -26,6 +26,10 @@ import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
 import { viewerHasReblogged } from './viewer-reblog-state';
+import {
+  toFeedAuthorProfileFallback,
+  toFeedAuthorProfileFromUserProfile,
+} from './to-feed-author-profile';
 
 export type BuildFeedStoryItemsFromPostPageDeps = {
   postsRepo: PostsRepository;
@@ -135,18 +139,8 @@ export async function buildFeedStoryItemsFromPostPage(
 
     const profile = profileByName.get(row.author);
     const authorProfile = profile
-      ? {
-          name: profile.name,
-          displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl,
-          reputation: profile.reputation,
-        }
-      : {
-          name: row.author,
-          displayName: null,
-          avatarUrl: null,
-          reputation: 0,
-        };
+      ? toFeedAuthorProfileFromUserProfile(profile)
+      : toFeedAuthorProfileFallback(row.author);
 
     const excerpt = truncateExcerpt(stripHtmlForExcerpt(post.body ?? ''));
     const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [], voted: false };

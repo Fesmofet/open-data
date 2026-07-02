@@ -1,8 +1,30 @@
 import { userProfileViewSchema } from '../../application/dto/user-profile.dto';
 import type { UserProfileRepository } from '../../domain/ports/user-profile.repository';
 import type { UserProfileView } from '../../domain/types/user-profile-view';
-import { queryApiFetch } from '../clients/query-api.client';
+import { queryApiFetch, QUERY_API_LIVE_INIT } from '../clients/query-api.client';
 import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
+
+function hasWobjectsWeight(data: unknown): boolean {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+  const row = data as Record<string, unknown>;
+  return typeof row.wobjectsWeight === 'number' || typeof row.wobjects_weight === 'number';
+}
+
+function normalizeUserProfilePayload(data: unknown): unknown {
+  if (!data || typeof data !== 'object') {
+    return data;
+  }
+  const row = data as Record<string, unknown>;
+  if (typeof row.wobjectsWeight === 'number') {
+    return data;
+  }
+  if (typeof row.wobjects_weight === 'number') {
+    return { ...row, wobjectsWeight: row.wobjects_weight };
+  }
+  return data;
+}
 
 export function createHttpUserProfileRepository(): UserProfileRepository {
   return {
@@ -22,17 +44,31 @@ export function createHttpUserProfileRepository(): UserProfileRepository {
         headers['X-Locale'] = localeTrimmed;
         headers['Accept-Language'] = localeTrimmed;
       }
-      const data = await queryApiFetch<unknown>(path, {
+      const fetchOpts = {
         headers,
         cacheTags: [queryApiCacheTags.userProfile(name)],
-      });
+      };
+
+      let data = await queryApiFetch<unknown>(path, fetchOpts);
       if (data === null) {
         return null;
       }
-      const parsed = userProfileViewSchema.safeParse(data);
+
+      if (!hasWobjectsWeight(data)) {
+        const live = await queryApiFetch<unknown>(path, {
+          ...fetchOpts,
+          ...QUERY_API_LIVE_INIT,
+          cacheTags: undefined,
+        });
+        if (live !== null) {
+          data = live;
+        }
+      }
+
+      const parsed = userProfileViewSchema.safeParse(normalizeUserProfilePayload(data));
       if (!parsed.success) {
         throw new Error(
-          `Invalid user profile response: ${parsed.error.flatten().toString()}`,
+          `Invalid user profile response: ${JSON.stringify(parsed.error.flatten())}`,
         );
       }
       return parsed.data;

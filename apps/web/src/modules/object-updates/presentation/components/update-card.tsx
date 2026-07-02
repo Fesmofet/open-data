@@ -20,7 +20,7 @@ import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
-import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
+import { shouldUnoptimizeRemoteImage, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '../../constants';
@@ -168,9 +168,11 @@ export function UpdateCard({
             {item.creator}
           </Link>
           {weightLabel ? (
-            <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
-              {weightLabel}
-            </span>
+            <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+              <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
+                {weightLabel}
+              </span>
+            </StatHoverTooltip>
           ) : null}
           <span className="text-caption text-muted">·</span>
           <time

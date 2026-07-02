@@ -38,6 +38,12 @@ Browse objects by type or users with optional text search and tag-category filte
 - Cursor: opaque base64 JSON (`seq`, `weight`, `object_id`, `sort`).
 - Cards: projected with shop card update types (`name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`).
 
+### User feed (`?users=1`)
+
+- Cursor: opaque base64 JSON (`wobjects_weight`, `name`).
+- Sort: `wobjects_weight DESC NULLS LAST`, `name ASC`.
+- Row UI (`DiscoverUserFeed`): avatar, username, expertise chip (`wobjects_weight`, 2 decimals) + `·` + plain `followers_count`; `StatHoverTooltip` on expertise and followers (same i18n keys as header search). Optional `search_user_following` label when `is_following`.
+
 ### Tag categories sidebar
 
 - Aggregated from `object_updates` where `update_type = tagCategoryItem`, grouped by `value_json.category` / `value_json.value`.

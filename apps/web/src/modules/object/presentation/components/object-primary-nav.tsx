@@ -1,7 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { profileSectionTabClass } from '@/shared/presentation';
+import { profileSectionTabClass, StatHoverTooltip } from '@/shared/presentation';
 
 import type { ObjectPrimaryTabView } from '../../domain/object-page.types';
 
@@ -27,7 +27,17 @@ export function ObjectPrimaryNav({
         const active = activeSegment === tab.segment;
         const label = tab.label;
         const suffix =
-          typeof tab.count === 'number' ? ` ${tab.count}` : '';
+          typeof tab.count === 'number' ? (
+            tab.segment === 'followers' ? (
+              <StatHoverTooltip content={t('stat_object_followers_tooltip')}>
+                <span>{` ${tab.count}`}</span>
+              </StatHoverTooltip>
+            ) : (
+              ` ${tab.count}`
+            )
+          ) : (
+            ''
+          );
         return (
           <button
             key={tab.segment}

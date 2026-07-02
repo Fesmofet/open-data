@@ -15,6 +15,7 @@ export interface SearchUserResult {
   name: string;
   profile_image: string | null;
   reputation: number;
+  wobjects_weight: number;
   followers_count: number;
   is_following: boolean;
 }

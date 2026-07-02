@@ -25,6 +25,7 @@ function mapViewToShellUser(view: UserProfileView): UserProfileShellUser {
     followerCount: view.followerCount,
     followingCount: view.followingCount,
     postingCount: view.postingCount,
+    wobjectsWeight: view.wobjectsWeight,
     coverImageUrl: view.coverImageUrl,
     avatarUrl: view.avatarUrl,
     isFollowing: view.is_following,

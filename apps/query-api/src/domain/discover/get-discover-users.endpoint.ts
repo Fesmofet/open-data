@@ -25,6 +25,7 @@ export class GetDiscoverUsersEndpoint {
       name: r.name,
       profile_image: r.profile_image,
       reputation: r.object_reputation,
+      wobjects_weight: r.wobjects_weight ?? 0,
       followers_count: r.followers_count,
       is_following: r.is_following,
     }));

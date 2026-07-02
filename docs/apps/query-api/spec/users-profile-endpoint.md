@@ -39,6 +39,7 @@ JSON object:
 | `followingCount` | number | `accounts_current.users_following_count` |
 | `postingCount` | number | `accounts_current.post_count` |
 | `reputation` | number | `accounts_current.object_reputation` |
+| `wobjectsWeight` | number | `accounts_current.wobjects_weight` — Waivio user expertise rank |
 
 `posting_json_metadata` is stored as a JSON string on the row; the server parses it safely (invalid JSON → treated as no metadata).
 

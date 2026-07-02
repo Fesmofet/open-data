@@ -27,6 +27,9 @@ const userProfileViewSchema = registry.register(
     followingCount: z.number().int().openapi({ description: '`users_following_count`.' }),
     postingCount: z.number().int().openapi({ description: '`post_count`.' }),
     reputation: z.number().int().openapi({ description: '`object_reputation`.' }),
+    wobjectsWeight: z.number().openapi({
+      description: '`accounts_current.wobjects_weight` — Waivio user expertise rank.',
+    }),
     is_following: z.boolean().openapi({
       description:
         'True when `X-Viewer` has a `user_subscriptions` row following this profile.',

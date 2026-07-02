@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useLoginModal } from '@/modules/auth/presentation';
-import { UserAvatar } from '@/shared/presentation';
+import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { UserFollowListView } from '@/modules/user-social/application/dto/user-social.dto';
 import { broadcastUserFollowToggle } from '@/modules/user-social/infrastructure/broadcast-user-subscription';
@@ -83,11 +83,15 @@ export function UserSocialAccountRow({
           {row.name}
         </Link>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-caption text-fg-secondary">
-          <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg">
-            {row.wobjectsWeight.toFixed(2)}
-          </span>
+          <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+            <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg">
+              {row.wobjectsWeight.toFixed(2)}
+            </span>
+          </StatHoverTooltip>
           <span aria-hidden>·</span>
-          <span>{row.usersFollowingCount}</span>
+          <StatHoverTooltip content={t('stat_user_followers_tooltip')}>
+            <span>{row.usersFollowingCount}</span>
+          </StatHoverTooltip>
         </p>
       </div>
       {showFollowControl ? (

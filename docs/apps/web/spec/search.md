@@ -31,6 +31,19 @@ Predictive search in the app header: debounced queries, dropdown results, discov
 
 Discover chips link to `/discover` with `q`, `type`, or `users=1` (see [discover.md](pages/discover/page.md)).
 
+### User rows (`SearchDropdown`)
+
+Each user hit: avatar, **username**, then on one line:
+
+| Piece | UI |
+|-------|-----|
+| Expertise | `wobjects_weight` in a bordered chip (2 decimals); hover tooltip `stat_user_expertise_tooltip` |
+| Separator | `·` (plain text, outside the chip) |
+| Followers | `followers_count` as plain text; hover tooltip `stat_user_followers_tooltip` |
+| Following badge | `search_user_following` when `is_following` |
+
+Tooltip strings are passed from `TopNav` via the `messages` prop (not `useI18n` in the dropdown). Same layout as discover user list and profile social rows.
+
 ## BFF routes
 
 | BFF | Upstream | Role |

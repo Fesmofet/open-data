@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { UserAvatar } from '@/shared/presentation';
+import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 
@@ -82,11 +82,11 @@ export function BlogPostScreen({
   bodyHtmlSafe,
   currentUsername,
 }: BlogPostScreenProps) {
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
-  const repLabel = formatReputation(story.authorReputation, locale);
+  const repLabel = formatReputation(story.authorWobjectsWeight, locale);
   const { openLogin } = useLoginModal();
   const taggedObjects = story.objects ?? [];
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
@@ -154,9 +154,11 @@ export function BlogPostScreen({
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
               <span className="font-weight-label text-body-sm text-fg">{displayAuthor}</span>
               {repLabel != null ? (
-                <span className="rounded-btn bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
-                  {repLabel}
-                </span>
+                <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+                  <span className="rounded-btn bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
+                    {repLabel}
+                  </span>
+                </StatHoverTooltip>
               ) : null}
               <span className="text-caption text-muted">·</span>
               <time className="text-caption text-fg-tertiary" dateTime={displayTimeIso}>

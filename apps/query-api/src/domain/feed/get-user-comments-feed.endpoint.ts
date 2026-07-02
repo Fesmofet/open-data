@@ -10,6 +10,9 @@ import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
 import { mapHiveContentToFeedStoryItemDto } from './map-hive-content-to-feed-story-item.dto';
 import { PostRewardService } from './post-reward.service';
 import type { UserThreadsFeedBody } from './schemas/user-threads-feed.schema';
+import {
+  toFeedAuthorProfileFromUserProfile,
+} from './to-feed-author-profile';
 
 /** Same as legacy Waivio: skip Leo Threads app comments, keep paging Hive until the page is filled. */
 const LEO_THREADS_PARENT = 'leothreads';
@@ -125,12 +128,7 @@ export class GetUserCommentsFeedEndpoint {
     const pageRows = hasMore ? filtered.slice(0, limit) : filtered;
 
     const profile = mapAccountToUserProfileView(accountRow);
-    const authorProfile: FeedStoryItemDto['authorProfile'] = {
-      name: profile.name,
-      displayName: profile.displayName,
-      avatarUrl: profile.avatarUrl,
-      reputation: profile.reputation,
-    };
+    const authorProfile = toFeedAuthorProfileFromUserProfile(profile);
 
     const items: FeedStoryItemDto[] = pageRows.map((c) =>
       mapHiveContentToFeedStoryItemDto(c, authorProfile, viewerAccount),

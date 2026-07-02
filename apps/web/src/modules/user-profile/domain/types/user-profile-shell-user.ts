@@ -7,6 +7,7 @@ export type UserProfileShellUser = {
   followerCount: number;
   followingCount: number;
   postingCount: number;
+  wobjectsWeight: number;
   coverImageUrl: string | null;
   avatarUrl: string | null;
   isFollowing: boolean;

@@ -199,6 +199,7 @@ export function UserRefSearchField({
             name: accountName,
             profile_image: null,
             reputation: 0,
+            wobjects_weight: 0,
             followers_count: 0,
             is_following: false,
           },

@@ -13,7 +13,7 @@ import { useLoginModal } from '@/modules/auth/presentation';
 import { broadcastObjectUnfollow } from '@/modules/user-social/infrastructure/broadcast-object-unfollow';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage, StatHoverTooltip } from '@/shared/presentation';
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB = 44;
@@ -107,9 +107,11 @@ export function UserSocialObjectRow({
           {name}
         </Link>
       </div>
-      <span className="shrink-0 rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg-secondary">
-        {weightLabel}
-      </span>
+      <StatHoverTooltip content={t('stat_object_expertise_tooltip')}>
+        <span className="shrink-0 rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg-secondary">
+          {weightLabel}
+        </span>
+      </StatHoverTooltip>
       {showUnfollow ? (
         <button
           type="button"

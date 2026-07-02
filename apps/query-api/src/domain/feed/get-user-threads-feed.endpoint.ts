@@ -13,6 +13,10 @@ import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import type { UserThreadsFeedBody } from './schemas/user-threads-feed.schema';
+import {
+  toFeedAuthorProfileFallback,
+  toFeedAuthorProfileFromUserProfile,
+} from './to-feed-author-profile';
 
 function threadCreatedIso(thread: Thread): string {
   const raw = thread.created?.trim();
@@ -94,18 +98,8 @@ export class GetUserThreadsFeedEndpoint {
       const pk = `${thread.author}\0${thread.permlink}`;
       const profile = profileByName.get(thread.author);
       const authorProfile = profile
-        ? {
-            name: profile.name,
-            displayName: profile.displayName,
-            avatarUrl: profile.avatarUrl,
-            reputation: profile.reputation,
-          }
-        : {
-            name: thread.author,
-            displayName: null,
-            avatarUrl: null,
-            reputation: 0,
-          };
+        ? toFeedAuthorProfileFromUserProfile(profile)
+        : toFeedAuthorProfileFallback(thread.author);
 
       const bodyText = thread.body ?? '';
       const excerpt = truncateExcerpt(stripHtmlForExcerpt(bodyText));

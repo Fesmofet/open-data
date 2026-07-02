@@ -57,8 +57,10 @@ export const feedStoryViewSchema = z.object({
   authorDisplayName: z.string().optional(),
   /** Optional explicit avatar URL from API; when absent, UI falls back to Hive default by author name. */
   authorAvatarUrl: z.string().nullable().optional(),
-  /** Author reputation score (e.g. Hive reputation). */
+  /** Author `object_reputation` — used for discussion sort, not display expertise. */
   authorReputation: z.number().optional(),
+  /** Author Waivio expertise (`wobjects_weight`). */
+  authorWobjectsWeight: z.number().optional(),
   /** First image URL from post metadata or body (feed preview). */
   thumbnailUrl: z.string().nullable().optional(),
   /** Video poster URL when post embeds video (metadata or body); UI prefers this over thumbnailUrl. */

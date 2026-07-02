@@ -37,6 +37,7 @@ export const feedStoryItemApiSchema = z.object({
     displayName: z.string().nullable(),
     avatarUrl: z.string().nullable(),
     reputation: z.number(),
+    wobjectsWeight: z.number().nullish().default(0),
   }),
   objects: z.array(projectedObjectApiSchema),
   votes: z.object({
@@ -78,6 +79,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     authorDisplayName: item.authorProfile.displayName ?? undefined,
     authorAvatarUrl: item.authorProfile.avatarUrl ?? undefined,
     authorReputation: item.authorProfile.reputation,
+    authorWobjectsWeight: item.authorProfile.wobjectsWeight ?? 0,
     thumbnailUrl: item.thumbnailUrl ?? undefined,
     videoThumbnailUrl: item.videoThumbnailUrl ?? undefined,
     videoEmbedUrl: item.videoEmbedUrl ?? undefined,

@@ -51,7 +51,7 @@ Predictive search for the web shell header: ranked **objects** and **users**. Gl
 `SearchResponseDto`:
 
 - **`objects`**: Array of `SearchObjectResult` — `object_id`, `object_type`, `name`, `image_url`, `parent_name` (subtitle in UI when present).
-- **`users`**: Array of `SearchUserResult` — `name`, `profile_image`, `reputation` (`object_reputation`), `followers_count`, `is_following`.
+- **`users`**: Array of `SearchUserResult` — `name`, `profile_image`, `reputation` (`object_reputation`, vote/sort only), `wobjects_weight` (`accounts_current.wobjects_weight` — user expertise for display), `followers_count`, `is_following`.
 
 No `type_counts` or `total_users` — use `/search/counts` for tab badges.
 

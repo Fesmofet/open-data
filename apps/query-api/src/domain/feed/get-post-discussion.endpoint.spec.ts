@@ -12,6 +12,7 @@ describe('GetPostDiscussionEndpoint', () => {
     displayName: null,
     avatarUrl: null,
     reputation: 25,
+    wobjectsWeight: 0,
   };
 
   let hiveClient: jest.Mocked<Pick<HiveClient, 'getState' | 'getAccounts'>>;

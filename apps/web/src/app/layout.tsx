@@ -2,10 +2,10 @@ import './global.css';
 
 import type { Metadata } from 'next';
 
-import { isRTL } from '../i18n/domain/is-rtl';
-import { I18nProvider } from '../i18n/providers/i18n-provider';
-import { getRequestLocale } from '../i18n/runtime/get-request-locale';
-import { loadMessages } from '../i18n/runtime/load-messages';
+import { isRTL } from '@/i18n/domain/is-rtl';
+import { I18nProvider } from '@/i18n/providers/i18n-provider';
+import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
+import { loadMessages } from '@/i18n/runtime/load-messages';
 import { env } from '@/config/env';
 import { getIpfsContentBaseUrl } from '@/config/get-ipfs-content-base-url';
 import { getNotificationsWsPublicUrl } from '@/config/get-notifications-ws-public-url';
@@ -14,8 +14,8 @@ import { OdlNetworkProvider } from '@/config/odl-network-provider';
 import { NotificationsWsConfigProvider } from '@/modules/notifications/presentation/notifications-ws-config-provider';
 import { ShellModeProvider } from '@/shell-mode';
 import { getServerShellModeResolution } from '@/shell-mode/server';
-import { getServerThemeResolution } from '../theme/get-server-theme-resolution';
-import { ThemeProvider } from '../theme/theme-provider';
+import { getServerThemeResolution } from '@/theme/get-server-theme-resolution';
+import { ThemeProvider } from '@/theme/theme-provider';
 
 const SITE_NAME = 'Waivio';
 const SITE_DESCRIPTION =

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage, useInfiniteScroll } from '@/shared/presentation';
+import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage, StatHoverTooltip, useInfiniteScroll } from '@/shared/presentation';
 
 import { fetchDiscoverUsers } from '../../infrastructure/discover.client';
 import type { DiscoverUsersPage } from '../../domain/discover-response.schema';
@@ -124,9 +124,21 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="font-weight-label text-fg">{u.name}</span>
-                    <span className="ms-2 text-caption text-fg-secondary">
-                      {u.reputation.toFixed(2)} · {u.followers_count}
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      <span className="font-weight-label text-fg">{u.name}</span>
+                      <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+                        <span className="rounded border border-border bg-surface-control px-1.5 py-0.5 font-mono text-caption text-fg">
+                          {(u.wobjects_weight ?? 0).toFixed(2)}
+                        </span>
+                      </StatHoverTooltip>
+                      <span aria-hidden className="text-caption text-fg-secondary">
+                        ·
+                      </span>
+                      <StatHoverTooltip content={t('stat_user_followers_tooltip')}>
+                        <span className="text-caption text-fg-secondary">
+                          {u.followers_count}
+                        </span>
+                      </StatHoverTooltip>
                     </span>
                   </span>
                   {u.is_following ? (
