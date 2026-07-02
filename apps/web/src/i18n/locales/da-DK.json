@@ -2154,5 +2154,8 @@
   "your_reward": "Din belønning",
   "your_vote": "Din stemme",
   "your_vote_placeholder": "Din stemme (valgfri)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "object_edit_status_apply": "Anvend",
+  "object_edit_status_category": "Kategori",
+  "object_edit_status_relisted_object": "Genlistet objekt"
 }

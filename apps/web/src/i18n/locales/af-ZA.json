@@ -2892,5 +2892,8 @@
   "your_vote": "Jou stem",
   "your_vote_placeholder": "Jou stem (opsioneel)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Gemeenskapsaksies"
+  "СЃommunity_actions": "Gemeenskapsaksies",
+  "object_edit_status_apply": "Pas toe",
+  "object_edit_status_category": "Kategorie",
+  "object_edit_status_relisted_object": "Herlysde voorwerp"
 }

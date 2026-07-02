@@ -2154,5 +2154,8 @@
   "your_reward": "귀하의 보상",
   "your_vote": "귀하의 투표는",
   "your_vote_placeholder": "투표 (선택 사항)",
-  "СЃommunity_actions": "커뮤니티 활동"
+  "СЃommunity_actions": "커뮤니티 활동",
+  "object_edit_status_apply": "적용",
+  "object_edit_status_category": "카테고리",
+  "object_edit_status_relisted_object": "재상장된 객체"
 }

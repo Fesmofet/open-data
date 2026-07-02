@@ -75,6 +75,7 @@ export {
   OBJECT_STATUS_VALUES,
   type ObjectStatus,
   UPDATE_STATUS,
+  UPDATE_STATUS_SCHEMA,
 } from './updates/status';
 export { UPDATE_IMAGE } from './updates/image';
 export { UPDATE_TITLE } from './updates/title';

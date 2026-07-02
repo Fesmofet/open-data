@@ -3000,5 +3000,8 @@
   "your_vote": "Ваш голос ",
   "your_vote_placeholder": "Ваш голос (необязательно)",
   "zoom": "Увеличить",
-  "СЃommunity_actions": "Действия сообщества"
+  "СЃommunity_actions": "Действия сообщества",
+  "object_edit_status_apply": "Применить",
+  "object_edit_status_category": "Категория",
+  "object_edit_status_relisted_object": "Перенесённый объект"
 }

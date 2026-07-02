@@ -34,6 +34,7 @@ import { MenuItemForm } from './menu-item-form';
 import { ObjectRefSearchField } from './object-ref-search-field';
 import { TagCategoryItemForm } from './tag-category-item-form';
 import { UserRefSearchField } from './user-ref-search-field';
+import { StatusUpdateForm } from './status-update-form';
 import { TelephoneForm } from './telephone-form';
 import { WalletAddressForm } from './wallet-address-form';
 
@@ -251,6 +252,16 @@ function UpdateValueFields({
           onChange={onChange}
           albumNames={galleryAlbumNames}
           lockAlbum={lockGalleryAlbum}
+        />
+      );
+    }
+    if (updateType === UPDATE_TYPES.STATUS) {
+      return (
+        <StatusUpdateForm
+          value={value}
+          onChange={onChange}
+          hideLegend={hideUpdateTypeHeading}
+          label={label}
         />
       );
     }

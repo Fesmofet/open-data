@@ -2153,5 +2153,8 @@
   "your_reward": "Your Reward",
   "your_vote": "Seu voto",
   "your_vote_placeholder": "Seu voto (opcional)",
-  "СЃommunity_actions": "Ações comunitárias"
+  "СЃommunity_actions": "Ações comunitárias",
+  "object_edit_status_apply": "Aplicar",
+  "object_edit_status_category": "Categoria",
+  "object_edit_status_relisted_object": "Objeto relistado"
 }

@@ -2154,5 +2154,8 @@
   "your_reward": "Vaša nagrada",
   "your_vote": "Vaš glas",
   "your_vote_placeholder": "Vaš glas (neobavezno)",
-  "СЃommunity_actions": "Akcije zajednice"
+  "СЃommunity_actions": "Akcije zajednice",
+  "object_edit_status_apply": "Primijeni",
+  "object_edit_status_category": "Kategorija",
+  "object_edit_status_relisted_object": "Ponovno objavljen objekt"
 }

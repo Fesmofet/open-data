@@ -2892,5 +2892,8 @@
   "your_vote": "Váš hlas",
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
-  "СЃommunity_actions": "Akce komunity"
+  "СЃommunity_actions": "Akce komunity",
+  "object_edit_status_apply": "Použít",
+  "object_edit_status_category": "Kategorie",
+  "object_edit_status_relisted_object": "Znovu vystavený objekt"
 }

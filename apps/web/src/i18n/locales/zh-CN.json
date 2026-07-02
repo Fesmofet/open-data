@@ -2873,5 +2873,8 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "object_edit_status_apply": "应用",
+  "object_edit_status_category": "类别",
+  "object_edit_status_relisted_object": "重新列出的对象"
 }

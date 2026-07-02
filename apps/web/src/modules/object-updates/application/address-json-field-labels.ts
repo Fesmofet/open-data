@@ -26,6 +26,11 @@ const LINK_JSON_FIELD_LABEL_KEYS: Record<string, string> = {
   value: 'object_edit_link_profile',
 };
 
+const STATUS_JSON_FIELD_LABEL_KEYS: Record<string, string> = {
+  title: 'object_edit_status_category',
+  link: 'object_edit_status_relisted_object',
+};
+
 export function orderJsonFieldDescriptors(
   fields: JsonFieldDescriptor[],
   updateType: string,
@@ -49,7 +54,9 @@ export function labelForJsonFieldKey(
       ? ADDRESS_JSON_FIELD_LABEL_KEYS
       : updateType === UPDATE_TYPES.LINK
         ? LINK_JSON_FIELD_LABEL_KEYS
-        : null;
+        : updateType === UPDATE_TYPES.STATUS
+          ? STATUS_JSON_FIELD_LABEL_KEYS
+          : null;
   if (labelKeys) {
     const i18nKey = labelKeys[fieldKey];
     if (i18nKey) {

@@ -2892,5 +2892,8 @@
   "your_vote": "आपका वोट",
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
-  "СЃommunity_actions": "समुदाय क्रियाएँ"
+  "СЃommunity_actions": "समुदाय क्रियाएँ",
+  "object_edit_status_apply": "लागू करें",
+  "object_edit_status_category": "श्रेणी",
+  "object_edit_status_relisted_object": "पुनः सूचीबद्ध वस्तु"
 }

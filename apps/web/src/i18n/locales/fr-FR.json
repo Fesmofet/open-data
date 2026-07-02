@@ -2892,5 +2892,8 @@
   "your_vote": "Votre vote",
   "your_vote_placeholder": "Votre vote (facultatif)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Actions communautaires"
+  "СЃommunity_actions": "Actions communautaires",
+  "object_edit_status_apply": "Appliquer",
+  "object_edit_status_category": "Catégorie",
+  "object_edit_status_relisted_object": "Objet relisté"
 }

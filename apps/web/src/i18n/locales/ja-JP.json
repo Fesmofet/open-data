@@ -2892,5 +2892,8 @@
   "your_vote": "あなたの投票",
   "your_vote_placeholder": "あなたの投票（オプション）",
   "zoom": "ズーム",
-  "СЃommunity_actions": "コミュニティのアクション"
+  "СЃommunity_actions": "コミュニティのアクション",
+  "object_edit_status_apply": "適用",
+  "object_edit_status_category": "カテゴリ",
+  "object_edit_status_relisted_object": "再リストされたオブジェクト"
 }

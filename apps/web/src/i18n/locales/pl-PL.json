@@ -2153,5 +2153,8 @@
   "your_reward": "Twoja nagroda",
   "your_vote": "Twój głos",
   "your_vote_placeholder": "Twój głos (opcjonalnie)",
-  "СЃommunity_actions": "Działania społecznościowe"
+  "СЃommunity_actions": "Działania społecznościowe",
+  "object_edit_status_apply": "Zastosuj",
+  "object_edit_status_category": "Kategoria",
+  "object_edit_status_relisted_object": "Ponownie wystawiony obiekt"
 }

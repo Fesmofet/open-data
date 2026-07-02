@@ -24,13 +24,22 @@ Track **visibility / lifecycle** state on `objects_core` without deleting rows. 
 
 `active`, `relisted`, `unavailable`, `nsfw`, `flagged` — enforced in DB (`CHECK`), in the `status` update registry schema (`UPDATE_STATUS`), and in TypeScript (`ObjectStatus` / `OBJECT_STATUS_VALUES` in `@opden-data-layer/core`).
 
+## Payload shape
+
+`value_json` is `{ title: '<status>', link?: '<object_id>' }`.
+
+- **`title`** — one of the allowed values above (forms typically offer `unavailable`, `relisted`, `nsfw`, `flagged`; `active` is the default core state).
+- **`link`** — required **only when `title` is `relisted`**: object id / permlink of the relist target. Omitted or empty for other statuses.
+
+Validated in `UPDATE_STATUS_SCHEMA` (`libs/core/src/update-registry/updates/status.ts`).
+
 ## Who can change it
 
 Only accounts listed as **platform governance admins** (`GovernanceCacheService.resolvePlatform()` → `snapshot.admins`) may apply a new status. Others’ `update_create` rows for `update_type: status` are still written to **`object_updates`**, but **`objects_core.status` is not updated** (logged warning).
 
 ## Chain flow
 
-1. ODL **`update_create`** with `update_type: 'status'` and `value_json: { title: '<status>', link: '...' }` (after existing guards and validation).
+1. ODL **`update_create`** with `update_type: 'status'` and `value_json: { title: '<status>', link?: '...' }` (after existing guards and validation; `link` required when `title` is `relisted`).
 2. **`UpdateCreateHandler`** persists the update, then emits **`OBJECT_STATUS_CREATED_EVENT`** (`ObjectStatusCreatedEvent` carries `objectId`, **signer** `creator`, and `status` from `title`).
 3. **`ObjectStatusHandler`** listens, reloads the platform governance snapshot, and if the signer is in `admins`, runs `UPDATE objects_core SET status = …`.
 

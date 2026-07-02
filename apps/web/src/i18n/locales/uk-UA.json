@@ -2892,5 +2892,8 @@
   "your_vote": "Ваш голос",
   "your_vote_placeholder": "Ваш голос (необов'язково)",
   "zoom": "Збільшити",
-  "СЃommunity_actions": "Дії спільноти"
+  "СЃommunity_actions": "Дії спільноти",
+  "object_edit_status_apply": "Застосувати",
+  "object_edit_status_category": "Категорія",
+  "object_edit_status_relisted_object": "Повторно відновлений об'єкт"
 }

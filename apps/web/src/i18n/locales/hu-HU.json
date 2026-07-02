@@ -2155,5 +2155,8 @@
   "your_reward": "Jutalmad",
   "your_vote": "A szavazatod",
   "your_vote_placeholder": "Az Ön szavazata (nem kötelező)",
-  "СЃommunity_actions": "Közösségi fellépések"
+  "СЃommunity_actions": "Közösségi fellépések",
+  "object_edit_status_apply": "Alkalmaz",
+  "object_edit_status_category": "Kategória",
+  "object_edit_status_relisted_object": "Újra listázott objektum"
 }

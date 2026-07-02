@@ -2154,5 +2154,8 @@
   "your_reward": "Sinu preemia",
   "your_vote": "Teie hääl",
   "your_vote_placeholder": "Teie hääl (valikuline)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "object_edit_status_apply": "Rakenda",
+  "object_edit_status_category": "Kategooria",
+  "object_edit_status_relisted_object": "Uuesti loetletud objekt"
 }

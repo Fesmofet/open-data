@@ -2153,5 +2153,8 @@
   "your_reward": "مكافأتك",
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
-  "СЃommunity_actions": "إجراءات المجتمع"
+  "СЃommunity_actions": "إجراءات المجتمع",
+  "object_edit_status_apply": "تطبيق",
+  "object_edit_status_category": "الفئة",
+  "object_edit_status_relisted_object": "كائن معاد إدراجه"
 }
