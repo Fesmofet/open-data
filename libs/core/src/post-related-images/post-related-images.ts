@@ -16,6 +16,7 @@ export const OBJECT_TYPES_WITH_RELATED_ALBUM: readonly string[] = [
   OBJECT_TYPES.PERSON,
   OBJECT_TYPES.RESTAURANT,
   OBJECT_TYPES.DISH,
+  OBJECT_TYPES.NEWSFEED,
 ] as const;
 
 const HTTPS_IMAGE_URL_RE = /^https:\/\//i;

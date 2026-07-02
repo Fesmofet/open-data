@@ -44,6 +44,7 @@ import { createdAtUnixFromObjectId, mongoIdToString } from '../objects/utils';
 import {
   buildMongoPostMetadataRecord,
   objectTypeByIdFromLegacyWobjects,
+  serializeMongoPostJsonMetadata,
 } from './build-mongo-post-metadata';
 import { deriveRewardsFinalizedAt } from '../../../libs/core/src/post-reward/derive-rewards-finalized-at';
 import { normalizeMongoPostLanguage } from './normalize-post-language';
@@ -53,6 +54,13 @@ const BATCH_SIZE = 5000;
 type PostInsertBuffer = Omit<NewPost, 'beneficiaries'> & {
   beneficiariesData: JsonValue;
 };
+
+interface RelatedImagePendingPost {
+  author: string;
+  permlink: string;
+  jsonMetadata: string;
+  objectRows: NewPostObject[];
+}
 
 interface MigrationStats {
   postsSeen: number;
@@ -228,7 +236,7 @@ class MongoPostsMigrator {
 
   private mentionBuffer: NewPostMention[] = [];
 
-  private relatedImageBuffer: NewPostObjectRelatedImage[] = [];
+  private relatedImagePending: RelatedImagePendingPost[] = [];
 
   readonly stats: MigrationStats = {
     postsSeen: 0,
@@ -260,17 +268,19 @@ class MongoPostsMigrator {
     await this.db.destroy();
   }
 
-  private async resolveExistingObjectIds(ids: string[]): Promise<Set<string>> {
+  private async resolveObjectsCoreByIds(
+    ids: string[],
+  ): Promise<Map<string, string>> {
     if (ids.length === 0) {
-      return new Set();
+      return new Map();
     }
     const unique = [...new Set(ids)];
     const rows = await this.db
       .selectFrom('objects_core')
-      .select('object_id')
+      .select(['object_id', 'object_type'])
       .where('object_id', 'in', unique)
       .execute();
-    return new Set(rows.map((r) => r.object_id));
+    return new Map(rows.map((r) => [r.object_id, r.object_type]));
   }
 
   private async flushPosts(): Promise<void> {
@@ -313,11 +323,15 @@ class MongoPostsMigrator {
     const chunk = this.objectBuffer;
     this.objectBuffer = [];
     const ids = chunk.map((r) => r.object_id);
-    const existing = await this.resolveExistingObjectIds(ids);
+    const coreById = await this.resolveObjectsCoreByIds(ids);
     const filtered: NewPostObject[] = [];
     for (const row of chunk) {
-      if (existing.has(row.object_id)) {
-        filtered.push(row);
+      const coreType = coreById.get(row.object_id);
+      if (coreType !== undefined) {
+        filtered.push({
+          ...row,
+          object_type: coreType ?? row.object_type ?? null,
+        });
       } else {
         this.stats.postObjectsSkippedNoFk += 1;
       }
@@ -385,21 +399,55 @@ class MongoPostsMigrator {
   }
 
   private async flushRelatedImages(): Promise<void> {
-    if (this.relatedImageBuffer.length === 0) {
+    if (this.relatedImagePending.length === 0) {
       return;
     }
-    const chunk = this.relatedImageBuffer;
-    this.relatedImageBuffer = [];
-    const ids = chunk.map((r) => r.object_id);
-    const existing = await this.resolveExistingObjectIds(ids);
+    const chunk = this.relatedImagePending;
+    this.relatedImagePending = [];
+
+    const objectIds = [
+      ...new Set(chunk.flatMap((post) => post.objectRows.map((row) => row.object_id))),
+    ];
+    const coreById = await this.resolveObjectsCoreByIds(objectIds);
+
     const filtered: NewPostObjectRelatedImage[] = [];
-    for (const row of chunk) {
-      if (existing.has(row.object_id)) {
+    for (const post of chunk) {
+      const imageUrls = extractPostImageUrls(post.jsonMetadata);
+      if (imageUrls.length === 0) {
+        this.stats.relatedImageRowsSkippedNoImages += post.objectRows.length;
+        continue;
+      }
+
+      const postObjects: NewPostObject[] = [];
+      for (const row of post.objectRows) {
+        const coreType = coreById.get(row.object_id);
+        if (coreType === undefined) {
+          this.stats.relatedImageRowsSkippedNoFk += 1;
+          continue;
+        }
+        const objectType = coreType;
+        if (!isObjectTypeEligibleForRelatedAlbum(objectType)) {
+          this.stats.relatedImageRowsSkippedIneligibleType += 1;
+          continue;
+        }
+        postObjects.push({ ...row, object_type: objectType });
+      }
+
+      const rows = buildRelatedImageRows(
+        postObjects.map((row) => ({
+          object_id: row.object_id,
+          object_type: row.object_type ?? null,
+        })),
+        post.author,
+        post.permlink,
+        imageUrls,
+      );
+      for (const row of rows) {
         filtered.push(row);
-      } else {
-        this.stats.relatedImageRowsSkippedNoFk += 1;
+        this.stats.relatedImageRowsBuffered += 1;
       }
     }
+
     if (filtered.length === 0) {
       return;
     }
@@ -472,7 +520,7 @@ class MongoPostsMigrator {
       await this.flushLinks();
       await this.flushMentions();
     }
-    if (this.relatedImageBuffer.length >= BATCH_SIZE) {
+    if (this.relatedImagePending.length >= BATCH_SIZE) {
       await this.flushPosts();
       await this.flushVotes();
       await this.flushObjects();
@@ -515,39 +563,21 @@ class MongoPostsMigrator {
     this.stats.mentionRowsBuffered += 1;
   }
 
-  private pushRelatedImage(row: NewPostObjectRelatedImage): void {
-    this.relatedImageBuffer.push(row);
-    this.stats.relatedImageRowsBuffered += 1;
-  }
-
   private pushRelatedImagesForPost(
     author: string,
     permlink: string,
     jsonMetadata: string,
     objectRows: NewPostObject[],
   ): void {
-    const imageUrls = extractPostImageUrls(jsonMetadata);
-    if (imageUrls.length === 0) {
-      this.stats.relatedImageRowsSkippedNoImages += objectRows.length;
+    if (objectRows.length === 0) {
       return;
     }
-    const rows = buildRelatedImageRows(
-      objectRows.map((row) => ({
-        object_id: row.object_id,
-        object_type: row.object_type ?? null,
-      })),
+    this.relatedImagePending.push({
       author,
       permlink,
-      imageUrls,
-    );
-    for (const row of objectRows) {
-      if (!isObjectTypeEligibleForRelatedAlbum(row.object_type)) {
-        this.stats.relatedImageRowsSkippedIneligibleType += 1;
-      }
-    }
-    for (const row of rows) {
-      this.pushRelatedImage(row);
-    }
+      jsonMetadata,
+      objectRows,
+    });
   }
 
   processPost(doc: MongoPost): void {
@@ -591,7 +621,7 @@ class MongoPostsMigrator {
       parent_permlink: strOrEmpty(doc.parent_permlink),
       title: strOrEmpty(doc.title),
       body: strOrEmpty(doc.body),
-      json_metadata: strOrEmpty(doc.json_metadata),
+      json_metadata: serializeMongoPostJsonMetadata(doc.json_metadata),
       app: strOrNull(doc.app),
       depth: doc.depth ?? null,
       category: strOrNull(doc.category),
@@ -670,11 +700,12 @@ class MongoPostsMigrator {
       this.pushObject(enriched);
     }
 
-    const jsonMetadata =
-      typeof doc.json_metadata === 'string'
-        ? doc.json_metadata
-        : JSON.stringify(doc.json_metadata ?? {});
-    this.pushRelatedImagesForPost(author, permlink, jsonMetadata, enrichedObjects);
+    this.pushRelatedImagesForPost(
+      author,
+      permlink,
+      serializeMongoPostJsonMetadata(doc.json_metadata),
+      enrichedObjects,
+    );
 
     for (const account of doc.reblogged_users ?? []) {
       const acc = account?.trim();

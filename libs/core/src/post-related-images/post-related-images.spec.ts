@@ -26,6 +26,7 @@ describe('extractPostImageUrls', () => {
 describe('isObjectTypeEligibleForRelatedAlbum', () => {
   it('accepts legacy eligible types', () => {
     expect(isObjectTypeEligibleForRelatedAlbum('restaurant')).toBe(true);
+    expect(isObjectTypeEligibleForRelatedAlbum('newsfeed')).toBe(true);
     expect(isObjectTypeEligibleForRelatedAlbum('hashtag')).toBe(false);
   });
 });

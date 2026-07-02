@@ -107,7 +107,21 @@ function parseMetadataTagStrings(metadata: Record<string, unknown> | null): stri
 }
 
 function parseMetadataLinkStrings(metadata: Record<string, unknown> | null): string[] {
-  return parseMetadataStringArray(metadata, 'links');
+  const raw = metadata?.['links'];
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const ids: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== 'string') {
+      continue;
+    }
+    const id = extractFirstObjectPathSlug(item);
+    if (id) {
+      ids.push(id);
+    }
+  }
+  return ids;
 }
 
 /**

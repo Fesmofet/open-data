@@ -45,7 +45,7 @@ export interface MongoPost {
   parent_permlink?: string;
   title?: string;
   body?: string;
-  json_metadata?: string;
+  json_metadata?: string | Record<string, unknown>;
   app?: string;
   depth?: number;
   category?: string;
