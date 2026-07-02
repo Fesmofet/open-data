@@ -1,3 +1,17 @@
+---
+id: docs-apps-query-api-spec-object-posts-feed
+title: Object posts feed
+description: POST /query/v1/objects/:objectId/posts — paginated posts for an object's Reviews tab (legacy getPostsByObject scope).
+type: spec
+status: active
+scope: query-api
+tags: [query-api, object-posts-feed]
+updated_at: 2026-07-02
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/apps/query-api/spec/object-threads-feed.md
+---
+
 # Object posts feed
 
 `POST /query/v1/objects/:objectId/posts` — paginated posts for an object's Reviews tab.

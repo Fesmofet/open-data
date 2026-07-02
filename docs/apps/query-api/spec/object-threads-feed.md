@@ -1,3 +1,17 @@
+---
+id: docs-apps-query-api-spec-object-threads-feed
+title: Object threads feed
+description: POST /query/v1/objects/:objectId/threads — threads whose hashtags array contains the object id (legacy byHashtag scope).
+type: spec
+status: active
+scope: query-api
+tags: [query-api, object-threads-feed]
+updated_at: 2026-07-02
+related:
+  - docs/apps/query-api/spec/overview.md
+  - docs/apps/query-api/spec/object-posts-feed.md
+---
+
 # Object threads feed
 
 `POST /query/v1/objects/:objectId/threads` — paginated threads for an object's Reviews > Threads sub-tab.
