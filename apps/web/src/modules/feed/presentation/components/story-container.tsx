@@ -6,11 +6,24 @@ export type StoryContainerProps = {
   story: FeedStoryView;
   feedTab?: FeedTab;
   currentUsername: string | null;
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
 /**
  * Thin container: maps feed context onto {@link Story}. No client store — data comes from the server.
  */
-export function StoryContainer({ story, feedTab, currentUsername }: StoryContainerProps) {
-  return <Story story={story} feedTab={feedTab} currentUsername={currentUsername} />;
+export function StoryContainer({
+  story,
+  feedTab,
+  currentUsername,
+  onBroadcastRevalidate,
+}: StoryContainerProps) {
+  return (
+    <Story
+      story={story}
+      feedTab={feedTab}
+      currentUsername={currentUsername}
+      onBroadcastRevalidate={onBroadcastRevalidate}
+    />
+  );
 }

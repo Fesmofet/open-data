@@ -1,4 +1,4 @@
-import { UPDATE_TYPES } from '@opden-data-layer/core';
+import { SUPPORTED_CURRENCIES, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { objectUpdatesFeedQuerySchema } from '../../domain/object-updates/schemas/object-updates-feed.schema';
@@ -256,6 +256,36 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
         governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
         viewerAccount: ctx.viewerAccount,
       });
+      if (!result) {
+        return toolError(`Object not found: ${object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_object_posts',
+    {
+      description: catalogDescription('get_object_posts'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          object_id: z.string().min(1).describe('Object id'),
+          limit: z.coerce.number().int().min(1).max(50).default(20),
+          cursor: z.string().optional(),
+          currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { object_id, limit, cursor, currency } = args;
+      const result = await deps.getObjectPostsFeed.execute(
+        object_id,
+        { limit, cursor, currency },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
       if (!result) {
         return toolError(`Object not found: ${object_id}`);
       }

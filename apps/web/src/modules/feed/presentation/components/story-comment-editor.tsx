@@ -19,6 +19,7 @@ export type StoryCommentEditorProps = {
   parentAuthor?: string;
   parentPermlink?: string;
   onSubmitted?: () => void;
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
 /** Matches insert (+) control styling in `EditorInsertCaretOverlay` — soft circular control. */
@@ -47,6 +48,7 @@ export function StoryCommentEditor({
   parentAuthor,
   parentPermlink,
   onSubmitted,
+  onBroadcastRevalidate,
 }: StoryCommentEditorProps) {
   useHydrateWalletProvider();
   const router = useRouter();
@@ -88,9 +90,10 @@ export function StoryCommentEditor({
       setPending(false);
       setConfirming(true);
       void awaitTrxConfirmation(transactionId).finally(() => {
-        void refreshAfterBroadcast(router, () =>
-          revalidateUserFeedAfterBroadcast(story.authorName),
-        ).finally(() => {
+        void refreshAfterBroadcast(router, async () => {
+          await revalidateUserFeedAfterBroadcast(story.authorName);
+          await onBroadcastRevalidate?.();
+        }).finally(() => {
           setConfirming(false);
           onSubmitted?.();
         });
@@ -103,6 +106,7 @@ export function StoryCommentEditor({
     bodyPlain,
     currentUsername,
     onSubmitted,
+    onBroadcastRevalidate,
     parentAuthor,
     parentPermlink,
     pending,

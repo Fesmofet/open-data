@@ -2,6 +2,7 @@ export { FeedModule } from './feed.module';
 export { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 export { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
 export { GetPostVotersEndpoint } from './get-post-voters.endpoint';
+export { GetObjectPostsFeedEndpoint } from './get-object-posts-feed.endpoint';
 export { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 export { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters.endpoint';
 export { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
@@ -19,6 +20,10 @@ export type {
   PostDiscussionResponseDto,
 } from './feed-story-dtos';
 export { userBlogFeedBodySchema, type UserBlogFeedBody } from './schemas/user-blog-feed.schema';
+export {
+  objectPostsFeedBodySchema,
+  type ObjectPostsFeedBody,
+} from './schemas/object-posts-feed.schema';
 export type {
   UserBlogObjectFilterItemDto,
   UserBlogObjectFiltersResponseDto,

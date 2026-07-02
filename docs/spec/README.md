@@ -98,6 +98,7 @@ Details: [architecture overview](../architecture/overview.md).
 |-----|-------------|
 | [data-model/flow.md](data-model/flow.md) | Schema, write/read flows, indexes, comparison notes |
 | [data-model/posts.md](data-model/posts.md) | Hive posts: `posts` + satellite tables (votes, objects, reblogs, languages, links, mentions) |
+| [data-model/post-languages.md](data-model/post-languages.md) | `post_languages` storage format (primary subtags), detection, migration, query expansion |
 | [data-model/post-json-metadata-objects.md](data-model/post-json-metadata-objects.md) | `json_metadata.objects` / `tags` / body `#hashtags` + `/object/` paths → `post_objects`; comment-driven append to parent post (merge rules, DB filter) |
 | [data-model/threads.md](data-model/threads.md) | Leo/Ecency threads: `threads` + `thread_active_votes` |
 | [data-model/users.md](data-model/users.md) | Waivio users: extended `accounts_current` + `user_*` tables |

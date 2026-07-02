@@ -53,4 +53,17 @@ describe('mapFeedStoryItemApiToView', () => {
     );
     expect(view.authorWobjectsWeight).toBe(0);
   });
+
+  it('defaults missing pin flags and maps API pin fields', () => {
+    const view = mapFeedStoryItemApiToView(
+      feedItem({
+        pin: true,
+        hasPinUpdate: true,
+        hasRemoveUpdate: true,
+      }),
+    );
+    expect(view.pin).toBe(true);
+    expect(view.hasPinUpdate).toBe(true);
+    expect(view.hasRemoveUpdate).toBe(true);
+  });
 });

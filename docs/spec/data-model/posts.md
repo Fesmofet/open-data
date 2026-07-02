@@ -27,7 +27,7 @@ This schema normalizes the legacy Mongo `PostSchema` (embedded arrays and denorm
 | **post_objects** | Many-to-many: post ↔ `objects_core`. `object_type` denormalized for filters without JOIN. |
 | **post_object_related_images** | Virtual Related gallery: one HTTPS image URL per object per post (from `json_metadata.image`). See [post-object-related-images.md](post-object-related-images.md). |
 | **post_reblogged_users** | Who reblogged which post; `reblogged_at_unix` drives chronological “reblog in my feed” ordering. |
-| **post_languages** | BCP 47 tags per post (multi-value); filter news streams by language. |
+| **post_languages** | Primary language subtags per post (multi-value, e.g. `en`, `es`); filter hashtag/news streams by language. See [post-languages.md](post-languages.md). |
 | **post_links** | URLs extracted for indexed lookup. |
 | **post_mentions** | Hive account names mentioned in the post for indexed lookup. |
 | **user_post_drafts** | Optional editor drafts per Hive account (`author`, `draft_id`). Optional `permlink` links one draft to a chain post; unique per `(author, permlink)` when set. See [user-post-drafts-endpoint.md](../../apps/query-api/spec/user-post-drafts-endpoint.md). |

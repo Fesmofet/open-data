@@ -9,6 +9,7 @@ import { GetPostVotersEndpoint } from './get-post-voters.endpoint';
 import { PostRewardRatesCache } from './post-reward-rates.cache';
 import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
 import { PostRewardService } from './post-reward.service';
+import { GetObjectPostsFeedEndpoint } from './get-object-posts-feed.endpoint';
 import { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 import { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters.endpoint';
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
@@ -20,6 +21,7 @@ import { HiveAccountHistoryPagerService } from './hive-account-history-pager.ser
 @Module({
   imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule, ObjectProjectionModule],
   providers: [
+    GetObjectPostsFeedEndpoint,
     GetUserBlogFeedEndpoint,
     GetUserBlogObjectFiltersEndpoint,
     GetUserThreadsFeedEndpoint,
@@ -35,6 +37,7 @@ import { HiveAccountHistoryPagerService } from './hive-account-history-pager.ser
     PostRewardService,
   ],
   exports: [
+    GetObjectPostsFeedEndpoint,
     GetUserBlogFeedEndpoint,
     GetUserBlogObjectFiltersEndpoint,
     GetUserThreadsFeedEndpoint,

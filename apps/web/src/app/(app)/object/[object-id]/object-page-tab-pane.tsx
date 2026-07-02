@@ -49,6 +49,7 @@ export type ObjectPageTabPaneProps = {
   objectPageBody?: ReactNode;
   objectDescriptionBody?: ReactNode;
   updatesFeedSlot?: ReactNode;
+  postsFeedSlot?: ReactNode;
 };
 
 export function ObjectPageTabPane({
@@ -69,6 +70,7 @@ export function ObjectPageTabPane({
   objectPageBody,
   objectDescriptionBody,
   updatesFeedSlot = null,
+  postsFeedSlot = null,
 }: ObjectPageTabPaneProps) {
   const {
     activePrimarySegment,
@@ -242,6 +244,7 @@ export function ObjectPageTabPane({
       menuRootName={menuRootName}
       onFeedSubSelect={setActiveFeedSubSegment}
       objectUpdatesFeed={updatesFeedSlot}
+      objectPostsFeed={postsFeedSlot}
       objectFollowersFeed={objectFollowersFeed}
       objectAuthorityFeed={objectAuthorityFeed}
       objectRelatedFeed={objectRelatedFeed}

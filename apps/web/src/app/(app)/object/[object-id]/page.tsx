@@ -41,6 +41,8 @@ import {
 
 import { loadObjectPageModel } from './object-page-model.server';
 import { ObjectPageUpdatesFeedSection } from './object-page-updates-feed-section.server';
+import { ObjectPagePostsFeedSection } from './object-page-posts-feed-section.server';
+import { FeedPostsLoadingSkeleton } from '@/modules/feed';
 import {
   firstSearchParam,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
@@ -48,6 +50,7 @@ import {
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   parseAuthoritySubTypeParam,
   parseViewPathParam,
+  resolveDefaultPrimarySegmentFromLanding,
   sanitizeNestedStack,
 } from './object-page-search';
 import { ObjectPageTabPane } from './object-page-tab-pane';
@@ -80,25 +83,10 @@ function resolveInitialPrimarySegment(
     return tabRaw;
   }
   if (!tabRaw && pathIds.length === 0) {
-    switch (model.defaultLanding.kind) {
-      case 'primaryTab':
-        if (model.defaultLanding.segment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
-          return OBJECT_PAGE_DESCRIPTION_SEGMENT;
-        }
-        if (allowed.has(model.defaultLanding.segment)) {
-          return model.defaultLanding.segment;
-        }
-        break;
-      case 'routeStub':
-        if (allowed.has('reviews')) {
-          return 'reviews';
-        }
-        break;
-      case 'nestedInHost':
-      case 'hostContent':
-        return '';
-        break;
-    }
+    return resolveDefaultPrimarySegmentFromLanding(
+      model.defaultLanding,
+      model.primaryTabs.map((tab) => tab.segment),
+    );
   }
   return '';
 }
@@ -344,6 +332,16 @@ export default async function ObjectDetailPage({
       </Suspense>
     ) : null;
 
+  const postsFeedSlot =
+    initialPrimarySegment === 'reviews' ? (
+      <Suspense fallback={<FeedPostsLoadingSkeleton />}>
+        <ObjectPagePostsFeedSection
+          objectId={objectId}
+          viewerUsername={viewerUsername}
+        />
+      </Suspense>
+    ) : null;
+
   return (
     <>
       {invalidPathRequested ? (
@@ -367,6 +365,7 @@ export default async function ObjectDetailPage({
         objectPageBody={objectPageBody}
         objectDescriptionBody={objectDescriptionBody}
         updatesFeedSlot={updatesFeedSlot}
+        postsFeedSlot={postsFeedSlot}
       />
     </>
   );

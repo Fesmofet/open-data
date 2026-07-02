@@ -48,6 +48,12 @@ import {
   type ObjectUpdatesFeedResponseDto,
   type UpdateVotersResponseDto,
 } from '../domain/object-updates';
+import {
+  GetObjectPostsFeedEndpoint,
+  objectPostsFeedBodySchema,
+  type ObjectPostsFeedBody,
+  type UserBlogFeedResponse,
+} from '../domain/feed';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
@@ -65,6 +71,7 @@ export class ObjectsController {
     private readonly getObjectRelatedAlbumPreviewEndpoint: GetObjectRelatedAlbumPreviewEndpoint,
     private readonly getObjectRelatedAlbumEndpoint: GetObjectRelatedAlbumEndpoint,
     private readonly checkObjectExists: CheckObjectExistsEndpoint,
+    private readonly getObjectPostsFeed: GetObjectPostsFeedEndpoint,
   ) {}
 
   @Get(':objectId/exists')
@@ -241,6 +248,28 @@ export class ObjectsController {
       throw new NotFoundException(
         `Update not found: ${decodedUpdateId} on object ${decodedObjectId}`,
       );
+    }
+    return result;
+  }
+
+  @Post(':objectId/posts')
+  async getObjectPosts(
+    @Param('objectId') rawObjectId: string,
+    @Body(new ZodBodyPipe(objectPostsFeedBodySchema)) body: ObjectPostsFeedBody,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserBlogFeedResponse> {
+    const objectId = decodeURIComponent(rawObjectId);
+    const result = await this.getObjectPostsFeed.execute(
+      objectId,
+      body,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${objectId}`);
     }
     return result;
   }

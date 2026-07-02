@@ -38,6 +38,7 @@ import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/re
 
 import {
   resolveGalleryAlbumForObjectPage,
+  resolveDefaultPrimarySegmentFromLanding,
   resolvePrimarySegmentForObjectPage,
 } from './object-page-search';
 import {
@@ -96,8 +97,21 @@ export function ObjectPageShellClient({
   const [bellPending, setBellPending] = useState(false);
   const [isFavorite, setFavorite] = useState(model.hasAdministrativeAuthority);
   const [favoritePending, setFavoritePending] = useState(false);
+  const defaultPrimaryWhenClean = useMemo(
+    () =>
+      resolveDefaultPrimarySegmentFromLanding(
+        model.defaultLanding,
+        model.primaryTabs.map((tab) => tab.segment),
+      ),
+    [model.defaultLanding, model.primaryTabs],
+  );
   const [activePrimarySegment, setActivePrimarySegment] = useState(() =>
-    resolvePrimarySegmentForObjectPage(model.objectId, pathname, searchParams, ''),
+    resolvePrimarySegmentForObjectPage(
+      model.objectId,
+      pathname,
+      searchParams,
+      defaultPrimaryWhenClean,
+    ),
   );
   const [activeGalleryAlbum, setActiveGalleryAlbum] = useState(() =>
     resolveGalleryAlbumForObjectPage(model.objectId, pathname, searchParams),
@@ -133,12 +147,17 @@ export function ObjectPageShellClient({
 
   useEffect(() => {
     setActivePrimarySegment(
-      resolvePrimarySegmentForObjectPage(model.objectId, pathname, searchParams, ''),
+      resolvePrimarySegmentForObjectPage(
+        model.objectId,
+        pathname,
+        searchParams,
+        defaultPrimaryWhenClean,
+      ),
     );
     setActiveGalleryAlbum(
       resolveGalleryAlbumForObjectPage(model.objectId, pathname, searchParams),
     );
-  }, [model.objectId, pathname, searchParams]);
+  }, [defaultPrimaryWhenClean, model.objectId, pathname, searchParams]);
 
   useEffect(() => {
     setFavorite(model.hasAdministrativeAuthority);

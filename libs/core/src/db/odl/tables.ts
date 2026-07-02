@@ -579,7 +579,7 @@ export type PostRebloggedUserUpdate = Updateable<PostRebloggedUsersTable>;
 export interface PostLanguagesTable {
   author: string;
   permlink: string;
-  /** BCP 47 tag, e.g. en-US. */
+  /** Primary language subtag (BCP-47 language code), e.g. `en`. */
   language: string;
 }
 

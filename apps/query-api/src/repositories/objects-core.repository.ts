@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type {
@@ -89,5 +90,58 @@ export class ObjectsCoreRepository {
       .where('object_id', '=', objectId)
       .returningAll()
       .executeTakeFirst();
+  }
+
+  /** Active objects sharing the same `meta_group_id` (product group siblings). */
+  async findObjectIdsByMetaGroupId(
+    metaGroupId: string,
+    excludeObjectId?: string,
+  ): Promise<string[]> {
+    const trimmed = metaGroupId.trim();
+    if (!trimmed) {
+      return [];
+    }
+    try {
+      let q = this.db
+        .selectFrom('objects_core')
+        .where('status', '=', 'active')
+        .where('meta_group_id', '=', trimmed)
+        .select('object_id');
+      if (excludeObjectId?.trim()) {
+        q = q.where('object_id', '<>', excludeObjectId.trim());
+      }
+      const rows = await q.execute();
+      return rows.map((r) => r.object_id);
+    } catch {
+      return [];
+    }
+  }
+
+  /** Objects that relisted `targetObjectId` via `status` update `{ title: relisted, link }`. */
+  async findRelistingObjectIds(targetObjectId: string): Promise<string[]> {
+    const target = targetObjectId.trim();
+    if (!target) {
+      return [];
+    }
+    try {
+      const rows = await this.db
+        .selectFrom('object_updates as ou')
+        .innerJoin('objects_core as oc', 'oc.object_id', 'ou.object_id')
+        .where('oc.status', '=', 'active')
+        .where('ou.update_type', '=', 'status')
+        .where(sql<boolean>`ou.value_json->>'title' = 'relisted'`)
+        .where((eb) =>
+          eb.or([
+            eb(sql`ou.value_json->>'link'`, '=', target),
+            eb('ou.value_text', '=', target),
+          ]),
+        )
+        .select('ou.object_id')
+        .distinct()
+        .execute();
+      return rows.map((r) => r.object_id);
+    } catch {
+      return [];
+    }
   }
 }

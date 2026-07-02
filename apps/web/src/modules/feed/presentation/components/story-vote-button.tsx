@@ -59,6 +59,7 @@ export type StoryVoteButtonProps = {
   contentType?: 'post' | 'thread';
   /** Override default full-vs-clear toggle; see `VoteWeightContext` in feed domain. */
   resolveVoteWeight?: (ctx: VoteWeightContext) => number;
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
 export function StoryVoteButton({
@@ -68,6 +69,7 @@ export function StoryVoteButton({
   currentUsername,
   contentType = 'post',
   resolveVoteWeight = defaultResolveVoteWeight,
+  onBroadcastRevalidate,
 }: StoryVoteButtonProps) {
   useHydrateWalletProvider();
   const router = useRouter();
@@ -112,9 +114,10 @@ export function StoryVoteButton({
       setPending(false);
       setConfirming(true);
       void awaitTrxConfirmation(transactionId).finally(() => {
-        void refreshAfterBroadcast(router, () =>
-          revalidateUserFeedAfterBroadcast(authorName),
-        ).finally(() => {
+        void refreshAfterBroadcast(router, async () => {
+          await revalidateUserFeedAfterBroadcast(authorName);
+          await onBroadcastRevalidate?.();
+        }).finally(() => {
           setConfirming(false);
         });
       });
@@ -130,6 +133,7 @@ export function StoryVoteButton({
     permlink,
     resolveVoteWeight,
     router,
+    onBroadcastRevalidate,
   ]);
 
   const onCountClick = useCallback(

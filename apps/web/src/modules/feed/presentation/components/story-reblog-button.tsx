@@ -38,6 +38,7 @@ export type StoryReblogButtonProps = {
   rebloggedByViewer: boolean;
   currentUsername: string | null;
   isOwnPost: boolean;
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
 export function StoryReblogButton({
@@ -46,6 +47,7 @@ export function StoryReblogButton({
   rebloggedByViewer,
   currentUsername,
   isOwnPost,
+  onBroadcastRevalidate,
 }: StoryReblogButtonProps) {
   useHydrateWalletProvider();
   const router = useRouter();
@@ -72,15 +74,16 @@ export function StoryReblogButton({
       setOptimisticReblogged(true);
       setPending(false);
       void awaitTrxConfirmation(transactionId).finally(() => {
-        void refreshAfterBroadcast(router, () =>
-          revalidateUserFeedAfterBroadcast(authorName),
-        );
+        void refreshAfterBroadcast(router, async () => {
+          await revalidateUserFeedAfterBroadcast(authorName);
+          await onBroadcastRevalidate?.();
+        });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Reblog failed');
       setPending(false);
     }
-  }, [authorName, currentUsername, isOwnPost, optimisticReblogged, pending, permlink, router]);
+  }, [authorName, currentUsername, isOwnPost, onBroadcastRevalidate, optimisticReblogged, pending, permlink, router]);
 
   if (isOwnPost) {
     return null;

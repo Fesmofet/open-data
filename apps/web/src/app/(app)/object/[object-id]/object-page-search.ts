@@ -11,6 +11,7 @@ import {
 } from '@/modules/object/domain/object-page-url.constants';
 import { parseViewPathFromSearchParam } from '@/modules/object/domain/object-page-path';
 import type { ObjectNestedViewResolved } from '@/modules/object/domain/object-page.types';
+import type { ObjectDefaultLanding } from '@/modules/object/domain/resolve-object-default-landing';
 
 /** Search param for the object profile primary tab (Reviews, Updates, …). */
 export const OBJECT_PAGE_PRIMARY_TAB_PARAM = 'tab';
@@ -151,6 +152,34 @@ export function resolveGalleryAlbumForObjectPage(
     return decodeURIComponent(fromQuery);
   } catch {
     return fromQuery;
+  }
+}
+
+/**
+ * Maps SSR `defaultLanding` to the primary tab segment used when the URL is clean
+ * (`/object/:id` with no `?tab=` or path segment).
+ */
+export function resolveDefaultPrimarySegmentFromLanding(
+  landing: ObjectDefaultLanding,
+  primaryTabSegments: readonly string[],
+): string {
+  const allowed = new Set(primaryTabSegments);
+  switch (landing.kind) {
+    case 'primaryTab':
+      if (landing.segment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+        return OBJECT_PAGE_DESCRIPTION_SEGMENT;
+      }
+      if (allowed.has(landing.segment)) {
+        return landing.segment;
+      }
+      return '';
+    case 'routeStub':
+      return allowed.has('reviews') ? 'reviews' : '';
+    case 'nestedInHost':
+    case 'hostContent':
+      return '';
+    default:
+      return '';
   }
 }
 

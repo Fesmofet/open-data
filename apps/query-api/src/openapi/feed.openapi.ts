@@ -423,3 +423,65 @@ registry.registerPath({
     },
   },
 });
+
+const objectPostsFeedBodySchema = registry.register(
+  'ObjectPostsFeedBody',
+  z.object({
+    limit: z.number().int().min(1).max(50).optional(),
+    cursor: z.string().optional(),
+    currency: feedCurrencyBodyField,
+  }),
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/objects/{objectId}/posts',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Object posts feed (Reviews tab)',
+  description:
+    'Paginated newest-first posts for an object (legacy `getPostsByObject`): linked via `post_objects`, group siblings, relisted sources, link/mention/url matches, optional `newsFeed` filter for `newsfeed` objects. Pinned posts appear first on the initial page. Same response shape as user blog feed.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: objectPostsFeedBodySchema,
+        },
+      },
+      required: false,
+    },
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account of the viewer; when set, each item `votes.voted` reflects whether they have an active vote.',
+        example: 'alice',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Feed page.',
+      content: {
+        'application/json': {
+          schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});

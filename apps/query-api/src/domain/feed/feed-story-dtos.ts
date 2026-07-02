@@ -100,6 +100,12 @@ export interface FeedStoryItemDto {
   };
   objects: ProjectedObject[];
   votes: FeedVoteSummaryDto;
+  /** True when this post is pinned in the object's feed (shown first on page 1). */
+  pin?: boolean;
+  /** Object has a `pin` update referencing this post. */
+  hasPinUpdate?: boolean;
+  /** Object has a `remove` update referencing this post. */
+  hasRemoveUpdate?: boolean;
 }
 
 export interface UserBlogFeedResponse {

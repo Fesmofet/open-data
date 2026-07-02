@@ -76,6 +76,7 @@ flowchart LR
 | Feature | Description |
 |---------|-------------|
 | [Hive ingestion](hive-ingestion.md) | Sequential block loop, Redis cursor, `custom_json` routing, error handling |
+| [Post languages](post-languages.md) | ELD detection on comment upsert → `post_languages` rows |
 | [Post related images sync](post-object-related-images-sync.md) | `post_object_related_images` from post `json_metadata.image` + `post_objects` |
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
 | [Hive delegations](hive-delegations.md) | HP `delegate_vesting_shares` and RC `custom_json` id `rc` → `user_delegations` / `user_rc_delegations` |

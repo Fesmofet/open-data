@@ -6,6 +6,7 @@ export const queryApiCacheTags = {
   objectFollowers: (objectId: string) =>
     `query-api:object:${objectId.trim()}:followers`,
   objectUpdates: (objectId: string) => `query-api:object:${objectId.trim()}:updates`,
+  objectPostsFeed: (objectId: string) => `query-api:object:${objectId.trim()}:posts-feed`,
   userProfile: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:profile`,
   userFollowers: (accountName: string) =>

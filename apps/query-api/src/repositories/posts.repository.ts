@@ -10,6 +10,8 @@ import {
   ROOT_POST_PREDICATE_POSTS,
   type UserBlogObjectFacetRow,
 } from './user-blog-post-scope';
+import { buildObjectPostFeedWhereClause } from './object-post-feed-scope';
+import type { ObjectPostFeedScope } from './object-post-feed-scope.types';
 
 export interface FeedBranchRow {
   author: string;
@@ -477,6 +479,98 @@ export class PostsRepository {
       out.add(`${row.author}\0${row.permlink}`);
     }
     return out;
+  }
+
+  /** Object-scoped post feed (Reviews tab) — root posts matching legacy getPostsByObject scope. */
+  async findObjectPostsFeed(
+    scope: ObjectPostFeedScope,
+    cursor: { feedAt: number; author: string; permlink: string } | null,
+    limitPlusOne: number,
+  ): Promise<FeedBranchRow[]> {
+    if (scope.newsFeedMode && !scope.newsFilter) {
+      return [];
+    }
+
+    try {
+      const whereClause = buildObjectPostFeedWhereClause(scope);
+      const cursorFilter = cursor
+        ? sql`AND (p.created_unix, p.author, p.permlink) < (${cursor.feedAt}, ${cursor.author}, ${cursor.permlink})`
+        : sql``;
+
+      const rows = await sql<{
+        author: string;
+        permlink: string;
+        feed_at: number;
+        reblogged_by: string | null;
+      }>`
+        SELECT
+          p.author AS author,
+          p.permlink AS permlink,
+          p.created_unix AS feed_at,
+          NULL::text AS reblogged_by
+        FROM posts p
+        WHERE ${whereClause}
+        ${cursorFilter}
+        ORDER BY p.created_unix DESC, p.author DESC, p.permlink DESC
+        LIMIT ${limitPlusOne}
+      `.execute(this.db);
+
+      return rows.rows.map((r) => ({
+        author: r.author,
+        permlink: r.permlink,
+        feed_at: Number(r.feed_at),
+        reblogged_by: r.reblogged_by,
+      }));
+    } catch (error) {
+      this.logger.error((error as Error).message);
+      return [];
+    }
+  }
+
+  /** Feed rows for explicit post keys (pinned prepend). */
+  async findPostsFeedRowsByKeys(
+    keys: { author: string; permlink: string }[],
+  ): Promise<FeedBranchRow[]> {
+    if (keys.length === 0) {
+      return [];
+    }
+
+    try {
+      const rows = await this.db
+        .selectFrom('posts as p')
+        .where((eb) =>
+          eb.or(
+            keys.map((k) =>
+              eb.and([eb('p.author', '=', k.author), eb('p.permlink', '=', k.permlink)]),
+            ),
+          ),
+        )
+        .where(ROOT_POST_PREDICATE_P)
+        .select([
+          sql<string>`p.author`.as('author'),
+          sql<string>`p.permlink`.as('permlink'),
+          sql<number>`p.created_unix`.as('feed_at'),
+          sql<string | null>`NULL::text`.as('reblogged_by'),
+        ])
+        .execute();
+
+      const order = new Map(keys.map((k, i) => [`${k.author}\0${k.permlink}`, i]));
+      const mapped = rows.map((r) => ({
+        author: r.author,
+        permlink: r.permlink,
+        feed_at: Number(r.feed_at),
+        reblogged_by: r.reblogged_by,
+      }));
+      mapped.sort((a, b) => {
+        const ai = order.get(`${a.author}\0${a.permlink}`) ?? 0;
+        const bi = order.get(`${b.author}\0${b.permlink}`) ?? 0;
+        return ai - bi;
+      });
+      return mapped;
+    } catch (error) {
+      this.logger.error((error as Error).message);
+      return [];
+    }
   }
 }
 

@@ -39,6 +39,7 @@ type StoryProps = {
   story: FeedStoryView;
   feedTab?: FeedTab;
   currentUsername: string | null;
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
 function IconComment({ className }: { className?: string }) {
@@ -111,7 +112,12 @@ function viewerIsAuthor(
   return viewer.trim().toLowerCase() === author.trim().toLowerCase();
 }
 
-export function Story({ story, feedTab, currentUsername }: StoryProps) {
+export function Story({
+  story,
+  feedTab,
+  currentUsername,
+  onBroadcastRevalidate,
+}: StoryProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [previewMediaFailed, setPreviewMediaFailed] = useState(false);
   const [previewMediaLandscape, setPreviewMediaLandscape] = useState(true);
@@ -440,6 +446,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             votes={story.votes}
             currentUsername={currentUsername}
             contentType={feedTab === 'threads' ? 'thread' : 'post'}
+            onBroadcastRevalidate={onBroadcastRevalidate}
           />
           <StoryStatButton
             icon={<IconComment />}
@@ -458,6 +465,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
               rebloggedByViewer={story.rebloggedByViewer ?? false}
               currentUsername={currentUsername}
               isOwnPost={isOwnPost}
+              onBroadcastRevalidate={onBroadcastRevalidate}
             />
           ) : null}
           <StoryOverflowMenu
@@ -481,7 +489,11 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             expanded
           />
           {currentUsername ? (
-            <StoryCommentEditor story={story} currentUsername={currentUsername} />
+            <StoryCommentEditor
+              story={story}
+              currentUsername={currentUsername}
+              onBroadcastRevalidate={onBroadcastRevalidate}
+            />
           ) : null}
         </>
       ) : null}

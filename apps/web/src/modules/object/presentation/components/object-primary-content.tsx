@@ -144,6 +144,8 @@ export type ObjectPrimaryContentProps = {
   menuRootName?: string | null;
   /** Injected feed (client) when the Updates tab is active. */
   objectUpdatesFeed?: ReactNode;
+  /** Injected posts feed when Reviews > Posts sub-tab is active. */
+  objectPostsFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Authority tab is active. */
@@ -184,6 +186,7 @@ export function ObjectPrimaryContent({
   defaultNestedContent = null,
   menuRootName = null,
   objectUpdatesFeed,
+  objectPostsFeed,
   objectFollowersFeed,
   objectAuthorityFeed,
   objectRelatedFeed,
@@ -641,11 +644,8 @@ export function ObjectPrimaryContent({
 
   const isMenuLanding = activePrimarySegment === MENU_LANDING_SEGMENT;
   const isReviewsTab = activePrimarySegment === REVIEWS_SEGMENT;
-
-  const showReviewsExtras =
-    isReviewsTab &&
-    currentView.objectType === 'default' &&
-    nestedStack.length === 0;
+  const onReviewsCenter = isReviewsTab && nestedStack.length === 0;
+  const onReviewsPostsTab = onReviewsCenter && activeFeedSubSegment === 'posts';
 
   return (
     <FeedColumn>
@@ -657,8 +657,10 @@ export function ObjectPrimaryContent({
           onNavigateTo={navigateToDepth}
         />
       ) : null}
-      {showReviewsExtras ? <ObjectWriteReviewPrompt /> : null}
-      {showReviewsExtras && feedSubTabs.length > 0 ? (
+      {onReviewsCenter && currentView.objectType === 'default' ? (
+        <ObjectWriteReviewPrompt />
+      ) : null}
+      {onReviewsCenter && feedSubTabs.length > 0 ? (
         <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
           <ObjectFeedSubNav
             tabs={feedSubTabs}
@@ -667,7 +669,9 @@ export function ObjectPrimaryContent({
           />
         </div>
       ) : null}
-      {renderTypeContent()}
+      {onReviewsPostsTab && objectPostsFeed != null
+        ? objectPostsFeed
+        : renderTypeContent()}
     </FeedColumn>
   );
 }

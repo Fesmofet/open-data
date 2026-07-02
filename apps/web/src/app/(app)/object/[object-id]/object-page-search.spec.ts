@@ -4,6 +4,7 @@ import {
   OBJECT_PAGE_VIEW_PATH_PARAM,
   resolveGalleryAlbumForObjectPage,
   resolveGalleryAlbumFromObjectUrl,
+  resolveDefaultPrimarySegmentFromLanding,
   resolvePrimarySegmentForObjectPage,
   resolvePrimarySegmentFromObjectUrl,
   sanitizeNestedStack,
@@ -78,6 +79,40 @@ describe('resolvePrimarySegmentForObjectPage', () => {
   it('falls back to empty segment on clean URL for nested default landing', () => {
     expect(
       resolvePrimarySegmentForObjectPage(objectId, base, new URLSearchParams(), ''),
+    ).toBe('');
+  });
+});
+
+describe('resolveDefaultPrimarySegmentFromLanding', () => {
+  const tabs = ['reviews', 'updates', 'gallery'] as const;
+
+  it('maps primaryTab reviews', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding({ kind: 'primaryTab', segment: 'reviews' }, tabs),
+    ).toBe('reviews');
+  });
+
+  it('maps primaryTab description', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'primaryTab', segment: 'description' },
+        tabs,
+      ),
+    ).toBe(OBJECT_PAGE_DESCRIPTION_SEGMENT);
+  });
+
+  it('maps routeStub to reviews when tab exists', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'routeStub', segment: 'blog', ref: 'alice' },
+        tabs,
+      ),
+    ).toBe('reviews');
+  });
+
+  it('returns empty for hostContent', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding({ kind: 'hostContent' }, tabs),
     ).toBe('');
   });
 });
