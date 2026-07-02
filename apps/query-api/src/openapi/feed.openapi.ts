@@ -485,3 +485,56 @@ registry.registerPath({
     },
   },
 });
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/objects/{objectId}/threads',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Object threads feed (Reviews > Threads tab)',
+  description:
+    'Paginated threads whose `hashtags` array contains the object id (legacy `getThreads.byHashtag`). Respects viewer mutes (X-Viewer). Cursor matches blog/user-threads feed encoding. No locale filter (unlike object posts).',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: userThreadsFeedBodySchema,
+        },
+      },
+      required: false,
+    },
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account of the viewer; mutes apply; vote preview uses thread_active_votes.',
+        example: 'alice',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Feed page; items use empty objects and payout fields for thread cards.',
+      content: {
+        'application/json': {
+          schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});

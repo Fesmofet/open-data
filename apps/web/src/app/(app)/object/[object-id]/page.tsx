@@ -42,6 +42,7 @@ import {
 import { loadObjectPageModel } from './object-page-model.server';
 import { ObjectPageUpdatesFeedSection } from './object-page-updates-feed-section.server';
 import { ObjectPagePostsFeedSection } from './object-page-posts-feed-section.server';
+import { ObjectThreadsFeedList } from './object-threads-feed-list';
 import { FeedPostsLoadingSkeleton } from '@/modules/feed';
 import {
   firstSearchParam,
@@ -342,6 +343,10 @@ export default async function ObjectDetailPage({
       </Suspense>
     ) : null;
 
+  const threadsFeedSlot = (
+    <ObjectThreadsFeedList objectId={objectId} currentUsername={viewerUsername} />
+  );
+
   return (
     <>
       {invalidPathRequested ? (
@@ -366,6 +371,7 @@ export default async function ObjectDetailPage({
         objectDescriptionBody={objectDescriptionBody}
         updatesFeedSlot={updatesFeedSlot}
         postsFeedSlot={postsFeedSlot}
+        threadsFeedSlot={threadsFeedSlot}
       />
     </>
   );

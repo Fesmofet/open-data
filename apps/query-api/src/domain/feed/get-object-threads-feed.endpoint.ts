@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   AccountsCurrentRepository,
+  ObjectsCoreRepository,
   ThreadsRepository,
   UserAccountMutesRepository,
 } from '../../repositories';
@@ -10,20 +11,26 @@ import type { UserThreadsFeedBody } from './schemas/user-threads-feed.schema';
 import { hydrateThreadFeedPage } from './thread-feed-hydrator';
 
 @Injectable()
-export class GetUserThreadsFeedEndpoint {
+export class GetObjectThreadsFeedEndpoint {
   constructor(
     private readonly threadsRepo: ThreadsRepository,
+    private readonly objectsCoreRepo: ObjectsCoreRepository,
     private readonly accounts: AccountsCurrentRepository,
     private readonly userAccountMutesRepo: UserAccountMutesRepository,
   ) {}
 
   async execute(
-    profileAccountName: string,
+    objectId: string,
     body: UserThreadsFeedBody,
     viewerAccount?: string,
   ): Promise<UserBlogFeedResponse | null> {
-    const accountRow = await this.accounts.findByName(profileAccountName);
-    if (!accountRow) {
+    const trimmedId = objectId.trim();
+    if (!trimmedId) {
+      return null;
+    }
+
+    const core = await this.objectsCoreRepo.findByObjectId(trimmedId);
+    if (!core) {
       return null;
     }
 
@@ -44,8 +51,8 @@ export class GetUserThreadsFeedEndpoint {
         ? await this.userAccountMutesRepo.listMutedForMuters([viewerTrimmed])
         : [];
 
-    const threadRows = await this.threadsRepo.findUserThreadsFeed(
-      profileAccountName,
+    const threadRows = await this.threadsRepo.findObjectThreadsFeed(
+      trimmedId,
       mutedAuthors,
       cursorPayload,
       body.sort,

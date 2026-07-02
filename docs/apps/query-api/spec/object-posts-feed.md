@@ -62,7 +62,6 @@ Pagination uses keyset cursors instead of `skip`.
 
 ## Known follow-ups (web)
 
-- Reviews **Threads** sub-tab is still a UI stub (no threads API).
 - `ObjectWriteReviewPrompt` has no composer wired.
 
 ## MCP

@@ -146,6 +146,8 @@ export type ObjectPrimaryContentProps = {
   objectUpdatesFeed?: ReactNode;
   /** Injected posts feed when Reviews > Posts sub-tab is active. */
   objectPostsFeed?: ReactNode;
+  /** Injected threads feed when Reviews > Threads sub-tab is active. */
+  objectThreadsFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Authority tab is active. */
@@ -187,6 +189,7 @@ export function ObjectPrimaryContent({
   menuRootName = null,
   objectUpdatesFeed,
   objectPostsFeed,
+  objectThreadsFeed,
   objectFollowersFeed,
   objectAuthorityFeed,
   objectRelatedFeed,
@@ -646,6 +649,7 @@ export function ObjectPrimaryContent({
   const isReviewsTab = activePrimarySegment === REVIEWS_SEGMENT;
   const onReviewsCenter = isReviewsTab && nestedStack.length === 0;
   const onReviewsPostsTab = onReviewsCenter && activeFeedSubSegment === 'posts';
+  const onReviewsThreadsTab = onReviewsCenter && activeFeedSubSegment === 'threads';
 
   return (
     <FeedColumn>
@@ -658,7 +662,11 @@ export function ObjectPrimaryContent({
         />
       ) : null}
       {onReviewsCenter && currentView.objectType === 'default' ? (
-        <ObjectWriteReviewPrompt />
+        <ObjectWriteReviewPrompt
+          objectId={objectId}
+          viewerUsername={viewerUsername}
+          onRequireLogin={onRequireLogin}
+        />
       ) : null}
       {onReviewsCenter && feedSubTabs.length > 0 ? (
         <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
@@ -671,7 +679,9 @@ export function ObjectPrimaryContent({
       ) : null}
       {onReviewsPostsTab && objectPostsFeed != null
         ? objectPostsFeed
-        : renderTypeContent()}
+        : onReviewsThreadsTab && objectThreadsFeed != null
+          ? objectThreadsFeed
+          : renderTypeContent()}
     </FeedColumn>
   );
 }

@@ -50,8 +50,11 @@ import {
 } from '../domain/object-updates';
 import {
   GetObjectPostsFeedEndpoint,
+  GetObjectThreadsFeedEndpoint,
   objectPostsFeedBodySchema,
   type ObjectPostsFeedBody,
+  userThreadsFeedBodySchema,
+  type UserThreadsFeedBody,
   type UserBlogFeedResponse,
 } from '../domain/feed';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
@@ -72,6 +75,7 @@ export class ObjectsController {
     private readonly getObjectRelatedAlbumEndpoint: GetObjectRelatedAlbumEndpoint,
     private readonly checkObjectExists: CheckObjectExistsEndpoint,
     private readonly getObjectPostsFeed: GetObjectPostsFeedEndpoint,
+    private readonly getObjectThreadsFeed: GetObjectThreadsFeedEndpoint,
   ) {}
 
   @Get(':objectId/exists')
@@ -268,6 +272,20 @@ export class ObjectsController {
       governanceObjectIdFromHeader,
       viewer,
     );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${objectId}`);
+    }
+    return result;
+  }
+
+  @Post(':objectId/threads')
+  async getObjectThreads(
+    @Param('objectId') rawObjectId: string,
+    @Body(new ZodBodyPipe(userThreadsFeedBodySchema)) body: UserThreadsFeedBody,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserBlogFeedResponse> {
+    const objectId = decodeURIComponent(rawObjectId);
+    const result = await this.getObjectThreadsFeed.execute(objectId, body, viewer);
     if (!result) {
       throw new NotFoundException(`Object not found: ${objectId}`);
     }

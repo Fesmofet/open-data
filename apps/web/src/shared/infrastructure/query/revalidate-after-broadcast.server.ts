@@ -22,6 +22,7 @@ export async function revalidateObjectAfterBroadcast(objectId: string): Promise<
   updateTag(queryApiCacheTags.objectFollowers(id));
   updateTag(queryApiCacheTags.objectUpdates(id));
   updateTag(queryApiCacheTags.objectPostsFeed(id));
+  updateTag(queryApiCacheTags.objectThreadsFeed(id));
   revalidatePath(objectPath(id), 'layout');
 }
 

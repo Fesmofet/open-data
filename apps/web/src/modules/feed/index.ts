@@ -2,6 +2,7 @@ export { feedStoryViewSchema, feedTabSchema } from './application/dto/feed-story
 export type { FeedStoryView } from './application/dto/feed-story.dto';
 export type { UserBlogFeedPage } from './application/dto/user-blog-feed-page.dto';
 export { getObjectPostsFeedPageQuery } from './application/queries/get-object-posts-feed.query';
+export { getObjectThreadsFeedPageQuery } from './application/queries/get-object-threads-feed.query';
 export { getUserBlogFeedPageQuery } from './application/queries/get-user-blog-feed.query';
 export { getUserThreadsFeedPageQuery } from './application/queries/get-user-threads-feed.query';
 export { getUserCommentsFeedPageQuery } from './application/queries/get-user-comments-feed.query';

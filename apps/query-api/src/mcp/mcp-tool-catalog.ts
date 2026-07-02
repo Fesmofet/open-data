@@ -114,6 +114,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/object-posts-feed.md',
   },
   {
+    name: 'get_object_threads',
+    description:
+      'Paginated threads feed for an object (Reviews > Threads tab; legacy byHashtag scope).',
+    httpEquivalent: 'POST /query/v1/objects/:id/threads',
+    specPath: 'docs/apps/query-api/spec/object-threads-feed.md',
+  },
+  {
     name: 'get_update_voters',
     description: 'Approve/reject voter lists for a single object update.',
     httpEquivalent: 'GET /query/v1/objects/:id/updates/:updateId/voters',

@@ -55,6 +55,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [Object ref lists](object-ref-list-endpoints.md) | `GET .../related`, `/similar`, `/add-on` |
 | [Object Related album](object-related-album.md) | `GET .../gallery/related/preview`, `GET .../gallery/related` |
 | [Object posts feed](object-posts-feed.md) | `POST /query/v1/objects/:id/posts` (Reviews tab) |
+| [Object threads feed](object-threads-feed.md) | `POST /query/v1/objects/:id/threads` (Reviews > Threads) |
 | [Object SEO](object-seo.md) | SEO fields on resolved objects |
 | [MCP agent mirror](mcp.md) | `POST /query/mcp` — live data tools for agents |
 

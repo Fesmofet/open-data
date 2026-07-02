@@ -91,3 +91,28 @@ describe('ObjectPrimaryContent Reviews posts feed', () => {
     expect(screen.getByText(/Posts list placeholder/)).toBeInTheDocument();
   });
 });
+
+describe('ObjectPrimaryContent Reviews threads feed', () => {
+  it('renders injected object threads feed on Reviews > Threads', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        activeFeedSubSegment="threads"
+        objectThreadsFeed={<div data-testid="object-threads-feed">Threads</div>}
+      />,
+    );
+    expect(screen.getByTestId('object-threads-feed')).toBeInTheDocument();
+    expect(screen.queryByText(/Posts list placeholder/)).not.toBeInTheDocument();
+  });
+
+  it('falls back to type content when Reviews > Threads has no feed slot', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        activeFeedSubSegment="threads"
+      />,
+    );
+    expect(screen.getByText(/Reviews and discussions \(mock\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Posts list placeholder/)).toBeInTheDocument();
+  });
+});

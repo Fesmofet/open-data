@@ -294,6 +294,35 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   );
 
   server.registerTool(
+    'get_object_threads',
+    {
+      description: catalogDescription('get_object_threads'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          object_id: z.string().min(1).describe('Object id'),
+          limit: z.coerce.number().int().min(1).max(50).default(20),
+          cursor: z.string().optional(),
+          sort: z.enum(['latest', 'oldest']).default('latest'),
+          currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { object_id, limit, cursor, sort, currency } = args;
+      const result = await deps.getObjectThreadsFeed.execute(
+        object_id,
+        { limit, cursor, sort, currency },
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_update_voters',
     {
       description: catalogDescription('get_update_voters'),

@@ -3,6 +3,7 @@ export { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 export { GetPostDiscussionEndpoint } from './get-post-discussion.endpoint';
 export { GetPostVotersEndpoint } from './get-post-voters.endpoint';
 export { GetObjectPostsFeedEndpoint } from './get-object-posts-feed.endpoint';
+export { GetObjectThreadsFeedEndpoint } from './get-object-threads-feed.endpoint';
 export { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 export { GetUserBlogObjectFiltersEndpoint } from './get-user-blog-object-filters.endpoint';
 export { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';

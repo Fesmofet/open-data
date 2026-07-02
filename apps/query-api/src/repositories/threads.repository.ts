@@ -90,6 +90,53 @@ export class ThreadsRepository {
   }
 
   /**
+   * Object/hashtag threads (`byHashtag`): threads whose `hashtags` array contains `objectId`.
+   */
+  async findObjectThreadsFeed(
+    objectId: string,
+    mutedAuthors: string[],
+    cursor: { feedAt: number; author: string; permlink: string } | null,
+    sort: 'latest' | 'oldest',
+    limitPlusOne: number,
+  ): Promise<Thread[]> {
+    let qb = this.db
+      .selectFrom('threads')
+      .selectAll()
+      .where('deleted', '=', false)
+      .where(sql<boolean>`${objectId} = ANY(threads.hashtags)` as never);
+
+    if (mutedAuthors.length > 0) {
+      qb = qb.where('author', 'not in', mutedAuthors);
+    }
+
+    if (cursor) {
+      if (sort === 'latest') {
+        qb = qb.where(
+          sql`(threads.created_unix, threads.author, threads.permlink) < (${cursor.feedAt}, ${cursor.author}, ${cursor.permlink})` as never,
+        );
+      } else {
+        qb = qb.where(
+          sql`(threads.created_unix, threads.author, threads.permlink) > (${cursor.feedAt}, ${cursor.author}, ${cursor.permlink})` as never,
+        );
+      }
+    }
+
+    if (sort === 'latest') {
+      qb = qb
+        .orderBy('threads.created_unix', 'desc')
+        .orderBy('threads.author', 'desc')
+        .orderBy('threads.permlink', 'desc');
+    } else {
+      qb = qb
+        .orderBy('threads.created_unix', 'asc')
+        .orderBy('threads.author', 'asc')
+        .orderBy('threads.permlink', 'asc');
+    }
+
+    return qb.limit(limitPlusOne).execute();
+  }
+
+  /**
    * Vote counts and preview voters from `thread_active_votes` (same shape as post feed).
    */
   async findThreadActiveVoteSummaries(
