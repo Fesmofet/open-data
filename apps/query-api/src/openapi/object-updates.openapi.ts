@@ -124,6 +124,7 @@ const updateVoterRowSchema = registry.register(
   z.object({
     voter: z.string(),
     event_seq: z.string(),
+    waiv_power: z.number().describe('30-day time-weighted average WAIV power used for vote weight'),
     privileged_tier: z.enum(['admin', 'trusted']).nullable(),
     profile: updateVoterProfileSchema,
   }),

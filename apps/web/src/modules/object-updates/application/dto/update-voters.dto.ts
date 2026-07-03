@@ -9,6 +9,7 @@ export const updateVoterProfileSchema = z.object({
 export const updateVoterRowSchema = z.object({
   voter: z.string(),
   event_seq: z.string(),
+  waiv_power: z.number(),
   privileged_tier: z.enum(['admin', 'trusted']).nullable(),
   profile: updateVoterProfileSchema,
 });

@@ -9,6 +9,7 @@ describe('GetUpdateVotersEndpoint', () => {
   };
   const updatesFeedRepo = {
     findValidityVotesForObjectAndUpdates: jest.fn(),
+    findWaivPowersByAccounts: jest.fn(),
   };
   const accounts = {
     findByNames: jest.fn(),
@@ -43,6 +44,13 @@ describe('GetUpdateVotersEndpoint', () => {
         created_at: new Date(0),
       },
     ]);
+    updatesFeedRepo.findWaivPowersByAccounts.mockResolvedValue(
+      new Map([
+        ['alice', 1_000_000],
+        ['bob', 500_000],
+        ['carol', 2_000_000],
+      ]),
+    );
   });
 
   it('returns null when update does not exist for object', async () => {
@@ -101,6 +109,7 @@ describe('GetUpdateVotersEndpoint', () => {
         {
           voter: 'carol',
           event_seq: '3',
+          waiv_power: 2_000_000,
           privileged_tier: 'trusted',
           profile: {
             name: 'carol',
@@ -111,6 +120,7 @@ describe('GetUpdateVotersEndpoint', () => {
         {
           voter: 'alice',
           event_seq: '2',
+          waiv_power: 1_000_000,
           privileged_tier: 'admin',
           profile: {
             name: 'alice',
@@ -123,6 +133,7 @@ describe('GetUpdateVotersEndpoint', () => {
         {
           voter: 'bob',
           event_seq: '1',
+          waiv_power: 500_000,
           privileged_tier: null,
           profile: {
             name: 'bob',

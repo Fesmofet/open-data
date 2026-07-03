@@ -9,6 +9,8 @@ export const updateVoterProfileSchema = z.object({
 export const updateVoterRowSchema = z.object({
   voter: z.string(),
   event_seq: z.string(),
+  /** 30-day time-weighted average WAIV power used for vote weight. */
+  waiv_power: z.number(),
   privileged_tier: z.enum(['admin', 'trusted']).nullable(),
   profile: updateVoterProfileSchema,
 });

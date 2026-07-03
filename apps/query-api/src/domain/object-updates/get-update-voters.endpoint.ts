@@ -53,7 +53,10 @@ export class GetUpdateVotersEndpoint {
     const allNames = [
       ...new Set([...cappedFor, ...cappedAgainst].map((entry) => entry.voter)),
     ];
-    const accountRows = await this.accounts.findByNames(allNames);
+    const [accountRows, waivPowers] = await Promise.all([
+      this.accounts.findByNames(allNames),
+      this.updatesFeedRepo.findWaivPowersByAccounts(allNames),
+    ]);
     const profileByName = new Map(
       accountRows.map((row) => [row.name, mapAccountToUserProfileView(row)]),
     );
@@ -63,6 +66,7 @@ export class GetUpdateVotersEndpoint {
       return {
         voter: entry.voter,
         event_seq: entry.event_seq.toString(),
+        waiv_power: waivPowers.get(entry.voter) ?? 0,
         privileged_tier: resolveVoterPrivilegedTier(entry.voter, governance, authorities),
         profile: {
           name: entry.voter,

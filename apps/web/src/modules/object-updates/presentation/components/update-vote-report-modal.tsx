@@ -16,6 +16,118 @@ import {
 
 const EVENT_SEQ_TOOLTIP_Z_INDEX = 1_200;
 
+function InfoTooltip({
+  ariaLabel,
+  helpText,
+}: {
+  ariaLabel: string;
+  helpText: string;
+}) {
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const openTooltip = () => {
+    const rect = anchorRef.current?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+    setTooltipPos({ top: rect.top, left: rect.left });
+    setTooltipOpen(true);
+  };
+
+  const tooltip =
+    mounted && tooltipOpen
+      ? createPortal(
+          <div
+            className="pointer-events-none fixed w-max max-w-[min(16rem,calc(100vw-2rem))]"
+            style={{
+              zIndex: EVENT_SEQ_TOOLTIP_Z_INDEX,
+              top: tooltipPos.top,
+              left: tooltipPos.left,
+              transform: 'translateY(calc(-100% - 0.5rem))',
+            }}
+            role="tooltip"
+          >
+            <div className="rounded-card border border-border bg-surface-raised px-3 py-2 text-caption text-fg shadow-card-float">
+              {helpText}
+            </div>
+            <div
+              className="absolute left-2 top-full h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-border bg-surface-raised"
+              aria-hidden
+            />
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <>
+      <span
+        ref={anchorRef}
+        tabIndex={0}
+        aria-label={ariaLabel}
+        className="inline-flex size-4 cursor-help items-center justify-center rounded-full border border-border text-caption font-weight-label text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        onMouseEnter={openTooltip}
+        onMouseLeave={() => setTooltipOpen(false)}
+        onFocus={openTooltip}
+        onBlur={() => setTooltipOpen(false)}
+      >
+        i
+      </span>
+      {tooltip}
+    </>
+  );
+}
+
+function UpdateVoteBalanceBar({ approvePercent }: { approvePercent: number }) {
+  const { t, locale } = useI18n();
+  const rejectPercent = Math.max(0, 100 - approvePercent);
+  const formatPercent = (value: number) =>
+    value.toLocaleString(locale, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  return (
+    <div className="mt-4 flex flex-col gap-2">
+      <div className="flex items-center gap-1.5">
+        <span className="text-body-sm text-fg">{t('object_updates_vote_balance_label')}</span>
+        <InfoTooltip
+          ariaLabel={t('object_updates_vote_balance_help_aria')}
+          helpText={t('object_updates_vote_balance_help')}
+        />
+      </div>
+      <div
+        className="h-2 overflow-hidden rounded-full bg-validity-rejected"
+        role="progressbar"
+        aria-valuenow={approvePercent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t('object_updates_vote_balance_label')}
+      >
+        <div
+          className="h-full bg-validity-approved transition-[width]"
+          style={{ width: `${approvePercent}%` }}
+        />
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-caption">
+        <span className="text-validity-approved">
+          ● {t('object_updates_approve')} {formatPercent(approvePercent)}%
+        </span>
+        <span className="text-validity-rejected">
+          ● {t('object_updates_reject')} {formatPercent(rejectPercent)}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function VoterPrivilegedTierBadge({
   tier,
 }: {
@@ -123,6 +235,7 @@ function VoterList({
   voters: UpdateVoterRowView[];
   emptyLabel: string;
 }) {
+  const { t, locale } = useI18n();
   const headingClass =
     side === 'for'
       ? 'mb-2 text-body-sm font-weight-strong text-validity-approved'
@@ -160,6 +273,12 @@ function VoterList({
                     </Link>
                     <VoterPrivilegedTierBadge tier={row.privileged_tier} />
                   </div>
+                  <span className="text-caption text-muted">
+                    {t('object_updates_waiv_power_label')}{' '}
+                    <span className="tabular-nums text-fg-secondary">
+                      {row.waiv_power.toLocaleString(locale, { maximumFractionDigits: 0 })}
+                    </span>
+                  </span>
                   <EventSeqRow eventSeq={row.event_seq} />
                 </div>
               </li>
@@ -249,6 +368,7 @@ export function UpdateVoteReportModal({
               approvePercent={approvePercent}
               decisivePrivilegedVote={decisivePrivilegedVote}
             />
+            <UpdateVoteBalanceBar approvePercent={approvePercent} />
           </div>
         ) : null}
         {loading ? (
