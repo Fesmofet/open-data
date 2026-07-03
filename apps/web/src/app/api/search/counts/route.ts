@@ -29,12 +29,12 @@ export async function GET(request: NextRequest) {
   if (!upstream.ok) {
     return new NextResponse(text, {
       status: upstream.status,
-      headers: { 'Content-Type': contentType },
+      headers: { 'Content-Type': contentType, 'Cache-Control': 'no-store' },
     });
   }
 
   return new NextResponse(text, {
     status: 200,
-    headers: { 'Content-Type': contentType },
+    headers: { 'Content-Type': contentType, 'Cache-Control': 'no-store' },
   });
 }

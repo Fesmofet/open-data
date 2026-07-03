@@ -3,6 +3,7 @@
 -- Requires: PostGIS extension for geo. No projection table; query directly via JOINs, tsvector, PostGIS.
 
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ---------------------------------------------------------------------------
 -- objects_core
@@ -55,6 +56,8 @@ CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_ge
 CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, value_text) WHERE value_text IS NOT NULL;
 -- Case-insensitive exact match (uses the generated column; faster than LOWER(value_text) = $1).
 CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, value_text_normalized) WHERE value_text_normalized IS NOT NULL;
+-- Trigram index for predictive-search name/title starts-with boost (LIKE 'query%'), incl. stopwords the english FTS strips.
+CREATE INDEX idx_object_updates_name_title_value_norm_trgm ON object_updates USING GIN (value_text_normalized gin_trgm_ops) WHERE update_type IN ('name', 'title') AND value_text_normalized IS NOT NULL;
 CREATE INDEX idx_object_updates_object_rank_score ON object_updates (object_id, rank_score);
 
 -- Trigger: keep search_vector in sync with value_text

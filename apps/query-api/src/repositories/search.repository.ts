@@ -43,6 +43,9 @@ const SEARCH_TIER_ID_SUBSTRING = 2;
 /** Sort tier: exact `objects_core.object_id` (draft / linked-object hydration). */
 const SEARCH_TIER_EXACT_OBJECT_ID = 3;
 
+/** Min query length for the trigram-backed name/title prefix boost (shorter degrades to seq scan). */
+const NAME_PREFIX_MIN_LENGTH = 3;
+
 @Injectable()
 export class SearchRepository {
   private readonly logger = new Logger(SearchRepository.name);
@@ -52,8 +55,13 @@ export class SearchRepository {
   /**
    * Object hits: FTS on `name` / `title` / `description`, optional id substring and
    * exact name boost (multi-word only). No `ts_rank` over the full hit set — keeps GIN path fast.
+   * Ranking priority: name/title starts-with the full query (trigram index, includes stopwords the
+   * `english` FTS strips) > sort tier > `objects_core.weight` (earned payouts).
    */
-  async searchObjects(queryText: string, limit: number): Promise<SearchObjectCandidateRow[]> {
+  async searchObjects(
+    queryText: string,
+    limit: number,
+  ): Promise<SearchObjectCandidateRow[]> {
     const trimmed = queryText.trim();
     if (!trimmed) {
       return [];
@@ -69,6 +77,9 @@ export class SearchRepository {
     const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
     const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
     const useFastFtsPath = !isMultiWord && !includeIdSubstring;
+    // Name/title starts-with boost (trigram index). Needs >= 3 chars so pg_trgm avoids a seq scan.
+    const includeNamePrefix = normalized.length >= NAME_PREFIX_MIN_LENGTH;
+    const namePrefixPattern = `${escapeIlikePattern(normalized)}%`;
 
     try {
       const result = useFastFtsPath
@@ -84,20 +95,36 @@ export class SearchRepository {
               WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
                 AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
             ),
+            name_prefix_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ${includeNamePrefix}
+                AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]})
+                AND ou.value_text_normalized LIKE ${namePrefixPattern} ESCAPE '\\'
+            ),
             candidate_ids AS (
               SELECT object_id FROM exact_object_id
               UNION
               SELECT object_id FROM fts_ids
+              UNION
+              SELECT object_id FROM name_prefix_ids
+            ),
+            collapsed AS (
+              SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
+                oc.object_id AS object_id,
+                oc.object_type AS object_type,
+                oc.meta_group_id AS meta_group_id,
+                oc.weight AS weight,
+                (np.object_id IS NOT NULL) AS is_name_prefix
+              FROM objects_core oc
+              INNER JOIN candidate_ids c ON c.object_id = oc.object_id
+              LEFT JOIN name_prefix_ids np ON np.object_id = oc.object_id
+              WHERE oc.status = 'active'
+              ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
             )
-            SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
-              oc.object_id AS object_id,
-              oc.object_type AS object_type,
-              oc.meta_group_id AS meta_group_id,
-              oc.weight AS weight
-            FROM objects_core oc
-            INNER JOIN candidate_ids c ON c.object_id = oc.object_id
-            WHERE oc.status = 'active'
-            ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
+            SELECT object_id, object_type, meta_group_id, weight
+            FROM collapsed
+            ORDER BY is_name_prefix DESC, weight DESC NULLS LAST, object_id
             LIMIT ${limit}
           `.execute(this.db)
         : await sql<SearchObjectCandidateRow>`
@@ -119,6 +146,13 @@ export class SearchRepository {
                 AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
                 AND ou.value_text_normalized = ${normalized}
             ),
+            name_prefix_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ${includeNamePrefix}
+                AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]})
+                AND ou.value_text_normalized LIKE ${namePrefixPattern} ESCAPE '\\'
+            ),
             id_hits AS (
               SELECT object_id
               FROM objects_core
@@ -134,6 +168,8 @@ export class SearchRepository {
               SELECT object_id, ${SEARCH_TIER_EXACT_TEXT}::int FROM exact_ids
               UNION ALL
               SELECT object_id, ${SEARCH_TIER_FTS}::int FROM fts_ids
+              UNION ALL
+              SELECT object_id, ${SEARCH_TIER_FTS}::int FROM name_prefix_ids
             ),
             best AS (
               SELECT object_id, MAX(sort_tier) AS sort_tier
@@ -146,15 +182,17 @@ export class SearchRepository {
                 oc.object_type AS object_type,
                 oc.meta_group_id AS meta_group_id,
                 oc.weight AS weight,
-                b.sort_tier AS sort_tier
+                b.sort_tier AS sort_tier,
+                (np.object_id IS NOT NULL) AS is_name_prefix
               FROM objects_core oc
               INNER JOIN best b ON b.object_id = oc.object_id
+              LEFT JOIN name_prefix_ids np ON np.object_id = oc.object_id
               WHERE oc.status = 'active'
               ORDER BY COALESCE(oc.meta_group_id, oc.object_id), b.sort_tier DESC, oc.weight DESC NULLS LAST
             )
             SELECT object_id, object_type, meta_group_id, weight
             FROM collapsed
-            ORDER BY sort_tier DESC, weight DESC NULLS LAST
+            ORDER BY is_name_prefix DESC, sort_tier DESC, weight DESC NULLS LAST, object_id
             LIMIT ${limit}
           `.execute(this.db);
 

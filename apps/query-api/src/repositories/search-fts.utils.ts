@@ -1,6 +1,6 @@
 /**
- * Builds a `to_tsquery` string for predictive search: all tokens AND-ed, last token is a prefix (`:*`).
- * Example: "Oeb Brea" → `oeb & brea:*` (matches "Oeb Breakfast" via GIN on `search_vector`).
+ * Builds a `to_tsquery` string for predictive search: all tokens AND-ed, each as a prefix (`:*`).
+ * Example: "about waiv" → `about:* & waiv:*` (matches "About Waivio" via GIN on `search_vector`).
  */
 export function buildAutocompleteTsQuery(queryText: string): string | null {
   const words = queryText
@@ -12,13 +12,7 @@ export function buildAutocompleteTsQuery(queryText: string): string | null {
   }
 
   const lexemes = words.map(escapeTsqueryLexeme);
-  if (lexemes.length === 1) {
-    return `${lexemes[0]}:*`;
-  }
-
-  const last = lexemes[lexemes.length - 1];
-  const rest = lexemes.slice(0, -1);
-  return `${rest.join(' & ')} & ${last}:*`;
+  return lexemes.map((lexeme) => `${lexeme}:*`).join(' & ');
 }
 
 /** Quote or sanitize a single token for `to_tsquery`. */
