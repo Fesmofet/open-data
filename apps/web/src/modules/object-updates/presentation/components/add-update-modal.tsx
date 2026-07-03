@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   buildOdlUpdateCreateOp,
-  buildOdlUpdateCreateWithLikeOp,
 } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
@@ -152,7 +151,6 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     resolveInitialLocale(resolveType(), feedInitialLocale),
   );
   const [isValid, setIsValid] = useState(false);
-  const [likeChecked, setLikeChecked] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wasOpenRef = useRef(false);
@@ -174,7 +172,6 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     setSelectedType(type);
     setError(null);
     setSubmitting(false);
-    setLikeChecked(true);
     setLocale(resolveInitialLocale(type, feedInitialLocale));
     if (type && UPDATE_REGISTRY[type]) {
       setValue(resolveFormValue(type));
@@ -241,11 +238,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
               creator: viewerUsername,
               itemValue: parsed.value,
               onChainGalleryAlbumNames,
-              withLike: likeChecked,
             })
-          : likeChecked
-            ? buildOdlUpdateCreateWithLikeOp(createInput)
-            : buildOdlUpdateCreateOp(createInput);
+          : buildOdlUpdateCreateOp(createInput);
       const { transactionId } = await getWalletFacade().broadcast({
         operations: [op],
       });
@@ -266,7 +260,6 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     selectedType,
     viewerUsername,
     locale,
-    likeChecked,
     onChainGalleryAlbumNames,
     odlCustomJsonId,
     onClose,
@@ -388,17 +381,6 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
             {error}
           </p>
         ) : null}
-
-        <label className="flex cursor-pointer items-center gap-2 text-body-sm text-muted">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-border accent-accent"
-            checked={likeChecked}
-            onChange={(e) => setLikeChecked(e.target.checked)}
-            disabled={submitting}
-          />
-          <span>{t('like')}</span>
-        </label>
       </div>
     </ModalShell>
   );

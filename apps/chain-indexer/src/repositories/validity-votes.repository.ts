@@ -79,6 +79,15 @@ export class ValidityVotesRepository {
       .executeTakeFirstOrThrow();
   }
 
+  /** Idempotent insert for creator auto-like on update_create (PK: update_id + voter). */
+  async createIfAbsent(row: NewValidityVote): Promise<void> {
+    await this.db
+      .insertInto('validity_votes')
+      .values(row)
+      .onConflict((oc) => oc.columns(['update_id', 'voter']).doNothing())
+      .execute();
+  }
+
   async delete(updateId: string, voter: string) {
     return this.db
       .deleteFrom('validity_votes')

@@ -3,6 +3,7 @@ import type { ObjectsCore } from '@opden-data-layer/core';
 import type {
   AccountSyncQueueRepository,
   AccountsCurrentRepository,
+  ValidityVotesRepository,
 } from '../../../repositories';
 
 /** Minimal `objects_core` row for UpdateCreateHandler unit tests. */
@@ -28,5 +29,16 @@ export function defaultUpdateCreateUserRefDeps(): {
     hiveClient: {
       getAccounts: jest.fn().mockResolvedValue([]),
     } as unknown as HiveClient,
+  };
+}
+
+/** Default mock for creator auto-like in UpdateCreateHandler unit tests. */
+export function defaultUpdateCreateValidityVotesDeps(): {
+  validityVotesRepository: ValidityVotesRepository;
+} {
+  return {
+    validityVotesRepository: {
+      createIfAbsent: jest.fn().mockResolvedValue(undefined),
+    } as unknown as ValidityVotesRepository,
   };
 }

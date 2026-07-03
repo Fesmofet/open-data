@@ -45,7 +45,6 @@ export function EditorCreateObjectModal({
   const [name, setName] = useState('');
   const [language, setLanguage] = useState<string>(DEFAULT_LOCALE);
   const [objectType, setObjectType] = useState('');
-  const [likeChecked, setLikeChecked] = useState(true);
   const [followChecked, setFollowChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +54,6 @@ export function EditorCreateObjectModal({
       setName('');
       setLanguage(DEFAULT_LOCALE);
       setObjectType('');
-      setLikeChecked(true);
       setFollowChecked(false);
       setSubmitting(false);
       setError(null);
@@ -110,7 +108,6 @@ export function EditorCreateObjectModal({
         odlCustomJsonId,
         fields,
         language,
-        likeName: likeChecked,
         followObject: followChecked,
       });
 
@@ -137,7 +134,6 @@ export function EditorCreateObjectModal({
     name,
     objectType,
     language,
-    likeChecked,
     followChecked,
     username,
     odlCustomJsonId,
@@ -245,17 +241,6 @@ export function EditorCreateObjectModal({
         {typeDescription ? (
           <p className="text-body-sm text-muted">{typeDescription}</p>
         ) : null}
-
-        <label className="flex cursor-pointer items-center gap-2 text-body-sm text-muted">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-border accent-accent"
-            checked={likeChecked}
-            onChange={(e) => setLikeChecked(e.target.checked)}
-            disabled={submitting}
-          />
-          <span>{t('like')}</span>
-        </label>
 
         <label className="flex cursor-pointer items-start gap-2 text-body-sm">
           <input

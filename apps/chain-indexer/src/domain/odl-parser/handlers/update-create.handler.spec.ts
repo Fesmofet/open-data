@@ -4,6 +4,7 @@ import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
 import {
   defaultUpdateCreateUserRefDeps,
+  defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
 import type { OdlEventContext } from '../odl-action-handler';
@@ -65,6 +66,7 @@ describe('UpdateCreateHandler write guard', () => {
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
@@ -72,6 +74,7 @@ describe('UpdateCreateHandler write guard', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      validityVotesDeps.validityVotesRepository,
       eventEmitter,
     );
 
@@ -86,6 +89,7 @@ describe('UpdateCreateHandler write guard', () => {
     );
 
     expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(validityVotesDeps.validityVotesRepository.createIfAbsent).not.toHaveBeenCalled();
   });
 
   it('persists when signer matches governance object creator', async () => {
@@ -101,6 +105,7 @@ describe('UpdateCreateHandler write guard', () => {
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
@@ -108,6 +113,7 @@ describe('UpdateCreateHandler write guard', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      validityVotesDeps.validityVotesRepository,
       eventEmitter,
     );
 
@@ -125,6 +131,14 @@ describe('UpdateCreateHandler write guard', () => {
 
     expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
     expect(createReplacingIfPresent).toHaveBeenCalledWith(undefined, expect.any(Object));
+    expect(validityVotesDeps.validityVotesRepository.createIfAbsent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        object_id: 'gov1',
+        voter: 'owner',
+        vote: 'for',
+        transaction_id: 'tx1',
+      }),
+    );
     expect(eventEmitter.emit).toHaveBeenCalled();
   });
 
@@ -148,6 +162,7 @@ describe('UpdateCreateHandler write guard', () => {
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
@@ -155,6 +170,7 @@ describe('UpdateCreateHandler write guard', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      validityVotesDeps.validityVotesRepository,
       eventEmitter,
     );
 
@@ -188,6 +204,7 @@ describe('UpdateCreateHandler write guard', () => {
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
@@ -195,6 +212,7 @@ describe('UpdateCreateHandler write guard', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      validityVotesDeps.validityVotesRepository,
       eventEmitter,
     );
 
@@ -211,7 +229,54 @@ describe('UpdateCreateHandler write guard', () => {
     );
 
     expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(validityVotesDeps.validityVotesRepository.createIfAbsent).not.toHaveBeenCalled();
     expect(eventEmitter.emit).not.toHaveBeenCalled();
+  });
+
+  it('still emits events when createIfAbsent throws', async () => {
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
+    (validityVotesDeps.validityVotesRepository.createIfAbsent as jest.Mock).mockRejectedValue(
+      new Error('db down'),
+    );
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
+      runner,
+      validityVotesDeps.validityVotesRepository,
+      eventEmitter,
+    );
+
+    const ctx = { ...baseCtx, creator: 'owner' };
+
+    await expect(
+      handler.handle(
+        {
+          object_id: 'gov1',
+          update_type: 'name',
+          creator: 'owner',
+          value_text: 'Title',
+        },
+        ctx,
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+    expect(eventEmitter.emit).toHaveBeenCalled();
   });
 
   it('emits OBJECT_STATUS_CREATED_EVENT after persisting a status update', async () => {
@@ -227,6 +292,7 @@ describe('UpdateCreateHandler write guard', () => {
       const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
       const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
       const userRefDeps = defaultUpdateCreateUserRefDeps();
+      const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
       const handler = new UpdateCreateHandler(
         objectUpdatesRepository,
         objectsCoreRepository,
@@ -234,6 +300,7 @@ describe('UpdateCreateHandler write guard', () => {
         userRefDeps.accountSyncQueueRepository,
         userRefDeps.hiveClient,
         runner,
+        validityVotesDeps.validityVotesRepository,
         eventEmitter,
       );
 
@@ -292,6 +359,7 @@ describe('UpdateCreateHandler write guard', () => {
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
@@ -299,6 +367,7 @@ describe('UpdateCreateHandler write guard', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      validityVotesDeps.validityVotesRepository,
       eventEmitter,
     );
 

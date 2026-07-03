@@ -43,7 +43,6 @@ export {
 export { wireCommentOptionsPayload } from './hive-operation-wire';
 export {
   buildOdlUpdateCreateOp,
-  buildOdlUpdateCreateWithLikeOp,
   buildOdlGalleryItemWithAlbumEnsureOp,
   buildOdlUpdateCreateWithRankVoteOp,
   buildOdlUpdateVoteOp,

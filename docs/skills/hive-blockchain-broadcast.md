@@ -164,8 +164,7 @@ Import builders from `@opden-data-layer/hive-broadcast`:
 
 | Builder | ODL action(s) | Notes |
 |---------|---------------|--------|
-| `buildOdlUpdateCreateOp` | `update_create` | `valueKind`: text/geo/json/object_ref/user_ref |
-| `buildOdlUpdateCreateWithLikeOp` | `update_create` + `update_vote` | Same tx |
+| `buildOdlUpdateCreateOp` | `update_create` | `valueKind`: text/geo/json/object_ref/user_ref; indexer auto-likes from `creator` |
 | `buildOdlUpdateCreateWithRankVoteOp` | `update_create` (aggregateRating) + `rank_vote` | Same tx |
 | `buildOdlUpdateVoteOp` | `update_vote` | `for` / `against` / `remove` |
 | `buildOdlRankVoteOp` | `rank_vote` | rank 0–10000 |

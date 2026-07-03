@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import {
-  buildOdlUpdateCreateWithLikeOp,
+  buildOdlUpdateCreateOp,
   buildOdlUpdateVoteOp,
 } from '@opden-data-layer/hive-broadcast';
 
@@ -194,7 +194,7 @@ export function ObjectTagsLeftRailSection({
           value: parsed.value,
           required_posting_auths: [voter],
         } as const;
-        const op = buildOdlUpdateCreateWithLikeOp(createInput);
+        const op = buildOdlUpdateCreateOp(createInput);
         const { transactionId } = await getWalletFacade().broadcast({
           operations: [op],
         });

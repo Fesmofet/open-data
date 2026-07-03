@@ -297,7 +297,6 @@ export function ObjectGalleryViewer({
           creator,
           itemValue,
           onChainGalleryAlbumNames,
-          withLike: false,
         });
         const { transactionId } = await getWalletFacade().broadcast({
           operations: [op],

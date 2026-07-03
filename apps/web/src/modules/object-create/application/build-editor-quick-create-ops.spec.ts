@@ -52,38 +52,6 @@ describe('buildEditorQuickCreateEvents', () => {
     expect(updateTypes).not.toContain(UPDATE_TYPES.IMAGE);
   });
 
-  it('appends update_vote when likeName is true', () => {
-    const { objectId, fields } = prepareEditorQuickCreateFields(
-      BASE.objectType,
-      BASE.language,
-      'Gadget',
-      'xyz',
-    );
-    const events = buildEditorQuickCreateEvents({
-      ...BASE,
-      objectId,
-      fields,
-      likeName: true,
-    });
-
-    const vote = events.find((e) => e.action === 'update_vote');
-    expect(vote).toBeDefined();
-    expect(vote?.payload).toMatchObject({
-      object_id: objectId,
-      voter: BASE.creator,
-      vote: 'for',
-    });
-    const nameCreate = events.find(
-      (e) =>
-        e.action === 'update_create' &&
-        (e.payload as { update_type?: string }).update_type === UPDATE_TYPES.NAME,
-    );
-    expect(nameCreate?.event_id).toBeTruthy();
-    expect(vote?.payload).toMatchObject({
-      create_event_id: nameCreate?.event_id,
-    });
-  });
-
   it('appends object_follow when followObject is true', () => {
     const { objectId, fields } = prepareEditorQuickCreateFields(
       BASE.objectType,

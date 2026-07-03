@@ -44,7 +44,7 @@ Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequence
 | Action | Handler class | Role (summary) |
 |--------|----------------|-----------------|
 | `object_create` | `ObjectCreateHandler` | Insert core object row |
-| `update_create` | `UpdateCreateHandler` | Insert update row; validate `object_type` / `update_type` against registries; run write guards |
+| `update_create` | `UpdateCreateHandler` | Insert update row; auto-insert creator validity vote `for`; validate `object_type` / `update_type` against registries; run write guards |
 | `update_vote` | `UpdateVoteHandler` | Validity votes |
 | `rank_vote` | `RankVoteHandler` | Rank votes; rejects single-cardinality targets; recomputes `object_updates.rank_score` |
 | `authority` | `AuthorityHandler` | Object authority edges |

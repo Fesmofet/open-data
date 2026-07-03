@@ -4,7 +4,6 @@ import {
   buildOdlObjectFollowOp,
   buildOdlRankVoteOp,
   buildOdlUpdateCreateOp,
-  buildOdlUpdateCreateWithLikeOp,
   buildOdlGalleryItemWithAlbumEnsureOp,
   buildOdlUpdateCreateWithRankVoteOp,
   buildOdlUpdateVoteOp,
@@ -120,43 +119,6 @@ describe('buildOdlUpdateCreateOp', () => {
     });
     const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
     expect(payload['locale']).toBeUndefined();
-  });
-});
-
-describe('buildOdlUpdateCreateWithLikeOp', () => {
-  const base = {
-    id: 'odl-testnet',
-    objectId: 'obj-1',
-    updateType: 'name',
-    creator: 'alice',
-    valueKind: 'text' as const,
-    value: 'My Business',
-    required_posting_auths: ['alice'] as const,
-  };
-
-  it('emits update_create with event_id then update_vote with create_event_id', () => {
-    const op = buildOdlUpdateCreateWithLikeOp(base);
-    const parsed = JSON.parse(op.json) as {
-      events: {
-        action: string;
-        event_id?: string;
-        payload: Record<string, unknown>;
-      }[];
-    };
-    expect(parsed.events).toHaveLength(2);
-    expect(parsed.events[0]?.action).toBe('update_create');
-    expect(parsed.events[1]?.action).toBe('update_vote');
-    const createEventId = parsed.events[0]?.event_id;
-    expect(createEventId).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
-    expect(parsed.events[1]?.payload['create_event_id']).toBe(createEventId);
-    expect(parsed.events[1]?.payload['vote']).toBe('for');
-    expect(parsed.events[1]?.payload['voter']).toBe('alice');
-    expect(parsed.events[1]?.payload['object_id']).toBe('obj-1');
-    expect(parsed.events[1]?.payload['update_id']).toBeUndefined();
-    expect(parsed.events[1]?.payload['transaction_id']).toBeUndefined();
-    expect(parsed.events[0]?.payload['transaction_id']).toBeUndefined();
   });
 });
 
@@ -398,34 +360,6 @@ describe('buildOdlGalleryItemWithAlbumEnsureOp', () => {
       value_json: {
         album: 'Photos',
         url: 'https://example.com/photo.jpg',
-      },
-    });
-  });
-
-  it('appends like vote on the gallery item when withLike is true', () => {
-    const op = buildOdlGalleryItemWithAlbumEnsureOp({
-      id: 'odl-testnet',
-      objectId: 'obj-1',
-      creator: 'alice',
-      albumName: 'Photos',
-      itemValue: { album: 'Photos', cid: 'bafy' },
-      withLike: true,
-      required_posting_auths: ['alice'],
-    });
-    const parsed = JSON.parse(op.json) as {
-      events: {
-        action: string;
-        event_id?: string;
-        payload: Record<string, unknown>;
-      }[];
-    };
-    expect(parsed.events).toHaveLength(3);
-    expect(parsed.events[1]?.event_id).toBeDefined();
-    expect(parsed.events[2]).toMatchObject({
-      action: 'update_vote',
-      payload: {
-        create_event_id: parsed.events[1]?.event_id,
-        vote: 'for',
       },
     });
   });

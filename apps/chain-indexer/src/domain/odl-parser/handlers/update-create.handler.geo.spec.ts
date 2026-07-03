@@ -5,6 +5,7 @@ import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner, GovernanceWriteGuard } from '../guards';
 import {
   defaultUpdateCreateUserRefDeps,
+  defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
 import { objectUpdateInsertValues } from '../../../repositories/object-update-insert-values';
@@ -53,6 +54,7 @@ describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
       defaultUpdateCreateUserRefDeps().accountSyncQueueRepository,
       defaultUpdateCreateUserRefDeps().hiveClient,
       new WriteGuardRunner([new GovernanceWriteGuard()]),
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       { emit: jest.fn() } as unknown as EventEmitter2,
     );
 

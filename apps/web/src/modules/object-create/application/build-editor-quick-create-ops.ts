@@ -23,14 +23,13 @@ import {
 } from './build-create-ops';
 
 export type OdlQuickCreateEvent = {
-  action: 'object_create' | 'update_create' | 'update_vote' | 'object_follow';
+  action: 'object_create' | 'update_create' | 'object_follow';
   v: 1;
   event_id?: string;
   payload: Record<string, unknown>;
 };
 
 export type BuildEditorQuickCreateOpsInput = BuildCreateOpsInput & {
-  likeName?: boolean;
   followObject?: boolean;
 };
 
@@ -129,7 +128,6 @@ export function buildEditorQuickCreateEvents(
   ];
 
   const acceptedFields: FieldEntry[] = [];
-  let nameEventId: string | undefined;
 
   for (const entry of fieldsForType) {
     if (
@@ -160,32 +158,11 @@ export function buildEditorQuickCreateEvents(
 
     acceptedFields.push(entry);
 
-    const isName = entry.updateType === UPDATE_TYPES.NAME;
-    const eventId =
-      isName && input.likeName ? crypto.randomUUID() : undefined;
-    if (eventId) {
-      nameEventId = eventId;
-    }
-
     events.push({
       action: 'update_create',
       v: 1,
-      ...(eventId ? { event_id: eventId } : {}),
       payload,
     });
-
-    if (isName && input.likeName && nameEventId) {
-      events.push({
-        action: 'update_vote',
-        v: 1,
-        payload: {
-          create_event_id: nameEventId,
-          object_id: input.objectId,
-          voter: input.creator,
-          vote: 'for',
-        },
-      });
-    }
   }
 
   const hasNameEvent = events.some(

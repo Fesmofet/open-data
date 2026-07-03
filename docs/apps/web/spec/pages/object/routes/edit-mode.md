@@ -28,8 +28,8 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | `+` click | Modal: optional update-type select (multi-type blocks), schema-driven value form, optional locale when `UPDATE_REGISTRY[type].localizable` |
 | Edit left rail | All supported slots show heading + `+` even when empty; order: **Name**, **Title**, Menu, Parent, Description, … (see `EDIT_MODE_LEFT_RAIL_BLOCK_ORDER`) |
 | Update count | Muted line under each field heading (e.g. `2 updates`); **click** navigates to the **Updates** tab and sets the feed `update_type` filter for that field |
-| Submit | Like checkbox (default on): `buildOdlUpdateCreateWithLikeOp` (create + vote in one trx) or off: `buildOdlUpdateCreateOp` only → wallet broadcast → `awaitTrxConfirmation` → `router.refresh()` |
-| Like | Footer checkbox labeled **Like**; when checked, envelope has `update_create` with `event_id` + `update_vote` with `create_event_id` pointing at that id |
+| Submit | `buildOdlUpdateCreateOp` → wallet broadcast → `awaitTrxConfirmation` → `router.refresh()` |
+| Creator vote | Indexer auto-inserts validity vote `for` from `creator` on every successful `update_create` (no client `update_vote` in create trx) |
 | `object_ref` value | Debounced object search (same as menu item); submitted as `value_text` = referenced `object_id` |
 | `geo` value | Latitude/longitude inputs + interactive map (click to set marker; inputs move marker) |
 | `walletAddress` value | Cryptocurrency `<select>` (`WALLET_SYMBOLS` from core) + address + optional title |
@@ -44,7 +44,7 @@ Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from serv
 
 ## Broadcast contract
 
-Built by `@opden-data-layer/hive-broadcast` **`buildOdlUpdateCreateOp`** or **`buildOdlUpdateCreateWithLikeOp`** (two events in one `custom_json`):
+Built by `@opden-data-layer/hive-broadcast` **`buildOdlUpdateCreateOp`** (single `update_create` event):
 
 ```json
 {
@@ -62,32 +62,9 @@ Built by `@opden-data-layer/hive-broadcast` **`buildOdlUpdateCreateOp`** or **`b
 }
 ```
 
-With Like enabled, the create event gets `event_id` (client UUID) and a second event is appended:
+`chain-indexer` **`UpdateCreateHandler`** persists the update, then best-effort inserts a validity vote `for` from `creator` (idempotent on `(update_id, voter)`). Clients no longer bundle `update_vote` in the same broadcast for self-likes.
 
-```json
-{
-  "events": [
-    {
-      "action": "update_create",
-      "v": 1,
-      "event_id": "<uuid>",
-      "payload": { "...": "..." }
-    },
-    {
-      "action": "update_vote",
-      "v": 1,
-      "payload": {
-        "create_event_id": "<same uuid>",
-        "object_id": "<id>",
-        "voter": "<hive account>",
-        "vote": "for"
-      }
-    }
-  ]
-}
-```
-
-`chain-indexer` stores Hive `transaction_id` on rows from the block context (not from payload). For same-broadcast votes it resolves `update_id` via `create_event_id` → envelope event index (`update-vote.handler.ts`). Separate broadcasts use explicit `update_id` in the vote payload.
+`chain-indexer` stores Hive `transaction_id` on rows from the block context (not from payload). On-chain `update_vote` events (other voters, tag reject/approve, etc.) still use explicit `update_id` or `create_event_id` resolution (`update-vote.handler.ts`).
 
 - Hive `custom_json.id`: `useOdlCustomJsonId()` from runtime `ODL_NETWORK` (see [auth.md](../../auth.md)).
 - Value field: `value_${value_kind}`, except `object_ref` → `value_text`.

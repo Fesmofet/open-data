@@ -13,6 +13,7 @@ import {
   AccountsCurrentRepository,
   ObjectsCoreRepository,
   ObjectUpdatesRepository,
+  ValidityVotesRepository,
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { coerceGeoUpdateRawValue } from '../coerce-geo-update-raw-value';
@@ -66,6 +67,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
     private readonly accountSyncQueueRepository: AccountSyncQueueRepository,
     private readonly hiveClient: HiveClient,
     private readonly writeGuardRunner: WriteGuardRunner,
+    private readonly validityVotesRepository: ValidityVotesRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -237,6 +239,18 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
 
     await this.objectUpdatesRepository.createReplacingIfPresent(replaceUpdateId, row);
+    try {
+      await this.validityVotesRepository.createIfAbsent({
+        update_id,
+        object_id,
+        voter: creator,
+        vote: 'for',
+        event_seq: ctx.eventSeq,
+        transaction_id: ctx.transactionId,
+      });
+    } catch (e) {
+      this.logger.error((e as Error).message);
+    }
     if (update_type === UPDATE_TYPES.STATUS) {
       const statusPayload = valueResult.data as { title: ObjectStatus; link: string };
       this.eventEmitter.emit(

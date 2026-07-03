@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
 import {
-  buildOdlUpdateCreateWithLikeOp,
+  buildOdlUpdateCreateOp,
 } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
@@ -104,7 +104,7 @@ export function ObjectStatusLeftRailSection({
         value: parsed.value,
         required_posting_auths: [voter],
       } as const;
-      const op = buildOdlUpdateCreateWithLikeOp(createInput);
+      const op = buildOdlUpdateCreateOp(createInput);
       const { transactionId } = await getWalletFacade().broadcast({
         operations: [op],
       });

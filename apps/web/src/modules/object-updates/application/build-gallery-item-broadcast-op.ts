@@ -2,7 +2,6 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import {
   buildOdlGalleryItemWithAlbumEnsureOp,
   buildOdlUpdateCreateOp,
-  buildOdlUpdateCreateWithLikeOp,
   type CustomJsonOp,
 } from '@opden-data-layer/hive-broadcast';
 
@@ -20,7 +19,6 @@ export function buildGalleryItemBroadcastOp(params: {
   creator: string;
   itemValue: unknown;
   onChainGalleryAlbumNames: readonly string[];
-  withLike: boolean;
 }): CustomJsonOp {
   const albumName = readAlbumName(params.itemValue);
   const ensureAlbum =
@@ -33,22 +31,17 @@ export function buildGalleryItemBroadcastOp(params: {
       creator: params.creator,
       albumName,
       itemValue: params.itemValue,
-      withLike: params.withLike,
       required_posting_auths: [params.creator],
     });
   }
 
-  const createInput = {
+  return buildOdlUpdateCreateOp({
     id: params.id,
     objectId: params.objectId,
     updateType: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
     creator: params.creator,
-    valueKind: 'json' as const,
+    valueKind: 'json',
     value: params.itemValue,
     required_posting_auths: [params.creator],
-  };
-
-  return params.withLike
-    ? buildOdlUpdateCreateWithLikeOp(createInput)
-    : buildOdlUpdateCreateOp(createInput);
+  });
 }

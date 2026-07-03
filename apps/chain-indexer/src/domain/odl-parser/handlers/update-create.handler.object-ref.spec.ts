@@ -34,6 +34,7 @@ jest.mock('@opden-data-layer/core', () => {
 import { UpdateCreateHandler } from './update-create.handler';
 import {
   defaultUpdateCreateUserRefDeps,
+  defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
 
@@ -102,6 +103,7 @@ describe('UpdateCreateHandler object_ref', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
     );
 
@@ -148,6 +150,7 @@ describe('UpdateCreateHandler object_ref', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
     );
 
@@ -194,6 +197,7 @@ describe('UpdateCreateHandler object_ref', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
     );
 

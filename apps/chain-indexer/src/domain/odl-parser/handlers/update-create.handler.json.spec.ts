@@ -6,6 +6,7 @@ import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner, GovernanceWriteGuard } from '../guards';
 import {
   defaultUpdateCreateUserRefDeps,
+  defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
 
@@ -56,6 +57,7 @@ describe('UpdateCreateHandler json payloads', () => {
       userRefDeps.accountSyncQueueRepository,
       userRefDeps.hiveClient,
       runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
     );
 
