@@ -1,5 +1,6 @@
 export type { ImageEditorConfig, ImageEditorExportParams } from './image-editor.types';
 export {
+  computeFitCropAndZoom,
   computeOutputDimensions,
   exportEditedImageBlob,
   getRadianAngle,

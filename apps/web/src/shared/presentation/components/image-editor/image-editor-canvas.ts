@@ -1,8 +1,12 @@
-import type { Area } from 'react-easy-crop';
+import type { Area, MediaSize, Point, Size } from 'react-easy-crop';
 
 import type { ImageEditorConfig, ImageEditorExportParams } from './image-editor.types';
 
 const DEG_TO_RAD = Math.PI / 180;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
 
 export function getRadianAngle(degree: number): number {
   return degree * DEG_TO_RAD;
@@ -19,6 +23,23 @@ export function rotateSize(
       Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
     height:
       Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+  };
+}
+
+/** Fit entire image inside crop area (CSS contain), centered. */
+export function computeFitCropAndZoom(
+  mediaSize: MediaSize,
+  cropSize: Size,
+  rotation: number,
+  minZoom: number,
+  maxZoom: number,
+): { crop: Point; zoom: number } {
+  const bbox = rotateSize(mediaSize.width, mediaSize.height, rotation);
+  const zoomW = cropSize.width / bbox.width;
+  const zoomH = cropSize.height / bbox.height;
+  return {
+    crop: { x: 0, y: 0 },
+    zoom: clamp(Math.min(zoomW, zoomH), minZoom, maxZoom),
   };
 }
 

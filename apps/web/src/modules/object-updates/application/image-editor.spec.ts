@@ -1,6 +1,7 @@
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import {
+  computeFitCropAndZoom,
   computeOutputDimensions,
   getRadianAngle,
   resolveEditorAspect,
@@ -8,6 +9,80 @@ import {
 } from '@/shared/presentation/components/image-editor/image-editor-canvas';
 
 import { imageEditorConfigForUpdateType } from './image-editor-config';
+
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 3;
+
+function mediaSize(width: number, height: number) {
+  return {
+    width,
+    height,
+    naturalWidth: width,
+    naturalHeight: height,
+  };
+}
+
+describe('computeFitCropAndZoom', () => {
+  const squareCrop = { width: 256, height: 256 };
+
+  it('centers landscape image in square crop with width-limited zoom', () => {
+    const result = computeFitCropAndZoom(
+      mediaSize(400, 300),
+      squareCrop,
+      0,
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+    expect(result.crop).toEqual({ x: 0, y: 0 });
+    expect(result.zoom).toBeCloseTo(256 / 400, 5);
+  });
+
+  it('centers portrait image in square crop with height-limited zoom', () => {
+    const result = computeFitCropAndZoom(
+      mediaSize(300, 600),
+      squareCrop,
+      0,
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+    expect(result.crop).toEqual({ x: 0, y: 0 });
+    expect(result.zoom).toBeCloseTo(256 / 600, 5);
+    expect(result.zoom).toBeLessThan(256 / 300);
+  });
+
+  it('swaps bbox at 90 degrees rotation', () => {
+    const result = computeFitCropAndZoom(
+      mediaSize(400, 300),
+      squareCrop,
+      90,
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+    expect(result.crop).toEqual({ x: 0, y: 0 });
+    expect(result.zoom).toBeCloseTo(256 / 400, 5);
+  });
+
+  it('clamps zoom to min and max bounds', () => {
+    const tinyCrop = { width: 10, height: 10 };
+    const huge = computeFitCropAndZoom(
+      mediaSize(4000, 3000),
+      tinyCrop,
+      0,
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+    expect(huge.zoom).toBe(MIN_ZOOM);
+
+    const small = computeFitCropAndZoom(
+      mediaSize(10, 10),
+      squareCrop,
+      0,
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+    expect(small.zoom).toBe(MAX_ZOOM);
+  });
+});
 
 describe('image-editor-canvas helpers', () => {
   it('computeOutputDimensions scales down to maxOutputPx', () => {

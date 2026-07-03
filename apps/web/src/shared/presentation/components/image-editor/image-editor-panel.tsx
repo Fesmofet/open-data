@@ -6,12 +6,12 @@ import Cropper, {
   type MediaSize,
   type Point,
   type Size,
-  getInitialCropFromCroppedAreaPercentages,
 } from 'react-easy-crop';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
+  computeFitCropAndZoom,
   exportEditedImageBlob,
   flipImageHorizontally,
   resolveEditorAspect,
@@ -87,22 +87,31 @@ export function ImageEditorPanel({
     (media: MediaSize) => {
       setMediaSize(media);
       setAspect(resolveEditorAspect(config, media.naturalWidth, media.naturalHeight));
+      if (shouldFitAfterReloadRef.current && cropSize) {
+        shouldFitAfterReloadRef.current = false;
+        const { crop: nextCrop, zoom: nextZoom } = computeFitCropAndZoom(
+          media,
+          cropSize,
+          rotation,
+          MIN_ZOOM,
+          MAX_ZOOM,
+        );
+        setCrop(nextCrop);
+        setZoom(nextZoom);
+      }
     },
-    [config],
+    [config, cropSize, rotation],
   );
 
   const applyFit = useCallback(
     (size: MediaSize | null, area: Size | null, rot: number) => {
       if (!size || !area) {
-        setCrop({ x: 0, y: 0 });
-        setZoom(MIN_ZOOM);
         return;
       }
-      const { crop: nextCrop, zoom: nextZoom } = getInitialCropFromCroppedAreaPercentages(
-        { x: 0, y: 0, width: 100, height: 100 },
+      const { crop: nextCrop, zoom: nextZoom } = computeFitCropAndZoom(
         size,
-        rot,
         area,
+        rot,
         MIN_ZOOM,
         MAX_ZOOM,
       );
@@ -125,12 +134,21 @@ export function ImageEditorPanel({
   }, [applyFit, cropSize, mediaSize, rotation]);
 
   const handleRotate = useCallback(() => {
-    setRotation((value) => {
-      const next = (value + 90) % 360;
-      applyFit(mediaSize, cropSize, next);
-      return next;
-    });
-  }, [applyFit, cropSize, mediaSize]);
+    if (!mediaSize || !cropSize) {
+      return;
+    }
+    const next = (rotation + 90) % 360;
+    const { crop: nextCrop, zoom: nextZoom } = computeFitCropAndZoom(
+      mediaSize,
+      cropSize,
+      next,
+      MIN_ZOOM,
+      MAX_ZOOM,
+    );
+    setRotation(next);
+    setCrop(nextCrop);
+    setZoom(nextZoom);
+  }, [cropSize, mediaSize, rotation]);
 
   const handleMirror = useCallback(async () => {
     if (isFlipping) {
@@ -145,11 +163,8 @@ export function ImageEditorPanel({
       }
       flippedUrlRef.current = flipped.url;
       setWorkingSrc(flipped.url);
-      setMediaSize(null);
-      setCropSize(null);
       setCroppedAreaPixels(null);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
+      setRotation(0);
       shouldFitAfterReloadRef.current = true;
     } catch {
       setExportError(t('object_create_image_upload_error'));
