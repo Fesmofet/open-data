@@ -67,6 +67,7 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_object_similar` | `GET .../similar` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
 | `get_object_add_on` | `GET .../add-on` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
 | `get_object_followers` | `GET .../followers` | [user-social-lists.md](user-social-lists.md) |
+| `get_object_experts` | `GET .../experts` | [object-experts.md](object-experts.md) |
 | `get_object_authority` | `GET .../authority` | [user-social-lists.md](user-social-lists.md) |
 | `get_object_updates` | `GET .../updates` | — |
 | `get_user_profile` | `GET .../profile` | [users-profile-endpoint.md](users-profile-endpoint.md) |
@@ -80,6 +81,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_favorites_types` | `GET .../favorites/types` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
 | `get_user_favorites` | `GET .../favorites` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
 | `post_user_favorites_map` | `POST .../favorites/map` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
+| `get_user_expertise_counters` | `GET .../expertise/counters` | [user-expertise.md](user-expertise.md) |
+| `get_user_expertise_objects` | `GET .../expertise/objects` | [user-expertise.md](user-expertise.md) |
 | `get_user_categories` | `GET .../categories` | [categories.md](categories.md) |
 | `get_user_shop_filters` | `GET .../shop/filters` | [shop-feed-endpoints.md](shop-feed-endpoints.md) |
 | `get_user_shop_objects` | `GET .../shop-objects` | [shop-feed-endpoints.md](shop-feed-endpoints.md) |

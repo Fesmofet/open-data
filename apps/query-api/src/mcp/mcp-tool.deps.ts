@@ -22,6 +22,7 @@ import type {
   GetObjectAuthorityEndpoint,
   GetObjectByIdEndpoint,
   GetObjectFollowersEndpoint,
+  GetObjectExpertsEndpoint,
   GetObjectRefListEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
@@ -45,6 +46,10 @@ import type {
   GetUserFavoritesTypesEndpoint,
   PostUserFavoritesMapEndpoint,
 } from '../domain/favorites';
+import type {
+  GetUserExpertiseCountersEndpoint,
+  GetUserExpertiseObjectsEndpoint,
+} from '../domain/expertise';
 import type { GetUserProfileEndpoint } from '../domain/users';
 import type {
   GetUserEngineTokenDelegationsEndpoint,
@@ -69,6 +74,7 @@ export interface McpToolDeps {
   getObjectRelatedAlbumPreview: GetObjectRelatedAlbumPreviewEndpoint;
   getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint;
   getObjectFollowers: GetObjectFollowersEndpoint;
+  getObjectExperts: GetObjectExpertsEndpoint;
   getObjectAuthority: GetObjectAuthorityEndpoint;
   getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint;
   getObjectPostsFeed: GetObjectPostsFeedEndpoint;
@@ -94,6 +100,8 @@ export interface McpToolDeps {
   getUserFavoritesTypes: GetUserFavoritesTypesEndpoint;
   getUserFavorites: GetUserFavoritesEndpoint;
   postUserFavoritesMap: PostUserFavoritesMapEndpoint;
+  getUserExpertiseCounters: GetUserExpertiseCountersEndpoint;
+  getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint;
   getUserCategories: GetUserCategoriesEndpoint;
   getUserShopObjects: GetUserShopObjectsEndpoint;
   getUserShopSections: GetUserShopSectionsEndpoint;

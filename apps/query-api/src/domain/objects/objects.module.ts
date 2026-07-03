@@ -6,6 +6,7 @@ import { RepositoriesModule } from '../../repositories';
 import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
 import { GetNestedObjectsEndpoint } from './get-nested-objects.endpoint';
 import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
+import { GetObjectExpertsEndpoint } from './get-object-experts.endpoint';
 import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
 import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
 import {
@@ -26,6 +27,7 @@ import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
     GetObjectByIdEndpoint,
     GetNestedObjectsEndpoint,
     GetObjectFollowersEndpoint,
+    GetObjectExpertsEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
     ObjectRelatedAlbumQuerySupport,
@@ -37,6 +39,7 @@ import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
     GetObjectByIdEndpoint,
     GetNestedObjectsEndpoint,
     GetObjectFollowersEndpoint,
+    GetObjectExpertsEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
     ObjectRelatedAlbumQuerySupport,

@@ -8,6 +8,7 @@ import { SearchModule } from '../domain/search';
 import { ShopModule } from '../domain/shop/shop.module';
 import { SocialModule } from '../domain/social/social.module';
 import { FavoritesModule } from '../domain/favorites/favorites.module';
+import { ExpertiseModule } from '../domain/expertise/expertise.module';
 import { UsersModule } from '../domain/users';
 import { WalletModule } from '../domain/wallet';
 import { McpController } from './mcp.controller';
@@ -23,6 +24,7 @@ import { McpService } from './mcp.service';
     ShopModule,
     SocialModule,
     FavoritesModule,
+    ExpertiseModule,
     SearchModule,
     DiscoverModule,
     WalletModule,

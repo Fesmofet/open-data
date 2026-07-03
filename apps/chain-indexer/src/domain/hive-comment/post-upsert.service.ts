@@ -372,6 +372,7 @@ export class PostUpsertService {
       total_payout_waiv: 0,
       total_rewards_waiv: 0,
       rewards_finalized_at: null,
+      expertise_applied_at: null,
       created_unix: createdUnix,
     };
   }

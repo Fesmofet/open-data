@@ -2898,5 +2898,6 @@
   "СЃommunity_actions": "コミュニティのアクション",
   "object_edit_status_apply": "適用",
   "object_edit_status_category": "カテゴリ",
-  "object_edit_status_relisted_object": "再リストされたオブジェクト"
+  "object_edit_status_relisted_object": "再リストされたオブジェクト",
+  "social_list_empty_experts": "No experts to show yet."
 }

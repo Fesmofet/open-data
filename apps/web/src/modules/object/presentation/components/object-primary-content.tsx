@@ -150,6 +150,8 @@ export type ObjectPrimaryContentProps = {
   objectThreadsFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
+  /** Injected feed (client) when the Experts tab is active. */
+  objectExpertsFeed?: ReactNode | null;
   /** Injected feed (client) when the Authority tab is active. */
   objectAuthorityFeed?: ReactNode | null;
   objectRelatedFeed?: ReactNode | null;
@@ -191,6 +193,7 @@ export function ObjectPrimaryContent({
   objectPostsFeed,
   objectThreadsFeed,
   objectFollowersFeed,
+  objectExpertsFeed,
   objectAuthorityFeed,
   objectRelatedFeed,
   objectSimilarFeed,
@@ -546,6 +549,25 @@ export function ObjectPrimaryContent({
     }
 
     if (activePrimarySegment === 'followers') {
+      return (
+        <FeedColumn>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+            <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+            <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
+          </div>
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'experts' && objectExpertsFeed != null) {
+      return (
+        <FeedColumn>
+          {objectExpertsFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'experts') {
       return (
         <FeedColumn>
           <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">

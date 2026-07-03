@@ -22,6 +22,7 @@ import { DiscoverRepository } from './discover.repository';
 import { ObjectRefListRepository } from './object-ref-list.repository';
 import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 import { UserFavoritesRepository } from './user-favorites.repository';
+import { UserObjectExpertiseRepository } from './user-object-expertise.repository';
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 import { WalletExemptionsRepository } from './wallet-exemptions.repository';
@@ -54,6 +55,7 @@ import { WaivGeneratedReportsRepository } from './waiv-generated-reports.reposit
     ObjectRefListRepository,
     PostObjectRelatedImagesRepository,
     UserFavoritesRepository,
+    UserObjectExpertiseRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
     WalletExemptionsRepository,
@@ -85,6 +87,7 @@ import { WaivGeneratedReportsRepository } from './waiv-generated-reports.reposit
     ObjectRefListRepository,
     PostObjectRelatedImagesRepository,
     UserFavoritesRepository,
+    UserObjectExpertiseRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
     WalletExemptionsRepository,

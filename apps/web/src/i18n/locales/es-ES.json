@@ -2990,5 +2990,6 @@
   "СЃommunity_actions": "Acciones de la comunidad",
   "object_edit_status_apply": "Aplicar",
   "object_edit_status_category": "Categoría",
-  "object_edit_status_relisted_object": "Objeto relistado"
+  "object_edit_status_relisted_object": "Objeto relistado",
+  "social_list_empty_experts": "No experts to show yet."
 }

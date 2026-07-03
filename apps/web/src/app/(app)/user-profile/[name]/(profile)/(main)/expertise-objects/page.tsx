@@ -1,5 +1,15 @@
-import { ProfileRouteStub } from '@/modules/user-profile';
+import { ProfileExpertiseMainContent } from '@/modules/user-profile/presentation/components/profile-expertise-main-content';
 
-export default function UserProfileExpertiseObjectsPage() {
-  return <ProfileRouteStub title="Expertise — objects" description="Object expertise list." />;
+export default async function UserProfileExpertiseObjectsPage({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}) {
+  const { name } = await params;
+  return (
+    <ProfileExpertiseMainContent
+      accountName={decodeURIComponent(name)}
+      scope="objects"
+    />
+  );
 }

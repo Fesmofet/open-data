@@ -60,6 +60,9 @@ export default () => {
       delaySec: env.POST_REWARDS_FINALIZE_DELAY_SEC,
       batchSize: env.POST_REWARDS_FINALIZE_BATCH_SIZE,
     },
+    postExpertiseBackfill: {
+      batchSize: env.POST_EXPERTISE_BACKFILL_BATCH_SIZE,
+    },
     postRewardReconcile: {
       batchSize: env.POST_REWARD_RECONCILE_BATCH_SIZE,
     },

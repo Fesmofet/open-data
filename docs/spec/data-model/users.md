@@ -31,6 +31,7 @@ Constants: `REFERRAL_TYPES`, `REFERRAL_STATUSES`, `SUPPORTED_CURRENCIES` in `@op
 | **user_subscriptions** | `SubscriptionSchema` follower/following + `bell` + `created_at` (relationship time; default `NOW()`, backfilled from Mongo `_id` where available). |
 | **user_account_mutes** | Hive social ignore pairs (`muter`, `muted`); PK `(muter, muted)`. |
 | **user_object_follows** | `objects_follow[]` with `object_id` in `objects_core`; `bell` default false (Mongo had no per-field bell). `created_at` defaults `NOW()`; migrated rows use user document `_id` time as an approximation. |
+| **user_object_expertise** | Per-user per-object post-author expertise (`user_name` + `author_permlink` + `weight` from legacy `user_expertise`). Aggregate `accounts_current.wobjects_weight` remains denormalized. |
 
 ## Entity relationship
 
@@ -41,7 +42,9 @@ erDiagram
   AccountsCurrent ||--o{ UserReferral : "has"
   AccountsCurrent ||--o{ UserPostBookmark : "has"
   AccountsCurrent ||--o{ UserObjectFollow : "follows"
+  AccountsCurrent ||--o{ UserObjectExpertise : "expertise_on"
   ObjectsCore ||--o{ UserObjectFollow : "followed_by"
+  ObjectsCore ||--o{ UserObjectExpertise : "expertise_for"
 
   AccountsCurrent {
     text name PK
@@ -74,6 +77,7 @@ erDiagram
 | user_shop_deselect | `(account)` | List deselected post-linked objects per user |
 | user_subscriptions | `(following)`, `(following, created_at DESC)`, `(follower, created_at DESC)` | Followers of an account; recency listings |
 | user_object_follows | `(object_id)`, `(account, created_at DESC)` | Who follows an object |
+| user_object_expertise | `(account, weight DESC)`, `(object_id)` | Profile expertise lists |
 | post_objects | `(author)` | Shop/favorites: filter post-linked objects by profile author |
 
 ## Data import

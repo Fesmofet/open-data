@@ -23,6 +23,8 @@ import { SiteRegistryDailyRunner } from '../jobs/site-registry-daily.runner';
 import { PostRewardReconcileRunner } from '../jobs/post-reward-reconcile.runner';
 import { PostRewardsFinalizeRunner } from '../jobs/post-rewards-finalize.runner';
 import { WaivPowerAvgRunner } from '../jobs/waiv-power-avg.runner';
+import { PostExpertiseService } from '../domain/post-expertise/post-expertise.service';
+import { PostExpertiseBackfillRunner } from '../jobs/post-expertise-backfill.runner';
 import { PostRewardsFinalizeQueue } from '../queues/post-rewards-finalize.queue';
 import { PostWaivReconcileQueue } from '../queues/post-waiv-reconcile.queue';
 import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
@@ -115,6 +117,8 @@ import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
     WaivPowerAvgRunner,
     PostRewardReconcileRunner,
     PostRewardsFinalizeRunner,
+    PostExpertiseBackfillRunner,
+    PostExpertiseService,
     PostWaivReconcileQueue,
     PostRewardsFinalizeQueue,
     WaivRewardPoolCache,

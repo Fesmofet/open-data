@@ -13,6 +13,7 @@ import {
   GetObjectByIdEndpoint,
   GetNestedObjectsEndpoint,
   GetObjectFollowersEndpoint,
+  GetObjectExpertsEndpoint,
   GetObjectAuthorityEndpoint,
   GetObjectRefListEndpoint,
   GetObjectRelatedAlbumEndpoint,
@@ -32,6 +33,9 @@ import {
   type ResolveNestedObjectsResponse,
   type ObjectRefListQuery,
   type ObjectRefListResponseDto,
+  objectExpertListQuerySchema,
+  type PaginatedObjectExpertList,
+  type ObjectExpertListQuery,
 } from '../domain/objects';
 import {
   userSocialListQuerySchema,
@@ -69,6 +73,7 @@ export class ObjectsController {
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
     private readonly getUpdateVoters: GetUpdateVotersEndpoint,
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
+    private readonly getObjectExpertsEndpoint: GetObjectExpertsEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
     private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
     private readonly getObjectRelatedAlbumPreviewEndpoint: GetObjectRelatedAlbumPreviewEndpoint,
@@ -209,6 +214,20 @@ export class ObjectsController {
   ): Promise<PaginatedUserFollowList> {
     const decodedId = decodeURIComponent(objectId);
     const result = await this.getObjectFollowersEndpoint.execute(decodedId, query, viewer);
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/experts')
+  async getObjectExpertsList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectExpertListQuerySchema)) query: ObjectExpertListQuery,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedObjectExpertList> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectExpertsEndpoint.execute(decodedId, query, viewer);
     if (!result) {
       throw new NotFoundException(`Object not found: ${decodedId}`);
     }

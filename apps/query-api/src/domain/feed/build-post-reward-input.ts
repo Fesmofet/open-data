@@ -1,7 +1,7 @@
 import type { HiveContentType } from '@opden-data-layer/clients';
 import type { Post } from '@opden-data-layer/core';
 
-import { parsePayoutAmount } from './calculate-post-reward-usd';
+import { parsePayoutAmount } from '@opden-data-layer/core';
 import type { PostRewardInput } from './post-reward.types';
 
 function mapBeneficiaries(

@@ -37,6 +37,7 @@ Runs once per post after cashout (+ `POST_REWARDS_FINALIZE_DELAY_SEC`, default 9
 2. `getContent` → Hive payout columns.
 3. WAIV-eligible: history `comments_authorReward` + `comments_beneficiaryReward` (sum × 2, legacy); `total_rewards_waiv = max(realtime, history)`. Curation stays in realtime HE only.
 4. Sets `rewards_finalized_at`; removes ZSET member.
+5. **`PostExpertiseService.applyForPost`** — author expertise to `user_object_expertise` + weight aggregates; sets `expertise_applied_at`. See [`post-expertise.md`](post-expertise.md).
 
 Realtime HE reward events remain in chain-indexer; finalize is authoritative closure.
 

@@ -2898,5 +2898,6 @@
   "СЃommunity_actions": "Akce komunity",
   "object_edit_status_apply": "Použít",
   "object_edit_status_category": "Kategorie",
-  "object_edit_status_relisted_object": "Znovu vystavený objekt"
+  "object_edit_status_relisted_object": "Znovu vystavený objekt",
+  "social_list_empty_experts": "No experts to show yet."
 }

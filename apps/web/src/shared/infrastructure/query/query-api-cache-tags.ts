@@ -5,6 +5,8 @@ export const queryApiCacheTags = {
     `query-api:object:${objectId.trim()}:authority`,
   objectFollowers: (objectId: string) =>
     `query-api:object:${objectId.trim()}:followers`,
+  objectExperts: (objectId: string) =>
+    `query-api:object:${objectId.trim()}:experts`,
   objectUpdates: (objectId: string) => `query-api:object:${objectId.trim()}:updates`,
   objectPostsFeed: (objectId: string) => `query-api:object:${objectId.trim()}:posts-feed`,
   objectThreadsFeed: (objectId: string) => `query-api:object:${objectId.trim()}:threads-feed`,
@@ -22,6 +24,10 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:favorites`,
   userFavoritesMap: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:favorites-map`,
+  userExpertiseCounters: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:expertise-counters`,
+  userExpertise: (accountName: string, scope: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:expertise:${scope}`,
   userBlogFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:blog-feed`,
   userThreadsFeed: (accountName: string) =>

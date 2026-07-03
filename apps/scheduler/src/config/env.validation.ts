@@ -99,6 +99,7 @@ export const schedulerConfigSchema = z.object({
   HIVE_ENGINE_HISTORY_URL_ROTATION_DB: z.coerce.number().optional().default(0),
   POST_REWARDS_FINALIZE_DELAY_SEC: z.coerce.number().optional().default(900),
   POST_REWARDS_FINALIZE_BATCH_SIZE: z.coerce.number().optional().default(50),
+  POST_EXPERTISE_BACKFILL_BATCH_SIZE: z.coerce.number().optional().default(100),
   POST_REWARD_RECONCILE_BATCH_SIZE: z.coerce.number().optional().default(50),
 });
 

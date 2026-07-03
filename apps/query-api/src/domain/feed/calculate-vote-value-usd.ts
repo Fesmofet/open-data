@@ -1,4 +1,4 @@
-import { parsePayoutAmount } from './calculate-post-reward-usd';
+import { parsePayoutAmount } from '@opden-data-layer/core';
 
 export type VoteValuePostContext = {
   pendingPayoutValue: string;

@@ -3006,5 +3006,6 @@
   "СЃommunity_actions": "Действия сообщества",
   "object_edit_status_apply": "Применить",
   "object_edit_status_category": "Категория",
-  "object_edit_status_relisted_object": "Перенесённый объект"
+  "object_edit_status_relisted_object": "Перенесённый объект",
+  "social_list_empty_experts": "No experts to show yet."
 }

@@ -30,6 +30,7 @@ import {
   GetObjectAuthorityEndpoint,
   GetObjectByIdEndpoint,
   GetObjectFollowersEndpoint,
+  GetObjectExpertsEndpoint,
   GetObjectRefListEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
@@ -51,6 +52,10 @@ import {
   GetUserFavoritesTypesEndpoint,
   PostUserFavoritesMapEndpoint,
 } from '../domain/favorites';
+import {
+  GetUserExpertiseCountersEndpoint,
+  GetUserExpertiseObjectsEndpoint,
+} from '../domain/expertise';
 import { GetUserProfileEndpoint } from '../domain/users';
 import {
   GetUserEngineTokenDelegationsEndpoint,
@@ -83,6 +88,7 @@ export class McpService {
     private readonly getObjectRelatedAlbumPreview: GetObjectRelatedAlbumPreviewEndpoint,
     private readonly getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint,
     private readonly getObjectFollowers: GetObjectFollowersEndpoint,
+    private readonly getObjectExperts: GetObjectExpertsEndpoint,
     private readonly getObjectAuthority: GetObjectAuthorityEndpoint,
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
     private readonly getObjectPostsFeed: GetObjectPostsFeedEndpoint,
@@ -108,6 +114,8 @@ export class McpService {
     private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
     private readonly getUserFavorites: GetUserFavoritesEndpoint,
     private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
+    private readonly getUserExpertiseCounters: GetUserExpertiseCountersEndpoint,
+    private readonly getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
@@ -132,6 +140,7 @@ export class McpService {
       getObjectRelatedAlbumPreview: this.getObjectRelatedAlbumPreview,
       getObjectRelatedAlbum: this.getObjectRelatedAlbum,
       getObjectFollowers: this.getObjectFollowers,
+      getObjectExperts: this.getObjectExperts,
       getObjectAuthority: this.getObjectAuthority,
       getObjectUpdatesFeed: this.getObjectUpdatesFeed,
       getObjectPostsFeed: this.getObjectPostsFeed,
@@ -157,6 +166,8 @@ export class McpService {
       getUserFavoritesTypes: this.getUserFavoritesTypes,
       getUserFavorites: this.getUserFavorites,
       postUserFavoritesMap: this.postUserFavoritesMap,
+      getUserExpertiseCounters: this.getUserExpertiseCounters,
+      getUserExpertiseObjects: this.getUserExpertiseObjects,
       getUserCategories: this.getUserCategories,
       getUserShopObjects: this.getUserShopObjects,
       getUserShopSections: this.getUserShopSections,

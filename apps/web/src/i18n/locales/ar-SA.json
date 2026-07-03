@@ -2159,5 +2159,6 @@
   "СЃommunity_actions": "إجراءات المجتمع",
   "object_edit_status_apply": "تطبيق",
   "object_edit_status_category": "الفئة",
-  "object_edit_status_relisted_object": "كائن معاد إدراجه"
+  "object_edit_status_relisted_object": "كائن معاد إدراجه",
+  "social_list_empty_experts": "No experts to show yet."
 }

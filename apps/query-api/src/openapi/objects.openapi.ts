@@ -13,6 +13,7 @@ const projectedObjectWithCountsSchema = registry.register(
   'ProjectedObjectWithCounts',
   projectedObjectOpenApiSchema.extend({
     followers_count: z.number().int(),
+    experts_count: z.number().int(),
     posts_count: z.number().int(),
     updates_count: z.number().int(),
     administrative_count: z.number().int(),
@@ -34,6 +35,33 @@ const notFoundSchema = z.object({
   error: z.string(),
 });
 
+const objectExpertListItemSchema = registry.register(
+  'ObjectExpertListItem',
+  z.object({
+    name: z.string().openapi({ description: '`accounts_current.name`' }),
+    avatarUrl: z.string().nullable().openapi({ description: '`accounts_current.profile_image`.' }),
+    objectExpertiseWeight: z
+      .number()
+      .openapi({ description: '`user_object_expertise.weight` for this object (not global wobjects_weight).' }),
+    usersFollowingCount: z
+      .number()
+      .openapi({ description: '`accounts_current.users_following_count` (followers of this account).' }),
+    isCurrentFollowing: z.boolean().openapi({
+      description:
+        'True when the request viewer (`X-Viewer`) has a `user_subscriptions` edge to this account.',
+    }),
+  }),
+);
+
+const paginatedObjectExpertListOpenApiSchema = registry.register(
+  'PaginatedObjectExpertList',
+  z.object({
+    items: z.array(objectExpertListItemSchema),
+    total: z.number().int(),
+    hasMore: z.boolean(),
+  }),
+);
+
 const resolveObjectRequestSchema = registry.register('ResolveObjectBody', resolveObjectBodySchema);
 
 registry.registerPath({
@@ -42,7 +70,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Resolve projected object by id',
   description:
-    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Includes `followers_count` from `user_object_follows`, `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, and `administrative_count` / `ownership_count` from `object_authority` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
+    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Includes `followers_count` from `user_object_follows`, `experts_count` from `user_object_expertise` (accounts with `weight > 0` on this object), `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, and `administrative_count` / `ownership_count` from `object_authority` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({
@@ -246,6 +274,52 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: paginatedUserFollowListOpenApiSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found or not active.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/experts',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'List accounts with expertise on the object',
+  description:
+    'Joins `user_object_expertise` (where `object_id` matches an active object and `weight > 0`) with `accounts_current`. Sorted by per-object expertise weight descending. Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: z.object({
+      skip: z.coerce.number().int().min(0).optional().openapi({ description: 'Pagination offset.' }),
+      limit: z.coerce.number().int().min(0).max(50).optional().openapi({
+        description: 'Page size; use `0` for total/hasMore only (no rows).',
+      }),
+    }),
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description: 'Optional viewer account; populates `isCurrentFollowing` per row.',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Paginated expert accounts for the object.',
+      content: {
+        'application/json': {
+          schema: paginatedObjectExpertListOpenApiSchema,
         },
       },
     },

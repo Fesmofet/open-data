@@ -13,6 +13,7 @@ import {
   objectAuthorityQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
+import { objectExpertListQuerySchema } from '../../domain/objects/object-expert-list.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
@@ -197,6 +198,31 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
       const result = await deps.getObjectFollowers.execute(
         object_id,
         { sort, skip, limit },
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_object_experts',
+    {
+      description: catalogDescription('get_object_experts'),
+      inputSchema: withMcpLocaleContext(
+        objectExpertListQuerySchema.extend({
+          object_id: z.string().min(1).describe('Object id'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { object_id, skip, limit } = args;
+      const result = await deps.getObjectExperts.execute(
+        object_id,
+        { skip, limit },
         ctx.viewerAccount,
       );
       if (!result) {

@@ -2898,5 +2898,6 @@
   "СЃommunity_actions": "Gemeenskapsaksies",
   "object_edit_status_apply": "Pas toe",
   "object_edit_status_category": "Kategorie",
-  "object_edit_status_relisted_object": "Herlysde voorwerp"
+  "object_edit_status_relisted_object": "Herlysde voorwerp",
+  "social_list_empty_experts": "No experts to show yet."
 }

@@ -16,7 +16,7 @@ updated_at: 2026-06-10
 
 # Object page — navigation & transitions
 
-**Back:** [web overview](../../overview.md) · **Related:** [page-shell.md](page-shell.md), [right-rail.md](routes/right-rail.md), [updates.md](routes/updates.md), [followers.md](routes/followers.md), [authority.md](routes/authority.md), [gallery.md](routes/gallery.md)
+**Back:** [web overview](../../overview.md) · **Related:** [page-shell.md](page-shell.md), [right-rail.md](routes/right-rail.md), [updates.md](routes/updates.md), [followers.md](routes/followers.md), [experts.md](routes/experts.md), [authority.md](routes/authority.md), [gallery.md](routes/gallery.md)
 
 ## Scope
 

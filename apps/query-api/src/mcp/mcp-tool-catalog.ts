@@ -96,6 +96,12 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-social-lists.md',
   },
   {
+    name: 'get_object_experts',
+    description: 'Users with per-object expertise on an object.',
+    httpEquivalent: 'GET /query/v1/objects/:id/experts',
+    specPath: 'docs/apps/query-api/spec/object-experts.md',
+  },
+  {
     name: 'get_object_authority',
     description: 'Authority holders for an object (administrative roles).',
     httpEquivalent: 'GET /query/v1/objects/:id/authority',
@@ -250,6 +256,18 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     description: 'Geo-filtered favorites in a bounding box for profile map.',
     httpEquivalent: 'POST /query/v1/users/:name/favorites/map',
     specPath: 'docs/apps/query-api/spec/users-favorites-endpoint.md',
+  },
+  {
+    name: 'get_user_expertise_counters',
+    description: 'Hashtag and object expertise counts for a profile.',
+    httpEquivalent: 'GET /query/v1/users/:name/expertise/counters',
+    specPath: 'docs/apps/query-api/spec/user-expertise.md',
+  },
+  {
+    name: 'get_user_expertise_objects',
+    description: 'Paginated expertise objects for a profile (hashtags or objects scope).',
+    httpEquivalent: 'GET /query/v1/users/:name/expertise/objects',
+    specPath: 'docs/apps/query-api/spec/user-expertise.md',
   },
   {
     name: 'get_user_categories',

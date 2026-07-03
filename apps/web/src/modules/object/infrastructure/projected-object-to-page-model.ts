@@ -119,6 +119,7 @@ function kindLabelFallback(switcher: ObjectSwitcherKind): string {
 function primaryTabs(
   updatesCount: number,
   followersCount: number,
+  expertsCount: number,
 ): ObjectPrimaryTabView[] {
   return [
     { segment: 'reviews', label: 'Reviews' },
@@ -126,7 +127,7 @@ function primaryTabs(
     { segment: 'updates', label: 'Updates', count: updatesCount },
     { segment: 'authority', label: 'Authority' },
     { segment: 'followers', label: 'Followers', count: followersCount },
-    { segment: 'experts', label: 'Experts' },
+    { segment: 'experts', label: 'Experts', count: expertsCount },
   ];
 }
 
@@ -560,7 +561,7 @@ export function projectedObjectWithCountsToPageModel(
     galleryAlbums,
     onChainGalleryAlbumNames,
     rating01To5: objectFields.ratingStars01To5(viewLike),
-    primaryTabs: primaryTabs(api.updates_count, api.followers_count),
+    primaryTabs: primaryTabs(api.updates_count, api.followers_count, api.experts_count),
     feedSubTabs: FEED_SUB_TABS,
     hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,

@@ -6,6 +6,7 @@ import {
   ObjectUpdatesRepository,
   PostsRepository,
   UserObjectFollowsRepository,
+  UserObjectExpertiseRepository,
 } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
@@ -30,6 +31,7 @@ export class GetObjectByIdEndpoint {
     private readonly governanceResolver: GovernanceResolverService,
     private readonly objectProjectionService: ObjectProjectionService,
     private readonly userObjectFollowsRepo: UserObjectFollowsRepository,
+    private readonly userObjectExpertiseRepo: UserObjectExpertiseRepository,
     private readonly objectUpdatesRepo: ObjectUpdatesRepository,
     private readonly objectAuthorityRepo: ObjectAuthorityRepository,
     private readonly postsRepo: PostsRepository,
@@ -72,6 +74,7 @@ export class GetObjectByIdEndpoint {
       projected,
       update_type_counts,
       followers_count,
+      experts_count,
       posts_count,
       administrative_count,
       ownership_count,
@@ -87,6 +90,7 @@ export class GetObjectByIdEndpoint {
       }),
       this.objectUpdatesRepo.countByObjectIdGroupByUpdateType(objectId),
       this.userObjectFollowsRepo.countByObjectId(objectId),
+      this.userObjectExpertiseRepo.countByObjectId(objectId),
       this.postsRepo.countPostObjectsByObjectId(objectId),
       this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
       this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
@@ -100,6 +104,7 @@ export class GetObjectByIdEndpoint {
     return {
       ...projected,
       followers_count,
+      experts_count,
       posts_count,
       updates_count,
       administrative_count,

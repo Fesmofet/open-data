@@ -6,6 +6,8 @@ export type UserProfileSocialCounts = {
   followerCount: number;
   followingCount: number;
   followingObjectsCount: number;
+  hashtagsExpCount?: number;
+  objectsExpCount?: number;
 };
 
 const UserProfileSocialCountsContext =

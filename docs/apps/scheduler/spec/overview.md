@@ -55,6 +55,7 @@ Tables `scheduler_job_runs` and `scheduler_job_queue` are in `libs/migrations` (
 | Spec | Summary |
 |------|---------|
 | [Post rewards](post-rewards.md) | WAIV reconcile + post-cashout finalize (Redis queues from chain-indexer) |
+| [Post expertise](post-expertise.md) | Author expertise at finalize + backfill job |
 
 ## Related code
 

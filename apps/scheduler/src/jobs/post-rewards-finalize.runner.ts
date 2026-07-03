@@ -11,6 +11,7 @@ import {
 import type { JobHandlerContext } from './cron-job.types';
 import { PostRewardsFinalizeQueue } from '../queues/post-rewards-finalize.queue';
 import { PostsRewardRepository } from '../repositories/posts-reward.repository';
+import { PostExpertiseService } from '../domain/post-expertise/post-expertise.service';
 
 const WAIV_HISTORY_AUTHOR_BEN_OPS =
   'comments_authorReward,comments_beneficiaryReward';
@@ -50,6 +51,7 @@ export class PostRewardsFinalizeRunner implements OnModuleInit {
     private readonly hiveClient: HiveClient,
     private readonly historyClient: HiveEngineHistoryClient,
     private readonly finalizeQueue: PostRewardsFinalizeQueue,
+    private readonly postExpertiseService: PostExpertiseService,
   ) {}
 
   onModuleInit(): void {
@@ -211,6 +213,13 @@ export class PostRewardsFinalizeRunner implements OnModuleInit {
     );
     if (ok) {
       await this.finalizeQueue.remove(author, permlink);
+      try {
+        await this.postExpertiseService.applyForPost(author, permlink);
+      } catch (e) {
+        this.logger.error(
+          `expertise apply after finalize failed ${author}/${permlink}: ${(e as Error).message}`,
+        );
+      }
     }
     return ok;
   }

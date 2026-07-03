@@ -9,6 +9,7 @@ import {
   UserProfilePendingNavSync,
   UserProfileSocialCountsProvider,
 } from '@/modules/user-profile';
+import { fetchExpertiseCountsForProfile } from '@/modules/user-profile/presentation/components/profile-expertise-main-content';
 import { getUserFollowingObjectsPageQuery } from '@/modules/user-social';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
@@ -27,7 +28,7 @@ export default async function ProfileGroupLayout({
   const viewer = viewerUser?.username ?? null;
   const locale = await getRequestLocale();
 
-  const [profile, objectsHead] = await Promise.all([
+  const [profile, objectsHead, expertiseCounts] = await Promise.all([
     getUserProfileQuery(decoded, viewer, locale),
     getUserFollowingObjectsPageQuery(
       decoded,
@@ -35,6 +36,7 @@ export default async function ProfileGroupLayout({
       locale,
       viewer,
     ),
+    fetchExpertiseCountsForProfile(decoded),
   ]);
   if (!profile) {
     notFound();
@@ -46,6 +48,8 @@ export default async function ProfileGroupLayout({
         followerCount: profile.followerCount,
         followingCount: profile.followingCount,
         followingObjectsCount: objectsHead.total,
+        hashtagsExpCount: expertiseCounts.hashtagsExpCount,
+        objectsExpCount: expertiseCounts.objectsExpCount,
       }}
     >
       <UserProfilePendingNavRoot>

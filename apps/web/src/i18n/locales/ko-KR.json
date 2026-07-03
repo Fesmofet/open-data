@@ -2160,5 +2160,6 @@
   "СЃommunity_actions": "커뮤니티 활동",
   "object_edit_status_apply": "적용",
   "object_edit_status_category": "카테고리",
-  "object_edit_status_relisted_object": "재상장된 객체"
+  "object_edit_status_relisted_object": "재상장된 객체",
+  "social_list_empty_experts": "No experts to show yet."
 }

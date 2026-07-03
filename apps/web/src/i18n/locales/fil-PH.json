@@ -2160,5 +2160,6 @@
   "СЃommunity_actions": "Mga aksyon sa pamayanan",
   "object_edit_status_apply": "Ilapat",
   "object_edit_status_category": "Kategorya",
-  "object_edit_status_relisted_object": "Muling inilista na bagay"
+  "object_edit_status_relisted_object": "Muling inilista na bagay",
+  "social_list_empty_experts": "No experts to show yet."
 }

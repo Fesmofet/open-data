@@ -28,6 +28,8 @@ export { DiscoverRepository } from './discover.repository';
 export { ObjectRefListRepository } from './object-ref-list.repository';
 export { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 export { UserFavoritesRepository } from './user-favorites.repository';
+export { UserObjectExpertiseRepository } from './user-object-expertise.repository';
+export type { UserExpertiseScope, UserExpertiseRow } from './user-object-expertise.repository';
 export type { FavoritesScopeParams } from './user-favorites.repository';
 export { UserDelegationsRepository } from './user-delegations.repository';
 export { UserRcDelegationsRepository } from './user-rc-delegations.repository';

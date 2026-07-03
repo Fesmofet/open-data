@@ -67,6 +67,14 @@ import {
   type UserFavoritesQuery,
   type UserFavoritesTypesResponse,
 } from '../domain/favorites';
+import {
+  GetUserExpertiseCountersEndpoint,
+  GetUserExpertiseObjectsEndpoint,
+  userExpertiseObjectsQuerySchema,
+  type PaginatedExpertiseObjects,
+  type UserExpertiseCountersResponse,
+  type UserExpertiseObjectsQuery,
+} from '../domain/expertise';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -85,6 +93,8 @@ export class UsersController {
     private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
     private readonly getUserFavorites: GetUserFavoritesEndpoint,
     private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
+    private readonly getUserExpertiseCounters: GetUserExpertiseCountersEndpoint,
+    private readonly getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -222,6 +232,38 @@ export class UsersController {
       governanceObjectIdFromHeader,
       viewer,
     );
+  }
+
+  @Get(':name/expertise/counters')
+  async getExpertiseCounters(
+    @Param('name') name: string,
+  ): Promise<UserExpertiseCountersResponse> {
+    const result = await this.getUserExpertiseCounters.execute(name);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/expertise/objects')
+  async getExpertiseObjects(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userExpertiseObjectsQuerySchema)) query: UserExpertiseObjectsQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedExpertiseObjects> {
+    const result = await this.getUserExpertiseObjects.execute(
+      name,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
   }
 
   @Get(':name/profile')

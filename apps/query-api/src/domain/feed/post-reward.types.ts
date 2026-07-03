@@ -1,9 +1,9 @@
 import type { SupportedCurrency } from '@opden-data-layer/core';
+import type { PostRewardUsdBreakdown } from '@opden-data-layer/core';
 
-export type PostRewardBeneficiaryInput = {
-  account: string;
-  weight: number;
-};
+import type { PostRewardBeneficiaryInput } from '@opden-data-layer/core';
+
+export type { PostRewardBeneficiaryInput };
 
 export type PostRewardInput = {
   pendingPayoutValue: string;
@@ -54,19 +54,4 @@ export type PostRewardDto = {
   rewardPowerOnly?: boolean;
 };
 
-export type PostRewardUsdBreakdown = {
-  waivUsd: number;
-  hiveUsd: number;
-  hbdUsd: number;
-  totalUsd: number;
-  authorUsd: number;
-  curatorUsd: number;
-  potentialUsd: number;
-  phase: 'potential' | 'paid';
-  isPayoutDeclined: boolean;
-  payoutLimitHit: boolean;
-  promotionCostUsd: number;
-  cashoutAt?: string;
-  rewardPowerOnly: boolean;
-  beneficiaries: Array<{ account: string; percent: number }>;
-};
+export type { PostRewardUsdBreakdown };

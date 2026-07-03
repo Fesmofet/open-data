@@ -2899,5 +2899,6 @@
   "СЃommunity_actions": "Azioni della comunità",
   "object_edit_status_apply": "Applica",
   "object_edit_status_category": "Categoria",
-  "object_edit_status_relisted_object": "Oggetto rilistato"
+  "object_edit_status_relisted_object": "Oggetto rilistato",
+  "social_list_empty_experts": "No experts to show yet."
 }

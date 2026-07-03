@@ -26,7 +26,16 @@ This document covers loading **shell profile** data (hero / header counts and di
 | Location | When |
 |----------|------|
 | `apps/web/src/app/(app)/user-profile/[name]/layout.tsx` | Validates `name` regex; `await getUserProfileQuery(decoded)` — `notFound()` if null |
-| `apps/web/src/app/(app)/user-profile/[name]/(profile)/layout.tsx` | Re-fetches profile with viewer + locale; loads following-objects count head for hero badges |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/layout.tsx` | Re-fetches profile with viewer + locale; loads following-objects count head and expertise counters for hero badges |
+
+### Expertise tab SSR
+
+| Route | Query layer | API |
+|-------|-------------|-----|
+| `.../expertise-hashtags`, `.../expertise-objects` | `getExpertiseObjectsPageQuery` | `GET /query/v1/users/:name/expertise/objects?scope=` |
+| Profile layout (badge counts) | `getExpertiseCountersQuery` | `GET /query/v1/users/:name/expertise/counters` |
+
+Expertise object lists send `X-Locale` / `Accept-Language` for field projection. Cache tags: `userExpertiseCounters`, `userExpertise`.
 
 ## Upstream API
 

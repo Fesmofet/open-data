@@ -25,6 +25,7 @@ import { buildObjectMetadata } from '@/seo';
 
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
+import { getObjectExpertsPageQuery } from '@/modules/object/application/queries/get-object-experts-page.query';
 import {
   fetchObjectRefList,
   REF_LIST_PAGE_SIZE,
@@ -222,6 +223,7 @@ export default async function ObjectDetailPage({
 
   const [
     embeddedFollowersPage,
+    embeddedExpertsPage,
     embeddedAuthorityPage,
     embeddedRelatedPage,
     embeddedSimilarPage,
@@ -233,6 +235,13 @@ export default async function ObjectDetailPage({
       ? getObjectFollowersPageQuery(
           objectId,
           { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
+          viewerUsername,
+        )
+      : Promise.resolve(null),
+    initialPrimarySegment === 'experts'
+      ? getObjectExpertsPageQuery(
+          objectId,
+          { skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
           viewerUsername,
         )
       : Promise.resolve(null),
@@ -355,6 +364,7 @@ export default async function ObjectDetailPage({
       <ObjectPageTabPane
         model={model}
         embeddedFollowersPage={embeddedFollowersPage}
+        embeddedExpertsPage={embeddedExpertsPage}
         followersSort={followersSort}
         embeddedAuthorityPage={embeddedAuthorityPage}
         authoritySubType={authoritySubType}

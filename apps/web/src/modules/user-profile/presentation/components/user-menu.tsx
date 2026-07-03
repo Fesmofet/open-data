@@ -261,8 +261,12 @@ function UserMenuInner({
         className={HORIZONTAL_SUB_NAV_ROW_CLASS}
         aria-label={t('user_profile_submenu_expertise_aria')}
       >
-        <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)}>{t('hashtags')}</UserProfileNavLink>
-        <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)}>{t('objects')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)}>
+          <SocialSubmenuLinkLabel label={t('hashtags')} count={socialCounts?.hashtagsExpCount} />
+        </UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)}>
+          <SocialSubmenuLinkLabel label={t('objects')} count={socialCounts?.objectsExpCount} />
+        </UserProfileNavLink>
       </nav>
     ) : null;
 
@@ -325,8 +329,12 @@ function UserMenuInner({
 
         {submenuVariant === 'expertise' ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_expertise_aria')}>
-            <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', true)}>{t('hashtags')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', true)}>{t('objects')}</UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', true)}>
+              <SocialSubmenuLinkLabel label={t('hashtags')} count={socialCounts?.hashtagsExpCount} />
+            </UserProfileNavLink>
+            <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', true)}>
+              <SocialSubmenuLinkLabel label={t('objects')} count={socialCounts?.objectsExpCount} />
+            </UserProfileNavLink>
           </nav>
         ) : null}
       </div>

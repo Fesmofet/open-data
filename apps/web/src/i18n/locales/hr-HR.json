@@ -2160,5 +2160,6 @@
   "СЃommunity_actions": "Akcije zajednice",
   "object_edit_status_apply": "Primijeni",
   "object_edit_status_category": "Kategorija",
-  "object_edit_status_relisted_object": "Ponovno objavljen objekt"
+  "object_edit_status_relisted_object": "Ponovno objavljen objekt",
+  "social_list_empty_experts": "No experts to show yet."
 }

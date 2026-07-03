@@ -2898,5 +2898,6 @@
   "СЃommunity_actions": "Дії спільноти",
   "object_edit_status_apply": "Застосувати",
   "object_edit_status_category": "Категорія",
-  "object_edit_status_relisted_object": "Повторно відновлений об'єкт"
+  "object_edit_status_relisted_object": "Повторно відновлений об'єкт",
+  "social_list_empty_experts": "No experts to show yet."
 }

@@ -17,6 +17,9 @@ export type UserSocialAccountRowProps = {
   profileAccountName: string;
   /** Current logged-in Hive account; when absent, follow control is disabled. */
   viewerUsername: string | null;
+  /** When set, badge shows per-object expertise instead of global wobjectsWeight. */
+  expertiseWeight?: number;
+  expertiseTooltipKey?: string;
   onBroadcastRevalidate?: (accountName: string) => Promise<void>;
 };
 
@@ -24,6 +27,8 @@ export function UserSocialAccountRow({
   row,
   profileAccountName,
   viewerUsername,
+  expertiseWeight,
+  expertiseTooltipKey = 'stat_user_expertise_tooltip',
   onBroadcastRevalidate,
 }: UserSocialAccountRowProps) {
   const { t } = useI18n();
@@ -73,19 +78,21 @@ export function UserSocialAccountRow({
     viewerUsername,
   ]);
 
+  const badgeWeight = expertiseWeight ?? row.wobjectsWeight;
+
   return (
     <li className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">
-      <Link href={href} className="shrink-0">
+      <Link href={href} className="shrink-0" suppressHydrationWarning>
         <UserAvatar username={row.name} avatarUrl={row.avatarUrl} displayName={row.name} size={44} />
       </Link>
       <div className="min-w-0 flex-1">
-        <Link href={href} className="font-weight-label text-fg hover:underline">
+        <Link href={href} className="font-weight-label text-fg hover:underline" suppressHydrationWarning>
           {row.name}
         </Link>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-caption text-fg-secondary">
-          <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
+          <StatHoverTooltip content={t(expertiseTooltipKey)}>
             <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg">
-              {row.wobjectsWeight.toFixed(2)}
+              {badgeWeight.toFixed(2)}
             </span>
           </StatHoverTooltip>
           <span aria-hidden>·</span>

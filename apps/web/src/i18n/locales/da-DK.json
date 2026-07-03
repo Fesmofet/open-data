@@ -2160,5 +2160,6 @@
   "СЃommunity_actions": "Fællesskabsaktioner",
   "object_edit_status_apply": "Anvend",
   "object_edit_status_category": "Kategori",
-  "object_edit_status_relisted_object": "Genlistet objekt"
+  "object_edit_status_relisted_object": "Genlistet objekt",
+  "social_list_empty_experts": "No experts to show yet."
 }

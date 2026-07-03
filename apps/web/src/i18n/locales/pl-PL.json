@@ -2159,5 +2159,6 @@
   "СЃommunity_actions": "Działania społecznościowe",
   "object_edit_status_apply": "Zastosuj",
   "object_edit_status_category": "Kategoria",
-  "object_edit_status_relisted_object": "Ponownie wystawiony obiekt"
+  "object_edit_status_relisted_object": "Ponownie wystawiony obiekt",
+  "social_list_empty_experts": "No experts to show yet."
 }

@@ -8,6 +8,7 @@ import { CategoriesModule } from '../domain/categories/categories.module';
 import { ShopModule } from '../domain/shop/shop.module';
 import { SocialModule } from '../domain/social/social.module';
 import { FavoritesModule } from '../domain/favorites/favorites.module';
+import { ExpertiseModule } from '../domain/expertise/expertise.module';
 import { ObjectUpdatesModule } from '../domain/object-updates';
 import { CurrencyController } from './currency.controller';
 import { ObjectsController } from './objects.controller';
@@ -38,6 +39,7 @@ import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-rep
     ShopModule,
     SocialModule,
     FavoritesModule,
+    ExpertiseModule,
     SearchModule,
     DiscoverModule,
     WalletModule,

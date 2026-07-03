@@ -16,6 +16,8 @@ All bulk importers accept `--skip-indexes` (drops secondary indexes before inser
 | `pnpm migrate:mongo-objects` | Wobject array JSON | `objects_core`, `object_updates`, `validity_votes`, `object_authority` |
 | `pnpm migrate:mongo-posts` | Post array JSON | `posts`, `post_active_votes`, `post_objects`, `post_object_related_images`, `post_reblogged_users`, `post_languages`, `post_links`, `post_mentions` |
 | `pnpm migrate:mongo-users` | User array JSON | `accounts_current` (Waivio columns), `user_metadata`, `user_notification_settings`, `user_referrals`, `user_post_bookmarks`, `user_object_follows` |
+| `pnpm migrate:mongo-user-expertise` | `user_expertise` collection JSON | `user_object_expertise` (does not update aggregate weights) |
+| `pnpm seed:post-expertise-applied` | — (SQL one-off) | `posts.expertise_applied_at` for rows with `rewards_finalized_at` |
 | `pnpm migrate:mongo-subscriptions` | Subscription array JSON | `user_subscriptions` |
 | `pnpm migrate:mongo-mutes` | Mute / ignore pair array JSON | `user_account_mutes` |
 | `pnpm migrate:mongo-delegations` | `delegations` collection JSON | `user_delegations` |

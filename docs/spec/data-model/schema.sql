@@ -337,6 +337,20 @@ CREATE INDEX idx_user_object_follows_object_id ON user_object_follows (object_id
 CREATE INDEX idx_user_object_follows_account_created_at ON user_object_follows (account, created_at DESC);
 
 -- ---------------------------------------------------------------------------
+-- user_object_expertise (per-user per-object post-author expertise)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_object_expertise (
+  account    TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+  object_id  TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  weight     DOUBLE PRECISION NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (account, object_id)
+);
+
+CREATE INDEX idx_user_object_expertise_account_weight ON user_object_expertise (account, weight DESC);
+CREATE INDEX idx_user_object_expertise_object_id ON user_object_expertise (object_id);
+
+-- ---------------------------------------------------------------------------
 -- posts (Hive post; normalized from legacy Mongo PostSchema)
 -- Embedded arrays → post_active_votes, post_objects, post_reblogged_users,
 -- post_languages, post_links, post_mentions. Omitted: blocked_for_apps,
@@ -389,11 +403,18 @@ CREATE TABLE posts (
   net_rshares_WAIV         DOUBLE PRECISION NOT NULL DEFAULT 0,
   total_payout_WAIV        DOUBLE PRECISION NOT NULL DEFAULT 0,
   total_rewards_WAIV       DOUBLE PRECISION NOT NULL DEFAULT 0,
+  rewards_finalized_at     TIMESTAMPTZ,
+  expertise_applied_at     TIMESTAMPTZ,
   created_unix             BIGINT NOT NULL,
   PRIMARY KEY (author, permlink)
 );
 
 CREATE INDEX idx_posts_author_created_unix ON posts (author, created_unix DESC);
+CREATE INDEX idx_posts_expertise_backfill_pending
+  ON posts (rewards_finalized_at)
+  WHERE (depth = 0 OR depth IS NULL)
+    AND rewards_finalized_at IS NOT NULL
+    AND expertise_applied_at IS NULL;
 
 -- ---------------------------------------------------------------------------
 -- post_active_votes

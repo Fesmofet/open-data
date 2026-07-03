@@ -22,10 +22,13 @@ import type {
   PaginatedUserFollowListView,
   UserSubscriptionSort,
 } from '@/modules/user-social/application/dto/user-social.dto';
+import type { PaginatedObjectExpertListView } from '@/modules/object/domain/types/object-experts';
+import { ObjectExpertsAccountList } from '@/modules/object/presentation/components/object-experts-account-list';
 import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
 import { useLoginModal } from '@/modules/auth';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
+import { loadMoreObjectExpertsAction } from './experts/object-experts.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
 import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
@@ -34,6 +37,7 @@ import { useObjectPageShell } from './object-page-shell-context';
 export type ObjectPageTabPaneProps = {
   model: ObjectPageViewModel;
   embeddedFollowersPage: PaginatedUserFollowListView | null;
+  embeddedExpertsPage: PaginatedObjectExpertListView | null;
   followersSort: UserSubscriptionSort;
   embeddedAuthorityPage: PaginatedUserFollowListView | null;
   authoritySubType: AuthoritySubType;
@@ -56,6 +60,7 @@ export type ObjectPageTabPaneProps = {
 export function ObjectPageTabPane({
   model,
   embeddedFollowersPage,
+  embeddedExpertsPage,
   followersSort,
   embeddedAuthorityPage,
   authoritySubType,
@@ -109,6 +114,22 @@ export function ObjectPageTabPane({
       />
     );
   }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
+
+  const objectExpertsFeed = useMemo(() => {
+    if (embeddedExpertsPage == null) {
+      return null;
+    }
+    return (
+      <ObjectExpertsAccountList
+        key={model.objectId}
+        objectId={model.objectId}
+        initialPage={embeddedExpertsPage}
+        currentUsername={viewerUsername}
+        loadMoreAction={loadMoreObjectExpertsAction}
+        onBroadcastRevalidate={revalidateObjectAfterBroadcast}
+      />
+    );
+  }, [embeddedExpertsPage, model.objectId, viewerUsername]);
 
   const objectRelatedFeed = useMemo(() => {
     if (embeddedRelatedPage == null) {
@@ -249,6 +270,7 @@ export function ObjectPageTabPane({
       objectPostsFeed={postsFeedSlot}
       objectThreadsFeed={threadsFeedSlot}
       objectFollowersFeed={objectFollowersFeed}
+      objectExpertsFeed={objectExpertsFeed}
       objectAuthorityFeed={objectAuthorityFeed}
       objectRelatedFeed={objectRelatedFeed}
       objectSimilarFeed={objectSimilarFeed}

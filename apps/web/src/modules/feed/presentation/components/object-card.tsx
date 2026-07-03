@@ -147,6 +147,8 @@ export type ObjectCardProps = {
   onMouseLeave?: () => void;
   /** Fired after administrative heart toggle succeeds (e.g. profile map refetch). */
   onAdministrativeAuthorityChange?: () => void;
+  /** User expertise weight on this object (profile expertise tab). */
+  userWeight?: number;
 };
 
 /**
@@ -165,6 +167,7 @@ export function ObjectCard({
   onMouseEnter,
   onMouseLeave,
   onAdministrativeAuthorityChange,
+  userWeight,
 }: ObjectCardProps) {
   const editorRow = layout === 'editorRow';
   const mapSidebar = layout === 'mapSidebar';
@@ -231,10 +234,20 @@ export function ObjectCard({
           />
         </div>
       ) : null}
+      {userWeight != null ? (
+        <div
+          className={[
+            'absolute end-3 rounded-btn border border-border bg-surface-alt px-2 py-0.5 text-caption text-fg',
+            showHeart ? 'top-12' : 'top-3',
+          ].join(' ')}
+        >
+          {userWeight.toFixed(2)}
+        </div>
+      ) : null}
       <div
         className={[
           'flex gap-3',
-          showHeart ? 'pe-8' : '',
+          showHeart || userWeight != null ? 'pe-8' : '',
           trailing ? 'items-start' : '',
         ]
           .filter(Boolean)

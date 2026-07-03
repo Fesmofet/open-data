@@ -4,6 +4,7 @@ import { AggregatedObjectRepository } from '../../repositories';
 import type { ObjectUpdatesRepository } from '../../repositories/object-updates.repository';
 import type { ObjectAuthorityRepository } from '../../repositories/object-authority.repository';
 import type { UserObjectFollowsRepository } from '../../repositories/user-object-follows.repository';
+import type { UserObjectExpertiseRepository } from '../../repositories/user-object-expertise.repository';
 import type { PostsRepository } from '../../repositories/posts.repository';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
@@ -39,6 +40,12 @@ function createPostsRepo(postsCount = 0): PostsRepository {
   } as unknown as PostsRepository;
 }
 
+function createExpertiseRepo(expertsCount = 0): UserObjectExpertiseRepository {
+  return {
+    countByObjectId: jest.fn().mockResolvedValue(expertsCount),
+  } as unknown as UserObjectExpertiseRepository;
+}
+
 describe('GetObjectByIdEndpoint', () => {
   it('returns null when repository returns no object', async () => {
     const repo = {
@@ -71,6 +78,7 @@ describe('GetObjectByIdEndpoint', () => {
       governanceResolver,
       projectionService,
       followsRepo,
+      createExpertiseRepo(),
       updatesRepo,
       authorityRepo,
       createPostsRepo(),
@@ -140,6 +148,7 @@ describe('GetObjectByIdEndpoint', () => {
         ),
     } as unknown as ObjectAuthorityRepository;
     const postsRepo = createPostsRepo(4);
+    const expertiseRepo = createExpertiseRepo(5);
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -148,6 +157,7 @@ describe('GetObjectByIdEndpoint', () => {
       governanceResolver,
       projectionService,
       followsRepo,
+      expertiseRepo,
       updatesRepo,
       authorityRepo,
       postsRepo,
@@ -163,6 +173,7 @@ describe('GetObjectByIdEndpoint', () => {
     expect(result).toEqual({
       ...projected,
       followers_count: 7,
+      experts_count: 5,
       posts_count: 4,
       updates_count: 25,
       administrative_count: 2,
@@ -193,6 +204,7 @@ describe('GetObjectByIdEndpoint', () => {
       }),
     );
     expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
+    expect(expertiseRepo.countByObjectId).toHaveBeenCalledWith('o1');
     expect(updatesRepo.countByObjectIdGroupByUpdateType).toHaveBeenCalledWith('o1');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'administrative');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'ownership');
@@ -269,6 +281,7 @@ describe('GetObjectByIdEndpoint', () => {
       governanceResolver,
       projectionService,
       followsRepo,
+      createExpertiseRepo(),
       updatesRepo,
       authorityRepo,
       createPostsRepo(),
@@ -344,6 +357,7 @@ describe('GetObjectByIdEndpoint', () => {
       governanceResolver,
       projectionService,
       followsRepo,
+      createExpertiseRepo(),
       updatesRepo,
       authorityRepo,
       createPostsRepo(),
@@ -411,6 +425,7 @@ describe('GetObjectByIdEndpoint', () => {
       governanceResolver,
       projectionService,
       followsRepo,
+      createExpertiseRepo(),
       updatesRepo,
       authorityRepo,
       createPostsRepo(),
@@ -470,6 +485,7 @@ describe('GetObjectByIdEndpoint', () => {
       governanceResolver,
       projectionService,
       followsRepo,
+      createExpertiseRepo(),
       updatesRepo,
       authorityRepo,
       createPostsRepo(),

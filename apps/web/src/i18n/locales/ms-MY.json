@@ -2158,5 +2158,6 @@
   "СЃommunity_actions": "Tindakan masyarakat",
   "object_edit_status_apply": "Guna",
   "object_edit_status_category": "Kategori",
-  "object_edit_status_relisted_object": "Objek disenaraikan semula"
+  "object_edit_status_relisted_object": "Objek disenaraikan semula",
+  "social_list_empty_experts": "No experts to show yet."
 }

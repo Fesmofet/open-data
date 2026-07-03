@@ -45,6 +45,7 @@ export interface OdlDatabase {
   user_rc_delegations: UserRcDelegationsTable;
   user_account_mutes: UserAccountMutesTable;
   user_object_follows: UserObjectFollowsTable;
+  user_object_expertise: UserObjectExpertiseTable;
   user_shop_deselect: UserShopDeselectTable;
   posts: PostsTable;
   post_active_votes: PostActiveVotesTable;
@@ -443,6 +444,21 @@ export type NewUserObjectFollow = Insertable<UserObjectFollowsTable>;
 export type UserObjectFollowUpdate = Updateable<UserObjectFollowsTable>;
 
 // ---------------------------------------------------------------------------
+// user_object_expertise (per-user per-object post-author expertise)
+// ---------------------------------------------------------------------------
+
+export interface UserObjectExpertiseTable {
+  account: string;
+  object_id: string;
+  weight: number;
+  updated_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type UserObjectExpertise = Selectable<UserObjectExpertiseTable>;
+export type NewUserObjectExpertise = Insertable<UserObjectExpertiseTable>;
+export type UserObjectExpertiseUpdate = Updateable<UserObjectExpertiseTable>;
+
+// ---------------------------------------------------------------------------
 // posts (Hive post body; normalized from Mongo PostSchema)
 // ---------------------------------------------------------------------------
 
@@ -496,6 +512,8 @@ export interface PostsTable {
   total_rewards_waiv: number;
   /** Set once post-cashout reward finalization completes. */
   rewards_finalized_at: string | null;
+  /** Set once post-author expertise has been applied (including Mongo import seed). */
+  expertise_applied_at: string | null;
   /** Unix seconds for chronological feeds and sorting. */
   created_unix: number;
 }

@@ -23,6 +23,8 @@
     "migrate:mongo-objects": "tsx --env-file=.env scripts/migrate-mongo-to-pg/objects/index.ts",
     "migrate:mongo-posts": "tsx --env-file=.env scripts/migrate-mongo-to-pg/posts/index.ts",
     "migrate:mongo-users": "tsx --env-file=.env scripts/migrate-mongo-to-pg/users/index.ts",
+    "migrate:mongo-user-expertise": "tsx --env-file=.env scripts/migrate-mongo-to-pg/user-expertise/index.ts",
+    "seed:post-expertise-applied": "tsx --env-file=.env scripts/seed-post-expertise-applied.ts",
     "migrate:mongo-subscriptions": "tsx --env-file=.env scripts/migrate-mongo-to-pg/subscriptions/index.ts",
     "migrate:mongo-wobject-subscriptions": "tsx --env-file=.env scripts/migrate-mongo-to-pg/wobject-subscriptions/index.ts",
     "migrate:mongo-mutes": "tsx --env-file=.env scripts/migrate-mongo-to-pg/mutes/index.ts",

@@ -2898,5 +2898,6 @@
   "СЃommunity_actions": "Tindakan Komunitas",
   "object_edit_status_apply": "Terapkan",
   "object_edit_status_category": "Kategori",
-  "object_edit_status_relisted_object": "Objek yang dilisting ulang"
+  "object_edit_status_relisted_object": "Objek yang dilisting ulang",
+  "social_list_empty_experts": "No experts to show yet."
 }

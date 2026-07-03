@@ -2161,5 +2161,6 @@
   "СЃommunity_actions": "Közösségi fellépések",
   "object_edit_status_apply": "Alkalmaz",
   "object_edit_status_category": "Kategória",
-  "object_edit_status_relisted_object": "Újra listázott objektum"
+  "object_edit_status_relisted_object": "Újra listázott objektum",
+  "social_list_empty_experts": "No experts to show yet."
 }

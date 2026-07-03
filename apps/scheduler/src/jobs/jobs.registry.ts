@@ -5,6 +5,7 @@ import { noopTickJob } from './noop-tick.job';
 import { siteRegistryDailyJob } from './site-registry-daily.job';
 import { postRewardReconcileJob } from './post-reward-reconcile.job';
 import { postRewardsFinalizeJob } from './post-rewards-finalize.job';
+import { postExpertiseBackfillJob } from './post-expertise-backfill.job';
 import { waivPowerAvgJob } from './waiv-power-avg.job';
 
 /**
@@ -16,6 +17,7 @@ export const cronJobRegistry: CronJobDefinition[] = [
   waivPowerAvgJob,
   postRewardReconcileJob,
   postRewardsFinalizeJob,
+  postExpertiseBackfillJob,
   hiveGlobalPropertiesWarmJob,
   ...currencyCronJobDefinitions,
 ];

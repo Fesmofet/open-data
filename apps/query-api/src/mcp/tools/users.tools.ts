@@ -9,6 +9,7 @@ import {
 } from '../../domain/social/user-social-list.schema';
 import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
+import { userExpertiseObjectsQuerySchema } from '../../domain/expertise/expertise.schema';
 import { userActivityBodyFieldsSchema } from '../../domain/feed/schemas/user-activity.schema';
 import {
   hiveAdvancedReportBodySchema,
@@ -468,6 +469,46 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         ctx.viewerAccount,
       );
       return jsonToolResult(result ?? { items: [], hasMore: false });
+    },
+  );
+
+  server.registerTool(
+    'get_user_expertise_counters',
+    {
+      description: catalogDescription('get_user_expertise_counters'),
+      inputSchema: z.object(accountField),
+    },
+    async (args) => {
+      const result = await deps.getUserExpertiseCounters.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_expertise_objects',
+    {
+      description: catalogDescription('get_user_expertise_objects'),
+      inputSchema: withMcpLocaleContext(
+        userExpertiseObjectsQuerySchema.extend(accountField),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { account, scope, skip, limit } = args;
+      const result = await deps.getUserExpertiseObjects.execute(
+        account,
+        { scope, skip, limit },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`User not found: ${account}`);
+      }
+      return jsonToolResult(result);
     },
   );
 

@@ -7,6 +7,7 @@ import type {
   PaginatedUserFollowListView,
   UserSubscriptionSort,
 } from '@/modules/user-social/application/dto/user-social.dto';
+import type { PaginatedObjectExpertListView } from '../../domain/types/object-experts';
 
 /** Right-rail followers preview fetch size — one extra row to detect `hasMore` when count > 5. */
 export const RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT = 6;
@@ -38,5 +39,23 @@ export async function fetchObjectFollowers(
   return queryApiFetch<PaginatedUserFollowListView>(path, {
     headers,
     cacheTags: [queryApiCacheTags.objectFollowers(objectId)],
+  });
+}
+
+export async function fetchObjectExperts(
+  objectId: string,
+  args: { skip: number; limit: number },
+  init?: { viewer?: string | null },
+): Promise<PaginatedObjectExpertListView | null> {
+  const qs = buildQuery({ skip: args.skip, limit: args.limit });
+  const path = `/query/v1/objects/${encodeURIComponent(objectId)}/experts${qs}`;
+  const headers: Record<string, string> = {};
+  const viewer = init?.viewer?.trim();
+  if (viewer) {
+    headers['X-Viewer'] = viewer;
+  }
+  return queryApiFetch(path, {
+    headers,
+    cacheTags: [queryApiCacheTags.objectExperts(objectId)],
   });
 }
