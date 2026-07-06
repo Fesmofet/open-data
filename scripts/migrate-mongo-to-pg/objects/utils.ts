@@ -111,6 +111,14 @@ export function legacyEventSeqFromObjectIdHex(oidHex: string | null): bigint {
   });
 }
 
+/** True when Mongo `active_votes` contains any entry for `voter` (trimmed match). */
+export function mongoActiveVotesHasVoter(
+  votes: readonly { voter?: string }[] | undefined,
+  voter: string,
+): boolean {
+  return votes?.some((v) => v.voter?.trim() === voter) ?? false;
+}
+
 /** Convert a camelCase identifier to snake_case (ASCII). */
 export function camelToSnake(key: string): string {
   return key.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();

@@ -44,6 +44,7 @@ import type { MongoRatingVote, MongoWObject, MongoWObjectField } from './types';
 import {
   createdAtUnixFromObjectId,
   legacyEventSeqFromObjectIdHex,
+  mongoActiveVotesHasVoter,
   mongoIdToString,
   parseMongoCreatedAt,
 } from './utils';
@@ -91,6 +92,8 @@ interface MigrationStats {
   coreRowsBuffered: number;
   votesSkippedZeroPercent: number;
   votesSkippedNoVoter: number;
+  creatorVotesAdded: number;
+  creatorVotesSkippedAlreadyPresent: number;
   rankRowsBuffered: number;
   rankVotesSkippedOutOfRange: number;
   rankVotesSkippedNoVoter: number;
@@ -265,6 +268,8 @@ class MongoToPgMigrator {
     coreRowsBuffered: 0,
     votesSkippedZeroPercent: 0,
     votesSkippedNoVoter: 0,
+    creatorVotesAdded: 0,
+    creatorVotesSkippedAlreadyPresent: 0,
     rankRowsBuffered: 0,
     rankVotesSkippedOutOfRange: 0,
     rankVotesSkippedNoVoter: 0,
@@ -629,6 +634,14 @@ class MongoToPgMigrator {
               permlink,
               field.active_votes,
             );
+            this.ensureCreatorForVoteIfAbsent(
+              objectId,
+              fieldId + suffix,
+              fieldCreator,
+              fieldTxId,
+              legacyEventSeqFromObjectIdHex(fieldId),
+              field.active_votes,
+            );
           }
           return;
         }
@@ -661,6 +674,14 @@ class MongoToPgMigrator {
       fieldId,
       fieldAuthor,
       permlink,
+      field.active_votes,
+    );
+    this.ensureCreatorForVoteIfAbsent(
+      objectId,
+      fieldId,
+      fieldCreator,
+      fieldTxId,
+      legacyEventSeqFromObjectIdHex(fieldId),
       field.active_votes,
     );
     if (updateType === 'aggregateRating') {
@@ -728,6 +749,33 @@ class MongoToPgMigrator {
         transaction_id: buildVoteLegacyTransactionId(voteOidHex, fieldAuthor, permlink, voter),
       });
     }
+  }
+
+  /**
+   * Mirrors chain-indexer update_create creator auto-for (createIfAbsent).
+   * @see apps/chain-indexer/src/domain/odl-parser/handlers/update-create.handler.ts
+   */
+  private ensureCreatorForVoteIfAbsent(
+    objectId: string,
+    updateId: string,
+    fieldCreator: string,
+    fieldTxId: string,
+    eventSeq: bigint,
+    votes: MongoWObjectField['active_votes'],
+  ): void {
+    if (mongoActiveVotesHasVoter(votes, fieldCreator)) {
+      this.stats.creatorVotesSkippedAlreadyPresent += 1;
+      return;
+    }
+    this.pushVote({
+      update_id: updateId,
+      object_id: objectId,
+      voter: fieldCreator,
+      vote: 'for',
+      event_seq: eventSeq,
+      transaction_id: fieldTxId,
+    });
+    this.stats.creatorVotesAdded += 1;
   }
 
   private processRatingVotesForField(

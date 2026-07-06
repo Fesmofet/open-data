@@ -1,6 +1,7 @@
 import {
   compareMongoObjectIdHex,
   legacyEventSeqFromObjectIdHex,
+  mongoActiveVotesHasVoter,
   parseMongoCreatedAt,
 } from './utils';
 
@@ -37,6 +38,22 @@ describe('legacyEventSeqFromObjectIdHex', () => {
     const versentryVote = legacyEventSeqFromObjectIdHex('622e6c7ab8407648f662d73c');
     const dataoperatorVote = legacyEventSeqFromObjectIdHex('631a58254aea5014d452dd2a');
     expect(dataoperatorVote).toBeGreaterThan(versentryVote);
+  });
+});
+
+describe('mongoActiveVotesHasVoter', () => {
+  it('returns false for undefined or empty votes', () => {
+    expect(mongoActiveVotesHasVoter(undefined, 'alice')).toBe(false);
+    expect(mongoActiveVotesHasVoter([], 'alice')).toBe(false);
+  });
+
+  it('matches voter after trim', () => {
+    expect(mongoActiveVotesHasVoter([{ voter: ' alice ' }], 'alice')).toBe(true);
+    expect(mongoActiveVotesHasVoter([{ voter: 'bob' }], 'alice')).toBe(false);
+  });
+
+  it('returns true for any creator entry regardless of percent', () => {
+    expect(mongoActiveVotesHasVoter([{ voter: 'alice' }], 'alice')).toBe(true);
   });
 });
 

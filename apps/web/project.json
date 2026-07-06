@@ -7,6 +7,14 @@
   "implicitDependencies": ["hive-broadcast"],
   "// targets": "to see all targets run: nx show project web --web",
   "targets": {
+    "dev": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/web",
+        "command": "next dev --webpack"
+      }
+    },
     "dev-webpack": {
       "continuous": true,
       "executor": "nx:run-commands",
