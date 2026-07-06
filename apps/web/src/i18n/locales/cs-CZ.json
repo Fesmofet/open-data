@@ -2797,6 +2797,8 @@
   "wallet_history_empty": "No wallet transactions yet.",
   "wallet_hive_hbd_conversion_completed": "HIVE>HBD: adjusted collateral release",
   "wallet_hive_hbd_conversion_request": "HIVE>HBD: conversion request",
+  "wallet_liquid_short": "likvidní:",
+  "wallet_staked_short": "stake:",
   "wallet_transactions": "Transakce peněženky",
   "wallet_validation_amount_exceeds_max": "Amount exceeds your available balance.",
   "wallet_validation_amount_invalid": "Enter a valid amount greater than zero.",

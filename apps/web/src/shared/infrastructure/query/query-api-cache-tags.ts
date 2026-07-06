@@ -44,6 +44,8 @@ export const queryApiCacheTags = {
   },
   userWaivWallet: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:waiv-wallet`,
+  userEngineWallet: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:engine-wallet`,
   userHiveWallet: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:hive-wallet`,
   userHiveHpDelegations: (accountName: string) =>

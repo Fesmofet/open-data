@@ -6,6 +6,12 @@ export type {
 } from './domain/types/waiv-wallet-view';
 
 export type {
+  EngineWalletSummaryView,
+  EngineWalletLoadError,
+  EngineWalletQueryResult,
+} from './domain/types/engine-wallet-view';
+
+export type {
   HiveWalletSummaryView,
   HiveWalletLoadError,
   HiveWalletQueryResult,
@@ -21,9 +27,11 @@ export {
 export { TransfersWalletPageClient } from './presentation/components/wallet/transfers-wallet-page-client';
 export { WaivWalletTab } from './presentation/components/waiv/waiv-wallet-tab';
 export { WaivWalletSummarySkeleton } from './presentation/components/waiv/waiv-wallet-summary-skeleton';
+export { EngineWalletSummarySkeleton } from './presentation/components/engine/engine-wallet-summary-skeleton';
 export { HiveWalletTab } from './presentation/components/hive/hive-wallet-tab';
 export { HiveWalletSummarySkeleton } from './presentation/components/hive/hive-wallet-summary-skeleton';
 export { getWaivWalletSummaryQuery } from './application/queries/get-waiv-wallet-summary.query';
+export { getEngineWalletSummaryQuery } from './application/queries/get-engine-wallet-summary.query';
 export { getHiveWalletHistoryPageQuery } from './application/queries/get-hive-wallet-history-page.query';
 export { getHiveWalletSummaryQuery } from './application/queries/get-hive-wallet-summary.query';
 export { getHiveAdvancedReportQuery } from './application/queries/get-hive-advanced-report.query';

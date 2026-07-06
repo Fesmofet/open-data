@@ -80,4 +80,82 @@ describe('collectWaivEngineRpcHistory', () => {
     expect(fetchBatch).toHaveBeenCalledTimes(2);
     expect(fetchBatch.mock.calls[1]?.[3]).toBe(11);
   });
+
+  it('skips rejected entries and keeps fetching until limit is met', async () => {
+    const waivBatch = Array.from({ length: 5 }, (_, index) =>
+      transferEntry(index, 1_700_000_000 - index),
+    );
+    const decEntry: HiveEngineAccountHistoryEntry = {
+      account: 'grampo',
+      operation: 'tokens_transfer',
+      timestamp: 1_699_999_000,
+      transactionId: 'dec-1',
+      quantity: '1',
+      symbol: 'DEC',
+      from: 'grampo',
+      to: 'peer',
+    };
+    const fetchBatch = jest
+      .fn()
+      .mockResolvedValueOnce({ entries: waivBatch, unavailable: false })
+      .mockResolvedValueOnce({ entries: [decEntry], unavailable: false });
+
+    const result = await collectWaivEngineRpcHistory({
+      limit: 1,
+      timestampStart: 1,
+      initialTimestampEnd: undefined,
+      acceptEntry: (entry) => entry.symbol !== 'WAIV',
+      fetchBatch,
+    });
+
+    expect(result.entries).toEqual([decEntry]);
+    expect(fetchBatch).toHaveBeenCalledTimes(2);
+  });
+
+  it('uses higher maxRoundTrips when filtering skips many WAIV batches', async () => {
+    const waivOnlyBatch = Array.from({ length: 3 }, (_, index) =>
+      transferEntry(index, 1_700_000_000 - index),
+    );
+    const decEntry: HiveEngineAccountHistoryEntry = {
+      account: 'grampo',
+      operation: 'tokens_transfer',
+      timestamp: 1_699_999_000,
+      transactionId: 'dec-1',
+      quantity: '1',
+      symbol: 'DEC',
+      from: 'grampo',
+      to: 'peer',
+    };
+    const fetchBatch = jest
+      .fn()
+      .mockImplementation(async () => {
+        const callIndex = fetchBatch.mock.calls.length;
+        if (callIndex <= 25) {
+          return { entries: waivOnlyBatch, unavailable: false };
+        }
+        return { entries: [decEntry], unavailable: false };
+      });
+
+    const capped = await collectWaivEngineRpcHistory({
+      limit: 1,
+      timestampStart: 1,
+      initialTimestampEnd: undefined,
+      maxRoundTrips: 20,
+      acceptEntry: (entry) => entry.symbol !== 'WAIV',
+      fetchBatch,
+    });
+    expect(capped.entries).toEqual([]);
+
+    fetchBatch.mockClear();
+    const extended = await collectWaivEngineRpcHistory({
+      limit: 1,
+      timestampStart: 1,
+      initialTimestampEnd: undefined,
+      maxRoundTrips: 100,
+      acceptEntry: (entry) => entry.symbol !== 'WAIV',
+      fetchBatch,
+    });
+    expect(extended.entries).toEqual([decEntry]);
+    expect(fetchBatch.mock.calls.length).toBeGreaterThan(20);
+  });
 });

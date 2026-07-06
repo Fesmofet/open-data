@@ -70,6 +70,11 @@ export class HiveEngineHistoryClient implements HiveEngineHistoryClientInterface
     if (params.symbol !== undefined) {
       url.searchParams.set('symbol', params.symbol);
     }
+    if (params.excludeSymbols !== undefined && params.excludeSymbols.length > 0) {
+      for (const sym of params.excludeSymbols) {
+        url.searchParams.append('excludeSymbols', sym);
+      }
+    }
     if (params.ops !== undefined) {
       url.searchParams.set('ops', params.ops);
     }

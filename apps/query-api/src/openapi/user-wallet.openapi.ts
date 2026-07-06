@@ -3,6 +3,11 @@ import { z } from 'zod';
 import { waivWalletResponseSchema } from '../domain/wallet/schemas/waiv-wallet.schema';
 import { waivWalletHistoryResponseSchema } from '../domain/wallet/schemas/waiv-wallet-history.schema';
 import { waivWalletHistoryBodySchema } from '../domain/wallet/schemas/waiv-wallet-history.schema';
+import { engineWalletResponseSchema } from '../domain/wallet/schemas/engine-wallet.schema';
+import {
+  engineWalletHistoryBodySchema,
+  engineWalletHistoryResponseSchema,
+} from '../domain/wallet/schemas/engine-wallet-history.schema';
 import { engineTokenDelegationsResponseSchema } from '../domain/wallet/schemas/engine-token-delegations.schema';
 import {
   hiveHpDelegationsResponseSchema,
@@ -109,6 +114,112 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: waivWalletHistoryResponseOpenApi,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid cursor or body.',
+      content: {
+        'application/json': {
+          schema: badRequestSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+    503: {
+      description: 'Hive Engine history unavailable.',
+      content: {
+        'application/json': {
+          schema: serviceUnavailableSchema,
+        },
+      },
+    },
+  },
+});
+
+const engineWalletResponseOpenApi = registry.register(
+  'EngineWalletResponse',
+  engineWalletResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/wallet/engine',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'User Hive Engine wallet summary',
+  description:
+    'Live Hive Engine token balances with pinned SWAP.* pegged tokens, other token rows, and USD estimate.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+  },
+  responses: {
+    200: {
+      description: 'Hive Engine wallet summary.',
+      content: {
+        'application/json': {
+          schema: engineWalletResponseOpenApi,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+    503: {
+      description: 'Hive Engine unavailable.',
+      content: {
+        'application/json': {
+          schema: serviceUnavailableSchema,
+        },
+      },
+    },
+  },
+});
+
+const engineWalletHistoryBodyOpenApi = registry.register(
+  'EngineWalletHistoryBody',
+  engineWalletHistoryBodySchema,
+);
+
+const engineWalletHistoryResponseOpenApi = registry.register(
+  'EngineWalletHistoryResponse',
+  engineWalletHistoryResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/wallet/engine/history',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'User Hive Engine wallet transaction history',
+  description:
+    'Paginated Hive Engine wallet history merged from accountHistory RPC (excluding WAIV) and indexed swaps.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: {
+      content: {
+        'application/json': {
+          schema: engineWalletHistoryBodyOpenApi,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Hive Engine wallet history page.',
+      content: {
+        'application/json': {
+          schema: engineWalletHistoryResponseOpenApi,
         },
       },
     },

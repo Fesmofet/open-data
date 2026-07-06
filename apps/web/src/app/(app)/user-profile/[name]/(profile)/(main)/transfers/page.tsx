@@ -1,6 +1,7 @@
 import { ProfileRouteStub } from '@/modules/user-profile';
 import { getWalletTypeFromSearch } from '@/modules/user-profile/presentation/components/user-profile-subnav';
 import {
+  getEngineWalletSummaryQuery,
   getHiveWalletSummaryQuery,
   getWaivWalletSummaryQuery,
   TransfersWalletPageClient,
@@ -40,9 +41,16 @@ export default async function UserProfileTransfersPage({
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
 
-  const [waiv, hive] = await Promise.all([
-    getWaivWalletSummaryQuery(accountName),
-    getHiveWalletSummaryQuery(accountName),
+  const [waiv, hive, engine] = await Promise.all([
+    walletType === 'WAIV' || walletType === 'HIVE'
+      ? getWaivWalletSummaryQuery(accountName)
+      : Promise.resolve({ summary: null, error: null }),
+    walletType === 'WAIV' || walletType === 'HIVE'
+      ? getHiveWalletSummaryQuery(accountName)
+      : Promise.resolve({ summary: null, error: null }),
+    walletType === 'ENGINE'
+      ? getEngineWalletSummaryQuery(accountName)
+      : Promise.resolve({ summary: null, error: null }),
   ]);
 
   if (walletType === 'HIVE' || walletType === 'WAIV') {
@@ -56,6 +64,24 @@ export default async function UserProfileTransfersPage({
           waivError={waiv.error}
           hiveSummary={hive.summary}
           hiveError={hive.error}
+        />
+      </TransfersWalletPageClient>
+    );
+  }
+
+  if (walletType === 'ENGINE') {
+    return (
+      <TransfersWalletPageClient>
+        <TransfersWalletShell
+          accountName={accountName}
+          viewerUsername={user?.username ?? null}
+          walletType={walletType}
+          waivSummary={waiv.summary}
+          waivError={waiv.error}
+          hiveSummary={hive.summary}
+          hiveError={hive.error}
+          engineSummary={engine.summary}
+          engineError={engine.error}
         />
       </TransfersWalletPageClient>
     );

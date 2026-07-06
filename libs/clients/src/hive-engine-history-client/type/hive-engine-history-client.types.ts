@@ -1,6 +1,8 @@
 export type HiveEngineAccountHistoryParams = {
   account: string;
   symbol?: string;
+  /** Excluded token symbols (History API `excludeSymbols`). */
+  excludeSymbols?: readonly string[];
   ops?: string;
   timestampStart?: number;
   timestampEnd?: number;

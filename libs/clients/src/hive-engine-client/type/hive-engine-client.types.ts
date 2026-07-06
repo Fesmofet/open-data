@@ -205,6 +205,19 @@ export type HiveEngineMarketPool = {
   creator: string;
 };
 
+export type HiveEngineMarketMetric = {
+  _id: number;
+  symbol: string;
+  volume: string;
+  lastPrice: string;
+  lowestAsk: string;
+  highestBid: string;
+  lastDayPrice: string;
+  lastDayVolume: string;
+  lastDayLowestAsk: string;
+  lastDayHighestBid: string;
+};
+
 export type HiveEngineTransaction = {
   refHiveBlockNumber: number;
   transactionId: string;

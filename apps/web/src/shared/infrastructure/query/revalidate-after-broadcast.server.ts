@@ -66,6 +66,7 @@ export async function revalidateUserWaivWalletAfterBroadcast(
     return;
   }
   updateTag(queryApiCacheTags.userWaivWallet(name));
+  updateTag(queryApiCacheTags.userEngineWallet(name));
   updateTag(queryApiCacheTags.userEngineTokenDelegations(name, 'WAIV'));
   revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
 }

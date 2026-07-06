@@ -267,6 +267,43 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_engine_wallet',
+    {
+      description: catalogDescription('get_user_engine_wallet'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserEngineWallet.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_engine_wallet_history',
+    {
+      description: catalogDescription('get_user_engine_wallet_history'),
+      inputSchema: z.object({
+        ...accountField,
+        limit: z.number().int().min(1).max(500).optional().describe('Page size (default 20)'),
+        cursor: z.string().optional().describe('Pagination cursor from previous response'),
+      }),
+    },
+    async (args) => {
+      const result = await deps.getUserEngineWalletHistory.execute(args.account, {
+        limit: args.limit,
+        cursor: args.cursor,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_engine_token_delegations',
     {
       description: catalogDescription('get_user_engine_token_delegations'),

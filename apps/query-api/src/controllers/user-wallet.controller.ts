@@ -13,7 +13,13 @@ import {
   GetUserHiveWalletEndpoint,
   GetUserWaivWalletEndpoint,
   GetUserWaivWalletHistoryEndpoint,
+  GetUserEngineWalletEndpoint,
+  GetUserEngineWalletHistoryEndpoint,
   type EngineTokenDelegationsResponse,
+  type EngineWalletResponse,
+  type EngineWalletHistoryResponse,
+  type EngineWalletHistoryBody,
+  engineWalletHistoryBodySchema,
   type HiveHpDelegationsResponse,
   type HiveRcDelegationsResponse,
   type HiveWalletResponse,
@@ -29,6 +35,8 @@ export class UserWalletController {
   constructor(
     private readonly getUserWaivWallet: GetUserWaivWalletEndpoint,
     private readonly getUserWaivWalletHistory: GetUserWaivWalletHistoryEndpoint,
+    private readonly getUserEngineWallet: GetUserEngineWalletEndpoint,
+    private readonly getUserEngineWalletHistory: GetUserEngineWalletHistoryEndpoint,
     private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
     private readonly getUserHiveWallet: GetUserHiveWalletEndpoint,
     private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
@@ -52,6 +60,30 @@ export class UserWalletController {
     @Body(new ZodBodyPipe(waivWalletHistoryBodySchema)) body: WaivWalletHistoryBody,
   ): Promise<WaivWalletHistoryResponse> {
     const result = await this.getUserWaivWalletHistory.execute(name, body);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/wallet/engine')
+  async getEngineWallet(
+    @Param('name') name: string,
+  ): Promise<EngineWalletResponse> {
+    const result = await this.getUserEngineWallet.execute(name);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/wallet/engine/history')
+  async getEngineWalletHistory(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(engineWalletHistoryBodySchema))
+    body: EngineWalletHistoryBody,
+  ): Promise<EngineWalletHistoryResponse> {
+    const result = await this.getUserEngineWalletHistory.execute(name, body);
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);
     }

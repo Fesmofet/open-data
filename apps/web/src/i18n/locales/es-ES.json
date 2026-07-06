@@ -2889,6 +2889,8 @@
   "wallet_history_empty": "No wallet transactions yet.",
   "wallet_hive_hbd_conversion_completed": "HIVE>HBD: adjusted collateral release",
   "wallet_hive_hbd_conversion_request": "HIVE>HBD: conversion request",
+  "wallet_liquid_short": "líquido:",
+  "wallet_staked_short": "en staking:",
   "wallet_transactions": "Transacciones de billetera",
   "wallet_validation_amount_exceeds_max": "Amount exceeds your available balance.",
   "wallet_validation_amount_invalid": "Enter a valid amount greater than zero.",

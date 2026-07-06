@@ -191,6 +191,20 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-waiv-wallet-endpoint.md',
   },
   {
+    name: 'get_user_engine_wallet',
+    description:
+      'Live Hive Engine wallet summary with pinned SWAP.* tokens and USD estimates.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/engine',
+    specPath: 'docs/apps/query-api/spec/user-engine-wallet-endpoint.md',
+  },
+  {
+    name: 'get_user_engine_wallet_history',
+    description:
+      'Paginated Hive Engine wallet history (RPC excluding WAIV + indexed swaps).',
+    httpEquivalent: 'POST /query/v1/users/:name/wallet/engine/history',
+    specPath: 'docs/apps/query-api/spec/user-engine-wallet-endpoint.md',
+  },
+  {
     name: 'get_user_engine_token_delegations',
     description: 'Incoming and outgoing Hive Engine token delegations for a user.',
     httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/:symbol/delegations',

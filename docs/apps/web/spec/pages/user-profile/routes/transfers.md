@@ -57,10 +57,10 @@ Wallet transaction history is rendered only on this transfers page (not on `Hive
 
 **Owner-only:** wallet action buttons and modals render only when `viewerUsername` matches profile `name` (case-insensitive).
 
-`?type=ENGINE` remains stubbed.
+**Hive Engine tab (`?type=ENGINE`):** read-only summary of pinned `SWAP.*` pegged tokens plus other Hive Engine token balances, with est. account value USD footer. Paginated transaction history below the summary from `POST /query/v1/users/{name}/wallet/engine/history` (History API excluding WAIV RPC rows + all indexed swaps). Row mapping: [engine-wallet-history.md](engine-wallet-history.md). API: [user-engine-wallet-endpoint.md](../../../../../query-api/spec/user-engine-wallet-endpoint.md).
 
 Shell hides left/right rails on `waiv-table` and `transfers/table` layouts — see [profile-shell.md](../profile-shell.md).
 
 ## Verification
 
-Manual: `/@:name/transfers?type=WAIV` or `?type=HIVE` from user menu wallet submenu. Advanced HIVE table: `/@:name/transfers/table` (link: `table_view` on HIVE wallet tab). WAIV advanced report (Standard tab): `/@:name/transfers/waiv-table` (link: `table_view` on WAIV wallet tab).
+Manual: `/@:name/transfers?type=WAIV`, `?type=HIVE`, or `?type=ENGINE` from user menu wallet submenu. Advanced HIVE table: `/@:name/transfers/table` (link: `table_view` on HIVE wallet tab). WAIV advanced report (Standard tab): `/@:name/transfers/waiv-table` (link: `table_view` on WAIV wallet tab).

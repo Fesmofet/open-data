@@ -20,7 +20,7 @@ related:
 
 Hive Engine `accountHistory` RPC exposes `marketpools_swapTokens` as **separate per-token legs**, without `symbolIn` / `symbolOut` on a single row. Legacy Waivio stored **atomic swaps** in Mongo `EngineAccountHistory`, parsed from transaction logs.
 
-chain-indexer writes the same atomic shape to Postgres table `hive_engine_swaps` for wallet history and advanced report consumers (query-api — future).
+chain-indexer writes the same atomic shape to Postgres table `hive_engine_swaps` for wallet history and advanced report consumers (query-api ENGINE/WAIV wallet tabs).
 
 ## Data source
 

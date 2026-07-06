@@ -18,6 +18,7 @@ import type {
   HiveEngineContractQuery,
   HiveEngineLiquidityPosition,
   HiveEngineMarketPool,
+  HiveEngineMarketMetric,
   HiveEngineMiningPool,
   HiveEngineRewardPool,
   HiveEngineStatus,
@@ -455,6 +456,26 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     return this.findOne<HiveEngineMarketPool>({
       contract: 'marketpools',
       table: 'pools',
+      query,
+    });
+  }
+
+  findMarketMetrics(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineMarketMetric[]> {
+    return this.find<HiveEngineMarketMetric>({
+      contract: 'market',
+      table: 'metrics',
+      ...params,
+    });
+  }
+
+  findOneMarketMetric(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineMarketMetric | null> {
+    return this.findOne<HiveEngineMarketMetric>({
+      contract: 'market',
+      table: 'metrics',
       query,
     });
   }

@@ -1,6 +1,8 @@
 export { WalletModule } from './wallet.module';
 export { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
 export { GetUserWaivWalletHistoryEndpoint } from './get-user-waiv-wallet-history.endpoint';
+export { GetUserEngineWalletEndpoint } from './get-user-engine-wallet.endpoint';
+export { GetUserEngineWalletHistoryEndpoint } from './get-user-engine-wallet-history.endpoint';
 export { GetUserEngineTokenDelegationsEndpoint } from './get-user-engine-token-delegations.endpoint';
 export { GetUserHiveWalletEndpoint } from './get-user-hive-wallet.endpoint';
 export { GetUserHiveHpDelegationsEndpoint } from './get-user-hive-hp-delegations.endpoint';
@@ -15,6 +17,16 @@ export {
   type WaivWalletHistoryBody,
   type WaivWalletHistoryResponse,
 } from './schemas/waiv-wallet-history.schema';
+export {
+  engineWalletResponseSchema,
+  type EngineWalletResponse,
+} from './schemas/engine-wallet.schema';
+export {
+  engineWalletHistoryBodySchema,
+  engineWalletHistoryResponseSchema,
+  type EngineWalletHistoryBody,
+  type EngineWalletHistoryResponse,
+} from './schemas/engine-wallet-history.schema';
 export {
   engineTokenDelegationsResponseSchema,
   type EngineTokenDelegationsResponse,

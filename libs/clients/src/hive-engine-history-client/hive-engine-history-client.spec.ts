@@ -58,6 +58,37 @@ describe('HiveEngineHistoryClient', () => {
     expect(rows[0].quantity).toBe('1.5');
   });
 
+  it('builds accountHistory GET URL with excludeSymbols', async () => {
+    let capturedUrl = '';
+    global.fetch = jest.fn(async (url: string | URL) => {
+      capturedUrl = String(url);
+      return {
+        ok: true,
+        json: async () => [],
+      } as unknown as Response;
+    });
+
+    const urlRotationService = {
+      getManager: () => ({
+        getBestUrl: async () => 'https://history.hive-engine.com',
+        recordRequest: async () => undefined,
+      }),
+    } as unknown as UrlRotationService;
+
+    const client = new HiveEngineHistoryClient(
+      { nodes: ['https://history.hive-engine.com'] },
+      urlRotationService,
+    );
+
+    await client.accountHistory({
+      account: 'alice',
+      excludeSymbols: ['WAIV'],
+      limit: 10,
+    });
+
+    expect(capturedUrl).toContain('excludeSymbols=WAIV');
+  });
+
   it('returns empty array on HTTP error', async () => {
     global.fetch = jest.fn(async () => ({
       ok: false,
