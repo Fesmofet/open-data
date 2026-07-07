@@ -71,6 +71,12 @@ export const queryApiConfigSchema = z.object({
   HIVE_ENGINE_HISTORY_MAX_RESPONSE_TIME_MS: z.coerce.number().optional().default(8000),
   HIVE_ENGINE_HISTORY_URL_ROTATION_DB: z.coerce.number().optional().default(0),
   CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(12_000),
+  HIVE_ENGINE_CONVERT_BASE_URL: z
+    .url()
+    .optional()
+    .default('https://converter-api.hive-engine.com/api/convert/'),
+  TRIBALDEX_BASE_URL: z.url().optional().default('https://api.tribaldex.com'),
+  ETH_GATEWAY_BASE_URL: z.url().optional().default('https://ethgw.hive-engine.com'),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

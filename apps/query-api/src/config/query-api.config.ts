@@ -5,6 +5,7 @@ export default () => {
   const env = validateQueryApi(
     process.env as unknown as Record<string, unknown>,
   );
+  const externalTimeoutMs = env.CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS;
   return {
     postgres: {
       host: env.POSTGRES_HOST,
@@ -58,6 +59,18 @@ export default () => {
         cacheTtlSeconds: 1200,
         maxResponseTimeMs: env.HIVE_ENGINE_HISTORY_MAX_RESPONSE_TIME_MS,
         urlRotationDb: env.HIVE_ENGINE_HISTORY_URL_ROTATION_DB,
+      },
+      convertClient: {
+        baseUrl: env.HIVE_ENGINE_CONVERT_BASE_URL,
+        requestTimeoutMs: externalTimeoutMs,
+      },
+      tribaldexClient: {
+        baseUrl: env.TRIBALDEX_BASE_URL,
+        requestTimeoutMs: externalTimeoutMs,
+      },
+      ethGatewayClient: {
+        baseUrl: env.ETH_GATEWAY_BASE_URL,
+        requestTimeoutMs: externalTimeoutMs,
       },
     },
   };

@@ -1,6 +1,11 @@
+import type { EngineWalletSummaryView } from './types/engine-wallet-view';
 import type { HiveWalletSummaryView } from './types/hive-wallet-view';
 import type { WaivWalletSummaryView } from './types/waiv-wallet-view';
-import type { WalletMainAsset, WalletTransferAsset } from './wallet-modal-types';
+import {
+  isEngineTokenAsset,
+  type WalletMainAsset,
+  type WalletTransferAsset,
+} from './wallet-modal-types';
 import { HIVE_RC_DELEGATOR_RESERVE } from '../constants/hive-rc';
 
 export type WalletAmountValidation = 'engine' | 'hive';
@@ -18,21 +23,48 @@ export type WalletPowerBalanceConfig = {
   validation: WalletAmountValidation;
 };
 
+function findEngineTokenRow(
+  engineSummary: EngineWalletSummaryView | null | undefined,
+  symbol: string,
+) {
+  if (!engineSummary) {
+    return null;
+  }
+  return (
+    [...engineSummary.pinnedTokens, ...engineSummary.tokens].find(
+      (row) => row.symbol === symbol,
+    ) ?? null
+  );
+}
+
 export function getWalletTransferBalanceConfig(
   asset: WalletTransferAsset,
   savings: 'none' | 'to' | 'from',
   waiv: WaivWalletSummaryView | null,
   hive: HiveWalletSummaryView | null,
+  engineSummary?: EngineWalletSummaryView | null,
 ): WalletTransferBalanceConfig | null {
-  if (asset === 'WAIV') {
-    if (!waiv || savings !== 'none') {
+  if (isEngineTokenAsset(asset)) {
+    if (savings !== 'none') {
+      return null;
+    }
+    if (asset === 'WAIV' && waiv) {
+      return {
+        maxAmount: waiv.balance.liquid,
+        tokenUsdRate: waiv.rates.waivUsd,
+        validation: 'engine',
+        symbol: asset,
+      };
+    }
+    const row = findEngineTokenRow(engineSummary, asset);
+    if (!row) {
       return null;
     }
     return {
-      maxAmount: waiv.balance.liquid,
-      tokenUsdRate: waiv.rates.waivUsd,
+      maxAmount: row.balance,
+      tokenUsdRate: row.usdEstimate,
       validation: 'engine',
-      symbol: 'WAIV',
+      symbol: asset,
     };
   }
 
@@ -79,14 +111,23 @@ export function getWalletPowerBalanceConfig(
   mode: 'up' | 'down',
   waiv: WaivWalletSummaryView | null,
   hive: HiveWalletSummaryView | null,
+  engineSummary?: EngineWalletSummaryView | null,
 ): WalletPowerBalanceConfig | null {
-  if (asset === 'WAIV') {
-    if (!waiv) {
+  if (isEngineTokenAsset(asset)) {
+    if (asset === 'WAIV' && waiv) {
+      return {
+        maxAmount: mode === 'up' ? waiv.balance.liquid : waiv.balance.stake,
+        balanceSymbol: mode === 'up' ? 'WAIV' : 'WP',
+        validation: 'engine',
+      };
+    }
+    const row = findEngineTokenRow(engineSummary, asset);
+    if (!row || !row.stakingEnabled) {
       return null;
     }
     return {
-      maxAmount: mode === 'up' ? waiv.balance.liquid : waiv.balance.stake,
-      balanceSymbol: mode === 'up' ? 'WAIV' : 'WP',
+      maxAmount: mode === 'up' ? row.balance : row.stake,
+      balanceSymbol: asset,
       validation: 'engine',
     };
   }
@@ -106,14 +147,23 @@ export function getWalletDelegateBalanceConfig(
   asset: WalletMainAsset,
   waiv: WaivWalletSummaryView | null,
   hive: HiveWalletSummaryView | null,
+  engineSummary?: EngineWalletSummaryView | null,
 ): WalletPowerBalanceConfig | null {
-  if (asset === 'WAIV') {
-    if (!waiv) {
+  if (isEngineTokenAsset(asset)) {
+    if (asset === 'WAIV' && waiv) {
+      return {
+        maxAmount: waiv.balance.stake,
+        balanceSymbol: 'WAIV',
+        validation: 'engine',
+      };
+    }
+    const row = findEngineTokenRow(engineSummary, asset);
+    if (!row) {
       return null;
     }
     return {
-      maxAmount: waiv.balance.stake,
-      balanceSymbol: 'WAIV',
+      maxAmount: row.stake,
+      balanceSymbol: asset,
       validation: 'engine',
     };
   }
@@ -129,21 +179,59 @@ export function getWalletDelegateBalanceConfig(
   };
 }
 
+function listEngineTransferAssets(
+  engineSummary: EngineWalletSummaryView | null | undefined,
+): WalletTransferAsset[] {
+  if (!engineSummary) {
+    return [];
+  }
+  return [...engineSummary.pinnedTokens, ...engineSummary.tokens]
+    .filter((row) => Number.parseFloat(row.balance) > 0)
+    .map((row) => row.symbol);
+}
+
+function listEnginePowerAssets(
+  engineSummary: EngineWalletSummaryView | null | undefined,
+): WalletMainAsset[] {
+  if (!engineSummary) {
+    return [];
+  }
+  return [...engineSummary.pinnedTokens, ...engineSummary.tokens]
+    .filter((row) => row.stakingEnabled)
+    .filter(
+      (row) =>
+        Number.parseFloat(row.balance) > 0 || Number.parseFloat(row.stake) > 0,
+    )
+    .map((row) => row.symbol);
+}
+
 export function listWalletTransferAssetOptions(
   savings: 'none' | 'to' | 'from',
   waiv: WaivWalletSummaryView | null,
   hive: HiveWalletSummaryView | null,
+  engineSummary?: EngineWalletSummaryView | null,
 ): WalletTransferAsset[] {
   if (savings === 'to' || savings === 'from') {
-    return savings === 'from' ? ['HIVE', 'HBD'] : ['HIVE', 'HBD'];
+    return ['HIVE', 'HBD'];
   }
 
   const options: WalletTransferAsset[] = [];
-  if (waiv) {
-    options.push('WAIV');
+  const engineAssets = listEngineTransferAssets(engineSummary);
+  for (const symbol of engineAssets) {
+    if (!options.includes(symbol)) {
+      options.push(symbol);
+    }
+  }
+  if (waiv && !options.includes('WAIV')) {
+    options.unshift('WAIV');
   }
   if (hive) {
-    options.push('HIVE', 'HBD');
+    if (!options.includes('HIVE')) {
+      options.push('HIVE');
+    }
+    if (!options.includes('HBD')) {
+      options.push('HBD');
+    }
   }
   return options;
 }
@@ -151,12 +239,18 @@ export function listWalletTransferAssetOptions(
 export function listWalletMainAssetOptions(
   waiv: WaivWalletSummaryView | null,
   hive: HiveWalletSummaryView | null,
+  engineSummary?: EngineWalletSummaryView | null,
 ): WalletMainAsset[] {
   const options: WalletMainAsset[] = [];
-  if (waiv) {
-    options.push('WAIV');
+  for (const symbol of listEnginePowerAssets(engineSummary)) {
+    if (!options.includes(symbol)) {
+      options.push(symbol);
+    }
   }
-  if (hive) {
+  if (waiv && !options.includes('WAIV')) {
+    options.unshift('WAIV');
+  }
+  if (hive && !options.includes('HIVE')) {
     options.push('HIVE');
   }
   return options;
@@ -167,7 +261,6 @@ function parseRcInteger(value: string): number {
   return Number.isFinite(parsed) ? Math.trunc(parsed) : 0;
 }
 
-/** Max RC for delegate_rc: delegatable max_rc capped by current mana (must have RC to broadcast). */
 export function getHiveDelegateRcMaxAmount(
   hive: HiveWalletSummaryView | null,
 ): string {

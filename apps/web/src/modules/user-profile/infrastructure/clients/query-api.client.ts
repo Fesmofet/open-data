@@ -2,10 +2,9 @@ import 'server-only';
 
 import { env } from '@/config/env';
 
-/** Uncached fetch — use only from post-broadcast server actions, not from default page-load clients. */
+/** Uncached fetch — use for live wallet/swap reads and post-broadcast refresh. */
 export const QUERY_API_LIVE_INIT = {
   cache: 'no-store' as const,
-  next: { revalidate: 0 },
 };
 
 export type QueryApiFetchOptions = RequestInit & {
@@ -16,6 +15,46 @@ export type QueryApiFetchOptions = RequestInit & {
 export type QueryApiFetchOutcome<T> =
   | { ok: true; data: T }
   | { ok: false; status: number | 'network' };
+
+type NextFetchConfig = {
+  revalidate?: number | false;
+  tags?: string[];
+};
+
+function buildNextFetchConfig(
+  fetchInit: RequestInit,
+  cacheTags?: string[],
+): NextFetchConfig | undefined {
+  const callerNext = (fetchInit as RequestInit & { next?: NextFetchConfig }).next;
+  const tags =
+    cacheTags && cacheTags.length > 0 ? { tags: cacheTags } : undefined;
+
+  if (fetchInit.cache === 'no-store') {
+    if (!callerNext && !tags) {
+      return undefined;
+    }
+    const { revalidate: _ignored, ...restCallerNext } = callerNext ?? {};
+    const merged = { ...restCallerNext, ...tags };
+    return Object.keys(merged).length > 0 ? merged : undefined;
+  }
+
+  return {
+    revalidate: 60,
+    ...tags,
+    ...callerNext,
+  };
+}
+
+function buildQueryApiFetchInit(
+  fetchInit: RequestInit,
+  cacheTags?: string[],
+): RequestInit {
+  const { next: _ignoredNext, ...restFetchInit } = fetchInit as RequestInit & {
+    next?: NextFetchConfig;
+  };
+  const next = buildNextFetchConfig(fetchInit, cacheTags);
+  return next ? { ...restFetchInit, next } : restFetchInit;
+}
 
 /**
  * Server-only fetch with HTTP status — use when callers must distinguish 503 from 404.
@@ -29,19 +68,9 @@ export async function queryApiFetchOutcome<T>(
   const url = path.startsWith('http')
     ? path
     : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
-  const nextInit = fetchInit as RequestInit & {
-    next?: { revalidate?: number | false; tags?: string[] };
-  };
   let res: Response;
   try {
-    res = await fetch(url, {
-      ...fetchInit,
-      next: {
-        revalidate: 60,
-        ...(cacheTags && cacheTags.length > 0 ? { tags: cacheTags } : {}),
-        ...nextInit.next,
-      },
-    });
+    res = await fetch(url, buildQueryApiFetchInit(fetchInit, cacheTags));
   } catch (err) {
     console.error(`[query-api] network error for ${path}:`, err);
     return { ok: false, status: 'network' };
@@ -70,19 +99,9 @@ export async function queryApiFetch<T>(
   const url = path.startsWith('http')
     ? path
     : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
-  const nextInit = fetchInit as RequestInit & {
-    next?: { revalidate?: number | false; tags?: string[] };
-  };
   let res: Response;
   try {
-    res = await fetch(url, {
-      ...fetchInit,
-      next: {
-        revalidate: 60,
-        ...(cacheTags && cacheTags.length > 0 ? { tags: cacheTags } : {}),
-        ...nextInit.next,
-      },
-    });
+    res = await fetch(url, buildQueryApiFetchInit(fetchInit, cacheTags));
   } catch (err) {
     console.error(`[query-api] network error for ${path}:`, err);
     return null;

@@ -12,6 +12,7 @@ import {
 } from '../../../domain/engine-token-amount';
 import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
 import type { WalletMainAsset } from '../../../domain/wallet-modal-types';
+import { WAIV_WITHDRAW_OUTPUT_SYMBOLS } from '../../../domain/waiv-withdraw-outputs';
 import { useWalletModal } from '../wallet/wallet-modal-context';
 import { WalletDelegationsListModal } from '../wallet/wallet-delegations-list-modal';
 import { WalletPowerDownProgressModal } from '../wallet/wallet-power-down-progress-modal';
@@ -26,12 +27,14 @@ export type WaivWalletSummaryProps = {
   summary: WaivWalletSummaryView;
   canManageWallet: boolean;
   defaultAsset: WalletMainAsset;
+  hideRowActions?: boolean;
 };
 
 export function WaivWalletSummary({
   summary,
   canManageWallet,
   defaultAsset,
+  hideRowActions = false,
 }: WaivWalletSummaryProps) {
   const { t, locale } = useI18n();
   const { openModal } = useWalletModal();
@@ -51,12 +54,18 @@ export function WaivWalletSummary({
     });
   }, [powerDownTooltipDate, t]);
 
-  const actions = canManageWallet
+  const actions = canManageWallet && !hideRowActions
     ? {
         openPowerUp: () =>
           openModal({ kind: 'power', mode: 'up', asset: defaultAsset }),
         openTransfer: () =>
           openModal({ kind: 'transfer', asset: defaultAsset }),
+        openWithdraw: (outputSymbol: string) =>
+          openModal({
+            kind: 'withdraw',
+            inputSymbol: 'WAIV',
+            outputSymbol,
+          }),
         openDelegate: () =>
           openModal({ kind: 'delegate', asset: defaultAsset }),
         openPowerDown: () =>
@@ -66,6 +75,21 @@ export function WaivWalletSummary({
           openModal({ kind: 'cancelPowerDown', asset: defaultAsset }),
       }
     : null;
+
+  const waivTokenMenuItems = actions
+    ? [
+        {
+          id: 'transfer',
+          label: t('transfer'),
+          onSelect: actions.openTransfer,
+        },
+        ...WAIV_WITHDRAW_OUTPUT_SYMBOLS.map((outputSymbol) => ({
+          id: `withdraw-${outputSymbol}`,
+          label: interpolateMessage(t('wallet_withdraw_to'), { symbol: outputSymbol }),
+          onSelect: () => actions.openWithdraw(outputSymbol),
+        })),
+      ]
+    : [];
 
   return (
     <section className="rounded-card border border-border bg-surface p-card-padding shadow-card">
@@ -81,13 +105,7 @@ export function WaivWalletSummary({
             ? {
                 primaryLabel: t('power_up'),
                 onPrimary: actions.openPowerUp,
-                menuItems: [
-                  {
-                    id: 'transfer',
-                    label: t('transfer'),
-                    onSelect: actions.openTransfer,
-                  },
-                ],
+                menuItems: waivTokenMenuItems,
               }
             : null
         }

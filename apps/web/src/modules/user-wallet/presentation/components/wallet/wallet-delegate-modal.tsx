@@ -38,6 +38,7 @@ import type {
   WalletDelegateModalState,
   WalletMainAsset,
 } from '../../../domain/wallet-modal-types';
+import { isEngineTokenAsset } from '../../../domain/wallet-modal-types';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { useHiveBroadcast } from '../../hooks/use-hive-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
@@ -61,7 +62,7 @@ export function WalletDelegateModal({
 }: WalletDelegateModalProps) {
   const { t } = useI18n();
   const titleId = useId();
-  const { waivSummary, hiveSummary } = useWalletBalances();
+  const { waivSummary, hiveSummary, engineSummary } = useWalletBalances();
   const engineBroadcast = useEngineTokenBroadcast(account);
   const hiveBroadcast = useHiveBroadcast(account);
 
@@ -83,20 +84,33 @@ export function WalletDelegateModal({
   }, [open, state.asset]);
 
   const balanceConfig = useMemo(
-    () => getWalletDelegateBalanceConfig(asset, waivSummary, hiveSummary),
-    [asset, waivSummary, hiveSummary],
+    () =>
+      getWalletDelegateBalanceConfig(
+        asset,
+        waivSummary,
+        hiveSummary,
+        engineSummary,
+      ),
+    [asset, waivSummary, hiveSummary, engineSummary],
   );
 
   const assetOptions = useMemo(() => {
-    return listWalletMainAssetOptions(waivSummary, hiveSummary).map((value) => {
-      const config = getWalletDelegateBalanceConfig(value, waivSummary, hiveSummary);
-      return {
-        value,
-        label: value === 'WAIV' ? 'WP' : 'HP',
-        balance: config?.maxAmount ?? '0',
-      };
-    });
-  }, [hiveSummary, waivSummary]);
+    return listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary).map(
+      (value) => {
+        const config = getWalletDelegateBalanceConfig(
+          value,
+          waivSummary,
+          hiveSummary,
+          engineSummary,
+        );
+        return {
+          value,
+          label: isEngineTokenAsset(value) ? value : 'HP',
+          balance: config?.maxAmount ?? '0',
+        };
+      },
+    );
+  }, [engineSummary, hiveSummary, waivSummary]);
 
   const hiveDelegationMinHp = useMemo(() => {
     if (asset !== 'HIVE' || !hiveSummary) {
@@ -109,8 +123,7 @@ export function WalletDelegateModal({
     if (!balanceConfig) {
       return false;
     }
-    const recipientOk =
-      asset === 'WAIV'
+    const recipientOk = isEngineTokenAsset(asset)
         ? validateEngineTokenRecipient(to) === null
         : validateHiveWalletRecipient(to) === null;
     const amountOk =
@@ -136,7 +149,7 @@ export function WalletDelegateModal({
       return;
     }
 
-    if (asset === 'WAIV') {
+    if (isEngineTokenAsset(asset)) {
       const recipientError = validateEngineTokenRecipient(to);
       if (recipientError) {
         setValidationError(t(engineTokenFormValidationMessageKey(recipientError)));
@@ -187,13 +200,13 @@ export function WalletDelegateModal({
     setValidationError(null);
     const recipient = to.trim().toLowerCase();
 
-    if (asset === 'WAIV') {
+    if (isEngineTokenAsset(asset)) {
       const parsed = parseEngineTokenAmount(amount);
       if (parsed === null) {
         return;
       }
       const ok = await engineBroadcast.broadcast('delegate', {
-        symbol: 'WAIV',
+        symbol: asset,
         quantity: formatEngineTokenQuantity(parsed),
         to: recipient,
       });

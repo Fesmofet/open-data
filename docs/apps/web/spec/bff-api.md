@@ -38,6 +38,15 @@ Next.js **Route Handlers** under `apps/web/src/app/api/` proxy to backend servic
 | `/api/discover/users` | GET | query-api discover users | Discover page |
 | `/api/discover/tag-categories` | GET | query-api tag categories | Discover filters |
 | `/api/hello` | GET | — | Health / smoke only |
+| `/api/users/[name]/wallet/waiv` | GET | query-api WAIV summary | WAIV transfers tab |
+| `/api/users/[name]/wallet/hive` | GET | query-api HIVE summary | HIVE transfers tab |
+| `/api/users/[name]/wallet/engine` | GET | query-api ENGINE summary | ENGINE transfers tab |
+| `/api/users/[name]/wallet/engine/swap/list` | GET | swap list | Swap modal |
+| `/api/users/[name]/wallet/engine/swap/quote` | POST | swap quote | Swap modal |
+| `/api/users/[name]/wallet/engine/deposit/list` | GET | deposit list | Deposit modal |
+| `/api/users/[name]/wallet/engine/deposit/address` | GET | deposit routing | Deposit modal |
+| `/api/users/[name]/wallet/engine/withdraw/list` | GET | withdraw list | Withdraw modal |
+| `/api/users/[name]/wallet/engine/withdraw/quote` | POST | withdraw quote | Withdraw modal |
 
 ## Conventions
 

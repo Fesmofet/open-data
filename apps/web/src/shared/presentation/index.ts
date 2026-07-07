@@ -31,6 +31,8 @@ export {
   APP_MODAL_Z_INDEX,
 } from './components/app-modal';
 export type { AppModalProps } from './components/app-modal';
+export { AppLoader } from './components/app-loader';
+export type { AppLoaderProps } from './components/app-loader';
 export {
   ModalShell,
   ModalShellCloseButton,

@@ -12,6 +12,10 @@ describe('formatWalletModalBalanceDisplay', () => {
   it('keeps shorter fractional values as-is', () => {
     expect(formatWalletModalBalanceDisplay('10.5')).toBe('10.5');
   });
+
+  it('shows up to 6 decimals for dust balances', () => {
+    expect(formatWalletModalBalanceDisplay('0.00005444')).toBe('0.000054');
+  });
 });
 
 describe('formatHiveRcBillionsDisplay', () => {

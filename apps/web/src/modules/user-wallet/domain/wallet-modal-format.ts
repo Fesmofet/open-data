@@ -1,4 +1,6 @@
 export const WALLET_MODAL_BALANCE_DISPLAY_DECIMALS = 3;
+export const WALLET_MODAL_SMALL_BALANCE_DISPLAY_DECIMALS = 6;
+export const WALLET_MODAL_SMALL_BALANCE_THRESHOLD = 0.001;
 
 /** Rounds modal balance labels down to 3 decimal places (legacy PowerSwitcher). */
 export function formatWalletModalBalanceDisplay(value: string): string {
@@ -6,6 +8,17 @@ export function formatWalletModalBalanceDisplay(value: string): string {
   const parsed = Number.parseFloat(numeric);
   if (!Number.isFinite(parsed)) {
     return value;
+  }
+  if (parsed === 0) {
+    return '0';
+  }
+  if (parsed <= WALLET_MODAL_SMALL_BALANCE_THRESHOLD) {
+    const factor = 10 ** WALLET_MODAL_SMALL_BALANCE_DISPLAY_DECIMALS;
+    const rounded = Math.round(parsed * factor) / factor;
+    return rounded.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: WALLET_MODAL_SMALL_BALANCE_DISPLAY_DECIMALS,
+    });
   }
   const factor = 10 ** WALLET_MODAL_BALANCE_DISPLAY_DECIMALS;
   const truncated = Math.floor(parsed * factor) / factor;

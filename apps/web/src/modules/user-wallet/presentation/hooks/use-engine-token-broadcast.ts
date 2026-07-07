@@ -3,7 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-import { buildHiveEngineTokensOp } from '@opden-data-layer/hive-broadcast';
+import {
+  buildHiveEngineCustomJsonOp,
+  buildHiveEngineTokensOp,
+  type HiveEngineCustomJsonPayload,
+} from '@opden-data-layer/hive-broadcast';
 import type { HiveEngineTokensContractAction } from '@opden-data-layer/hive-broadcast';
 
 import { getWalletFacade } from '@/modules/auth';
@@ -23,6 +27,12 @@ export function useEngineTokenBroadcast(account: string) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<EngineTokenBroadcastErrorCode | null>(null);
 
+  const afterBroadcast = useCallback(async () => {
+    await refreshAfterBroadcast(router, () =>
+      revalidateUserWaivWalletAfterBroadcast(account),
+    );
+  }, [account, router]);
+
   const broadcast = useCallback(
     async (
       contractAction: HiveEngineTokensContractAction,
@@ -40,9 +50,7 @@ export function useEngineTokenBroadcast(account: string) {
           operations: [op],
         });
         await awaitTrxConfirmation(transactionId);
-        await refreshAfterBroadcast(router, () =>
-          revalidateUserWaivWalletAfterBroadcast(account),
-        );
+        await afterBroadcast();
         return true;
       } catch (e) {
         if (isHiveSignerRedirectError(e)) {
@@ -54,8 +62,35 @@ export function useEngineTokenBroadcast(account: string) {
         setPending(false);
       }
     },
-    [account, router],
+    [account, afterBroadcast],
   );
 
-  return { broadcast, pending, error, setError };
+  const broadcastCustomJson = useCallback(
+    async (
+      payloads: readonly HiveEngineCustomJsonPayload[],
+    ): Promise<boolean> => {
+      setError(null);
+      setPending(true);
+      try {
+        const op = buildHiveEngineCustomJsonOp(account, payloads);
+        const { transactionId } = await getWalletFacade().broadcast({
+          operations: [op],
+        });
+        await awaitTrxConfirmation(transactionId);
+        await afterBroadcast();
+        return true;
+      } catch (e) {
+        if (isHiveSignerRedirectError(e)) {
+          return false;
+        }
+        setError(mapEngineTokenBroadcastError(e));
+        return false;
+      } finally {
+        setPending(false);
+      }
+    },
+    [account, afterBroadcast],
+  );
+
+  return { broadcast, broadcastCustomJson, pending, error, setError };
 }

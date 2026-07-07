@@ -3,9 +3,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import {
   ExchangeRateClientModule,
+  EthGatewayClientModule,
   HiveClientModule,
   HiveEngineClientModule,
+  HiveEngineConvertClientModule,
   HiveEngineHistoryClientModule,
+  TribaldexClientModule,
   type HiveEngineClientModuleOptions,
   HIVE_RPC_NODES,
   RedisClientModule,
@@ -75,6 +78,24 @@ import { RepositoriesModule } from './repositories';
         }
         return client;
       },
+      inject: [ConfigService],
+    }),
+    HiveEngineConvertClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) =>
+        config.getOrThrow('hiveEngine.convertClient'),
+      inject: [ConfigService],
+    }),
+    TribaldexClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) =>
+        config.getOrThrow('hiveEngine.tribaldexClient'),
+      inject: [ConfigService],
+    }),
+    EthGatewayClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) =>
+        config.getOrThrow('hiveEngine.ethGatewayClient'),
       inject: [ConfigService],
     }),
     RepositoriesModule,

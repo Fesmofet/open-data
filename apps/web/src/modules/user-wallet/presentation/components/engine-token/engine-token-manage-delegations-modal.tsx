@@ -6,6 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
   AppModal,
   AppModalCloseButton,
+  AppLoader,
 } from '@/shared/presentation';
 
 import { formatEngineTokenQuantity } from '../../../domain/engine-token-amount';
@@ -101,7 +102,7 @@ export function EngineTokenManageDelegationsModal({
           <span className="font-weight-label text-fg">{t('token')}:</span> {state.symbol}
         </p>
         {loading ? (
-          <p className="text-body-sm text-muted">…</p>
+          <AppLoader layout="center" label={t('wallet_delegations_loading')} />
         ) : loadError ? (
           <p className="text-body-sm text-error" role="alert">
             {t('unavailable')}

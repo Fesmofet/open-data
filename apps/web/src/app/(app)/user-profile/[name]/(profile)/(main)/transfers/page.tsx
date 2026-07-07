@@ -42,20 +42,25 @@ export default async function UserProfileTransfersPage({
   const user = await auth.getUser();
 
   const [waiv, hive, engine] = await Promise.all([
-    walletType === 'WAIV' || walletType === 'HIVE'
+    walletType === 'WAIV' || walletType === 'HIVE' || walletType === 'ENGINE'
       ? getWaivWalletSummaryQuery(accountName)
       : Promise.resolve({ summary: null, error: null }),
-    walletType === 'WAIV' || walletType === 'HIVE'
+    walletType === 'WAIV' || walletType === 'HIVE' || walletType === 'ENGINE'
       ? getHiveWalletSummaryQuery(accountName)
       : Promise.resolve({ summary: null, error: null }),
-    walletType === 'ENGINE'
+    walletType === 'ENGINE' || walletType === 'WAIV'
       ? getEngineWalletSummaryQuery(accountName)
       : Promise.resolve({ summary: null, error: null }),
   ]);
 
   if (walletType === 'HIVE' || walletType === 'WAIV') {
     return (
-      <TransfersWalletPageClient>
+      <TransfersWalletPageClient
+        accountName={accountName}
+        viewerUsername={user?.username ?? null}
+        waivSummary={waiv.summary}
+        hiveSummary={hive.summary}
+      >
         <TransfersWalletShell
           accountName={accountName}
           viewerUsername={user?.username ?? null}
@@ -71,7 +76,13 @@ export default async function UserProfileTransfersPage({
 
   if (walletType === 'ENGINE') {
     return (
-      <TransfersWalletPageClient>
+      <TransfersWalletPageClient
+        accountName={accountName}
+        viewerUsername={user?.username ?? null}
+        waivSummary={waiv.summary}
+        hiveSummary={hive.summary}
+        engineSummary={engine.summary}
+      >
         <TransfersWalletShell
           accountName={accountName}
           viewerUsername={user?.username ?? null}

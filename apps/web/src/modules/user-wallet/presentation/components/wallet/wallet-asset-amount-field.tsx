@@ -6,6 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
+import { WalletSearchableAssetSelect } from './wallet-searchable-asset-select';
 
 export type WalletAssetAmountOption<T extends string> = {
   value: T;
@@ -23,6 +24,9 @@ export type WalletAssetAmountFieldProps<T extends string> = {
   assetDisabled?: boolean;
   maxAmount: string;
   placeholder?: string;
+  amountReadOnly?: boolean;
+  /** Search/filter token list (swap modal). */
+  searchableAsset?: boolean;
 };
 
 export function WalletAssetAmountField<T extends string>({
@@ -35,6 +39,8 @@ export function WalletAssetAmountField<T extends string>({
   assetDisabled = false,
   maxAmount,
   placeholder,
+  amountReadOnly = false,
+  searchableAsset = false,
 }: WalletAssetAmountFieldProps<T>) {
   const { t } = useI18n();
   const inputId = useId();
@@ -51,7 +57,11 @@ export function WalletAssetAmountField<T extends string>({
             type="text"
             inputMode="decimal"
             aria-label={label}
-            className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-body text-fg outline-none focus:ring-0"
+            readOnly={amountReadOnly}
+            className={[
+              'min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-body text-fg outline-none focus:ring-0',
+              amountReadOnly ? 'cursor-default text-muted' : '',
+            ].join(' ')}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
@@ -59,7 +69,7 @@ export function WalletAssetAmountField<T extends string>({
           <button
             type="button"
             className="shrink-0 self-center px-2 text-caption text-muted hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!canUseMax}
+            disabled={!canUseMax || amountReadOnly}
             onClick={() => {
               if (!canUseMax) {
                 return;
@@ -69,6 +79,15 @@ export function WalletAssetAmountField<T extends string>({
           >
             {t('max')}
           </button>
+          {searchableAsset ? (
+            <WalletSearchableAssetSelect
+              value={asset}
+              options={options}
+              onChange={onAssetChange}
+              disabled={assetDisabled || options.length <= 1}
+              ariaLabel={t('object_edit_wallet_symbol')}
+            />
+          ) : (
           <select
             aria-label={t('object_edit_wallet_symbol')}
             className="max-w-[9rem] shrink-0 border-0 border-l border-border bg-surface px-2 py-2 text-body-sm text-fg outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
@@ -76,12 +95,17 @@ export function WalletAssetAmountField<T extends string>({
             disabled={assetDisabled || options.length <= 1}
             onChange={(e) => onAssetChange(e.target.value as T)}
           >
-            {options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label} ({formatWalletModalBalanceDisplay(option.balance)})
-              </option>
-            ))}
+            {options.length === 0 ? (
+              <option value={asset}>{asset || '…'}</option>
+            ) : (
+              options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label} ({formatWalletModalBalanceDisplay(option.balance)})
+                </option>
+              ))
+            )}
           </select>
+          )}
         </div>
       </div>
     </div>

@@ -115,6 +115,9 @@ importers:
       axios:
         specifier: ^1.15.2
         version: 1.16.1
+      bignumber.js:
+        specifier: ^11.1.5
+        version: 11.1.5
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -269,6 +272,9 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/bignumber.js':
+        specifier: ^5.0.4
+        version: 5.0.4
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
@@ -3547,6 +3553,10 @@ packages:
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
 
+  '@types/bignumber.js@5.0.4':
+    resolution: {integrity: sha512-y/nRKmgKRakrBZ4B3/1mhZOEHrKcf6BniqxVlsVrmaG6fN6WzzUlXfsD+KX+Ii4C+093A7h1p6LkOsXktOfQnQ==}
+    deprecated: This is a stub types definition. bignumber.js provides its own type definitions, so you do not need this installed.
+
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
 
@@ -4382,6 +4392,9 @@ packages:
 
   bigi@1.4.2:
     resolution: {integrity: sha512-ddkU+dFIuEIW8lE7ZwdIAf2UPoM90eaprg5m3YXAVVTmKlqV/9BX4A2M8BOK2yOq6/VgZFVhK6QAxJebhlbhzw==}
+
+  bignumber.js@11.1.5:
+    resolution: {integrity: sha512-6WmzCNtUnfKpbozq+hOgWaZMMzORmYBwF1xZScyoIX3QRYWeKTtxxwDOW5tIz7C9BdjkIYHGTcelCLkXg0mndw==}
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -13246,6 +13259,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.0
 
+  '@types/bignumber.js@5.0.4':
+    dependencies:
+      bignumber.js: 11.1.5
+
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
@@ -14224,6 +14241,8 @@ snapshots:
   big.js@5.2.2: {}
 
   bigi@1.4.2: {}
+
+  bignumber.js@11.1.5: {}
 
   binary-extensions@2.3.0: {}
 

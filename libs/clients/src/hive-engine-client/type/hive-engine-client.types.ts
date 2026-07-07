@@ -205,6 +205,14 @@ export type HiveEngineMarketPool = {
   creator: string;
 };
 
+/** Global market pool fee parameters (`marketpools` / `params`). */
+export type HiveEngineMarketPoolParams = {
+  _id: number;
+  tradeFeeMul: string;
+  baseFee?: string;
+  baseFeeSymbol?: string;
+};
+
 export type HiveEngineMarketMetric = {
   _id: number;
   symbol: string;

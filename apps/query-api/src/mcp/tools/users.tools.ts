@@ -304,6 +304,97 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_engine_swap_list',
+    {
+      description: catalogDescription('get_user_engine_swap_list'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserEngineSwapList.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'post_user_engine_swap_quote',
+    {
+      description: catalogDescription('post_user_engine_swap_quote'),
+      inputSchema: z.object({
+        ...accountField,
+        fromSymbol: z.string().min(1),
+        toSymbol: z.string().min(1),
+        amountIn: z.string().min(1),
+        direction: z.enum(['exactInput', 'exactOutput']).optional(),
+        slippage: z.number().min(0).max(1).optional(),
+      }),
+    },
+    async (args) => {
+      const result = await deps.postUserEngineSwapQuote.execute(args.account, {
+        fromSymbol: args.fromSymbol,
+        toSymbol: args.toSymbol,
+        amountIn: args.amountIn,
+        direction: args.direction,
+        slippage: args.slippage,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_engine_deposit_address',
+    {
+      description: catalogDescription('get_user_engine_deposit_address'),
+      inputSchema: z.object({
+        ...accountField,
+        symbol: z.string().min(1).describe('Deposit token symbol (e.g. HIVE, BTC)'),
+      }),
+    },
+    async (args) => {
+      const result = await deps.getUserEngineDepositAddress.execute(args.account, {
+        symbol: args.symbol,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'post_user_engine_withdraw_quote',
+    {
+      description: catalogDescription('post_user_engine_withdraw_quote'),
+      inputSchema: z.object({
+        ...accountField,
+        inputSymbol: z.string().min(1),
+        outputSymbol: z.string().min(1),
+        quantity: z.string().min(1),
+        address: z.string().optional(),
+        previewOnly: z.boolean().optional(),
+      }),
+    },
+    async (args) => {
+      const result = await deps.postUserEngineWithdrawQuote.execute(args.account, {
+        inputSymbol: args.inputSymbol,
+        outputSymbol: args.outputSymbol,
+        quantity: args.quantity,
+        address: args.address,
+        previewOnly: args.previewOnly,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_engine_token_delegations',
     {
       description: catalogDescription('get_user_engine_token_delegations'),

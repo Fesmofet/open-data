@@ -8,6 +8,7 @@ import type {
   HiveEngineContractQuery,
   HiveEngineLiquidityPosition,
   HiveEngineMarketPool,
+  HiveEngineMarketPoolParams,
   HiveEngineMarketMetric,
   HiveEngineMiningPool,
   HiveEngineRewardPool,
@@ -118,6 +119,13 @@ export interface HiveEngineClientInterface {
   findOneMarketPool(
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineMarketPool | null>;
+
+  findMarketPoolParams(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineMarketPoolParams[]>;
+  findOneMarketPoolParam(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineMarketPoolParams | null>;
 
   findMarketMetrics(
     params?: FindContractTableParams,

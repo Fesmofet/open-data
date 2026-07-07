@@ -205,6 +205,30 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-engine-wallet-endpoint.md',
   },
   {
+    name: 'get_user_engine_swap_list',
+    description: 'Swappable Hive Engine tokens and pool pairs for wallet swap UI.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/swap/list',
+    specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
+  },
+  {
+    name: 'post_user_engine_swap_quote',
+    description: 'AMM swap quote for Hive Engine market pools (no withdraw validation).',
+    httpEquivalent: 'POST /query/v1/users/:name/wallet/engine/swap/quote',
+    specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
+  },
+  {
+    name: 'get_user_engine_deposit_address',
+    description: 'Deposit routing instructions via Hive Engine converter API.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/deposit/address',
+    specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
+  },
+  {
+    name: 'post_user_engine_withdraw_quote',
+    description: 'Multi-hop swap + withdraw custom_json quote with final-leg validation.',
+    httpEquivalent: 'POST /query/v1/users/:name/wallet/engine/withdraw/quote',
+    specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
+  },
+  {
     name: 'get_user_engine_token_delegations',
     description: 'Incoming and outgoing Hive Engine token delegations for a user.',
     httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/:symbol/delegations',

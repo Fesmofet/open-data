@@ -120,3 +120,29 @@ export function buildHiveEngineTokensOp(
     json,
   });
 }
+
+export type HiveEngineCustomJsonPayload = {
+  readonly contractName: string;
+  readonly contractAction: string;
+  readonly contractPayload: Record<string, string>;
+};
+
+/**
+ * Wrap arbitrary Hive Engine contract payloads (marketpools, hivepegged, tokens, …)
+ * as active-auth `custom_json` operations.
+ */
+export function buildHiveEngineCustomJsonOp(
+  account: string,
+  payloads: readonly HiveEngineCustomJsonPayload[],
+): CustomJsonOp {
+  const json =
+    payloads.length === 1
+      ? JSON.stringify(payloads[0])
+      : JSON.stringify([...payloads]);
+  return buildCustomJsonOp({
+    required_auths: [account],
+    required_posting_auths: [],
+    id: HIVE_ENGINE_CUSTOM_JSON_ID,
+    json,
+  });
+}

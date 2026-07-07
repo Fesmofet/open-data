@@ -8,6 +8,17 @@ import {
   engineWalletHistoryBodySchema,
   engineWalletHistoryResponseSchema,
 } from '../domain/wallet/schemas/engine-wallet-history.schema';
+import {
+  engineDepositAddressQuerySchema,
+  engineDepositAddressResponseSchema,
+  engineDepositListResponseSchema,
+  engineSwapListResponseSchema,
+  engineSwapQuoteBodySchema,
+  engineSwapQuoteResponseSchema,
+  engineWithdrawListResponseSchema,
+  engineWithdrawQuoteBodySchema,
+  engineWithdrawQuoteResponseSchema,
+} from '../domain/wallet/schemas/engine-swap.schema';
 import { engineTokenDelegationsResponseSchema } from '../domain/wallet/schemas/engine-token-delegations.schema';
 import {
   hiveHpDelegationsResponseSchema,
@@ -376,6 +387,148 @@ registry.registerPath({
         },
       },
     },
+  },
+});
+
+const engineSwapListOpenApi = registry.register(
+  'EngineSwapListResponse',
+  engineSwapListResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/wallet/engine/swap/list',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Hive Engine swap token list',
+  request: { params: z.object({ name: accountNameParam }) },
+  responses: {
+    200: {
+      description: 'Swappable tokens with pool adjacency.',
+      content: { 'application/json': { schema: engineSwapListOpenApi } },
+    },
+    404: { description: 'Unknown account.', content: { 'application/json': { schema: notFoundSchema } } },
+    503: { description: 'Hive Engine unavailable.', content: { 'application/json': { schema: serviceUnavailableSchema } } },
+  },
+});
+
+const engineSwapQuoteBodyOpenApi = registry.register(
+  'EngineSwapQuoteBody',
+  engineSwapQuoteBodySchema,
+);
+const engineSwapQuoteResponseOpenApi = registry.register(
+  'EngineSwapQuoteResponse',
+  engineSwapQuoteResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/wallet/engine/swap/quote',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Hive Engine swap quote',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: { content: { 'application/json': { schema: engineSwapQuoteBodyOpenApi } } },
+  },
+  responses: {
+    200: {
+      description: 'AMM swap quote with custom_json payloads.',
+      content: { 'application/json': { schema: engineSwapQuoteResponseOpenApi } },
+    },
+    400: { description: 'Invalid pair or amount.', content: { 'application/json': { schema: badRequestSchema } } },
+    404: { description: 'Unknown account.', content: { 'application/json': { schema: notFoundSchema } } },
+    503: { description: 'Hive Engine unavailable.', content: { 'application/json': { schema: serviceUnavailableSchema } } },
+  },
+});
+
+const engineDepositListOpenApi = registry.register(
+  'EngineDepositListResponse',
+  engineDepositListResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/wallet/engine/deposit/list',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Hive Engine deposit token list',
+  request: { params: z.object({ name: accountNameParam }) },
+  responses: {
+    200: { description: 'Depositable tokens.', content: { 'application/json': { schema: engineDepositListOpenApi } } },
+    404: { description: 'Unknown account.', content: { 'application/json': { schema: notFoundSchema } } },
+    503: { description: 'Converter unavailable.', content: { 'application/json': { schema: serviceUnavailableSchema } } },
+  },
+});
+
+const engineDepositAddressQueryOpenApi = registry.register(
+  'EngineDepositAddressQuery',
+  engineDepositAddressQuerySchema,
+);
+const engineDepositAddressResponseOpenApi = registry.register(
+  'EngineDepositAddressResponse',
+  engineDepositAddressResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/wallet/engine/deposit/address',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Hive Engine deposit routing',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    query: engineDepositAddressQueryOpenApi,
+  },
+  responses: {
+    200: {
+      description: 'Deposit address / account / memo routing.',
+      content: { 'application/json': { schema: engineDepositAddressResponseOpenApi } },
+    },
+    400: { description: 'Unsupported symbol.', content: { 'application/json': { schema: badRequestSchema } } },
+    404: { description: 'Unknown account.', content: { 'application/json': { schema: notFoundSchema } } },
+    503: { description: 'Converter unavailable.', content: { 'application/json': { schema: serviceUnavailableSchema } } },
+  },
+});
+
+const engineWithdrawListOpenApi = registry.register(
+  'EngineWithdrawListResponse',
+  engineWithdrawListResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/wallet/engine/withdraw/list',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Hive Engine withdraw route list',
+  request: { params: z.object({ name: accountNameParam }) },
+  responses: {
+    200: { description: 'Withdraw pairs for held balances.', content: { 'application/json': { schema: engineWithdrawListOpenApi } } },
+    404: { description: 'Unknown account.', content: { 'application/json': { schema: notFoundSchema } } },
+    503: { description: 'Hive Engine unavailable.', content: { 'application/json': { schema: serviceUnavailableSchema } } },
+  },
+});
+
+const engineWithdrawQuoteBodyOpenApi = registry.register(
+  'EngineWithdrawQuoteBody',
+  engineWithdrawQuoteBodySchema,
+);
+const engineWithdrawQuoteResponseOpenApi = registry.register(
+  'EngineWithdrawQuoteResponse',
+  engineWithdrawQuoteResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/wallet/engine/withdraw/quote',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Hive Engine withdraw quote',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: { content: { 'application/json': { schema: engineWithdrawQuoteBodyOpenApi } } },
+  },
+  responses: {
+    200: {
+      description: 'Predictive receive amount and optional custom_json sequence.',
+      content: { 'application/json': { schema: engineWithdrawQuoteResponseOpenApi } },
+    },
+    404: { description: 'Unknown account.', content: { 'application/json': { schema: notFoundSchema } } },
   },
 });
 

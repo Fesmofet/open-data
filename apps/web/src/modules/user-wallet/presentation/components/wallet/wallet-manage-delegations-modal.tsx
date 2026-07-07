@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { buildDelegateVestingSharesOp } from '@opden-data-layer/hive-broadcast';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AppModal, AppModalCloseButton } from '@/shared/presentation';
+import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
 import { formatEngineTokenQuantity } from '../../../domain/engine-token-amount';
 import type { EngineTokenDelegationsView } from '../../../domain/types/waiv-wallet-view';
@@ -168,7 +168,7 @@ export function WalletManageDelegationsModal({
           </div>
         ) : null}
         {loading ? (
-          <p className="text-body-sm text-muted">…</p>
+          <AppLoader layout="center" label={t('wallet_delegations_loading')} />
         ) : loadError ? (
           <p className="text-body-sm text-error" role="alert">
             {t('unavailable')}
@@ -294,7 +294,7 @@ function DelegationLists({
         </section>
       ) : null}
       {incoming.length === 0 && outgoing.length === 0 ? (
-        <p className="text-body-sm text-muted">—</p>
+        <p className="text-body-sm text-muted">{t('your_list_is_empty')}</p>
       ) : null}
     </div>
   );

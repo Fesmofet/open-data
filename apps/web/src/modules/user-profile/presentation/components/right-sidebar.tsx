@@ -5,14 +5,17 @@ import { Suspense } from 'react';
 
 import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
 import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
+import { isUserProfileTransfersTab } from '../../domain/profile-transfers-url';
 import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
 import { isUserProfileShopOrRecipeTab } from '../../domain/profile-shop-filters-url';
 import { ProfilePostFiltersFromUrl } from './profile-post-filters';
 import { ProfileShopFiltersFromUrl } from './profile-shop-filters';
+import { WalletActionsSidebar } from './wallet-actions-sidebar';
 
 type RightSidebarProps = {
   accountName: string;
+  viewerUsername?: string | null;
 };
 
 function FiltersFallback() {
@@ -34,7 +37,7 @@ function FiltersFallback() {
   );
 }
 
-function RightSidebarContent({ accountName }: RightSidebarProps) {
+function RightSidebarContent({ accountName, viewerUsername }: RightSidebarProps) {
   const pathname = usePathname();
   if (isUserProfilePostsTab(pathname)) {
     return (
@@ -60,9 +63,26 @@ function RightSidebarContent({ accountName }: RightSidebarProps) {
     );
   }
 
+  if (isUserProfileTransfersTab(pathname)) {
+    return (
+      <WalletActionsSidebar
+        accountName={accountName}
+        viewerUsername={viewerUsername ?? null}
+      />
+    );
+  }
+
   return null;
 }
 
-export function RightSidebar({ accountName }: RightSidebarProps) {
-  return <RightSidebarContent accountName={accountName} />;
+export function RightSidebar({
+  accountName,
+  viewerUsername = null,
+}: RightSidebarProps) {
+  return (
+    <RightSidebarContent
+      accountName={accountName}
+      viewerUsername={viewerUsername}
+    />
+  );
 }

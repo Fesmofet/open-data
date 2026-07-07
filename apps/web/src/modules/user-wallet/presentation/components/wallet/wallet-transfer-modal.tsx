@@ -38,6 +38,7 @@ import {
   listWalletTransferAssetOptions,
 } from '../../../domain/wallet-modal-balances';
 import type { WalletTransferAsset } from '../../../domain/wallet-modal-types';
+import { isEngineTokenAsset, isHiveL1TransferAsset } from '../../../domain/wallet-modal-types';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { useHiveBroadcast } from '../../hooks/use-hive-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
@@ -63,12 +64,13 @@ export function WalletTransferModal({
   const { t } = useI18n();
   const titleId = useId();
   const memoId = useId();
-  const { waivSummary, hiveSummary } = useWalletBalances();
+  const { waivSummary, hiveSummary, engineSummary } = useWalletBalances();
   const engineBroadcast = useEngineTokenBroadcast(account);
   const hiveBroadcast = useHiveBroadcast(account);
 
   const savingsMode = state.fromSavings ? 'from' : state.toSavings ? 'to' : 'none';
-  const assetLocked = savingsMode !== 'none';
+  const assetLocked = savingsMode !== 'none' || Boolean(state.lockAsset);
+  const recipientLocked = Boolean(state.lockRecipient && state.presetTo);
 
   const [asset, setAsset] = useState<WalletTransferAsset>(state.asset);
   const [to, setTo] = useState('');
@@ -81,28 +83,40 @@ export function WalletTransferModal({
       return;
     }
     setAsset(state.asset);
-    setTo('');
+    setTo(state.presetTo ?? '');
     setAmount('');
-    setMemo('');
+    setMemo(state.presetMemo ?? '');
     setValidationError(null);
     engineBroadcast.setError(null);
     hiveBroadcast.setError(null);
-  }, [open, state.asset, account]);
+  }, [open, state.asset, state.presetTo, state.presetMemo, account]);
 
   const balanceConfig = useMemo(
-    () => getWalletTransferBalanceConfig(asset, savingsMode, waivSummary, hiveSummary),
-    [asset, savingsMode, waivSummary, hiveSummary],
+    () =>
+      getWalletTransferBalanceConfig(
+        asset,
+        savingsMode,
+        waivSummary,
+        hiveSummary,
+        engineSummary,
+      ),
+    [asset, savingsMode, waivSummary, hiveSummary, engineSummary],
   );
 
   const assetOptions = useMemo(() => {
-    return listWalletTransferAssetOptions(savingsMode, waivSummary, hiveSummary).map(
-      (value) => {
-        const config = getWalletTransferBalanceConfig(
-          value,
-          savingsMode,
-          waivSummary,
-          hiveSummary,
-        );
+    return listWalletTransferAssetOptions(
+      savingsMode,
+      waivSummary,
+      hiveSummary,
+      engineSummary,
+    ).map((value) => {
+      const config = getWalletTransferBalanceConfig(
+        value,
+        savingsMode,
+        waivSummary,
+        hiveSummary,
+        engineSummary,
+      );
         return {
           value,
           label: value,
@@ -191,13 +205,13 @@ export function WalletTransferModal({
     setValidationError(null);
     const recipient = to.trim().toLowerCase();
 
-    if (asset === 'WAIV') {
+    if (isEngineTokenAsset(asset)) {
       const parsed = parseEngineTokenAmount(amount);
       if (parsed === null) {
         return;
       }
       const ok = await engineBroadcast.broadcast('transfer', {
-        symbol: 'WAIV',
+        symbol: asset,
         quantity: formatEngineTokenQuantity(parsed),
         to: recipient,
         memo: memo.trim(),
@@ -205,6 +219,10 @@ export function WalletTransferModal({
       if (ok) {
         onClose();
       }
+      return;
+    }
+
+    if (!isHiveL1TransferAsset(asset)) {
       return;
     }
 
@@ -255,15 +273,21 @@ export function WalletTransferModal({
           <div>
             <WalletModalFieldLabel>{t('to')}</WalletModalFieldLabel>
             <div className="mt-1">
-              <UserRefSearchField
-                value={to}
-                onChange={(name) => {
-                  setTo(name);
-                  setValidationError(null);
-                }}
-                excludeAccountNames={[account]}
-                fieldLabel={t('to')}
-              />
+              {recipientLocked ? (
+                <div className="rounded-btn border border-border bg-surface px-3 py-2 text-body">
+                  @{state.presetTo}
+                </div>
+              ) : (
+                <UserRefSearchField
+                  value={to}
+                  onChange={(name) => {
+                    setTo(name);
+                    setValidationError(null);
+                  }}
+                  excludeAccountNames={[account]}
+                  fieldLabel={t('to')}
+                />
+              )}
             </div>
           </div>
           <WalletAssetAmountField
@@ -293,11 +317,14 @@ export function WalletTransferModal({
             />
           ) : null}
           <div>
-            <WalletModalFieldLabel>{t('memo_optional')}</WalletModalFieldLabel>
+            <WalletModalFieldLabel>
+              {state.presetMemo ? `${t('memo')} (${t('required_field')})` : t('memo_optional')}
+            </WalletModalFieldLabel>
             <textarea
               id={memoId}
               rows={3}
-              className="mt-1 w-full resize-y rounded-btn border border-border bg-bg px-3 py-2 text-body text-fg"
+              readOnly={Boolean(state.presetMemo)}
+              className="mt-1 w-full resize-y rounded-btn border border-border bg-bg px-3 py-2 text-body text-fg read-only:bg-surface"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               placeholder={t('memo_placeholder')}

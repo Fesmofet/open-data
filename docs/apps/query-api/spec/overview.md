@@ -42,6 +42,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [User activity endpoint](user-activity-endpoint.md) | `POST /query/v1/users/:name/activity` (Hive `get_account_history`) |
 | [User WAIV wallet](user-waiv-wallet-endpoint.md) | `GET /query/v1/users/:name/wallet/waiv`, `POST .../wallet/waiv/history`, `GET .../wallet/engine/:symbol/delegations` |
 | [User ENGINE wallet](user-engine-wallet-endpoint.md) | `GET /query/v1/users/:name/wallet/engine`, `POST .../wallet/engine/history` |
+| [User ENGINE swap / deposit / withdraw](user-engine-swap-endpoints.md) | `GET .../engine/swap/list`, `POST .../engine/swap/quote`, `GET .../engine/deposit/list`, `GET .../engine/deposit/address`, `GET .../engine/withdraw/list`, `POST .../engine/withdraw/quote` |
 | [User HIVE wallet](user-hive-wallet-endpoint.md) | `GET .../wallet/hive`, `GET .../wallet/hive/delegations`, `GET .../wallet/hive/rc-delegations` |
 | [Hive advanced report](user-hive-advanced-report-endpoint.md) | `POST /query/v1/wallet/hive/advanced-report`, `POST .../exemptions` |
 | [WAIV advanced report](user-waiv-advanced-report-endpoint.md) | `POST /query/v1/wallet/waiv/advanced-report` |

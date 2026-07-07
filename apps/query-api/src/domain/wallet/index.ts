@@ -3,6 +3,12 @@ export { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
 export { GetUserWaivWalletHistoryEndpoint } from './get-user-waiv-wallet-history.endpoint';
 export { GetUserEngineWalletEndpoint } from './get-user-engine-wallet.endpoint';
 export { GetUserEngineWalletHistoryEndpoint } from './get-user-engine-wallet-history.endpoint';
+export { GetUserEngineSwapListEndpoint } from './get-user-engine-swap-list.endpoint';
+export { PostUserEngineSwapQuoteEndpoint } from './post-user-engine-swap-quote.endpoint';
+export { GetUserEngineDepositListEndpoint } from './get-user-engine-deposit-list.endpoint';
+export { GetUserEngineDepositAddressEndpoint } from './get-user-engine-deposit-address.endpoint';
+export { GetUserEngineWithdrawListEndpoint } from './get-user-engine-withdraw-list.endpoint';
+export { PostUserEngineWithdrawQuoteEndpoint } from './post-user-engine-withdraw-quote.endpoint';
 export { GetUserEngineTokenDelegationsEndpoint } from './get-user-engine-token-delegations.endpoint';
 export { GetUserHiveWalletEndpoint } from './get-user-hive-wallet.endpoint';
 export { GetUserHiveHpDelegationsEndpoint } from './get-user-hive-hp-delegations.endpoint';
@@ -27,6 +33,26 @@ export {
   type EngineWalletHistoryBody,
   type EngineWalletHistoryResponse,
 } from './schemas/engine-wallet-history.schema';
+export {
+  engineSwapListResponseSchema,
+  engineSwapQuoteBodySchema,
+  engineSwapQuoteResponseSchema,
+  engineDepositListResponseSchema,
+  engineDepositAddressQuerySchema,
+  engineDepositAddressResponseSchema,
+  engineWithdrawListResponseSchema,
+  engineWithdrawQuoteBodySchema,
+  engineWithdrawQuoteResponseSchema,
+  type EngineSwapListResponse,
+  type EngineSwapQuoteBody,
+  type EngineSwapQuoteResponse,
+  type EngineDepositListResponse,
+  type EngineDepositAddressQuery,
+  type EngineDepositAddressResponse,
+  type EngineWithdrawListResponse,
+  type EngineWithdrawQuoteBody,
+  type EngineWithdrawQuoteResponse,
+} from './schemas/engine-swap.schema';
 export {
   engineTokenDelegationsResponseSchema,
   type EngineTokenDelegationsResponse,

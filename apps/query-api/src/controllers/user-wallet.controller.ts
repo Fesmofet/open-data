@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Body,
+  Query,
 } from '@nestjs/common';
 import {
   GetUserEngineTokenDelegationsEndpoint,
@@ -15,11 +16,29 @@ import {
   GetUserWaivWalletHistoryEndpoint,
   GetUserEngineWalletEndpoint,
   GetUserEngineWalletHistoryEndpoint,
+  GetUserEngineSwapListEndpoint,
+  PostUserEngineSwapQuoteEndpoint,
+  GetUserEngineDepositListEndpoint,
+  GetUserEngineDepositAddressEndpoint,
+  GetUserEngineWithdrawListEndpoint,
+  PostUserEngineWithdrawQuoteEndpoint,
   type EngineTokenDelegationsResponse,
   type EngineWalletResponse,
   type EngineWalletHistoryResponse,
   type EngineWalletHistoryBody,
   engineWalletHistoryBodySchema,
+  type EngineSwapListResponse,
+  type EngineSwapQuoteBody,
+  type EngineSwapQuoteResponse,
+  engineSwapQuoteBodySchema,
+  type EngineDepositListResponse,
+  type EngineDepositAddressResponse,
+  engineDepositAddressQuerySchema,
+  type EngineDepositAddressQuery,
+  type EngineWithdrawListResponse,
+  type EngineWithdrawQuoteBody,
+  type EngineWithdrawQuoteResponse,
+  engineWithdrawQuoteBodySchema,
   type HiveHpDelegationsResponse,
   type HiveRcDelegationsResponse,
   type HiveWalletResponse,
@@ -28,7 +47,7 @@ import {
   waivWalletHistoryBodySchema,
   type WaivWalletHistoryBody,
 } from '../domain/wallet';
-import { ZodBodyPipe } from '../pipes';
+import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 
 @Controller({ path: 'users', version: '1' })
 export class UserWalletController {
@@ -38,6 +57,12 @@ export class UserWalletController {
     private readonly getUserEngineWallet: GetUserEngineWalletEndpoint,
     private readonly getUserEngineWalletHistory: GetUserEngineWalletHistoryEndpoint,
     private readonly getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint,
+    private readonly getUserEngineSwapList: GetUserEngineSwapListEndpoint,
+    private readonly postUserEngineSwapQuote: PostUserEngineSwapQuoteEndpoint,
+    private readonly getUserEngineDepositList: GetUserEngineDepositListEndpoint,
+    private readonly getUserEngineDepositAddress: GetUserEngineDepositAddressEndpoint,
+    private readonly getUserEngineWithdrawList: GetUserEngineWithdrawListEndpoint,
+    private readonly postUserEngineWithdrawQuote: PostUserEngineWithdrawQuoteEndpoint,
     private readonly getUserHiveWallet: GetUserHiveWalletEndpoint,
     private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
     private readonly getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint,
@@ -129,6 +154,77 @@ export class UserWalletController {
     @Param('symbol') symbol: string,
   ): Promise<EngineTokenDelegationsResponse> {
     const result = await this.getUserEngineTokenDelegations.execute(name, symbol);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/wallet/engine/swap/list')
+  async getEngineSwapList(
+    @Param('name') name: string,
+  ): Promise<EngineSwapListResponse> {
+    const result = await this.getUserEngineSwapList.execute(name);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/wallet/engine/swap/quote')
+  async postEngineSwapQuote(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(engineSwapQuoteBodySchema)) body: EngineSwapQuoteBody,
+  ): Promise<EngineSwapQuoteResponse> {
+    const result = await this.postUserEngineSwapQuote.execute(name, body);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/wallet/engine/deposit/list')
+  async getEngineDepositList(
+    @Param('name') name: string,
+  ): Promise<EngineDepositListResponse> {
+    const result = await this.getUserEngineDepositList.execute(name);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/wallet/engine/deposit/address')
+  async getEngineDepositAddress(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(engineDepositAddressQuerySchema))
+    query: EngineDepositAddressQuery,
+  ): Promise<EngineDepositAddressResponse> {
+    const result = await this.getUserEngineDepositAddress.execute(name, query);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/wallet/engine/withdraw/list')
+  async getEngineWithdrawList(
+    @Param('name') name: string,
+  ): Promise<EngineWithdrawListResponse> {
+    const result = await this.getUserEngineWithdrawList.execute(name);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/wallet/engine/withdraw/quote')
+  async postEngineWithdrawQuote(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(engineWithdrawQuoteBodySchema))
+    body: EngineWithdrawQuoteBody,
+  ): Promise<EngineWithdrawQuoteResponse> {
+    const result = await this.postUserEngineWithdrawQuote.execute(name, body);
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);
     }

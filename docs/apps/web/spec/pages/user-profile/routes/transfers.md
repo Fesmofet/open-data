@@ -10,6 +10,7 @@ updated_at: 2026-06-25
 related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/user-profile/routes/waiv-wallet-history.md
+  - docs/apps/web/spec/pages/user-profile/routes/engine-wallet-operations.md
 ---
 
 # User profile — wallet and transfers
@@ -57,7 +58,9 @@ Wallet transaction history is rendered only on this transfers page (not on `Hive
 
 **Owner-only:** wallet action buttons and modals render only when `viewerUsername` matches profile `name` (case-insensitive).
 
-**Hive Engine tab (`?type=ENGINE`):** read-only summary of pinned `SWAP.*` pegged tokens plus other Hive Engine token balances, with est. account value USD footer. Paginated transaction history below the summary from `POST /query/v1/users/{name}/wallet/engine/history` (History API excluding WAIV RPC rows + all indexed swaps). Row mapping: [engine-wallet-history.md](engine-wallet-history.md). API: [user-engine-wallet-endpoint.md](../../../../../query-api/spec/user-engine-wallet-endpoint.md).
+**Hive Engine tab (`?type=ENGINE`):** summary of pinned `SWAP.*` pegged tokens plus other Hive Engine token balances, with est. account value USD footer. Paginated transaction history below the summary from `POST /query/v1/users/{name}/wallet/engine/history` (History API excluding WAIV RPC rows + all indexed swaps). Row mapping: [engine-wallet-history.md](engine-wallet-history.md). API: [user-engine-wallet-endpoint.md](../../../../../query-api/spec/user-engine-wallet-endpoint.md).
+
+**Owner ENGINE operations:** center column is read-only; the right sidebar exposes transfer, power, delegations, swap, deposit, and withdraw for the profile owner. See [engine-wallet-operations.md](engine-wallet-operations.md). BFF routes under `/api/users/{name}/wallet/engine/*`.
 
 Shell hides left/right rails on `waiv-table` and `transfers/table` layouts — see [profile-shell.md](../profile-shell.md).
 

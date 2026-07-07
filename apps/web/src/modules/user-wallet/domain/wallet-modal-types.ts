@@ -1,12 +1,34 @@
-export type WalletMainAsset = 'WAIV' | 'HIVE';
+export const HIVE_L1_TRANSFER_ASSETS = ['HIVE', 'HBD'] as const;
 
-export type WalletTransferAsset = WalletMainAsset | 'HBD';
+export type HiveL1TransferAsset = (typeof HIVE_L1_TRANSFER_ASSETS)[number];
+
+export type WalletTransferAsset = string;
+
+export type WalletMainAsset = string;
+
+export function isHiveL1TransferAsset(
+  asset: string,
+): asset is HiveL1TransferAsset {
+  return asset === 'HIVE' || asset === 'HBD';
+}
+
+export function isEngineTokenAsset(asset: string): boolean {
+  return !isHiveL1TransferAsset(asset);
+}
 
 export type WalletTransferModalState = {
   kind: 'transfer';
   asset: WalletTransferAsset;
   toSavings?: boolean;
   fromSavings?: boolean;
+  /** Pre-filled Hive recipient (e.g. engine deposit routing). */
+  presetTo?: string;
+  /** Pre-filled transfer memo (e.g. hivepegged buy JSON). */
+  presetMemo?: string;
+  /** Lock asset selector when routing is token-specific. */
+  lockAsset?: boolean;
+  /** Lock recipient field when deposit routing is fixed. */
+  lockRecipient?: boolean;
 };
 
 export type WalletPowerModalState = {
@@ -45,6 +67,21 @@ export type WalletCancelSavingsWithdrawModalState = {
   asset: 'HIVE' | 'HBD';
 };
 
+export type WalletSwapModalState = {
+  kind: 'swap';
+  fromSymbol?: string;
+};
+
+export type WalletDepositModalState = {
+  kind: 'deposit';
+};
+
+export type WalletWithdrawModalState = {
+  kind: 'withdraw';
+  inputSymbol?: string;
+  outputSymbol?: string;
+};
+
 export type WalletModalState =
   | WalletTransferModalState
   | WalletPowerModalState
@@ -54,4 +91,7 @@ export type WalletModalState =
   | WalletDelegateRcModalState
   | WalletManageRcModalState
   | WalletCancelSavingsWithdrawModalState
+  | WalletSwapModalState
+  | WalletDepositModalState
+  | WalletWithdrawModalState
   | null;

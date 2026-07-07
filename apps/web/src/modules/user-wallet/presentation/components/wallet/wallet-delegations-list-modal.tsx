@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AppModal, AppModalCloseButton } from '@/shared/presentation/components/app-modal';
+import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
 import type { EngineTokenDelegationsView } from '../../../domain/types/waiv-wallet-view';
 import type { HiveHpDelegationsView, HiveRcDelegationsView } from '../../../domain/types/hive-wallet-view';
@@ -342,9 +342,9 @@ export function WalletDelegationsListModal({
           <AppModalCloseButton onClose={onClose} />
         </div>
         {loading ? (
-          <p className="text-body-sm text-muted">{t('wallet_delegations_loading')}</p>
+          <AppLoader layout="center" label={t('wallet_delegations_loading')} />
         ) : loadError ? (
-          <p className="text-body-sm text-danger">{t('wallet_delegations_load_error')}</p>
+          <p className="text-body-sm text-error">{t('wallet_delegations_load_error')}</p>
         ) : (
           <WalletDelegationTabs
             receivedLabel={receivedLabel}

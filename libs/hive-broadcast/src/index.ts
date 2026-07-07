@@ -13,6 +13,8 @@ export {
   type HiveEngineTokensStakePayload,
   type HiveEngineTokensSymbolPayload,
   type HiveEngineTokensTransferPayload,
+  type HiveEngineCustomJsonPayload,
+  buildHiveEngineCustomJsonOp,
 } from './hive-engine-token-operations';
 export {
   buildTransferOp,

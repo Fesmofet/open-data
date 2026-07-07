@@ -18,6 +18,7 @@ import type {
   HiveEngineContractQuery,
   HiveEngineLiquidityPosition,
   HiveEngineMarketPool,
+  HiveEngineMarketPoolParams,
   HiveEngineMarketMetric,
   HiveEngineMiningPool,
   HiveEngineRewardPool,
@@ -139,8 +140,18 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     return this.engineRequest<T>(HE_ENDPOINT.BLOCKCHAIN, method, params);
   }
 
+  private normalizeFindParams(params: FindContractParams): FindContractParams {
+    return {
+      ...params,
+      query: params.query ?? {},
+    };
+  }
+
   async find<T>(params: FindContractParams): Promise<T[]> {
-    const result = await this.contractsRequest<T[] | T | null>('find', params);
+    const result = await this.contractsRequest<T[] | T | null>(
+      'find',
+      this.normalizeFindParams(params),
+    );
     if (Array.isArray(result)) {
       return result;
     }
@@ -180,7 +191,10 @@ export class HiveEngineClient implements HiveEngineClientInterface {
    * Like find but throws {@link HiveEngineUnavailableError} when the RPC fails.
    */
   async findStrict<T>(params: FindContractParams): Promise<T[]> {
-    const result = await this.contractsRequest<T[] | T | null>('find', params);
+    const result = await this.contractsRequest<T[] | T | null>(
+      'find',
+      this.normalizeFindParams(params),
+    );
     if (result === undefined) {
       throw new HiveEngineUnavailableError();
     }
@@ -456,6 +470,26 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     return this.findOne<HiveEngineMarketPool>({
       contract: 'marketpools',
       table: 'pools',
+      query,
+    });
+  }
+
+  findMarketPoolParams(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineMarketPoolParams[]> {
+    return this.find<HiveEngineMarketPoolParams>({
+      contract: 'marketpools',
+      table: 'params',
+      ...params,
+    });
+  }
+
+  findOneMarketPoolParam(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineMarketPoolParams | null> {
+    return this.findOne<HiveEngineMarketPoolParams>({
+      contract: 'marketpools',
+      table: 'params',
       query,
     });
   }

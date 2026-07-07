@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import { buildUndelegateRcOp } from '@opden-data-layer/hive-broadcast';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AppModal, AppModalCloseButton } from '@/shared/presentation';
+import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
 import type { HiveRcDelegationsView } from '../../../domain/types/hive-wallet-view';
 import { formatRcDelegationBillions } from '../../../domain/wallet-modal-format';
@@ -84,7 +84,7 @@ export function HiveManageRcDelegationsModal({
           <AppModalCloseButton onClose={onClose} />
         </div>
         {loading ? (
-          <p className="text-body-sm text-muted">{t('wallet_delegations_loading')}</p>
+          <AppLoader layout="center" label={t('wallet_delegations_loading')} />
         ) : loadError ? (
           <p className="text-body-sm text-error" role="alert">
             {t('wallet_delegations_load_error')}

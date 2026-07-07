@@ -8,7 +8,6 @@ import type { HiveWalletSummaryView } from '../../../domain/types/hive-wallet-vi
 import type { WaivWalletLoadError, WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
 import { WaivWalletSummary } from '../waiv/waiv-wallet-summary';
 import { WaivWalletHistoryFeedClient } from '../waiv/history/waiv-wallet-history-feed-client';
-import { UnifiedWalletModalHost } from './unified-wallet-modal-host';
 
 export type TransfersWaivWalletViewProps = {
   accountName: string;
@@ -23,7 +22,7 @@ export function TransfersWaivWalletView({
   viewerUsername,
   waivSummary,
   waivError,
-  hiveSummary,
+  hiveSummary: _hiveSummary,
 }: TransfersWaivWalletViewProps) {
   const { t } = useI18n();
   const canManageWallet =
@@ -32,12 +31,7 @@ export function TransfersWaivWalletView({
   const canManageWithSummary = canManageWallet && summaryAvailable;
 
   return (
-    <UnifiedWalletModalHost
-      account={accountName}
-      viewerUsername={summaryAvailable ? viewerUsername : null}
-      waivSummary={waivSummary}
-      hiveSummary={hiveSummary}
-    >
+    <>
       {waivError ? (
         <p className="rounded-card border border-border bg-bg p-card-padding text-body-sm text-muted">
           {waivError === 'invalid_response'
@@ -49,6 +43,7 @@ export function TransfersWaivWalletView({
           summary={waivSummary}
           canManageWallet={canManageWithSummary}
           defaultAsset="WAIV"
+          hideRowActions={canManageWithSummary}
         />
       )}
       <div className="mt-4 flex justify-end">
@@ -61,6 +56,6 @@ export function TransfersWaivWalletView({
         </Link>
       </div>
       <WaivWalletHistoryFeedClient accountName={accountName} />
-    </UnifiedWalletModalHost>
+    </>
   );
 }

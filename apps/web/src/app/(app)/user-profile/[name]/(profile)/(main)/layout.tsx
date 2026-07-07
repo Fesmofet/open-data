@@ -6,11 +6,13 @@ import {
   HiddenBelow,
 } from '@/shared/presentation/layout';
 import {
+  ProfileMainWalletModalShell,
   RightSidebar,
   UserMenuVerticalRail,
   UserProfileMainContentPendingShell,
   UserProfileSubmenu,
 } from '@/modules/user-profile';
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
 /**
  * Profile `(main)` shell — parity with {@link ObjectViewShell}.
@@ -27,8 +29,11 @@ export default async function UserProfileMainShellLayout({
 }) {
   const { name } = await params;
   const accountName = decodeURIComponent(name);
+  const auth = createCookieAuthContextProvider();
+  const user = await auth.getUser();
 
   return (
+    <ProfileMainWalletModalShell>
     <div
       className={[
         'shell-profile-grid mt-card-padding grid grid-cols-1 gap-card-padding',
@@ -57,9 +62,13 @@ export default async function UserProfileMainShellLayout({
 
       <HiddenBelow breakpoint="lg" className="min-w-0">
         <div className="shell-hide-instagram lg:contents">
-          <RightSidebar accountName={accountName} />
+          <RightSidebar
+            accountName={accountName}
+            viewerUsername={user?.username ?? null}
+          />
         </div>
       </HiddenBelow>
     </div>
+    </ProfileMainWalletModalShell>
   );
 }

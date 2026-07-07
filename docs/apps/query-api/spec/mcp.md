@@ -91,6 +91,10 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_waiv_wallet_history` | `POST .../wallet/waiv/history` | [user-waiv-wallet-endpoint.md](user-waiv-wallet-endpoint.md) |
 | `get_user_engine_wallet` | `GET .../wallet/engine` | [user-engine-wallet-endpoint.md](user-engine-wallet-endpoint.md) |
 | `get_user_engine_wallet_history` | `POST .../wallet/engine/history` | [user-engine-wallet-endpoint.md](user-engine-wallet-endpoint.md) |
+| `get_user_engine_swap_list` | `GET .../wallet/engine/swap/list` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
+| `post_user_engine_swap_quote` | `POST .../wallet/engine/swap/quote` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
+| `get_user_engine_deposit_address` | `GET .../wallet/engine/deposit/address` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
+| `post_user_engine_withdraw_quote` | `POST .../wallet/engine/withdraw/quote` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `get_user_engine_token_delegations` | `GET .../wallet/engine/{symbol}/delegations` | [user-waiv-wallet-endpoint.md](user-waiv-wallet-endpoint.md) |
 | `get_user_hive_hp_delegations` | `GET .../wallet/hive/delegations` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |
 | `get_user_hive_rc_delegations` | `GET .../wallet/hive/rc-delegations` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |

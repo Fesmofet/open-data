@@ -28,6 +28,7 @@ export {
 export type { UserProfileSocialCounts } from './components/user-profile-social-counts-context';
 export { LeftSidebar } from './components/left-sidebar';
 export { RightSidebar } from './components/right-sidebar';
+export { ProfileMainWalletModalShell } from './components/profile-main-wallet-modal-shell';
 export { UserProfilePendingNavRoot } from './components/user-profile-pending-nav-root';
 export { UserProfilePendingNavSync } from './components/user-profile-pending-nav-sync';
 export {

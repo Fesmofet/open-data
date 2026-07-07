@@ -32,6 +32,7 @@ import {
   listWalletMainAssetOptions,
 } from '../../../domain/wallet-modal-balances';
 import type { WalletMainAsset, WalletPowerModalState } from '../../../domain/wallet-modal-types';
+import { isEngineTokenAsset } from '../../../domain/wallet-modal-types';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { useHiveBroadcast } from '../../hooks/use-hive-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
@@ -55,7 +56,7 @@ export function WalletPowerModal({
 }: WalletPowerModalProps) {
   const { t } = useI18n();
   const titleId = useId();
-  const { waivSummary, hiveSummary } = useWalletBalances();
+  const { waivSummary, hiveSummary, engineSummary } = useWalletBalances();
   const engineBroadcast = useEngineTokenBroadcast(account);
   const hiveBroadcast = useHiveBroadcast(account);
 
@@ -75,18 +76,27 @@ export function WalletPowerModal({
   }, [open, state.asset]);
 
   const balanceConfig = useMemo(
-    () => getWalletPowerBalanceConfig(asset, state.mode, waivSummary, hiveSummary),
-    [asset, state.mode, waivSummary, hiveSummary],
-  );
-
-  const assetOptions = useMemo(() => {
-    return listWalletMainAssetOptions(waivSummary, hiveSummary).map((value) => {
-      const config = getWalletPowerBalanceConfig(
-        value,
+    () =>
+      getWalletPowerBalanceConfig(
+        asset,
         state.mode,
         waivSummary,
         hiveSummary,
-      );
+        engineSummary,
+      ),
+    [asset, state.mode, waivSummary, hiveSummary, engineSummary],
+  );
+
+  const assetOptions = useMemo(() => {
+    return listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary).map(
+      (value) => {
+        const config = getWalletPowerBalanceConfig(
+          value,
+          state.mode,
+          waivSummary,
+          hiveSummary,
+          engineSummary,
+        );
       const powerLabel = value === 'WAIV' ? 'WP' : 'HP';
       return {
         value,
@@ -94,7 +104,7 @@ export function WalletPowerModal({
         balance: config?.maxAmount ?? '0',
       };
     });
-  }, [hiveSummary, state.mode, waivSummary]);
+  }, [engineSummary, hiveSummary, state.mode, waivSummary]);
 
   const canSubmit = useMemo(() => {
     if (!balanceConfig) {
@@ -140,7 +150,7 @@ export function WalletPowerModal({
 
     setValidationError(null);
 
-    if (asset === 'WAIV') {
+    if (isEngineTokenAsset(asset)) {
       const parsed = parseEngineTokenAmount(amount);
       if (parsed === null) {
         return;
@@ -148,7 +158,7 @@ export function WalletPowerModal({
       const quantity = formatEngineTokenQuantity(parsed);
       const ok = await engineBroadcast.broadcast(
         state.mode === 'up' ? 'stake' : 'unstake',
-        { symbol: 'WAIV', quantity },
+        { symbol: asset, quantity },
       );
       if (ok) {
         onClose();

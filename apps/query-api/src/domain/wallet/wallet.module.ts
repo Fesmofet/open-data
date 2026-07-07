@@ -10,6 +10,13 @@ import { GetUserWaivWalletEndpoint } from './get-user-waiv-wallet.endpoint';
 import { GetUserWaivWalletHistoryEndpoint } from './get-user-waiv-wallet-history.endpoint';
 import { GetUserEngineWalletEndpoint } from './get-user-engine-wallet.endpoint';
 import { GetUserEngineWalletHistoryEndpoint } from './get-user-engine-wallet-history.endpoint';
+import { GetUserEngineSwapListEndpoint } from './get-user-engine-swap-list.endpoint';
+import { PostUserEngineSwapQuoteEndpoint } from './post-user-engine-swap-quote.endpoint';
+import { GetUserEngineDepositAddressEndpoint } from './get-user-engine-deposit-address.endpoint';
+import { GetUserEngineDepositListEndpoint } from './get-user-engine-deposit-list.endpoint';
+import { GetUserEngineWithdrawListEndpoint } from './get-user-engine-withdraw-list.endpoint';
+import { PostUserEngineWithdrawQuoteEndpoint } from './post-user-engine-withdraw-quote.endpoint';
+import { EngineWithdrawQuoteService } from './engine-swap/engine-withdraw-quote.service';
 import { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
 import { GetWaivAdvancedReportEndpoint } from './get-waiv-advanced-report.endpoint';
 import { WaivGeneratedReportsService } from './waiv-generated-reports.service';
@@ -31,6 +38,13 @@ import { EngineWalletHistoryPagerService } from './engine-wallet-history-pager.s
     GetUserWaivWalletHistoryEndpoint,
     GetUserEngineWalletEndpoint,
     GetUserEngineWalletHistoryEndpoint,
+    GetUserEngineSwapListEndpoint,
+    PostUserEngineSwapQuoteEndpoint,
+    GetUserEngineDepositListEndpoint,
+    GetUserEngineDepositAddressEndpoint,
+    GetUserEngineWithdrawListEndpoint,
+    PostUserEngineWithdrawQuoteEndpoint,
+    EngineWithdrawQuoteService,
     WaivWalletHistoryPagerService,
     EngineWalletHistoryPagerService,
     GetUserEngineTokenDelegationsEndpoint,
@@ -54,6 +68,13 @@ import { EngineWalletHistoryPagerService } from './engine-wallet-history-pager.s
     GetUserWaivWalletHistoryEndpoint,
     GetUserEngineWalletEndpoint,
     GetUserEngineWalletHistoryEndpoint,
+    GetUserEngineSwapListEndpoint,
+    PostUserEngineSwapQuoteEndpoint,
+    GetUserEngineDepositListEndpoint,
+    GetUserEngineDepositAddressEndpoint,
+    GetUserEngineWithdrawListEndpoint,
+    PostUserEngineWithdrawQuoteEndpoint,
+    EngineWithdrawQuoteService,
     GetUserEngineTokenDelegationsEndpoint,
     GetUserHiveWalletEndpoint,
     GetUserHiveHpDelegationsEndpoint,
