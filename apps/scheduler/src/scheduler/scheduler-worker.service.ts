@@ -69,13 +69,19 @@ export class SchedulerWorkerService
       'scheduler.staleRunSec',
       21_600,
     );
-    const recovered = await this.repo.recoverStaleWork(
-      staleClaimSec,
-      staleRunSec,
-    );
-    if (recovered.reclaimedClaims > 0 || recovered.failedRuns > 0) {
-      this.logger.warn(
-        `Recovered stale scheduler work: reclaimed=${recovered.reclaimedClaims} failedRuns=${recovered.failedRuns}`,
+    try {
+      const recovered = await this.repo.recoverStaleWork(
+        staleClaimSec,
+        staleRunSec,
+      );
+      if (recovered.reclaimedClaims > 0 || recovered.failedRuns > 0) {
+        this.logger.warn(
+          `Recovered stale scheduler work: reclaimed=${recovered.reclaimedClaims} failedRuns=${recovered.failedRuns}`,
+        );
+      }
+    } catch (e) {
+      this.logger.error(
+        `Stale work recovery failed: ${(e as Error).message}`,
       );
     }
     const batch = await this.repo.claimBatch(limit);

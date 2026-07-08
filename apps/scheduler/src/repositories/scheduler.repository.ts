@@ -271,10 +271,7 @@ export class SchedulerRepository {
         SET
           status = 'failed',
           finished_at = NOW(),
-          duration_ms = GREATEST(
-            0,
-            (EXTRACT(EPOCH FROM (NOW() - COALESCE(r.started_at, r.created_at))) * 1000)::int
-          ),
+          duration_ms = NULL,
           error = 'stale: incomplete run exceeded max age'
         WHERE r.status IN ('pending', 'running')
           AND r.created_at < NOW() - (${runSec} * INTERVAL '1 second')
