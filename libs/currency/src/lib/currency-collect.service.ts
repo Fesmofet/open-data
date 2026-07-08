@@ -96,8 +96,7 @@ export class CurrencyCollectService {
     signal.throwIfAborted();
 
     if (!(hiveUsd > 0)) {
-      this.logger.warn('collectHiveEngineOrdinary: could not resolve HIVE/USD');
-      return;
+      throw new Error('collectHiveEngineOrdinary: could not resolve HIVE/USD');
     }
 
     await this.insertWaivOrdinaryFromPools(signal, hiveUsd);
@@ -193,20 +192,19 @@ export class CurrencyCollectService {
     signal: AbortSignal,
     hiveUsd: number,
   ): Promise<void> {
-    const pool = await this.hiveEngine.findOneMarketPool({
+    const pool = await this.hiveEngine.findOneMarketPoolStrict({
       _id: WAIV_HIVE_DIESEL_POOL_ID,
     });
 
     signal.throwIfAborted();
 
     if (!pool?.quotePrice) {
-      this.logger.warn('WAIV diesel pool unavailable');
-      return;
+      throw new Error('WAIV diesel pool unavailable');
     }
 
     const priceInHive = Number.parseFloat(pool.quotePrice);
     if (!Number.isFinite(priceInHive) || priceInHive <= 0) {
-      return;
+      throw new Error('WAIV diesel pool has invalid quotePrice');
     }
 
     const today = utcYmd(new Date());
@@ -230,8 +228,7 @@ export class CurrencyCollectService {
     const hbdUsd = spot.hbdUsd;
 
     if (!(hiveUsd > 0)) {
-      this.logger.warn('collectSwapPoolUsdSnapshots: missing HIVE/USD in Postgres');
-      return;
+      throw new Error('collectSwapPoolUsdSnapshots: missing HIVE/USD');
     }
 
     const tokenPairs = [
@@ -239,7 +236,7 @@ export class CurrencyCollectService {
       ...Object.values(ENGINE_POOL_PAIR_BY_SYMBOL),
     ];
 
-    const pools = await this.hiveEngine.findMarketPools({
+    const pools = await this.hiveEngine.findMarketPoolsStrict({
       query: { tokenPair: { $in: [...new Set(tokenPairs)] } },
     });
 

@@ -51,10 +51,9 @@ export class SchedulerDispatchService {
     if (!def.allowOverlap) {
       const has = await this.repo.hasIncompleteRun(jobName);
       if (has) {
-        this.logger.log(
-          `Skip ${jobName} (${trigger}): overlap not allowed, incomplete run exists`,
+        this.logger.debug(
+          `Skip ${jobName} (${trigger}): overlap not allowed, active queue exists`,
         );
-        await this.repo.insertSkippedRun(jobName, trigger);
         return 'skipped';
       }
     }
@@ -72,7 +71,6 @@ export class SchedulerDispatchService {
       if (!def.allowOverlap) {
         const has = await this.repo.hasIncompleteRun(jobName);
         if (has) {
-          await this.repo.insertSkippedRun(jobName, trigger);
           return 'skipped';
         }
       }

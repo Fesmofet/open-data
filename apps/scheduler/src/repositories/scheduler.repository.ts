@@ -39,10 +39,12 @@ export class SchedulerRepository {
     trx?: Transaction<Database>,
   ): Promise<number> {
     const r = await this.executor(trx)
-      .selectFrom('scheduler_job_runs')
+      .selectFrom('scheduler_job_runs as r')
+      .innerJoin('scheduler_job_queue as q', 'q.run_id', 'r.id')
       .select((eb) => eb.fn.countAll<number>().as('n'))
-      .where('job_name', '=', jobName)
-      .where('status', 'in', ['pending', 'running'])
+      .where('r.job_name', '=', jobName)
+      .where('r.status', 'in', ['pending', 'running'])
+      .where('q.status', 'in', ['pending', 'claimed'])
       .executeTakeFirst();
     return Number(r?.n ?? 0);
   }
@@ -247,8 +249,8 @@ export class SchedulerRepository {
   }
 
   /**
-   * Reclaims queue items left in `claimed` after a worker crash and fails ancient
-   * incomplete runs that would otherwise block `allowOverlap: false` forever.
+   * Reclaims queue items left in `claimed` after a worker crash and fails incomplete
+   * runs that would otherwise block scheduling or clog the worker queue.
    */
   async recoverStaleWork(
     staleClaimSec: number,
@@ -258,13 +260,45 @@ export class SchedulerRepository {
     const runSec = Math.max(claimSec, staleRunSec);
 
     return this.db.transaction().execute(async (trx) => {
-      const reclaimed = await sql<{ id: string }>`
+      const reclaimed = await sql<{ id: string; run_id: string }>`
         UPDATE scheduler_job_queue
         SET status = 'pending', claimed_at = NULL
         WHERE status = 'claimed'
           AND claimed_at < NOW() - (${claimSec} * INTERVAL '1 second')
-        RETURNING id
+        RETURNING id, run_id
       `.execute(trx);
+
+      const reclaimedRunIds = [
+        ...new Set(reclaimed.rows.map((row) => row.run_id)),
+      ];
+
+      let failedFromReclaim = 0;
+      if (reclaimedRunIds.length > 0) {
+        const reclaimedFails = await sql<{ id: string }>`
+          UPDATE scheduler_job_runs r
+          SET
+            status = 'failed',
+            finished_at = NOW(),
+            duration_ms = NULL,
+            error = 'stale: reclaimed expired claim'
+          WHERE r.id IN (${sql.join(reclaimedRunIds.map((id) => sql.lit(id)))})
+            AND r.status IN ('pending', 'running')
+          RETURNING r.id
+        `.execute(trx);
+        failedFromReclaim = reclaimedFails.rows.length;
+
+        if (failedFromReclaim > 0) {
+          await sql`
+            UPDATE scheduler_job_queue q
+            SET
+              status = 'dead',
+              last_error = 'stale: reclaimed claim expired',
+              claimed_at = NULL
+            WHERE q.run_id IN (${sql.join(reclaimedRunIds.map((id) => sql.lit(id)))})
+              AND q.status IN ('pending', 'claimed')
+          `.execute(trx);
+        }
+      }
 
       const failed = await sql<{ id: string }>`
         UPDATE scheduler_job_runs r
@@ -275,47 +309,59 @@ export class SchedulerRepository {
           error = 'stale: incomplete run exceeded max age'
         WHERE r.status IN ('pending', 'running')
           AND r.created_at < NOW() - (${runSec} * INTERVAL '1 second')
-          AND (
-            NOT EXISTS (
-              SELECT 1
-              FROM scheduler_job_queue q
-              WHERE q.run_id = r.id
-                AND q.status IN ('pending', 'claimed')
-            )
-            OR EXISTS (
-              SELECT 1
-              FROM scheduler_job_queue q
-              WHERE q.run_id = r.id
-                AND q.status = 'dead'
-            )
-            OR EXISTS (
-              SELECT 1
-              FROM scheduler_job_queue q
-              WHERE q.run_id = r.id
-                AND q.status = 'pending'
-                AND q.available_at < NOW() - (${runSec} * INTERVAL '1 second')
-            )
-          )
         RETURNING r.id
       `.execute(trx);
 
-      if (failed.rows.length > 0) {
+      const failedRunIds = failed.rows.map((row) => row.id);
+      if (failedRunIds.length > 0) {
         await sql`
           UPDATE scheduler_job_queue q
           SET
             status = 'dead',
             last_error = 'stale: parent run exceeded max age',
             claimed_at = NULL
-          FROM scheduler_job_runs r
-          WHERE q.run_id = r.id
-            AND r.id IN (${sql.join(failed.rows.map((row) => sql.lit(row.id)))})
+          WHERE q.run_id IN (${sql.join(failedRunIds.map((id) => sql.lit(id)))})
             AND q.status IN ('pending', 'claimed')
+        `.execute(trx);
+      }
+
+      const purged = await sql<{ id: string }>`
+        UPDATE scheduler_job_queue q
+        SET
+          status = 'dead',
+          last_error = 'stale: backlog queue item expired',
+          claimed_at = NULL
+        WHERE q.status IN ('pending', 'claimed')
+          AND q.available_at < NOW() - (${runSec} * INTERVAL '1 second')
+          AND EXISTS (
+            SELECT 1
+            FROM scheduler_job_runs r
+            WHERE r.id = q.run_id
+              AND r.status IN ('pending', 'running')
+          )
+        RETURNING q.id
+      `.execute(trx);
+
+      if (purged.rows.length > 0) {
+        await sql`
+          UPDATE scheduler_job_runs r
+          SET
+            status = 'failed',
+            finished_at = NOW(),
+            duration_ms = NULL,
+            error = 'stale: backlog queue item expired'
+          WHERE r.id IN (
+            SELECT q.run_id
+            FROM scheduler_job_queue q
+            WHERE q.id IN (${sql.join(purged.rows.map((row) => sql.lit(row.id)))})
+          )
+            AND r.status IN ('pending', 'running')
         `.execute(trx);
       }
 
       return {
         reclaimedClaims: reclaimed.rows.length,
-        failedRuns: failed.rows.length,
+        failedRuns: failedFromReclaim + failed.rows.length + purged.rows.length,
       };
     });
   }

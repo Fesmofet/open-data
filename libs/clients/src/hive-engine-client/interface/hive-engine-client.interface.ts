@@ -116,7 +116,13 @@ export interface HiveEngineClientInterface {
   findMarketPools(
     params?: FindContractTableParams,
   ): Promise<HiveEngineMarketPool[]>;
+  findMarketPoolsStrict(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineMarketPool[]>;
   findOneMarketPool(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineMarketPool | null>;
+  findOneMarketPoolStrict(
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineMarketPool | null>;
 

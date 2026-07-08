@@ -56,39 +56,44 @@ export class SchedulerWorkerService
    * @returns how many items were taken from the queue (not necessarily success).
    */
   async processOneRound(): Promise<number> {
-    const size = this.config.get<number>(
-      'scheduler.workerBatchSize',
-      5,
-    );
-    const limit = Math.max(1, size);
-    const staleClaimSec = this.config.get<number>(
-      'scheduler.staleClaimSec',
-      600,
-    );
-    const staleRunSec = this.config.get<number>(
-      'scheduler.staleRunSec',
-      21_600,
-    );
     try {
-      const recovered = await this.repo.recoverStaleWork(
-        staleClaimSec,
-        staleRunSec,
+      const size = this.config.get<number>(
+        'scheduler.workerBatchSize',
+        5,
       );
-      if (recovered.reclaimedClaims > 0 || recovered.failedRuns > 0) {
-        this.logger.warn(
-          `Recovered stale scheduler work: reclaimed=${recovered.reclaimedClaims} failedRuns=${recovered.failedRuns}`,
+      const limit = Math.max(1, size);
+      const staleClaimSec = this.config.get<number>(
+        'scheduler.staleClaimSec',
+        600,
+      );
+      const staleRunSec = this.config.get<number>(
+        'scheduler.staleRunSec',
+        21_600,
+      );
+      try {
+        const recovered = await this.repo.recoverStaleWork(
+          staleClaimSec,
+          staleRunSec,
+        );
+        if (recovered.reclaimedClaims > 0 || recovered.failedRuns > 0) {
+          this.logger.warn(
+            `Recovered stale scheduler work: reclaimed=${recovered.reclaimedClaims} failedRuns=${recovered.failedRuns}`,
+          );
+        }
+      } catch (e) {
+        this.logger.error(
+          `Stale work recovery failed: ${(e as Error).message}`,
         );
       }
+      const batch = await this.repo.claimBatch(limit);
+      for (const item of batch) {
+        await this.processItem(item);
+      }
+      return batch.length;
     } catch (e) {
-      this.logger.error(
-        `Stale work recovery failed: ${(e as Error).message}`,
-      );
+      this.logger.error(`Worker round failed: ${(e as Error).message}`);
+      return 0;
     }
-    const batch = await this.repo.claimBatch(limit);
-    for (const item of batch) {
-      await this.processItem(item);
-    }
-    return batch.length;
   }
 
   /**
@@ -121,6 +126,9 @@ export class SchedulerWorkerService
     }, def.timeoutMs);
     const t0 = Date.now();
     try {
+      this.logger.log(
+        `${item.jobName} started (run ${item.runId}, try ${item.attempts}/${item.maxAttempts})`,
+      );
       await this.repo.setRunToRunning(item.runId, item.attempts);
       await def.run({
         jobName: item.jobName,
@@ -134,6 +142,7 @@ export class SchedulerWorkerService
         throw new Error('job aborted: timeout or signal');
       }
       await this.repo.completeSuccess(item.runId, item.queueId, d);
+      this.logger.log(`${item.jobName} completed in ${d}ms`);
     } catch (e) {
       const err = e as Error;
       const d = Date.now() - t0;

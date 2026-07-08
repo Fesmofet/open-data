@@ -1,6 +1,4 @@
 export const HIVE_ENGINE_NODES = [
-  'https://enginerpc.com',
-  'https://api.hive-engine.com/rpc',
   'https://v6-he.atexoras.com:2083',
   'https://herpc.actifit.io',
   'https://he.c0ff33a.uk',

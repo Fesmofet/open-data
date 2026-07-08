@@ -464,10 +464,30 @@ export class HiveEngineClient implements HiveEngineClientInterface {
     });
   }
 
+  findMarketPoolsStrict(
+    params?: FindContractTableParams,
+  ): Promise<HiveEngineMarketPool[]> {
+    return this.findStrict<HiveEngineMarketPool>({
+      contract: 'marketpools',
+      table: 'pools',
+      ...params,
+    });
+  }
+
   findOneMarketPool(
     query?: HiveEngineContractQuery,
   ): Promise<HiveEngineMarketPool | null> {
     return this.findOne<HiveEngineMarketPool>({
+      contract: 'marketpools',
+      table: 'pools',
+      query,
+    });
+  }
+
+  findOneMarketPoolStrict(
+    query?: HiveEngineContractQuery,
+  ): Promise<HiveEngineMarketPool | null> {
+    return this.findOneStrict<HiveEngineMarketPool>({
       contract: 'marketpools',
       table: 'pools',
       query,

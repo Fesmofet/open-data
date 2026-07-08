@@ -5,6 +5,8 @@ import { getCurrencyCollectRunner } from './currency-collect.runner';
 const logger = new Logger('currency-jobs');
 
 const ORD_TIMEOUT_MS = 120_000;
+const ORD_ENGINE_RETRY_COUNT = 3;
+const ORD_ENGINE_RETRY_DELAY_MS = 15_000;
 const DAILY_TIMEOUT_MS = 600_000;
 const SCHEDULE_EVERY_FIVE_UTC_CRON_MIN = '*/5 * * * *';
 
@@ -18,7 +20,7 @@ export const currencyCoinGeckoOrdinaryJob: CronJobDefinition = {
   lockTtlSec: 45,
   retryCount: 1,
   retryDelayMs: 15_000,
-  allowOverlap: false,
+  allowOverlap: true,
   run: async (ctx) => {
     logger.log(`${ctx.jobName} run ${ctx.runId} attempt ${ctx.attempt}`);
     await getCurrencyCollectRunner().coinGeckoOrdinary(ctx);
@@ -33,9 +35,9 @@ export const currencyHiveEngineOrdinaryJob: CronJobDefinition = {
   enabled: true,
   timeoutMs: ORD_TIMEOUT_MS,
   lockTtlSec: 45,
-  retryCount: 1,
-  retryDelayMs: 15_000,
-  allowOverlap: false,
+  retryCount: ORD_ENGINE_RETRY_COUNT,
+  retryDelayMs: ORD_ENGINE_RETRY_DELAY_MS,
+  allowOverlap: true,
   run: async (ctx) => {
     logger.log(`${ctx.jobName} run ${ctx.runId} attempt ${ctx.attempt}`);
     await getCurrencyCollectRunner().hiveEngineOrdinary(ctx);
