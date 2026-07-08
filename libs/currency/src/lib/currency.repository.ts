@@ -98,6 +98,7 @@ export class CurrencyRepository {
         .where('is_daily', '=', true)
         .where('created_at', '>=', start)
         .where('created_at', '<', end)
+        .limit(1)
         .executeTakeFirst();
       return hit !== undefined;
     } catch (e) {
@@ -129,6 +130,7 @@ export class CurrencyRepository {
         .selectAll()
         .where('is_daily', '=', isDaily)
         .orderBy('created_at', 'desc')
+        .limit(1)
         .executeTakeFirst();
     } catch (e) {
       this.logger.error((e as Error).message);
@@ -259,6 +261,7 @@ export class CurrencyRepository {
         .selectAll()
         .where('base', '=', params.base)
         .orderBy('date', 'desc')
+        .limit(1)
         .executeTakeFirst();
       if (!row) {
         return null;
@@ -292,6 +295,7 @@ export class CurrencyRepository {
         .selectAll()
         .where('base', '=', params.base)
         .orderBy('date', 'desc')
+        .limit(1)
         .executeTakeFirst();
 
       const out: Record<string, number> = { [params.base]: 1 };
@@ -331,6 +335,7 @@ export class CurrencyRepository {
         .where('base', '=', params.base)
         .where('is_daily', '=', true)
         .where('date', '=', params.dateIso as never)
+        .limit(1)
         .executeTakeFirst();
     } catch (e) {
       this.logger.error((e as Error).message);
@@ -424,6 +429,7 @@ export class CurrencyRepository {
         .where('is_daily', '=', true)
         .where('created_at', '<', beforeUtc)
         .orderBy('created_at', 'desc')
+        .limit(1)
         .executeTakeFirst();
       return row ?? null;
     } catch (e) {
@@ -466,6 +472,44 @@ export class CurrencyRepository {
         .where('base', '=', base)
         .where('date', 'in', unique as never)
         .orderBy('date', 'asc')
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
+
+  async upsertSwapPoolUsd(symbol: string, usd: number): Promise<void> {
+    try {
+      await this.db
+        .insertInto('hive_engine_swap_pool_usd')
+        .values({ symbol, usd, updated_at: new Date() })
+        .onConflict((oc) =>
+          oc.column('symbol').doUpdateSet({
+            usd,
+            updated_at: new Date(),
+          }),
+        )
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
+  async listSwapPoolUsdBySymbols(
+    symbols: readonly string[],
+  ): Promise<Array<{ symbol: string; usd: number }>> {
+    const unique = [...new Set(symbols.map((symbol) => symbol.trim()).filter(Boolean))];
+    if (unique.length === 0) {
+      return [];
+    }
+
+    try {
+      return await this.db
+        .selectFrom('hive_engine_swap_pool_usd')
+        .select(['symbol', 'usd'])
+        .where('symbol', 'in', unique)
         .execute();
     } catch (e) {
       this.logger.error((e as Error).message);

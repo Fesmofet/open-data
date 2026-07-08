@@ -73,6 +73,7 @@ export interface OdlDatabase {
   currency_rates: CurrencyRatesTable;
   currency_statistics: CurrencyStatisticsTable;
   hive_engine_rates: HiveEngineRatesTable;
+  hive_engine_swap_pool_usd: HiveEngineSwapPoolUsdTable;
   wallet_exemptions: WalletExemptionsTable;
   hive_engine_swaps: HiveEngineSwapsTable;
   hive_engine_waiv_airdrops: HiveEngineWaivAirdropsTable;
@@ -979,6 +980,19 @@ export interface HiveEngineRatesTable {
 export type HiveEngineRatesRow = Selectable<HiveEngineRatesTable>;
 export type NewHiveEngineRatesRow = Insertable<HiveEngineRatesTable>;
 export type HiveEngineRatesRowUpdate = Updateable<HiveEngineRatesTable>;
+
+// ---------------------------------------------------------------------------
+// hive_engine_swap_pool_usd (scheduler SWAP.* USD snapshots; 5m)
+// ---------------------------------------------------------------------------
+
+export interface HiveEngineSwapPoolUsdTable {
+  symbol: string;
+  usd: number;
+  updated_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type HiveEngineSwapPoolUsdRow = Selectable<HiveEngineSwapPoolUsdTable>;
+export type NewHiveEngineSwapPoolUsdRow = Insertable<HiveEngineSwapPoolUsdTable>;
 
 // ---------------------------------------------------------------------------
 // wallet_exemptions (advanced report row exclusions per viewer)

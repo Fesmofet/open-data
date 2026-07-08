@@ -9,11 +9,14 @@ import {
 import {
   COINGECKO_IDS,
   ENGINE_BASE_WAIV,
+  ENGINE_POOL_PAIR_BY_SYMBOL,
   FIAT_RATE_BASE_USD,
   FIAT_TARGET_CODES,
+  HBD_HIVE_SWAP_POOL,
   VS_CURRENCIES,
   WAIV_HIVE_DIESEL_POOL_ID,
 } from './currency.constants';
+import { computeSwapPoolUsdRows } from './currency-swap-pool-usd';
 import { CurrencyRepository } from './currency.repository';
 
 function utcYmd(d: Date): string {
@@ -98,6 +101,10 @@ export class CurrencyCollectService {
     }
 
     await this.insertWaivOrdinaryFromPools(signal, hiveUsd);
+    await this.collectSwapPoolUsdSnapshots(signal, {
+      hiveUsd,
+      hbdUsd: Number(latestOrd?.hbd_usd ?? 0),
+    });
   }
 
   /** Cron ~00:13 UTC — aggregate previous UTC day's ordinary samples into one daily row. */
@@ -213,6 +220,46 @@ export class CurrencyCollectService {
       change_24h_hive: null,
       change_24h_usd: null,
     });
+  }
+
+  private async collectSwapPoolUsdSnapshots(
+    signal: AbortSignal,
+    spot: { hiveUsd: number; hbdUsd: number },
+  ): Promise<void> {
+    const hiveUsd = spot.hiveUsd;
+    const hbdUsd = spot.hbdUsd;
+
+    if (!(hiveUsd > 0)) {
+      this.logger.warn('collectSwapPoolUsdSnapshots: missing HIVE/USD in Postgres');
+      return;
+    }
+
+    const tokenPairs = [
+      HBD_HIVE_SWAP_POOL,
+      ...Object.values(ENGINE_POOL_PAIR_BY_SYMBOL),
+    ];
+
+    const pools = await this.hiveEngine.findMarketPools({
+      query: { tokenPair: { $in: [...new Set(tokenPairs)] } },
+    });
+
+    signal.throwIfAborted();
+
+    const symbols = [
+      'SWAP.HIVE',
+      ...Object.keys(ENGINE_POOL_PAIR_BY_SYMBOL),
+    ] as const;
+
+    const rows = computeSwapPoolUsdRows({
+      pools,
+      hiveUsd,
+      hbdUsd,
+      symbols,
+    });
+
+    for (const row of rows) {
+      await this.currencyRepo.upsertSwapPoolUsd(row.symbol, row.USD);
+    }
   }
 
   /** Cron ~00:20 UTC — ordinary WAIV aggregate for UTC yesterday + 24h change vs prior daily row. */

@@ -80,6 +80,8 @@ Secondary quotes:
 
 If `engine/rates` returns `error: no_data` or `current` is null, WAIV row shows `—` and empty sparkline.
 
+WAIV spot is read from Postgres `hive_engine_rates` (scheduler refresh ~5 min), not live Hive Engine RPC on each panel load.
+
 ## BFF
 
 `GET /api/currency/market-panel` — aggregates both query-api calls and returns normalized `CurrencyMarketPanelData` (Zod-validated).

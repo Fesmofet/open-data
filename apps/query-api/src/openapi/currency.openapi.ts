@@ -102,7 +102,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.currency],
   summary: 'HIVE / HBD market snapshot and trailing daily rows',
   description:
-    'Spot and weekly history from Postgres `currency_statistics` (ordinary + daily aggregates). Optional `ids` / `vs_currencies` are accepted for legacy compatibility but do not change the stored HIVE/HBD shape.',
+    'Spot and weekly history from Postgres `currency_statistics` (ordinary + daily aggregates). Optional `ids` / `vs_currencies` are accepted for legacy compatibility but do not change the stored HIVE/HBD shape. Scheduler `currency-coingecko-ordinary` refreshes every ~5 min.',
   request: {
     query: z.object({
       ids: z
@@ -171,6 +171,8 @@ registry.registerPath({
   path: '/query/v1/currency/engine/rates',
   tags: [queryApiOpenApiTags.currency],
   summary: 'WAIV (or base) Hive Engine: current head + weekly daily window',
+  description:
+    'Reads `hive_engine_rates` in Postgres (ordinary head + trailing daily rows). Scheduler `currency-hive-engine-ordinary` refreshes spot every ~5 min. For live pool RPC use `GET /currency/engine/current`.',
   request: {
     query: z.object({
       base: z
@@ -181,7 +183,7 @@ registry.registerPath({
   },
   responses: {
     200: {
-      description: 'Live diesel-pool head when WAIV/base resolved; `error` when no data.',
+      description: 'Stored ordinary head from `hive_engine_rates`; `error` when no data.',
       content: {
         'application/json': {
           schema: currencyEngineRatesResponseSchema,
@@ -195,7 +197,9 @@ registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/engine/current',
   tags: [queryApiOpenApiTags.currency],
-  summary: 'WAIV (or base) current HIVE / USD rates from pool × HIVE/USD',
+  summary: 'WAIV (or base) current HIVE / USD rates from stored ordinary row',
+  description:
+    'Reads latest ordinary `hive_engine_rates` row (scheduler refresh ~5 min). For live pool RPC use a dedicated ingest path only — not exposed on query-api hot reads.',
   request: {
     query: z.object({
       base: z
@@ -248,7 +252,9 @@ registry.registerPath({
   method: 'get',
   path: '/query/v1/currency/engine/pools/usd',
   tags: [queryApiOpenApiTags.currency],
-  summary: 'Map swap pool symbols to USD (via HIVE and HBD/HIVE pool)',
+  summary: 'Map swap pool symbols to USD (stored scheduler snapshots)',
+  description:
+    'Reads `hive_engine_swap_pool_usd` populated by scheduler `currency-hive-engine-ordinary` (~5 min).',
   request: {
     query: z.object({
       symbols: z
