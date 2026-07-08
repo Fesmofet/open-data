@@ -35,12 +35,8 @@ function pickMarketRowDateLabel(row: {
   return pickIsoDateSlice(row.createdAt);
 }
 
-function chronologicalWeekly<T>(weekly: T[]): T[] {
-  if (weekly.length <= 1) {
-    return weekly;
-  }
-
-  return [...weekly.slice(1), weekly[0]];
+function sortChartPointsChronologically(points: ChartPoint[]): ChartPoint[] {
+  return [...points].sort((left, right) => left.label.localeCompare(right.label));
 }
 
 function hiveSparklineFromMarketWeekly(
@@ -48,12 +44,14 @@ function hiveSparklineFromMarketWeekly(
   pickUsd: (row: (typeof weekly)[number]) => number,
   pickLabel: (row: (typeof weekly)[number]) => string,
 ): ChartPoint[] {
-  return chronologicalWeekly(weekly)
+  const points = weekly
     .map((row) => ({
       label: pickLabel(row),
       value: pickUsd(row),
     }))
-    .filter((point) => Number.isFinite(point.value));
+    .filter((point) => point.label.length > 0 && Number.isFinite(point.value));
+
+  return sortChartPointsChronologically(points);
 }
 
 function waivSparklineFromEngineWeekly(
@@ -61,7 +59,7 @@ function waivSparklineFromEngineWeekly(
 ): ChartPoint[] {
   const points: ChartPoint[] = [];
 
-  for (const row of chronologicalWeekly(weekly)) {
+  for (const row of weekly) {
     const rates = row.rates as { USD?: number } | undefined;
     const usd = rates?.USD;
     const label =
@@ -69,12 +67,12 @@ function waivSparklineFromEngineWeekly(
         ? row.dateString
         : '';
 
-    if (typeof usd === 'number' && Number.isFinite(usd)) {
+    if (label && typeof usd === 'number' && Number.isFinite(usd)) {
       points.push({ label, value: usd });
     }
   }
 
-  return points;
+  return sortChartPointsChronologically(points);
 }
 
 function buildHiveRow(
