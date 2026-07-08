@@ -61,6 +61,23 @@ export class SchedulerWorkerService
       5,
     );
     const limit = Math.max(1, size);
+    const staleClaimSec = this.config.get<number>(
+      'scheduler.staleClaimSec',
+      600,
+    );
+    const staleRunSec = this.config.get<number>(
+      'scheduler.staleRunSec',
+      21_600,
+    );
+    const recovered = await this.repo.recoverStaleWork(
+      staleClaimSec,
+      staleRunSec,
+    );
+    if (recovered.reclaimedClaims > 0 || recovered.failedRuns > 0) {
+      this.logger.warn(
+        `Recovered stale scheduler work: reclaimed=${recovered.reclaimedClaims} failedRuns=${recovered.failedRuns}`,
+      );
+    }
     const batch = await this.repo.claimBatch(limit);
     for (const item of batch) {
       await this.processItem(item);

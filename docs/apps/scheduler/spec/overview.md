@@ -23,6 +23,7 @@ Background Nest process with **no HTTP server**: it registers **cron** schedules
 - `SCHEDULER_GLOBAL_ENABLED` — if `false`, scheduled cron dispatches are skipped (manual CLI still enqueues if the job is not disabled).
 - `SCHEDULER_DISABLED_JOBS` — comma-separated job names, temporarily off without deploy.
 - `SCHEDULER_ENQUEUE_LOCK_TOKEN_TTL_SEC` — upper bound (with job `lockTtlSec`) for the Redis `SET NX` used only while inserting run + queue rows.
+- `SCHEDULER_STALE_CLAIM_SEC` / `SCHEDULER_STALE_RUN_SEC` — worker reclaims queue rows stuck in `claimed` after a crash and fails ancient incomplete runs that would block `allowOverlap: false` forever.
 - Post rewards: `HIVE_ENGINE_HISTORY_NODES` (History API for finalize), `POST_REWARDS_FINALIZE_DELAY_SEC`, batch sizes — see [`post-rewards.md`](post-rewards.md) and `apps/scheduler/.env.example`.
 
 ## Flow

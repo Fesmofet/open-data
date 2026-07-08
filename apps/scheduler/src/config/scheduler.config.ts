@@ -23,6 +23,8 @@ export default () => {
       disabledJobNames: env.SCHEDULER_DISABLED_JOBS,
       defaultLockTtlMaxSec: env.SCHEDULER_DEFAULT_LOCK_TTL_MAX_SEC,
       enqueueLockTokenTtlSec: env.SCHEDULER_ENQUEUE_LOCK_TOKEN_TTL_SEC,
+      staleClaimSec: env.SCHEDULER_STALE_CLAIM_SEC,
+      staleRunSec: env.SCHEDULER_STALE_RUN_SEC,
     },
     siteCanonical: {
       fallbackOrigin: env.SITE_CANONICAL_FALLBACK_ORIGIN,

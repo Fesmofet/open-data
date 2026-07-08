@@ -246,6 +246,83 @@ export class SchedulerRepository {
     });
   }
 
+  /**
+   * Reclaims queue items left in `claimed` after a worker crash and fails ancient
+   * incomplete runs that would otherwise block `allowOverlap: false` forever.
+   */
+  async recoverStaleWork(
+    staleClaimSec: number,
+    staleRunSec: number,
+  ): Promise<{ reclaimedClaims: number; failedRuns: number }> {
+    const claimSec = Math.max(60, staleClaimSec);
+    const runSec = Math.max(claimSec, staleRunSec);
+
+    return this.db.transaction().execute(async (trx) => {
+      const reclaimed = await sql<{ id: string }>`
+        UPDATE scheduler_job_queue
+        SET status = 'pending', claimed_at = NULL
+        WHERE status = 'claimed'
+          AND claimed_at < NOW() - (${claimSec} * INTERVAL '1 second')
+        RETURNING id
+      `.execute(trx);
+
+      const failed = await sql<{ id: string }>`
+        UPDATE scheduler_job_runs r
+        SET
+          status = 'failed',
+          finished_at = NOW(),
+          duration_ms = GREATEST(
+            0,
+            (EXTRACT(EPOCH FROM (NOW() - COALESCE(r.started_at, r.created_at))) * 1000)::int
+          ),
+          error = 'stale: incomplete run exceeded max age'
+        WHERE r.status IN ('pending', 'running')
+          AND r.created_at < NOW() - (${runSec} * INTERVAL '1 second')
+          AND (
+            NOT EXISTS (
+              SELECT 1
+              FROM scheduler_job_queue q
+              WHERE q.run_id = r.id
+                AND q.status IN ('pending', 'claimed')
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM scheduler_job_queue q
+              WHERE q.run_id = r.id
+                AND q.status = 'dead'
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM scheduler_job_queue q
+              WHERE q.run_id = r.id
+                AND q.status = 'pending'
+                AND q.available_at < NOW() - (${runSec} * INTERVAL '1 second')
+            )
+          )
+        RETURNING r.id
+      `.execute(trx);
+
+      if (failed.rows.length > 0) {
+        await sql`
+          UPDATE scheduler_job_queue q
+          SET
+            status = 'dead',
+            last_error = 'stale: parent run exceeded max age',
+            claimed_at = NULL
+          FROM scheduler_job_runs r
+          WHERE q.run_id = r.id
+            AND r.id IN (${sql.join(failed.rows.map((row) => sql.lit(row.id)))})
+            AND q.status IN ('pending', 'claimed')
+        `.execute(trx);
+      }
+
+      return {
+        reclaimedClaims: reclaimed.rows.length,
+        failedRuns: failed.rows.length,
+      };
+    });
+  }
+
   async failPermanently(
     runId: string,
     queueId: string,

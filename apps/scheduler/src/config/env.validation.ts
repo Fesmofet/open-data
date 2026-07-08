@@ -38,6 +38,10 @@ export const schedulerConfigSchema = z.object({
     .transform(parseDisabledJobs),
   SCHEDULER_DEFAULT_LOCK_TTL_MAX_SEC: z.coerce.number().optional().default(30),
   SCHEDULER_ENQUEUE_LOCK_TOKEN_TTL_SEC: z.coerce.number().optional().default(30),
+  /** Reclaim queue rows stuck in `claimed` after worker crash (seconds). */
+  SCHEDULER_STALE_CLAIM_SEC: z.coerce.number().optional().default(600),
+  /** Fail incomplete runs blocking overlap when older than this (seconds). */
+  SCHEDULER_STALE_RUN_SEC: z.coerce.number().optional().default(21_600),
   /** HTTPS origin for per-object fallback URLs; must match chain-indexer / query-api. */
   SITE_CANONICAL_FALLBACK_ORIGIN: z
     .url()

@@ -10,7 +10,7 @@ import {
   nearestChartPointIndex,
   scaleChartPoints,
 } from '../../domain/chart-scale';
-import { formatChartWeekdayLabel } from '../../domain/format-chart-weekday';
+import { formatChartHoverLabel, formatChartWeekdayLabel } from '../../domain/format-chart-weekday';
 
 const CHART_WIDTH = 280;
 const CHART_PLOT_HEIGHT = 88;
@@ -165,7 +165,9 @@ export function LineChartSvg({
           >
             {activePoint.label ? (
               <div className="text-muted">
-                {formatChartWeekdayLabel(activePoint.label, locale) || activePoint.label}
+                {formatChartHoverLabel(activePoint.label, locale) ||
+                  formatChartWeekdayLabel(activePoint.label, locale) ||
+                  activePoint.label}
               </div>
             ) : null}
             <div className="font-weight-strong">{formatValue(activePoint.value)}</div>
