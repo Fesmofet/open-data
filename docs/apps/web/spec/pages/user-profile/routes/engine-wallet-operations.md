@@ -6,9 +6,10 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, wallet, engine]
-updated_at: 2026-07-07
+updated_at: 2026-07-08
 related:
   - docs/apps/web/spec/pages/user-profile/routes/transfers.md
+  - docs/apps/web/spec/pages/user-profile/routes/currency-market-widget.md
   - docs/apps/query-api/spec/user-engine-swap-endpoints.md
 ---
 
@@ -16,15 +17,30 @@ related:
 
 Transfers tab owner actions live in the profile **right sidebar** when viewing `/@name/transfers`.
 
-## Sidebar buttons
+## Right rail layout (desktop `lg+`)
+
+The sidebar is split into three vertical blocks (legacy parity):
+
+| Block | Component | Who sees it | Tabs |
+|-------|-----------|-------------|------|
+| Top actions | `WalletActionsSidebarTop` | Profile owner | All wallet tabs |
+| Market | `CryptoMarketPanel` | All viewers | All wallet tabs |
+| Bottom actions | `WalletActionsSidebarBottom` | Profile owner | **WAIV** and **ENGINE** only (hidden on **HIVE**) |
+
+### Top group (owner, all tabs)
 
 - Transfer (primary)
 - Power up / Power down
 - Manage delegations
+
+### Market (all viewers)
+
+See [currency-market-widget.md](currency-market-widget.md).
+
+### Bottom group (owner, WAIV / ENGINE only)
+
 - Swap tokens (primary) — opens swap modal with `fromSymbol: WAIV`
 - Deposit / Withdraw
-
-Market widget is not implemented in this iteration.
 
 ## WAIV row actions
 

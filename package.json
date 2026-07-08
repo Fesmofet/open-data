@@ -208,7 +208,8 @@
       "js-yaml": "^4.2.0",
       "launch-editor": "^2.14.1",
       "http-proxy-middleware": "^3.0.7",
-      "piscina": "^4.9.3"
+      "piscina": "^4.9.3",
+      "@xhmikosr/decompress": "^11.1.3"
     }
   }
 }

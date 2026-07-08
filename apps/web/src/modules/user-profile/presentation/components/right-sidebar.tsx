@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 
+import { CryptoMarketPanel } from '@/modules/currency/presentation/components/crypto-market-panel';
 import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
 import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
 import { isUserProfileTransfersTab } from '../../domain/profile-transfers-url';
@@ -11,7 +12,10 @@ import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
 import { isUserProfileShopOrRecipeTab } from '../../domain/profile-shop-filters-url';
 import { ProfilePostFiltersFromUrl } from './profile-post-filters';
 import { ProfileShopFiltersFromUrl } from './profile-shop-filters';
-import { WalletActionsSidebar } from './wallet-actions-sidebar';
+import {
+  WalletActionsSidebarBottom,
+  WalletActionsSidebarTop,
+} from './wallet-actions-sidebar';
 
 type RightSidebarProps = {
   accountName: string;
@@ -65,10 +69,22 @@ function RightSidebarContent({ accountName, viewerUsername }: RightSidebarProps)
 
   if (isUserProfileTransfersTab(pathname)) {
     return (
-      <WalletActionsSidebar
-        accountName={accountName}
-        viewerUsername={viewerUsername ?? null}
-      />
+      <aside
+        className={[
+          PROFILE_FILTER_RAIL_STICKY_CLASS,
+          'min-w-0 space-y-card-padding overflow-x-hidden',
+        ].join(' ')}
+      >
+        <WalletActionsSidebarTop
+          accountName={accountName}
+          viewerUsername={viewerUsername ?? null}
+        />
+        <CryptoMarketPanel />
+        <WalletActionsSidebarBottom
+          accountName={accountName}
+          viewerUsername={viewerUsername ?? null}
+        />
+      </aside>
     );
   }
 

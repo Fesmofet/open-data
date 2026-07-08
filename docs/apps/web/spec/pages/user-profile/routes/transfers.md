@@ -6,11 +6,12 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, wallet]
-updated_at: 2026-06-25
+updated_at: 2026-07-08
 related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/user-profile/routes/waiv-wallet-history.md
   - docs/apps/web/spec/pages/user-profile/routes/engine-wallet-operations.md
+  - docs/apps/web/spec/pages/user-profile/routes/currency-market-widget.md
 ---
 
 # User profile — wallet and transfers
@@ -63,6 +64,16 @@ Wallet transaction history is rendered only on this transfers page (not on `Hive
 **Owner ENGINE operations:** center column is read-only; the right sidebar exposes transfer, power, delegations, swap, deposit, and withdraw for the profile owner. See [engine-wallet-operations.md](engine-wallet-operations.md). BFF routes under `/api/users/{name}/wallet/engine/*`.
 
 Shell hides left/right rails on `waiv-table` and `transfers/table` layouts — see [profile-shell.md](../profile-shell.md).
+
+## Right rail (transfers tab, desktop `lg+`)
+
+On `/@:name/transfers` with the main three-column layout, the right sidebar stacks:
+
+1. **Top wallet actions** (profile owner only) — transfer, power, delegations
+2. **Currency market widget** (all viewers) — WAIV / HIVE / HBD prices and sparklines
+3. **Bottom wallet actions** (profile owner, **WAIV** or **ENGINE** tab only) — swap, deposit, withdraw
+
+Hidden below `lg`, in Instagram shell, and on advanced table layouts. Full widget spec: [currency-market-widget.md](currency-market-widget.md).
 
 ## Verification
 
