@@ -145,7 +145,7 @@ export function ProfileCategoryNavSkeleton() {
 export function ProfileLeftRailSkeleton() {
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-card-padding"
+      className="rounded-card bg-surface-alt p-card-padding"
       aria-busy="true"
       aria-label="Loading sidebar"
     >
@@ -161,8 +161,8 @@ export function ProfileLeftRailSkeleton() {
       <div className="mt-4 space-y-2">
         {Array.from({ length: 3 }, (_, i) => (
           <div key={i} className="flex items-center gap-2">
-            <div className="size-9 shrink-0 animate-pulse rounded-btn bg-surface-control" />
-            <div className="h-4 w-16 animate-pulse rounded-btn bg-surface-control" />
+            <div className="h-[0.875rem] w-[0.875rem] shrink-0 animate-pulse rounded-btn bg-surface-control" />
+            <div className="h-3.5 w-16 animate-pulse rounded-btn bg-surface-control" />
           </div>
         ))}
       </div>

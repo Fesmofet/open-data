@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 function SidebarIconShell({ children }: { children: ReactNode }) {
   return (
     <span
-      className="inline-flex w-5 shrink-0 items-center justify-center text-muted"
+      className="inline-flex w-5 shrink-0 items-center justify-center text-fg"
       aria-hidden
     >
       {children}

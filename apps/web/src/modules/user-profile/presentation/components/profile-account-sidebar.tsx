@@ -54,7 +54,7 @@ function SidebarRow({
   nowrap?: boolean;
 }) {
   return (
-    <div className="flex items-start gap-2 text-body-sm text-muted">
+    <div className="flex items-start gap-2 text-body-sm text-fg">
       {icon}
       <div
         className={[
@@ -79,8 +79,10 @@ function SidebarMetricRow({
 }) {
   return (
     <SidebarRow icon={icon} nowrap>
-      {label}:{'\u00a0'}
-      <span className="text-fg">{value}</span>
+      <span className="text-fg">
+        {label}:{'\u00a0'}
+        {value}
+      </span>
     </SidebarRow>
   );
 }
@@ -98,15 +100,15 @@ function SidebarBrandButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-btn text-left transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className="flex w-full items-center gap-2 rounded-btn text-left text-body-sm text-accent transition-opacity hover:opacity-80 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
-      <div
-        className="flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
+      <img
+        src={iconSrc}
+        alt=""
+        className="h-[1em] w-[1em] shrink-0 object-contain"
         aria-hidden
-      >
-        <img src={iconSrc} alt="" width={22} height={22} className="size-[22px] object-contain" />
-      </div>
-      <span className="text-body-sm font-weight-label text-accent">{label}</span>
+      />
+      <span className="font-weight-label">{label}</span>
     </button>
   );
 }
@@ -150,7 +152,7 @@ export function ProfileAccountSidebar({
     <aside
       className={[
         PROFILE_RAIL_STICKY_CLASS,
-        'rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted',
+        'rounded-card bg-surface-alt p-card-padding text-body-sm text-fg',
       ].join(' ')}
       aria-label={t('user_profile_account_sidebar_aria')}
     >
@@ -161,9 +163,7 @@ export function ProfileAccountSidebar({
 
         <div className={model.about.trim().length > 0 ? 'mt-4 space-y-2' : 'space-y-2'}>
           {model.location && (
-            <SidebarRow icon={<SidebarLocationIcon />}>
-              <span className="text-fg">{model.location}</span>
-            </SidebarRow>
+            <SidebarRow icon={<SidebarLocationIcon />}>{model.location}</SidebarRow>
           )}
           {website?.href && (
             <SidebarRow icon={<SidebarLinkIcon />}>
@@ -191,8 +191,7 @@ export function ProfileAccountSidebar({
               </SidebarRow>
             )}
             <SidebarRow icon={<SidebarHashtagIcon />}>
-              {t('expertise')}:{' '}
-              <span className="text-fg">{model.expertiseWeight.toFixed(2)}</span>
+              {t('expertise')}: {model.expertiseWeight.toFixed(2)}
             </SidebarRow>
             {model.lastActivityAt && (
               <SidebarRow icon={<SidebarClockIcon />}>
@@ -201,10 +200,7 @@ export function ProfileAccountSidebar({
               </SidebarRow>
             )}
             <SidebarRow icon={<SidebarDollarIcon />}>
-              {t('vote_value')}:{' '}
-              <span className="text-fg">
-                {formatSidebarUsd(model.totalVoteValueUsd, locale)}
-              </span>
+              {t('vote_value')}: {formatSidebarUsd(model.totalVoteValueUsd, locale)}
             </SidebarRow>
           </div>
 
@@ -216,21 +212,15 @@ export function ProfileAccountSidebar({
                 <ExternalLinkButton
                   key={`${row.label}-${row.href}`}
                   href={row.href}
-                  className="flex w-full items-center gap-2 rounded-btn text-left transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className="flex w-full items-center gap-2 rounded-btn text-left text-body-sm text-accent transition-opacity hover:opacity-80 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                 >
-                  <div
-                    className="flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
+                  <img
+                    src={row.iconSrc}
+                    alt=""
+                    className="h-[1em] w-[1em] shrink-0 object-contain"
                     aria-hidden
-                  >
-                    <img
-                      src={row.iconSrc}
-                      alt=""
-                      width={22}
-                      height={22}
-                      className="size-[22px] object-contain"
-                    />
-                  </div>
-                  <span className="text-body-sm font-weight-label text-accent">{row.label}</span>
+                  />
+                  <span className="font-weight-label">{row.label}</span>
                 </ExternalLinkButton>
               ))}
               {PROFILE_SIDEBAR_TRANSFER_WALLETS.map((wallet) => (
