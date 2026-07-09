@@ -149,9 +149,41 @@ export function ProfileLeftRailSkeleton() {
       aria-busy="true"
       aria-label="Loading sidebar"
     >
-      <div className="h-4 max-w-[5rem] animate-pulse rounded-btn bg-surface-control" />
-      <div className="mt-2 h-3 w-full animate-pulse rounded-btn bg-surface-control" />
-      <div className="mt-1 h-3 max-w-[85%] animate-pulse rounded-btn bg-surface-control" />
+      <div className="h-5 max-w-[10rem] animate-pulse rounded-btn bg-surface-control" />
+      <div className="mt-4 space-y-2">
+        {Array.from({ length: 5 }, (_, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="size-5 shrink-0 animate-pulse rounded-btn bg-surface-control" />
+            <div className="h-3 min-w-0 flex-1 max-w-[85%] animate-pulse rounded-btn bg-surface-control" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 space-y-2">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="size-9 shrink-0 animate-pulse rounded-btn bg-surface-control" />
+            <div className="h-4 w-16 animate-pulse rounded-btn bg-surface-control" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 h-4 max-w-[6rem] animate-pulse rounded-btn bg-surface-control" />
+      <div className="mt-2 space-y-2">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="size-5 shrink-0 animate-pulse rounded-btn bg-surface-control" />
+            <div className="h-3 min-w-0 flex-1 max-w-[80%] animate-pulse rounded-btn bg-surface-control" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 h-4 max-w-[6rem] animate-pulse rounded-btn bg-surface-control" />
+      <div className="mt-2 space-y-2">
+        {Array.from({ length: 5 }, (_, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="size-5 shrink-0 animate-pulse rounded-btn bg-surface-control" />
+            <div className="h-3 min-w-0 flex-1 max-w-[75%] animate-pulse rounded-btn bg-surface-control" />
+          </div>
+        ))}
+      </div>
     </aside>
   );
 }

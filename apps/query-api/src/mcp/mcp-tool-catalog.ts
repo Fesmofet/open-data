@@ -139,6 +139,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/users-profile-endpoint.md',
   },
   {
+    name: 'get_user_account_sidebar',
+    description:
+      'Profile left-rail account panel: metadata, mana, RC, and vote value estimates.',
+    httpEquivalent: 'GET /query/v1/users/:name/account-sidebar',
+    specPath: 'docs/apps/query-api/spec/users-account-sidebar.md',
+  },
+  {
     name: 'get_user_blog',
     description: 'User blog feed posts with reward projection.',
     httpEquivalent: 'POST /query/v1/users/:name/blog',

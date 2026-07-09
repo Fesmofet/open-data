@@ -21,7 +21,9 @@ import {
 } from '../domain/feed';
 import {
   GetUserProfileEndpoint,
+  GetUserAccountSidebarEndpoint,
   type UserProfileView,
+  type UserAccountSidebarView,
 } from '../domain/users';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -95,6 +97,7 @@ export class UsersController {
     private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
     private readonly getUserExpertiseCounters: GetUserExpertiseCountersEndpoint,
     private readonly getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint,
+    private readonly getUserAccountSidebar: GetUserAccountSidebarEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -272,6 +275,17 @@ export class UsersController {
     @ReqViewer() viewer: string | undefined,
   ): Promise<UserProfileView> {
     const view = await this.getUserProfile.execute(name, viewer);
+    if (!view) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return view;
+  }
+
+  @Get(':name/account-sidebar')
+  async getAccountSidebar(
+    @Param('name') name: string,
+  ): Promise<UserAccountSidebarView> {
+    const view = await this.getUserAccountSidebar.execute(name);
     if (!view) {
       throw new NotFoundException(`User not found: ${name}`);
     }

@@ -3,6 +3,16 @@ type PostingProfileSlice = {
   about?: string;
   profile_image?: string;
   cover_image?: string;
+  location?: string;
+  website?: string;
+  email?: string;
+  [key: string]: string | undefined;
+};
+
+export type ParsedPostingMetadata = {
+  profile: PostingProfileSlice;
+  /** All string entries from `profile` (social ids, wallets, etc.). */
+  profileFields: Record<string, string>;
 };
 
 /**
@@ -11,7 +21,7 @@ type PostingProfileSlice = {
  */
 export function parsePostingMetadata(
   raw: string | null,
-): { profile: PostingProfileSlice } | null {
+): ParsedPostingMetadata | null {
   if (raw === null || raw.trim() === '') {
     return null;
   }
@@ -26,6 +36,12 @@ export function parsePostingMetadata(
     }
     const p = profileUnknown as Record<string, unknown>;
     const profile: PostingProfileSlice = {};
+    const profileFields: Record<string, string> = {};
+    for (const [key, value] of Object.entries(p)) {
+      if (typeof value === 'string' && value.trim().length > 0) {
+        profileFields[key] = value.trim();
+      }
+    }
     if (typeof p.name === 'string') {
       profile.name = p.name;
     }
@@ -38,7 +54,16 @@ export function parsePostingMetadata(
     if (typeof p.cover_image === 'string') {
       profile.cover_image = p.cover_image;
     }
-    return { profile };
+    if (typeof p.location === 'string') {
+      profile.location = p.location;
+    }
+    if (typeof p.website === 'string') {
+      profile.website = p.website;
+    }
+    if (typeof p.email === 'string') {
+      profile.email = p.email;
+    }
+    return { profile, profileFields };
   } catch {
     return null;
   }

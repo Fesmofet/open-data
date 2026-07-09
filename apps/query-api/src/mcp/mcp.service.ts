@@ -56,7 +56,7 @@ import {
   GetUserExpertiseCountersEndpoint,
   GetUserExpertiseObjectsEndpoint,
 } from '../domain/expertise';
-import { GetUserProfileEndpoint } from '../domain/users';
+import { GetUserProfileEndpoint, GetUserAccountSidebarEndpoint } from '../domain/users';
 import {
   GetUserEngineTokenDelegationsEndpoint,
   GetUserHiveHpDelegationsEndpoint,
@@ -101,6 +101,7 @@ export class McpService {
     private readonly getObjectThreadsFeed: GetObjectThreadsFeedEndpoint,
     private readonly getUpdateVoters: GetUpdateVotersEndpoint,
     private readonly getUserProfile: GetUserProfileEndpoint,
+    private readonly getUserAccountSidebar: GetUserAccountSidebarEndpoint,
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
     private readonly getUserBlogObjectFilters: GetUserBlogObjectFiltersEndpoint,
     private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
@@ -159,6 +160,7 @@ export class McpService {
       getObjectThreadsFeed: this.getObjectThreadsFeed,
       getUpdateVoters: this.getUpdateVoters,
       getUserProfile: this.getUserProfile,
+      getUserAccountSidebar: this.getUserAccountSidebar,
       getUserBlogFeed: this.getUserBlogFeed,
       getUserBlogObjectFilters: this.getUserBlogObjectFilters,
       getUserMentionsFeed: this.getUserMentionsFeed,

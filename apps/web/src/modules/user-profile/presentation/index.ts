@@ -26,7 +26,9 @@ export {
   useUserProfileSocialCounts,
 } from './components/user-profile-social-counts-context';
 export type { UserProfileSocialCounts } from './components/user-profile-social-counts-context';
-export { LeftSidebar } from './components/left-sidebar';
+export { ProfileAccountSidebar } from './components/profile-account-sidebar';
+export { ProfileAccountSidebarShell } from './components/profile-account-sidebar-shell';
+export { renderProfileAccountSidebar } from './components/profile-account-sidebar-loader';
 export { RightSidebar } from './components/right-sidebar';
 export { ProfileMainWalletModalShell } from './components/profile-main-wallet-modal-shell';
 export { UserProfilePendingNavRoot } from './components/user-profile-pending-nav-root';

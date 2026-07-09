@@ -57,7 +57,7 @@ Shared modal context: `ProfileMainWalletModalShell` in `(main)/layout.tsx` wraps
 
 ## Layout
 
-Center column summaries are read-only for owners (`hideRowActions` when sidebar visible); sidebar owns primary action triggers on desktop. ENGINE tab summary has no inline row actions (sidebar only).
+Center column balance rows show inline owner actions; the right sidebar also exposes transfer/power/delegate on desktop. ENGINE tab summary has no inline row actions (sidebar only).
 
 ## Deposit QR
 

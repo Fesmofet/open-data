@@ -34,6 +34,7 @@ export async function revalidateUserSocialAfterBroadcast(accountName: string): P
     return;
   }
   updateTag(queryApiCacheTags.userProfile(name));
+  updateTag(queryApiCacheTags.userAccountSidebar(name));
   updateTag(queryApiCacheTags.userFollowers(name));
   updateTag(queryApiCacheTags.userFollowing(name));
   updateTag(queryApiCacheTags.userFollowingObjects(name));
@@ -66,6 +67,7 @@ export async function revalidateUserWaivWalletAfterBroadcast(
     return;
   }
   updateTag(queryApiCacheTags.userWaivWallet(name));
+  updateTag(queryApiCacheTags.userAccountSidebar(name));
   updateTag(queryApiCacheTags.userEngineWallet(name));
   updateTag(queryApiCacheTags.userEngineTokenDelegations(name, 'WAIV'));
   revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
@@ -80,6 +82,7 @@ export async function revalidateUserHiveWalletAfterBroadcast(
     return;
   }
   updateTag(queryApiCacheTags.userHiveWallet(name));
+  updateTag(queryApiCacheTags.userAccountSidebar(name));
   updateTag(queryApiCacheTags.userHiveHpDelegations(name));
   updateTag(queryApiCacheTags.userHiveRcDelegations(name));
   updateTag(queryApiCacheTags.userActivityFeed(name, 'wallet'));

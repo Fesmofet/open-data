@@ -50,7 +50,7 @@ import type {
   GetUserExpertiseCountersEndpoint,
   GetUserExpertiseObjectsEndpoint,
 } from '../domain/expertise';
-import type { GetUserProfileEndpoint } from '../domain/users';
+import type { GetUserProfileEndpoint, GetUserAccountSidebarEndpoint } from '../domain/users';
 import type {
   GetUserEngineTokenDelegationsEndpoint,
   GetUserHiveHpDelegationsEndpoint,
@@ -87,6 +87,7 @@ export interface McpToolDeps {
   getObjectThreadsFeed: GetObjectThreadsFeedEndpoint;
   getUpdateVoters: GetUpdateVotersEndpoint;
   getUserProfile: GetUserProfileEndpoint;
+  getUserAccountSidebar: GetUserAccountSidebarEndpoint;
   getUserBlogFeed: GetUserBlogFeedEndpoint;
   getUserBlogObjectFilters: GetUserBlogObjectFiltersEndpoint;
   getUserMentionsFeed: GetUserMentionsFeedEndpoint;

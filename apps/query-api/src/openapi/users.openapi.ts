@@ -91,3 +91,81 @@ registry.registerPath({
     },
   },
 });
+
+const userAccountSidebarWaivSchema = z.object({
+  upvotingManaPercent: z.number(),
+  downvotingManaPercent: z.number(),
+  voteValueUsd: z.number(),
+});
+
+const userAccountSidebarHiveSchema = z.object({
+  reputation: z.number(),
+  upvotingManaPercent: z.number(),
+  downvotingManaPercent: z.number(),
+  resourceCreditsPercent: z.number(),
+  voteValueUsd: z.number(),
+});
+
+const userAccountSidebarSocialLinkSchema = z.object({
+  type: z.string(),
+  value: z.string(),
+  href: z.string(),
+});
+
+const userAccountSidebarCryptoWalletSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  shortName: z.string(),
+  abbreviation: z.string(),
+  address: z.string(),
+  icon: z.string(),
+  coingeckoId: z.string(),
+});
+
+const userAccountSidebarViewSchema = registry.register(
+  'UserAccountSidebarView',
+  z.object({
+    about: z.string(),
+    location: z.string().nullable(),
+    website: z.string().nullable(),
+    email: z.string().nullable(),
+    joinedAt: z.string().nullable(),
+    expertiseWeight: z.number(),
+    lastActivityAt: z.string().nullable(),
+    totalVoteValueUsd: z.number(),
+    socialLinks: z.array(userAccountSidebarSocialLinkSchema),
+    cryptoWallets: z.array(userAccountSidebarCryptoWalletSchema),
+    waiv: userAccountSidebarWaivSchema,
+    hive: userAccountSidebarHiveSchema,
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/account-sidebar',
+  tags: [queryApiOpenApiTags.users],
+  summary: 'Get profile left-sidebar account panel',
+  description:
+    'Aggregates posting metadata, expertise, last activity, Hive/Engine mana, RC, and estimated vote values for the profile left rail.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+  },
+  responses: {
+    200: {
+      description: 'Account sidebar fields (legacy UserInfo parity).',
+      content: {
+        'application/json': {
+          schema: userAccountSidebarViewSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No row in `accounts_current` for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});

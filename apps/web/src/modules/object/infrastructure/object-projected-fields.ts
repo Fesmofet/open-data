@@ -914,7 +914,7 @@ const OBJECT_LINK_KINDS = [
 
 export type ProjectedObjectLinkKind = (typeof OBJECT_LINK_KINDS)[number];
 
-function isProjectedLinkKind(type: string): type is ProjectedObjectLinkKind {
+export function isProjectedLinkKind(type: string): type is ProjectedObjectLinkKind {
   return (OBJECT_LINK_KINDS as readonly string[]).includes(type);
 }
 

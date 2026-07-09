@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, social-parsers]
-updated_at: 2026-06-10
+updated_at: 2026-07-09
 related:
   - docs/apps/chain-indexer/spec/overview.md
   - docs/apps/chain-indexer/spec/account-sync.md
@@ -27,12 +27,16 @@ Deterministic handling of Hive operations that drive the social graph and profil
 | Hive operation | Handler | Persistence |
 |----------------|---------|-------------|
 | `custom_json` with `id: "follow"` | `FollowSocialService` / `ReblogSocialService` | `user_subscriptions`, `user_account_mutes`, `accounts_current` counters, `post_reblogged_users` (reblog branch) |
-| `account_update` | `AccountProfileUpdateService` | `accounts_current` (`alias`, `profile_image`, raw metadata strings) when row exists; if **no row**, enqueue [account sync](account-sync.md) |
+| `account_update` | `AccountProfileUpdateService` | `accounts_current` (`alias`, `profile_image`, `json_metadata`, `posting_json_metadata`) when row exists; if **no row**, enqueue [account sync](account-sync.md) |
 | `create_account`, `create_claimed_account` | `AccountEnsureService` | Minimal `accounts_current` row if absent; then enqueue [account sync](account-sync.md) |
 
 ## Signer
 
 `transactionAccount = required_posting_auths[0] ?? required_auths[0]` (posting auth preferred).
+
+## `account_update` metadata
+
+When the operation payload includes **both** `json_metadata` and `posting_json_metadata`, `AccountProfileUpdateService` updates **both** columns on `accounts_current`. Either field alone updates only that column. Empty strings are stored as-is; absent fields are not overwritten.
 
 ## Follow JSON (`custom_json` id `follow`)
 

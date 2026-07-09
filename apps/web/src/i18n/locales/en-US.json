@@ -3055,6 +3055,7 @@
   "user_info": "User info",
   "user_profile_back_home": "Back to home",
   "user_profile_following_objects": "Following objects",
+  "user_profile_account_sidebar_aria": "Account information",
   "user_profile_nav_aria": "Profile sections",
   "user_profile_not_found_body": "This account does not exist or could not be loaded.",
   "user_profile_not_found_title": "Profile not found",

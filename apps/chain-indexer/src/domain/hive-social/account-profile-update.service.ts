@@ -46,6 +46,7 @@ export class AccountProfileUpdateService {
         posting_json_metadata: pjm,
         alias,
         profile_image,
+        ...(jm ? { json_metadata: jm } : {}),
       };
     } else if (jm) {
       const parsed = parseJsonObject(jm);

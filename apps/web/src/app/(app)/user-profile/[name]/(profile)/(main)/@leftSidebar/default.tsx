@@ -1,5 +1,10 @@
-import { LeftSidebar } from '@/modules/user-profile';
+import { renderProfileAccountSidebar } from '@/modules/user-profile';
 
-export default function LeftSidebarDefault() {
-  return <LeftSidebar />;
+type PageProps = {
+  params: Promise<{ name: string }>;
+};
+
+export default async function LeftSidebarDefault({ params }: PageProps) {
+  const { name } = await params;
+  return renderProfileAccountSidebar(decodeURIComponent(name));
 }

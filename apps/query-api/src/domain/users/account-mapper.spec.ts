@@ -31,4 +31,18 @@ describe('mapAccountToUserProfileView', () => {
     );
     expect(view.wobjectsWeight).toBe(0);
   });
+
+  it('prefers chain posting_json_metadata for bio', () => {
+    const view = mapAccountToUserProfileView(
+      accountRow({
+        posting_json_metadata: JSON.stringify({
+          profile: { about: 'stale bio' },
+        }),
+      }),
+      JSON.stringify({
+        profile: { about: 'live bio' },
+      }),
+    );
+    expect(view.bio).toBe('live bio');
+  });
 });

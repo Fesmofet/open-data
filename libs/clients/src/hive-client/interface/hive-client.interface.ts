@@ -10,6 +10,7 @@ import {
   HiveAccountHistoryPage,
   HiveAccountHistoryRow,
   HiveDynamicGlobalProperties,
+  HiveRewardFund,
   HiveOperationFilter,
   HiveRcAccount,
   HiveRcDelegation,
@@ -130,6 +131,8 @@ export interface HiveClientInterface {
   ): Promise<HiveAccountHistoryPage | null>;
 
   getDynamicGlobalProperties(): Promise<HiveDynamicGlobalProperties | undefined>;
+
+  getRewardFund(name?: string): Promise<HiveRewardFund | undefined>;
 }
 
 export interface GetVoteInterface {

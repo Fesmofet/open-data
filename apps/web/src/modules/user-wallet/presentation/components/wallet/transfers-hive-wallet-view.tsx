@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { useEffectiveViewerUsername } from '@/modules/object-updates/application/use-effective-viewer-username';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { HiveWalletLoadError, HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
@@ -25,8 +26,9 @@ export function TransfersHiveWalletView({
   hiveError,
 }: TransfersHiveWalletViewProps) {
   const { t } = useI18n();
+  const viewerAccount = useEffectiveViewerUsername(viewerUsername);
   const canManageWallet =
-    viewerUsername?.trim().toLowerCase() === accountName.trim().toLowerCase();
+    viewerAccount?.trim().toLowerCase() === accountName.trim().toLowerCase();
   const summaryAvailable = hiveSummary !== null && hiveError === null;
   const canManageWithSummary = canManageWallet && summaryAvailable;
 
@@ -44,7 +46,6 @@ export function TransfersHiveWalletView({
           canManageWallet={canManageWithSummary}
           accountName={accountName}
           defaultAsset="HIVE"
-          hideRowActions={canManageWithSummary}
         />
       ) : null}
       <div className="mt-4 flex justify-end">

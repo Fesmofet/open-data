@@ -28,6 +28,12 @@ describe('parsePostingMetadata', () => {
         profile_image: 'https://example.com/a.jpg',
         cover_image: 'https://example.com/c.jpg',
       },
+      profileFields: {
+        name: 'Display',
+        about: 'Bio text',
+        profile_image: 'https://example.com/a.jpg',
+        cover_image: 'https://example.com/c.jpg',
+      },
     });
   });
 

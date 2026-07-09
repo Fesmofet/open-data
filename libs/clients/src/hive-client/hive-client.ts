@@ -12,6 +12,7 @@ import type {
   HiveAccountHistoryPage,
   HiveAccountHistoryRow,
   HiveDynamicGlobalProperties,
+  HiveRewardFund,
   HiveOperationFilter,
   HiveRcAccount,
   HiveRcDelegation,
@@ -620,5 +621,9 @@ export class HiveClient implements HiveClientInterface {
       throw new HiveNodeUnavailableError();
     }
     return result;
+  }
+
+  async getRewardFund(name = 'post'): Promise<HiveRewardFund | undefined> {
+    return this.hiveRequest<HiveRewardFund>(CONDENSER_API.GET_REWARD_FUND, [name]);
   }
 }

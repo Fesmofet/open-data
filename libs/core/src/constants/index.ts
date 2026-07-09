@@ -3,4 +3,5 @@ export * from './feed.constants';
 export * from './favorites.constants';
 export * from './map-geo.constants';
 export * from './waiv-token.constants';
+export * from './voting-mana.constants';
 export * from './user.constants';

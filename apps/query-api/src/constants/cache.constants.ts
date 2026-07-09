@@ -24,3 +24,12 @@ export const POST_REWARD_FIAT_RATES_CACHE_TTL_SEC = 21_600;
 
 /** Redis TTL for Hive dynamic global properties (vesting fund/shares for activity HP). */
 export const HIVE_GLOBAL_PROPERTIES_CACHE_TTL_SEC = 300;
+
+/** Redis TTL for Hive reward fund used in account sidebar vote value (seconds). */
+export const HIVE_REWARD_FUND_CACHE_TTL_SEC = 60;
+
+/** Redis TTL for WAIV Engine reward pool rate (seconds). */
+export const WAIV_REWARD_POOL_CACHE_TTL_SEC = 60;
+
+/** Redis TTL for condenser `get_accounts` snapshot (profile + sidebar dedup). */
+export const HIVE_ACCOUNTS_CACHE_TTL_SEC = 60;

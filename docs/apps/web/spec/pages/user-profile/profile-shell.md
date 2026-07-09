@@ -62,7 +62,7 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
 |--------|-----------|-------------|
 | Hero | `UserProfileHeroClient` | `(profile)/layout.tsx` only — not on `(article)/post/*` |
 | Primary nav | `UserMenu` in hero | See [user-menu.md](components/user-menu.md) |
-| Left rail | `@leftSidebar` parallel route or vertical menu | Hidden below `lg`; shop/recipe use category nav in parallel slot |
+| Left rail | `@leftSidebar` → `ProfileAccountSidebar` on default routes; category nav on shop/recipe; `FavoritesTypeNav` on favorites; vertical `UserMenu` in twitter mode | Hidden below `lg` |
 | Center | Route `page.tsx` children | — |
 | Right rail | `RightSidebar` | Hidden on `map`, `waiv-table`; hidden below `lg` on `(main)` |
 
@@ -89,6 +89,7 @@ Shell profile fetch: [data-loading.md](data-loading.md). `(profile)/layout.tsx` 
 | Map | [routes/map.md](routes/map.md) |
 | Favorites | [routes/favorites.md](routes/favorites.md) |
 | Expertise | [routes/expertise.md](routes/expertise.md) |
+| Account sidebar | [components/account-sidebar.md](components/account-sidebar.md) |
 | Reblogs | [routes/reblogs.md](routes/reblogs.md) |
 | Wallet / transfers | [routes/transfers.md](routes/transfers.md) |
 | Post article / modal | [routes/post-article.md](routes/post-article.md) |

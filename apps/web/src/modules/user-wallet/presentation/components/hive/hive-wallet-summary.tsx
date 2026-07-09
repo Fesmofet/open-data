@@ -34,7 +34,6 @@ export type HiveWalletSummaryProps = {
   canManageWallet: boolean;
   accountName: string;
   defaultAsset: WalletMainAsset;
-  hideRowActions?: boolean;
 };
 
 type SavingsProgressState = {
@@ -48,7 +47,6 @@ export function HiveWalletSummary({
   canManageWallet,
   accountName,
   defaultAsset,
-  hideRowActions = false,
 }: HiveWalletSummaryProps) {
   const { t, locale } = useI18n();
   const { openModal } = useWalletModal();
@@ -81,7 +79,7 @@ export function HiveWalletSummary({
           days: String(summary.interest.daysUntilClaim),
         });
 
-  const actions = canManageWallet && !hideRowActions
+  const actions = canManageWallet
     ? {
         openPowerUp: () =>
           openModal({ kind: 'power', mode: 'up', asset: defaultAsset }),

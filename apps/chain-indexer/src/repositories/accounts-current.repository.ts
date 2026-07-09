@@ -159,4 +159,21 @@ export class AccountsCurrentRepository {
       .returningAll()
       .executeTakeFirst();
   }
+
+  /** Batch bump `last_activity` for accounts active in a block (monotonic). */
+  async touchLastActivity(names: string[], timestampUnix: number): Promise<void> {
+    if (names.length === 0) {
+      return;
+    }
+    await this.db
+      .updateTable('accounts_current')
+      .set((eb) => ({
+        last_activity: eb.fn('greatest', [
+          eb.fn.coalesce('last_activity', eb.val(0)),
+          eb.val(timestampUnix),
+        ]),
+      }))
+      .where('name', 'in', names)
+      .execute();
+  }
 }

@@ -96,6 +96,21 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_account_sidebar',
+    {
+      description: catalogDescription('get_user_account_sidebar'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserAccountSidebar.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_blog',
     {
       description: catalogDescription('get_user_blog'),

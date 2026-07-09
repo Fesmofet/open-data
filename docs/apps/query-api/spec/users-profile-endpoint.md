@@ -32,7 +32,7 @@ JSON object:
 |-------|------|--------|
 | `name` | string | `accounts_current.name` |
 | `displayName` | string | First non-empty: `alias` (trimmed), then `posting_json_metadata.profile.name`, then `name` |
-| `bio` | string | `posting_json_metadata.profile.about` or `""` |
+| `bio` | string | `posting_json_metadata.profile.about` or `""` — **live Hive chain preferred** over Postgres when `get_accounts` succeeds |
 | `avatarUrl` | string \| null | First non-empty: `profile_image`, then `posting_json_metadata.profile.profile_image` |
 | `coverImageUrl` | string \| null | `posting_json_metadata.profile.cover_image` or null |
 | `followerCount` | number | `accounts_current.followers_count` |

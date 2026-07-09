@@ -1,9 +1,15 @@
 import type { AccountCurrent } from '@opden-data-layer/core';
 import { parsePostingMetadata } from './parse-posting-metadata';
+import { resolvePostingJsonMetadata } from './resolve-posting-json-metadata';
 import type { UserProfileView } from './user-profile.types';
 
-export function mapAccountToUserProfileView(row: AccountCurrent): UserProfileView {
-  const meta = parsePostingMetadata(row.posting_json_metadata);
+export function mapAccountToUserProfileView(
+  row: AccountCurrent,
+  chainPostingJsonMetadata?: string | null,
+): UserProfileView {
+  const meta = parsePostingMetadata(
+    resolvePostingJsonMetadata(row.posting_json_metadata, chainPostingJsonMetadata),
+  );
   const aliasTrimmed = row.alias?.trim() ?? '';
   const metaName = meta?.profile.name?.trim() ?? '';
   const displayName =

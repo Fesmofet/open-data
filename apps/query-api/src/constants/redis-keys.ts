@@ -28,6 +28,10 @@ export const redisKey = {
     buildRedisKey(APP, 'cache', 'post-reward', 'fiat', base),
   hiveGlobalProperties: () =>
     buildRedisKey(APP, 'cache', 'hive', 'dynamic-global-properties'),
+  hiveRewardFund: () => buildRedisKey(APP, 'cache', 'reward-fund', 'hive'),
+  hiveAccount: (accountName: string) =>
+    buildRedisKey(APP, 'cache', 'hive', 'account', accountName.trim().toLowerCase()),
+  waivRewardPool: () => buildRedisKey(APP, 'cache', 'waiv', 'reward-pool'),
   waivGeneratedReportLock: (reportId: string) =>
     buildRedisKey(APP, 'lock', 'waiv-generated-report', reportId),
 } as const;

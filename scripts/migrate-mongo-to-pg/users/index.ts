@@ -176,7 +176,26 @@ class MongoUsersMigrator {
       await this.db
         .insertInto('accounts_current')
         .values(slice)
-        .onConflict((oc) => oc.column('name').doNothing())
+        .onConflict((oc) =>
+          oc.column('name').doUpdateSet((eb) => ({
+            // Mongo export fields — refresh on re-run; null-safe for metadata strings.
+            json_metadata: sql`COALESCE(${eb.ref('excluded.json_metadata')}, ${eb.ref('accounts_current.json_metadata')})`,
+            posting_json_metadata: sql`COALESCE(${eb.ref('excluded.posting_json_metadata')}, ${eb.ref('accounts_current.posting_json_metadata')})`,
+            alias: eb.ref('excluded.alias'),
+            profile_image: eb.ref('excluded.profile_image'),
+            post_count: eb.ref('excluded.post_count'),
+            last_root_post: eb.ref('excluded.last_root_post'),
+            wobjects_weight: eb.ref('excluded.wobjects_weight'),
+            last_posts_count: eb.ref('excluded.last_posts_count'),
+            users_following_count: eb.ref('excluded.users_following_count'),
+            followers_count: eb.ref('excluded.followers_count'),
+            stage_version: eb.ref('excluded.stage_version'),
+            referral_status: eb.ref('excluded.referral_status'),
+            last_activity: eb.ref('excluded.last_activity'),
+            updated_at_unix: eb.ref('excluded.updated_at_unix'),
+            // Hive-sourced columns (hive_id, created, comment_count, …) are indexer-owned — not overwritten here.
+          })),
+        )
         .execute();
     }
   }

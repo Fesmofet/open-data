@@ -6,7 +6,9 @@ import { createHttpUserProfileRepository } from './infrastructure/repositories/u
 export * from './presentation';
 
 export { createGetUserProfileQuery } from './application/queries/get-user-profile.query';
+export { getUserAccountSidebarQuery } from './application/queries/get-user-account-sidebar.query';
 export type { UserProfileView } from './domain/types/user-profile-view';
+export type { UserAccountSidebarView } from './domain/types/user-account-sidebar-view';
 
 const userProfileRepository = createHttpUserProfileRepository();
 

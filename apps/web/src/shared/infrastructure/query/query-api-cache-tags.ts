@@ -12,6 +12,8 @@ export const queryApiCacheTags = {
   objectThreadsFeed: (objectId: string) => `query-api:object:${objectId.trim()}:threads-feed`,
   userProfile: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:profile`,
+  userAccountSidebar: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:account-sidebar`,
   userFollowers: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:followers`,
   userFollowing: (accountName: string) =>

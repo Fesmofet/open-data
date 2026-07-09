@@ -17,6 +17,7 @@ import { AccountProfileUpdateService } from '../hive-social/account-profile-upda
 import { AccountEnsureService } from '../hive-social/account-ensure.service';
 import { VoteHiveService } from '../hive-vote/vote-hive.service';
 import { HiveHpDelegationService } from '../hive-delegation/hive-hp-delegation.service';
+import { AccountLastActivityService } from '../hive-social/account-last-activity.service';
 
 @Injectable()
 export class HiveMainParser {
@@ -31,6 +32,7 @@ export class HiveMainParser {
     private readonly accountEnsure: AccountEnsureService,
     private readonly voteHiveService: VoteHiveService,
     private readonly hpDelegationService: HiveHpDelegationService,
+    private readonly accountLastActivity: AccountLastActivityService,
   ) {
     this.handlers = {
       [HIVE_OPERATION.CUSTOM_JSON]: {
@@ -127,5 +129,7 @@ export class HiveMainParser {
         }
       }
     }
+
+    await this.accountLastActivity.touchFromBlock(transactions, timestamp);
   }
 }

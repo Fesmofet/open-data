@@ -27,6 +27,15 @@ This document covers loading **shell profile** data (hero / header counts and di
 |----------|------|
 | `apps/web/src/app/(app)/user-profile/[name]/layout.tsx` | Validates `name` regex; `await getUserProfileQuery(decoded)` — `notFound()` if null |
 | `apps/web/src/app/(app)/user-profile/[name]/(profile)/layout.tsx` | Re-fetches profile with viewer + locale; loads following-objects count head and expertise counters for hero badges |
+| `apps/web/src/app/(app)/user-profile/[name]/(profile)/(main)/@leftSidebar/*` | `getUserAccountSidebarQuery` on default routes (not shop/recipe/favorites) |
+
+### Left sidebar (account panel)
+
+| Route slot | Query | API |
+|------------|-------|-----|
+| `@leftSidebar/page.tsx`, `[...slug]/page.tsx`, `default.tsx` | `getUserAccountSidebarQuery` | `GET /query/v1/users/:name/account-sidebar` |
+
+Spec: [components/account-sidebar.md](components/account-sidebar.md). Cache tag: `userAccountSidebar:{name}`.
 
 ### Expertise tab SSR
 
@@ -81,4 +90,4 @@ Validation: Zod `userProfileViewSchema` in `apps/web/src/modules/user-profile/ap
 
 ## Backend contract
 
-See [query-api user profile spec](../../../../query-api/spec/users-profile-endpoint.md).
+See [query-api user profile spec](../../../../query-api/spec/users-profile-endpoint.md) and [account sidebar spec](../../../../query-api/spec/users-account-sidebar.md).

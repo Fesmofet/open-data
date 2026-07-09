@@ -167,7 +167,8 @@ Source: [`tmp/UserSchema.js`](../../tmp/UserSchema.js). ODL: [`libs/core/src/db/
 - **`user_notification_settings.vote`:** from nested JSON `user_metadata.settings.userNotifications.like` (Mongo field name `like`; stored as column `vote` because `like` is a PostgreSQL reserved word).
 - **`user_post_bookmarks`:** only entries in `user_metadata.bookmarks[]` containing `/` are split into `author` + `permlink`; others are skipped (object bookmarks not modeled).
 - **`user_object_follows`:** only rows whose `object_id` exists in `objects_core` are inserted; see migrator stats `objectFollowsSkippedNoFk`.
-- **`hive_id`, `comment_count`, `lifetime_vote_count`, `last_post`, `object_reputation`:** not present on Mongo user export; importer uses 0 / null defaults.
+- **`hive_id`, `comment_count`, `lifetime_vote_count`, `last_post`, `object_reputation`:** not present on Mongo user export; importer uses 0 / null defaults on **insert** only. Re-runs **update** Mongo-sourced Waivio columns (`posting_json_metadata`, `json_metadata`, `alias`, counts, …) but do **not** overwrite Hive indexer fields (`hive_id`, `created`, `comment_count`, …).
+- Re-running the same users export refreshes Mongo-sourced Waivio columns. **`json_metadata` / `posting_json_metadata`:** upsert uses `COALESCE(excluded, existing)` — a null/empty value in the export does **not** wipe a non-null value already in Postgres (from a prior export or chain-indexer). For chain-authoritative profile text, rely on chain-indexer `account_update` / [account sync](../../docs/apps/chain-indexer/spec/account-sync.md), or query-api live Hive reads on profile endpoints.
 
 ## Related
 

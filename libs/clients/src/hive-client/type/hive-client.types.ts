@@ -103,6 +103,12 @@ export type CommentStateType = {
 };
 
 /** Wallet-related fields from `condenser_api.get_accounts`. */
+export type HiveManabar = {
+  current_mana?: string | number;
+  last_update_time?: number;
+};
+
+/** Wallet-related fields from `condenser_api.get_accounts`. */
 export type HiveAccountWalletFields = {
   balance: string;
   hbd_balance: string;
@@ -117,6 +123,18 @@ export type HiveAccountWalletFields = {
   to_withdraw: string;
   vesting_withdraw_rate: string;
   next_vesting_withdrawal: string;
+  voting_power?: number;
+  last_vote_time?: string;
+  reputation?: number;
+  voting_manabar?: HiveManabar;
+  downvote_manabar?: HiveManabar;
+};
+
+export type HiveRewardFund = {
+  id: number;
+  name: string;
+  reward_balance: string;
+  recent_claims: string;
 };
 
 /** Subset of `condenser_api.get_accounts` result used for indexer sync and wallet. */

@@ -27,14 +27,12 @@ export type WaivWalletSummaryProps = {
   summary: WaivWalletSummaryView;
   canManageWallet: boolean;
   defaultAsset: WalletMainAsset;
-  hideRowActions?: boolean;
 };
 
 export function WaivWalletSummary({
   summary,
   canManageWallet,
   defaultAsset,
-  hideRowActions = false,
 }: WaivWalletSummaryProps) {
   const { t, locale } = useI18n();
   const { openModal } = useWalletModal();
@@ -54,7 +52,7 @@ export function WaivWalletSummary({
     });
   }, [powerDownTooltipDate, t]);
 
-  const actions = canManageWallet && !hideRowActions
+  const actions = canManageWallet
     ? {
         openPowerUp: () =>
           openModal({ kind: 'power', mode: 'up', asset: defaultAsset }),
