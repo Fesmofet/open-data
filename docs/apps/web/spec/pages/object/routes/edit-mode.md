@@ -26,7 +26,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | View mode | Left rail read-only (existing blocks) |
 | Edit mode | `+` next to each block heading (menu, description, phones, …) |
 | `+` click | Modal: optional update-type select (multi-type blocks), schema-driven value form, optional locale when `UPDATE_REGISTRY[type].localizable` |
-| Edit left rail | All supported slots show heading + `+` even when empty; order: **Name**, **Title**, Menu, Parent, Description, … (see `EDIT_MODE_LEFT_RAIL_BLOCK_ORDER`) |
+| Edit left rail | All supported slots show heading + `+` even when empty; order: **Name**, **Title**, then type-specific slots (see below) |
 | Update count | Muted line under each field heading (e.g. `2 updates`); **click** navigates to the **Updates** tab and sets the feed `update_type` filter for that field |
 | Submit | `buildOdlUpdateCreateOp` → wallet broadcast → `awaitTrxConfirmation` → `router.refresh()` |
 | Creator vote | Indexer auto-inserts validity vote `for` from `creator` on every successful `update_create` (no client `update_vote` in create trx) |
@@ -41,6 +41,11 @@ Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from serv
 ## Block → update type mapping
 
 `apps/web/src/modules/object-updates/domain/block-update-type-map.ts` maps left-rail `kind` to `UPDATE_TYPES` values (camelCase). Candidates are filtered by `OBJECT_TYPE_REGISTRY[objectType].supported_updates` (via `embeddedUpdatesFeed.typeOptions` on the client).
+
+### Left-rail slot order
+
+- **Generic types:** `EDIT_MODE_LEFT_RAIL_BLOCK_ORDER` — Name, Title, Menu, … about stack (`left-rail-edit-blocks.ts`).
+- **`product` / `book` / `service`:** legacy navigate cluster **before** menu — gallery → compareAtPrice → price → saleEvent → **options**, then menu (`resolveEditModeLeftRailBlockOrder` in `object-left-rail-order.ts`). See [options.md](options.md).
 
 ## Broadcast contract
 

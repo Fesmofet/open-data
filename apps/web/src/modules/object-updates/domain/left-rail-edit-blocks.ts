@@ -1,5 +1,5 @@
 import {
-  EDIT_MODE_LEFT_RAIL_BLOCK_ORDER,
+  resolveEditModeLeftRailBlockOrder,
   type EditModeLeftRailBlockId,
 } from '@/modules/object/domain/object-left-rail-order';
 import { OBJECT_LEFT_RAIL_BLOCK_LABEL } from '@/modules/object/domain/object-update-labels';
@@ -51,6 +51,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'gallery', headingLabel, photos: [] };
     case 'price':
       return { kind: 'price', headingLabel, text: '' };
+    case 'options':
+      return { kind: 'options', headingLabel, currentObjectId: '', categories: [] };
     case 'workHours':
       return { kind: 'workHours', headingLabel, lines: [] };
     case 'address':
@@ -119,6 +121,7 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
 export function mergeLeftRailBlocksForEditMode(
   viewBlocks: ObjectLeftRailBlock[],
   supportedUpdateTypes: readonly string[],
+  objectType = '',
 ): ObjectLeftRailBlock[] {
   const supported = new Set(supportedUpdateTypes);
   const byKind = new Map<ObjectLeftRailBlock['kind'], ObjectLeftRailBlock>();
@@ -127,8 +130,9 @@ export function mergeLeftRailBlocksForEditMode(
   }
 
   const merged: ObjectLeftRailBlock[] = [];
+  const slotOrder = resolveEditModeLeftRailBlockOrder(objectType);
 
-  for (const slot of EDIT_MODE_LEFT_RAIL_BLOCK_ORDER) {
+  for (const slot of slotOrder) {
     if (!isEditableKind(slot, supported)) {
       continue;
     }

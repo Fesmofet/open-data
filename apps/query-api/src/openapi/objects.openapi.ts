@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { resolveObjectBodySchema } from '../domain/objects/schemas/resolve-object.schema';
 import { resolveNestedObjectsBodySchema } from '../domain/objects/schemas/resolve-nested-objects.schema';
+import { objectOptionsResponseSchema } from '../domain/objects/schemas/object-options.schema';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import {
   paginatedUserFollowListOpenApiSchema,
@@ -232,6 +233,52 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: objectExistsResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+const objectOptionsOpenApiSchema = registry.register(
+  'ObjectOptionsResponse',
+  objectOptionsResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/options',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Aggregated product variant options by category',
+  description:
+    'Returns option rows grouped by category for the requested object and all active siblings sharing `meta_group_id`. Each entry includes the owning `object_id`, optional `image`, `price`, and `imageUrl` from that variant. When the object type does not support the `option` update, returns `{ options: {} }`. Returns 404 when the object does not exist.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Grouped variant options for the object (may be empty).',
+      content: {
+        'application/json': {
+          schema: objectOptionsOpenApiSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found or not active.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
         },
       },
     },

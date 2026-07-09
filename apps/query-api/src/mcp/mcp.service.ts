@@ -34,6 +34,7 @@ import {
   GetObjectRefListEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
+  GetObjectOptionsEndpoint,
 } from '../domain/objects';
 import { GetSearchCountsEndpoint } from '../domain/search/get-search-counts.endpoint';
 import { GetSearchEndpoint } from '../domain/search/get-search.endpoint';
@@ -91,6 +92,7 @@ export class McpService {
     private readonly getNestedObjects: GetNestedObjectsEndpoint,
     private readonly checkObjectExists: CheckObjectExistsEndpoint,
     private readonly getObjectRefList: GetObjectRefListEndpoint,
+    private readonly getObjectOptions: GetObjectOptionsEndpoint,
     private readonly getObjectRelatedAlbumPreview: GetObjectRelatedAlbumPreviewEndpoint,
     private readonly getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint,
     private readonly getObjectFollowers: GetObjectFollowersEndpoint,
@@ -150,6 +152,7 @@ export class McpService {
       getNestedObjects: this.getNestedObjects,
       checkObjectExists: this.checkObjectExists,
       getObjectRefList: this.getObjectRefList,
+      getObjectOptions: this.getObjectOptions,
       getObjectRelatedAlbumPreview: this.getObjectRelatedAlbumPreview,
       getObjectRelatedAlbum: this.getObjectRelatedAlbum,
       getObjectFollowers: this.getObjectFollowers,

@@ -31,6 +31,7 @@ import { ObjectTagsLeftRailSection } from './object-tags-left-rail-section';
 import { ObjectStatusLeftRailSection } from './object-status-left-rail-section';
 import { LeftRailTelephonesContent } from './left-rail-telephone-row';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
+import { ObjectOptionsSection } from './object-options-section';
 import { StarRating } from './star-rating';
 
 export type ObjectLeftRailEditContext = {
@@ -326,8 +327,12 @@ export function ObjectLeftRailPanel({
     if (!editContext) {
       return blocks.filter((b) => b.kind !== 'name' && b.kind !== 'title');
     }
-    return mergeLeftRailBlocksForEditMode(blocks, editContext.supportedUpdateTypes);
-  }, [blocks, editContext]);
+    return mergeLeftRailBlocksForEditMode(
+      blocks,
+      editContext.supportedUpdateTypes,
+      objectTypeKey,
+    );
+  }, [blocks, editContext, objectTypeKey]);
 
   const addLabel = t('object_edit_add_update');
 
@@ -613,6 +618,21 @@ export function ObjectLeftRailPanel({
                   </span>
                   <span className="font-weight-strong tabular-nums text-fg">{block.text}</span>
                 </div>
+              </div>
+            );
+          case 'options':
+            return (
+              <div key={`options-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  {...editToolbarProps('options', t('object_field_options'))}
+                />
+                {block.categories.length > 0 ? (
+                  <ObjectOptionsSection
+                    key={block.currentObjectId || objectId}
+                    currentObjectId={block.currentObjectId || objectId}
+                    categories={block.categories}
+                  />
+                ) : null}
               </div>
             );
           case 'workHours':

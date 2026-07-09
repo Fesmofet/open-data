@@ -3,7 +3,13 @@
  * (DNS, flaky CDN, or offline dev). Using `unoptimized` avoids throwing during
  * SSR/optimization; use `onError` on the Image for client-side fallbacks.
  */
-const HOSTS_SKIP_IMAGE_OPTIMIZATION = new Set(['img.3speakcontent.co']);
+const HOSTS_SKIP_IMAGE_OPTIMIZATION = new Set([
+  'img.3speakcontent.co',
+  // Next optimizer intermittently 500s on Amazon product CDN; load directly.
+  'm.media-amazon.com',
+  'images-na.ssl-images-amazon.com',
+  'images-eu.ssl-images-amazon.com',
+]);
 
 export function shouldUnoptimizeRemoteImage(src: string): boolean {
   if (!src || src.startsWith('/') || src.startsWith('data:')) {

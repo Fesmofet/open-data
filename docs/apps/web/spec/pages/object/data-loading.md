@@ -24,9 +24,11 @@ Server-side fetch and caching for `/object/[object-id]`. Used by `page.tsx`, `ge
 
 | Loader | File | Upstream |
 |--------|------|----------|
-| `loadObjectPageModel` | [`object-page-model.server.ts`](../../../../../apps/web/src/app/(app)/object/[object-id]/object-page-model.server.ts) | `fetchProjectedObjectWithCounts` → query-api object resolve |
+| `loadObjectPageModel` | [`object-page-model.server.ts`](../../../../../apps/web/src/app/(app)/object/[object-id]/object-page-model.server.ts) | `fetchProjectedObjectWithCounts` + `fetchObjectOptions` → query-api |
 
 Wrapped in **`react.cache()`** — shared by metadata and page body.
+
+`fetchObjectOptions` loads aggregated variant options (`GET /query/v1/objects/:id/options`) in parallel with resolve. Results map to the left-rail `options` block (Color/Size selectors) when non-empty; edit mode shows the `+` slot when the object type supports `option`.
 
 ### Resolve options
 
@@ -62,7 +64,8 @@ Loaded in `page.tsx` when tabs/sections need them:
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm nx test web --testPathPatterns=object-page-model` | Loader behavior |
+| `pnpm nx test web --testPathPatterns=projected-object-to-page-model` | Loader / page-model mapping |
+| `pnpm nx test web --testPathPatterns=object-options-section` | Options UI helpers |
 | Manual | View source — title from `model.seo`; hero counts match resolve |
 
 ## Related code paths
@@ -70,4 +73,6 @@ Loaded in `page.tsx` when tabs/sections need them:
 | Path | Role |
 |------|------|
 | `apps/web/src/modules/object/infrastructure/fetch-object-resolve.server.ts` | HTTP resolve |
+| `apps/web/src/modules/object/infrastructure/fetch-object-options.server.ts` | HTTP variant options |
+| `apps/web/src/modules/object/presentation/components/object-options-section.tsx` | Color/Size selector UI |
 | `apps/web/src/seo/application/build-object-metadata.ts` | Metadata from `model.seo` |

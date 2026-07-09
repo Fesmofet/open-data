@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
@@ -11,6 +11,8 @@ import type {
 
 @Injectable()
 export class ObjectsCoreRepository {
+  private readonly logger = new Logger(ObjectsCoreRepository.name);
+
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
   async findByObjectId(objectId: string) {
@@ -96,6 +98,7 @@ export class ObjectsCoreRepository {
   async findObjectIdsByMetaGroupId(
     metaGroupId: string,
     excludeObjectId?: string,
+    limit?: number,
   ): Promise<string[]> {
     const trimmed = metaGroupId.trim();
     if (!trimmed) {
@@ -106,14 +109,20 @@ export class ObjectsCoreRepository {
         .selectFrom('objects_core')
         .where('status', '=', 'active')
         .where('meta_group_id', '=', trimmed)
-        .select('object_id');
+        .select('object_id')
+        .orderBy(sql`weight desc nulls last`)
+        .orderBy('object_id', 'asc');
       if (excludeObjectId?.trim()) {
         q = q.where('object_id', '<>', excludeObjectId.trim());
       }
+      if (limit != null && limit > 0) {
+        q = q.limit(limit);
+      }
       const rows = await q.execute();
       return rows.map((r) => r.object_id);
-    } catch {
-      return [];
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
     }
   }
 

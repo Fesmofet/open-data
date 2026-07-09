@@ -60,6 +60,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     httpEquivalent: 'GET /query/v1/objects/:id/exists',
   },
   {
+    name: 'get_object_options',
+    description:
+      'Aggregated product variant options grouped by category (Color, Size, etc.) across meta_group_id siblings.',
+    httpEquivalent: 'GET /query/v1/objects/:id/options',
+    specPath: 'docs/apps/query-api/spec/object-options.md',
+  },
+  {
     name: 'get_object_related',
     description: 'Paginated related objects (IS_RELATED_TO).',
     httpEquivalent: 'GET /query/v1/objects/:id/related',

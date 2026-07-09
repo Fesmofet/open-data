@@ -7,6 +7,8 @@ export * from './object-expert-list.schema';
 export * from './object-expert-list.types';
 export * from './get-object-authority.endpoint';
 export * from './get-object-ref-list.endpoint';
+export * from './get-object-options.endpoint';
+export * from './schemas/object-options.schema';
 export * from './get-object-related-album.endpoint';
 export * from './schemas/related-album.schema';
 export * from './schemas/object-ref-list.schema';

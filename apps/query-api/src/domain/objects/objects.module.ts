@@ -15,6 +15,7 @@ import {
   ObjectRelatedAlbumQuerySupport,
 } from './get-object-related-album.endpoint';
 import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
+import { GetObjectOptionsEndpoint } from './get-object-options.endpoint';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
     GetObjectRelatedAlbumPreviewEndpoint,
     GetObjectRelatedAlbumEndpoint,
     CheckObjectExistsEndpoint,
+    GetObjectOptionsEndpoint,
   ],
   exports: [
     GetObjectByIdEndpoint,
@@ -46,6 +48,7 @@ import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
     GetObjectRelatedAlbumPreviewEndpoint,
     GetObjectRelatedAlbumEndpoint,
     CheckObjectExistsEndpoint,
+    GetObjectOptionsEndpoint,
   ],
 })
 export class ObjectsModule {}

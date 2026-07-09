@@ -33,6 +33,7 @@ import * as m00032 from './00032_waiv_generated_reports_merge_fold';
 import * as m00033 from './00033_object_updates_name_trgm';
 import * as m00034 from './00034_user_object_expertise';
 import * as m00035 from './00035_hive_engine_swap_pool_usd';
+import * as m00036 from './00036_objects_core_meta_group_id_index';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -78,4 +79,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00033_object_updates_name_trgm': { up: m00033.up, down: m00033.down },
   '00034_user_object_expertise': { up: m00034.up, down: m00034.down },
   '00035_hive_engine_swap_pool_usd': { up: m00035.up, down: m00035.down },
+  '00036_objects_core_meta_group_id_index': { up: m00036.up, down: m00036.down },
 };

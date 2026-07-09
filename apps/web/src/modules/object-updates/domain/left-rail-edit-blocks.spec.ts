@@ -14,6 +14,13 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     UPDATE_TYPES.WEBSITE,
   ];
 
+  const productSupported = [
+    ...supported,
+    UPDATE_TYPES.OPTION,
+    UPDATE_TYPES.PRICE,
+    UPDATE_TYPES.IMAGE_GALLERY_ITEM,
+  ];
+
   it('places button after menu and includes empty website slot', () => {
     const viewBlocks: ObjectLeftRailBlock[] = [
       {
@@ -51,5 +58,17 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     ];
     const merged = mergeLeftRailBlocksForEditMode(viewBlocks, supported);
     expect(merged.find((b) => b.kind === 'name')).toEqual(viewBlocks[0]);
+  });
+
+  it('places options before menu for product type', () => {
+    const merged = mergeLeftRailBlocksForEditMode([], productSupported, 'product');
+    const kinds = merged.map((b) => b.kind);
+    const optionsIdx = kinds.indexOf('options');
+    const menuIdx = kinds.indexOf('menuItems');
+    const galleryIdx = kinds.indexOf('gallery');
+
+    expect(galleryIdx).toBeGreaterThanOrEqual(0);
+    expect(optionsIdx).toBeGreaterThan(galleryIdx);
+    expect(menuIdx).toBeGreaterThan(optionsIdx);
   });
 });

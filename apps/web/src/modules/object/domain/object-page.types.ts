@@ -89,6 +89,17 @@ export type ObjectRefItem = {
   imageUrl: string | null;
 };
 
+/** One selectable variant value within an option category (Color, Size, …). */
+export type ObjectOptionValueView = {
+  objectId: string;
+  category: string;
+  value: string;
+  position: number;
+  image: string | null;
+  price: string | null;
+  imageUrl: string | null;
+};
+
 /** Ordered blocks for the left rail (legacy `ObjectInfo` stack). */
 export type ObjectLeftRailBlock =
   | {
@@ -149,6 +160,12 @@ export type ObjectLeftRailBlock =
       kind: 'price';
       headingLabel: string;
       text: string;
+    }
+  | {
+      kind: 'options';
+      headingLabel: string;
+      currentObjectId: string;
+      categories: { category: string; values: ObjectOptionValueView[] }[];
     }
   | {
       kind: 'workHours';

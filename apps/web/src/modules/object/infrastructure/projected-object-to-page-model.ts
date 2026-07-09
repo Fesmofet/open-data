@@ -6,7 +6,11 @@ import {
 import {
   ABOUT_SECTION_BLOCK_ORDER,
   HEADER_BLOCK_ORDER,
+  isOptionsObjectType,
   MENU_BLOCK_ID,
+  NAVIGATE_SECTION_BLOCK_ORDER,
+  optionsTypeAboutRemainderOrder,
+  type AboutSectionBlockId,
 } from '../domain/object-left-rail-order';
 import {
   applyDescriptionFallbackToDefaultLanding,
@@ -15,6 +19,7 @@ import {
 import type {
   ObjectFeedSubTabView,
   ObjectLeftRailBlock,
+  ObjectOptionValueView,
   ObjectPageSeoView,
   ObjectPageViewModel,
   ObjectPrimaryTabView,
@@ -23,6 +28,7 @@ import type {
 import { OBJECT_LEFT_RAIL_BLOCK_LABEL } from '../domain/object-update-labels';
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
+import type { ObjectOptionsApiResponse } from './fetch-object-options.server';
 import {
   applySortCustomToListItems,
   projectedAddressDisplayLine,
@@ -175,27 +181,27 @@ function workHoursLines(raw: string): string[] {
   return split.length > 0 ? split : [raw.trim()];
 }
 
-function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock[] {
-  const blocks: ObjectLeftRailBlock[] = [];
+function mapOptionsApiToCategories(
+  options: ObjectOptionsApiResponse['options'],
+): { category: string; values: ObjectOptionValueView[] }[] {
+  return Object.entries(options).map(([category, entries]) => ({
+    category,
+    values: entries.map((entry) => ({
+      objectId: entry.object_id,
+      category: entry.category,
+      value: entry.value,
+      position: entry.position,
+      image: entry.image,
+      price: entry.price,
+      imageUrl: entry.imageUrl,
+    })),
+  }));
+}
 
-  const menuOrdered = resolveMenuItemsForView(viewLike);
-  if (menuOrdered.length > 0) {
-    blocks.push({
-      kind: MENU_BLOCK_ID,
-      headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.menuItems,
-      items: menuOrdered,
-    });
-  }
-
-  const buttonItems = projectedButtonItems(viewLike);
-  if (buttonItems.length > 0) {
-    blocks.push({
-      kind: 'button',
-      headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.button,
-      items: buttonItems,
-    });
-  }
-
+function appendHeaderBlocks(
+  blocks: ObjectLeftRailBlock[],
+  viewLike: ProjectedObjectView,
+): void {
   for (const step of HEADER_BLOCK_ORDER) {
     if (step === 'name') {
       const text = objectFields.name(viewLike)?.trim();
@@ -219,260 +225,333 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
       }
     }
   }
+}
 
-  for (const step of ABOUT_SECTION_BLOCK_ORDER) {
-    switch (step) {
-      case 'image':
-      case 'imageBackground':
-      case 'status':
-      case 'compareAtPrice':
-      case 'saleEvent':
-      case 'size':
-      case 'featureList':
-      case 'category':
-      case 'calories':
-      case 'cookTime':
-      case 'ingredients':
-      case 'nutrition':
-      case 'datePublished':
-      case 'inLanguage':
-      case 'typicalAgeRange':
-        // Edit-mode only — shown via mergeLeftRailBlocksForEditMode, skip in view mode.
-        break;
-      case 'brand': {
-        const items = projectedObjectRefItems(viewLike, 'brand');
-        if (items.length > 0) {
-          blocks.push({ kind: 'brand', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.brand, items });
-        }
-        break;
+function appendMenuClusterBlocks(
+  blocks: ObjectLeftRailBlock[],
+  viewLike: ProjectedObjectView,
+): void {
+  const menuOrdered = resolveMenuItemsForView(viewLike);
+  if (menuOrdered.length > 0) {
+    blocks.push({
+      kind: MENU_BLOCK_ID,
+      headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.menuItems,
+      items: menuOrdered,
+    });
+  }
+
+  const buttonItems = projectedButtonItems(viewLike);
+  if (buttonItems.length > 0) {
+    blocks.push({
+      kind: 'button',
+      headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.button,
+      items: buttonItems,
+    });
+  }
+}
+
+function appendAboutSectionBlock(
+  blocks: ObjectLeftRailBlock[],
+  step: AboutSectionBlockId,
+  viewLike: ProjectedObjectView,
+  optionsApi?: ObjectOptionsApiResponse | null,
+): void {
+  switch (step) {
+    case 'image':
+    case 'imageBackground':
+    case 'status':
+    case 'compareAtPrice':
+    case 'saleEvent':
+    case 'size':
+    case 'featureList':
+    case 'category':
+    case 'calories':
+    case 'cookTime':
+    case 'ingredients':
+    case 'nutrition':
+    case 'datePublished':
+    case 'inLanguage':
+    case 'typicalAgeRange':
+      // Edit-mode only — shown via mergeLeftRailBlocksForEditMode, skip in view mode.
+      break;
+    case 'brand': {
+      const items = projectedObjectRefItems(viewLike, 'brand');
+      if (items.length > 0) {
+        blocks.push({ kind: 'brand', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.brand, items });
       }
-      case 'manufacturer': {
-        const items = projectedObjectRefItems(viewLike, 'manufacturer');
-        if (items.length > 0) {
-          blocks.push({ kind: 'manufacturer', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.manufacturer, items });
-        }
-        break;
+      break;
+    }
+    case 'manufacturer': {
+      const items = projectedObjectRefItems(viewLike, 'manufacturer');
+      if (items.length > 0) {
+        blocks.push({ kind: 'manufacturer', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.manufacturer, items });
       }
-      case 'merchant': {
-        const items = projectedObjectRefItems(viewLike, 'merchant');
-        if (items.length > 0) {
-          blocks.push({ kind: 'merchant', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.merchant, items });
-        }
-        break;
+      break;
+    }
+    case 'merchant': {
+      const items = projectedObjectRefItems(viewLike, 'merchant');
+      if (items.length > 0) {
+        blocks.push({ kind: 'merchant', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.merchant, items });
       }
-      case 'author': {
-        const items = projectedObjectRefItems(viewLike, 'author');
-        if (items.length > 0) {
-          blocks.push({ kind: 'author', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.author, items });
-        }
-        break;
+      break;
+    }
+    case 'author': {
+      const items = projectedObjectRefItems(viewLike, 'author');
+      if (items.length > 0) {
+        blocks.push({ kind: 'author', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.author, items });
       }
-      case 'publisher': {
-        const items = projectedObjectRefItems(viewLike, 'publisher');
-        if (items.length > 0) {
-          blocks.push({ kind: 'publisher', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.publisher, items });
-        }
-        break;
+      break;
+    }
+    case 'publisher': {
+      const items = projectedObjectRefItems(viewLike, 'publisher');
+      if (items.length > 0) {
+        blocks.push({ kind: 'publisher', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.publisher, items });
       }
-      case 'parent': {
-        const row = projectedParentRow(viewLike);
-        if (row) {
-          blocks.push({
-            kind: 'parent',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.parent,
-            objectId: row.objectId,
-            name: row.name,
-            imageUrl: row.imageUrl,
-          });
-        }
-        break;
-      }
-      case 'description': {
-        const text = objectFields.description(viewLike)?.trim();
-        if (text && text.length > 0) {
-          blocks.push({
-            kind: 'description',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.description,
-            text,
-          });
-        }
-        break;
-      }
-      case 'rating': {
-        const aspects = objectFields
-          .aggregateRatingAspects(viewLike)
-          .filter(
-            (a): a is typeof a & { update_id: string } =>
-              typeof a.update_id === 'string' && a.update_id.length > 0,
-          )
-          .map((a) => ({
-            update_id: a.update_id,
-            dimension: a.dimension,
-            averageRating01To5:
-              a.averageRating != null && Number.isFinite(a.averageRating)
-                ? Math.min(5, Math.max(0, a.averageRating / 2000))
-                : null,
-            totalVoters: a.totalVoters,
-            viewerRating01To5:
-              a.userRating != null && Number.isFinite(a.userRating)
-                ? Math.min(5, Math.max(0, a.userRating / 2000))
-                : null,
-          }));
-        if (aspects.length === 0) {
-          break;
-        }
+      break;
+    }
+    case 'parent': {
+      const row = projectedParentRow(viewLike);
+      if (row) {
         blocks.push({
-          kind: 'rating',
-          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.rating,
-          aspects,
+          kind: 'parent',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.parent,
+          objectId: row.objectId,
+          name: row.name,
+          imageUrl: row.imageUrl,
         });
+      }
+      break;
+    }
+    case 'description': {
+      const text = objectFields.description(viewLike)?.trim();
+      if (text && text.length > 0) {
+        blocks.push({
+          kind: 'description',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.description,
+          text,
+        });
+      }
+      break;
+    }
+    case 'rating': {
+      const aspects = objectFields
+        .aggregateRatingAspects(viewLike)
+        .filter(
+          (a): a is typeof a & { update_id: string } =>
+            typeof a.update_id === 'string' && a.update_id.length > 0,
+        )
+        .map((a) => ({
+          update_id: a.update_id,
+          dimension: a.dimension,
+          averageRating01To5:
+            a.averageRating != null && Number.isFinite(a.averageRating)
+              ? Math.min(5, Math.max(0, a.averageRating / 2000))
+              : null,
+          totalVoters: a.totalVoters,
+          viewerRating01To5:
+            a.userRating != null && Number.isFinite(a.userRating)
+              ? Math.min(5, Math.max(0, a.userRating / 2000))
+              : null,
+        }));
+      if (aspects.length === 0) {
         break;
       }
-      case 'tags': {
-        const sections = projectedTagCategorySections(viewLike);
-        if (sections.length > 0) {
-          blocks.push({
-            kind: 'tags',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.tags,
-            sections,
-          });
-        }
-        break;
+      blocks.push({
+        kind: 'rating',
+        headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.rating,
+        aspects,
+      });
+      break;
+    }
+    case 'tags': {
+      const sections = projectedTagCategorySections(viewLike);
+      if (sections.length > 0) {
+        blocks.push({
+          kind: 'tags',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.tags,
+          sections,
+        });
       }
-      case 'gallery': {
-        const photos = projectedLeftRailPreviewGallery(viewLike);
-        if (photos.length > 0) {
-          blocks.push({
-            kind: 'gallery',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.gallery,
-            photos,
-          });
-        }
-        break;
+      break;
+    }
+    case 'gallery': {
+      const photos = projectedLeftRailPreviewGallery(viewLike);
+      if (photos.length > 0) {
+        blocks.push({
+          kind: 'gallery',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.gallery,
+          photos,
+        });
       }
-      case 'price': {
-        const price = projectedPrice(viewLike);
-        if (price) {
-          blocks.push({
-            kind: 'price',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.price,
-            text: price,
-          });
-        }
-        break;
+      break;
+    }
+    case 'price': {
+      const price = projectedPrice(viewLike);
+      if (price) {
+        blocks.push({
+          kind: 'price',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.price,
+          text: price,
+        });
       }
-      case 'workHours': {
-        const hours = projectedWorkHours(viewLike);
-        if (hours) {
-          blocks.push({
-            kind: 'workHours',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.workHours,
-            lines: workHoursLines(hours),
-          });
-        }
-        break;
+      break;
+    }
+    case 'options': {
+      const categories = optionsApi ? mapOptionsApiToCategories(optionsApi.options) : [];
+      if (categories.length > 0) {
+        blocks.push({
+          kind: 'options',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.options,
+          currentObjectId: viewLike.object_id,
+          categories,
+        });
       }
-      case 'address': {
-        const line = projectedAddressDisplayLine(viewLike);
-        if (line) {
-          blocks.push({
-            kind: 'address',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.address,
-            text: line,
-          });
-        }
-        break;
+      break;
+    }
+    case 'workHours': {
+      const hours = projectedWorkHours(viewLike);
+      if (hours) {
+        blocks.push({
+          kind: 'workHours',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.workHours,
+          lines: workHoursLines(hours),
+        });
       }
-      case 'geo': {
-        const coords = projectedGeoLatLon(viewLike);
-        if (coords) {
-          blocks.push({
-            kind: 'geo',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.geo,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          });
-        }
-        break;
+      break;
+    }
+    case 'address': {
+      const line = projectedAddressDisplayLine(viewLike);
+      if (line) {
+        blocks.push({
+          kind: 'address',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.address,
+          text: line,
+        });
       }
-      case 'websites': {
-        const entries = projectedWebsiteEntries(viewLike);
-        if (entries.length > 0) {
-          blocks.push({
-            kind: 'websites',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.websites,
-            entries,
-          });
-        }
-        break;
+      break;
+    }
+    case 'geo': {
+      const coords = projectedGeoLatLon(viewLike);
+      if (coords) {
+        blocks.push({
+          kind: 'geo',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.geo,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
       }
-      case 'link': {
-        const social = projectedObjectLinkRows(viewLike);
-        if (social.length > 0) {
-          blocks.push({
-            kind: 'link',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.link,
-            items: social,
-          });
-        }
-        break;
+      break;
+    }
+    case 'websites': {
+      const entries = projectedWebsiteEntries(viewLike);
+      if (entries.length > 0) {
+        blocks.push({
+          kind: 'websites',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.websites,
+          entries,
+        });
       }
-      case 'phones': {
-        const entries = projectedTelephoneEntries(viewLike);
-        if (entries.length > 0) {
-          blocks.push({
-            kind: 'phones',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.phones,
-            entries,
-          });
-        }
-        break;
+      break;
+    }
+    case 'link': {
+      const social = projectedObjectLinkRows(viewLike);
+      if (social.length > 0) {
+        blocks.push({
+          kind: 'link',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.link,
+          items: social,
+        });
       }
-      case 'email': {
-        const addr = projectedEmail(viewLike);
-        if (addr) {
-          blocks.push({
-            kind: 'email',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.email,
-            address: addr,
-          });
-        }
-        break;
+      break;
+    }
+    case 'phones': {
+      const entries = projectedTelephoneEntries(viewLike);
+      if (entries.length > 0) {
+        blocks.push({
+          kind: 'phones',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.phones,
+          entries,
+        });
       }
-      case 'walletAddress': {
-        const wallets = projectedWalletAddressRows(viewLike);
-        if (wallets.length > 0) {
-          blocks.push({
-            kind: 'walletAddress',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.walletAddress,
-            items: wallets,
-          });
-        }
-        break;
+      break;
+    }
+    case 'email': {
+      const addr = projectedEmail(viewLike);
+      if (addr) {
+        blocks.push({
+          kind: 'email',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.email,
+          address: addr,
+        });
       }
-      case 'identifier': {
-        const identifiers = projectedIdentifierRows(viewLike);
-        if (identifiers.length > 0) {
-          blocks.push({
-            kind: 'identifier',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.identifier,
-            rows: identifiers,
-          });
-        }
-        break;
+      break;
+    }
+    case 'walletAddress': {
+      const wallets = projectedWalletAddressRows(viewLike);
+      if (wallets.length > 0) {
+        blocks.push({
+          kind: 'walletAddress',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.walletAddress,
+          items: wallets,
+        });
       }
-      default: {
-        const _exhaustive: never = step;
-        return _exhaustive;
+      break;
+    }
+    case 'identifier': {
+      const identifiers = projectedIdentifierRows(viewLike);
+      if (identifiers.length > 0) {
+        blocks.push({
+          kind: 'identifier',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.identifier,
+          rows: identifiers,
+        });
       }
+      break;
+    }
+    default: {
+      const _exhaustive: never = step;
+      return _exhaustive;
     }
   }
+}
+
+function appendAboutSectionBlocks(
+  blocks: ObjectLeftRailBlock[],
+  steps: readonly AboutSectionBlockId[],
+  viewLike: ProjectedObjectView,
+  optionsApi?: ObjectOptionsApiResponse | null,
+): void {
+  for (const step of steps) {
+    appendAboutSectionBlock(blocks, step, viewLike, optionsApi);
+  }
+}
+
+function buildLeftRailBlocks(
+  viewLike: ProjectedObjectView,
+  optionsApi?: ObjectOptionsApiResponse | null,
+): ObjectLeftRailBlock[] {
+  const blocks: ObjectLeftRailBlock[] = [];
+  const isOptionsType = isOptionsObjectType(viewLike.object_type ?? '');
+
+  if (isOptionsType) {
+    appendHeaderBlocks(blocks, viewLike);
+    appendAboutSectionBlocks(blocks, ['parent', 'publisher'], viewLike, optionsApi);
+    appendAboutSectionBlocks(blocks, NAVIGATE_SECTION_BLOCK_ORDER, viewLike, optionsApi);
+    appendMenuClusterBlocks(blocks, viewLike);
+    appendAboutSectionBlocks(blocks, optionsTypeAboutRemainderOrder(), viewLike, optionsApi);
+    return blocks;
+  }
+
+  appendMenuClusterBlocks(blocks, viewLike);
+  appendHeaderBlocks(blocks, viewLike);
+  appendAboutSectionBlocks(blocks, ABOUT_SECTION_BLOCK_ORDER, viewLike, optionsApi);
 
   return blocks;
 }
 
 export function projectedObjectWithCountsToPageModel(
   api: ProjectedObjectWithCountsView,
+  optionsApi?: ObjectOptionsApiResponse | null,
 ): ObjectPageViewModel {
   const fields = api.fields ?? {};
 
@@ -511,7 +590,7 @@ export function projectedObjectWithCountsToPageModel(
   const tagline =
     tagLabels.length > 0 ? tagLabels.slice(-2).join(' · ') : null;
 
-  const leftRailBlocks = buildLeftRailBlocks(viewLike);
+  const leftRailBlocks = buildLeftRailBlocks(viewLike, optionsApi);
   const tagCategoryNames = projectedTagCategoryNames(viewLike);
   const onChainGalleryAlbumNames = projectedGalleryAlbumNames(viewLike);
   const sortCustom = projectedSortCustom(viewLike);

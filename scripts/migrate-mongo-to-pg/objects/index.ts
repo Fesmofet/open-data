@@ -10,7 +10,9 @@
  *
  * Re-runs: inserts use ON CONFLICT DO NOTHING for child tables; objects_core
  * updates `created_at` when the export includes `createdAt` (COALESCE keeps
- * existing value when the row omits `created_at`).
+ * existing value when the row omits `created_at`), and `meta_group_id` /
+ * `weight` when the dump provides a non-null value (dump wins; never wipe
+ * an existing value with null).
  */
 
 import * as fs from 'fs';
@@ -298,6 +300,9 @@ class MongoToPgMigrator {
       .onConflict((oc) =>
         oc.column('object_id').doUpdateSet((eb) => ({
           created_at: sql`CASE WHEN ${eb.ref('excluded.created_at')} IS NOT NULL THEN ${eb.ref('excluded.created_at')} ELSE ${eb.ref('objects_core.created_at')} END`,
+          // Dump is source of truth for product groups; keep existing when dump omits.
+          meta_group_id: sql`COALESCE(${eb.ref('excluded.meta_group_id')}, ${eb.ref('objects_core.meta_group_id')})`,
+          weight: sql`COALESCE(${eb.ref('excluded.weight')}, ${eb.ref('objects_core.weight')})`,
         })),
       )
       .execute();

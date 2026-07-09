@@ -80,6 +80,31 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
     },
   );
 
+  server.registerTool(
+    'get_object_options',
+    {
+      description: catalogDescription('get_object_options'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          object_id: z.string().min(1).describe('Object id to load variant options for'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const result = await deps.getObjectOptions.execute(
+        args.object_id,
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${args.object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
   const refListSchema = withMcpLocaleContext(
     objectRefListQuerySchema.extend({
       object_id: z.string().min(1).describe('Source object id'),

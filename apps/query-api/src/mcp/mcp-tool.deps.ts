@@ -26,6 +26,7 @@ import type {
   GetObjectRefListEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
+  GetObjectOptionsEndpoint,
   GetNestedObjectsEndpoint,
 } from '../domain/objects';
 import type { GetSearchCountsEndpoint } from '../domain/search/get-search-counts.endpoint';
@@ -77,6 +78,7 @@ export interface McpToolDeps {
   getNestedObjects: GetNestedObjectsEndpoint;
   checkObjectExists: CheckObjectExistsEndpoint;
   getObjectRefList: GetObjectRefListEndpoint;
+  getObjectOptions: GetObjectOptionsEndpoint;
   getObjectRelatedAlbumPreview: GetObjectRelatedAlbumPreviewEndpoint;
   getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint;
   getObjectFollowers: GetObjectFollowersEndpoint;

@@ -39,7 +39,7 @@ Single App Router entry: [`page.tsx`](../../../../../apps/web/src/app/(app)/obje
 | Region | Component | Notes |
 |--------|-----------|--------|
 | Hero | `ObjectHero` | Follow/bell — [object-follow.md](../../object-follow.md); edit toggle |
-| Left rail | `ObjectLeftRail` | Menu blocks, edit `+` — [routes/edit-mode.md](routes/edit-mode.md) |
+| Left rail | `ObjectLeftRail` | Menu blocks, product **options** (variant selectors) — [routes/options.md](routes/options.md), edit `+` — [routes/edit-mode.md](routes/edit-mode.md) |
 | Center | `ObjectPrimaryContent` | Tab content, nested stack, description |
 | Right rail | `ObjectRightSidebar` / `ObjectEditRightRail` | [routes/right-rail.md](routes/right-rail.md) |
 

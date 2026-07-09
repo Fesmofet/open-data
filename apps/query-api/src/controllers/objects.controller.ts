@@ -18,6 +18,7 @@ import {
   GetObjectRefListEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
+  GetObjectOptionsEndpoint,
   relatedAlbumListQuerySchema,
   relatedAlbumPreviewQuerySchema,
   objectRefListQuerySchema,
@@ -33,6 +34,7 @@ import {
   type ResolveNestedObjectsResponse,
   type ObjectRefListQuery,
   type ObjectRefListResponseDto,
+  type ObjectOptionsResponseDto,
   objectExpertListQuerySchema,
   type PaginatedObjectExpertList,
   type ObjectExpertListQuery,
@@ -81,6 +83,7 @@ export class ObjectsController {
     private readonly checkObjectExists: CheckObjectExistsEndpoint,
     private readonly getObjectPostsFeed: GetObjectPostsFeedEndpoint,
     private readonly getObjectThreadsFeed: GetObjectThreadsFeedEndpoint,
+    private readonly getObjectOptions: GetObjectOptionsEndpoint,
   ) {}
 
   @Get(':objectId/exists')
@@ -126,6 +129,26 @@ export class ObjectsController {
       query,
       locale,
       governanceObjectIdFromHeader,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/options')
+  async getObjectOptionsList(
+    @Param('objectId') objectId: string,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectOptionsResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectOptions.execute(
+      decodedId,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
     );
     if (!result) {
       throw new NotFoundException(`Object not found: ${decodedId}`);
