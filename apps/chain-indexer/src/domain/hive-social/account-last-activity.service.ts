@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { HiveTransaction } from '@opden-data-layer/clients';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { collectActiveAccountNamesFromBlock } from './account-last-activity.util';
 
@@ -13,7 +14,7 @@ export class AccountLastActivityService {
    * appeared in the block (legacy `updateLastActivity`).
    */
   async touchFromBlock(
-    transactions: Array<{ operations?: Array<[string, Record<string, unknown>]> }>,
+    transactions: ReadonlyArray<Pick<HiveTransaction, 'operations'>>,
     blockTimestamp: string,
   ): Promise<void> {
     const names = collectActiveAccountNamesFromBlock(transactions);

@@ -1,3 +1,5 @@
+import type { HiveTransaction } from '@opden-data-layer/clients';
+
 /**
  * Maps Hive operation types to the account name that should receive a
  * `last_activity` touch (legacy `userFieldMappings` in chain-indexer-legacy).
@@ -83,14 +85,19 @@ export function accountNameFromHiveOperation(
 }
 
 export function collectActiveAccountNamesFromBlock(
-  transactions: Array<{ operations?: Array<[string, Record<string, unknown>]> }>,
+  transactions: ReadonlyArray<Pick<HiveTransaction, 'operations'>>,
 ): string[] {
   const names = new Set<string>();
   for (const transaction of transactions) {
     const operations = transaction.operations;
     if (!operations?.length) continue;
-    for (const [type, payload] of operations) {
-      const name = accountNameFromHiveOperation(type, payload);
+    for (const operation of operations) {
+      const type = operation[0];
+      const payload = operation[1];
+      const name = accountNameFromHiveOperation(
+        type,
+        payload as Record<string, unknown>,
+      );
       if (name) {
         names.add(name);
       }

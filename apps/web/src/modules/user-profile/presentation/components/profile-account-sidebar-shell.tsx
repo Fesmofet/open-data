@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 'use client';
 
 import { useHydrateWalletProvider } from '@/modules/auth';
