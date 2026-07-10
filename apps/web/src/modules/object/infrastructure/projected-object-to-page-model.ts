@@ -34,6 +34,7 @@ import {
   projectedAddressDisplayLine,
   projectedButtonItems,
   projectedEmail,
+  projectedFeatureListItems,
   projectedGalleryAlbums,
   projectedPreviewGallery,
   projectedLeftRailPreviewGallery,
@@ -265,7 +266,6 @@ function appendAboutSectionBlock(
     case 'status':
     case 'compareAtPrice':
     case 'saleEvent':
-    case 'featureList':
     case 'calories':
     case 'cookTime':
     case 'ingredients':
@@ -304,6 +304,17 @@ function appendAboutSectionBlock(
       const items = projectedObjectRefItems(viewLike, 'merchant');
       if (items.length > 0) {
         blocks.push({ kind: 'merchant', headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.merchant, items });
+      }
+      break;
+    }
+    case 'featureList': {
+      const items = projectedFeatureListItems(viewLike);
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'featureList',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.featureList,
+          items,
+        });
       }
       break;
     }

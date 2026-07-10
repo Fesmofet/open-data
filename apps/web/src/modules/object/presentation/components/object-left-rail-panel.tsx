@@ -28,6 +28,7 @@ import { formatProductSizeDisplay, formatProductWeightDisplay } from '../../infr
 import { LeftRailDimensionsIcon } from './left-rail-dimensions-icon';
 import { LeftRailWeightScaleIcon } from './left-rail-weight-scale-icon';
 import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
+import { ObjectFeatureListLeftRailSection } from './object-feature-list-left-rail-section';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
@@ -267,38 +268,56 @@ function LeftRailIdentifierSection({
   );
 }
 
+function LeftRailObjectRefLink({
+  objectId,
+  name,
+  imageUrl,
+}: {
+  objectId: string;
+  name: string;
+  imageUrl: string | null;
+}) {
+  return (
+    <Link
+      href={`/object/${encodeURIComponent(objectId)}`}
+      prefetch={false}
+      suppressHydrationWarning
+      className="-mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
+      <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="40px"
+            unoptimized={shouldUnoptimizeRemoteImage(imageUrl)}
+          />
+        ) : (
+          <div
+            className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
+            aria-hidden
+          >
+            —
+          </div>
+        )}
+      </div>
+      <span className="min-w-0 break-words text-accent">{name}</span>
+    </Link>
+  );
+}
+
 function ObjectRefItemsList({ items }: { items: ObjectRefItem[] }) {
   return (
     <ul className="list-none space-y-1 p-0">
       {items.map((item) => (
         <li key={item.objectId}>
-          <Link
-            href={`/object/${encodeURIComponent(item.objectId)}`}
-            prefetch={false}
-            suppressHydrationWarning
-            className="-mx-1 -my-0.5 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            <div className="relative size-8 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
-              {item.imageUrl ? (
-                <Image
-                  src={item.imageUrl}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="32px"
-                  unoptimized={shouldUnoptimizeRemoteImage(item.imageUrl)}
-                />
-              ) : (
-                <div
-                  className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
-                  aria-hidden
-                >
-                  —
-                </div>
-              )}
-            </div>
-            <span className="min-w-0 break-words text-accent">{item.name}</span>
-          </Link>
+          <LeftRailObjectRefLink
+            objectId={item.objectId}
+            name={item.name}
+            imageUrl={item.imageUrl}
+          />
         </li>
       ))}
     </ul>
@@ -459,33 +478,11 @@ export function ObjectLeftRailPanel({
               <div key={`parent-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('parent', block.headingLabel)} />
                 {block.objectId.trim() ? (
-                  <Link
-                    href={`/object/${encodeURIComponent(block.objectId)}`}
-                    prefetch={false}
-                    suppressHydrationWarning
-                    className="-mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                  >
-                    <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
-                      {block.imageUrl ? (
-                        <Image
-                          src={block.imageUrl}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="40px"
-                          unoptimized={shouldUnoptimizeRemoteImage(block.imageUrl)}
-                        />
-                      ) : (
-                        <div
-                          className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
-                          aria-hidden
-                        >
-                          —
-                        </div>
-                      )}
-                    </div>
-                    <span className="min-w-0 break-words text-accent">{block.name}</span>
-                  </Link>
+                  <LeftRailObjectRefLink
+                    objectId={block.objectId}
+                    name={block.name}
+                    imageUrl={block.imageUrl}
+                  />
                 ) : null}
               </div>
             );
@@ -846,6 +843,20 @@ export function ObjectLeftRailPanel({
                 ) : null}
               </div>
             );
+          case 'featureList':
+            return (
+              <div key={`featureList-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectFeatureListLeftRailSection
+                  headingLabel={block.headingLabel}
+                  items={block.items}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps('featureList', block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
           case 'status':
             return (
               <div key={`status-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
@@ -863,7 +874,6 @@ export function ObjectLeftRailPanel({
             );
           case 'compareAtPrice':
           case 'saleEvent':
-          case 'featureList':
           case 'calories':
           case 'cookTime':
           case 'ingredients':

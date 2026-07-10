@@ -266,4 +266,91 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
       expect(sizeBlock.unit).toBe('μm');
     }
   });
+
+  it('places merchant, brand, and manufacturer after size on product pages', () => {
+    const ref = (id: string, name: string) => ({
+      object_id: id,
+      object_type: 'business',
+      fields: { name, image: `https://cdn.example/${id}.jpg` },
+      weight: 1,
+    });
+
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        size: { length: 11, width: 20, depth: 3, unit: 'μm' },
+        merchant: ref('merchant-1', 'Acme Store'),
+        brand: ref('brand-1', 'Acme Brand'),
+        manufacturer: ref('mfg-1', 'Acme Mfg'),
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const sizeIdx = kinds.indexOf('size');
+    const merchantIdx = kinds.indexOf('merchant');
+    const brandIdx = kinds.indexOf('brand');
+    const manufacturerIdx = kinds.indexOf('manufacturer');
+
+    expect(sizeIdx).toBeGreaterThanOrEqual(0);
+    expect(merchantIdx).toBe(sizeIdx + 1);
+    expect(brandIdx).toBe(merchantIdx + 1);
+    expect(manufacturerIdx).toBe(brandIdx + 1);
+
+    const merchantBlock = model.leftRailBlocks[merchantIdx];
+    expect(merchantBlock?.kind).toBe('merchant');
+    if (merchantBlock?.kind === 'merchant') {
+      expect(merchantBlock.items[0]?.objectId).toBe('merchant-1');
+      expect(merchantBlock.items[0]?.name).toBe('Acme Store');
+    }
+  });
+
+  it('places featureList after manufacturer on product pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        manufacturer: {
+          object_id: 'mfg-1',
+          object_type: 'business',
+          fields: { name: 'Acme Mfg' },
+          weight: 1,
+        },
+        featureList: [
+          { key: 'key1', value: 'value1' },
+          { key: 'key2', value: 'value2' },
+        ],
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const manufacturerIdx = kinds.indexOf('manufacturer');
+    const featureIdx = kinds.indexOf('featureList');
+
+    expect(manufacturerIdx).toBeGreaterThanOrEqual(0);
+    expect(featureIdx).toBe(manufacturerIdx + 1);
+
+    const featureBlock = model.leftRailBlocks[featureIdx];
+    expect(featureBlock?.kind).toBe('featureList');
+    if (featureBlock?.kind === 'featureList') {
+      expect(featureBlock.items).toEqual([
+        { key: 'key1', value: 'value1' },
+        { key: 'key2', value: 'value2' },
+      ]);
+    }
+  });
 });

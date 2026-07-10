@@ -89,6 +89,11 @@ export type ObjectRefItem = {
   imageUrl: string | null;
 };
 
+export type FeatureListItem = {
+  key: string;
+  value: string;
+};
+
 /** One selectable variant value within an option category (Color, Size, …). */
 export type ObjectOptionValueView = {
   objectId: string;
@@ -256,7 +261,11 @@ export type ObjectLeftRailBlock =
       headingLabel: string;
       items: ObjectRefItem[];
     }
-  | { kind: 'featureList'; headingLabel: string }
+  | {
+      kind: 'featureList';
+      headingLabel: string;
+      items: FeatureListItem[];
+    }
   | { kind: 'category'; headingLabel: string; names: string[] }
   | { kind: 'calories'; headingLabel: string }
   | { kind: 'cookTime'; headingLabel: string }

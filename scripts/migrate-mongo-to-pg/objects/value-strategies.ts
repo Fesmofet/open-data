@@ -250,16 +250,26 @@ export const addressStrategy: JsonValueStrategy = {
 };
 
 /**
- * Legacy Waivio `{ name, author_permlink }` JSON in `field.body` — ODL `object_ref`
- * stores only `author_permlink` as `value_text` (no `name`).
+ * Legacy Waivio `{ name?, authorPermlink }` (or `author_permlink`) JSON in `field.body` —
+ * ODL `object_ref` stores only the permlink as `value_text` (no `name`).
  */
 const LEGACY_NAME_AUTHOR_PERMLINK_OBJECT_REF_TYPES = new Set([
-  'authors',
+  'author',
   'brand',
   'manufacturer',
   'merchant',
   'publisher',
 ]);
+
+function readLegacyObjectRefPermlink(o: Record<string, unknown>): string {
+  return (
+    trimStr(o.author_permlink) ||
+    trimStr(o.authorPermlink) ||
+    trimStr(o.object_id) ||
+    trimStr(o.objectId) ||
+    ''
+  );
+}
 
 function legacyJsonBodyToAuthorPermlinkObject(
   rawBody: string,
@@ -288,7 +298,7 @@ function legacyJsonBodyToAuthorPermlinkObject(
 
 /**
  * Maps legacy Mongo `field.body` to a single object_id string for `value_text`.
- * For known legacy JSON shapes, only `author_permlink` is kept (not `name`).
+ * For known legacy JSON shapes, only the referenced permlink is kept (not `name`).
  */
 export function migrateObjectRefBodyToText(
   rawBody: string,
@@ -302,16 +312,26 @@ export function migrateObjectRefBodyToText(
         reason: `${updateType}: body is not a JSON object (or empty array)`,
       };
     }
-    const objectId = trimStr(o.author_permlink);
+    const objectId = readLegacyObjectRefPermlink(o);
     if (!objectId.length) {
-      return { ok: false, reason: `${updateType}: missing or empty author_permlink` };
+      return {
+        ok: false,
+        reason: `${updateType}: missing or empty authorPermlink / author_permlink`,
+      };
     }
     if (objectId.length < 3) {
-      return { ok: false, reason: `${updateType}: author_permlink too short` };
+      return { ok: false, reason: `${updateType}: object ref permlink too short` };
     }
     return { ok: true, value: objectId };
   }
   const trimmed = rawBody?.trim() ?? '';
+  const parsedObject = legacyJsonBodyToAuthorPermlinkObject(rawBody);
+  if (parsedObject !== null) {
+    const objectId = readLegacyObjectRefPermlink(parsedObject);
+    if (objectId.length >= 3) {
+      return { ok: true, value: objectId };
+    }
+  }
   if (trimmed.length < 3) {
     return { ok: false, reason: 'object_ref: empty or too short body' };
   }

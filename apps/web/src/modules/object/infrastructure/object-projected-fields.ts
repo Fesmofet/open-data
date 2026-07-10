@@ -913,6 +913,47 @@ export function projectedButtonItems(o: ProjectedObjectView): ProjectedButtonIte
   return out;
 }
 
+export type ProjectedFeatureListItem = {
+  key: string;
+  value: string;
+};
+
+function readFeatureListKey(row: Record<string, unknown>): string | undefined {
+  return (
+    readString(row.key) ??
+    readString(row.name) ??
+    readString(row.feature_name) ??
+    readString(row.featureName)
+  );
+}
+
+function readFeatureListValue(row: Record<string, unknown>): string | undefined {
+  return (
+    readString(row.value) ??
+    readString(row.body) ??
+    readString(row.feature_value) ??
+    readString(row.featureValue)
+  );
+}
+
+/** Feature rows from projected `featureList` (`{ key, value }[]`). */
+export function projectedFeatureListItems(o: ProjectedObjectView): ProjectedFeatureListItem[] {
+  const raw = o.fields.featureList;
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  const out: ProjectedFeatureListItem[] = [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const key = readFeatureListKey(row);
+    const value = readFeatureListValue(row);
+    if (key && value) {
+      out.push({ key, value });
+    }
+  }
+  return out;
+}
+
 export type ProjectedTelephoneEntry = {
   value: string;
   title?: string;

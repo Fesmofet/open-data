@@ -1,5 +1,66 @@
-import { addressStrategy, transformTelephoneFromField } from './value-strategies';
+import {
+  addressStrategy,
+  migrateObjectRefBodyToText,
+  transformTelephoneFromField,
+} from './value-strategies';
 import type { MongoWObjectField } from './types';
+
+describe('migrateObjectRefBodyToText', () => {
+  it('maps legacy merchant body with authorPermlink (camelCase)', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({ authorPermlink: 'btw-test-merchant-02021106' }),
+        'merchant',
+      ),
+    ).toEqual({ ok: true, value: 'btw-test-merchant-02021106' });
+  });
+
+  it('maps legacy brand body with authorPermlink (camelCase)', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({ authorPermlink: 'fcs-test-brand-02021105' }),
+        'brand',
+      ),
+    ).toEqual({ ok: true, value: 'fcs-test-brand-02021105' });
+  });
+
+  it('maps legacy manufacturer body with authorPermlink (camelCase)', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({ authorPermlink: 'kfb-2-test-manufacturer' }),
+        'manufacturer',
+      ),
+    ).toEqual({ ok: true, value: 'kfb-2-test-manufacturer' });
+  });
+
+  it('still accepts author_permlink (snake_case)', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({
+          name: 'Acme',
+          author_permlink: 'acme-brand',
+        }),
+        'brand',
+      ),
+    ).toEqual({ ok: true, value: 'acme-brand' });
+  });
+
+  it('parses parent JSON bodies with authorPermlink', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({ authorPermlink: 'parent-object-1' }),
+        'parent',
+      ),
+    ).toEqual({ ok: true, value: 'parent-object-1' });
+  });
+
+  it('accepts plain permlink strings for object_ref', () => {
+    expect(migrateObjectRefBodyToText('plain-object-id', 'parent')).toEqual({
+      ok: true,
+      value: 'plain-object-id',
+    });
+  });
+});
 
 describe('transformTelephoneFromField', () => {
   const base: MongoWObjectField = { name: 'phone' };
