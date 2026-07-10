@@ -24,6 +24,9 @@ import type {
 import type { TagApprovalStatsIndex } from '../../domain/tag-approval-stats';
 
 import { ExternalLinkButton } from './external-link-modal';
+import { formatProductSizeDisplay, formatProductWeightDisplay } from '../../infrastructure/object-projected-fields';
+import { LeftRailDimensionsIcon } from './left-rail-dimensions-icon';
+import { LeftRailWeightScaleIcon } from './left-rail-weight-scale-icon';
 import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
@@ -704,6 +707,44 @@ export function ObjectLeftRailPanel({
                 </ul>
               </div>
             );
+          case 'productWeight':
+            return (
+              <div key={`product-weight-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  {...editToolbarProps('productWeight', block.headingLabel)}
+                />
+                {block.unit ? (
+                  <div className="flex items-center gap-2 text-body-sm text-fg">
+                    <LeftRailWeightScaleIcon />
+                    <span className="tabular-nums">
+                      {formatProductWeightDisplay({
+                        value: block.value,
+                        unit: block.unit,
+                      })}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            );
+          case 'size':
+            return (
+              <div key={`size-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps('size', block.headingLabel)} />
+                {block.unit ? (
+                  <div className="flex items-center gap-2 text-body-sm text-fg">
+                    <LeftRailDimensionsIcon />
+                    <span className="tabular-nums">
+                      {formatProductSizeDisplay({
+                        length: block.length,
+                        width: block.width,
+                        depth: block.depth,
+                        unit: block.unit,
+                      })}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            );
           case 'phones':
             return (
               <div key={`phones-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
@@ -822,7 +863,6 @@ export function ObjectLeftRailPanel({
             );
           case 'compareAtPrice':
           case 'saleEvent':
-          case 'size':
           case 'featureList':
           case 'calories':
           case 'cookTime':

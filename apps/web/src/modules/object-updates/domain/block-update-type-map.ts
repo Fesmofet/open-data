@@ -44,6 +44,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   address: [UPDATE_TYPES.ADDRESS],
   geo: [UPDATE_TYPES.GEO],
   websites: [UPDATE_TYPES.WEBSITE],
+  productWeight: [UPDATE_TYPES.PRODUCT_WEIGHT],
   phones: [UPDATE_TYPES.TELEPHONE],
   email: [UPDATE_TYPES.EMAIL],
   walletAddress: [UPDATE_TYPES.WALLET_ADDRESS],

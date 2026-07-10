@@ -790,6 +790,106 @@ export function projectedWebsiteEntries(
   return out;
 }
 
+export type ProjectedProductWeight = {
+  value: number;
+  unit: string;
+};
+
+const PRODUCT_WEIGHT_UNITS = new Set([
+  't',
+  'kg',
+  'gm',
+  'mg',
+  'mcg',
+  'st',
+  'lb',
+  'oz',
+]);
+
+/** Product weight from projected `productWeight` (`{ value, unit }`). */
+export function projectedProductWeight(o: ProjectedObjectView): ProjectedProductWeight | null {
+  const raw = o.fields.productWeight;
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const value = toFiniteNumber(row.value);
+    const unit = readString(row.unit);
+    if (value == null || value < 0 || !unit || !PRODUCT_WEIGHT_UNITS.has(unit)) {
+      continue;
+    }
+    return { value, unit };
+  }
+  return null;
+}
+
+/** Display label for left rail (`12 st`). */
+export function formatProductWeightDisplay(weight: ProjectedProductWeight): string {
+  const valueText = Number.isInteger(weight.value)
+    ? String(weight.value)
+    : String(weight.value);
+  return `${valueText} ${weight.unit}`;
+}
+
+export type ProjectedProductSize = {
+  length: number;
+  width: number;
+  depth: number;
+  unit: string;
+};
+
+const DIMENSION_UNITS = new Set([
+  'km',
+  'm',
+  'cm',
+  'mm',
+  'μm',
+  'mi',
+  'yd',
+  'ft',
+  'in',
+  'nmi',
+]);
+
+/** Physical dimensions from projected `size` (`{ length, width, depth, unit }`). */
+export function projectedProductSize(o: ProjectedObjectView): ProjectedProductSize | null {
+  const raw = o.fields.size;
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const length = toFiniteNumber(row.length);
+    const width = toFiniteNumber(row.width);
+    const depth = toFiniteNumber(row.depth);
+    const unit = readString(row.unit);
+    if (
+      length == null ||
+      width == null ||
+      depth == null ||
+      length < 0 ||
+      width < 0 ||
+      depth < 0 ||
+      !unit ||
+      !DIMENSION_UNITS.has(unit)
+    ) {
+      continue;
+    }
+    return { length, width, depth, unit };
+  }
+  return null;
+}
+
+function formatDimensionValue(value: number): string {
+  return Number.isInteger(value) ? String(value) : String(value);
+}
+
+/** Display label for left rail (`11 x 20 x 3 μm`). */
+export function formatProductSizeDisplay(size: ProjectedProductSize): string {
+  return `${formatDimensionValue(size.length)} x ${formatDimensionValue(size.width)} x ${formatDimensionValue(size.depth)} ${size.unit}`;
+}
+
 export type ProjectedButtonItem = {
   title: string;
   href: string;

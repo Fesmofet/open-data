@@ -4,6 +4,10 @@ import { UPDATE_TYPES } from '../update-types';
 
 const WEIGHT_UNITS = ['t', 'kg', 'gm', 'mg', 'mcg', 'st', 'lb', 'oz'] as const;
 
+export type ProductWeightUnit = (typeof WEIGHT_UNITS)[number];
+
+export { WEIGHT_UNITS };
+
 export const UPDATE_PRODUCT_WEIGHT: UpdateDefinition = {
   update_type: UPDATE_TYPES.PRODUCT_WEIGHT,
   namespace: 'schema',

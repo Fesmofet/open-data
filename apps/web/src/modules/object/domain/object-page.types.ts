@@ -189,6 +189,13 @@ export type ObjectLeftRailBlock =
       entries: { title: string; link: string }[];
     }
   | {
+      kind: 'productWeight';
+      headingLabel: string;
+      value: number;
+      /** Empty in edit-mode placeholder when weight is not set yet. */
+      unit: string;
+    }
+  | {
       kind: 'link';
       headingLabel: string;
       items: { iconSrc: string; label: string; href: string }[];
@@ -229,12 +236,16 @@ export type ObjectLeftRailBlock =
   | { kind: 'status'; headingLabel: string }
   | { kind: 'compareAtPrice'; headingLabel: string }
   | { kind: 'saleEvent'; headingLabel: string }
-  | { kind: 'size'; headingLabel: string }
   | {
-      kind: 'brand';
+      kind: 'size';
       headingLabel: string;
-      items: ObjectRefItem[];
+      length: number;
+      width: number;
+      depth: number;
+      /** Empty in edit-mode placeholder when size is not set yet. */
+      unit: string;
     }
+  | { kind: 'brand'; headingLabel: string; items: ObjectRefItem[] }
   | {
       kind: 'manufacturer';
       headingLabel: string;

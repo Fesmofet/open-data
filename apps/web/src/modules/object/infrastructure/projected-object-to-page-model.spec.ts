@@ -200,4 +200,70 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     expect(tagsIdx).toBeGreaterThanOrEqual(0);
     expect(galleryIdx).toBeGreaterThan(tagsIdx);
   });
+
+  it('places productWeight after websites on product pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        website: { title: 'Shop', link: 'https://example.com' },
+        productWeight: { value: 12, unit: 'st' },
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const websitesIdx = kinds.indexOf('websites');
+    const weightIdx = kinds.indexOf('productWeight');
+
+    expect(websitesIdx).toBeGreaterThanOrEqual(0);
+    expect(weightIdx).toBe(websitesIdx + 1);
+
+    const weightBlock = model.leftRailBlocks[weightIdx];
+    expect(weightBlock?.kind).toBe('productWeight');
+    if (weightBlock?.kind === 'productWeight') {
+      expect(weightBlock.value).toBe(12);
+      expect(weightBlock.unit).toBe('st');
+    }
+  });
+
+  it('places size after productWeight on product pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        productWeight: { value: 12, unit: 'st' },
+        size: { length: 11, width: 20, depth: 3, unit: 'μm' },
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const weightIdx = kinds.indexOf('productWeight');
+    const sizeIdx = kinds.indexOf('size');
+
+    expect(weightIdx).toBeGreaterThanOrEqual(0);
+    expect(sizeIdx).toBe(weightIdx + 1);
+
+    const sizeBlock = model.leftRailBlocks[sizeIdx];
+    expect(sizeBlock?.kind).toBe('size');
+    if (sizeBlock?.kind === 'size') {
+      expect(sizeBlock.length).toBe(11);
+      expect(sizeBlock.width).toBe(20);
+      expect(sizeBlock.depth).toBe(3);
+      expect(sizeBlock.unit).toBe('μm');
+    }
+  });
 });

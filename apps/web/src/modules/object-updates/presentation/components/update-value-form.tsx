@@ -36,6 +36,8 @@ import { TagCategoryItemForm } from './tag-category-item-form';
 import { UserRefSearchField } from './user-ref-search-field';
 import { StatusUpdateForm } from './status-update-form';
 import { TelephoneForm } from './telephone-form';
+import { ProductWeightForm } from './product-weight-form';
+import { ProductSizeForm } from './product-size-form';
 import { WalletAddressForm } from './wallet-address-form';
 
 export type UpdateValueFormProps = {
@@ -244,6 +246,12 @@ function UpdateValueFields({
     }
     if (updateType === UPDATE_TYPES.TELEPHONE) {
       return <TelephoneForm value={value} onChange={onChange} />;
+    }
+    if (updateType === UPDATE_TYPES.PRODUCT_WEIGHT) {
+      return <ProductWeightForm value={value} onChange={onChange} />;
+    }
+    if (updateType === UPDATE_TYPES.SIZE) {
+      return <ProductSizeForm value={value} onChange={onChange} />;
     }
     if (updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
       return (

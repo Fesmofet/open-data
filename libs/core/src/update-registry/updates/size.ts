@@ -4,6 +4,10 @@ import { UPDATE_TYPES } from '../update-types';
 
 const DIMENSION_UNITS = ['km', 'm', 'cm', 'mm', 'μm', 'mi', 'yd', 'ft', 'in', 'nmi'] as const;
 
+export type DimensionUnit = (typeof DIMENSION_UNITS)[number];
+
+export { DIMENSION_UNITS };
+
 export const UPDATE_SIZE: UpdateDefinition = {
   update_type: UPDATE_TYPES.SIZE,
   namespace: 'schema',

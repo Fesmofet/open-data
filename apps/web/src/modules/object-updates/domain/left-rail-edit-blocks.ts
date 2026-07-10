@@ -61,6 +61,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'geo', headingLabel };
     case 'websites':
       return { kind: 'websites', headingLabel, entries: [] };
+    case 'productWeight':
+      return { kind: 'productWeight', headingLabel, value: 0, unit: '' };
     case 'link':
       return { kind: 'link', headingLabel, items: [] };
     case 'phones':
@@ -78,7 +80,14 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
     case 'saleEvent':
       return { kind: 'saleEvent', headingLabel };
     case 'size':
-      return { kind: 'size', headingLabel };
+      return {
+        kind: 'size',
+        headingLabel,
+        length: 0,
+        width: 0,
+        depth: 0,
+        unit: '',
+      };
     case 'brand':
       return { kind: 'brand', headingLabel, items: [] };
     case 'manufacturer':

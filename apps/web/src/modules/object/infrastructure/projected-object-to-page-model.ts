@@ -56,6 +56,8 @@ import {
   projectedTagCategorySections,
   projectedTelephoneEntries,
   projectedWebsiteEntries,
+  projectedProductWeight,
+  projectedProductSize,
   projectedWalletAddressRows,
   projectedWorkHours,
 } from './object-projected-fields';
@@ -263,7 +265,6 @@ function appendAboutSectionBlock(
     case 'status':
     case 'compareAtPrice':
     case 'saleEvent':
-    case 'size':
     case 'featureList':
     case 'calories':
     case 'cookTime':
@@ -460,6 +461,32 @@ function appendAboutSectionBlock(
           kind: 'websites',
           headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.websites,
           entries,
+        });
+      }
+      break;
+    }
+    case 'productWeight': {
+      const weight = projectedProductWeight(viewLike);
+      if (weight) {
+        blocks.push({
+          kind: 'productWeight',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.productWeight,
+          value: weight.value,
+          unit: weight.unit,
+        });
+      }
+      break;
+    }
+    case 'size': {
+      const dimensions = projectedProductSize(viewLike);
+      if (dimensions) {
+        blocks.push({
+          kind: 'size',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.size,
+          length: dimensions.length,
+          width: dimensions.width,
+          depth: dimensions.depth,
+          unit: dimensions.unit,
         });
       }
       break;

@@ -109,6 +109,20 @@ function appendLeftRailBlock(
         });
       }
       break;
+    case 'productWeight':
+      pushEntry(fields, counters, UPDATE_TYPES.PRODUCT_WEIGHT, {
+        value: block.value,
+        unit: block.unit,
+      });
+      break;
+    case 'size':
+      pushEntry(fields, counters, UPDATE_TYPES.SIZE, {
+        length: block.length,
+        width: block.width,
+        depth: block.depth,
+        unit: block.unit,
+      });
+      break;
     case 'phones':
       for (const entry of block.entries) {
         const value = entry.value.trim();
@@ -150,7 +164,6 @@ function appendLeftRailBlock(
     case 'options':
     case 'compareAtPrice':
     case 'saleEvent':
-    case 'size':
     case 'featureList':
     case 'category':
     case 'calories':

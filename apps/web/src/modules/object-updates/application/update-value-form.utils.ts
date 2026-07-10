@@ -11,6 +11,8 @@ import {
 } from './image-form-value';
 import { sanitizeMenuItemFormValue } from './menu-item-form-value';
 import { sanitizeTelephoneFormValue } from './telephone-form-value';
+import { sanitizeProductWeightFormValue } from './product-weight-form-value';
+import { sanitizeProductSizeFormValue } from './product-size-form-value';
 import { sanitizeWalletAddressFormValue } from './wallet-address-form-value';
 import { sanitizeStatusFormValue } from './status-form-value';
 
@@ -198,6 +200,12 @@ export function coerceFormValueForValidation(
       }
       if (definition.update_type === UPDATE_TYPES.TELEPHONE) {
         return sanitizeTelephoneFormValue(raw as Record<string, unknown>);
+      }
+      if (definition.update_type === UPDATE_TYPES.PRODUCT_WEIGHT) {
+        return sanitizeProductWeightFormValue(raw as Record<string, unknown>);
+      }
+      if (definition.update_type === UPDATE_TYPES.SIZE) {
+        return sanitizeProductSizeFormValue(raw as Record<string, unknown>);
       }
       if (definition.update_type === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
         return sanitizeGalleryItemFormValue(raw as Record<string, unknown>);
