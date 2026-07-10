@@ -4,6 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Request, Response } from 'express';
 import { GetUserCategoriesEndpoint } from '../domain/categories/get-user-categories.endpoint';
+import { GetCategoryObjectsEndpoint } from '../domain/categories/get-category-objects.endpoint';
 import {
   GetDiscoverObjectsEndpoint,
   GetDiscoverTagCategoriesEndpoint,
@@ -132,6 +133,7 @@ export class McpService {
     private readonly getUserExpertiseCounters: GetUserExpertiseCountersEndpoint,
     private readonly getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
+    private readonly getCategoryObjects: GetCategoryObjectsEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
     private readonly getUserShopFilters: GetUserShopFiltersEndpoint,
@@ -192,6 +194,7 @@ export class McpService {
       getUserExpertiseCounters: this.getUserExpertiseCounters,
       getUserExpertiseObjects: this.getUserExpertiseObjects,
       getUserCategories: this.getUserCategories,
+      getCategoryObjects: this.getCategoryObjects,
       getUserShopObjects: this.getUserShopObjects,
       getUserShopSections: this.getUserShopSections,
       getUserShopFilters: this.getUserShopFilters,

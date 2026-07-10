@@ -6,8 +6,12 @@ import {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
+  OBJECT_PAGE_CATEGORY_NAME_PARAM,
+  OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
   OBJECT_PAGE_VIEW_PATH_PARAM,
+  resolveCategoryNameFromObjectUrl,
+  resolveCategoryNameForObjectPage,
 } from '@/modules/object/domain/object-page-url.constants';
 import { parseViewPathFromSearchParam } from '@/modules/object/domain/object-page-path';
 import type { ObjectNestedViewResolved } from '@/modules/object/domain/object-page.types';
@@ -22,6 +26,7 @@ export const OBJECT_PAGE_AUTHORITY_SUB_PARAM = 'sub';
 export {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
+  OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 };
 
@@ -100,6 +105,10 @@ export function resolvePrimarySegmentFromObjectUrl(
   if (path === `${base}/gallery` || path.startsWith(galleryAlbumPrefix)) {
     return 'gallery';
   }
+  const categoryPrefix = `${base}/${OBJECT_PAGE_CATEGORY_PATH_SEGMENT}/`;
+  if (path.startsWith(categoryPrefix)) {
+    return OBJECT_PAGE_CATEGORY_PATH_SEGMENT;
+  }
   for (const segment of PATH_TAB_SEGMENTS) {
     if (path === `${base}/${segment}`) {
       return segment;
@@ -108,6 +117,11 @@ export function resolvePrimarySegmentFromObjectUrl(
   const tab = searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
   return tab ?? '';
 }
+
+/**
+ * Parses the active department category name from a visible object URL pathname.
+ */
+export { resolveCategoryNameFromObjectUrl, resolveCategoryNameForObjectPage };
 
 /**
  * Parses the active gallery album name from a visible object URL pathname.

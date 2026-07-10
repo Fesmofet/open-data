@@ -24,6 +24,7 @@ import type {
 import type { TagApprovalStatsIndex } from '../../domain/tag-approval-stats';
 
 import { ExternalLinkButton } from './external-link-modal';
+import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
@@ -64,6 +65,8 @@ export type ObjectLeftRailPanelProps = {
   objectTypeKey: string;
   editContext?: ObjectLeftRailEditContext;
   objectId: string;
+  /** Active department category feed name (left-rail highlight). */
+  activeCategoryName?: string | null;
   /** SSR default nested target — menu link stays on clean `/object/:id`. */
   defaultNestedTargetId?: string | null;
   /** Show Description link when text or gallery preview exists. */
@@ -309,6 +312,7 @@ export function ObjectLeftRailPanel({
   objectTypeKey,
   editContext,
   objectId,
+  activeCategoryName = null,
   defaultNestedTargetId = null,
   canOpenDescriptionPage = false,
   objectName = '',
@@ -820,7 +824,6 @@ export function ObjectLeftRailPanel({
           case 'saleEvent':
           case 'size':
           case 'featureList':
-          case 'category':
           case 'calories':
           case 'cookTime':
           case 'ingredients':
@@ -831,6 +834,22 @@ export function ObjectLeftRailPanel({
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
+              </div>
+            );
+          case 'category':
+            return (
+              <div key={`category-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectCategoryLeftRailSection
+                  objectId={objectId}
+                  headingLabel={block.headingLabel}
+                  names={block.names}
+                  activeCategoryName={activeCategoryName}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps('category', block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
               </div>
             );
           default: {

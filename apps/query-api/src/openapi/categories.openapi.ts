@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { registry } from './registry';
 import { queryApiOpenApiTags } from './tags';
 import { userCategoriesQuerySchema } from '../domain/categories/categories-query.schema';
+import { categoryObjectsQuerySchema } from '../domain/categories/category-objects-query.schema';
 
 const itemSchema = registry.register(
   'CategoryNavItem',
@@ -48,6 +49,55 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: categoriesResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Query validation failed (Zod).',
+      content: {
+        'application/json': {
+          schema: badRequestSchema,
+        },
+      },
+    },
+  },
+});
+
+const categoryRefListResponseSchema = registry.register(
+  'CategoryObjectsResponse',
+  z.object({
+    items: z.array(
+      z.object({
+        object_id: z.string(),
+        object_type: z.string(),
+        fields: z.record(z.string(), z.unknown()),
+        weight: z.number().nullable(),
+        addedAtUnix: z.number().optional(),
+        listItemsCount: z.number().int().optional(),
+        hasAdministrativeAuthority: z.boolean().optional(),
+      }),
+    ),
+    hasMore: z.boolean(),
+    cursor: z.string().nullable(),
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/categories/objects',
+  tags: [queryApiOpenApiTags.categories],
+  summary: 'Global objects by department category name',
+  description:
+    'Returns active objects whose materialized `object_categories.category_names` contain the given name (array overlap). Results are collapsed by `meta_group_id`, ordered by `weight DESC NULLS LAST`, and projected as compact `RefSummary` rows. Keyset cursor encodes weight + object_id.',
+  request: {
+    query: categoryObjectsQuerySchema,
+  },
+  responses: {
+    200: {
+      description: 'Paginated category object feed.',
+      content: {
+        'application/json': {
+          schema: categoryRefListResponseSchema,
         },
       },
     },

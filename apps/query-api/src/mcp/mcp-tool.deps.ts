@@ -32,6 +32,7 @@ import type {
 import type { GetSearchCountsEndpoint } from '../domain/search/get-search-counts.endpoint';
 import type { GetSearchEndpoint } from '../domain/search/get-search.endpoint';
 import type { GetUserCategoriesEndpoint } from '../domain/categories/get-user-categories.endpoint';
+import type { GetCategoryObjectsEndpoint } from '../domain/categories/get-category-objects.endpoint';
 import type {
   GetUserShopFiltersEndpoint,
   GetUserShopObjectsEndpoint,
@@ -118,6 +119,7 @@ export interface McpToolDeps {
   getUserExpertiseCounters: GetUserExpertiseCountersEndpoint;
   getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint;
   getUserCategories: GetUserCategoriesEndpoint;
+  getCategoryObjects: GetCategoryObjectsEndpoint;
   getUserShopObjects: GetUserShopObjectsEndpoint;
   getUserShopSections: GetUserShopSectionsEndpoint;
   getUserShopFilters: GetUserShopFiltersEndpoint;

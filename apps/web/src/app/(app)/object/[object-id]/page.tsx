@@ -30,6 +30,7 @@ import {
   fetchObjectRefList,
   REF_LIST_PAGE_SIZE,
 } from '@/modules/object/infrastructure/object-ref-list.client';
+import { fetchCategoryObjects } from '@/modules/object/infrastructure/category-objects.client';
 import {
   fetchObjectRelatedAlbumPage,
   fetchObjectRelatedAlbumPreview,
@@ -49,6 +50,7 @@ import {
   firstSearchParam,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
+  OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   parseAuthoritySubTypeParam,
   parseViewPathParam,
@@ -59,6 +61,21 @@ import { ObjectPageTabPane } from './object-page-tab-pane';
 import { ObjectPageInvalidPathFix } from './object-page-invalid-path-fix';
 
 const REF_LIST_PRIMARY_SEGMENTS = ['related', 'similar', 'add-on'] as const;
+const CATEGORY_PRIMARY_SEGMENT = 'category';
+
+function parseCategoryNameParam(
+  sp: Record<string, string | string[] | undefined>,
+): string | null {
+  const raw = firstSearchParam(sp, OBJECT_PAGE_CATEGORY_NAME_PARAM)?.trim();
+  if (!raw) {
+    return null;
+  }
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
 
 function objectTypeSupportsRefList(
   objectTypeKey: string,
@@ -80,6 +97,9 @@ function resolveInitialPrimarySegment(
 
   if (tabRaw === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
     return OBJECT_PAGE_DESCRIPTION_SEGMENT;
+  }
+  if (tabRaw === CATEGORY_PRIMARY_SEGMENT && parseCategoryNameParam(sp)) {
+    return CATEGORY_PRIMARY_SEGMENT;
   }
   if (tabRaw && (allowed.has(tabRaw) || refListSegments.has(tabRaw))) {
     return tabRaw;
@@ -163,6 +183,11 @@ export async function generateMetadata({
         ? messages.object_right_add_on
         : 'Add-On';
     title = `${baseTitle} · ${addOnLabel}`;
+  } else if (tab === CATEGORY_PRIMARY_SEGMENT) {
+    const categoryName = parseCategoryNameParam(sp);
+    if (categoryName) {
+      title = `${baseTitle} · ${categoryName}`;
+    }
   }
 
   return buildObjectMetadata({
@@ -201,6 +226,8 @@ export default async function ObjectDetailPage({
 
   const pathIds = parseViewPathParam(sp);
   const initialPrimarySegment = resolveInitialPrimarySegment(model, sp, pathIds);
+  const activeCategoryName =
+    initialPrimarySegment === CATEGORY_PRIMARY_SEGMENT ? parseCategoryNameParam(sp) : null;
 
   const supportsRelated = objectTypeSupportsRefList(
     model.objectTypeKey,
@@ -228,6 +255,7 @@ export default async function ObjectDetailPage({
     embeddedRelatedPage,
     embeddedSimilarPage,
     embeddedAddOnPage,
+    embeddedCategoryPage,
     initialNestedStackRaw,
     defaultNestedContent,
   ] = await Promise.all([
@@ -278,6 +306,16 @@ export default async function ObjectDetailPage({
           objectId,
           'add-on',
           { limit: REF_LIST_PAGE_SIZE },
+          refFetchInit,
+        )
+      : Promise.resolve(null),
+    initialPrimarySegment === CATEGORY_PRIMARY_SEGMENT && activeCategoryName
+      ? fetchCategoryObjects(
+          {
+            name: activeCategoryName,
+            limit: REF_LIST_PAGE_SIZE,
+            excludeObjectId: objectId,
+          },
           refFetchInit,
         )
       : Promise.resolve(null),
@@ -372,6 +410,8 @@ export default async function ObjectDetailPage({
         embeddedRelatedPage={embeddedRelatedPage}
         embeddedSimilarPage={embeddedSimilarPage}
         embeddedAddOnPage={embeddedAddOnPage}
+        embeddedCategoryPage={embeddedCategoryPage}
+        activeCategoryName={activeCategoryName}
         viewerUsername={viewerUsername}
         relatedAlbumPreview={relatedAlbumPreview}
         relatedAlbumInitialPage={relatedAlbumInitialPage}

@@ -1215,6 +1215,17 @@ export function projectedTagCategoryNames(o: ProjectedObjectView): string[] {
     .map((x) => x.trim());
 }
 
+/** Department path segments (`category` multi text). */
+export function projectedCategoryNames(o: ProjectedObjectView): string[] {
+  const raw = o.fields.category;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+    .map((x) => x.trim());
+}
+
 /** On-chain gallery album names (`imageGallery` multi text). */
 export function projectedGalleryAlbumNames(o: ProjectedObjectView): string[] {
   const raw = o.fields.imageGallery;

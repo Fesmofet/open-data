@@ -39,6 +39,7 @@ Before route handling, `refreshSessionCookiesIfNeeded`:
 | Incoming pathname | Rewrite |
 |-------------------|---------|
 | `/object/:id/gallery/album/:name` | `/object/:id?tab=gallery&gallery_album=:name` |
+| `/object/:id/category/:name` | `/object/:id?tab=category&category_name=:name` |
 | `/object/:id/:tab` for each tab segment | `/object/:id?tab=:tab` |
 
 Address bar keeps the clean path; single `object/[object-id]/page.tsx` handles all variants. See [object navigation](pages/object/navigation.md).

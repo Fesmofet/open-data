@@ -59,4 +59,4 @@ Uncategorized is only counted at the **root** response using the live query abov
 
 ## Global scope
 
-Aggregator and global read path are reserved for a future endpoint; table shape is already defined (`scope_type = 'global'`).
+Global object feeds by department name: [`category-objects.md`](category-objects.md) (`GET /query/v1/categories/objects`). User shop navigation remains on `GET /users/:name/categories`.

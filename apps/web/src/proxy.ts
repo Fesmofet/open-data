@@ -5,6 +5,8 @@ import { env } from '@/config/env';
 import {
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
+  OBJECT_PAGE_CATEGORY_NAME_PARAM,
+  OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
 } from '@/modules/object/domain/object-page-url.constants';
 import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presentation/components/profile-path';
@@ -72,6 +74,19 @@ export async function proxy(request: NextRequest) {
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', 'gallery');
     url.searchParams.set(OBJECT_PAGE_GALLERY_ALBUM_PARAM, albumEncoded);
+    return finish(NextResponse.rewrite(url));
+  }
+
+  const categoryMatch = pathname.match(
+    new RegExp(`^/object/([^/]+)/${OBJECT_PAGE_CATEGORY_PATH_SEGMENT}/(.+)$`),
+  );
+  if (categoryMatch) {
+    const id = categoryMatch[1];
+    const categoryEncoded = categoryMatch[2];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', OBJECT_PAGE_CATEGORY_PATH_SEGMENT);
+    url.searchParams.set(OBJECT_PAGE_CATEGORY_NAME_PARAM, categoryEncoded);
     return finish(NextResponse.rewrite(url));
   }
 

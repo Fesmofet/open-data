@@ -3,6 +3,7 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import type { CategoryObjectsCursorPayload } from '../domain/categories/category-objects-cursor';
 import {
   buildShopObjectFilterClause,
   buildShopScopeCtes,
@@ -11,6 +12,13 @@ import {
   type ShopTagCategoryRow,
   type ShopTagFilter,
 } from './shop-scope.sql';
+
+function sqlStringArray(values: readonly string[]) {
+  if (values.length === 0) {
+    return sql`ARRAY[]::text[]`;
+  }
+  return sql`ARRAY[${sql.join(values.map((v) => sql`${v}`), sql`, `)}]::text[]`;
+}
 
 @Injectable()
 export class ObjectCategoriesRepository {
@@ -488,5 +496,70 @@ export class ObjectCategoriesRepository {
       );
       return [];
     }
+  }
+
+  /**
+   * Global active objects whose `category_names` contain `categoryName` (array overlap).
+   * Collapses product variants by `meta_group_id`; orders by weight DESC NULLS LAST.
+   */
+  async findObjectIdsByCategoryName(params: {
+    categoryName: string;
+    limit: number;
+    cursor: CategoryObjectsCursorPayload | null;
+    excludeObjectId?: string;
+  }): Promise<{
+    rows: { object_id: string; weight: number | null }[];
+    hasMore: boolean;
+  }> {
+    const name = params.categoryName.trim();
+    if (name.length === 0 || params.limit <= 0) {
+      return { rows: [], hasMore: false };
+    }
+
+    const fetchLimit = params.limit + 1;
+    const excludeId = params.excludeObjectId?.trim() || null;
+    const cursor = params.cursor;
+
+    const cursorFilter =
+      cursor != null
+        ? sql`AND (
+          COALESCE(picked.weight, -1) < COALESCE(${cursor.weight}, -1)
+          OR (
+            COALESCE(picked.weight, -1) = COALESCE(${cursor.weight}, -1)
+            AND picked.object_id < ${cursor.object_id}
+          )
+        )`
+        : sql``;
+
+    const excludeFilter =
+      excludeId != null && excludeId.length > 0
+        ? sql`AND oc.object_id <> ${excludeId}`
+        : sql``;
+
+    const nameArray = sqlStringArray([name]);
+
+    const result = await sql<{ object_id: string; weight: number | null }>`
+      WITH picked AS (
+        SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
+          oc.object_id AS object_id,
+          oc.weight AS weight
+        FROM objects_core oc
+        INNER JOIN object_categories cat ON cat.object_id = oc.object_id
+        WHERE oc.status = 'active'
+          AND cat.category_names && ${nameArray}
+          ${excludeFilter}
+        ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST, oc.object_id ASC
+      )
+      SELECT picked.object_id AS object_id, picked.weight AS weight
+      FROM picked
+      WHERE TRUE
+        ${cursorFilter}
+      ORDER BY picked.weight DESC NULLS LAST, picked.object_id ASC
+      LIMIT ${fetchLimit}
+    `.execute(this.db);
+
+    const hasMore = result.rows.length > params.limit;
+    const rows = hasMore ? result.rows.slice(0, params.limit) : result.rows;
+    return { rows, hasMore };
   }
 }

@@ -2,6 +2,7 @@
 export const queryApiOpenApiTags = {
   objects: 'Objects',
   users: 'Users',
+  categories: 'Categories',
   userThreads: 'User threads',
   userActivity: 'User activity',
   userWallet: 'User wallet',
@@ -22,6 +23,10 @@ export const queryApiOpenApiTagDefinitions = [
   {
     name: queryApiOpenApiTags.users,
     description: 'Profiles, social lists, favorites, shop, blog and mentions feeds.',
+  },
+  {
+    name: queryApiOpenApiTags.categories,
+    description: 'Global department category object feeds.',
   },
   {
     name: queryApiOpenApiTags.userThreads,

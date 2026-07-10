@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import type {
@@ -16,7 +17,9 @@ import {
   ObjectPrimaryContent,
   ObjectRefListFeed,
 } from '@/modules/object';
+import { ObjectCategoryObjectsFeed } from '@/modules/object/presentation/components/object-category-objects-feed';
 import type { ObjectRefListPageView } from '@/modules/object/infrastructure/object-ref-list.client';
+import type { CategoryObjectsPageView } from '@/modules/object/infrastructure/category-objects.client';
 import { AuthorityActionButton } from '@/modules/object/presentation/components/authority-action-button';
 import type {
   PaginatedUserFollowListView,
@@ -31,8 +34,10 @@ import { loadMoreObjectAuthorityAction } from './authority/object-authority.acti
 import { loadMoreObjectExpertsAction } from './experts/object-experts.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
 import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
+import { loadMoreCategoryObjectsAction } from './category/load-more-category-objects.actions';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { useObjectPageShell } from './object-page-shell-context';
+import { resolveCategoryNameForObjectPage } from './object-page-search';
 
 export type ObjectPageTabPaneProps = {
   model: ObjectPageViewModel;
@@ -45,6 +50,8 @@ export type ObjectPageTabPaneProps = {
   embeddedRelatedPage: ObjectRefListPageView | null;
   embeddedSimilarPage: ObjectRefListPageView | null;
   embeddedAddOnPage: ObjectRefListPageView | null;
+  embeddedCategoryPage: CategoryObjectsPageView | null;
+  activeCategoryName: string | null;
   viewerUsername: string | null;
   relatedAlbumPreview?: RelatedAlbumPreviewView | null;
   relatedAlbumInitialPage?: RelatedAlbumListView | null;
@@ -68,6 +75,8 @@ export function ObjectPageTabPane({
   embeddedRelatedPage,
   embeddedSimilarPage,
   embeddedAddOnPage,
+  embeddedCategoryPage,
+  activeCategoryName,
   viewerUsername,
   relatedAlbumPreview = null,
   relatedAlbumInitialPage = null,
@@ -87,6 +96,13 @@ export function ObjectPageTabPane({
     onBackToGalleryAlbums,
     onOpenGalleryPhoto,
   } = useObjectPageShell();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const categoryNameFromUrl = useMemo(
+    () => resolveCategoryNameForObjectPage(model.objectId, pathname, searchParams),
+    [model.objectId, pathname, searchParams],
+  );
+  const effectiveCategoryName = activeCategoryName ?? categoryNameFromUrl;
   const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
   const [activeFeedSubSegment, setActiveFeedSubSegment] = useState(defaultFeedSub);
   const { openLogin } = useLoginModal();
@@ -188,6 +204,36 @@ export function ObjectPageTabPane({
     );
   }, [embeddedAddOnPage, model.objectId, openLogin, viewerUsername]);
 
+  const objectCategoryFeed = useMemo(() => {
+    if (effectiveCategoryName == null) {
+      return null;
+    }
+    const page = embeddedCategoryPage ?? {
+      items: [],
+      hasMore: false,
+      cursor: null,
+    };
+    return (
+      <ObjectCategoryObjectsFeed
+        key={`${model.objectId}-category-${effectiveCategoryName}`}
+        objectId={model.objectId}
+        categoryName={effectiveCategoryName}
+        initialItems={page.items}
+        initialCursor={page.cursor}
+        initialHasMore={page.hasMore}
+        viewerUsername={viewerUsername}
+        onRequireLogin={openLogin}
+        loadMoreAction={loadMoreCategoryObjectsAction}
+      />
+    );
+  }, [
+    effectiveCategoryName,
+    embeddedCategoryPage,
+    model.objectId,
+    openLogin,
+    viewerUsername,
+  ]);
+
   const loadMoreObjectAuthority = useMemo(
     () => (profileAccountName: string, sort: UserSubscriptionSort, skip: number) =>
       loadMoreObjectAuthorityAction(profileAccountName, authoritySubType, sort, skip),
@@ -275,6 +321,7 @@ export function ObjectPageTabPane({
       objectRelatedFeed={objectRelatedFeed}
       objectSimilarFeed={objectSimilarFeed}
       objectAddOnFeed={objectAddOnFeed}
+      objectCategoryFeed={objectCategoryFeed}
       objectPageBody={objectPageBody}
       objectDescriptionBody={objectDescriptionBody}
       galleryAlbums={model.galleryAlbums}

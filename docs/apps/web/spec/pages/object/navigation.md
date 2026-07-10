@@ -41,12 +41,15 @@ Covers all navigation behaviour on the object detail page (`/object/[object-id]`
 | `/object/:id/related` | Related objects feed | Related |
 | `/object/:id/similar` | Similar objects feed | Similar |
 | `/object/:id/add-on` | Add-on objects feed | Add-On |
+| `/object/:id/category/:name` | Category objects feed (left rail) | none |
 
 **Right rail:** preview blocks for Related, Similar, Add-On, and Followers (when data exists) — see [right-rail.md](routes/right-rail.md). Show more on each block opens the matching row above.
 
+**Category feed:** opened from the left-rail **Categories** list (not a primary tab). See [category-feed.md](routes/category-feed.md).
+
 **Proxy rewrites** (`apps/web/src/proxy.ts`):
 
-All `/object/:id/<tab>` paths are rewritten server-side to `/object/:id` with `?tab=<tab>` injected. Gallery album drill-down is rewritten to `?tab=gallery&gallery_album=<encoded-name>` (see [gallery.md](routes/gallery.md)). A single App Router page (`page.tsx`) handles every variant.
+All `/object/:id/<tab>` paths are rewritten server-side to `/object/:id` with `?tab=<tab>` injected. Gallery album drill-down is rewritten to `?tab=gallery&gallery_album=<encoded-name>` (see [gallery.md](routes/gallery.md)). Category feed paths rewrite to `?tab=category&category_name=<encoded-name>` (see [category-feed.md](routes/category-feed.md)). A single App Router page (`page.tsx`) handles every variant.
 
 **`?path=`** (`OBJECT_PAGE_VIEW_PATH_PARAM = 'path'`) holds a comma-separated list of nested object ids representing the current breadcrumb stack in the center column. Parsed by `apps/web/src/modules/object/domain/object-page-path.ts`.
 
@@ -56,7 +59,7 @@ All `/object/:id/<tab>` paths are rewritten server-side to `/object/:id` with `?
 
 On every URL change (including browser back/forward), `ObjectPageClient` calls `resolvePrimarySegmentForObjectPage` in `apps/web/src/app/(app)/object/[object-id]/object-page-search.ts`:
 
-1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|authority|description|gallery|gallery/album/:name|experts|related|similar|add-on`, then legacy `?tab=`.
+1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|authority|description|gallery|gallery/album/:name|category/:name|experts|related|similar|add-on`, then legacy `?tab=`.
 2. If that returns a segment, use it (explicit tab in URL).
 3. If `?path=` is present, use `''` (menu landing with user-driven nested stack).
 4. Otherwise keep the SSR default tab from default landing (`initialPrimarySegment`) — e.g. Reviews on clean `/object/:id` without requiring `/reviews` in the path.

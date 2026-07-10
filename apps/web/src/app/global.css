@@ -9,6 +9,14 @@
     @apply text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
   }
 
+  .object-category-left-rail-link {
+    @apply text-body-sm text-fg hover:text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .object-category-left-rail-link--active {
+    @apply text-accent;
+  }
+
   /** Lexical post editor: selected block image (see editor-image-keyboard-plugin). */
   [data-post-image][data-image-selected] {
     @apply ring-2 ring-accent ring-offset-2 ring-offset-bg;

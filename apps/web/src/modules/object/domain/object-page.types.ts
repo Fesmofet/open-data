@@ -246,7 +246,7 @@ export type ObjectLeftRailBlock =
       items: ObjectRefItem[];
     }
   | { kind: 'featureList'; headingLabel: string }
-  | { kind: 'category'; headingLabel: string }
+  | { kind: 'category'; headingLabel: string; names: string[] }
   | { kind: 'calories'; headingLabel: string }
   | { kind: 'cookTime'; headingLabel: string }
   | { kind: 'ingredients'; headingLabel: string }

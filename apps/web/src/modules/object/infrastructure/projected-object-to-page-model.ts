@@ -51,6 +51,7 @@ import {
   projectedPrice,
   projectedSortCustom,
   projectedTagCategoryNames,
+  projectedCategoryNames,
   projectedGalleryAlbumNames,
   projectedTagCategorySections,
   projectedTelephoneEntries,
@@ -264,7 +265,6 @@ function appendAboutSectionBlock(
     case 'saleEvent':
     case 'size':
     case 'featureList':
-    case 'category':
     case 'calories':
     case 'cookTime':
     case 'ingredients':
@@ -274,6 +274,17 @@ function appendAboutSectionBlock(
     case 'typicalAgeRange':
       // Edit-mode only — shown via mergeLeftRailBlocksForEditMode, skip in view mode.
       break;
+    case 'category': {
+      const names = projectedCategoryNames(viewLike);
+      if (names.length > 0) {
+        blocks.push({
+          kind: 'category',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.category,
+          names,
+        });
+      }
+      break;
+    }
     case 'brand': {
       const items = projectedObjectRefItems(viewLike, 'brand');
       if (items.length > 0) {

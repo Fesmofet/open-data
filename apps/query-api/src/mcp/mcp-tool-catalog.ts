@@ -328,6 +328,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/categories.md',
   },
   {
+    name: 'get_category_objects',
+    description:
+      'Global paginated object feed for a department category name (weight sort, RefSummary cards).',
+    httpEquivalent: 'GET /query/v1/categories/objects',
+    specPath: 'docs/apps/query-api/spec/category-objects.md',
+  },
+  {
     name: 'get_user_shop_filters',
     description: 'Tag category and rating filter facets for a user shop/recipe catalog.',
     httpEquivalent: 'GET /query/v1/users/:name/shop/filters',

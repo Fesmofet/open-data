@@ -1,7 +1,13 @@
 import {
+  OBJECT_PAGE_CATEGORY_NAME_PARAM,
+  OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+} from '@/modules/object/domain/object-page-url.constants';
+import {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
+  resolveCategoryNameForObjectPage,
+  resolveCategoryNameFromObjectUrl,
   resolveGalleryAlbumForObjectPage,
   resolveGalleryAlbumFromObjectUrl,
   resolveDefaultPrimarySegmentFromLanding,
@@ -132,6 +138,57 @@ describe('resolvePrimarySegmentFromObjectUrl', () => {
         new URLSearchParams(),
       ),
     ).toBe('gallery');
+  });
+
+  it('returns category for category feed path', () => {
+    expect(
+      resolvePrimarySegmentFromObjectUrl(
+        'abc',
+        `/object/abc/${OBJECT_PAGE_CATEGORY_PATH_SEGMENT}/Active%20Skirts`,
+        new URLSearchParams(),
+      ),
+    ).toBe(OBJECT_PAGE_CATEGORY_PATH_SEGMENT);
+  });
+});
+
+describe('resolveCategoryNameFromObjectUrl', () => {
+  const objectId = 'test-obj';
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  it('decodes category name from path', () => {
+    expect(
+      resolveCategoryNameFromObjectUrl(
+        objectId,
+        `${base}/${OBJECT_PAGE_CATEGORY_PATH_SEGMENT}/${encodeURIComponent('Active Skirts')}`,
+      ),
+    ).toBe('Active Skirts');
+  });
+
+  it('returns null for unrelated paths', () => {
+    expect(resolveCategoryNameFromObjectUrl(objectId, `${base}/reviews`)).toBeNull();
+  });
+});
+
+describe('resolveCategoryNameForObjectPage', () => {
+  const objectId = 'test-obj';
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  it('prefers pathname over query param', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_CATEGORY_NAME_PARAM, encodeURIComponent('Other'));
+    expect(
+      resolveCategoryNameForObjectPage(
+        objectId,
+        `${base}/${OBJECT_PAGE_CATEGORY_PATH_SEGMENT}/${encodeURIComponent('Active Skirts')}`,
+        sp,
+      ),
+    ).toBe('Active Skirts');
+  });
+
+  it('falls back to query param when pathname has no category', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_CATEGORY_NAME_PARAM, encodeURIComponent('Skirts'));
+    expect(resolveCategoryNameForObjectPage(objectId, base, sp)).toBe('Skirts');
   });
 });
 

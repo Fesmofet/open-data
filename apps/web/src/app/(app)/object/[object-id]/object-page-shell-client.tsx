@@ -30,9 +30,13 @@ import {
   resolveUpdateTypeFilterForBlockKind,
   type ObjectLeftRailBlockKind,
 } from '@/modules/object-updates/domain/block-update-type-map';
-import { buildObjectGalleryAlbumPath } from '@/modules/object/domain/object-page-url.constants';
+import {
+  buildObjectGalleryAlbumPath,
+  OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  resolveCategoryNameForObjectPage,
+} from '@/modules/object/domain/object-page-url.constants';
 import { ObjectPageCenterSkeleton } from '@/modules/object/presentation/components/object-page-loading-skeleton';
-import { useInstantNavigation } from '@/shared/presentation';
+import { useEffectiveNav, useInstantNavigation } from '@/shared/presentation';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
@@ -85,6 +89,7 @@ export function ObjectPageShellClient({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const effectiveNav = useEffectiveNav();
   const { navigateInstant, isNavigating } = useInstantNavigation();
   const { openLogin } = useLoginModal();
   useHydrateWalletProvider();
@@ -116,6 +121,30 @@ export function ObjectPageShellClient({
   const [activeGalleryAlbum, setActiveGalleryAlbum] = useState(() =>
     resolveGalleryAlbumForObjectPage(model.objectId, pathname, searchParams),
   );
+  const effectiveSearchParams = useMemo(
+    () => new URLSearchParams(effectiveNav.search),
+    [effectiveNav.search],
+  );
+  const activeCategoryName = useMemo(() => {
+    const categoryPathname =
+      effectiveNav.pathname.includes(`/${OBJECT_PAGE_CATEGORY_PATH_SEGMENT}/`)
+        ? effectiveNav.pathname
+        : pathname;
+    const categorySearch =
+      effectiveNav.search.length > 0 ? effectiveSearchParams : searchParams;
+    return resolveCategoryNameForObjectPage(
+      model.objectId,
+      categoryPathname,
+      categorySearch,
+    );
+  }, [
+    effectiveNav.pathname,
+    effectiveNav.search,
+    effectiveSearchParams,
+    model.objectId,
+    pathname,
+    searchParams,
+  ]);
   const [galleryFullView, setGalleryFullView] = useState<{
     album: ProjectedGalleryAlbumView;
     initialIndex: number;
@@ -157,7 +186,12 @@ export function ObjectPageShellClient({
     setActiveGalleryAlbum(
       resolveGalleryAlbumForObjectPage(model.objectId, pathname, searchParams),
     );
-  }, [defaultPrimaryWhenClean, model.objectId, pathname, searchParams]);
+  }, [
+    defaultPrimaryWhenClean,
+    model.objectId,
+    pathname,
+    searchParams,
+  ]);
 
   useEffect(() => {
     setFavorite(model.hasAdministrativeAuthority);
@@ -435,6 +469,7 @@ export function ObjectPageShellClient({
         objectTypeKey={model.objectTypeKey}
         editContext={leftRailEditContext}
         objectId={model.objectId}
+        activeCategoryName={activeCategoryName}
         defaultNestedTargetId={defaultNestedTargetId}
         canOpenDescriptionPage={canOpenDescriptionPage}
         objectName={model.title}
@@ -464,6 +499,7 @@ export function ObjectPageShellClient({
     () => ({
       activePrimarySegment,
       activeGalleryAlbum,
+      activeCategoryName,
       onAuthoritySubSelect,
       onOpenGalleryAlbum,
       onBackToGalleryAlbums,
@@ -471,6 +507,7 @@ export function ObjectPageShellClient({
       isNavigating,
     }),
     [
+      activeCategoryName,
       activeGalleryAlbum,
       activePrimarySegment,
       isNavigating,

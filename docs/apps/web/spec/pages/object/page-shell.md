@@ -74,6 +74,7 @@ Gated by hero Edit toggle + `viewerUsername` from server.
 | Followers | [routes/followers.md](routes/followers.md) |
 | Authority | [routes/authority.md](routes/authority.md) |
 | Related / Similar / Add-On feeds | [routes/ref-feeds.md](routes/ref-feeds.md) |
+| Category objects feed | [routes/category-feed.md](routes/category-feed.md) |
 | Edit mode | [routes/edit-mode.md](routes/edit-mode.md) |
 | Right rail | [routes/right-rail.md](routes/right-rail.md) |
 

@@ -29,6 +29,8 @@ Center-column full feeds for Related, Similar, and Add-On tabs. Right-rail previ
 | `/object/:id/similar` | `isSimilarTo` | `GET .../similar` |
 | `/object/:id/add-on` | `addOn` | `GET .../add-on` |
 
+**Category feed** (left-rail driven, not a primary tab): [`category-feed.md`](category-feed.md).
+
 Proxy rewrites path to `?tab=` — [routing-proxy](../../../routing-proxy.md).
 
 ## UI

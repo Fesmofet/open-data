@@ -88,7 +88,7 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
     case 'featureList':
       return { kind: 'featureList', headingLabel };
     case 'category':
-      return { kind: 'category', headingLabel };
+      return { kind: 'category', headingLabel, names: [] };
     case 'calories':
       return { kind: 'calories', headingLabel };
     case 'cookTime':

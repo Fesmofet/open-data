@@ -1,0 +1,31 @@
+import { Controller, Get, Query } from '@nestjs/common';
+import { ReqLocale } from '@opden-data-layer/core';
+import {
+  categoryObjectsQuerySchema,
+  GetCategoryObjectsEndpoint,
+  type CategoryObjectsQuery,
+} from '../domain/categories';
+import type { ObjectRefListResponseDto } from '../domain/objects/schemas/object-ref-list.schema';
+import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqViewer } from '../http/viewer-header.decorator';
+import { ZodQueryPipe } from '../pipes';
+
+@Controller({ path: 'categories', version: '1' })
+export class CategoriesController {
+  constructor(private readonly getCategoryObjects: GetCategoryObjectsEndpoint) {}
+
+  @Get('objects')
+  async getObjects(
+    @Query(new ZodQueryPipe(categoryObjectsQuerySchema)) query: CategoryObjectsQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectRefListResponseDto> {
+    return this.getCategoryObjects.execute({
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewerAccount: viewer,
+    });
+  }
+}

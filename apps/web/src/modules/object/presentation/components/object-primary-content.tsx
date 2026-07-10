@@ -62,6 +62,8 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Similar';
     case 'add-on':
       return 'Add-On';
+    case 'category':
+      return 'Category';
     default:
       return 'This section';
   }
@@ -157,6 +159,7 @@ export type ObjectPrimaryContentProps = {
   objectRelatedFeed?: ReactNode | null;
   objectSimilarFeed?: ReactNode | null;
   objectAddOnFeed?: ReactNode | null;
+  objectCategoryFeed?: ReactNode | null;
   /** Server-rendered page body for top-level page-type object. */
   objectPageBody?: ReactNode;
   /** Server-rendered description body for `/object/:id/description`. */
@@ -198,6 +201,7 @@ export function ObjectPrimaryContent({
   objectRelatedFeed,
   objectSimilarFeed,
   objectAddOnFeed,
+  objectCategoryFeed,
   objectPageBody,
   objectDescriptionBody,
   galleryAlbums = [],
@@ -653,6 +657,14 @@ export function ObjectPrimaryContent({
       return (
         <FeedColumn>
           {objectAddOnFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'category' && objectCategoryFeed != null) {
+      return (
+        <FeedColumn>
+          {objectCategoryFeed}
         </FeedColumn>
       );
     }

@@ -20,6 +20,7 @@ import { UserActivityController } from './user-activity.controller';
 import { SearchController } from './search.controller';
 import { SearchModule } from '../domain/search';
 import { DiscoverController } from './discover.controller';
+import { CategoriesController } from './categories.controller';
 import { DiscoverModule } from '../domain/discover';
 import { WalletModule } from '../domain/wallet';
 import { UserWalletController } from './user-wallet.controller';
@@ -58,6 +59,7 @@ import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-rep
     CurrencyController,
     SearchController,
     DiscoverController,
+    CategoriesController,
   ],
 })
 export class ControllersModule {}

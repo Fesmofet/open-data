@@ -1,10 +1,19 @@
 import { Module } from '@nestjs/common';
+import { ObjectsDomainModule } from '@opden-data-layer/objects-domain';
+import { GovernanceModule } from '../governance';
+import { ObjectProjectionModule } from '../object-projection/object-projection.module';
 import { RepositoriesModule } from '../../repositories/repositories.module';
 import { GetUserCategoriesEndpoint } from './get-user-categories.endpoint';
+import { GetCategoryObjectsEndpoint } from './get-category-objects.endpoint';
 
 @Module({
-  imports: [RepositoriesModule],
-  providers: [GetUserCategoriesEndpoint],
-  exports: [GetUserCategoriesEndpoint],
+  imports: [
+    RepositoriesModule,
+    ObjectsDomainModule,
+    GovernanceModule,
+    ObjectProjectionModule,
+  ],
+  providers: [GetUserCategoriesEndpoint, GetCategoryObjectsEndpoint],
+  exports: [GetUserCategoriesEndpoint, GetCategoryObjectsEndpoint],
 })
 export class CategoriesModule {}

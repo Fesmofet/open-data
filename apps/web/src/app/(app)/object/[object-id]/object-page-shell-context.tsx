@@ -8,6 +8,7 @@ import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-p
 export type ObjectPageShellContextValue = {
   activePrimarySegment: string;
   activeGalleryAlbum: string | null;
+  activeCategoryName: string | null;
   onAuthoritySubSelect: (sub: AuthoritySubType) => void;
   onOpenGalleryAlbum: (albumName: string) => void;
   onBackToGalleryAlbums: () => void;
