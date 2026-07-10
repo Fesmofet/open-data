@@ -16,7 +16,7 @@ jest.mock('next/link', () => ({
   }: {
     href: string;
     children: React.ReactNode;
-    'aria-current'?: string;
+    'aria-current'?: boolean | 'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false';
   }) => (
     <a href={href} {...rest}>
       {children}

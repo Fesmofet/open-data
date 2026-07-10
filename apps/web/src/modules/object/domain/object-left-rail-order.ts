@@ -84,7 +84,19 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'identifier',
 ] as const;
 
-export type AboutSectionBlockId = (typeof ABOUT_SECTION_BLOCK_ORDER)[number];
+/** Book-only about fields injected after `websites` (not in generic about stack). */
+export const BOOK_ABOUT_SECTION_BLOCK_ORDER = [
+  'typicalAgeRange',
+  'inLanguage',
+  'datePublished',
+  'printLength',
+] as const;
+
+export type BookAboutSectionBlockId = (typeof BOOK_ABOUT_SECTION_BLOCK_ORDER)[number];
+
+export type AboutSectionBlockId =
+  | (typeof ABOUT_SECTION_BLOCK_ORDER)[number]
+  | BookAboutSectionBlockId;
 
 /**
  * Menu / custom-sort cluster is rendered before the about stack (legacy `menuSection`).
@@ -104,7 +116,12 @@ export const EDIT_MODE_LEFT_RAIL_BLOCK_ORDER = [
   ...ABOUT_SECTION_BLOCK_ORDER,
 ] as const;
 
-export type EditModeLeftRailBlockId = (typeof EDIT_MODE_LEFT_RAIL_BLOCK_ORDER)[number];
+export type EditModeLeftRailBlockId =
+  | (typeof EDIT_MODE_LEFT_RAIL_BLOCK_ORDER)[number]
+  | BookAboutSectionBlockId
+  | NavigateSectionBlockId
+  | 'parent'
+  | 'publisher';
 
 /** About-stack blocks for product-like types after the navigate cluster (no duplicate commerce blocks). */
 export function optionsTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
