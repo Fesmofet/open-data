@@ -281,9 +281,10 @@ export type ObjectLeftRailBlock =
       headingLabel: string;
       items: ObjectRefItem[];
     }
-  | { kind: 'datePublished'; headingLabel: string }
-  | { kind: 'inLanguage'; headingLabel: string }
-  | { kind: 'typicalAgeRange'; headingLabel: string };
+  | { kind: 'datePublished'; headingLabel: string; text: string }
+  | { kind: 'inLanguage'; headingLabel: string; text: string }
+  | { kind: 'typicalAgeRange'; headingLabel: string; text: string }
+  | { kind: 'printLength'; headingLabel: string; text: string };
 
 export type ObjectPageSeoView = {
   title: string | null;

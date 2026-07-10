@@ -24,8 +24,12 @@ import type {
 import type { TagApprovalStatsIndex } from '../../domain/tag-approval-stats';
 
 import { ExternalLinkButton } from './external-link-modal';
-import { formatProductSizeDisplay, formatProductWeightDisplay } from '../../infrastructure/object-projected-fields';
+import { formatProductSizeDisplay, formatProductWeightDisplay, formatDatePublishedDisplay } from '../../infrastructure/object-projected-fields';
+import { LeftRailDatePublishedIcon } from './left-rail-date-published-icon';
 import { LeftRailDimensionsIcon } from './left-rail-dimensions-icon';
+import { LeftRailInLanguageIcon } from './left-rail-in-language-icon';
+import { LeftRailPrintLengthIcon } from './left-rail-print-length-icon';
+import { LeftRailReadingAgeIcon } from './left-rail-reading-age-icon';
 import { LeftRailWeightScaleIcon } from './left-rail-weight-scale-icon';
 import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
 import { ObjectFeatureListLeftRailSection } from './object-feature-list-left-rail-section';
@@ -346,7 +350,7 @@ export function ObjectLeftRailPanel({
   onRequireLogin,
   tagApprovalStats,
 }: ObjectLeftRailPanelProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
 
   const displayBlocks = useMemo(() => {
@@ -878,12 +882,61 @@ export function ObjectLeftRailPanel({
           case 'cookTime':
           case 'ingredients':
           case 'nutrition':
-          case 'datePublished':
-          case 'inLanguage':
-          case 'typicalAgeRange':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
+              </div>
+            );
+          case 'datePublished':
+            return (
+              <div key={`date-published-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps('datePublished', block.headingLabel)} />
+                {block.text.trim() ? (
+                  <div className="flex items-center gap-2 text-body-sm text-fg">
+                    <LeftRailDatePublishedIcon />
+                    <span>{formatDatePublishedDisplay(block.text, locale)}</span>
+                  </div>
+                ) : null}
+              </div>
+            );
+          case 'printLength':
+            return (
+              <div key={`print-length-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps('printLength', block.headingLabel)} />
+                {block.text.trim() ? (
+                  <div className="flex items-center gap-2 text-body-sm text-fg">
+                    <LeftRailPrintLengthIcon />
+                    <span className="tabular-nums">
+                      {block.text} {t('lowercase_pages')}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            );
+          case 'inLanguage':
+            return (
+              <div key={`in-language-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps('inLanguage', block.headingLabel)} />
+                {block.text.trim() ? (
+                  <div className="flex items-center gap-2 text-body-sm text-fg">
+                    <LeftRailInLanguageIcon />
+                    <span>{block.text}</span>
+                  </div>
+                ) : null}
+              </div>
+            );
+          case 'typicalAgeRange':
+            return (
+              <div key={`typical-age-range-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar
+                  {...editToolbarProps('typicalAgeRange', block.headingLabel)}
+                />
+                {block.text.trim() ? (
+                  <div className="flex items-center gap-2 text-body-sm text-fg">
+                    <LeftRailReadingAgeIcon />
+                    <span className="tabular-nums">{block.text}</span>
+                  </div>
+                ) : null}
               </div>
             );
           case 'category':

@@ -353,4 +353,208 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
       ]);
     }
   });
+
+  it('places typicalAgeRange after websites on book pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'book-1',
+      object_type: 'book',
+      semantic_type: 'schema:Book',
+      weight: 1,
+      fields: {
+        name: 'Novel',
+        website: { title: 'Publisher', link: 'https://example.com' },
+        typicalAgeRange: '18',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const websitesIdx = kinds.indexOf('websites');
+    const ageIdx = kinds.indexOf('typicalAgeRange');
+
+    expect(websitesIdx).toBeGreaterThanOrEqual(0);
+    expect(ageIdx).toBe(websitesIdx + 1);
+
+    const ageBlock = model.leftRailBlocks[ageIdx];
+    expect(ageBlock?.kind).toBe('typicalAgeRange');
+    if (ageBlock?.kind === 'typicalAgeRange') {
+      expect(ageBlock.text).toBe('18');
+    }
+  });
+
+  it('places inLanguage after typicalAgeRange on book pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'book-1',
+      object_type: 'book',
+      semantic_type: 'schema:Book',
+      weight: 1,
+      fields: {
+        name: 'Novel',
+        typicalAgeRange: '18',
+        inLanguage: 'English',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const ageIdx = kinds.indexOf('typicalAgeRange');
+    const languageIdx = kinds.indexOf('inLanguage');
+
+    expect(ageIdx).toBeGreaterThanOrEqual(0);
+    expect(languageIdx).toBe(ageIdx + 1);
+
+    const languageBlock = model.leftRailBlocks[languageIdx];
+    expect(languageBlock?.kind).toBe('inLanguage');
+    if (languageBlock?.kind === 'inLanguage') {
+      expect(languageBlock.text).toBe('English');
+    }
+  });
+
+  it('places datePublished after inLanguage on book pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'book-1',
+      object_type: 'book',
+      semantic_type: 'schema:Book',
+      weight: 1,
+      fields: {
+        name: 'Novel',
+        inLanguage: 'English',
+        datePublished: '2020-01-15T00:00:00.000Z',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const languageIdx = kinds.indexOf('inLanguage');
+    const dateIdx = kinds.indexOf('datePublished');
+
+    expect(languageIdx).toBeGreaterThanOrEqual(0);
+    expect(dateIdx).toBe(languageIdx + 1);
+
+    const dateBlock = model.leftRailBlocks[dateIdx];
+    expect(dateBlock?.kind).toBe('datePublished');
+    if (dateBlock?.kind === 'datePublished') {
+      expect(dateBlock.text).toBe('2020-01-15T00:00:00.000Z');
+    }
+  });
+
+  it('places printLength after datePublished on book pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'book-1',
+      object_type: 'book',
+      semantic_type: 'schema:Book',
+      weight: 1,
+      fields: {
+        name: 'Novel',
+        datePublished: '2020-01-15',
+        printLength: '320',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const dateIdx = kinds.indexOf('datePublished');
+    const lengthIdx = kinds.indexOf('printLength');
+
+    expect(dateIdx).toBeGreaterThanOrEqual(0);
+    expect(lengthIdx).toBe(dateIdx + 1);
+
+    const lengthBlock = model.leftRailBlocks[lengthIdx];
+    expect(lengthBlock?.kind).toBe('printLength');
+    if (lengthBlock?.kind === 'printLength') {
+      expect(lengthBlock.text).toBe('320');
+    }
+  });
+
+  it('omits printLength on product pages even when field is set', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        printLength: '320',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds).not.toContain('printLength');
+  });
+
+  it('omits datePublished on product pages even when field is set', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        datePublished: '2020-01-15',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds).not.toContain('datePublished');
+  });
+
+  it('omits inLanguage on product pages even when field is set', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        inLanguage: 'English',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds).not.toContain('inLanguage');
+  });
+
+  it('omits typicalAgeRange on product pages even when field is set', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        typicalAgeRange: '18',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds).not.toContain('typicalAgeRange');
+  });
 });

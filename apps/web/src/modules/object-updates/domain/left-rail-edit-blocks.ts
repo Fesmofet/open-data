@@ -111,11 +111,13 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
     case 'publisher':
       return { kind: 'publisher', headingLabel, items: [] };
     case 'datePublished':
-      return { kind: 'datePublished', headingLabel };
+      return { kind: 'datePublished', headingLabel, text: '' };
     case 'inLanguage':
-      return { kind: 'inLanguage', headingLabel };
+      return { kind: 'inLanguage', headingLabel, text: '' };
     case 'typicalAgeRange':
-      return { kind: 'typicalAgeRange', headingLabel };
+      return { kind: 'typicalAgeRange', headingLabel, text: '' };
+    case 'printLength':
+      return { kind: 'printLength', headingLabel, text: '' };
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;

@@ -14,9 +14,15 @@ export const OPTIONS_OBJECT_TYPES = ['book', 'product', 'service'] as const;
 
 export type OptionsObjectType = (typeof OPTIONS_OBJECT_TYPES)[number];
 
+export const BOOK_OBJECT_TYPE = 'book' as const;
+
 export function isOptionsObjectType(objectType: string): boolean {
   const normalized = objectType.trim();
   return (OPTIONS_OBJECT_TYPES as readonly string[]).includes(normalized);
+}
+
+export function isBookObjectType(objectType: string): boolean {
+  return objectType.trim() === BOOK_OBJECT_TYPE;
 }
 
 /**
@@ -61,9 +67,6 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'cookTime',
   'ingredients',
   'nutrition',
-  'datePublished',
-  'inLanguage',
-  'typicalAgeRange',
   'workHours',
   'address',
   'geo',
@@ -109,10 +112,31 @@ export function optionsTypeAboutRemainderOrder(): readonly AboutSectionBlockId[]
     ...NAVIGATE_SECTION_BLOCK_ORDER,
     'parent',
     'publisher',
+    'typicalAgeRange',
+    'inLanguage',
+    'datePublished',
+    'printLength',
   ]);
   const rest = ABOUT_SECTION_BLOCK_ORDER.filter((id) => !excluded.has(id));
   const withoutDescription = rest.filter((id) => id !== 'description');
   return ['description', ...withoutDescription];
+}
+
+/** Book about stack: reading age, language, and publication date after website. */
+export function bookTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
+  const base = optionsTypeAboutRemainderOrder();
+  const websitesIdx = base.indexOf('websites');
+  if (websitesIdx < 0) {
+    return [...base, 'typicalAgeRange', 'inLanguage', 'datePublished', 'printLength'];
+  }
+  return [
+    ...base.slice(0, websitesIdx + 1),
+    'typicalAgeRange',
+    'inLanguage',
+    'datePublished',
+    'printLength',
+    ...base.slice(websitesIdx + 1),
+  ];
 }
 
 /** Edit-mode slot order; product-like types match legacy navigate-before-menu layout. */
@@ -121,6 +145,18 @@ export function resolveEditModeLeftRailBlockOrder(
 ): readonly EditModeLeftRailBlockId[] {
   if (!isOptionsObjectType(objectType)) {
     return EDIT_MODE_LEFT_RAIL_BLOCK_ORDER;
+  }
+
+  if (isBookObjectType(objectType)) {
+    return [
+      ...HEADER_BLOCK_ORDER,
+      'parent',
+      'publisher',
+      ...NAVIGATE_SECTION_BLOCK_ORDER,
+      MENU_BLOCK_ID,
+      ...MENU_CLUSTER_BLOCK_ORDER,
+      ...bookTypeAboutRemainderOrder(),
+    ];
   }
 
   return [

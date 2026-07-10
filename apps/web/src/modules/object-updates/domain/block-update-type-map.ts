@@ -31,6 +31,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   datePublished: [UPDATE_TYPES.DATE_PUBLISHED],
   inLanguage: [UPDATE_TYPES.IN_LANGUAGE],
   typicalAgeRange: [UPDATE_TYPES.TYPICAL_AGE_RANGE],
+  printLength: [UPDATE_TYPES.PRINT_LENGTH],
   menuItems: [UPDATE_TYPES.MENU_ITEM],
   parent: [UPDATE_TYPES.PARENT],
   description: [UPDATE_TYPES.DESCRIPTION],

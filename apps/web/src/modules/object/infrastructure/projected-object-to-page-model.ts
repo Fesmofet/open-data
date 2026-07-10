@@ -5,7 +5,9 @@ import {
 
 import {
   ABOUT_SECTION_BLOCK_ORDER,
+  bookTypeAboutRemainderOrder,
   HEADER_BLOCK_ORDER,
+  isBookObjectType,
   isOptionsObjectType,
   MENU_BLOCK_ID,
   NAVIGATE_SECTION_BLOCK_ORDER,
@@ -35,6 +37,7 @@ import {
   projectedButtonItems,
   projectedEmail,
   projectedFeatureListItems,
+  projectedInLanguage,
   projectedGalleryAlbums,
   projectedPreviewGallery,
   projectedLeftRailPreviewGallery,
@@ -53,9 +56,12 @@ import {
   projectedSortCustom,
   projectedTagCategoryNames,
   projectedCategoryNames,
+  projectedDatePublished,
+  projectedPrintLength,
   projectedGalleryAlbumNames,
   projectedTagCategorySections,
   projectedTelephoneEntries,
+  projectedTypicalAgeRange,
   projectedWebsiteEntries,
   projectedProductWeight,
   projectedProductSize,
@@ -270,11 +276,64 @@ function appendAboutSectionBlock(
     case 'cookTime':
     case 'ingredients':
     case 'nutrition':
-    case 'datePublished':
-    case 'inLanguage':
-    case 'typicalAgeRange':
       // Edit-mode only — shown via mergeLeftRailBlocksForEditMode, skip in view mode.
       break;
+    case 'datePublished': {
+      if (!isBookObjectType(viewLike.object_type ?? '')) {
+        break;
+      }
+      const text = projectedDatePublished(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'datePublished',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.datePublished,
+          text,
+        });
+      }
+      break;
+    }
+    case 'printLength': {
+      if (!isBookObjectType(viewLike.object_type ?? '')) {
+        break;
+      }
+      const text = projectedPrintLength(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'printLength',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.printLength,
+          text,
+        });
+      }
+      break;
+    }
+    case 'inLanguage': {
+      if (!isBookObjectType(viewLike.object_type ?? '')) {
+        break;
+      }
+      const text = projectedInLanguage(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'inLanguage',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.inLanguage,
+          text,
+        });
+      }
+      break;
+    }
+    case 'typicalAgeRange': {
+      if (!isBookObjectType(viewLike.object_type ?? '')) {
+        break;
+      }
+      const text = projectedTypicalAgeRange(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'typicalAgeRange',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.typicalAgeRange,
+          text,
+        });
+      }
+      break;
+    }
     case 'category': {
       const names = projectedCategoryNames(viewLike);
       if (names.length > 0) {
@@ -587,7 +646,14 @@ function buildLeftRailBlocks(
     appendAboutSectionBlocks(blocks, ['parent', 'publisher'], viewLike, optionsApi);
     appendAboutSectionBlocks(blocks, NAVIGATE_SECTION_BLOCK_ORDER, viewLike, optionsApi);
     appendMenuClusterBlocks(blocks, viewLike);
-    appendAboutSectionBlocks(blocks, optionsTypeAboutRemainderOrder(), viewLike, optionsApi);
+    appendAboutSectionBlocks(
+      blocks,
+      isBookObjectType(viewLike.object_type ?? '')
+        ? bookTypeAboutRemainderOrder()
+        : optionsTypeAboutRemainderOrder(),
+      viewLike,
+      optionsApi,
+    );
     return blocks;
   }
 

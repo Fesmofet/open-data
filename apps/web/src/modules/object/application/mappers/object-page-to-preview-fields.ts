@@ -173,6 +173,7 @@ function appendLeftRailBlock(
     case 'datePublished':
     case 'inLanguage':
     case 'typicalAgeRange':
+    case 'printLength':
       break;
     default: {
       const _exhaustive: never = block;

@@ -913,6 +913,63 @@ export function projectedButtonItems(o: ProjectedObjectView): ProjectedButtonIte
   return out;
 }
 
+/** Reading age from projected `typicalAgeRange` (book). */
+export function projectedTypicalAgeRange(o: ProjectedObjectView): string | null {
+  const raw = o.fields.typicalAgeRange;
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const text = raw.trim();
+  return text.length > 0 ? text : null;
+}
+
+/** Language from projected `inLanguage` (book). */
+export function projectedInLanguage(o: ProjectedObjectView): string | null {
+  const raw = o.fields.inLanguage;
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const text = raw.trim();
+  return text.length > 0 ? text : null;
+}
+
+/** Publication date from projected `datePublished` (book). */
+export function projectedDatePublished(o: ProjectedObjectView): string | null {
+  const raw = o.fields.datePublished;
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const text = raw.trim();
+  return text.length > 0 ? text : null;
+}
+
+/** Print length (page count) from projected `printLength` (book). */
+export function projectedPrintLength(o: ProjectedObjectView): string | null {
+  const raw = o.fields.printLength;
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const text = raw.trim();
+  return text.length > 0 ? text : null;
+}
+
+/** Legacy Waivio `MMMM DD, YYYY` when the value is parseable as a date. */
+export function formatDatePublishedDisplay(raw: string, locale = 'en-US'): string {
+  const trimmed = raw.trim();
+  if (!trimmed.length) {
+    return '';
+  }
+  const parsed = Date.parse(trimmed);
+  if (!Number.isFinite(parsed)) {
+    return trimmed;
+  }
+  return new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(parsed));
+}
+
 export type ProjectedFeatureListItem = {
   key: string;
   value: string;
