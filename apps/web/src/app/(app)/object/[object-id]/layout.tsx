@@ -31,6 +31,8 @@ export default async function ObjectDetailLayout({
 
   const followersTabCount =
     model.primaryTabs.find((tab) => tab.segment === 'followers')?.count ?? 0;
+  const expertsTabCount =
+    model.primaryTabs.find((tab) => tab.segment === 'experts')?.count ?? 0;
 
   const rightRailSlot = (
     <Suspense fallback={<ObjectPageRightRailSkeleton />}>
@@ -40,6 +42,7 @@ export default async function ObjectDetailLayout({
         locale={locale}
         viewerUsername={viewerUsername}
         followersTabCount={followersTabCount}
+        expertsTabCount={expertsTabCount}
       />
     </Suspense>
   );

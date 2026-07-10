@@ -11,8 +11,10 @@ import {
 } from '../../domain/object-page-url.constants';
 import type { ObjectRefCardView } from '../../domain/object-page.types';
 import type { PaginatedUserFollowListView } from '@/modules/user-social/application/dto/user-social.dto';
+import type { PaginatedObjectExpertListView } from '@/modules/object/domain/types/object-experts';
 
 import { ObjectRefCard } from './object-ref-list-feed';
+import { ObjectRightExpertsSection } from './object-right-experts-section';
 import { ObjectRightFollowersSection } from './object-right-followers-section';
 
 const RIGHT_RAIL_MAX_ITEMS = 5;
@@ -26,6 +28,7 @@ export type ObjectRightSidebarProps = {
   similarHasMore: boolean;
   addOnHasMore: boolean;
   rightRailFollowersPage: PaginatedUserFollowListView | null;
+  rightRailExpertsPage: PaginatedObjectExpertListView | null;
 };
 
 function ObjectRefSection({
@@ -82,6 +85,7 @@ export function ObjectRightSidebar({
   similarHasMore,
   addOnHasMore,
   rightRailFollowersPage,
+  rightRailExpertsPage,
 }: ObjectRightSidebarProps) {
   const { t } = useI18n();
 
@@ -105,6 +109,9 @@ export function ObjectRightSidebar({
         hasMore={addOnHasMore}
         showMoreHref={buildObjectAddOnPath(objectId)}
       />
+      {rightRailExpertsPage != null ? (
+        <ObjectRightExpertsSection objectId={objectId} page={rightRailExpertsPage} />
+      ) : null}
       {rightRailFollowersPage != null ? (
         <ObjectRightFollowersSection objectId={objectId} page={rightRailFollowersPage} />
       ) : null}

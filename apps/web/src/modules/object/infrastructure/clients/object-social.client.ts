@@ -12,6 +12,9 @@ import type { PaginatedObjectExpertListView } from '../../domain/types/object-ex
 /** Right-rail followers preview fetch size — one extra row to detect `hasMore` when count > 5. */
 export const RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT = 6;
 
+/** Right-rail experts preview fetch size — one extra row to detect `hasMore` when count > 5. */
+export const RIGHT_RAIL_EXPERTS_FETCH_LIMIT = 6;
+
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const u = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {

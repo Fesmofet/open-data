@@ -2,7 +2,11 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
-import { RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT } from '@/modules/object/infrastructure/clients/object-social.client';
+import { getObjectExpertsPageQuery } from '@/modules/object/application/queries/get-object-experts-page.query';
+import {
+  RIGHT_RAIL_EXPERTS_FETCH_LIMIT,
+  RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT,
+} from '@/modules/object/infrastructure/clients/object-social.client';
 import {
   fetchObjectRefList,
   projectedObjectToRefCard,
@@ -22,6 +26,7 @@ export type ObjectPageRightRailSectionProps = {
   locale: string;
   viewerUsername: string | null;
   followersTabCount: number;
+  expertsTabCount: number;
 };
 
 export async function ObjectPageRightRailSection({
@@ -30,13 +35,14 @@ export async function ObjectPageRightRailSection({
   locale,
   viewerUsername,
   followersTabCount,
+  expertsTabCount,
 }: ObjectPageRightRailSectionProps) {
   const refFetchInit = { locale, viewer: viewerUsername };
   const supportsRelated = objectTypeSupportsRefList(objectTypeKey, UPDATE_TYPES.IS_RELATED_TO);
   const supportsSimilar = objectTypeSupportsRefList(objectTypeKey, UPDATE_TYPES.IS_SIMILAR_TO);
   const supportsAddOn = objectTypeSupportsRefList(objectTypeKey, UPDATE_TYPES.ADD_ON);
 
-  const [relatedRailPage, similarRailPage, addOnRailPage, rightRailFollowersPage] =
+  const [relatedRailPage, similarRailPage, addOnRailPage, rightRailFollowersPage, rightRailExpertsPage] =
     await Promise.all([
       supportsRelated
         ? fetchObjectRefList(
@@ -69,11 +75,22 @@ export async function ObjectPageRightRailSection({
             viewerUsername,
           )
         : Promise.resolve(null),
+      expertsTabCount > 0
+        ? getObjectExpertsPageQuery(
+            objectId,
+            { skip: 0, limit: RIGHT_RAIL_EXPERTS_FETCH_LIMIT },
+            viewerUsername,
+          )
+        : Promise.resolve(null),
     ]);
 
   const rightRailFollowersPreview =
     rightRailFollowersPage != null && rightRailFollowersPage.items.length > 0
       ? rightRailFollowersPage
+      : null;
+  const rightRailExpertsPreview =
+    rightRailExpertsPage != null && rightRailExpertsPage.items.length > 0
+      ? rightRailExpertsPage
       : null;
 
   return (
@@ -86,6 +103,7 @@ export async function ObjectPageRightRailSection({
       similarHasMore={similarRailPage?.hasMore ?? false}
       addOnHasMore={addOnRailPage?.hasMore ?? false}
       rightRailFollowersPage={rightRailFollowersPreview}
+      rightRailExpertsPage={rightRailExpertsPreview}
     />
   );
 }

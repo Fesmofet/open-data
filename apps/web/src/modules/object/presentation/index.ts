@@ -36,5 +36,7 @@ export { ObjectEditRightRail } from './components/object-edit-right-rail';
 export type { ObjectEditRightRailProps } from './components/object-edit-right-rail';
 export { ObjectRightFollowersSection } from './components/object-right-followers-section';
 export type { ObjectRightFollowersSectionProps } from './components/object-right-followers-section';
+export { ObjectRightExpertsSection } from './components/object-right-experts-section';
+export type { ObjectRightExpertsSectionProps } from './components/object-right-experts-section';
 export { ObjectRefCard, ObjectRefListFeed } from './components/object-ref-list-feed';
 export type { ObjectRefCardProps, ObjectRefListFeedProps } from './components/object-ref-list-feed';

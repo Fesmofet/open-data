@@ -122,3 +122,7 @@ export function resolveCategoryNameForObjectPage(
 export function buildObjectFollowersPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/followers`;
 }
+
+export function buildObjectExpertsPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/experts`;
+}

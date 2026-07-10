@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { profileSectionTabClass, StatHoverTooltip } from '@/shared/presentation';
 
@@ -10,6 +12,35 @@ export type ObjectPrimaryNavProps = {
   activeSegment: string;
   onSelect: (segment: string) => void;
 };
+
+function renderTabCount(
+  tab: ObjectPrimaryTabView,
+  t: (key: string) => string,
+): ReactNode {
+  if (typeof tab.count !== 'number') {
+    return null;
+  }
+
+  const countNode = <span className="tabular-nums">{tab.count}</span>;
+
+  if (tab.segment === 'followers') {
+    return (
+      <StatHoverTooltip content={t('stat_object_followers_tooltip')}>
+        {countNode}
+      </StatHoverTooltip>
+    );
+  }
+
+  if (tab.segment === 'experts') {
+    return (
+      <StatHoverTooltip content={t('stat_object_expertise_tooltip')}>
+        {countNode}
+      </StatHoverTooltip>
+    );
+  }
+
+  return countNode;
+}
 
 export function ObjectPrimaryNav({
   tabs,
@@ -25,19 +56,8 @@ export function ObjectPrimaryNav({
     >
       {tabs.map((tab) => {
         const active = activeSegment === tab.segment;
-        const label = tab.label;
-        const suffix =
-          typeof tab.count === 'number' ? (
-            tab.segment === 'followers' ? (
-              <StatHoverTooltip content={t('stat_object_followers_tooltip')}>
-                <span>{` ${tab.count}`}</span>
-              </StatHoverTooltip>
-            ) : (
-              ` ${tab.count}`
-            )
-          ) : (
-            ''
-          );
+        const count = renderTabCount(tab, t);
+
         return (
           <button
             key={tab.segment}
@@ -45,8 +65,10 @@ export function ObjectPrimaryNav({
             className={profileSectionTabClass(active, 'primary')}
             onClick={() => onSelect(tab.segment)}
           >
-            {label}
-            {suffix}
+            <span className="inline-flex items-center gap-1">
+              <span>{tab.label}</span>
+              {count}
+            </span>
           </button>
         );
       })}
