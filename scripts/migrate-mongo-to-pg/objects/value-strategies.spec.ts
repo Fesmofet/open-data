@@ -6,6 +6,42 @@ import {
 import type { MongoWObjectField } from './types';
 
 describe('migrateObjectRefBodyToText', () => {
+  it('maps legacy authors body with authorPermlink (camelCase)', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({ authorPermlink: 'ylk-test-person-1' }),
+        'author',
+      ),
+    ).toEqual({ ok: true, value: 'ylk-test-person-1' });
+  });
+
+  it('maps legacy authors body with author_permlink (snake_case)', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify({ author_permlink: 'ylk-test-person-1' }),
+        'author',
+      ),
+    ).toEqual({ ok: true, value: 'ylk-test-person-1' });
+  });
+
+  it('skips author object_ref when authorPermlink / author_permlink missing', () => {
+    expect(
+      migrateObjectRefBodyToText(JSON.stringify({ name: 'Jane Doe' }), 'author'),
+    ).toEqual({
+      ok: false,
+      reason: 'author: missing or empty authorPermlink / author_permlink',
+    });
+  });
+
+  it('parses double-encoded JSON author bodies', () => {
+    expect(
+      migrateObjectRefBodyToText(
+        JSON.stringify(JSON.stringify({ authorPermlink: 'ylk-test-person-1' })),
+        'author',
+      ),
+    ).toEqual({ ok: true, value: 'ylk-test-person-1' });
+  });
+
   it('maps legacy merchant body with authorPermlink (camelCase)', () => {
     expect(
       migrateObjectRefBodyToText(

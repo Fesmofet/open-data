@@ -1,6 +1,6 @@
 import type { MongoWObjectField } from './types';
 import type { JsonValue } from './utils';
-import { keysCamelToSnake } from './utils';
+import { keysCamelToSnake, normalizeLegacyFieldBody } from './utils';
 
 export type JsonTransformResult =
   | { ok: true; value: JsonValue }
@@ -40,7 +40,21 @@ function parseJson(rawBody: string): JsonValue | null {
     return null;
   }
   try {
-    return JSON.parse(trimmed) as JsonValue;
+    let value: unknown = JSON.parse(trimmed);
+    if (typeof value === 'string') {
+      const nested = value.trim();
+      if (
+        (nested.startsWith('{') && nested.endsWith('}')) ||
+        (nested.startsWith('[') && nested.endsWith(']'))
+      ) {
+        try {
+          value = JSON.parse(nested);
+        } catch {
+          // keep outer string
+        }
+      }
+    }
+    return value as JsonValue;
   } catch {
     return null;
   }
@@ -430,7 +444,7 @@ export function buildLegacyGalleryAlbumIdToNameMap(
       continue;
     }
     const id = typeof field.id === 'string' ? field.id.trim() : '';
-    const name = typeof field.body === 'string' ? field.body.trim() : '';
+    const name = normalizeLegacyFieldBody(field.body).trim();
     if (id.length > 0 && name.length > 0) {
       map.set(id, name);
     }
@@ -482,7 +496,7 @@ export function transformImageGalleryItemFromField(
     return null;
   }
 
-  const rawBody = field.body ?? '';
+  const rawBody = normalizeLegacyFieldBody(field.body);
   const jsonResult = transformImageGalleryItemJsonBody(rawBody);
   if (jsonResult !== null) {
     return jsonResult;
@@ -595,7 +609,7 @@ export function transformTelephoneFromField(
     return null;
   }
   const number = typeof field.number === 'string' ? field.number.trim() : '';
-  const body = typeof field.body === 'string' ? field.body.trim() : '';
+  const body = normalizeLegacyFieldBody(field.body).trim();
 
   let value = number;
   let title: string | undefined;
@@ -623,7 +637,7 @@ export function transformTagCategoryItemFromField(
   if (updateType !== 'tagCategoryItem') {
     return null;
   }
-  const value = typeof field.body === 'string' ? field.body.trim() : '';
+  const value = normalizeLegacyFieldBody(field.body).trim();
   const category =
     typeof field.tagCategory === 'string' ? field.tagCategory.trim() : '';
   if (!value.length || !category.length) {
@@ -646,7 +660,7 @@ export function transformPromotionSaleFromField(
   if (updateType !== 'promotion' && updateType !== 'saleEvent') {
     return null;
   }
-  const value = typeof field.body === 'string' ? field.body.trim() : '';
+  const value = normalizeLegacyFieldBody(field.body).trim();
   if (!value.length) {
     return { ok: false, reason: `${updateType}: empty body` };
   }

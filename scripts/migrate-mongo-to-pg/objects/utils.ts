@@ -119,6 +119,24 @@ export function mongoActiveVotesHasVoter(
   return votes?.some((v) => v.voter?.trim() === voter) ?? false;
 }
 
+/** Coerce legacy `field.body` (string or embedded object) to a string for parsers. */
+export function normalizeLegacyFieldBody(body: unknown): string {
+  if (typeof body === 'string') {
+    return body;
+  }
+  if (body !== null && typeof body === 'object') {
+    try {
+      return JSON.stringify(body);
+    } catch {
+      return '';
+    }
+  }
+  if (body === null || body === undefined) {
+    return '';
+  }
+  return String(body);
+}
+
 /** Convert a camelCase identifier to snake_case (ASCII). */
 export function camelToSnake(key: string): string {
   return key.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();

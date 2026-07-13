@@ -36,7 +36,8 @@ export interface MongoRatingVote {
 
 export interface MongoWObjectField {
   name?: string;
-  body?: string;
+  /** String JSON or embedded object from some mongo exports. */
+  body?: string | Record<string, unknown>;
   /** Waivio `phone` field: dialable number (not stored in `body`). */
   number?: string;
   weight?: number;

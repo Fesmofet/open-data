@@ -5,6 +5,7 @@ import {
 
 import {
   ABOUT_SECTION_BLOCK_ORDER,
+  BOOK_HOISTED_AUTHOR_BLOCK_ORDER,
   bookTypeAboutRemainderOrder,
   HEADER_BLOCK_ORDER,
   isBookObjectType,
@@ -642,15 +643,17 @@ function buildLeftRailBlocks(
   const isOptionsType = isOptionsObjectType(viewLike.object_type ?? '');
 
   if (isOptionsType) {
+    const isBook = isBookObjectType(viewLike.object_type ?? '');
     appendHeaderBlocks(blocks, viewLike);
+    if (isBook) {
+      appendAboutSectionBlocks(blocks, BOOK_HOISTED_AUTHOR_BLOCK_ORDER, viewLike, optionsApi);
+    }
     appendAboutSectionBlocks(blocks, ['parent', 'publisher'], viewLike, optionsApi);
     appendAboutSectionBlocks(blocks, NAVIGATE_SECTION_BLOCK_ORDER, viewLike, optionsApi);
     appendMenuClusterBlocks(blocks, viewLike);
     appendAboutSectionBlocks(
       blocks,
-      isBookObjectType(viewLike.object_type ?? '')
-        ? bookTypeAboutRemainderOrder()
-        : optionsTypeAboutRemainderOrder(),
+      isBook ? bookTypeAboutRemainderOrder() : optionsTypeAboutRemainderOrder(),
       viewLike,
       optionsApi,
     );

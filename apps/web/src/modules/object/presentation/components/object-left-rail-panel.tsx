@@ -31,6 +31,7 @@ import { LeftRailInLanguageIcon } from './left-rail-in-language-icon';
 import { LeftRailPrintLengthIcon } from './left-rail-print-length-icon';
 import { LeftRailReadingAgeIcon } from './left-rail-reading-age-icon';
 import { LeftRailWeightScaleIcon } from './left-rail-weight-scale-icon';
+import { ObjectAuthorsLeftRailSection } from './object-authors-left-rail-section';
 import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
 import { ObjectFeatureListLeftRailSection } from './object-feature-list-left-rail-section';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
@@ -837,7 +838,6 @@ export function ObjectLeftRailPanel({
           case 'brand':
           case 'manufacturer':
           case 'merchant':
-          case 'author':
           case 'publisher':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
@@ -845,6 +845,19 @@ export function ObjectLeftRailPanel({
                 {block.items.length > 0 ? (
                   <ObjectRefItemsList items={block.items} />
                 ) : null}
+              </div>
+            );
+          case 'author':
+            return (
+              <div key={`author-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectAuthorsLeftRailSection
+                  items={block.items}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps('author', block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
               </div>
             );
           case 'featureList':

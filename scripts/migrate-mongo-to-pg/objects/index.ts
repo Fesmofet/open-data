@@ -49,6 +49,7 @@ import {
   legacyEventSeqFromObjectIdHex,
   mongoActiveVotesHasVoter,
   mongoIdToString,
+  normalizeLegacyFieldBody,
   parseMongoCreatedAt,
 } from './utils';
 import {
@@ -550,6 +551,7 @@ class MongoToPgMigrator {
     const permlink = field.permlink?.trim() ?? '';
     const fieldTxId = buildFieldLegacyTransactionId(fieldAuthor, permlink);
     const fieldCreator = field.creator?.trim() ?? objectCreator;
+    const fieldBody = normalizeLegacyFieldBody(field.body);
 
     const localeRaw = field.locale?.trim();
     const locale = localeRaw && localeRaw.length > 0 ? localeRaw : null;
@@ -559,17 +561,16 @@ class MongoToPgMigrator {
     let value_geo: ReturnType<typeof sql> | null = null;
 
     if (def.value_kind === 'object_ref') {
-      const refResult = migrateObjectRefBodyToText(field.body ?? '', updateType);
+      const refResult = migrateObjectRefBodyToText(fieldBody, updateType);
       if (!refResult.ok) {
         this.stats.fieldsSkippedBadPayload += 1;
         return;
       }
       value_text = refResult.value;
     } else if (def.value_kind === 'text') {
-      const body = field.body ?? '';
-      value_text = body;
+      value_text = fieldBody;
     } else if (def.value_kind === 'geo') {
-      const parsed = parseGeoPointFromBody(field.body);
+      const parsed = parseGeoPointFromBody(fieldBody);
       if (!parsed) {
         this.stats.fieldsSkippedBadPayload += 1;
         return;
@@ -612,7 +613,7 @@ class MongoToPgMigrator {
         const multi = transformJsonBodyMulti(
           legacyName,
           updateType,
-          field.body ?? '',
+          fieldBody,
         );
         if (multi !== null) {
           if (!multi.ok) {
@@ -652,7 +653,7 @@ class MongoToPgMigrator {
           return;
         }
 
-        const jsonResult = transformJsonBody(legacyName, updateType, field.body ?? '');
+        const jsonResult = transformJsonBody(legacyName, updateType, fieldBody);
         if (!jsonResult.ok) {
           this.stats.fieldsSkippedBadPayload += 1;
           return;

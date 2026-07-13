@@ -4,6 +4,7 @@
  * Default types: menu cluster first (when present), then {@link ABOUT_SECTION_BLOCK_ORDER}.
  * Product-like types (`book`, `product`, `service`): parent/publisher, then
  * {@link NAVIGATE_SECTION_BLOCK_ORDER} (gallery → price → options), then menu, then about.
+ * `book`: `author` immediately after header (legacy `By` authors); reading metadata stays after `websites`.
  *
  * @see tmp/waivio-frontend-legacy/src/client/app/Sidebar/ObjectInfo/ObjectInfo.js
  * (`galleryPriceOptionsSection` before `menuSection`; gallery/price omitted from `aboutSection`.)
@@ -84,7 +85,7 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'identifier',
 ] as const;
 
-/** Book-only about fields injected after `websites` (not in generic about stack). */
+/** Book-only about fields (not in generic about stack). */
 export const BOOK_ABOUT_SECTION_BLOCK_ORDER = [
   'typicalAgeRange',
   'inLanguage',
@@ -93,6 +94,9 @@ export const BOOK_ABOUT_SECTION_BLOCK_ORDER = [
 ] as const;
 
 export type BookAboutSectionBlockId = (typeof BOOK_ABOUT_SECTION_BLOCK_ORDER)[number];
+
+/** Book view/edit: author hoisted to the top of the left rail (legacy `By` line). */
+export const BOOK_HOISTED_AUTHOR_BLOCK_ORDER = ['author'] as const;
 
 export type AboutSectionBlockId =
   | (typeof ABOUT_SECTION_BLOCK_ORDER)[number]
@@ -139,19 +143,16 @@ export function optionsTypeAboutRemainderOrder(): readonly AboutSectionBlockId[]
   return ['description', ...withoutDescription];
 }
 
-/** Book about stack: reading age, language, and publication date after website. */
+/** Book about stack: description first; reading metadata after `websites` (author hoisted separately). */
 export function bookTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
-  const base = optionsTypeAboutRemainderOrder();
+  const base = optionsTypeAboutRemainderOrder().filter((id) => id !== 'author');
   const websitesIdx = base.indexOf('websites');
   if (websitesIdx < 0) {
-    return [...base, 'typicalAgeRange', 'inLanguage', 'datePublished', 'printLength'];
+    return [...base, ...BOOK_ABOUT_SECTION_BLOCK_ORDER];
   }
   return [
     ...base.slice(0, websitesIdx + 1),
-    'typicalAgeRange',
-    'inLanguage',
-    'datePublished',
-    'printLength',
+    ...BOOK_ABOUT_SECTION_BLOCK_ORDER,
     ...base.slice(websitesIdx + 1),
   ];
 }
@@ -167,6 +168,7 @@ export function resolveEditModeLeftRailBlockOrder(
   if (isBookObjectType(objectType)) {
     return [
       ...HEADER_BLOCK_ORDER,
+      ...BOOK_HOISTED_AUTHOR_BLOCK_ORDER,
       'parent',
       'publisher',
       ...NAVIGATE_SECTION_BLOCK_ORDER,

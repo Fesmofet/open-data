@@ -354,6 +354,74 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     }
   });
 
+  it('hoists author before parent and menu without duplicating book blocks', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'book-1',
+      object_type: 'book',
+      semantic_type: 'schema:Book',
+      weight: 1,
+      fields: {
+        name: 'Novel',
+        description: 'A story',
+        website: { title: 'Publisher', link: 'https://example.com' },
+        author: [
+          {
+            object_id: 'ylk-test-person-1',
+            fields: { name: 'Author One', image: 'https://example.com/a.jpg' },
+          },
+          {
+            object_id: 'ylk-test-person-2',
+            fields: { name: 'Author Two' },
+          },
+        ],
+        typicalAgeRange: '18',
+        inLanguage: 'English',
+        datePublished: '2020-01-15',
+        printLength: '320',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const descriptionIdx = kinds.indexOf('description');
+    const authorIdx = kinds.indexOf('author');
+    const parentIdx = kinds.indexOf('parent');
+    const websitesIdx = kinds.indexOf('websites');
+    const ageIdx = kinds.indexOf('typicalAgeRange');
+
+    expect(kinds.filter((kind) => kind === 'author')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'typicalAgeRange')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'inLanguage')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'datePublished')).toHaveLength(1);
+    expect(kinds.filter((kind) => kind === 'printLength')).toHaveLength(1);
+
+    expect(authorIdx).toBeGreaterThanOrEqual(0);
+    if (parentIdx >= 0) {
+      expect(authorIdx).toBeLessThan(parentIdx);
+    }
+
+    const menuIdx = kinds.indexOf('menuItems');
+    if (menuIdx >= 0) {
+      expect(authorIdx).toBeLessThan(menuIdx);
+      expect(ageIdx).toBeGreaterThan(menuIdx);
+    }
+
+    expect(websitesIdx).toBeGreaterThanOrEqual(0);
+    expect(ageIdx).toBe(websitesIdx + 1);
+    expect(descriptionIdx).toBeLessThan(websitesIdx);
+
+    const authorBlock = model.leftRailBlocks[authorIdx];
+    expect(authorBlock?.kind).toBe('author');
+    if (authorBlock?.kind === 'author') {
+      expect(authorBlock.items).toHaveLength(2);
+      expect(authorBlock.items[0]?.name).toBe('Author One');
+      expect(authorBlock.items[1]?.name).toBe('Author Two');
+    }
+  });
+
   it('places typicalAgeRange after websites on book pages', () => {
     const api: ProjectedObjectWithCountsView = {
       object_id: 'book-1',
@@ -362,6 +430,7 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
       weight: 1,
       fields: {
         name: 'Novel',
+        description: 'A story',
         website: { title: 'Publisher', link: 'https://example.com' },
         typicalAgeRange: '18',
       },
@@ -373,10 +442,12 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     const model = projectedObjectWithCountsToPageModel(api);
     const kinds = model.leftRailBlocks.map((block) => block.kind);
     const websitesIdx = kinds.indexOf('websites');
+    const descriptionIdx = kinds.indexOf('description');
     const ageIdx = kinds.indexOf('typicalAgeRange');
 
     expect(websitesIdx).toBeGreaterThanOrEqual(0);
     expect(ageIdx).toBe(websitesIdx + 1);
+    expect(descriptionIdx).toBeLessThan(websitesIdx);
 
     const ageBlock = model.leftRailBlocks[ageIdx];
     expect(ageBlock?.kind).toBe('typicalAgeRange');
