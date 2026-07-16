@@ -22,6 +22,9 @@ export const OBJECT_TYPES = {
   GROUP: 'group',
   HTML: 'html',
   GOVERNANCE: 'governance',
+  SERVICE_OFFERED: 'service_offered',
+  SERVICE_REQUESTED: 'service_requested',
+  LEGAL_DOCUMENT: 'legal_document',
 } as const;
 
 export type ObjectType = (typeof OBJECT_TYPES)[keyof typeof OBJECT_TYPES];

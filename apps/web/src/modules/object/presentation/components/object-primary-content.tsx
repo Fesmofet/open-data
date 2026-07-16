@@ -475,13 +475,15 @@ export function ObjectPrimaryContent({
       );
     }
 
-    if (currentView.objectType === 'page') {
-      if (nestedStack.length === 0 && objectPageBody) {
-        return objectPageBody;
-      }
-      if (currentView.pageContentHtml) {
-        return <ObjectNestedPageBody html={currentView.pageContentHtml} />;
-      }
+    if (nestedStack.length === 0 && objectPageBody) {
+      return objectPageBody;
+    }
+
+    if (currentView.pageContentHtml) {
+      return <ObjectNestedPageBody html={currentView.pageContentHtml} />;
+    }
+
+    if (currentView.objectType === 'page' || objectTypeKey === 'legal_document') {
       return (
         <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
           <p className="text-fg">This page has no content yet.</p>
@@ -506,6 +508,7 @@ export function ObjectPrimaryContent({
     navigateInColumn,
     nestedStack.length,
     objectPageBody,
+    objectTypeKey,
     sortedListItems,
     title,
     viewerUsername,

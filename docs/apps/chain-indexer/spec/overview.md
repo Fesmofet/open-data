@@ -81,6 +81,7 @@ flowchart LR
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
 | [Hive delegations](hive-delegations.md) | HP `delegate_vesting_shares` and RC `custom_json` id `rc` → `user_delegations` / `user_rc_delegations` |
 | [ODL pipeline](odl-pipeline.md) | Envelope, actions, repositories, write guards, batch import |
+| [OBL parser](obl-parser.md) | Open Business Layer `custom_json` actions, mutual ledger, payments, disputes |
 | [Vote ingestion](vote-ingestion.md) | Hive `vote` → `post_active_votes` + `post_sync_queue`; worker fills `rshares` and ghost posts |
 | [Account sync](account-sync.md) | `account_sync_queue`: `get_accounts` + followers/following/muted backfill when account is missing or on create |
 | [Meta group sync](meta-group-sync.md) | `meta_group_id` on `objects_core` synced from winning `group_id` via `ObjectViewService` + platform governance |

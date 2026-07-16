@@ -28,6 +28,8 @@ Every App Router `page.tsx` under `apps/web/src/app/` maps to a **route area** f
 | `/settings` | `settings/` | [page.md](settings/page.md) | `@/i18n`, `@/theme`, `@/shell-mode` |
 | `/notifications` | `notifications/` | [page.md](notifications/page.md) | `@/modules/notifications` |
 | `/object-create` | `object-create/` | [page.md](object-create/page.md) | `@/modules/object-create` |
+| `/business` | `business/` | [overview.md](business/overview.md) | `@/modules/business` |
+| `/offers`, `/requests` | `business/` | [overview.md](business/overview.md) | `@/modules/business` (public discovery) |
 | `/sign-in` | `sign-in/` | [page.md](sign-in/page.md) | `@/modules/auth` |
 | `/dev/showcase` | `dev/showcase/` | [page.md](dev/showcase/page.md) | layout demo (internal, `status: draft`) |
 

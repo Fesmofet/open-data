@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { encodeEventSeq } from '@opden-data-layer/core';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
-import type { OdlActionHandler, OdlEventContext } from './odl-action-handler';
+import type { OdlActionHandler } from '../odl-shared';
+import { dispatchEnvelope } from '../odl-shared';
 import { odlEnvelopeSchema } from './odl-envelope.schema';
 import { ObjectCreateHandler } from './handlers/object-create.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
@@ -52,70 +53,15 @@ export class OdlCustomJsonParser {
     account: string,
     hiveCtx: HiveOperationHandlerContext,
   ): Promise<void> {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(rawJson);
-    } catch {
-      this.logger.warn('ODL custom_json: failed to parse JSON');
-      return;
-    }
-
-    const envelopeResult = odlEnvelopeSchema.safeParse(parsed);
-    if (!envelopeResult.success) {
-      this.logger.warn(`ODL envelope validation failed: ${envelopeResult.error.message}`);
-      return;
-    }
-
-    const { events } = envelopeResult.data;
-
-    const eventIdIndexMap = new Map<string, number>();
-    for (let i = 0; i < events.length; i++) {
-      const eid = events[i].event_id;
-      if (eid) {
-        eventIdIndexMap.set(eid, i);
-      }
-    }
-
-    const gov = await this.governanceCache.resolvePlatform();
-    if (gov.banned.includes(account)) {
-      this.logger.log(`ODL: account '${account}' is banned; ignoring all events`);
-      return;
-    }
-
-    for (let odlEventIndex = 0; odlEventIndex < events.length; odlEventIndex++) {
-      const event = events[odlEventIndex];
-      const handler = this.handlerMap[event.action];
-
-      if (!handler) {
-        this.logger.warn(`ODL: unknown action '${event.action}'; skipping`);
-        continue;
-      }
-
-      const ctx: OdlEventContext = {
-        action: event.action,
-        creator: account,
-        blockNum: hiveCtx.blockNum,
-        transactionIndex: hiveCtx.transactionIndex,
-        operationIndex: hiveCtx.operationIndex,
-        odlEventIndex,
-        transactionId: hiveCtx.transaction.transaction_id,
-        timestamp: hiveCtx.timestamp,
-        eventSeq: encodeEventSeq({
-          blockNum: hiveCtx.blockNum,
-          trxIndex: hiveCtx.transactionIndex,
-          opIndex: hiveCtx.operationIndex,
-          odlEventIndex,
-        }),
-        eventIdIndexMap,
-      };
-
-      try {
-        await handler.handle(event.payload, ctx);
-      } catch (err: unknown) {
-        this.logger.error(
-          `ODL handler '${event.action}' failed at block ${hiveCtx.blockNum}: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-    }
+    await dispatchEnvelope(rawJson, {
+      schema: odlEnvelopeSchema,
+      handlerMap: this.handlerMap,
+      governanceCache: this.governanceCache,
+      logger: this.logger,
+      encodeEventSeq,
+      hiveCtx,
+      account,
+      unknownActionLabel: 'ODL: unknown action',
+    });
   }
 }

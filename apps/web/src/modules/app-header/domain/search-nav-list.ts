@@ -38,5 +38,6 @@ export function formatObjectTypeLabel(objectType: string): string {
   if (!objectType) {
     return objectType;
   }
-  return objectType.charAt(0).toUpperCase() + objectType.slice(1);
+  const normalized = objectType.replace(/_/g, ' ');
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }

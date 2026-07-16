@@ -257,7 +257,28 @@ Canonical event order is determined by `event_seq` — a packed BIGINT encoding 
 
 ---
 
-## D) Non-functional requirements
+## D) OBL lifecycle (MVP smoke)
+
+### AC-OBL1: Legal document single-writer
+- **Setup**: `legal_document` object L created by account A.
+- **Events**: `update_create` on L from account B.
+- **Expect**: Rejected via `LegalDocumentWriteGuard` (`UNAUTHORIZED_LEGAL_DOC_OP`); no neutral mutation.
+
+### AC-OBL2: Mutual ledger cutoff
+- **Setup**: Pair (A,B) has `contract_sign` at `event_seq = S`; pre-ledger invoice I1 and post-ledger invoice I2 exist.
+- **Action**: `GET /query/v1/obl/balance?accountA=A&accountB=B`.
+- **Expect**: Balance includes only rows with `created_event_seq >= S`; `startedEventSeq` returned on ledger endpoint.
+
+### AC-OBL3: Offer retire retires all versions
+- **Setup**: Offer O has versions 1 and 2 both `active`.
+- **Events**: `offer_retire` by author.
+- **Expect**: All rows for `offer_id` are `retired`; `contract_sign` on any version fails.
+
+### AC-OBL4: WAIV transfer attribution
+- **Setup**: Mutual ledger exists for pair; WAIV HE transfer between accounts after ledger start.
+- **Expect**: `obl_payments` row with `method = token_transfer` and deduped `payment_id`.
+
+## E) Non-functional requirements
 
 ### Benchmark protocol (minimum, mandatory)
 - **Warmup**: 10 minutes before metric collection.

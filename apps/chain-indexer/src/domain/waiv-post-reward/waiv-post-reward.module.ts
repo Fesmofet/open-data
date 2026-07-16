@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RepositoriesModule } from '../../repositories';
+import { OblParserModule } from '../obl-parser/obl-parser.module';
 import { PostWaivReconcileQueue } from '../hive-engine-parser/post-waiv-reconcile.queue';
 import { WaivPostRewardService } from '../hive-engine-parser/waiv-post-reward.service';
 import { WaivRewardEventDedupCache } from '../hive-engine-parser/waiv-reward-event-dedup.cache';
@@ -7,7 +8,7 @@ import { WaivRewardPoolCache } from '../hive-engine-parser/waiv-reward-pool.cach
 import { PostRewardsFinalizeQueue } from './post-rewards-finalize.queue';
 
 @Module({
-  imports: [RepositoriesModule],
+  imports: [RepositoriesModule, OblParserModule],
   providers: [
     WaivRewardPoolCache,
     WaivRewardEventDedupCache,

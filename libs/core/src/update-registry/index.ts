@@ -112,6 +112,20 @@ export { UPDATE_WHITELIST } from './updates/whitelist';
 export { UPDATE_OBJECT_CONTROL } from './updates/object-control';
 export { UPDATE_INHERITS_FROM } from './updates/inherits-from';
 export { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
+export { UPDATE_CAPABILITY } from './updates/capability';
+export {
+  ENDPOINT_PROTOCOLS,
+  UPDATE_ENDPOINT,
+  UPDATE_ENDPOINT_SCHEMA,
+} from './updates/endpoint';
+export {
+  PRICE_MODEL_KINDS,
+  UPDATE_PRICE_MODEL,
+  UPDATE_PRICE_MODEL_SCHEMA,
+} from './updates/price-model';
+export { UPDATE_CURRENCY } from './updates/currency';
+export { UPDATE_SLA, UPDATE_SLA_SCHEMA } from './updates/sla';
+export { UPDATE_LEGAL_TEXT } from './updates/legal-text';
 
 export { cidSchema } from './schemas/cid-schema';
 export {

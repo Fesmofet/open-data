@@ -66,7 +66,10 @@ export default async function RootLayout({
       <body className="min-h-screen bg-bg text-fg antialiased">
         <ThemeProvider initialResolution={themeResolution}>
           <ShellModeProvider initialResolution={shellModeResolution}>
-            <OdlNetworkProvider customJsonId={env.odlCustomJsonId}>
+            <OdlNetworkProvider
+              customJsonId={env.odlCustomJsonId}
+              oblCustomJsonId={env.oblCustomJsonId}
+            >
               <IpfsContentBaseProvider contentBaseUrl={ipfsContentBaseUrl}>
                 <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
                   <I18nProvider locale={locale} messages={messages}>

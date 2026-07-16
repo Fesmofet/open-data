@@ -5,6 +5,7 @@ import {
   HiveEngineProcessorModule,
 } from '@opden-data-layer/hive-engine-processor';
 import { RepositoriesModule } from '../../repositories';
+import { OblParserModule } from '../obl-parser/obl-parser.module';
 import { WaivPostRewardModule } from '../waiv-post-reward/waiv-post-reward.module';
 import { HiveEngineCompositeParser } from './hive-engine-composite.parser';
 import {
@@ -12,6 +13,7 @@ import {
   type HiveEngineSubParser,
 } from './hive-engine-sub-parser.interface';
 import { MarketpoolsSwapParser } from './parsers/marketpools-swap.parser';
+import { OblTokenTransferParser } from './parsers/obl-token-transfer.parser';
 import { WaivPostRewardParser } from './parsers/waiv-post-reward.parser';
 import { WaivStakeParser } from './parsers/waiv-stake.parser';
 
@@ -30,9 +32,10 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
 @Module({
   imports: [
     RepositoriesModule,
+    OblParserModule,
     WaivPostRewardModule,
     HiveEngineProcessorModule.forRootAsync({
-      imports: [ConfigModule, WaivPostRewardModule, RepositoriesModule],
+      imports: [ConfigModule, WaivPostRewardModule, RepositoriesModule, OblParserModule],
       useFactory: (config: ConfigService) => {
         const he = config.get<{
           blockNumberKey: string;
@@ -54,10 +57,16 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
         WaivStakeParser,
         WaivPostRewardParser,
         MarketpoolsSwapParser,
+        OblTokenTransferParser,
         {
           provide: HIVE_ENGINE_SUB_PARSERS,
           useFactory: (...parsers: HiveEngineSubParser[]) => parsers,
-          inject: [WaivStakeParser, WaivPostRewardParser, MarketpoolsSwapParser],
+          inject: [
+            WaivStakeParser,
+            WaivPostRewardParser,
+            MarketpoolsSwapParser,
+            OblTokenTransferParser,
+          ],
         },
 
         // ── composite dispatcher ───────────────────────────────────────────

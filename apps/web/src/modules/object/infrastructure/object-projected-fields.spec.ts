@@ -18,6 +18,9 @@ import {
   projectedObjectLinkRows,
   projectedButtonItems,
   projectedParentRow,
+  projectedLegalText,
+  projectedHostHtmlBody,
+  projectedPageContent,
   linkKindPublicIconSrc,
   linkKindDisplayLabel,
   walletSymbolDisplayName,
@@ -617,5 +620,33 @@ describe('object-projected-fields', () => {
       hasOwnershipAuthority: false,
     };
     expect(projectedTelephoneEntries(v)).toEqual([{ value: '+58 212-555-0100' }]);
+  });
+
+  it('projects legalText from fields', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'legal-1',
+      object_type: 'legal_document',
+      semantic_type: null,
+      weight: null,
+      fields: { legalText: '  <p>Terms</p>  ' },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedLegalText(v)).toBe('<p>Terms</p>');
+    expect(projectedHostHtmlBody(v)).toBe('<p>Terms</p>');
+  });
+
+  it('prefers pageContent over legalText in projectedHostHtmlBody', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'page',
+      semantic_type: null,
+      weight: null,
+      fields: { pageContent: 'Page body', legalText: 'Legal body' },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedPageContent(v)).toBe('Page body');
+    expect(projectedHostHtmlBody(v)).toBe('Page body');
   });
 });

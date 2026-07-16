@@ -1,0 +1,130 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useOblCustomJsonId } from '@/config/odl-network-provider';
+
+import {
+  buildRetireOfferOp,
+} from '../../application/build-obl-ops';
+import { businessRoutes } from '../../domain/routes';
+import type { OblOfferApiRow } from '../../infrastructure/clients/obl-offers.server';
+import { createOblDraftAction } from '../../infrastructure/actions/obl-drafts.actions';
+import { BusinessDisclosure } from './business-disclosure';
+import { StateBadge } from './state-badge';
+import { useOblBroadcast } from '../hooks/use-obl-broadcast';
+import { BusinessPageShell } from '../layout/business-page-shell';
+
+export function BusinessOfferDetailClient({
+  username,
+  offer,
+}: {
+  username: string;
+  offer: OblOfferApiRow;
+}) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const oblCustomJsonId = useOblCustomJsonId();
+  const { broadcast, phase, error } = useOblBroadcast(username);
+  const isOwner = username === offer.author;
+  const publicHref =
+    offer.kind === 'offer'
+      ? businessRoutes.publicOffer(offer.offer_id, offer.version)
+      : businessRoutes.publicRequest(offer.offer_id, offer.version);
+
+  async function onRetire() {
+    const op = buildRetireOfferOp({
+      oblCustomJsonId,
+      author: username,
+      offerId: offer.offer_id,
+    });
+    await broadcast([op]);
+    router.refresh();
+  }
+
+  async function onNewVersion() {
+    const draft = await createOblDraftAction(username, {
+      kind: offer.kind,
+      fields: {
+        offerId: offer.offer_id,
+        publishedOfferId: offer.offer_id,
+        name: offer.name,
+        description: offer.description ?? '',
+        tags: offer.tags,
+        serviceRef: offer.service_ref ?? undefined,
+        legalRef: offer.legal_ref ?? undefined,
+        terms: (offer.terms as Record<string, unknown>) ?? {},
+        disputeRule: offer.dispute_rule,
+        arbiter: offer.arbiter,
+      },
+    });
+    if (draft.ok) {
+      router.push(businessRoutes.offerDraft(draft.value.draftId));
+    }
+  }
+
+  return (
+    <BusinessPageShell
+      activeNav="offers"
+      title={offer.name}
+      subtitle={t('business_offer_detail_subtitle')}
+      actions={
+        isOwner ? (
+          <>
+            {offer.status === 'active' ? (
+              <button
+                type="button"
+                onClick={() => void onRetire()}
+                className="rounded-btn border border-border px-3 py-1 text-body-sm"
+              >
+                {t('business_retire_offer')}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => void onNewVersion()}
+              className="rounded-btn bg-accent px-3 py-1 text-body-sm text-accent-fg"
+            >
+              {t('business_new_version')}
+            </button>
+          </>
+        ) : null
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <StateBadge
+            variant={offer.status === 'active' ? 'confirmed' : 'retired'}
+          />
+          <span className="text-caption text-fg-secondary">
+            {offer.kind} · v{offer.version}
+          </span>
+        </div>
+
+        {offer.description ? (
+          <p className="text-body text-fg">{offer.description}</p>
+        ) : null}
+
+        <BusinessDisclosure variant="immutable_version" />
+        {offer.legal_ref ? <BusinessDisclosure variant="legal_ref_warning" /> : null}
+
+        <div className="flex flex-wrap gap-3">
+          <Link href={publicHref} className="text-body-sm text-link">
+            {t('business_public_link')}
+          </Link>
+          <Link
+            href={businessRoutes.offerVersion(offer.offer_id, offer.version)}
+            className="text-body-sm text-link"
+          >
+            {t('business_versions')} v{offer.version}
+          </Link>
+        </div>
+
+        {phase === 'indexing' ? <StateBadge variant="indexing" /> : null}
+        {error ? <p className="text-body-sm text-error">{error}</p> : null}
+      </div>
+    </BusinessPageShell>
+  );
+}

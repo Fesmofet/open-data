@@ -13,4 +13,8 @@ export type WaivEngineRewardEvent = {
   quantity: number;
   symbol: string;
   event: string;
+  account: string;
+  refHiveBlockNumber: number;
+  trxIndex: number;
+  logIndex: number;
 };

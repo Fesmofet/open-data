@@ -13,6 +13,8 @@ export const queryApiOpenApiTags = {
   search: 'Search',
   discover: 'Discover',
   currency: 'Currency',
+  obl: 'OBL',
+  oblOfferDrafts: 'OBL offer drafts',
 } as const;
 
 export const queryApiOpenApiTagDefinitions = [
@@ -67,5 +69,13 @@ export const queryApiOpenApiTagDefinitions = [
   {
     name: queryApiOpenApiTags.currency,
     description: 'Market, fiat, and Hive Engine rate reads.',
+  },
+  {
+    name: queryApiOpenApiTags.obl,
+    description: 'Open Business Layer reads: offer search, mutual ledger, balance, USD conversion.',
+  },
+  {
+    name: queryApiOpenApiTags.oblOfferDrafts,
+    description: 'JWT-authenticated OBL offer draft CRUD.',
   },
 ] as const;

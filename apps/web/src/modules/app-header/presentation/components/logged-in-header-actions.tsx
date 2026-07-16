@@ -11,6 +11,7 @@ import {
 } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { businessRoutes } from '@/modules/business';
 import { NotificationBell } from '@/modules/notifications';
 import { clearWalletSession } from '@/modules/auth/infrastructure';
 import { UserAvatar } from '@/shared/presentation';
@@ -229,6 +230,32 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
               suppressHydrationWarning
             >
               {t('drafts')}
+            </Link>
+            <Link
+              href="/business"
+              role="menuitem"
+              aria-current={pathname.startsWith('/business') ? 'page' : undefined}
+              className={menuNavLinkClassName(pathname.startsWith('/business'))}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('business_menu')}
+            </Link>
+            <Link
+              href={businessRoutes.publicOffers}
+              role="menuitem"
+              aria-current={
+                pathname === '/offers' || pathname.startsWith('/offers/')
+                  ? 'page'
+                  : undefined
+              }
+              className={menuNavLinkClassName(
+                pathname === '/offers' || pathname.startsWith('/offers/'),
+              )}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('business_view_offers')}
             </Link>
             <Link
               href={profileAboutHref}

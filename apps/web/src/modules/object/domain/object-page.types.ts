@@ -321,6 +321,8 @@ export type ObjectPageViewModel = {
   listItemsSortCustom: ProjectedSortCustom | null;
   /** Raw page body (`pageContent` update) for page-type objects. */
   pageContent: string | null;
+  /** Raw legal body (`legalText` update) for `legal_document` objects. */
+  legalText: string | null;
   /** Raw description body (`description` update) for center-column `/description` route. */
   descriptionContent: string | null;
   /** Photos-album preview from query-api (legacy `preview_gallery`). */

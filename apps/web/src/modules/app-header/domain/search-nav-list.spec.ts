@@ -1,4 +1,7 @@
-import { buildDiscoverHrefFromSearch } from './search-nav-list';
+import {
+  buildDiscoverHrefFromSearch,
+  formatObjectTypeLabel,
+} from './search-nav-list';
 
 describe('buildDiscoverHrefFromSearch', () => {
   it('builds discover URL for all object types', () => {
@@ -15,5 +18,16 @@ describe('buildDiscoverHrefFromSearch', () => {
     expect(buildDiscoverHrefFromSearch('users', 'test')).toBe(
       '/discover?q=test&users=1',
     );
+  });
+});
+
+describe('formatObjectTypeLabel', () => {
+  it('capitalizes a single-word type', () => {
+    expect(formatObjectTypeLabel('product')).toBe('Product');
+  });
+
+  it('replaces snake_case with spaces', () => {
+    expect(formatObjectTypeLabel('service_offered')).toBe('Service offered');
+    expect(formatObjectTypeLabel('legal_document')).toBe('Legal document');
   });
 });

@@ -51,6 +51,7 @@ import {
   projectedDescriptionContent,
   projectedObjectRefItems,
   projectedPageContent,
+  projectedLegalText,
   projectedParentRow,
   resolveMenuItemsForView,
   projectedPrice,
@@ -717,6 +718,7 @@ export function projectedObjectWithCountsToPageModel(
     sortCustom,
   );
   const pageContent = projectedPageContent(viewLike);
+  const legalText = projectedLegalText(viewLike);
   const descriptionContent = projectedDescriptionContent(viewLike);
   const previewGallery = projectedPreviewGallery(viewLike);
   const galleryAlbums = projectedGalleryAlbums(viewLike);
@@ -753,6 +755,7 @@ export function projectedObjectWithCountsToPageModel(
     listItems,
     listItemsSortCustom: sortCustom,
     pageContent,
+    legalText,
     descriptionContent,
     previewGallery,
     galleryAlbums,

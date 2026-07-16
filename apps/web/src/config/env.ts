@@ -2,7 +2,11 @@ import 'server-only';
 
 import { z } from 'zod';
 
-import { parseOdlNetwork, resolveOdlCustomJsonId } from './odl-network';
+import {
+  parseOdlNetwork,
+  resolveOblCustomJsonId,
+  resolveOdlCustomJsonId,
+} from './odl-network';
 
 /**
  * Single source of truth for server-side env vars used by `apps/web`.
@@ -86,4 +90,6 @@ export const env = {
   publicOrigin,
   /** Hive `custom_json.id` for server-side ODL envelope builders. */
   odlCustomJsonId: resolveOdlCustomJsonId(odlNetwork),
+  /** Hive `custom_json.id` for server-side OBL envelope builders. */
+  oblCustomJsonId: resolveOblCustomJsonId(odlNetwork),
 };

@@ -23,6 +23,9 @@ import { RECIPE_OBJECT_TYPE } from './object-types/recipe';
 import { GROUP_OBJECT_TYPE } from './object-types/group';
 import { HTML_OBJECT_TYPE } from './object-types/html';
 import { GOVERNANCE_OBJECT_TYPE } from './object-types/governance';
+import { SERVICE_OFFERED_OBJECT_TYPE } from './object-types/service-offered';
+import { SERVICE_REQUESTED_OBJECT_TYPE } from './object-types/service-requested';
+import { LEGAL_DOCUMENT_OBJECT_TYPE } from './object-types/legal-document';
 
 export const OBJECT_TYPE_REGISTRY: ObjectTypeRegistry = {
   [OBJECT_TYPES.HASHTAG]: HASHTAG_OBJECT_TYPE,
@@ -48,4 +51,7 @@ export const OBJECT_TYPE_REGISTRY: ObjectTypeRegistry = {
   [OBJECT_TYPES.GROUP]: GROUP_OBJECT_TYPE,
   [OBJECT_TYPES.HTML]: HTML_OBJECT_TYPE,
   [OBJECT_TYPES.GOVERNANCE]: GOVERNANCE_OBJECT_TYPE,
+  [OBJECT_TYPES.SERVICE_OFFERED]: SERVICE_OFFERED_OBJECT_TYPE,
+  [OBJECT_TYPES.SERVICE_REQUESTED]: SERVICE_REQUESTED_OBJECT_TYPE,
+  [OBJECT_TYPES.LEGAL_DOCUMENT]: LEGAL_DOCUMENT_OBJECT_TYPE,
 };

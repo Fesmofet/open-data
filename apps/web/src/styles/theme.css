@@ -1,4 +1,14 @@
-/* Design tokens: Tailwind maps to var(--*). data-theme on <html> is the source of truth. */
+/*
+ * THEME TOKENS — MANDATORY (apps/web)
+ *
+ * 1. Components MUST use semantic Tailwind utilities (bg-bg, text-fg, text-body, rounded-card, …)
+ *    or var(--*) in CSS — NOT raw hex/rgb/hsl, NOT Tailwind default scale (text-sm, rounded-lg, …).
+ * 2. New visual roles: add --* here for EVERY [data-theme] block, wire tailwind.config.js,
+ *    update docs/apps/web/spec/theme.md — never one-off values in TSX/CSS modules.
+ * 3. Exceptions only as listed in apps/web/AGENTS.md (hero-on-photo, third-party embeds, …).
+ *
+ * data-theme on <html> is runtime source of truth. See theme.md + AGENTS.md.
+ */
 
 /* Default + light: feed UI, orange accent, Medium-style type, flat surfaces, thin borders */
 :root,

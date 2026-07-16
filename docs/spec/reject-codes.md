@@ -35,6 +35,12 @@ Indexer MUST persist reject code whenever an event is not applied to neutral sta
 | `INVALID_GOVERNANCE_PAYLOAD` | Governance object payload or governance update payload failed schema/business validation. |
 | `UNAUTHORIZED_GOVERNANCE_OP` | Governance object update/vote is authored by an account other than governance object creator, or otherwise violates governance ownership rules. |
 
+### Legal document object operations (`object_type = legal_document`)
+
+| Code | When |
+|------|------|
+| `UNAUTHORIZED_LEGAL_DOC_OP` | Legal document `update_create` / `update_vote` / `rank_vote` is authored by an account other than the object creator (single-writer). |
+
 ### Object type validation (code-registry checks)
 
 | Code | When |
@@ -68,6 +74,17 @@ Indexer MUST persist reject code whenever an event is not applied to neutral sta
 |------|------|
 | `UNKNOWN_ACTION` | Action is not recognized for the namespace. |
 | `INVALID_PAYLOAD` | Malformed JSON or invalid envelope. |
+
+### OBL actions (`custom_json` id `obl-mainnet` / `obl-testnet`)
+
+OBL handler validation failures are currently **warn-only** (event skipped, no persisted reject row). Future versions may persist codes below.
+
+| Code (planned) | When |
+|----------------|------|
+| `INVALID_OBL_PAYLOAD` | Envelope event payload failed Zod schema. |
+| `UNAUTHORIZED_OBL_SIGNER` | `contract_sign` signer does not match counterparty role or offer author binding. |
+| `OBL_OFFER_INACTIVE` | Referenced offer version is retired or missing. |
+| `OBL_LEDGER_VIOLATION` | Invoice/payment/dispute references pair with no mutual ledger or wrong state transition. |
 
 ## 2) Query/masking error codes
 

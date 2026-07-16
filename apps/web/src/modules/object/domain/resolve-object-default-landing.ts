@@ -229,7 +229,7 @@ function resolveHostTypeLanding(
   switcherKind: ObjectSwitcherKind,
   objectTypeKey: string,
 ): ObjectDefaultLanding | null {
-  if (objectTypeKey === 'html') {
+  if (objectTypeKey === 'html' || objectTypeKey === 'legal_document') {
     return { kind: 'hostContent' };
   }
   if (HOST_SWITCHER_KINDS.has(switcherKind)) {

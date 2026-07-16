@@ -1,4 +1,10 @@
 import type { CurrencyQueryService } from '@opden-data-layer/currency';
+import type {
+  OblConversionService,
+  OblLedgerService,
+  OblOffersService,
+  OblRelationshipsService,
+} from '../domain/obl';
 import type { GetDiscoverObjectsEndpoint } from '../domain/discover/get-discover-objects.endpoint';
 import type { GetDiscoverTagCategoriesEndpoint } from '../domain/discover/get-discover-tag-categories.endpoint';
 import type { GetDiscoverUsersEndpoint } from '../domain/discover/get-discover-users.endpoint';
@@ -127,4 +133,8 @@ export interface McpToolDeps {
   getPostDiscussion: GetPostDiscussionEndpoint;
   getPostVoters: GetPostVotersEndpoint;
   currencyQueries: CurrencyQueryService;
+  oblOffers: OblOffersService;
+  oblLedger: OblLedgerService;
+  oblConversion: OblConversionService;
+  oblRelationships: OblRelationshipsService;
 }

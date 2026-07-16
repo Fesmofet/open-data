@@ -63,7 +63,8 @@ export function extractWaivEventsFromTransactions(
   const votes: WaivEngineVoteEvent[] = [];
   const rewards: WaivEngineRewardEvent[] = [];
 
-  for (const tx of transactions) {
+  for (let trxIndex = 0; trxIndex < transactions.length; trxIndex++) {
+    const tx = transactions[trxIndex];
     if (tx.contract !== 'comments') {
       continue;
     }
@@ -73,7 +74,9 @@ export function extractWaivEventsFromTransactions(
     const voter = String(payload.voter ?? '').trim();
     const weight = Number(payload.weight ?? 0);
 
-    for (const ev of parseHiveEngineLogs(tx)) {
+    const logEvents = parseHiveEngineLogs(tx);
+    for (let logIndex = 0; logIndex < logEvents.length; logIndex++) {
+      const ev = logEvents[logIndex];
       const symbol = String(ev.data.symbol ?? '');
       if (symbol !== WAIV_TOKEN.SYMBOL) {
         continue;
@@ -101,6 +104,7 @@ export function extractWaivEventsFromTransactions(
       );
       if (isReward && quantity !== 0) {
         const authorperm = String(ev.data.authorperm ?? '').trim();
+        const account = String(ev.data.account ?? '').trim();
         if (authorperm) {
           rewards.push({
             heTransactionId: tx.transactionId,
@@ -108,6 +112,10 @@ export function extractWaivEventsFromTransactions(
             quantity,
             symbol,
             event: eventType,
+            account,
+            refHiveBlockNumber: tx.refHiveBlockNumber,
+            trxIndex,
+            logIndex,
           });
         }
       }

@@ -52,6 +52,8 @@ Reward event dedup: Redis `chain-indexer:cache:waiv-reward-event:{txId}:{event}:
 - Optimistic API like updates (`likePost.js`, `PROCESSED_LIKES*`)
 - Comments (`depth > 0`), expertise distribution, non-WAIV tokens
 
+**OBL:** WAIV curation rewards on posts may be attributed as OBL `upvote_reward` payments when a mutual ledger exists — see [OBL payments](../../../spec/obl/payments.md) and [obl-parser](obl-parser.md).
+
 ## Query layer
 
 query-api reads these columns via [`post-reward.md`](../../query-api/spec/post-reward.md); no client-side payout math.

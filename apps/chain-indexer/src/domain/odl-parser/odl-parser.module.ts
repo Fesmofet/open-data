@@ -24,6 +24,7 @@ import { ObjectTagCategoriesWorker } from './object-tag-categories.worker';
 import { RankScoreModule } from '../rank-score/rank-score.module';
 import {
   GovernanceWriteGuard,
+  LegalDocumentWriteGuard,
   WRITE_GUARDS,
   WriteGuardRunner,
 } from './guards';
@@ -32,11 +33,15 @@ import {
   imports: [RepositoriesModule, GovernanceModule, ObjectsDomainModule, RankScoreModule],
   providers: [
     GovernanceWriteGuard,
+    LegalDocumentWriteGuard,
     WriteGuardRunner,
     {
       provide: WRITE_GUARDS,
-      useFactory: (gov: GovernanceWriteGuard) => [gov],
-      inject: [GovernanceWriteGuard],
+      useFactory: (gov: GovernanceWriteGuard, legal: LegalDocumentWriteGuard) => [
+        gov,
+        legal,
+      ],
+      inject: [GovernanceWriteGuard, LegalDocumentWriteGuard],
     },
     ObjectCreateHandler,
     UpdateCreateHandler,

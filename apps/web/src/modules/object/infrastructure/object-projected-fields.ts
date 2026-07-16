@@ -506,6 +506,19 @@ export function projectedPageContent(o: ProjectedObjectView): string | null {
   return null;
 }
 
+export function projectedLegalText(o: ProjectedObjectView): string | null {
+  const raw = o.fields.legalText;
+  if (typeof raw === 'string' && raw.trim().length > 0) {
+    return raw.trim();
+  }
+  return null;
+}
+
+/** Sanitized HTML body for page-type objects and legal documents. */
+export function projectedHostHtmlBody(o: ProjectedObjectView): string | null {
+  return projectedPageContent(o) ?? projectedLegalText(o);
+}
+
 export function projectedDescriptionContent(o: ProjectedObjectView): string | null {
   const raw = o.fields.description;
   if (typeof raw === 'string' && raw.trim().length > 0) {

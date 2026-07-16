@@ -8,7 +8,7 @@ import { fetchNestedObjectsBatch } from './fetch-nested-objects.server';
 import {
   applySortCustomToListItems,
   projectedListItems,
-  projectedPageContent,
+  projectedHostHtmlBody,
   projectedSortCustom,
 } from './object-projected-fields';
 import { sanitizePostHtml } from '@/shared/infrastructure/sanitize-post-html';
@@ -54,7 +54,7 @@ function nestedViewFromApi(
   const viewLike = toViewLike(api.object_id, api.object_type, fields);
   const sortCustom = projectedSortCustom(viewLike);
   const listItems = applySortCustomToListItems(projectedListItems(viewLike), sortCustom);
-  const pageContent = projectedPageContent(viewLike);
+  const htmlBody = projectedHostHtmlBody(viewLike);
   const name = objectFields.name(viewLike)?.trim() || api.object_id;
   const objectType = toSwitcherKind(api.object_type);
 
@@ -64,7 +64,7 @@ function nestedViewFromApi(
     objectType,
     listItems,
     listItemsSortCustom: sortCustom,
-    pageContentHtml: pageContent ? sanitizePostHtml(pageContent) : null,
+    pageContentHtml: htmlBody ? sanitizePostHtml(htmlBody) : null,
   };
 }
 

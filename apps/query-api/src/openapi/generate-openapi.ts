@@ -20,6 +20,8 @@ import './currency.openapi';
 import './search.openapi';
 import './discover.openapi';
 import './shop.openapi';
+import './obl.openapi';
+import './obl-offer-drafts.openapi';
 
 export function generateOpenApiDocument() {
   const base = new OpenApiGeneratorV31(registry.definitions).generateDocument({

@@ -70,6 +70,8 @@ For **`update_create`**, a **duplicate-value** check (`existsByObjectAndValue` â
 
 [`GovernanceWriteGuard`](../../../../apps/chain-indexer/src/domain/odl-parser/guards/governance-write.guard.ts): for `object_type === governance`, the **event creator** must match the **object creator**; otherwise the update is rejected with a logged warning.
 
+[`LegalDocumentWriteGuard`](../../../../apps/chain-indexer/src/domain/odl-parser/guards/legal-document-write.guard.ts): for `object_type === legal_document`, the **event creator** must match the **object creator** on `update_create`, `update_vote`, and `rank_vote`; otherwise the event is rejected with `UNAUTHORIZED_LEGAL_DOC_OP` (logged warning). See [OBL catalog](../../../spec/obl/catalog.md).
+
 ## 7) Governance utilities
 
 [`GovernanceResolverService`](../../../../apps/chain-indexer/src/domain/governance/governance-resolver.service.ts) and [`assembleSnapshot`](../../../../apps/chain-indexer/src/domain/governance/assemble-snapshot.ts) are registered in the app for **shared governance snapshot** logic (similar structure exists on the query side). They are **not** invoked from `OdlCustomJsonParser` or Hive parsers in the current block loop. Request-time resolution semantics remain in [governance resolution](../../../spec/governance-resolution.md) and the query app.

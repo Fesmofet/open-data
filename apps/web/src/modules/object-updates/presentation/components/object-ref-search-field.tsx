@@ -9,6 +9,7 @@ import {
   fetchSearchObjectById,
   fetchObjectSearchResults,
 } from '@/modules/app-header/infrastructure/search.client';
+import { resolveObjectRefDisplayAction } from '@/modules/object/application/actions/resolve-object-ref-display.action';
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
 import { Z_INDEX_DROPDOWN_ABOVE_MODAL } from '@/modules/map';
@@ -200,12 +201,37 @@ export function ObjectRefSearchField({
     void fetchSearchObjectById(objectId, {
       signal: controller.signal,
       appliesTo,
-    }).then((result) => {
+    }).then(async (result) => {
+      if (controller.signal.aborted) {
+        return;
+      }
+      if (result) {
+        setSelectedObject(result);
+        setResolvingObject(false);
+        return;
+      }
+
+      const unfiltered = await fetchSearchObjectById(objectId, {
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) {
+        return;
+      }
+      if (
+        unfiltered &&
+        (!appliesTo?.length || appliesTo.includes(unfiltered.object_type))
+      ) {
+        setSelectedObject(unfiltered);
+        setResolvingObject(false);
+        return;
+      }
+
+      const projected = await resolveObjectRefDisplayAction(objectId, appliesTo);
       if (controller.signal.aborted) {
         return;
       }
       setSelectedObject(
-        result ?? {
+        projected ?? {
           object_id: objectId,
           object_type: '',
           name: objectId,

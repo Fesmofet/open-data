@@ -20,7 +20,7 @@ export type NestedObjectViewFromApi = z.infer<typeof nestedObjectViewSchema>;
 
 export async function fetchNestedObjectsBatch(
   ids: string[],
-  init: { locale: string; viewer?: string | null },
+  init: { locale: string; viewer?: string | null; updateTypes?: readonly string[] },
 ): Promise<Map<string, NestedObjectViewFromApi>> {
   const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter((id) => id.length > 0))];
   if (uniqueIds.length === 0) {
@@ -40,7 +40,10 @@ export async function fetchNestedObjectsBatch(
   const raw = await queryApiFetch<unknown>(RESOLVE_NESTED_PATH, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ ids: uniqueIds }),
+    body: JSON.stringify({
+      ids: uniqueIds,
+      ...(init.updateTypes?.length ? { update_types: [...init.updateTypes] } : {}),
+    }),
   });
 
   if (raw == null) {

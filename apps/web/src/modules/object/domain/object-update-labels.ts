@@ -53,6 +53,8 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
   identifier: 'Identifier',
   menuItem: 'Menu',
   sortCustom: 'Sort',
+  pageContent: 'Page content',
+  legalText: 'Legal text',
 };
 
 /** Labels for blocks keyed by internal rail kind (not always 1:1 with update_type). */

@@ -94,6 +94,12 @@ import { UPDATE_WHITELIST } from './updates/whitelist';
 import { UPDATE_OBJECT_CONTROL } from './updates/object-control';
 import { UPDATE_INHERITS_FROM } from './updates/inherits-from';
 import { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
+import { UPDATE_CAPABILITY } from './updates/capability';
+import { UPDATE_ENDPOINT } from './updates/endpoint';
+import { UPDATE_PRICE_MODEL } from './updates/price-model';
+import { UPDATE_CURRENCY } from './updates/currency';
+import { UPDATE_SLA } from './updates/sla';
+import { UPDATE_LEGAL_TEXT } from './updates/legal-text';
 
 export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
@@ -190,4 +196,10 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.OBJECT_CONTROL]: UPDATE_OBJECT_CONTROL,
   [UPDATE_TYPES.INHERITS_FROM]: UPDATE_INHERITS_FROM,
   [UPDATE_TYPES.VALIDITY_CUTOFF]: UPDATE_VALIDITY_CUTOFF,
+  [UPDATE_TYPES.CAPABILITY]: UPDATE_CAPABILITY,
+  [UPDATE_TYPES.ENDPOINT]: UPDATE_ENDPOINT,
+  [UPDATE_TYPES.PRICE_MODEL]: UPDATE_PRICE_MODEL,
+  [UPDATE_TYPES.CURRENCY]: UPDATE_CURRENCY,
+  [UPDATE_TYPES.SLA]: UPDATE_SLA,
+  [UPDATE_TYPES.LEGAL_TEXT]: UPDATE_LEGAL_TEXT,
 } satisfies UpdateRegistry;

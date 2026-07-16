@@ -109,7 +109,15 @@ export const OBJECT_TYPE_DISPLAY_LABEL: Record<string, string> = {
 };
 
 export function labelForObjectType(objectType: string): string {
-  return OBJECT_TYPE_DISPLAY_LABEL[objectType] ?? objectType;
+  const explicit = OBJECT_TYPE_DISPLAY_LABEL[objectType];
+  if (explicit) {
+    return explicit;
+  }
+  if (!objectType) {
+    return objectType;
+  }
+  const normalized = objectType.replace(/_/g, ' ');
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
 /** UI subtitle for a type (card copy, then registry machine description). */

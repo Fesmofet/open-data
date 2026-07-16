@@ -37,6 +37,10 @@ export default () => {
         env.ODL_NETWORK === 'testnet'
           ? CUSTOM_JSON_ID.ODL_TESTNET
           : CUSTOM_JSON_ID.ODL_MAINNET,
+      oblCustomJsonId:
+        env.ODL_NETWORK === 'testnet'
+          ? CUSTOM_JSON_ID.OBL_TESTNET
+          : CUSTOM_JSON_ID.OBL_MAINNET,
     },
     ipfs: {
       apiUrl: env.IPFS_API_URL,

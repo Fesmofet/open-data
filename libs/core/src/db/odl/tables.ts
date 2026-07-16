@@ -79,6 +79,13 @@ export interface OdlDatabase {
   hive_engine_waiv_airdrops: HiveEngineWaivAirdropsTable;
   waiv_generated_reports: WaivGeneratedReportsTable;
   waiv_generated_report_rows: WaivGeneratedReportRowsTable;
+  obl_offers: OblOffersTable;
+  obl_contracts: OblContractsTable;
+  obl_invoices: OblInvoicesTable;
+  obl_ledgers: OblLedgersTable;
+  obl_payments: OblPaymentsTable;
+  obl_disputes: OblDisputesTable;
+  obl_offer_drafts: OblOfferDraftsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -1110,3 +1117,141 @@ export interface WaivGeneratedReportRowsTable {
 
 export type WaivGeneratedReportStoredRow = Selectable<WaivGeneratedReportRowsTable>;
 export type NewWaivGeneratedReportStoredRow = Insertable<WaivGeneratedReportRowsTable>;
+
+// ---------------------------------------------------------------------------
+// OBL (Open Business Layer)
+// ---------------------------------------------------------------------------
+
+export type OblOfferKind = 'offer' | 'request';
+export type OblOfferStatus = 'active' | 'retired';
+export type OblDisputeRule = 'client' | 'provider' | 'arbiter';
+export type OblInvoiceState =
+  | 'confirmed'
+  | 'pending'
+  | 'disputed'
+  | 'resolved'
+  | 'void';
+export type OblPaymentMethod = 'token_transfer' | 'upvote_reward' | 'offchain';
+export type OblPaymentState = 'confirmed' | 'pending';
+export type OblDisputeStatus = 'open' | 'resolved';
+
+export interface OblOffersTable {
+  offer_id: string;
+  version: number;
+  kind: OblOfferKind;
+  author: string;
+  name: string;
+  description: string | null;
+  tags: ColumnType<string[], string[] | undefined, string[]>;
+  service_ref: string | null;
+  legal_ref: string | null;
+  terms: ColumnType<JsonValue>;
+  dispute_rule: OblDisputeRule;
+  arbiter: string | null;
+  status: ColumnType<OblOfferStatus, OblOfferStatus | undefined, OblOfferStatus>;
+  created_event_seq: bigint;
+  transaction_id: string;
+}
+
+export type OblOffer = Selectable<OblOffersTable>;
+export type NewOblOffer = Insertable<OblOffersTable>;
+export type OblOfferUpdate = Updateable<OblOffersTable>;
+
+export interface OblContractsTable {
+  contract_id: string;
+  offer_id: string;
+  offer_version: number;
+  provider: string;
+  client: string;
+  dispute_rule: OblDisputeRule;
+  arbiter: string | null;
+  pair_low: Generated<string>;
+  pair_high: Generated<string>;
+  created_event_seq: bigint;
+  transaction_id: string;
+}
+
+export type OblContract = Selectable<OblContractsTable>;
+export type NewOblContract = Insertable<OblContractsTable>;
+export type OblContractUpdate = Updateable<OblContractsTable>;
+
+export interface OblInvoicesTable {
+  invoice_id: string;
+  contract_id: string | null;
+  issuer: string;
+  debtor: string;
+  creditor: string;
+  amount_usd: ColumnType<string, number | string, number | string>;
+  final_amount_usd: ColumnType<string | null, number | string | null, number | string | null>;
+  details: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  state: OblInvoiceState;
+  pair_low: Generated<string>;
+  pair_high: Generated<string>;
+  created_event_seq: bigint;
+  transaction_id: string;
+}
+
+export type OblInvoice = Selectable<OblInvoicesTable>;
+export type NewOblInvoice = Insertable<OblInvoicesTable>;
+export type OblInvoiceUpdate = Updateable<OblInvoicesTable>;
+
+export interface OblLedgersTable {
+  pair_low: string;
+  pair_high: string;
+  started_event_seq: bigint;
+}
+
+export type OblLedger = Selectable<OblLedgersTable>;
+export type NewOblLedger = Insertable<OblLedgersTable>;
+
+export interface OblPaymentsTable {
+  payment_id: string;
+  payer: string;
+  receiver: string;
+  amount_usd: ColumnType<string, number | string, number | string>;
+  method: OblPaymentMethod;
+  token_symbol: string | null;
+  token_amount: string | null;
+  rate_usd: ColumnType<string | null, number | string | null, number | string | null>;
+  state: OblPaymentState;
+  contract_id: string | null;
+  ref: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
+  pair_low: Generated<string>;
+  pair_high: Generated<string>;
+  created_event_seq: bigint;
+  transaction_id: string | null;
+}
+
+export type OblPayment = Selectable<OblPaymentsTable>;
+export type NewOblPayment = Insertable<OblPaymentsTable>;
+export type OblPaymentUpdate = Updateable<OblPaymentsTable>;
+
+export interface OblDisputesTable {
+  dispute_id: string;
+  invoice_id: string;
+  disputant: string;
+  proposed_amount_usd: ColumnType<string, number | string, number | string>;
+  status: OblDisputeStatus;
+  final_amount_usd: ColumnType<string | null, number | string | null, number | string | null>;
+  resolver: string | null;
+  created_event_seq: bigint;
+  resolved_event_seq: bigint | null;
+  transaction_id: string;
+}
+
+export type OblDispute = Selectable<OblDisputesTable>;
+export type NewOblDispute = Insertable<OblDisputesTable>;
+export type OblDisputeUpdate = Updateable<OblDisputesTable>;
+
+export interface OblOfferDraftsTable {
+  author: string;
+  draft_id: string;
+  kind: OblOfferKind;
+  fields: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  legal_text: string | null;
+  last_updated: number;
+}
+
+export type OblOfferDraft = Selectable<OblOfferDraftsTable>;
+export type NewOblOfferDraft = Insertable<OblOfferDraftsTable>;
+export type OblOfferDraftUpdate = Updateable<OblOfferDraftsTable>;

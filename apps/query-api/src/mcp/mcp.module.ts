@@ -11,6 +11,7 @@ import { FavoritesModule } from '../domain/favorites/favorites.module';
 import { ExpertiseModule } from '../domain/expertise/expertise.module';
 import { UsersModule } from '../domain/users';
 import { WalletModule } from '../domain/wallet';
+import { OblModule } from '../domain/obl';
 import { McpController } from './mcp.controller';
 import { McpService } from './mcp.service';
 
@@ -28,6 +29,7 @@ import { McpService } from './mcp.service';
     SearchModule,
     DiscoverModule,
     WalletModule,
+    OblModule,
   ],
   controllers: [McpController],
   providers: [McpService],

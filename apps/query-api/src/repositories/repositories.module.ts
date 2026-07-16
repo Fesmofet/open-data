@@ -29,6 +29,7 @@ import { WalletExemptionsRepository } from './wallet-exemptions.repository';
 import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 import { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';
 import { WaivGeneratedReportsRepository } from './waiv-generated-reports.repository';
+import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
 
 @Module({
   providers: [
@@ -62,6 +63,8 @@ import { WaivGeneratedReportsRepository } from './waiv-generated-reports.reposit
     HiveEngineSwapsRepository,
     HiveEngineWaivAirdropsRepository,
     WaivGeneratedReportsRepository,
+    OblRepository,
+    OblOfferDraftsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -94,6 +97,8 @@ import { WaivGeneratedReportsRepository } from './waiv-generated-reports.reposit
     HiveEngineSwapsRepository,
     HiveEngineWaivAirdropsRepository,
     WaivGeneratedReportsRepository,
+    OblRepository,
+    OblOfferDraftsRepository,
   ],
 })
 export class RepositoriesModule {}

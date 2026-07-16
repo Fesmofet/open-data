@@ -119,6 +119,16 @@ Details: [architecture overview](../architecture/overview.md).
 | [acceptance-tests.md](acceptance-tests.md) | Acceptance criteria and non-functional targets |
 | [resolved-view-waivio-legacy.md](resolved-view-waivio-legacy.md) | Informative: legacy Waivio pipeline vs ODL resolution |
 
+### Open Business Layer (OBL)
+
+| Doc | Description |
+|-----|-------------|
+| [open-business-layer.md](open-business-layer.md) | OBL scope, lifecycle, custom_json ids |
+| [obl/mutual-ledger.md](obl/mutual-ledger.md) | Per-pair USD balance, states, cutoff |
+| [obl/contracts.md](obl/contracts.md) | Offers, contracts, invoices, drafts |
+| [obl/payments.md](obl/payments.md) | WAIV transfer, upvote, off-chain |
+| [obl/disputes.md](obl/disputes.md) | Dispute rules and resolution |
+
 ### Library integration
 
 | Doc | Description |
@@ -160,12 +170,25 @@ Output: `generated/object-types/`, `generated/object-updates/`. Source of truth:
 
 ---
 
-## 8. ODL event ids and envelope
+## 8. ODL / OBL event ids and envelope
+
+### ODL (catalog objects)
 
 - Main network `custom_json.id`: `odl-mainnet`
 - Test network `custom_json.id`: `odl-testnet`
 
-Envelope shape:
+Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`. Governance is expressed as objects with `object_type = governance` (no separate namespace).
+
+### OBL (business ledger)
+
+- Main network `custom_json.id`: `obl-mainnet`
+- Test network `custom_json.id`: `obl-testnet`
+
+Actions: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
+
+See [open-business-layer.md](open-business-layer.md).
+
+Envelope shape (both ODL and OBL):
 
 ```json
 {
@@ -175,4 +198,6 @@ Envelope shape:
 }
 ```
 
-Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`. Governance is expressed as objects with `object_type = governance` (no separate namespace).
+Actions (ODL in `waivio` / platform id): `object_create`, `update_create`, `update_vote`, `rank_vote`.
+
+Actions (OBL in `obl-mainnet` / `obl-testnet`): `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`. See [open-business-layer.md](open-business-layer.md).

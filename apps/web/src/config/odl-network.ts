@@ -1,7 +1,9 @@
-/** Hive `custom_json` ids for ODL envelopes (must match chain-indexer `hive.odlCustomJsonId`). */
+/** Hive `custom_json` ids for ODL/OBL envelopes (must match chain-indexer config). */
 export const CUSTOM_JSON_ID = Object.freeze({
   ODL_MAINNET: 'odl-mainnet',
   ODL_TESTNET: 'odl-testnet',
+  OBL_MAINNET: 'obl-mainnet',
+  OBL_TESTNET: 'obl-testnet',
 } as const);
 
 export type OdlNetwork = 'mainnet' | 'testnet';
@@ -15,4 +17,10 @@ export function resolveOdlCustomJsonId(network: OdlNetwork): string {
   return network === 'testnet'
     ? CUSTOM_JSON_ID.ODL_TESTNET
     : CUSTOM_JSON_ID.ODL_MAINNET;
+}
+
+export function resolveOblCustomJsonId(network: OdlNetwork): string {
+  return network === 'testnet'
+    ? CUSTOM_JSON_ID.OBL_TESTNET
+    : CUSTOM_JSON_ID.OBL_MAINNET;
 }

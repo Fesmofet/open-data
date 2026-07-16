@@ -99,6 +99,13 @@ export const UPDATE_TYPES = {
   OBJECT_CONTROL: 'objectControl',
   INHERITS_FROM: 'inheritsFrom',
   VALIDITY_CUTOFF: 'validityCutoff',
+  // OBL catalog (Open Business Layer)
+  CAPABILITY: 'capability',
+  ENDPOINT: 'endpoint',
+  PRICE_MODEL: 'priceModel',
+  CURRENCY: 'currency',
+  SLA: 'sla',
+  LEGAL_TEXT: 'legalText',
 } as const;
 
 export type UpdateType = (typeof UPDATE_TYPES)[keyof typeof UPDATE_TYPES];

@@ -329,10 +329,15 @@ export default async function ObjectDetailPage({
 
   const initialNestedStack = sanitizeNestedStack(pathIds, initialNestedStackRaw);
 
-  const objectPageBody =
-    model.objectType === 'page' && model.pageContent
-      ? <ObjectPageBody rawContent={model.pageContent} />
-      : undefined;
+  const hostHtmlBody =
+    model.objectTypeKey === 'legal_document'
+      ? model.legalText
+      : model.objectType === 'page'
+        ? model.pageContent
+        : null;
+  const objectPageBody = hostHtmlBody
+    ? <ObjectPageBody rawContent={hostHtmlBody} />
+    : undefined;
 
   const objectDescriptionBody =
     initialPrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT

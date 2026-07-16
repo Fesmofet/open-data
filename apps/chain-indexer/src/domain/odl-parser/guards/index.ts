@@ -5,3 +5,4 @@ export {
   type WriteGuardContext,
 } from './write-guard';
 export { GovernanceWriteGuard } from './governance-write.guard';
+export { LegalDocumentWriteGuard } from './legal-document-write.guard';

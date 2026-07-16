@@ -26,6 +26,10 @@ export type EditorCreateObjectModalProps = {
   onClose: () => void;
   username: string;
   onCreated: (objectId: string) => void | Promise<void>;
+  /** Pre-select object type when the modal opens. */
+  initialObjectType?: string;
+  /** When true, object type cannot be changed (defaults to true when `initialObjectType` is set). */
+  lockObjectType?: boolean;
 };
 
 export function EditorCreateObjectModal({
@@ -33,6 +37,8 @@ export function EditorCreateObjectModal({
   onClose,
   username,
   onCreated,
+  initialObjectType = '',
+  lockObjectType,
 }: EditorCreateObjectModalProps) {
   useHydrateWalletProvider();
   const { t } = useI18n();
@@ -49,6 +55,9 @@ export function EditorCreateObjectModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const typeLocked =
+    lockObjectType ?? Boolean(initialObjectType.trim().length > 0);
+
   useEffect(() => {
     if (!open) {
       setName('');
@@ -57,8 +66,15 @@ export function EditorCreateObjectModal({
       setFollowChecked(false);
       setSubmitting(false);
       setError(null);
+      return;
     }
-  }, [open]);
+    setObjectType(initialObjectType.trim());
+    setName('');
+    setLanguage(DEFAULT_LOCALE);
+    setFollowChecked(false);
+    setSubmitting(false);
+    setError(null);
+  }, [open, initialObjectType]);
 
   const canSubmit =
     name.trim().length > 0 && objectType.trim().length > 0 && !submitting;
@@ -235,7 +251,7 @@ export function EditorCreateObjectModal({
           label={t('object_create_type_label')}
           value={objectType}
           onChange={setObjectType}
-          disabled={submitting}
+          disabled={submitting || typeLocked}
         />
 
         {typeDescription ? (

@@ -56,4 +56,15 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:hive-rc-delegations`,
   userEngineTokenDelegations: (accountName: string, symbol: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:engine-delegations:${symbol.trim().toUpperCase()}`,
+  oblOffers: (accountName: string) =>
+    `query-api:obl:${accountName.trim().toLowerCase()}:offers`,
+  oblLedger: (accountA: string, accountB: string) => {
+    const a = accountA.trim().toLowerCase();
+    const b = accountB.trim().toLowerCase();
+    const low = a <= b ? a : b;
+    const high = a <= b ? b : a;
+    return `query-api:obl:ledger:${low}:${high}`;
+  },
+  oblRelationships: (accountName: string) =>
+    `query-api:obl:${accountName.trim().toLowerCase()}:relationships`,
 } as const;

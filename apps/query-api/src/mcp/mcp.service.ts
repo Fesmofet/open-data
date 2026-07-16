@@ -74,6 +74,12 @@ import {
   GetHiveAdvancedReportEndpoint,
   UpsertHiveWalletExemptionEndpoint,
 } from '../domain/wallet';
+import {
+  OblConversionService,
+  OblLedgerService,
+  OblOffersService,
+  OblRelationshipsService,
+} from '../domain/obl';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import type { McpToolDeps } from './mcp-tool.deps';
 import { registerAllMcpTools } from './register-all-tools';
@@ -141,6 +147,10 @@ export class McpService {
     private readonly getPostDiscussion: GetPostDiscussionEndpoint,
     private readonly getPostVoters: GetPostVotersEndpoint,
     private readonly currencyQueries: CurrencyQueryService,
+    private readonly oblOffers: OblOffersService,
+    private readonly oblLedger: OblLedgerService,
+    private readonly oblConversion: OblConversionService,
+    private readonly oblRelationships: OblRelationshipsService,
   ) {}
 
   private buildDeps(): McpToolDeps {
@@ -202,6 +212,10 @@ export class McpService {
       getPostDiscussion: this.getPostDiscussion,
       getPostVoters: this.getPostVoters,
       currencyQueries: this.currencyQueries,
+      oblOffers: this.oblOffers,
+      oblLedger: this.oblLedger,
+      oblConversion: this.oblConversion,
+      oblRelationships: this.oblRelationships,
     };
   }
 

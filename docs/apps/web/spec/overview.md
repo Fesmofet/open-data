@@ -41,6 +41,7 @@ Route-area specs live under [`pages/`](pages/index.md). Start at the [site map](
 | [pages/index.md](pages/index.md) | Full site map: route → area folder → hub spec |
 | [pages/object/page-shell.md](pages/object/page-shell.md) | Object detail layout, regions, edit vs browse |
 | [pages/user-profile/profile-shell.md](pages/user-profile/profile-shell.md) | Profile layout tree, `/@:name` URLs |
+| [pages/business/overview.md](pages/business/overview.md) | OBL Business UI: `/business`, `/offers`, `/requests` |
 
 Do **not** duplicate page-route detail in this file — link the site map or the relevant `pages/<area>/` hub.
 

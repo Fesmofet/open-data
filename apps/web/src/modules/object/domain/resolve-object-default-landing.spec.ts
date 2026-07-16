@@ -51,6 +51,16 @@ describe('resolveObjectDefaultLanding', () => {
     expect(landing).toEqual({ kind: 'hostContent' });
   });
 
+  it('returns hostContent for legal_document host', () => {
+    const landing = resolveObjectDefaultLanding(
+      view('legal_document', { legalText: '<p>Terms</p>' }),
+      'default',
+      'legal_document',
+      DEPS,
+    );
+    expect(landing).toEqual({ kind: 'hostContent' });
+  });
+
   it('returns nestedInHost for business with first menuItem list target', () => {
     const landing = resolveObjectDefaultLanding(
       view('business', {

@@ -23,10 +23,13 @@ import { DiscoverController } from './discover.controller';
 import { CategoriesController } from './categories.controller';
 import { DiscoverModule } from '../domain/discover';
 import { WalletModule } from '../domain/wallet';
+import { OblModule } from '../domain/obl';
 import { UserWalletController } from './user-wallet.controller';
 import { HiveWalletAdvancedReportController } from './hive-wallet-advanced-report.controller';
 import { WaivWalletAdvancedReportController } from './waiv-wallet-advanced-report.controller';
 import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-report.controller';
+import { OblOfferDraftsController } from './obl-offer-drafts.controller';
+import { OblController } from './obl.controller';
 
 @Module({
   imports: [
@@ -44,6 +47,7 @@ import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-rep
     SearchModule,
     DiscoverModule,
     WalletModule,
+    OblModule,
   ],
   controllers: [
     ObjectsController,
@@ -60,6 +64,8 @@ import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-rep
     SearchController,
     DiscoverController,
     CategoriesController,
+    OblOfferDraftsController,
+    OblController,
   ],
 })
 export class ControllersModule {}

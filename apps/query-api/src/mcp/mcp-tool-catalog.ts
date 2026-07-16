@@ -403,6 +403,48 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     description: 'USD scaling for Hive Engine swap pool symbols.',
     httpEquivalent: 'GET /query/v1/currency/engine/pools-usd',
   },
+  {
+    name: 'search_obl_offers',
+    description: 'Search published OBL offers/requests by name, description, and tags.',
+    httpEquivalent: 'GET /query/v1/obl/offers/search',
+    specPath: 'docs/spec/open-business-layer.md',
+  },
+  {
+    name: 'get_obl_offer',
+    description: 'Get one published OBL offer by offer_id (optional version).',
+    httpEquivalent: 'GET /query/v1/obl/offers/:offerId',
+    specPath: 'docs/spec/open-business-layer.md',
+  },
+  {
+    name: 'get_obl_ledger',
+    description: 'Mutual Ledger drill-down for an account pair: contracts, invoices, payments, disputes, balance.',
+    httpEquivalent: 'GET /query/v1/obl/ledger',
+    specPath: 'docs/spec/obl/mutual-ledger.md',
+  },
+  {
+    name: 'get_obl_balance',
+    description: 'Per-pair USD balance in confirmed/pending/disputed states.',
+    httpEquivalent: 'GET /query/v1/obl/balance',
+    specPath: 'docs/spec/obl/mutual-ledger.md',
+  },
+  {
+    name: 'convert_usd_to_waiv',
+    description: 'Live USD→WAIV conversion using stored hive_engine_rates.',
+    httpEquivalent: 'GET /query/v1/obl/convert/usd-to-waiv',
+    specPath: 'docs/spec/obl/payments.md',
+  },
+  {
+    name: 'get_obl_relationships',
+    description: 'List OBL counterparties and per-pair balances for an account.',
+    httpEquivalent: 'GET /query/v1/obl/relationships',
+    specPath: 'docs/spec/open-business-layer.md',
+  },
+  {
+    name: 'get_obl_contract',
+    description: 'Get one OBL contract by contract_id.',
+    httpEquivalent: 'GET /query/v1/obl/contracts/:contractId',
+    specPath: 'docs/spec/open-business-layer.md',
+  },
 ] as const;
 
 export const REGISTERED_MCP_TOOL_NAMES: readonly string[] = QUERY_MCP_TOOL_CATALOG.map(

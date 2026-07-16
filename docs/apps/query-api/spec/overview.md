@@ -65,6 +65,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [Object threads feed](object-threads-feed.md) | `POST /query/v1/objects/:id/threads` (Reviews > Threads) |
 | [Object SEO](object-seo.md) | SEO fields on resolved objects |
 | [MCP agent mirror](mcp.md) | `POST /query/mcp` — live data tools for agents |
+| [OBL reads](obl.md) | Offer search, mutual ledger, balance, USD→WAIV conversion, offer drafts |
 
 ## Verification
 

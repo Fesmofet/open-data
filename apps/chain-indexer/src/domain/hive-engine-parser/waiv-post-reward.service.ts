@@ -14,6 +14,8 @@ import {
 } from './waiv-post-reward.util';
 import { WaivRewardEventDedupCache } from './waiv-reward-event-dedup.cache';
 import { WaivRewardPoolCache } from './waiv-reward-pool.cache';
+import { WAIV_HE_REWARD_EVENTS } from '../../constants/waiv-reward.constants';
+import { OblPaymentAttributionService } from '../obl-parser/obl-payment-attribution.service';
 
 @Injectable()
 export class WaivPostRewardService {
@@ -26,6 +28,7 @@ export class WaivPostRewardService {
     private readonly poolCache: WaivRewardPoolCache,
     private readonly reconcileQueue: PostWaivReconcileQueue,
     private readonly rewardDedupCache: WaivRewardEventDedupCache,
+    private readonly oblPayments: OblPaymentAttributionService,
   ) {}
 
   async handleVotes(votes: WaivEngineVoteEvent[], blockTimestampUnix: number): Promise<void> {
@@ -161,6 +164,21 @@ export class WaivPostRewardService {
       this.logger.warn(
         `WAIV reward skipped: root post missing ${author}/${permlink}`,
       );
+      return;
+    }
+
+    if (reward.event === WAIV_HE_REWARD_EVENTS.CURATION_REWARD && reward.account) {
+      await this.oblPayments.recordUpvoteReward({
+        voter: reward.account,
+        author,
+        symbol: reward.symbol,
+        quantity: reward.quantity,
+        authorperm: reward.authorperm,
+        heTransactionId: reward.heTransactionId,
+        refHiveBlockNumber: reward.refHiveBlockNumber,
+        trxIndex: reward.trxIndex,
+        logIndex: reward.logIndex,
+      });
     }
   }
 }
