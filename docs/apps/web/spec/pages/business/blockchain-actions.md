@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, business, blockchain]
-updated_at: 2026-07-14
+updated_at: 2026-07-16
 related:
   - docs/apps/web/spec/pages/business/overview.md
 ---
@@ -27,6 +27,17 @@ Client broadcasts use `useOblCustomJsonId()` from `OdlNetworkProvider` (server e
 
 `drafting` → `wallet` → `broadcast` → `indexing` → `confirmed` | `failed`. UI surfaces indexing via `StateBadge` variant `indexing`.
 
+`isOblBroadcastBusy(phase)` is true for `wallet`, `broadcast`, and `indexing`. Primary actions (Sign contract, Publish version, Retire offer, relationship modal submits, header ledger actions) are **disabled** while busy. Modals use `closeOnBackdrop={!isBusy}`.
+
 ## Builders
 
-`application/build-obl-ops.ts` wraps `@opden-data-layer/hive-broadcast` for publish, update, retire, sign, invoice, payment, dispute ops.
+`application/build-obl-ops.ts` wraps `@opden-data-layer/hive-broadcast` for publish, update, retire, sign (with optional `metadata`), invoice (with optional `details` + `contractId`), payment declare/confirm (confirm supports `declarePaymentId` and partial amount), dispute open/resolve.
+
+Relationship modals:
+
+| Modal | Op |
+|-------|-----|
+| Issue invoice | `buildIssueInvoiceOp` |
+| Record payment | `buildDeclarePaymentOp` |
+| Confirm payment | `buildConfirmPaymentOp` + `declarePaymentId` |
+| Open dispute | `buildOpenDisputeOp` |

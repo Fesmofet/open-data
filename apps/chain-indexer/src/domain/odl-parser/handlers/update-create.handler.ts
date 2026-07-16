@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   latLonToGeoJsonPoint,
+  blockTimestampToUnixSeconds,
   OBJECT_TYPE_REGISTRY,
   UPDATE_REGISTRY,
   UPDATE_TYPES,
@@ -185,7 +186,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       update_type,
       creator,
       locale: effectiveLocale,
-      created_at_unix: Math.floor(new Date(ctx.timestamp).getTime() / 1000),
+      created_at_unix: blockTimestampToUnixSeconds(ctx.timestamp),
       event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
       value_text:

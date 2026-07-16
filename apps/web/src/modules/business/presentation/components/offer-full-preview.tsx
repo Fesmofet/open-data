@@ -5,6 +5,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
   formatTagsInput,
   getOfferTerms,
+  getOfferTermination,
   type OfferDraftState,
 } from '../../domain/offer-form.types';
 import { BusinessDisclosure } from './business-disclosure';
@@ -32,6 +33,8 @@ export function OfferFullPreview({ state, author }: OfferFullPreviewProps) {
   const { t } = useI18n();
   const { kind, fields, legalText } = state;
   const terms = getOfferTerms(fields);
+  const termination = getOfferTermination(fields);
+  const signParams = terms.signParams ?? [];
 
   return (
     <article className="flex flex-col gap-6">
@@ -77,6 +80,14 @@ export function OfferFullPreview({ state, author }: OfferFullPreviewProps) {
             label={t('business_field_service_ref')}
             value={displayOrDash(fields.serviceRef)}
           />
+          {signParams.length > 0 ? (
+            <PreviewRow
+              label={t('business_sign_params_editor_title')}
+              value={signParams
+                .map((param) => `${param.label} (${param.key})${param.required ? ' *' : ''}`)
+                .join('\n')}
+            />
+          ) : null}
         </dl>
       </section>
 
@@ -122,8 +133,24 @@ export function OfferFullPreview({ state, author }: OfferFullPreviewProps) {
         </h3>
         <dl>
           <PreviewRow
+            label={t('business_field_termination_who')}
+            value={displayOrDash(termination.who)}
+          />
+          <PreviewRow
+            label={t('business_field_termination_mode')}
+            value={displayOrDash(termination.mode)}
+          />
+          {termination.mode === 'notice' ? (
+            <PreviewRow
+              label={t('business_field_termination_notice_days')}
+              value={
+                termination.noticeDays !== undefined ? String(termination.noticeDays) : '—'
+              }
+            />
+          ) : null}
+          <PreviewRow
             label={t('business_field_termination_notes')}
-            value={displayOrDash(fields.terminationNotes)}
+            value={displayOrDash(termination.notes)}
           />
         </dl>
       </section>

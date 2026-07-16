@@ -17,3 +17,7 @@ export type BlockchainActionKind =
   | 'payment_confirm'
   | 'dispute_open'
   | 'dispute_resolve';
+
+export function isOblBroadcastBusy(phase: BlockchainActionPhase): boolean {
+  return phase === 'wallet' || phase === 'broadcast' || phase === 'indexing';
+}

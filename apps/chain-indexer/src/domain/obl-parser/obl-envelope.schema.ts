@@ -44,6 +44,7 @@ export const contractSignPayloadSchema = z.object({
   provider: z.string().min(1).max(32),
   client: z.string().min(1).max(32),
   signer: z.string().min(1).max(32),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const invoiceIssuePayloadSchema = z.object({
@@ -61,7 +62,6 @@ export const paymentDeclarePayloadSchema = z.object({
   payer: z.string().min(1).max(32),
   receiver: z.string().min(1).max(32),
   amount_usd: z.union([z.number().positive(), z.string().min(1)]),
-  contract_id: z.string().min(1).max(256).optional(),
   ref: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -71,6 +71,7 @@ export const paymentConfirmPayloadSchema = z.object({
   payer: z.string().min(1).max(32).optional(),
   amount_usd: z.union([z.number().positive(), z.string().min(1)]),
   declare_payment_id: z.string().min(1).max(256).optional(),
+  ref: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const disputeOpenPayloadSchema = z.object({

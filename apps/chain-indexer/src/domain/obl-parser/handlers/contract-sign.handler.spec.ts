@@ -19,6 +19,7 @@ const baseOffer: OblOffer = {
   status: 'active',
   created_event_seq: BigInt(1),
   transaction_id: 'tx-offer',
+  created_at: new Date('2026-01-01T00:00:00.000Z'),
 };
 
 function ctx(creator: string): OdlEventContext {
@@ -40,6 +41,7 @@ describe('ContractSignHandler', () => {
   let handler: ContractSignHandler;
   let findOfferVersion: jest.Mock;
   let findContract: jest.Mock;
+  let findContractForOfferAndPair: jest.Mock;
   let hasLedgerForPair: jest.Mock;
   let runInTransaction: jest.Mock;
   let insertContract: jest.Mock;
@@ -47,12 +49,14 @@ describe('ContractSignHandler', () => {
   beforeEach(() => {
     findOfferVersion = jest.fn();
     findContract = jest.fn().mockResolvedValue(null);
+    findContractForOfferAndPair = jest.fn().mockResolvedValue(null);
     hasLedgerForPair = jest.fn().mockResolvedValue(false);
     runInTransaction = jest.fn(async (fn: (trx: unknown) => Promise<void>) => fn({}));
     insertContract = jest.fn().mockResolvedValue(undefined);
     handler = new ContractSignHandler({
       findOfferVersion,
       findContract,
+      findContractForOfferAndPair,
       hasLedgerForPair,
       runInTransaction,
       insertContract,
@@ -92,5 +96,47 @@ describe('ContractSignHandler', () => {
     );
     expect(runInTransaction).toHaveBeenCalled();
     expect(insertContract).toHaveBeenCalled();
+  });
+
+  it('rejects duplicate contract for same offer and pair', async () => {
+    findOfferVersion.mockResolvedValue(baseOffer);
+    findContractForOfferAndPair.mockResolvedValue({
+      contract_id: 'existing',
+      offer_id: 'offer-1',
+    });
+    await handler.handle(
+      {
+        contract_id: 'c-2',
+        offer_id: 'offer-1',
+        offer_version: 1,
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+      ctx('bob'),
+    );
+    expect(insertContract).not.toHaveBeenCalled();
+  });
+
+  it('stores metadata on contract insert', async () => {
+    findOfferVersion.mockResolvedValue(baseOffer);
+    await handler.handle(
+      {
+        contract_id: 'c-1',
+        offer_id: 'offer-1',
+        offer_version: 1,
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+        metadata: { targets: ['obj-1'], governance: 'gov-1' },
+      },
+      ctx('bob'),
+    );
+    expect(insertContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: { targets: ['obj-1'], governance: 'gov-1' },
+      }),
+      expect.anything(),
+    );
   });
 });

@@ -2,11 +2,16 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
-import { businessRoutes } from '../../domain/routes';
+import {
+  businessNavIdForKind,
+  businessRoutes,
+  type OblOfferKindRoute,
+  type OffersListTab,
+} from '../../domain/routes';
 import type { OblOfferDraftView } from '../../infrastructure/clients/obl-drafts.server';
 import type { OblOfferApiRow } from '../../infrastructure/clients/obl-offers.server';
 import { createOblDraftAction } from '../../infrastructure/actions/obl-drafts.actions';
@@ -18,32 +23,51 @@ import {
 
 export type BusinessOffersListClientProps = {
   username: string;
+  kind: OblOfferKindRoute;
+  tab: OffersListTab;
   drafts: OblOfferDraftView[];
   published: OblOfferApiRow[];
 };
 
 export function BusinessOffersListClient({
   username,
+  kind,
+  tab,
   drafts,
   published,
 }: BusinessOffersListClientProps) {
   const { t } = useI18n();
   const router = useRouter();
-  const [tab, setTab] = useState<'drafts' | 'published' | 'retired'>('drafts');
   const [creating, setCreating] = useState(false);
 
-  const retired = published.filter((o) => o.status === 'retired');
-  const activePublished = published.filter((o) => o.status === 'active');
+  const kindDrafts = useMemo(
+    () => drafts.filter((draft) => draft.kind === kind),
+    [drafts, kind],
+  );
+  const retired = useMemo(
+    () => published.filter((row) => row.kind === kind && row.status === 'retired'),
+    [published, kind],
+  );
+  const activePublished = useMemo(
+    () => published.filter((row) => row.kind === kind && row.status === 'active'),
+    [published, kind],
+  );
+
+  const title = kind === 'offer' ? t('business_offers_title') : t('business_requests_title');
+  const subtitle =
+    kind === 'offer' ? t('business_offers_subtitle') : t('business_requests_subtitle');
+  const createLabel =
+    kind === 'offer' ? t('business_create_offer') : t('business_create_request');
 
   async function onCreateDraft() {
     setCreating(true);
     try {
       const result = await createOblDraftAction(username, {
-        kind: 'offer',
+        kind,
         fields: { name: '' },
       });
       if (result.ok) {
-        router.push(businessRoutes.offerDraft(result.value.draftId));
+        router.push(businessRoutes.offerDraft(kind, result.value.draftId));
       }
     } finally {
       setCreating(false);
@@ -52,9 +76,9 @@ export function BusinessOffersListClient({
 
   return (
     <BusinessPageShell
-      activeNav="offers"
-      title={t('business_offers_title')}
-      subtitle={t('business_offers_subtitle')}
+      activeNav={businessNavIdForKind(kind)}
+      title={title}
+      subtitle={subtitle}
       actions={
         <button
           type="button"
@@ -62,16 +86,15 @@ export function BusinessOffersListClient({
           onClick={() => void onCreateDraft()}
           className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg disabled:opacity-50"
         >
-          {creating ? '…' : t('business_create_offer_or_request')}
+          {creating ? '…' : createLabel}
         </button>
       }
     >
       <div className="mb-4 flex flex-wrap gap-2">
         {(['drafts', 'published', 'retired'] as const).map((id) => (
-          <button
+          <Link
             key={id}
-            type="button"
-            onClick={() => setTab(id)}
+            href={businessRoutes.manageTab(kind, id)}
             className={[
               'rounded-pill border px-3 py-1 text-body-sm',
               tab === id
@@ -80,19 +103,19 @@ export function BusinessOffersListClient({
             ].join(' ')}
           >
             {t(`business_offers_tab_${id}`)}
-          </button>
+          </Link>
         ))}
       </div>
 
       {tab === 'drafts' ? (
-        drafts.length === 0 ? (
+        kindDrafts.length === 0 ? (
           <BusinessEmptyState
             title={t('business_offers_drafts_empty_title')}
             description={t('business_offers_drafts_empty_body')}
           />
         ) : (
           <ul className="flex flex-col gap-3">
-            {drafts.map((draft) => (
+            {kindDrafts.map((draft) => (
               <li
                 key={draft.draftId}
                 className="rounded-card border border-border bg-surface p-card-padding shadow-card"
@@ -104,12 +127,12 @@ export function BusinessOffersListClient({
                         t('business_draft_untitled')}
                     </p>
                     <p className="text-caption text-fg-secondary">
-                      {draft.kind} · {t('business_last_edited')}{' '}
+                      {t('business_last_edited')}{' '}
                       {new Date(draft.lastUpdated * 1000).toLocaleString()}
                     </p>
                   </div>
                   <Link
-                    href={businessRoutes.offerDraft(draft.draftId)}
+                    href={businessRoutes.offerDraft(kind, draft.draftId)}
                     className="rounded-btn border border-border px-3 py-1 text-body-sm text-link"
                   >
                     {t('business_continue_editing')}
@@ -139,9 +162,7 @@ export function BusinessOffersListClient({
                     <p className="text-body font-weight-strong text-heading">
                       {offer.name}
                     </p>
-                    <p className="text-caption text-fg-secondary">
-                      {offer.kind} · v{offer.version}
-                    </p>
+                    <p className="text-caption text-fg-secondary">v{offer.version}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <StateBadge

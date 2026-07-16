@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../odl-action-handler';
 import { FollowObjectHandler } from './follow-object.handler';
 
@@ -48,7 +49,7 @@ describe('FollowObjectHandler', () => {
       account: 'alice',
       object_id: objectId,
       bell: false,
-      created_at: new Date(baseCtx.timestamp),
+      created_at: hiveBlockTimestampToDate(baseCtx.timestamp),
     });
   });
 

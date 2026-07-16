@@ -9,7 +9,7 @@ import { useOblCustomJsonId } from '@/config/odl-network-provider';
 import {
   buildRetireOfferOp,
 } from '../../application/build-obl-ops';
-import { businessRoutes } from '../../domain/routes';
+import { businessNavIdForKind, businessRoutes } from '../../domain/routes';
 import type { OblOfferApiRow } from '../../infrastructure/clients/obl-offers.server';
 import { createOblDraftAction } from '../../infrastructure/actions/obl-drafts.actions';
 import { BusinessDisclosure } from './business-disclosure';
@@ -27,7 +27,7 @@ export function BusinessOfferDetailClient({
   const { t } = useI18n();
   const router = useRouter();
   const oblCustomJsonId = useOblCustomJsonId();
-  const { broadcast, phase, error } = useOblBroadcast(username);
+  const { broadcast, phase, isBusy, error } = useOblBroadcast(username);
   const isOwner = username === offer.author;
   const publicHref =
     offer.kind === 'offer'
@@ -61,13 +61,13 @@ export function BusinessOfferDetailClient({
       },
     });
     if (draft.ok) {
-      router.push(businessRoutes.offerDraft(draft.value.draftId));
+      router.push(businessRoutes.offerDraft(offer.kind, draft.value.draftId));
     }
   }
 
   return (
     <BusinessPageShell
-      activeNav="offers"
+      activeNav={businessNavIdForKind(offer.kind)}
       title={offer.name}
       subtitle={t('business_offer_detail_subtitle')}
       actions={
@@ -76,8 +76,9 @@ export function BusinessOfferDetailClient({
             {offer.status === 'active' ? (
               <button
                 type="button"
+                disabled={isBusy}
                 onClick={() => void onRetire()}
-                className="rounded-btn border border-border px-3 py-1 text-body-sm"
+                className="rounded-btn border border-border px-3 py-1 text-body-sm disabled:opacity-50"
               >
                 {t('business_retire_offer')}
               </button>

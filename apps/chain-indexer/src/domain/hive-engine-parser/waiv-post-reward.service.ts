@@ -37,9 +37,9 @@ export class WaivPostRewardService {
     }
   }
 
-  async handleRewards(rewards: WaivEngineRewardEvent[]): Promise<void> {
+  async handleRewards(rewards: WaivEngineRewardEvent[], createdAt?: Date): Promise<void> {
     for (const reward of rewards) {
-      await this.handleReward(reward);
+      await this.handleReward(reward, createdAt);
     }
   }
 
@@ -129,7 +129,7 @@ export class WaivPostRewardService {
     await this.reconcileQueue.markDirty(author, permlink, blockTimestampUnix);
   }
 
-  private async handleReward(reward: WaivEngineRewardEvent): Promise<void> {
+  private async handleReward(reward: WaivEngineRewardEvent, createdAt?: Date): Promise<void> {
     const parsed = parseAuthorPerm(reward.authorperm);
     if (!parsed) {
       return;
@@ -178,6 +178,7 @@ export class WaivPostRewardService {
         refHiveBlockNumber: reward.refHiveBlockNumber,
         trxIndex: reward.trxIndex,
         logIndex: reward.logIndex,
+        createdAt,
       });
     }
   }

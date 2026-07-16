@@ -33,7 +33,7 @@ export function BusinessRelationshipsClient({
           description={t('business_relationships_empty_body')}
           action={
             <Link
-              href={businessRoutes.publicOffers}
+              href={businessRoutes.discoverOffers}
               className="rounded-btn bg-accent px-4 py-2 text-body-sm text-accent-fg"
             >
               {t('business_view_offers')}

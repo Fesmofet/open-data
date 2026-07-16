@@ -30,7 +30,7 @@ Domain: `apps/query-api/src/domain/obl/`
 
 | Method | Path |
 |--------|------|
-| GET | `/query/v1/obl/offers/search` |
+| GET | `/query/v1/obl/offers/search` | `status` optional: `active` (default), `retired`, `all` — owner dashboards use `author` + `status=all` |
 | GET | `/query/v1/obl/offers/:offerId` |
 | GET | `/query/v1/obl/ledger?accountA=&accountB=` |
 | GET | `/query/v1/obl/balance?accountA=&accountB=` |

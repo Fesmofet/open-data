@@ -3,12 +3,12 @@
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { ModalShell } from '@/shared/presentation/components/modal-shell';
+import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 
 import { useOfferEditor } from '../../application/use-offer-editor';
 import { computeStepCompleteness } from '../../domain/offer-draft.schema';
 import { OFFER_EDITOR_STEPS } from '../../domain/offer-form.types';
-import { businessRoutes } from '../../domain/routes';
+import { businessNavIdForKind, businessRoutes } from '../../domain/routes';
 import type { OblOfferDraftView } from '../../infrastructure/clients/obl-drafts.server';
 import { OfferEditorBasicsStep } from './offer-editor/offer-editor-basics-step';
 import { OfferEditorBillingStep } from './offer-editor/offer-editor-billing-step';
@@ -32,7 +32,7 @@ export function BusinessOfferEditorClient({
   draft,
 }: BusinessOfferEditorClientProps) {
   const { t } = useI18n();
-  const { broadcast, phase, error } = useOblBroadcast(username);
+  const { broadcast, phase, isBusy, error } = useOblBroadcast(username);
   const editor = useOfferEditor({ username, draft, broadcast });
 
   const previewTitleId = 'offer-full-preview-title';
@@ -40,7 +40,7 @@ export function BusinessOfferEditorClient({
   return (
     <>
       <BusinessPageShell
-        activeNav="offers"
+        activeNav={businessNavIdForKind(draft.kind)}
         title={editor.fields.name || t('business_draft_untitled')}
         subtitle={t('business_editor_subtitle')}
         actions={
@@ -91,6 +91,7 @@ export function BusinessOfferEditorClient({
               fields={editor.fields}
               onKindChange={editor.setKind}
               onFieldsChange={editor.setFields}
+              kindLocked
             />
           ) : null}
           {editor.step === 'service' ? (
@@ -138,6 +139,7 @@ export function BusinessOfferEditorClient({
             <OfferEditorReviewStep
               state={editor.state}
               phase={phase}
+              isBusy={isBusy}
               error={error}
               onPublish={() => void editor.publish()}
               onGoToStep={editor.setStep}
@@ -165,8 +167,13 @@ export function BusinessOfferEditorClient({
         </div>
 
         <p className="mt-4">
-          <Link href={businessRoutes.offers} className="text-body-sm text-link">
-            {t('business_back_to_offers')}
+          <Link
+            href={businessRoutes.manageTab(draft.kind, 'drafts')}
+            className="text-body-sm text-link"
+          >
+            {draft.kind === 'request'
+              ? t('business_back_to_requests')
+              : t('business_back_to_offers')}
           </Link>
         </p>
       </BusinessPageShell>
@@ -184,14 +191,20 @@ export function BusinessOfferEditorClient({
             <h2 id={previewTitleId} className="text-body font-weight-strong text-heading">
               {t('business_full_preview')}
             </h2>
-            <Link
-              href={editor.previewHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-body-sm text-link"
-            >
-              {t('business_full_preview_open_tab')}
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={editor.previewHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-body-sm text-link"
+              >
+                {t('business_full_preview_open_tab')}
+              </Link>
+              <ModalShellCloseButton
+                onClose={() => editor.setPreviewOpen(false)}
+                ariaLabel={t('business_modal_close')}
+              />
+            </div>
           </div>
         }
       >

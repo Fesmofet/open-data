@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core';
+import { hiveBlockTimestampToDate, OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core';
 import { ObjectsCoreRepository } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { objectCreatePayloadSchema } from '../odl-envelope.schema';
@@ -46,7 +46,7 @@ export class ObjectCreateHandler implements OdlActionHandler {
       object_type,
       creator,
       transaction_id: ctx.transactionId,
-      created_at: new Date(ctx.timestamp),
+      created_at: hiveBlockTimestampToDate(ctx.timestamp),
     });
     this.eventEmitter.emit(
       USER_OBJECT_POWERS_CREATE_EVENT,

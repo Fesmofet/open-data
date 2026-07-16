@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: platform
 tags: [obl, disputes]
-updated_at: 2026-07-14
+updated_at: 2026-07-16
 related:
   - docs/spec/open-business-layer.md
   - docs/spec/obl/mutual-ledger.md
@@ -14,12 +14,14 @@ related:
 
 # Disputes
 
-Frozen in contract: `dispute_rule` ∈ `client` | `provider` | `arbiter`.
+Frozen in contract: `dispute_rule` ∈ `client` | `provider` | `arbiter` (read from the disputed invoice's `contract_id` when present).
 
 ## Actions
 
 - `dispute_open` — disputant ∈ {debtor, creditor}; invoice → `disputed`
 - `dispute_resolve` — authorized resolver sets `final_amount_usd`; invoice → `resolved`
+
+Client-generated `dispute_id` values use prefixed UUIDs (`dispute-{uuid}`).
 
 ## Resolution authority
 
@@ -30,3 +32,9 @@ Frozen in contract: `dispute_rule` ∈ `client` | `provider` | `arbiter`.
 | `arbiter` | frozen `arbiter` account |
 
 Balance: open dispute amount in **disputed**; after resolve, `final_amount_usd` in **confirmed**.
+
+## Web UI
+
+On the relationship **Disputes** tab, open disputes show **Resolve dispute** when the signed-in account matches the resolver for the invoice's contract rule. `BusinessResolveDisputeModal` broadcasts `dispute_resolve` with editable final amount (default = proposed amount).
+
+Resolved disputes show the full settlement chain: **original invoice amount → proposed amount → agreed final amount** and **resolver** account. The **Invoices** tab shows `$original → $final` for resolved invoices.

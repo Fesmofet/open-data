@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { HiveEngineBlock, HiveEngineTransaction } from '@opden-data-layer/clients';
+import { blockTimestampToUnixSeconds, hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';
 import { WaivPostRewardService } from '../waiv-post-reward.service';
 import { extractWaivEventsFromTransactions } from '../waiv-post-reward.util';
@@ -24,8 +25,8 @@ export class WaivPostRewardParser implements HiveEngineSubParser {
     }
 
     const { votes, rewards } = extractWaivEventsFromTransactions(commentsTxs);
-    const blockTimestampUnix = Math.floor(Date.parse(block.timestamp) / 1000);
-    const ts = Number.isFinite(blockTimestampUnix)
+    const blockTimestampUnix = blockTimestampToUnixSeconds(block.timestamp);
+    const ts = blockTimestampUnix > 0
       ? blockTimestampUnix
       : Math.floor(Date.now() / 1000);
 
@@ -33,7 +34,10 @@ export class WaivPostRewardParser implements HiveEngineSubParser {
       await this.waivPostRewardService.handleVotes(votes, ts);
     }
     if (rewards.length > 0) {
-      await this.waivPostRewardService.handleRewards(rewards);
+      await this.waivPostRewardService.handleRewards(
+        rewards,
+        hiveBlockTimestampToDate(block.timestamp),
+      );
     }
   }
 }

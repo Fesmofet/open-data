@@ -23,7 +23,7 @@ function readSearchParam(
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
-/** Parse `/offers` or `/requests` query state from RSC `searchParams` or client `URLSearchParams`. */
+/** Parse discover catalog query state from RSC `searchParams` or client `URLSearchParams`. */
 export function parsePublicOffersPageState(
   source: PublicOffersSearchParamsSource,
 ): PublicOffersPageState {

@@ -71,4 +71,44 @@ describe('offer-draft.schema', () => {
     const fields: OfferDraftFields = { publishedOfferId: 'existing-offer' };
     expect(isPublishedOfferUpdate(fields)).toBe(true);
   });
+
+  it('marks termination incomplete when notice mode lacks noticeDays', () => {
+    const state = baseState();
+    state.fields.terms = {
+      ...state.fields.terms,
+      termination: { mode: 'notice', who: 'both' },
+    };
+    expect(computeStepCompleteness('termination', state)).toBe('incomplete');
+  });
+
+  it('requires noticeDays for publish when termination mode is notice', () => {
+    const state = baseState();
+    state.fields.terms = {
+      ...state.fields.terms,
+      termination: { mode: 'notice', who: 'both' },
+    };
+    const result = validateOfferDraftForPublish(state);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.termination).toContain('termination_notice_days_required');
+    }
+  });
+
+  it('normalizes termination and signParams into terms for publish', () => {
+    const state = baseState();
+    state.fields.terms = {
+      pricingModel: 'custom',
+      signParams: [{ key: 'targets', label: 'Targets', required: true }],
+      termination: { mode: 'instant', who: 'provider', notes: 'Any time' },
+    };
+    const normalized = normalizeOfferDraftForPublish(state);
+    expect(normalized.fields.terms?.signParams).toEqual([
+      { key: 'targets', label: 'Targets', required: true },
+    ]);
+    expect(normalized.fields.terms?.termination).toEqual({
+      mode: 'instant',
+      who: 'provider',
+      notes: 'Any time',
+    });
+  });
 });

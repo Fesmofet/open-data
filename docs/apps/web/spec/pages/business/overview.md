@@ -1,12 +1,12 @@
 ---
 id: web-business-overview
 title: Business (OBL) UI
-description: Private `/business` area and public offer/request discovery for Open Business Layer.
+description: Private `/business` area and offer/request discovery for Open Business Layer.
 type: spec
 status: active
 scope: web
 tags: [web, business, obl]
-updated_at: 2026-07-14
+updated_at: 2026-07-16
 related:
   - docs/apps/web/spec/overview.md
   - docs/spec/open-business-layer.md
@@ -20,7 +20,7 @@ related:
 
 ## Purpose
 
-Authenticated **Business** workspace for OBL: offer drafts, publish/retire, mutual-ledger relationships, invoices, payments, and disputes. Public `/offers` and `/requests` routes support discovery and contract signing.
+**Business** workspace for OBL: public discover catalog, private offer/request management, mutual-ledger relationships, invoices, payments, and disputes.
 
 Implementation module: `apps/web/src/modules/business/`.
 
@@ -34,27 +34,31 @@ PR review: reject `#…`, `rgb(`, `text-sm`/`text-lg`, `rounded-md`, or inline c
 
 | Area | Gate |
 |------|------|
-| `/business/**` | `requireBusinessUser()` → redirect `/sign-in` |
-| `/offers`, `/requests` (list) | Public |
+| `/business/manage/**` | `requireBusinessUser()` → redirect `/sign-in` |
+| `/business/relationships/**`, `/business/contracts/**` | `requireBusinessUser()` |
+| `/business`, `/business/offers`, `/business/requests` (discover) | Public |
 | `/offers/.../versions/:v`, `/requests/.../versions/:v` | Public read; sign requires wallet session |
 
-Header entry: avatar menu → **Business** (`/business`) and **Browse offers** (`/offers`) (`logged-in-header-actions.tsx`).
+Header entry: avatar menu → **Business** (`/business/offers` discover) (`logged-in-header-actions.tsx`).
 
 ## Route map
 
-| Route | Phase | Role |
-|-------|-------|------|
-| `/business` | D | Overview shell (summary + activity placeholders) |
-| `/business/offers` | A | Drafts / published / retired tabs |
-| `/business/offers/new` | A | Create draft → redirect to editor |
-| `/business/offers/drafts/:draftId` | A | 8-step editor, autosave, publish |
-| `/business/offers/:offerId` | A | Owner detail, retire, new version |
-| `/business/offers/:offerId/versions/:version` | A | Version read / sign (private viewer) |
-| `/business/relationships` | B | Counterparty list |
-| `/business/relationships/:account` | B | Balance cards + tabs (invoices, payments, disputes per counterparty) |
-| `/business/contracts/:contractId` | B | Contract drill-down |
-| `/offers`, `/requests` | A | Public search lists (`?author=`, `?q=`) |
-| `/offers/:id/versions/:v`, `/requests/:id/versions/:v` | A | Public sign + disclosures |
+| Route | Role |
+|-------|------|
+| `/business` | Redirect → `/business/offers` |
+| `/business/offers`, `/business/requests` | Discover catalog (`?author=`, `?q=`); Offers / Requests tab links |
+| `/business/manage/offers/drafts` \| `published` \| `retired` | Private offer management |
+| `/business/manage/requests/drafts` \| `published` \| `retired` | Private request management |
+| `/business/manage/offers/new`, `/business/manage/requests/new` | Create draft → editor |
+| `/business/manage/offers/drafts/:draftId` | 8-step editor, autosave, publish |
+| `/business/manage/offers/:offerId` | Owner detail, retire, new version |
+| `/business/manage/offers/:offerId/versions/:version` | Authenticated version read / sign |
+| `/business/relationships` | Counterparty list |
+| `/business/relationships/:account` | Balance cards + tabs |
+| `/business/contracts/:contractId` | Contract drill-down |
+| `/offers`, `/requests` | Redirect → discover |
+| `/offers/:id/versions/:v`, `/requests/:id/versions/:v` | Public sign + disclosures |
+| `/business/offers/*`, `/business/requests/*` (legacy manage paths) | Redirect → `/business/manage/...` |
 
 Path builders: `modules/business/domain/routes.ts`.
 
@@ -67,15 +71,6 @@ Path builders: `modules/business/domain/routes.ts`.
 | Ledger / relationships | `obl-ledger.server.ts` |
 | Broadcast | `useOblBroadcast` + `useOblCustomJsonId` + `@opden-data-layer/hive-broadcast` |
 | USD→WAIV (client) | BFF `GET /api/business/convert-usd-to-waiv` |
-
-## Phased delivery
-
-| Phase | Scope |
-|-------|--------|
-| A | Drafts, editor, publish, lists, public sign |
-| B | Relationships, contracts, per-relationship invoices/payments/disputes |
-| C | Payments, converter (on relationship detail) |
-| D | Disputes, overview polish, a11y |
 
 Child specs: [offers.md](offers.md), [relationships.md](relationships.md), [blockchain-actions.md](blockchain-actions.md).
 

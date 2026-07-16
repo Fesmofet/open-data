@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { PublicOfferPageClient } from '@/modules/business';
 import { fetchOblOffer } from '@/modules/business/infrastructure/clients/obl-offers.server';
+import { resolveOfferAlreadySigned } from '@/modules/business/infrastructure/clients/obl-ledger.server';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
 export default async function PublicRequestSignPage({
@@ -20,5 +21,9 @@ export default async function PublicRequestSignPage({
   if (!offer || offer.kind !== 'request') {
     notFound();
   }
-  return <PublicOfferPageClient offer={offer} viewer={user?.username ?? null} />;
+  const viewer = user?.username ?? null;
+  const alreadySigned = await resolveOfferAlreadySigned(viewer, offerId, offer.author);
+  return (
+    <PublicOfferPageClient offer={offer} viewer={viewer} alreadySigned={alreadySigned} />
+  );
 }

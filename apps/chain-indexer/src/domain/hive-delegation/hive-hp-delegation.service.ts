@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserDelegationsRepository } from '../../repositories/user-delegations.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
@@ -39,7 +40,7 @@ export class HiveHpDelegationService {
       delegator,
       delegatee,
       vesting_shares: vestingShares,
-      delegation_date: new Date(context.timestamp),
+      delegation_date: hiveBlockTimestampToDate(context.timestamp),
     });
   }
 }

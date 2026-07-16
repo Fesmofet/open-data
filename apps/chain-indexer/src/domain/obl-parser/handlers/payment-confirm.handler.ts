@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
@@ -31,6 +32,8 @@ export class PaymentConfirmHandler implements OdlActionHandler {
       return;
     }
 
+    const createdAt = hiveBlockTimestampToDate(ctx.timestamp);
+
     if (data.declare_payment_id) {
       const pending = await this.oblRepository.findPayment(data.declare_payment_id);
       if (!pending || pending.receiver !== data.receiver) {
@@ -41,68 +44,10 @@ export class PaymentConfirmHandler implements OdlActionHandler {
         this.logger.warn('payment_confirm: declare payment is not pending');
         return;
       }
-      const pendingUsd = Number(pending.amount_usd);
-      const confirmNum = Number(confirmUsd);
-      await this.oblRepository.runInTransaction(async (trx) => {
-        if (confirmNum >= pendingUsd) {
-          await this.oblRepository.updatePayment(
-            data.declare_payment_id!,
-            {
-              state: 'confirmed',
-              amount_usd: pending.amount_usd,
-            },
-            trx,
-          );
-          const remainder = confirmNum - pendingUsd;
-          if (remainder > 0) {
-            await this.oblRepository.insertPayment(
-              {
-                payment_id: data.payment_id,
-                payer: pending.payer,
-                receiver: pending.receiver,
-                amount_usd: remainder.toFixed(8),
-                method: 'offchain',
-                token_symbol: null,
-                token_amount: null,
-                rate_usd: null,
-                state: 'confirmed',
-                contract_id: pending.contract_id,
-                ref: asJsonValue({ excess_confirm: true }),
-                created_event_seq: ctx.eventSeq,
-                transaction_id: ctx.transactionId,
-              },
-              trx,
-            );
-          }
-          return;
-        }
-        await this.oblRepository.updatePayment(
-          data.declare_payment_id!,
-          {
-            state: 'confirmed',
-            amount_usd: confirmUsd,
-          },
-          trx,
-        );
-        const remainder = (pendingUsd - confirmNum).toFixed(8);
-        await this.oblRepository.insertPayment(
-          {
-            payment_id: data.payment_id,
-            payer: pending.payer,
-            receiver: pending.receiver,
-            amount_usd: remainder,
-            method: 'offchain',
-            token_symbol: null,
-            token_amount: null,
-            rate_usd: null,
-            state: 'pending',
-            contract_id: pending.contract_id,
-            ref: asJsonValue({ partial_remainder_of: data.declare_payment_id }),
-            created_event_seq: ctx.eventSeq,
-            transaction_id: ctx.transactionId,
-          },
-          trx,
-        );
+
+      await this.oblRepository.updatePayment(data.declare_payment_id, {
+        state: 'confirmed',
+        amount_usd: confirmUsd,
       });
       return;
     }
@@ -130,15 +75,19 @@ export class PaymentConfirmHandler implements OdlActionHandler {
       payer: data.payer,
       receiver: data.receiver,
       amount_usd: confirmUsd,
+      declared_amount_usd: confirmUsd,
       method: 'offchain',
       token_symbol: null,
       token_amount: null,
       rate_usd: null,
       state: 'confirmed',
-      contract_id: null,
-      ref: asJsonValue({ receiver_only_confirm: true }),
+      ref: asJsonValue({
+        receiver_only_confirm: true,
+        ...(data.ref ?? {}),
+      }),
       created_event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
+      created_at: createdAt,
     });
   }
 }

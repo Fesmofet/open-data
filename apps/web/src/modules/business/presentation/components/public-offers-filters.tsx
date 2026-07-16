@@ -22,11 +22,6 @@ export function PublicOffersFilters({ kind, filters }: PublicOffersFiltersProps)
   const [author, setAuthor] = useState(filters.author);
   const [q, setQ] = useState(filters.q);
 
-  const otherKind = kind === 'offer' ? 'request' : 'offer';
-  const otherHref = buildPublicOffersHref(otherKind, {
-    author: filters.author || undefined,
-    q: filters.q || undefined,
-  });
   const hasFilters = hasPublicOffersFilters(filters);
 
   function onSubmit(e: FormEvent) {
@@ -47,24 +42,6 @@ export function PublicOffersFilters({ kind, filters }: PublicOffersFiltersProps)
 
   return (
     <div className="mb-section-y flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-body-sm text-fg-secondary">
-          {kind === 'offer'
-            ? t('business_public_offers_title')
-            : t('business_public_requests_title')}
-        </span>
-        <span className="text-caption text-fg-tertiary">·</span>
-        <button
-          type="button"
-          onClick={() => router.push(otherHref)}
-          className="text-body-sm text-link"
-        >
-          {otherKind === 'offer'
-            ? t('business_view_offers')
-            : t('business_view_requests')}
-        </button>
-      </div>
-
       <form
         onSubmit={onSubmit}
         className="flex flex-col gap-3 rounded-card border border-border bg-surface p-card-padding shadow-card sm:flex-row sm:flex-wrap sm:items-end"

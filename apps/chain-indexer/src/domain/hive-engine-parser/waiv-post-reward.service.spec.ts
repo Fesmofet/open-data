@@ -34,6 +34,7 @@ describe('WaivPostRewardService', () => {
       { getRewardRate: jest.fn() } as never,
       { markDirty } as never,
       { claimOnce } as never,
+      { recordUpvoteReward: jest.fn() } as never,
     );
 
     return {
@@ -85,6 +86,10 @@ describe('WaivPostRewardService', () => {
         quantity: 2,
         symbol: 'WAIV',
         event: 'authorReward',
+        account: 'bob',
+        refHiveBlockNumber: 100,
+        trxIndex: 0,
+        logIndex: 0,
       },
     ]);
 
@@ -112,6 +117,10 @@ describe('WaivPostRewardService', () => {
         quantity: 2,
         symbol: 'WAIV',
         event: 'authorReward',
+        account: 'bob',
+        refHiveBlockNumber: 100,
+        trxIndex: 0,
+        logIndex: 0,
       },
     ]);
 

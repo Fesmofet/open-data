@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { PublicOfferPageClient } from '@/modules/business';
 import { fetchOblOffer } from '@/modules/business/infrastructure/clients/obl-offers.server';
+import { resolveOfferAlreadySigned } from '@/modules/business/infrastructure/clients/obl-ledger.server';
 import { requireBusinessUser } from '@/modules/business/infrastructure/require-business-user.server';
 
 export default async function BusinessOfferVersionPage({
@@ -19,5 +20,12 @@ export default async function BusinessOfferVersionPage({
   if (!offer) {
     notFound();
   }
-  return <PublicOfferPageClient offer={offer} viewer={username} />;
+  const alreadySigned = await resolveOfferAlreadySigned(username, offerId, offer.author);
+  return (
+    <PublicOfferPageClient
+      offer={offer}
+      viewer={username}
+      alreadySigned={alreadySigned}
+    />
+  );
 }

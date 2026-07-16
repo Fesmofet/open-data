@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useOblCustomJsonId } from '@/config/odl-network-provider';
@@ -10,17 +10,122 @@ import {
   buildConfirmPaymentOp,
   buildDeclarePaymentOp,
   buildIssueInvoiceOp,
+  buildOpenDisputeOp,
+  buildResolveDisputeOp,
 } from '../../application/build-obl-ops';
+import {
+  canViewerResolveDispute,
+  disputeAuthorityForInvoice,
+  findInvoiceForDispute,
+  formatLedgerDate,
+  formatUsdDisplay,
+  shortContractId,
+  truncateText,
+} from '../../domain/dispute-resolution';
+import type {
+  LedgerContractRow,
+  LedgerDisputeRow,
+  LedgerInvoiceRow,
+  LedgerPaymentRow,
+} from '../../domain/ledger.types';
+import { sortByCreatedAtDesc } from '../../domain/ledger-sort';
+import {
+  newOblDisputeId,
+  newOblInvoiceId,
+  newOblPaymentConfirmId,
+  newOblPaymentDeclareId,
+} from '../../domain/obl-ids';
 import { businessRoutes } from '../../domain/routes';
 import type { OblLedgerApiResponse } from '../../infrastructure/clients/obl-ledger.server';
 import { BalanceCards } from './balance-cards';
-import { BusinessDisclosure } from './business-disclosure';
+import { BusinessConfirmPaymentModal } from './relationship/business-confirm-payment-modal';
+import { BusinessDeclarePaymentModal } from './relationship/business-declare-payment-modal';
+import { BusinessIssueInvoiceModal } from './relationship/business-issue-invoice-modal';
+import { BusinessOpenDisputeModal } from './relationship/business-open-dispute-modal';
+import { BusinessResolveDisputeModal } from './relationship/business-resolve-dispute-modal';
+import { DisputeSettlementSummary } from './relationship/dispute-settlement-summary';
+import { RelationshipPaymentRow } from './relationship/relationship-payment-row';
 import { StateBadge } from './state-badge';
-import { UsdWaivConverter } from './usd-waiv-converter';
 import { useOblBroadcast } from '../hooks/use-obl-broadcast';
 import { BusinessPageShell } from '../layout/business-page-shell';
 
-type TabId = 'overview' | 'contracts' | 'invoices' | 'payments' | 'disputes';
+type TabId = 'payments' | 'contracts' | 'invoices' | 'disputes';
+
+const CONTRACT_DESCRIPTION_MAX = 300;
+
+function invoiceDetailSummary(details: Record<string, unknown> | undefined): string | null {
+  if (!details || Object.keys(details).length === 0) {
+    return null;
+  }
+  const report = details.report;
+  if (typeof report === 'string' && report.trim().length > 0) {
+    return report.trim();
+  }
+  const memo = details.memo;
+  if (typeof memo === 'string' && memo.trim().length > 0) {
+    return memo.trim();
+  }
+  return JSON.stringify(details);
+}
+
+function invoiceStateBadgeVariant(
+  state: LedgerInvoiceRow['state'],
+): 'confirmed' | 'pending_signature' | 'disputed' | 'resolved' {
+  if (state === 'pending') {
+    return 'pending_signature';
+  }
+  if (state === 'disputed') {
+    return 'disputed';
+  }
+  if (state === 'resolved') {
+    return 'resolved';
+  }
+  return 'confirmed';
+}
+
+function castLedgerRows(ledger: OblLedgerApiResponse) {
+  return {
+    contracts: sortByCreatedAtDesc(ledger.contracts as LedgerContractRow[]),
+    invoices: sortByCreatedAtDesc(ledger.invoices as LedgerInvoiceRow[]),
+    payments: sortByCreatedAtDesc(ledger.payments as LedgerPaymentRow[]),
+    disputes: sortByCreatedAtDesc(ledger.disputes as LedgerDisputeRow[]),
+  };
+}
+
+function hasOpenDisputeForInvoice(
+  disputes: readonly LedgerDisputeRow[],
+  invoiceId: string,
+): boolean {
+  return disputes.some((d) => d.invoice_id === invoiceId && d.status === 'open');
+}
+
+function canDisputeInvoice(
+  invoice: LedgerInvoiceRow,
+  username: string,
+  disputes: readonly LedgerDisputeRow[],
+): boolean {
+  if (invoice.state !== 'confirmed' && invoice.state !== 'pending') {
+    return false;
+  }
+  if (username !== invoice.debtor && username !== invoice.creditor) {
+    return false;
+  }
+  return !hasOpenDisputeForInvoice(disputes, invoice.invoice_id);
+}
+
+function contractLabel(
+  contractId: string | null | undefined,
+  contracts: readonly LedgerContractRow[],
+): string | null {
+  if (!contractId) {
+    return null;
+  }
+  const contract = contracts.find((c) => c.contract_id === contractId);
+  if (!contract) {
+    return contractId;
+  }
+  return `${contract.offer_name} · ${shortContractId(contract.contract_id)}`;
+}
 
 export function BusinessRelationshipDetailClient({
   username,
@@ -33,183 +138,373 @@ export function BusinessRelationshipDetailClient({
 }) {
   const { t } = useI18n();
   const oblCustomJsonId = useOblCustomJsonId();
-  const { broadcast, error } = useOblBroadcast(username, counterparty);
-  const [tab, setTab] = useState<TabId>('overview');
-  const [invoiceAmount, setInvoiceAmount] = useState('10');
-  const [paymentAmount, setPaymentAmount] = useState('5');
+  const { broadcast, isBusy, phase, error } = useOblBroadcast(username, counterparty);
+  const [tab, setTab] = useState<TabId>('payments');
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [declareModalOpen, setDeclareModalOpen] = useState(false);
+  const [confirmPaymentRow, setConfirmPaymentRow] = useState<LedgerPaymentRow | null>(null);
+  const [disputeInvoice, setDisputeInvoice] = useState<LedgerInvoiceRow | null>(null);
+  const [resolveDisputeRow, setResolveDisputeRow] = useState<LedgerDisputeRow | null>(null);
 
-  async function issueInvoice() {
-    const debtor = username;
-    const creditor = counterparty;
-    const op = buildIssueInvoiceOp({
-      oblCustomJsonId,
-      invoiceId: `inv-${Date.now()}`,
-      issuer: username,
-      debtor,
-      creditor,
-      amountUsd: invoiceAmount,
-    });
-    await broadcast([op]);
+  const { contracts, invoices, payments, disputes } = useMemo(
+    () => castLedgerRows(ledger),
+    [ledger],
+  );
+
+  const resolveAuthority = useMemo(() => {
+    if (!resolveDisputeRow) {
+      return null;
+    }
+    const invoice = invoices.find((inv) => inv.invoice_id === resolveDisputeRow.invoice_id);
+    if (!invoice) {
+      return null;
+    }
+    return disputeAuthorityForInvoice(invoice, contracts);
+  }, [resolveDisputeRow, invoices, contracts]);
+
+  const resolveInvoice = useMemo(() => {
+    if (!resolveDisputeRow) {
+      return null;
+    }
+    return findInvoiceForDispute(resolveDisputeRow, invoices) ?? null;
+  }, [resolveDisputeRow, invoices]);
+
+  async function issueInvoice(
+    amountUsd: string,
+    parties: { debtor: string; creditor: string },
+    contractId?: string,
+    details?: Record<string, unknown>,
+  ) {
+    await broadcast([
+      buildIssueInvoiceOp({
+        oblCustomJsonId,
+        invoiceId: newOblInvoiceId(),
+        issuer: username,
+        debtor: parties.debtor,
+        creditor: parties.creditor,
+        amountUsd,
+        contractId,
+        details,
+      }),
+    ]);
   }
 
-  async function declarePayment() {
-    const op = buildDeclarePaymentOp({
-      oblCustomJsonId,
-      paymentId: `pay-${Date.now()}`,
-      payer: username,
-      receiver: counterparty,
-      amountUsd: paymentAmount,
-    });
-    await broadcast([op]);
+  async function recordPayment(
+    amountUsd: string,
+    parties: { payer: string; receiver: string },
+    ref?: Record<string, unknown>,
+  ) {
+    if (parties.receiver === username) {
+      await broadcast([
+        buildConfirmPaymentOp({
+          oblCustomJsonId,
+          paymentId: newOblPaymentConfirmId(),
+          receiver: username,
+          payer: parties.payer,
+          amountUsd,
+          ref,
+        }),
+      ]);
+      return;
+    }
+
+    await broadcast([
+      buildDeclarePaymentOp({
+        oblCustomJsonId,
+        paymentId: newOblPaymentDeclareId(),
+        payer: parties.payer,
+        receiver: parties.receiver,
+        amountUsd,
+        ref,
+      }),
+    ]);
   }
 
-  async function confirmReceived() {
-    const op = buildConfirmPaymentOp({
-      oblCustomJsonId,
-      paymentId: `pay-recv-${Date.now()}`,
-      receiver: username,
-      payer: counterparty,
-      amountUsd: paymentAmount,
-    });
-    await broadcast([op]);
+  async function submitPaymentConfirm(pay: LedgerPaymentRow, amountUsd: string) {
+    await broadcast([
+      buildConfirmPaymentOp({
+        oblCustomJsonId,
+        paymentId: newOblPaymentConfirmId(),
+        receiver: username,
+        payer: pay.payer,
+        amountUsd,
+        declarePaymentId: pay.payment_id,
+      }),
+    ]);
   }
 
-  const tabs: TabId[] = ['overview', 'contracts', 'invoices', 'payments', 'disputes'];
+  async function openDispute(invoice: LedgerInvoiceRow, proposedAmountUsd: string) {
+    await broadcast([
+      buildOpenDisputeOp({
+        oblCustomJsonId,
+        disputeId: newOblDisputeId(),
+        invoiceId: invoice.invoice_id,
+        disputant: username,
+        proposedAmountUsd,
+      }),
+    ]);
+  }
+
+  async function resolveDispute(dispute: LedgerDisputeRow, finalAmountUsd: string) {
+    await broadcast([
+      buildResolveDisputeOp({
+        oblCustomJsonId,
+        disputeId: dispute.dispute_id,
+        resolver: username,
+        finalAmountUsd,
+      }),
+    ]);
+  }
+
+  const tabs: TabId[] = ['payments', 'contracts', 'invoices', 'disputes'];
 
   return (
-    <BusinessPageShell
-      activeNav="relationships"
-      title={`@${counterparty}`}
-      subtitle={t('business_relationship_detail_subtitle')}
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => void issueInvoice()}
-            className="rounded-btn bg-accent px-3 py-1 text-body-sm text-accent-fg"
-          >
-            {t('business_create_invoice')}
-          </button>
-          <button
-            type="button"
-            onClick={() => void declarePayment()}
-            className="rounded-btn border border-border px-3 py-1 text-body-sm"
-          >
-            {t('business_record_payment')}
-          </button>
-        </div>
-      }
-    >
-      <BalanceCards viewer={username} counterparty={counterparty} balance={ledger.balance} />
-
-      <div className="mt-6 flex flex-wrap gap-2 border-b border-border pb-2">
-        {tabs.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={[
-              'rounded-btn px-3 py-1 text-body-sm',
-              tab === id ? 'bg-surface-alt font-weight-label text-heading' : 'text-fg-secondary',
-            ].join(' ')}
-          >
-            {t(`business_tab_${id}`)}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-4">
-        {tab === 'overview' ? (
-          <div className="flex flex-col gap-4">
-            <BusinessDisclosure variant="auto_payments" />
-            <UsdWaivConverter />
-            {error ? <p className="text-body-sm text-error">{error}</p> : null}
-          </div>
-        ) : null}
-
-        {tab === 'contracts' ? (
-          <ul className="flex flex-col gap-2">
-            {(ledger.contracts as Array<{ contract_id: string; offer_id: string }>).map(
-              (c) => (
-                <li key={c.contract_id}>
-                  <Link
-                    href={businessRoutes.contract(c.contract_id)}
-                    className="text-body-sm text-link"
-                  >
-                    {c.contract_id} · {c.offer_id}
-                  </Link>
-                </li>
-              ),
-            )}
-          </ul>
-        ) : null}
-
-        {tab === 'invoices' ? (
-          <div className="flex flex-col gap-3">
-            <label className="text-body-sm">
-              USD
-              <input
-                value={invoiceAmount}
-                onChange={(e) => setInvoiceAmount(e.target.value)}
-                className="ml-2 rounded-btn border border-border px-2 py-1"
-              />
-            </label>
-            {(ledger.invoices as Array<{ invoice_id: string; state: string; amount_usd: string }>).map(
-              (inv) => (
-                <div
-                  key={inv.invoice_id}
-                  className="rounded-card border border-border p-3 text-body-sm"
-                >
-                  {inv.invoice_id} · ${inv.amount_usd} ·{' '}
-                  <StateBadge
-                    variant={
-                      inv.state === 'pending'
-                        ? 'pending_signature'
-                        : inv.state === 'disputed'
-                          ? 'disputed'
-                          : 'confirmed'
-                    }
-                  />
-                </div>
-              ),
-            )}
-          </div>
-        ) : null}
-
-        {tab === 'payments' ? (
-          <div className="flex flex-col gap-3">
-            <label className="text-body-sm">
-              USD
-              <input
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                className="ml-2 rounded-btn border border-border px-2 py-1"
-              />
-            </label>
+    <>
+      <BusinessPageShell
+        activeNav="relationships"
+        title={`@${counterparty}`}
+        subtitle={t('business_relationship_detail_subtitle')}
+        actions={
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => void confirmReceived()}
-              className="w-fit rounded-btn border border-border px-3 py-1 text-body-sm"
+              disabled={isBusy}
+              onClick={() => setInvoiceModalOpen(true)}
+              className="rounded-btn bg-accent px-3 py-1 text-body-sm text-accent-fg disabled:opacity-50"
             >
-              {t('business_confirm_received_payment')}
+              {t('business_create_invoice')}
             </button>
-            {(ledger.payments as Array<{ payment_id: string; method: string; amount_usd: string; state: string }>).map(
-              (pay) => (
-                <div
-                  key={pay.payment_id}
-                  className="rounded-card border border-border p-3 text-body-sm"
-                >
-                  {pay.method} · ${pay.amount_usd} · {pay.state}
-                </div>
-              ),
-            )}
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => setDeclareModalOpen(true)}
+              className="rounded-btn border border-border px-3 py-1 text-body-sm disabled:opacity-50"
+            >
+              {t('business_record_payment')}
+            </button>
+          </div>
+        }
+      >
+        <BalanceCards viewer={username} counterparty={counterparty} balance={ledger.balance} />
+        {phase === 'indexing' ? (
+          <div className="mt-2">
+            <StateBadge variant="indexing" />
           </div>
         ) : null}
+        {error ? <p className="mt-2 text-body-sm text-error">{error}</p> : null}
 
-        {tab === 'disputes' ? (
-          <p className="text-body-sm text-fg-secondary">{t('business_disputes_tab_hint')}</p>
-        ) : null}
-      </div>
-    </BusinessPageShell>
+        <div className="mt-6 flex flex-wrap gap-2 border-b border-border pb-2">
+          {tabs.map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={[
+                'rounded-btn px-3 py-1 text-body-sm',
+                tab === id ? 'bg-surface-alt font-weight-label text-heading' : 'text-fg-secondary',
+              ].join(' ')}
+            >
+              {t(`business_tab_${id}`)}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4">
+          {tab === 'contracts' ? (
+            <div className="flex flex-col gap-3">
+              {contracts.length === 0 ? (
+                <p className="text-body-sm text-fg-secondary">{t('business_contracts_empty')}</p>
+              ) : null}
+              {contracts.map((c) => (
+                <Link
+                  key={c.contract_id}
+                  href={businessRoutes.contract(c.contract_id)}
+                  className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm hover:bg-surface-alt"
+                >
+                  <h3 className="font-weight-label text-heading">{c.offer_name}</h3>
+                  {c.offer_description ? (
+                    <p className="mt-2 text-caption text-fg-secondary">
+                      {truncateText(c.offer_description, CONTRACT_DESCRIPTION_MAX)}
+                    </p>
+                  ) : null}
+                  <p className="mt-2 font-mono text-caption text-fg-secondary">{c.contract_id}</p>
+                  <p className="mt-1 text-caption text-fg-secondary">
+                    {t('business_field_created_at')}: {formatLedgerDate(c.created_at)}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
+          {tab === 'invoices' ? (
+            <div className="flex flex-col gap-3">
+              {invoices.length === 0 ? (
+                <p className="text-body-sm text-fg-secondary">{t('business_invoices_empty')}</p>
+              ) : null}
+              {invoices.map((inv) => {
+                const detailSummary = invoiceDetailSummary(inv.details);
+                const disputable = canDisputeInvoice(inv, username, disputes);
+                const linkedContract = contractLabel(inv.contract_id, contracts);
+                const showSettled =
+                  inv.state === 'resolved' &&
+                  inv.final_amount_usd != null &&
+                  inv.final_amount_usd !== '';
+                return (
+                  <div
+                    key={inv.invoice_id}
+                    className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span>
+                        {inv.invoice_id}
+                        {showSettled ? (
+                          <>
+                            {' '}
+                            · ${formatUsdDisplay(inv.amount_usd)} → $
+                            {formatUsdDisplay(inv.final_amount_usd)}
+                          </>
+                        ) : (
+                          <> · ${inv.amount_usd}</>
+                        )}
+                      </span>
+                      <StateBadge variant={invoiceStateBadgeVariant(inv.state)} />
+                    </div>
+                    <p className="mt-1 text-caption text-fg-secondary">
+                      @{inv.debtor} → @{inv.creditor}
+                    </p>
+                    {linkedContract ? (
+                      <p className="mt-1 text-caption text-fg-secondary">
+                        {t('business_invoice_contract_label')}: {linkedContract}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-caption text-fg-secondary">
+                      {t('business_field_created_at')}: {formatLedgerDate(inv.created_at)}
+                    </p>
+                    {detailSummary ? (
+                      <p className="mt-2 text-caption text-fg-secondary">{detailSummary}</p>
+                    ) : null}
+                    {disputable ? (
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => setDisputeInvoice(inv)}
+                        className="mt-2 text-body-sm text-link disabled:opacity-50"
+                      >
+                        {t('business_invoice_dispute_action')}
+                      </button>
+                    ) : null}
+                    {inv.state === 'disputed' ? (
+                      <p className="mt-2 text-caption text-fg-secondary">
+                        {t('business_invoice_in_dispute')}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {tab === 'payments' ? (
+            <div className="flex flex-col gap-3">
+              {payments.length === 0 ? (
+                <p className="text-body-sm text-fg-secondary">{t('business_payments_empty')}</p>
+              ) : null}
+              {payments.map((pay) => (
+                <RelationshipPaymentRow
+                  key={pay.payment_id}
+                  payment={pay}
+                  viewer={username}
+                  isBusy={isBusy}
+                  onConfirm={setConfirmPaymentRow}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {tab === 'disputes' ? (
+            <div className="flex flex-col gap-3">
+              {disputes.length === 0 ? (
+                <p className="text-body-sm text-fg-secondary">{t('business_disputes_empty')}</p>
+              ) : null}
+              {disputes.map((d) => {
+                const resolvable = canViewerResolveDispute(username, d, invoices, contracts);
+                const linkedInvoice = findInvoiceForDispute(d, invoices);
+                return (
+                  <div
+                    key={d.dispute_id}
+                    className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span>{d.dispute_id}</span>
+                      <StateBadge variant={d.status === 'open' ? 'disputed' : 'resolved'} />
+                    </div>
+                    <p className="mt-1 text-caption text-fg-secondary">
+                      {t('business_field_invoice')}: {d.invoice_id}
+                    </p>
+                    <DisputeSettlementSummary dispute={d} invoice={linkedInvoice} />
+                    <p className="mt-2 text-caption text-fg-secondary">
+                      {t('business_field_created_at')}: {formatLedgerDate(d.created_at)}
+                    </p>
+                    {resolvable ? (
+                      <button
+                        type="button"
+                        disabled={isBusy}
+                        onClick={() => setResolveDisputeRow(d)}
+                        className="mt-2 text-body-sm text-link disabled:opacity-50"
+                      >
+                        {t('business_dispute_resolve_action')}
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      </BusinessPageShell>
+
+      <BusinessIssueInvoiceModal
+        open={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        isBusy={isBusy}
+        issuer={username}
+        debtor={counterparty}
+        creditor={username}
+        contracts={contracts}
+        onSubmit={issueInvoice}
+      />
+      <BusinessDeclarePaymentModal
+        open={declareModalOpen}
+        onClose={() => setDeclareModalOpen(false)}
+        isBusy={isBusy}
+        viewer={username}
+        payer={username}
+        receiver={counterparty}
+        onSubmit={recordPayment}
+      />
+      <BusinessConfirmPaymentModal
+        open={confirmPaymentRow !== null}
+        payment={confirmPaymentRow}
+        onClose={() => setConfirmPaymentRow(null)}
+        isBusy={isBusy}
+        onSubmit={submitPaymentConfirm}
+      />
+      <BusinessOpenDisputeModal
+        open={disputeInvoice !== null}
+        invoice={disputeInvoice}
+        onClose={() => setDisputeInvoice(null)}
+        isBusy={isBusy}
+        onSubmit={openDispute}
+      />
+      <BusinessResolveDisputeModal
+        open={resolveDisputeRow !== null}
+        dispute={resolveDisputeRow}
+        invoice={resolveInvoice}
+        authority={resolveAuthority}
+        onClose={() => setResolveDisputeRow(null)}
+        isBusy={isBusy}
+        onSubmit={resolveDispute}
+      />
+    </>
   );
 }

@@ -27,6 +27,7 @@ export async function searchOblOffers(params: {
   q?: string;
   kind?: 'offer' | 'request';
   author?: string;
+  status?: 'active' | 'retired' | 'all';
   limit?: number;
   offset?: number;
 }) {
@@ -34,6 +35,7 @@ export async function searchOblOffers(params: {
   if (params.q) q.set('q', params.q);
   if (params.kind) q.set('kind', params.kind);
   if (params.author) q.set('author', params.author);
+  if (params.status) q.set('status', params.status);
   if (params.limit !== undefined) q.set('limit', String(params.limit));
   if (params.offset !== undefined) q.set('offset', String(params.offset));
   const qs = q.toString();

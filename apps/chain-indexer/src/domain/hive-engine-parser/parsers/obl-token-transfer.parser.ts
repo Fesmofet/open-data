@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { HiveEngineBlock, HiveEngineTransaction } from '@opden-data-layer/clients';
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { OblPaymentAttributionService } from '../../obl-parser/obl-payment-attribution.service';
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';
 import {
@@ -26,7 +27,12 @@ export class OblTokenTransferParser implements HiveEngineSubParser {
     ];
 
     for (let trxIndex = 0; trxIndex < txs.length; trxIndex++) {
-      await this.processTransaction(txs[trxIndex], block.refHiveBlockNumber, trxIndex);
+      await this.processTransaction(
+        txs[trxIndex],
+        block.refHiveBlockNumber,
+        trxIndex,
+        block.timestamp,
+      );
     }
   }
 
@@ -34,6 +40,7 @@ export class OblTokenTransferParser implements HiveEngineSubParser {
     tx: HiveEngineTransaction,
     refHiveBlockNumber: number,
     trxIndex: number,
+    blockTimestamp: string,
   ): Promise<void> {
     if (tx.contract !== TOKENS_CONTRACT || tx.action !== TRANSFER_ACTION) {
       return;
@@ -80,6 +87,7 @@ export class OblTokenTransferParser implements HiveEngineSubParser {
         refHiveBlockNumber,
         trxIndex,
         logIndex,
+        createdAt: hiveBlockTimestampToDate(blockTimestamp),
       });
     }
   }

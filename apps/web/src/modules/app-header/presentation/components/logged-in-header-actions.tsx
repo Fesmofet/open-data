@@ -232,30 +232,24 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
               {t('drafts')}
             </Link>
             <Link
-              href="/business"
-              role="menuitem"
-              aria-current={pathname.startsWith('/business') ? 'page' : undefined}
-              className={menuNavLinkClassName(pathname.startsWith('/business'))}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
-            >
-              {t('business_menu')}
-            </Link>
-            <Link
-              href={businessRoutes.publicOffers}
+              href={businessRoutes.discoverOffers}
               role="menuitem"
               aria-current={
-                pathname === '/offers' || pathname.startsWith('/offers/')
+                pathname.startsWith('/business') ||
+                pathname === '/offers' ||
+                pathname.startsWith('/offers/')
                   ? 'page'
                   : undefined
               }
               className={menuNavLinkClassName(
-                pathname === '/offers' || pathname.startsWith('/offers/'),
+                pathname.startsWith('/business') ||
+                  pathname === '/offers' ||
+                  pathname.startsWith('/offers/'),
               )}
               onClick={() => setMenuOpen(false)}
               suppressHydrationWarning
             >
-              {t('business_view_offers')}
+              {t('business_menu')}
             </Link>
             <Link
               href={profileAboutHref}

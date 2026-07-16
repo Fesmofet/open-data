@@ -15,6 +15,7 @@ import {
 import {
   OFFER_EDITOR_STEPS,
   emptyOfferFields,
+  normalizeLoadedOfferFields,
   type OfferDraftFields,
   type OfferDraftState,
   type OfferEditorStep,
@@ -37,10 +38,12 @@ export function useOfferEditor({ username, draft, broadcast }: UseOfferEditorOpt
   const oblCustomJsonId = useOblCustomJsonId();
   const [step, setStep] = useState<OfferEditorStep>('basics');
   const [kind, setKind] = useState<'offer' | 'request'>(draft.kind);
-  const [fields, setFields] = useState<OfferDraftFields>({
-    ...emptyOfferFields(),
-    ...(draft.fields as OfferDraftFields),
-  });
+  const [fields, setFields] = useState<OfferDraftFields>(() =>
+    normalizeLoadedOfferFields({
+      ...emptyOfferFields(),
+      ...(draft.fields as OfferDraftFields),
+    }),
+  );
   const [legalText, setLegalText] = useState(draft.legalText ?? '');
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -108,7 +111,7 @@ export function useOfferEditor({ username, draft, broadcast }: UseOfferEditorOpt
 
     const txId = await broadcast([op]);
     if (txId) {
-      router.push(businessRoutes.offers);
+      router.push(businessRoutes.manageTab(kind, 'published'));
     }
   }, [
     state,
@@ -139,7 +142,7 @@ export function useOfferEditor({ username, draft, broadcast }: UseOfferEditorOpt
     goBack,
     goNext,
     publish,
-    previewHref: businessRoutes.offerDraftPreview(draft.draftId),
+    previewHref: businessRoutes.offerDraftPreview(kind, draft.draftId),
     draftId: draft.draftId,
   };
 }

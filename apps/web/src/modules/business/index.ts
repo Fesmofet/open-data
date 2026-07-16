@@ -1,5 +1,4 @@
 export { businessRoutes } from './domain/routes';
-export { BusinessOverviewClient } from './presentation/components/business-overview-client';
 export { BusinessOffersListClient } from './presentation/components/business-offers-list-client';
 export { BusinessOfferEditorClient } from './presentation/components/business-offer-editor-client';
 export { BusinessRelationshipsClient } from './presentation/components/business-relationships-client';

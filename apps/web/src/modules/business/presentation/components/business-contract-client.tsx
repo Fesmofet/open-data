@@ -41,6 +41,16 @@ export function BusinessContractClient({ contract }: { contract: OblContractApiR
           <dt className="text-fg-secondary">{t('business_field_dispute_rule')}</dt>
           <dd>{contract.dispute_rule}</dd>
         </div>
+        {Object.keys(contract.metadata ?? {}).length > 0 ? (
+          <div>
+            <dt className="text-fg-secondary">{t('business_sign_metadata_label')}</dt>
+            <dd>
+              <pre className="mt-1 whitespace-pre-wrap rounded-btn border border-border bg-surface-alt p-2 font-mono text-caption">
+                {JSON.stringify(contract.metadata, null, 2)}
+              </pre>
+            </dd>
+          </div>
+        ) : null}
       </dl>
       <div className="mt-6 flex gap-3">
         <Link

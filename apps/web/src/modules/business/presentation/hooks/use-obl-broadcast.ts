@@ -12,6 +12,7 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 import { revalidateOblAfterBroadcast } from '@/shared/infrastructure/query/revalidate-obl-after-broadcast.server';
 
 import type { BlockchainActionPhase } from '../../domain/blockchain-action';
+import { isOblBroadcastBusy } from '../../domain/blockchain-action';
 
 function isHiveSignerRedirectError(e: unknown): boolean {
   return (
@@ -56,5 +57,5 @@ export function useOblBroadcast(account: string, counterparty?: string) {
     [account, counterparty, router],
   );
 
-  return { broadcast, phase, setPhase, error, setError };
+  return { broadcast, phase, isBusy: isOblBroadcastBusy(phase), setPhase, error, setError };
 }

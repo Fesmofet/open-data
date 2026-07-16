@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
+  buildPublicOffersHref,
   hasPublicOffersFilters,
   type PublicOffersPageState,
 } from '../../domain/public-offers-url';
@@ -12,6 +13,7 @@ import { businessRoutes } from '../../domain/routes';
 import type { OblOfferApiRow } from '../../infrastructure/clients/obl-offers.server';
 import { PublicOffersFilters } from './public-offers-filters';
 import { StateBadge } from './state-badge';
+import { BusinessPageShell } from '../layout/business-page-shell';
 
 export function PublicOffersListClient({
   offers,
@@ -23,14 +25,8 @@ export function PublicOffersListClient({
   filters: PublicOffersPageState;
 }) {
   const { t } = useI18n();
-  const title =
-    kind === 'offer'
-      ? t('business_public_offers_title')
-      : t('business_public_requests_title');
-  const subtitle =
-    kind === 'offer'
-      ? t('business_public_offers_subtitle')
-      : t('business_public_requests_subtitle');
+  const title = t('business_title');
+  const subtitle = t('business_discover_subtitle');
   const hasFilters = hasPublicOffersFilters(filters);
   const filterHint =
     filters.author && filters.q
@@ -40,18 +36,35 @@ export function PublicOffersListClient({
         : filters.q
           ? `"${filters.q}"`
           : null;
+  const tabQuery = {
+    author: filters.author || undefined,
+    q: filters.q || undefined,
+  };
 
   return (
-    <div className="mx-auto max-w-container-content px-gutter py-section-y">
-      <header className="mb-section-y">
-        <h1 className="text-section font-display font-weight-display text-heading">
-          {title}
-        </h1>
-        <p className="mt-1 text-body text-fg-secondary">{subtitle}</p>
-        {filterHint ? (
-          <p className="mt-1 text-caption text-fg-tertiary">{filterHint}</p>
-        ) : null}
-      </header>
+    <BusinessPageShell activeNav="discover" title={title} subtitle={subtitle}>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(['offer', 'request'] as const).map((id) => (
+          <Link
+            key={id}
+            href={buildPublicOffersHref(id, tabQuery)}
+            className={[
+              'rounded-pill border px-3 py-1 text-body-sm',
+              kind === id
+                ? 'border-border bg-surface-alt font-weight-label text-heading'
+                : 'border-transparent text-fg-secondary',
+            ].join(' ')}
+          >
+            {id === 'offer'
+              ? t('business_public_offers_title')
+              : t('business_public_requests_title')}
+          </Link>
+        ))}
+      </div>
+
+      {filterHint ? (
+        <p className="mb-4 text-caption text-fg-tertiary">{filterHint}</p>
+      ) : null}
 
       <PublicOffersFilters kind={kind} filters={filters} />
 
@@ -97,6 +110,6 @@ export function PublicOffersListClient({
           })}
         </ul>
       )}
-    </div>
+    </BusinessPageShell>
   );
 }

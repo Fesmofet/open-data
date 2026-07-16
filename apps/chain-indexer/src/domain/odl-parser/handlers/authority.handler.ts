@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ObjectsCoreRepository, ObjectAuthorityRepository } from '../../../repositories';
@@ -49,7 +50,7 @@ export class AuthorityHandler implements OdlActionHandler {
         object_id,
         account: ctx.creator,
         authority_type,
-        created_at: new Date(ctx.timestamp),
+        created_at: hiveBlockTimestampToDate(ctx.timestamp),
       });
       if (authority_type === 'administrative') {
         this.eventEmitter.emit(

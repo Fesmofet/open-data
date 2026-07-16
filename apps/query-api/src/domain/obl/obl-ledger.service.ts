@@ -31,6 +31,7 @@ export class OblOffersService {
       kind: query.kind,
       tags: query.tags,
       author: query.author ? normalizeHiveAccount(query.author) : undefined,
+      status: query.status,
       limit: query.limit,
       offset: query.offset,
     });
@@ -49,7 +50,12 @@ export class OblLedgerService {
     accountA: string;
     accountB: string;
     startedEventSeq: string | null;
-    contracts: OblContract[];
+    contracts: Array<
+      OblContract & {
+        offer_name: string;
+        offer_description: string | null;
+      }
+    >;
     invoices: OblInvoice[];
     payments: OblPayment[];
     disputes: OblDispute[];
@@ -65,7 +71,7 @@ export class OblLedgerService {
     const startedSeq = await this.obl.findLedgerStartedSeq(pairLow, pairHigh);
 
     const [contracts, allInvoices, allPayments] = await Promise.all([
-      this.obl.listContractsForPair(pairLow, pairHigh),
+      this.obl.listContractsForPairWithOffer(pairLow, pairHigh),
       this.obl.listInvoicesForPair(pairLow, pairHigh),
       this.obl.listPaymentsForPair(pairLow, pairHigh),
     ]);

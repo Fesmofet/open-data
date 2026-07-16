@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ObjectsCoreRepository, UserObjectFollowsRepository } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
@@ -35,7 +36,7 @@ export class FollowObjectHandler implements OdlActionHandler {
         account: ctx.creator,
         object_id,
         bell: false,
-        created_at: new Date(ctx.timestamp),
+        created_at: hiveBlockTimestampToDate(ctx.timestamp),
       });
       return;
     }

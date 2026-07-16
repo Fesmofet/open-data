@@ -59,6 +59,35 @@ describe('obl-operations', () => {
     expect(op.required_posting_auths).toEqual(['bob']);
   });
 
+  it('buildOblContractSignOp includes metadata when provided', () => {
+    const op = buildOblContractSignOp({
+      id: 'obl-testnet',
+      contractId: 'c-1',
+      offerId: 'offer-1',
+      offerVersion: 1,
+      provider: 'alice',
+      client: 'bob',
+      signer: 'bob',
+      metadata: { targets: ['obj-1'] },
+    });
+    const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
+    expect(payload['metadata']).toEqual({ targets: ['obj-1'] });
+  });
+
+  it('buildOblContractSignOp omits metadata when not provided', () => {
+    const op = buildOblContractSignOp({
+      id: 'obl-testnet',
+      contractId: 'c-1',
+      offerId: 'offer-1',
+      offerVersion: 1,
+      provider: 'alice',
+      client: 'bob',
+      signer: 'bob',
+    });
+    const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
+    expect(payload).not.toHaveProperty('metadata');
+  });
+
   it('buildOblOfferUpdateOp emits offer_update', () => {
     const op = buildOblOfferUpdateOp({
       id: 'obl-mainnet',

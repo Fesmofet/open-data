@@ -29,6 +29,7 @@ export class OblRepository {
     kind?: 'offer' | 'request';
     tags?: string[];
     author?: string;
+    status?: 'active' | 'retired' | 'all';
     limit: number;
     offset: number;
   }): Promise<OblOffer[]> {
@@ -36,9 +37,13 @@ export class OblRepository {
       .selectFrom('obl_offers')
       .distinctOn('offer_id')
       .selectAll()
-      .where('status', '=', 'active')
       .orderBy('offer_id')
       .orderBy('version', 'desc');
+
+    const status = input.status ?? 'active';
+    if (status !== 'all') {
+      latestQb = latestQb.where('status', '=', status);
+    }
 
     if (input.kind) {
       latestQb = latestQb.where('kind', '=', input.kind);
@@ -65,6 +70,7 @@ export class OblRepository {
     return this.db
       .selectFrom(latest)
       .selectAll()
+      .orderBy('created_at', 'desc')
       .orderBy('created_event_seq', 'desc')
       .limit(input.limit)
       .offset(input.offset)
@@ -100,7 +106,35 @@ export class OblRepository {
       .selectAll()
       .where('pair_low', '=', pairLow)
       .where('pair_high', '=', pairHigh)
-      .orderBy('created_event_seq', 'asc')
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
+      .execute();
+  }
+
+  async listContractsForPairWithOffer(
+    pairLow: string,
+    pairHigh: string,
+  ): Promise<
+    Array<
+      OblContract & {
+        offer_name: string;
+        offer_description: string | null;
+      }
+    >
+  > {
+    return this.db
+      .selectFrom('obl_contracts as c')
+      .innerJoin('obl_offers as o', (join) =>
+        join
+          .onRef('o.offer_id', '=', 'c.offer_id')
+          .onRef('o.version', '=', 'c.offer_version'),
+      )
+      .selectAll('c')
+      .select(['o.name as offer_name', 'o.description as offer_description'])
+      .where('c.pair_low', '=', pairLow)
+      .where('c.pair_high', '=', pairHigh)
+      .orderBy('c.created_at', 'desc')
+      .orderBy('c.created_event_seq', 'desc')
       .execute();
   }
 
@@ -110,7 +144,8 @@ export class OblRepository {
       .selectAll()
       .where('pair_low', '=', pairLow)
       .where('pair_high', '=', pairHigh)
-      .orderBy('created_event_seq', 'asc')
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
       .execute();
   }
 
@@ -120,7 +155,8 @@ export class OblRepository {
       .selectAll()
       .where('pair_low', '=', pairLow)
       .where('pair_high', '=', pairHigh)
-      .orderBy('created_event_seq', 'asc')
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
       .execute();
   }
 
@@ -132,6 +168,8 @@ export class OblRepository {
       .selectFrom('obl_disputes')
       .selectAll()
       .where('invoice_id', 'in', invoiceIds)
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
       .execute();
   }
 
@@ -209,6 +247,7 @@ export class OblRepository {
       .select('created_event_seq')
       .where('pair_low', '=', pairLow)
       .where('pair_high', '=', pairHigh)
+      .orderBy('created_at', 'desc')
       .orderBy('created_event_seq', 'desc')
       .executeTakeFirst();
     return row?.created_event_seq ?? null;

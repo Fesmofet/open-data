@@ -140,6 +140,28 @@ export class OblRepository {
     }
   }
 
+  async findContractForOfferAndPair(
+    offerId: string,
+    pairLow: string,
+    pairHigh: string,
+    trx?: DbExecutor,
+  ): Promise<OblContract | null> {
+    try {
+      return (
+        (await this.executor(trx)
+          .selectFrom('obl_contracts')
+          .where('offer_id', '=', offerId)
+          .where('pair_low', '=', pairLow)
+          .where('pair_high', '=', pairHigh)
+          .selectAll()
+          .executeTakeFirst()) ?? null
+      );
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
+
   async hasLedgerForPair(
     pairLow: string,
     pairHigh: string,

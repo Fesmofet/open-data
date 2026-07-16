@@ -28,6 +28,7 @@ export class OblPaymentAttributionService {
     refHiveBlockNumber: number;
     trxIndex: number;
     logIndex: number;
+    createdAt?: Date;
   }): Promise<void> {
     const payer = input.payer.trim();
     const receiver = input.receiver.trim();
@@ -68,15 +69,16 @@ export class OblPaymentAttributionService {
       payer,
       receiver,
       amount_usd: quote.amountUsd,
+      declared_amount_usd: quote.amountUsd,
       method: 'token_transfer',
       token_symbol: symbol,
       token_amount: String(input.quantity),
       rate_usd: quote.rateUsd,
       state: 'confirmed',
-      contract_id: null,
       ref: asJsonValue({ he_tx: input.transactionId }),
       created_event_seq: eventSeq,
       transaction_id: input.transactionId,
+      created_at: input.createdAt ?? new Date(),
     });
   }
 
@@ -90,6 +92,7 @@ export class OblPaymentAttributionService {
     refHiveBlockNumber: number;
     trxIndex: number;
     logIndex: number;
+    createdAt?: Date;
   }): Promise<void> {
     const payer = input.voter.trim();
     const receiver = input.author.trim();
@@ -130,15 +133,16 @@ export class OblPaymentAttributionService {
       payer,
       receiver,
       amount_usd: quote.amountUsd,
+      declared_amount_usd: quote.amountUsd,
       method: 'upvote_reward',
       token_symbol: symbol,
       token_amount: String(input.quantity),
       rate_usd: quote.rateUsd,
       state: 'confirmed',
-      contract_id: null,
       ref: asJsonValue({ authorperm: input.authorperm }),
       created_event_seq: eventSeq,
       transaction_id: input.heTransactionId,
+      created_at: input.createdAt ?? new Date(),
     });
   }
 }

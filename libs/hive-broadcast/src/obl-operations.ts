@@ -167,6 +167,7 @@ export type BuildOblContractSignOpInput = {
   readonly provider: string;
   readonly client: string;
   readonly signer: string;
+  readonly metadata?: Record<string, unknown>;
   readonly required_posting_auths?: readonly string[];
 };
 
@@ -182,6 +183,7 @@ export function buildOblContractSignOp(input: BuildOblContractSignOpInput): Cust
       provider: input.provider,
       client: input.client,
       signer: input.signer,
+      ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
     },
   });
 }
@@ -221,7 +223,6 @@ export type BuildOblPaymentDeclareOpInput = {
   readonly payer: string;
   readonly receiver: string;
   readonly amountUsd: number | string;
-  readonly contractId?: string;
   readonly ref?: Record<string, unknown>;
   readonly required_posting_auths?: readonly string[];
 };
@@ -236,7 +237,6 @@ export function buildOblPaymentDeclareOp(input: BuildOblPaymentDeclareOpInput): 
       payer: input.payer,
       receiver: input.receiver,
       amount_usd: input.amountUsd,
-      ...(input.contractId !== undefined ? { contract_id: input.contractId } : {}),
       ...(input.ref !== undefined ? { ref: input.ref } : {}),
     },
   });
@@ -249,6 +249,7 @@ export type BuildOblPaymentConfirmOpInput = {
   readonly amountUsd: number | string;
   readonly payer?: string;
   readonly declarePaymentId?: string;
+  readonly ref?: Record<string, unknown>;
   readonly required_posting_auths?: readonly string[];
 };
 
@@ -265,6 +266,7 @@ export function buildOblPaymentConfirmOp(input: BuildOblPaymentConfirmOpInput): 
       ...(input.declarePaymentId !== undefined
         ? { declare_payment_id: input.declarePaymentId }
         : {}),
+      ...(input.ref !== undefined ? { ref: input.ref } : {}),
     },
   });
 }

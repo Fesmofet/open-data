@@ -1,8 +1,9 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { contractSignPayloadSchema } from '../obl-envelope.schema';
-import { normalizePair } from '../obl.utils';
+import { normalizePair, asJsonValue } from '../obl.utils';
 
 @Injectable()
 export class ContractSignHandler implements OdlActionHandler {
@@ -59,6 +60,16 @@ export class ContractSignHandler implements OdlActionHandler {
     }
 
     const { pairLow, pairHigh } = normalizePair(data.provider, data.client);
+    const existingForPair = await this.oblRepository.findContractForOfferAndPair(
+      data.offer_id,
+      pairLow,
+      pairHigh,
+    );
+    if (existingForPair) {
+      this.logger.warn('contract_sign: contract already exists for offer and pair');
+      return;
+    }
+
     const hadLedger = await this.oblRepository.hasLedgerForPair(pairLow, pairHigh);
 
     await this.oblRepository.runInTransaction(async (trx) => {
@@ -71,8 +82,10 @@ export class ContractSignHandler implements OdlActionHandler {
           client: data.client,
           dispute_rule: offer.dispute_rule,
           arbiter: offer.arbiter,
+          metadata: asJsonValue(data.metadata ?? {}),
           created_event_seq: ctx.eventSeq,
           transaction_id: ctx.transactionId,
+          created_at: hiveBlockTimestampToDate(ctx.timestamp),
         },
         trx,
       );

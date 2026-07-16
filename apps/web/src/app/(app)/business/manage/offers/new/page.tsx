@@ -11,7 +11,7 @@ export default async function BusinessOffersNewPage() {
     fields: { name: '' },
   });
   if (result.ok) {
-    redirect(businessRoutes.offerDraft(result.value.draftId));
+    redirect(businessRoutes.offerDraft('offer', result.value.draftId));
   }
-  redirect(businessRoutes.offers);
+  redirect(businessRoutes.manageOffers);
 }

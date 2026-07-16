@@ -15,6 +15,7 @@ export type OfferEditorBasicsStepProps = {
   fields: OfferDraftFields;
   onKindChange: (kind: OblOfferKind) => void;
   onFieldsChange: (fields: OfferDraftFields) => void;
+  kindLocked?: boolean;
 };
 
 export function OfferEditorBasicsStep({
@@ -22,21 +23,30 @@ export function OfferEditorBasicsStep({
   fields,
   onKindChange,
   onFieldsChange,
+  kindLocked = true,
 }: OfferEditorBasicsStepProps) {
   const { t } = useI18n();
+  const kindLabel =
+    kind === 'offer' ? t('business_kind_offer') : t('business_kind_request');
 
   return (
     <div className="flex flex-col gap-4">
       <label className={offerEditorLabelClass}>
         {t('business_field_kind')}
-        <select
-          value={kind}
-          onChange={(e) => onKindChange(e.target.value as OblOfferKind)}
-          className={offerEditorFieldClass}
-        >
-          <option value="offer">{t('business_kind_offer')}</option>
-          <option value="request">{t('business_kind_request')}</option>
-        </select>
+        {kindLocked ? (
+          <p className="mt-1 text-body-sm text-heading" aria-readonly="true">
+            {kindLabel}
+          </p>
+        ) : (
+          <select
+            value={kind}
+            onChange={(e) => onKindChange(e.target.value as OblOfferKind)}
+            className={offerEditorFieldClass}
+          >
+            <option value="offer">{t('business_kind_offer')}</option>
+            <option value="request">{t('business_kind_request')}</option>
+          </select>
+        )}
       </label>
       <label className={offerEditorLabelClass}>
         {t('business_field_name')}

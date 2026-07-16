@@ -44,4 +44,53 @@ describe('OblRepository', () => {
     expect(seq).toBe(BigInt(42));
     expect(executeTakeFirst).toHaveBeenCalledTimes(2);
   });
+
+  it('searchOffers defaults to active status filter', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const chain: Record<string, jest.Mock> = {};
+    const handler: ProxyHandler<object> = {
+      get(_target, prop) {
+        if (prop === 'execute') {
+          return execute;
+        }
+        if (!chain[String(prop)]) {
+          chain[String(prop)] = jest.fn().mockReturnValue(new Proxy({}, handler));
+        }
+        return chain[String(prop)];
+      },
+    };
+    const db = new Proxy({}, handler) as Kysely<unknown>;
+    const repo = new OblRepository(db as never);
+
+    await repo.searchOffers({ limit: 10, offset: 0 });
+
+    expect(chain.where).toHaveBeenCalledWith('status', '=', 'active');
+  });
+
+  it('searchOffers skips status filter when status is all', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const where = jest.fn();
+    const chain: Record<string, jest.Mock> = { where };
+    const handler: ProxyHandler<object> = {
+      get(_target, prop) {
+        if (prop === 'execute') {
+          return execute;
+        }
+        if (!chain[String(prop)]) {
+          chain[String(prop)] = jest.fn().mockReturnValue(new Proxy({}, handler));
+        }
+        return chain[String(prop)];
+      },
+    };
+    where.mockReturnValue(new Proxy({}, handler));
+    const db = new Proxy({}, handler) as Kysely<unknown>;
+    const repo = new OblRepository(db as never);
+
+    await repo.searchOffers({ limit: 10, offset: 0, status: 'all' });
+
+    const statusFilters = where.mock.calls.filter(
+      (call) => call[0] === 'status',
+    );
+    expect(statusFilters).toHaveLength(0);
+  });
 });

@@ -37,8 +37,8 @@ describe('hasPublicOffersFilters', () => {
 
 describe('buildPublicOffersHref', () => {
   it('returns base path without filters', () => {
-    expect(buildPublicOffersHref('offer')).toBe('/offers');
-    expect(buildPublicOffersHref('request')).toBe('/requests');
+    expect(buildPublicOffersHref('offer')).toBe('/business/offers');
+    expect(buildPublicOffersHref('request')).toBe('/business/requests');
   });
 
   it('builds query string with author and q', () => {
@@ -47,14 +47,14 @@ describe('buildPublicOffersHref', () => {
       q: 'design',
     });
     const url = new URL(href, 'http://local');
-    expect(url.pathname).toBe('/offers');
+    expect(url.pathname).toBe('/business/offers');
     expect(url.searchParams.get('author')).toBe('flowmaster');
     expect(url.searchParams.get('q')).toBe('design');
   });
 
   it('omits empty params', () => {
     expect(buildPublicOffersHref('offer', { author: 'alice', q: '' })).toBe(
-      '/offers?author=alice',
+      '/business/offers?author=alice',
     );
   });
 });

@@ -11,6 +11,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 
 import type { OfferDraftFields } from '../domain/offer-form.types';
+import { newOblOfferId } from '../domain/obl-ids';
 
 export function buildPublishOfferOp(input: {
   oblCustomJsonId: string;
@@ -18,7 +19,7 @@ export function buildPublishOfferOp(input: {
   kind: 'offer' | 'request';
   fields: OfferDraftFields;
 }) {
-  const offerId = input.fields.offerId ?? `obl-offer-${Date.now()}`;
+  const offerId = input.fields.offerId ?? newOblOfferId();
   return buildOblOfferPublishOp({
     id: input.oblCustomJsonId,
     offerId,
@@ -79,6 +80,7 @@ export function buildSignContractOp(input: {
   provider: string;
   client: string;
   signer: string;
+  metadata?: Record<string, unknown>;
 }) {
   return buildOblContractSignOp({
     id: input.oblCustomJsonId,
@@ -88,6 +90,7 @@ export function buildSignContractOp(input: {
     provider: input.provider,
     client: input.client,
     signer: input.signer,
+    metadata: input.metadata,
     required_posting_auths: [input.signer],
   });
 }
@@ -121,6 +124,7 @@ export function buildDeclarePaymentOp(input: {
   payer: string;
   receiver: string;
   amountUsd: string;
+  ref?: Record<string, unknown>;
 }) {
   return buildOblPaymentDeclareOp({
     id: input.oblCustomJsonId,
@@ -128,6 +132,7 @@ export function buildDeclarePaymentOp(input: {
     payer: input.payer,
     receiver: input.receiver,
     amountUsd: input.amountUsd,
+    ref: input.ref,
     required_posting_auths: [input.payer],
   });
 }
@@ -139,6 +144,7 @@ export function buildConfirmPaymentOp(input: {
   amountUsd: string;
   payer?: string;
   declarePaymentId?: string;
+  ref?: Record<string, unknown>;
 }) {
   return buildOblPaymentConfirmOp({
     id: input.oblCustomJsonId,
@@ -147,6 +153,7 @@ export function buildConfirmPaymentOp(input: {
     amountUsd: input.amountUsd,
     payer: input.payer,
     declarePaymentId: input.declarePaymentId,
+    ref: input.ref,
     required_posting_auths: [input.receiver],
   });
 }

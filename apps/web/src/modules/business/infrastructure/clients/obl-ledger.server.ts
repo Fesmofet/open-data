@@ -34,7 +34,11 @@ export type OblContractApiRow = {
   client: string;
   dispute_rule: 'client' | 'provider' | 'arbiter';
   arbiter: string | null;
+  metadata: Record<string, unknown>;
+  offer_name: string;
+  offer_description: string | null;
   created_event_seq: string;
+  created_at: string;
   transaction_id: string;
 };
 
@@ -60,6 +64,23 @@ export async function fetchOblRelationships(account: string) {
 export async function fetchOblContract(contractId: string) {
   return queryApiFetch<OblContractApiRow>(
     `/query/v1/obl/contracts/${encodeURIComponent(contractId)}`,
+  );
+}
+
+export async function resolveOfferAlreadySigned(
+  viewer: string | null,
+  offerId: string,
+  author: string,
+): Promise<boolean> {
+  if (!viewer || viewer === author) {
+    return false;
+  }
+  const ledger = await fetchOblLedger(viewer, author);
+  if (!ledger) {
+    return false;
+  }
+  return (ledger.contracts as Array<{ offer_id: string }>).some(
+    (contract) => contract.offer_id === offerId,
   );
 }
 

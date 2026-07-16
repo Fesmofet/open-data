@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { HiveEngineBlock, HiveEngineTransaction } from '@opden-data-layer/clients';
 import type { NewHiveEngineSwap } from '@opden-data-layer/core';
+import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import { HiveEngineSwapsRepository } from '../../../repositories/hive-engine-swaps.repository';
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';
 import {
@@ -87,8 +88,8 @@ export class MarketpoolsSwapParser implements HiveEngineSubParser {
 }
 
 function blockTimestampFromBlock(block: HiveEngineBlock): number {
-  const blockTimestampUnix = Math.floor(Date.parse(block.timestamp) / 1000);
-  return Number.isFinite(blockTimestampUnix)
+  const blockTimestampUnix = blockTimestampToUnixSeconds(block.timestamp);
+  return blockTimestampUnix > 0
     ? blockTimestampUnix
     : Math.floor(Date.now() / 1000);
 }

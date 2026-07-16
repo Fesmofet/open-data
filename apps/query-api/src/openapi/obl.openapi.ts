@@ -92,13 +92,17 @@ registry.registerPath({
       kind: z.enum(['offer', 'request']).optional(),
       tags: z.string().optional().describe('Comma-separated tags (AND)'),
       author: z.string().optional(),
+      status: z
+        .enum(['active', 'retired', 'all'])
+        .optional()
+        .describe('Default active. Use all for owner dashboards (includes retired).'),
       limit: z.coerce.number().int().min(1).max(100).optional(),
       offset: z.coerce.number().int().min(0).optional(),
     }),
   },
   responses: {
     200: {
-      description: 'Latest active version per offer_id',
+      description: 'Latest version per offer_id (default status=active)',
       content: { 'application/json': { schema: z.array(oblOfferSchema) } },
     },
   },

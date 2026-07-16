@@ -12,6 +12,13 @@ import type { HiveEngineBlockParserInterface } from './hive-engine-processor.opt
 
 const LOG_EVERY_N_BLOCKS = 10;
 
+class BlockNotAvailableError extends Error {
+  constructor(blockNumber: number) {
+    super(`Block ${blockNumber} not available yet`);
+    this.name = BlockNotAvailableError.name;
+  }
+}
+
 @Injectable()
 export class HiveEngineProcessorService implements OnApplicationBootstrap {
   private readonly logger = new Logger(HiveEngineProcessorService.name);
@@ -35,7 +42,11 @@ export class HiveEngineProcessorService implements OnApplicationBootstrap {
       try {
         await this.parseNextBlock();
       } catch (e) {
-        this.logger.error(e);
+        if (e instanceof BlockNotAvailableError) {
+          this.logger.debug(e.message);
+        } else {
+          this.logger.error(e);
+        }
         await this.sleep(2000);
       }
     }
@@ -66,7 +77,7 @@ export class HiveEngineProcessorService implements OnApplicationBootstrap {
   async processBlock(currentBlock: number): Promise<void> {
     const block = await this.hiveEngineClient.getBlockInfo(currentBlock);
     if (!block) {
-      throw new Error(`Unable to fetch block ${currentBlock}`);
+      throw new BlockNotAvailableError(currentBlock);
     }
     if (block.transactions.length === 0) {
       this.logger.log(`EMPTY BLOCK: ${currentBlock}`);

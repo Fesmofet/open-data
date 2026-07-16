@@ -18,6 +18,7 @@ import { StateBadge } from '../state-badge';
 export type OfferEditorReviewStepProps = {
   state: OfferDraftState;
   phase: string;
+  isBusy?: boolean;
   error: string | null;
   onPublish: () => void;
   onGoToStep?: (step: OfferEditorStep) => void;
@@ -46,6 +47,7 @@ function stepStatus(
 export function OfferEditorReviewStep({
   state,
   phase,
+  isBusy = false,
   error,
   onPublish,
   onGoToStep,
@@ -145,7 +147,7 @@ export function OfferEditorReviewStep({
       {error ? <p className="text-body-sm text-error">{error}</p> : null}
       <button
         type="button"
-        disabled={!canPublish}
+        disabled={!canPublish || isBusy}
         onClick={onPublish}
         className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg disabled:opacity-50"
       >

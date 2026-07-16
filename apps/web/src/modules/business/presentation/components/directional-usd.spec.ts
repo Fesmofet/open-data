@@ -1,6 +1,7 @@
 import {
   directionalAmountsForViewer,
   formatDisplayUsd,
+  viewerNetUsd,
 } from './directional-usd';
 
 describe('directionalAmountsForViewer', () => {
@@ -21,6 +22,27 @@ describe('directionalAmountsForViewer', () => {
     expect(directionalAmountsForViewer('bob', 'alice', 'bob', bucket)).toEqual({
       viewerOwes: 0,
       owesViewer: 110,
+    });
+  });
+});
+
+describe('viewerNetUsd', () => {
+  it('maps positive netUsd to counterparty debt when viewer is accountA', () => {
+    expect(viewerNetUsd('alice', 'alice', 'bob', '70.00000000')).toBe(70);
+    expect(viewerNetUsd('bob', 'alice', 'bob', '70.00000000')).toBe(-70);
+  });
+
+  it('handles clamped gross buckets with non-zero net (bidirectional payments)', () => {
+    const bucket = {
+      owesAtoB: '0.00000000',
+      owesBtoA: '0.00000000',
+      netUsd: '3.00000000',
+    };
+    expect(viewerNetUsd('flowmaster', 'flowmaster', 'fesmofet', bucket.netUsd)).toBe(3);
+    expect(viewerNetUsd('fesmofet', 'flowmaster', 'fesmofet', bucket.netUsd)).toBe(-3);
+    expect(directionalAmountsForViewer('flowmaster', 'flowmaster', 'fesmofet', bucket)).toEqual({
+      viewerOwes: 0,
+      owesViewer: 0,
     });
   });
 });

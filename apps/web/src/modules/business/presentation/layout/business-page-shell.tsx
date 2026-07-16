@@ -8,8 +8,13 @@ import { OptimisticNavLink } from '@/shared/presentation';
 import { businessRoutes, type BusinessNavId } from '../../domain/routes';
 
 const NAV_ITEMS: { id: BusinessNavId; href: string; labelKey: string }[] = [
-  { id: 'overview', href: businessRoutes.overview, labelKey: 'business_nav_overview' },
-  { id: 'offers', href: businessRoutes.offers, labelKey: 'business_nav_offers' },
+  { id: 'discover', href: businessRoutes.discoverOffers, labelKey: 'business_nav_discover' },
+  { id: 'offers', href: businessRoutes.manageOffers, labelKey: 'business_nav_offers' },
+  {
+    id: 'requests',
+    href: businessRoutes.manageRequests,
+    labelKey: 'business_nav_requests',
+  },
   {
     id: 'relationships',
     href: businessRoutes.relationships,
@@ -69,7 +74,7 @@ export function BusinessPageShell({
   children,
 }: BusinessPageShellProps) {
   return (
-    <div className="mx-auto w-full max-w-container-content px-gutter py-section-y">
+    <div className="mx-auto w-full max-w-container-page px-gutter py-section-y sm:px-gutter-sm">
       <div className="mb-section-y flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-section font-display font-weight-display text-heading">
@@ -81,9 +86,9 @@ export function BusinessPageShell({
         </div>
         {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
       </div>
-      <div className="grid gap-section-y lg:grid-cols-[12rem_minmax(0,1fr)]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
         <BusinessLayoutNav active={activeNav} />
-        <div className="min-w-0">{children}</div>
+        <div className="min-w-0 lg:col-span-2">{children}</div>
       </div>
     </div>
   );

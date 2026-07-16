@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ObjectsCoreRepository } from '../../../repositories';
 import { OblRepository } from '../../../repositories/obl.repository';
@@ -65,6 +66,7 @@ export class OfferPublishHandler implements OdlActionHandler {
       status: 'active',
       created_event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
+      created_at: hiveBlockTimestampToDate(ctx.timestamp),
     });
   }
 }

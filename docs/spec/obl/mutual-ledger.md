@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: platform
 tags: [obl, ledger, balance]
-updated_at: 2026-07-14
+updated_at: 2026-07-16
 related:
   - docs/spec/open-business-layer.md
   - docs/spec/obl/payments.md
@@ -20,9 +20,9 @@ Per account pair (A↔B), eternal. Starts at first `contract_sign` between the p
 
 | State | Meaning |
 |-------|---------|
-| `confirmed` | Signed-ledger invoices (incl. resolved) minus confirmed payments |
-| `pending` | Prerequisite invoices, off-chain declare/confirm not fully settled |
-| `disputed` | Open dispute on invoice amount |
+| `confirmed` | Signed-ledger invoices (incl. resolved) minus **confirmed** payments (`payment_confirm`) |
+| `pending` | Prerequisite invoices (`pending`), plus **pending** payments from `payment_declare` awaiting receiver confirm |
+| `disputed` | Invoices in `disputed` state after `dispute_open` (payments do not contribute) |
 
 Netting (positive net ⇒ B owes A):
 

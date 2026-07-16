@@ -35,6 +35,9 @@ import * as m00034 from './00034_user_object_expertise';
 import * as m00035 from './00035_hive_engine_swap_pool_usd';
 import * as m00036 from './00036_objects_core_meta_group_id_index';
 import * as m00037 from './00037_obl';
+import * as m00038 from './00038_obl_contract_metadata';
+import * as m00039 from './00039_obl_payments_contract_and_created_at';
+import * as m00040 from './00040_obl_payments_declared_amount';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -82,4 +85,7 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00035_hive_engine_swap_pool_usd': { up: m00035.up, down: m00035.down },
   '00036_objects_core_meta_group_id_index': { up: m00036.up, down: m00036.down },
   '00037_obl': { up: m00037.up, down: m00037.down },
+  '00038_obl_contract_metadata': { up: m00038.up, down: m00038.down },
+  '00039_obl_payments_contract_and_created_at': { up: m00039.up, down: m00039.down },
+  '00040_obl_payments_declared_amount': { up: m00040.up, down: m00040.down },
 };

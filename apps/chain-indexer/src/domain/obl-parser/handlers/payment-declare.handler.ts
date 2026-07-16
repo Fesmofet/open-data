@@ -1,3 +1,4 @@
+import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
@@ -49,15 +50,16 @@ export class PaymentDeclareHandler implements OdlActionHandler {
       payer: data.payer,
       receiver: data.receiver,
       amount_usd: amountUsd,
+      declared_amount_usd: amountUsd,
       method: 'offchain',
       token_symbol: null,
       token_amount: null,
       rate_usd: null,
       state: 'pending',
-      contract_id: data.contract_id ?? null,
       ref: data.ref !== undefined ? asJsonValue(data.ref) : null,
       created_event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
+      created_at: hiveBlockTimestampToDate(ctx.timestamp),
     });
   }
 }

@@ -1151,6 +1151,7 @@ export interface OblOffersTable {
   status: ColumnType<OblOfferStatus, OblOfferStatus | undefined, OblOfferStatus>;
   created_event_seq: bigint;
   transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type OblOffer = Selectable<OblOffersTable>;
@@ -1165,10 +1166,12 @@ export interface OblContractsTable {
   client: string;
   dispute_rule: OblDisputeRule;
   arbiter: string | null;
+  metadata: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
   pair_low: Generated<string>;
   pair_high: Generated<string>;
   created_event_seq: bigint;
   transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type OblContract = Selectable<OblContractsTable>;
@@ -1189,6 +1192,7 @@ export interface OblInvoicesTable {
   pair_high: Generated<string>;
   created_event_seq: bigint;
   transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type OblInvoice = Selectable<OblInvoicesTable>;
@@ -1209,17 +1213,18 @@ export interface OblPaymentsTable {
   payer: string;
   receiver: string;
   amount_usd: ColumnType<string, number | string, number | string>;
+  declared_amount_usd: ColumnType<string, number | string, number | string>;
   method: OblPaymentMethod;
   token_symbol: string | null;
   token_amount: string | null;
   rate_usd: ColumnType<string | null, number | string | null, number | string | null>;
   state: OblPaymentState;
-  contract_id: string | null;
   ref: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   pair_low: Generated<string>;
   pair_high: Generated<string>;
   created_event_seq: bigint;
   transaction_id: string | null;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type OblPayment = Selectable<OblPaymentsTable>;
@@ -1237,6 +1242,7 @@ export interface OblDisputesTable {
   created_event_seq: bigint;
   resolved_event_seq: bigint | null;
   transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type OblDispute = Selectable<OblDisputesTable>;

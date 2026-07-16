@@ -30,6 +30,23 @@ export function directionalAmountsForViewer(
   return { viewerOwes: owesAtoB, owesViewer: owesBtoA };
 }
 
+/** netUsd = raw owesBtoA − raw owesAtoB; positive means accountB owes accountA. */
+export function viewerNetUsd(
+  viewer: string,
+  accountA: string,
+  accountB: string,
+  netUsd: string,
+): number {
+  const net = parseUsd(netUsd);
+  if (viewer === accountA) {
+    return net;
+  }
+  if (viewer === accountB) {
+    return -net;
+  }
+  return net;
+}
+
 export type DirectionalUsdProps = {
   viewer: string;
   counterparty: string;
@@ -46,35 +63,17 @@ export function DirectionalUsd({
   bucket,
 }: DirectionalUsdProps) {
   const { t } = useI18n();
-  const { viewerOwes, owesViewer } = directionalAmountsForViewer(
-    viewer,
-    accountA,
-    accountB,
-    bucket,
-  );
+  const viewerNet = viewerNetUsd(viewer, accountA, accountB, bucket.netUsd);
 
   let text: string;
-  if (owesViewer > 0 && viewerOwes === 0) {
+  if (viewerNet > 0) {
     text = t('business_balance_counterparty_owes_you')
       .replace('@account', `@${counterparty}`)
-      .replace('$amount', formatDisplayUsd(owesViewer));
-  } else if (viewerOwes > 0 && owesViewer === 0) {
+      .replace('$amount', formatDisplayUsd(viewerNet));
+  } else if (viewerNet < 0) {
     text = t('business_balance_you_owe_counterparty')
       .replace('@account', `@${counterparty}`)
-      .replace('$amount', formatDisplayUsd(viewerOwes));
-  } else if (viewerOwes > 0 && owesViewer > 0) {
-    const net = owesViewer - viewerOwes;
-    if (net > 0) {
-      text = t('business_balance_counterparty_owes_you')
-        .replace('@account', `@${counterparty}`)
-        .replace('$amount', formatDisplayUsd(net));
-    } else if (net < 0) {
-      text = t('business_balance_you_owe_counterparty')
-        .replace('@account', `@${counterparty}`)
-        .replace('$amount', formatDisplayUsd(Math.abs(net)));
-    } else {
-      text = t('business_balance_settled');
-    }
+      .replace('$amount', formatDisplayUsd(Math.abs(viewerNet)));
   } else {
     text = t('business_balance_settled');
   }

@@ -17,6 +17,7 @@ const invoice: OblInvoice = {
   pair_high: 'bob',
   created_event_seq: BigInt(10),
   transaction_id: 'tx-inv',
+  created_at: new Date('2026-01-01T00:00:00.000Z'),
 };
 
 function ctx(): OdlEventContext {

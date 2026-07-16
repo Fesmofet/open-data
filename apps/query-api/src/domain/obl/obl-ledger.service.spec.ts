@@ -22,6 +22,7 @@ function invoice(
     pair_high: 'bob',
     created_event_seq: seq,
     transaction_id: 'tx',
+    created_at: new Date('2026-01-01T00:00:00.000Z'),
   };
 }
 
@@ -31,17 +32,18 @@ function payment(id: string, seq: bigint): OblPayment {
     payer: 'bob',
     receiver: 'alice',
     amount_usd: '100.00000000',
+    declared_amount_usd: '100.00000000',
     method: 'offchain',
     token_symbol: null,
     token_amount: null,
     rate_usd: null,
     state: 'confirmed',
-    contract_id: null,
     ref: null,
     pair_low: 'alice',
     pair_high: 'bob',
     created_event_seq: seq,
     transaction_id: 'tx',
+    created_at: new Date('2026-01-01T00:00:00.000Z'),
   };
 }
 
@@ -50,7 +52,7 @@ describe('OblLedgerService', () => {
     const startedSeq = BigInt(50);
     const obl = {
       findLedgerStartedSeq: jest.fn().mockResolvedValue(startedSeq),
-      listContractsForPair: jest.fn().mockResolvedValue([]),
+      listContractsForPairWithOffer: jest.fn().mockResolvedValue([]),
       listInvoicesForPair: jest.fn().mockResolvedValue([
         invoice('pre', BigInt(10)),
         invoice('post', BigInt(60)),

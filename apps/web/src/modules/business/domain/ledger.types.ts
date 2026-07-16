@@ -43,3 +43,52 @@ export type OblRelationshipRow = {
   balance: PairBalanceView;
   lastActivityAt: string | null;
 };
+
+export type LedgerInvoiceRow = {
+  invoice_id: string;
+  contract_id: string | null;
+  debtor: string;
+  creditor: string;
+  issuer: string;
+  amount_usd: string;
+  final_amount_usd?: string | null;
+  state: 'confirmed' | 'pending' | 'disputed' | 'resolved' | 'void';
+  details?: Record<string, unknown>;
+  created_at: string;
+};
+
+export type LedgerPaymentRow = {
+  payment_id: string;
+  payer: string;
+  receiver: string;
+  amount_usd: string;
+  declared_amount_usd?: string | null;
+  state: 'pending' | 'confirmed';
+  method: string;
+  ref?: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type LedgerDisputeRow = {
+  dispute_id: string;
+  invoice_id: string;
+  disputant: string;
+  proposed_amount_usd: string;
+  final_amount_usd?: string | null;
+  resolver?: string | null;
+  status: 'open' | 'resolved';
+  created_at: string;
+};
+
+export type LedgerContractRow = {
+  contract_id: string;
+  offer_id: string;
+  offer_version: number;
+  provider: string;
+  client: string;
+  dispute_rule: 'client' | 'provider' | 'arbiter';
+  arbiter: string | null;
+  offer_name: string;
+  offer_description: string | null;
+  created_at: string;
+};
