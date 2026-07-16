@@ -93,4 +93,31 @@ describe('OblRepository', () => {
     );
     expect(statusFilters).toHaveLength(0);
   });
+
+  it('listArbitrationDisputesForAccount filters arbiter contracts and status', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const where = jest.fn();
+    const chain: Record<string, jest.Mock> = { where };
+    const handler: ProxyHandler<object> = {
+      get(_target, prop) {
+        if (prop === 'execute') {
+          return execute;
+        }
+        if (!chain[String(prop)]) {
+          chain[String(prop)] = jest.fn().mockReturnValue(new Proxy({}, handler));
+        }
+        return chain[String(prop)];
+      },
+    };
+    where.mockReturnValue(new Proxy({}, handler));
+    const db = new Proxy({}, handler) as Kysely<unknown>;
+    const repo = new OblRepository(db as never);
+
+    await repo.listArbitrationDisputesForAccount('carol', 'open', 20, undefined);
+
+    expect(where).toHaveBeenCalledWith('c.dispute_rule', '=', 'arbiter');
+    expect(where).toHaveBeenCalledWith('c.arbiter', '=', 'carol');
+    expect(where).toHaveBeenCalledWith('d.status', '=', 'open');
+    expect(execute).toHaveBeenCalled();
+  });
 });

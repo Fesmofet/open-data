@@ -474,6 +474,7 @@
   "business_nav_discover": "Discover",
   "business_nav_offers": "Offers",
   "business_nav_relationships": "Relationships",
+  "business_nav_arbitration": "Arbitration",
   "business_nav_requests": "Requests",
   "business_new_version": "New version",
   "business_offer_detail_subtitle": "Published offer version",
@@ -527,6 +528,13 @@
   "business_relationship_detail_subtitle": "Mutual ledger with this counterparty",
   "business_relationships_empty_body": "Sign a contract from a published offer or request to start a mutual ledger.",
   "business_relationships_empty_title": "No relationships yet",
+  "business_arbitration_title": "Arbitration",
+  "business_arbitration_subtitle": "Disputes on contracts where you are the assigned arbiter.",
+  "business_arbitration_filter_open": "Open",
+  "business_arbitration_filter_resolved": "Resolved",
+  "business_arbitration_empty_title": "No disputes assigned to you",
+  "business_arbitration_empty_body": "When a contract lists you as arbiter and a party opens a dispute, it appears here.",
+  "business_arbitration_view_relationship": "View relationship",
   "business_relationships_subtitle": "Counterparties you have contracts with.",
   "business_relationships_title": "Relationships",
   "business_requests_subtitle": "Your request drafts and published versions.",
@@ -3538,5 +3546,6 @@
   "your_vote": "Your vote",
   "your_vote_placeholder": "Your vote(optional)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Community actions"
+  "СЃommunity_actions": "Community actions",
+  "business_field_amount_usd_invalid": "Enter a valid USD amount (e.g. 12.50)."
 }

@@ -38,3 +38,14 @@ Balance: open dispute amount in **disputed**; after resolve, `final_amount_usd` 
 On the relationship **Disputes** tab, open disputes show **Resolve dispute** when the signed-in account matches the resolver for the invoice's contract rule. `BusinessResolveDisputeModal` broadcasts `dispute_resolve` with editable final amount (default = proposed amount).
 
 Resolved disputes show the full settlement chain: **original invoice amount → proposed amount → agreed final amount** and **resolver** account. The **Invoices** tab shows `$original → $final` for resolved invoices.
+
+## Arbiter inbox (web)
+
+When `dispute_rule` is `arbiter`, the assigned arbiter is not a ledger counterparty and does not appear on **Relationships**. The Business nav **Arbitration** tab (`/business/arbitration`) lists disputes on contracts where `contract.arbiter` equals the signed-in account.
+
+| Filter | Query | Content |
+|--------|-------|---------|
+| Open (default) | `?status=open` | Cards with **Resolve dispute** → `BusinessResolveDisputeModal` |
+| Resolved | `?status=resolved` | Same cards with final amount and resolver via `DisputeSettlementSummary` |
+
+Data: `GET /query/v1/obl/arbitration?account=&status=&limit=&cursor=`. See [arbitration.md](../../../apps/web/spec/pages/business/arbitration.md).

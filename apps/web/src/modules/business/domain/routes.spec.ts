@@ -40,6 +40,9 @@ describe('businessRoutes', () => {
 
   it('builds relationship and contract paths', () => {
     expect(businessRoutes.relationship('alice')).toBe('/business/relationships/alice');
+    expect(businessRoutes.relationshipTab('alice', 'invoices')).toBe(
+      '/business/relationships/alice?tab=invoices',
+    );
     expect(businessRoutes.contract('c-9')).toBe('/business/contracts/c-9');
   });
 

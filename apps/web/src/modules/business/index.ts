@@ -2,6 +2,7 @@ export { businessRoutes } from './domain/routes';
 export { BusinessOffersListClient } from './presentation/components/business-offers-list-client';
 export { BusinessOfferEditorClient } from './presentation/components/business-offer-editor-client';
 export { BusinessRelationshipsClient } from './presentation/components/business-relationships-client';
+export { BusinessArbitrationClient } from './presentation/components/business-arbitration-client';
 export { BusinessRelationshipDetailClient } from './presentation/components/business-relationship-detail-client';
 export { BusinessContractClient } from './presentation/components/business-contract-client';
 export { BusinessOfferDetailClient } from './presentation/components/business-offer-detail-client';

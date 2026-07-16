@@ -1,4 +1,4 @@
-import { OBJECT_TYPES, type JsonValue } from '@opden-data-layer/core';
+import { OBJECT_TYPES, type JsonValue, parseOblUsdAmount, type OblUsdAmountKind } from '@opden-data-layer/core';
 
 export function asJsonValue(value: unknown): JsonValue {
   return JSON.parse(JSON.stringify(value)) as JsonValue;
@@ -10,12 +10,12 @@ export function normalizePair(a: string, b: string): { pairLow: string; pairHigh
   return x <= y ? { pairLow: x, pairHigh: y } : { pairLow: y, pairHigh: x };
 }
 
-export function toUsdString(value: number | string): string {
-  const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n) || n < 0) {
+export function toUsdString(value: number | string, kind: OblUsdAmountKind = 'nonnegative'): string {
+  const parsed = parseOblUsdAmount(value, kind);
+  if (!parsed) {
     throw new Error('invalid amount_usd');
   }
-  return n.toFixed(8);
+  return parsed;
 }
 
 export function isServiceRefType(objectType: string, kind: 'offer' | 'request'): boolean {

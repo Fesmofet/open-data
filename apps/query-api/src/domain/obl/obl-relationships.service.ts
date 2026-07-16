@@ -1,47 +1,117 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { normalizeHiveAccount } from '../../auth';
 import { OblRepository } from '../../repositories/obl.repository';
-import { OblLedgerService } from './obl-ledger.service';
+import { computePairBalance } from './compute-pair-balance';
+import { buildOffsetPage, type OffsetPage } from './obl-pagination';
+import {
+  filterByLedgerCutoff,
+  normalizePair,
+  pairKey,
+} from './obl-pair-utils';
+import type { ListOblRelationshipsQuery } from './obl.schemas';
 
-function normalizePair(a: string, b: string): { pairLow: string; pairHigh: string } {
-  const x = a.trim();
-  const y = b.trim();
-  return x <= y ? { pairLow: x, pairHigh: y } : { pairLow: y, pairHigh: x };
-}
+export type OblRelationshipRow = {
+  counterparty: string;
+  roles: Array<'provider' | 'client'>;
+  contractCount: number;
+  balance: ReturnType<typeof computePairBalance>;
+  lastActivityEventSeq: string | null;
+  lastActivityAt: string | null;
+};
 
 @Injectable()
 export class OblRelationshipsService {
-  constructor(
-    private readonly obl: OblRepository,
-    private readonly ledger: OblLedgerService,
-  ) {}
+  constructor(private readonly obl: OblRepository) {}
 
-  async listForAccount(accountRaw: string) {
+  async listForAccount(
+    accountRaw: string,
+    query: ListOblRelationshipsQuery,
+  ): Promise<OffsetPage<OblRelationshipRow>> {
     const account = normalizeHiveAccount(accountRaw);
-    const counterparties = await this.obl.listCounterpartiesForAccount(account);
-    const rows = await Promise.all(
-      counterparties.map(async (counterparty) => {
-        const { pairLow, pairHigh } = normalizePair(account, counterparty);
-        const counts = await this.obl.countContractsForPair(pairLow, pairHigh, account);
-        const roles: Array<'provider' | 'client'> = [];
-        if (counts.asProvider > 0) {
-          roles.push('provider');
-        }
-        if (counts.asClient > 0) {
-          roles.push('client');
-        }
-        const ledger = await this.ledger.getLedger(account, counterparty);
-        const lastSeq = await this.obl.latestContractActivitySeq(pairLow, pairHigh);
-        return {
-          counterparty,
-          roles,
-          contractCount: counts.total,
-          balance: ledger.balance,
-          lastActivityAt: lastSeq !== null ? lastSeq.toString() : null,
-        };
-      }),
+    const counterparties = await this.obl.listCounterpartiesPaginated(
+      account,
+      query.limit + 1,
+      query.offset,
     );
-    return rows;
+    const page = buildOffsetPage(counterparties, query.limit);
+    if (page.items.length === 0) {
+      return { items: [], hasMore: page.hasMore };
+    }
+
+    const pairs = page.items.map((counterparty) => {
+      const { pairLow, pairHigh } = normalizePair(account, counterparty);
+      return { counterparty, pairLow, pairHigh };
+    });
+    const pairRefs = pairs.map(({ pairLow, pairHigh }) => ({ pairLow, pairHigh }));
+
+    const [countsMap, startedSeqsMap, activityMap, allInvoices, allPayments] =
+      await Promise.all([
+        this.obl.summarizeContractsForAccountPairs(account, pairRefs),
+        this.obl.findLedgerStartedSeqsForPairs(pairRefs),
+        this.obl.latestContractActivitySeqForPairs(pairRefs),
+        this.obl.listInvoicesForPairs(pairRefs),
+        this.obl.listPaymentsForPairs(pairRefs),
+      ]);
+
+    const items = pairs.map(({ counterparty, pairLow, pairHigh }) => {
+      const key = pairKey(pairLow, pairHigh);
+      const counts = countsMap.get(key) ?? {
+        total: 0,
+        asProvider: 0,
+        asClient: 0,
+      };
+      const roles: Array<'provider' | 'client'> = [];
+      if (counts.asProvider > 0) {
+        roles.push('provider');
+      }
+      if (counts.asClient > 0) {
+        roles.push('client');
+      }
+      const startedSeq = startedSeqsMap.get(key) ?? null;
+      const invoices = filterByLedgerCutoff(
+        allInvoices.filter(
+          (row) => row.pair_low === pairLow && row.pair_high === pairHigh,
+        ),
+        startedSeq,
+      );
+      const payments = filterByLedgerCutoff(
+        allPayments.filter(
+          (row) => row.pair_low === pairLow && row.pair_high === pairHigh,
+        ),
+        startedSeq,
+      );
+      const balance = computePairBalance(
+        account,
+        counterparty,
+        invoices.map((inv) => ({
+          debtor: inv.debtor,
+          creditor: inv.creditor,
+          amount_usd: String(inv.amount_usd),
+          final_amount_usd:
+            inv.final_amount_usd !== null && inv.final_amount_usd !== undefined
+              ? String(inv.final_amount_usd)
+              : null,
+          state: inv.state,
+        })),
+        payments.map((pay) => ({
+          payer: pay.payer,
+          receiver: pay.receiver,
+          amount_usd: String(pay.amount_usd),
+          state: pay.state,
+        })),
+      );
+      const lastSeq = activityMap.get(key) ?? null;
+      return {
+        counterparty,
+        roles,
+        contractCount: counts.total,
+        balance,
+        lastActivityEventSeq: lastSeq !== null ? lastSeq.toString() : null,
+        lastActivityAt: lastSeq !== null ? lastSeq.toString() : null,
+      };
+    });
+
+    return { items, hasMore: page.hasMore };
   }
 
   async getContract(contractId: string) {

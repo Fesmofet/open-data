@@ -46,16 +46,112 @@ const pairBalanceSchema = registry.register(
   }),
 );
 
+const oblOffsetPageSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    items: z.array(item),
+    hasMore: z.boolean(),
+  });
+
+const oblCursorPageSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    items: z.array(item),
+    hasMore: z.boolean(),
+    nextCursor: z.string().nullable(),
+  });
+
+const oblPaymentSchema = registry.register(
+  'OblPayment',
+  z.object({
+    payment_id: z.string(),
+    payer: z.string(),
+    receiver: z.string(),
+    amount_usd: z.string(),
+    declared_amount_usd: z.string().nullable(),
+    state: z.enum(['confirmed', 'pending']),
+    ref: z.unknown().nullable(),
+    created_event_seq: z.string(),
+    created_at: z.string(),
+    transaction_id: z.string(),
+  }),
+);
+
+const oblInvoiceSchema = registry.register(
+  'OblInvoice',
+  z.object({
+    invoice_id: z.string(),
+    debtor: z.string(),
+    creditor: z.string(),
+    amount_usd: z.string(),
+    final_amount_usd: z.string().nullable(),
+    state: z.enum(['confirmed', 'pending', 'disputed', 'resolved', 'void']),
+    contract_id: z.string().nullable(),
+    details: z.unknown(),
+    created_event_seq: z.string(),
+    created_at: z.string(),
+    transaction_id: z.string(),
+  }),
+);
+
+const oblDisputeSchema = registry.register(
+  'OblDispute',
+  z.object({
+    dispute_id: z.string(),
+    invoice_id: z.string(),
+    status: z.enum(['open', 'resolved']),
+    proposed_amount_usd: z.string(),
+    final_amount_usd: z.string().nullable(),
+    created_event_seq: z.string(),
+    created_at: z.string(),
+    transaction_id: z.string(),
+  }),
+);
+
+const oblContractSchema = registry.register(
+  'OblContract',
+  z.object({
+    contract_id: z.string(),
+    offer_id: z.string(),
+    offer_version: z.number().int(),
+    provider: z.string(),
+    client: z.string(),
+    dispute_rule: z.enum(['client', 'provider', 'arbiter']),
+    arbiter: z.string().nullable(),
+    created_event_seq: z.string(),
+    transaction_id: z.string(),
+  }),
+);
+
+const oblArbitrationRowSchema = registry.register(
+  'OblArbitrationRow',
+  z.object({
+    dispute: oblDisputeSchema.extend({
+      disputant: z.string(),
+      resolver: z.string().nullable(),
+      resolved_event_seq: z.string().nullable(),
+    }),
+    invoice: oblInvoiceSchema,
+    contract: oblContractSchema.extend({
+      metadata: z.unknown(),
+      created_at: z.string(),
+    }),
+    offerName: z.string(),
+    pair: z.object({
+      provider: z.string(),
+      client: z.string(),
+    }),
+  }),
+);
+
 const oblLedgerResponseSchema = registry.register(
   'OblLedgerResponse',
   z.object({
     accountA: z.string(),
     accountB: z.string(),
     startedEventSeq: z.string().nullable(),
-    contracts: z.array(z.unknown()),
-    invoices: z.array(z.unknown()),
-    payments: z.array(z.unknown()),
-    disputes: z.array(z.unknown()),
+    contracts: z.array(oblContractSchema),
+    invoices: z.array(oblInvoiceSchema),
+    payments: z.array(oblPaymentSchema),
+    disputes: z.array(oblDisputeSchema),
     balance: pairBalanceSchema,
   }),
 );
@@ -96,14 +192,16 @@ registry.registerPath({
         .enum(['active', 'retired', 'all'])
         .optional()
         .describe('Default active. Use all for owner dashboards (includes retired).'),
-      limit: z.coerce.number().int().min(1).max(100).optional(),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
       offset: z.coerce.number().int().min(0).optional(),
     }),
   },
   responses: {
     200: {
-      description: 'Latest version per offer_id (default status=active)',
-      content: { 'application/json': { schema: z.array(oblOfferSchema) } },
+      description: 'Paginated latest version per offer_id (default status=active)',
+      content: {
+        'application/json': { schema: oblOffsetPageSchema(oblOfferSchema) },
+      },
     },
   },
 });
@@ -201,23 +299,101 @@ const oblRelationshipRowSchema = registry.register(
     contractCount: z.number().int(),
     balance: pairBalanceSchema,
     lastActivityAt: z.string().nullable(),
+    lastActivityEventSeq: z.string().nullable().optional(),
   }),
 );
 
-const oblContractSchema = registry.register(
-  'OblContract',
-  z.object({
-    contract_id: z.string(),
-    offer_id: z.string(),
-    offer_version: z.number().int(),
-    provider: z.string(),
-    client: z.string(),
-    dispute_rule: z.enum(['client', 'provider', 'arbiter']),
-    arbiter: z.string().nullable(),
-    created_event_seq: z.string(),
-    transaction_id: z.string(),
-  }),
-);
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/ledger/payments',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Paginated payments for an account pair',
+  request: {
+    query: z.object({
+      accountA: z.string().min(1).max(32),
+      accountB: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of payments',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblPaymentSchema) },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/ledger/invoices',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Paginated invoices for an account pair',
+  request: {
+    query: z.object({
+      accountA: z.string().min(1).max(32),
+      accountB: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of invoices',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblInvoiceSchema) },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/ledger/contracts',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Paginated contracts for an account pair',
+  request: {
+    query: z.object({
+      accountA: z.string().min(1).max(32),
+      accountB: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of contracts',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblContractSchema) },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/ledger/disputes',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Paginated disputes for an account pair',
+  request: {
+    query: z.object({
+      accountA: z.string().min(1).max(32),
+      accountB: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of disputes',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblDisputeSchema) },
+      },
+    },
+  },
+});
 
 registry.registerPath({
   method: 'get',
@@ -227,12 +403,43 @@ registry.registerPath({
   request: {
     query: z.object({
       account: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      offset: z.coerce.number().int().min(0).optional(),
     }),
   },
   responses: {
     200: {
-      description: 'Relationship rows',
-      content: { 'application/json': { schema: z.array(oblRelationshipRowSchema) } },
+      description: 'Paginated relationship rows',
+      content: {
+        'application/json': { schema: oblOffsetPageSchema(oblRelationshipRowSchema) },
+      },
+    },
+    400: {
+      description: 'Invalid account',
+      content: { 'application/json': { schema: badRequestSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/arbitration',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'List disputes assigned to an arbiter account',
+  request: {
+    query: z.object({
+      account: z.string().min(1).max(32),
+      status: z.enum(['open', 'resolved']).optional(),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of arbitration dispute rows',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblArbitrationRowSchema) },
+      },
     },
     400: {
       description: 'Invalid account',

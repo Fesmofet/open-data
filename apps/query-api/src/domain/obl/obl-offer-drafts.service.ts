@@ -8,8 +8,10 @@ import type { JsonValue, OblOfferDraft } from '@opden-data-layer/core';
 import { OblOfferDraftsRepository } from '../../repositories/obl.repository';
 import type {
   CreateOblOfferDraftBody,
+  ListOblOfferDraftsQuery,
   PatchOblOfferDraftBody,
 } from './obl.schemas';
+import { buildOffsetPage } from './obl-pagination';
 
 export interface OblOfferDraftView {
   draftId: string;
@@ -41,9 +43,15 @@ export class OblOfferDraftsService {
     };
   }
 
-  async getList(author: string): Promise<OblOfferDraftView[]> {
-    const rows = await this.drafts.listByAuthor(author);
-    return rows.map((row) => this.toView(row));
+  async getList(author: string, query?: ListOblOfferDraftsQuery) {
+    const limit = query?.limit ?? 20;
+    const offset = query?.offset ?? 0;
+    const rows = await this.drafts.listByAuthorPaginated(author, limit + 1, offset);
+    const page = buildOffsetPage(rows, limit);
+    return {
+      items: page.items.map((row) => this.toView(row)),
+      hasMore: page.hasMore,
+    };
   }
 
   async getOne(author: string, draftId: string): Promise<OblOfferDraftView> {

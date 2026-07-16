@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import {
+  oblNonNegativeUsdAmountSchema,
+  oblPositiveUsdAmountSchema,
+} from './obl-usd.schema';
+
 export const OBL_DISPUTE_RULES = ['client', 'provider', 'arbiter'] as const;
 export const OBL_OFFER_KINDS = ['offer', 'request'] as const;
 
@@ -52,7 +57,7 @@ export const invoiceIssuePayloadSchema = z.object({
   issuer: z.string().min(1).max(32),
   debtor: z.string().min(1).max(32),
   creditor: z.string().min(1).max(32),
-  amount_usd: z.union([z.number().positive(), z.string().min(1)]),
+  amount_usd: oblPositiveUsdAmountSchema,
   contract_id: z.string().min(1).max(256).optional(),
   details: z.record(z.string(), z.unknown()).optional(),
 });
@@ -61,7 +66,7 @@ export const paymentDeclarePayloadSchema = z.object({
   payment_id: z.string().min(1).max(256),
   payer: z.string().min(1).max(32),
   receiver: z.string().min(1).max(32),
-  amount_usd: z.union([z.number().positive(), z.string().min(1)]),
+  amount_usd: oblPositiveUsdAmountSchema,
   ref: z.record(z.string(), z.unknown()).optional(),
 });
 
@@ -69,7 +74,7 @@ export const paymentConfirmPayloadSchema = z.object({
   payment_id: z.string().min(1).max(256),
   receiver: z.string().min(1).max(32),
   payer: z.string().min(1).max(32).optional(),
-  amount_usd: z.union([z.number().positive(), z.string().min(1)]),
+  amount_usd: oblPositiveUsdAmountSchema,
   declare_payment_id: z.string().min(1).max(256).optional(),
   ref: z.record(z.string(), z.unknown()).optional(),
 });
@@ -78,13 +83,13 @@ export const disputeOpenPayloadSchema = z.object({
   dispute_id: z.string().min(1).max(256),
   invoice_id: z.string().min(1).max(256),
   disputant: z.string().min(1).max(32),
-  proposed_amount_usd: z.union([z.number().nonnegative(), z.string().min(1)]),
+  proposed_amount_usd: oblNonNegativeUsdAmountSchema,
 });
 
 export const disputeResolvePayloadSchema = z.object({
   dispute_id: z.string().min(1).max(256),
   resolver: z.string().min(1).max(32),
-  final_amount_usd: z.union([z.number().nonnegative(), z.string().min(1)]),
+  final_amount_usd: oblNonNegativeUsdAmountSchema,
 });
 
 const oblEventSchema = z.object({

@@ -8,7 +8,7 @@ import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 import type { LedgerDisputeRow, LedgerInvoiceRow } from '../../../domain/ledger.types';
 import type { DisputeAuthority } from '../../../domain/dispute-resolution';
 import { formatUsdDisplay } from '../../../domain/dispute-resolution';
-import { RelationshipReadonlyField, parsePositiveUsdAmount } from './relationship-modal-fields';
+import { RelationshipReadonlyField, parseNonNegativeUsdAmount } from './relationship-modal-fields';
 
 export type BusinessResolveDisputeModalProps = {
   open: boolean;
@@ -39,7 +39,7 @@ export function BusinessResolveDisputeModal({
     }
   }, [dispute]);
 
-  const canSubmit = !isBusy && dispute !== null && parsePositiveUsdAmount(finalAmount);
+  const canSubmit = !isBusy && dispute !== null && parseNonNegativeUsdAmount(finalAmount);
 
   if (!dispute || !authority) {
     return null;

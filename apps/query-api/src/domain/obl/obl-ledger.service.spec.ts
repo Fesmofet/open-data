@@ -74,6 +74,36 @@ describe('OblLedgerService', () => {
     expect(result.payments[0].payment_id).toBe('pay-post');
   });
 
+  it('filters contracts by ledger started_event_seq', async () => {
+    const startedSeq = BigInt(50);
+    const obl = {
+      findLedgerStartedSeq: jest.fn().mockResolvedValue(startedSeq),
+      listContractsForPairWithOffer: jest.fn().mockResolvedValue([
+        {
+          contract_id: 'pre',
+          created_event_seq: BigInt(10),
+          offer_name: 'Old',
+          offer_description: null,
+        },
+        {
+          contract_id: 'post',
+          created_event_seq: BigInt(60),
+          offer_name: 'New',
+          offer_description: null,
+        },
+      ]),
+      listInvoicesForPair: jest.fn().mockResolvedValue([]),
+      listPaymentsForPair: jest.fn().mockResolvedValue([]),
+      listDisputesForInvoices: jest.fn().mockResolvedValue([]),
+    } as unknown as OblRepository;
+
+    const service = new OblLedgerService(obl);
+    const result = await service.getLedger('alice', 'bob');
+
+    expect(result.contracts).toHaveLength(1);
+    expect(result.contracts[0].contract_id).toBe('post');
+  });
+
   it('rejects identical accounts', async () => {
     const service = new OblLedgerService({} as OblRepository);
     await expect(service.getLedger('alice', 'alice')).rejects.toBeInstanceOf(

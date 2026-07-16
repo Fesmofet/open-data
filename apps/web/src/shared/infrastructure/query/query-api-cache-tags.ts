@@ -58,6 +58,11 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:engine-delegations:${symbol.trim().toUpperCase()}`,
   oblOffers: (accountName: string) =>
     `query-api:obl:${accountName.trim().toLowerCase()}:offers`,
+  oblDrafts: (accountName: string) =>
+    `query-api:obl:${accountName.trim().toLowerCase()}:drafts`,
+  oblDiscover: (filtersKey: string) => `query-api:obl:discover:${filtersKey}`,
+  oblContract: (contractId: string) =>
+    `query-api:obl:contract:${contractId.trim()}`,
   oblLedger: (accountA: string, accountB: string) => {
     const a = accountA.trim().toLowerCase();
     const b = accountB.trim().toLowerCase();
@@ -67,4 +72,6 @@ export const queryApiCacheTags = {
   },
   oblRelationships: (accountName: string) =>
     `query-api:obl:${accountName.trim().toLowerCase()}:relationships`,
+  oblArbitration: (accountName: string, status: 'open' | 'resolved') =>
+    `query-api:obl:${accountName.trim().toLowerCase()}:arbitration:${status}`,
 } as const;

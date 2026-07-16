@@ -4,11 +4,17 @@ import {
   OblLedgerService,
   OblOffersService,
   OblRelationshipsService,
+  OblArbitrationService,
+  listOblRelationshipsQuerySchema,
+  listOblArbitrationQuerySchema,
   oblAccountQuerySchema,
+  oblLedgerListQuerySchema,
   pairBalanceQuerySchema,
   searchOblOffersQuerySchema,
   usdToWaivQuerySchema,
-  type OblAccountQuery,
+  type ListOblRelationshipsQuery,
+  type ListOblArbitrationQuery,
+  type OblLedgerListQuery,
   type PairBalanceQuery,
   type SearchOblOffersQuery,
   type UsdToWaivQuery,
@@ -22,6 +28,7 @@ export class OblController {
     private readonly ledger: OblLedgerService,
     private readonly conversion: OblConversionService,
     private readonly relationships: OblRelationshipsService,
+    private readonly arbitration: OblArbitrationService,
   ) {}
 
   @Get('offers/search')
@@ -50,6 +57,34 @@ export class OblController {
     return offer;
   }
 
+  @Get('ledger/payments')
+  async listLedgerPayments(
+    @Query(new ZodQueryPipe(oblLedgerListQuerySchema)) query: OblLedgerListQuery,
+  ) {
+    return this.ledger.listPayments(query);
+  }
+
+  @Get('ledger/invoices')
+  async listLedgerInvoices(
+    @Query(new ZodQueryPipe(oblLedgerListQuerySchema)) query: OblLedgerListQuery,
+  ) {
+    return this.ledger.listInvoices(query);
+  }
+
+  @Get('ledger/contracts')
+  async listLedgerContracts(
+    @Query(new ZodQueryPipe(oblLedgerListQuerySchema)) query: OblLedgerListQuery,
+  ) {
+    return this.ledger.listContracts(query);
+  }
+
+  @Get('ledger/disputes')
+  async listLedgerDisputes(
+    @Query(new ZodQueryPipe(oblLedgerListQuerySchema)) query: OblLedgerListQuery,
+  ) {
+    return this.ledger.listDisputes(query);
+  }
+
   @Get('ledger')
   async getLedger(
     @Query(new ZodQueryPipe(pairBalanceQuerySchema)) query: PairBalanceQuery,
@@ -74,9 +109,18 @@ export class OblController {
 
   @Get('relationships')
   async listRelationships(
-    @Query(new ZodQueryPipe(oblAccountQuerySchema)) query: OblAccountQuery,
+    @Query(new ZodQueryPipe(listOblRelationshipsQuerySchema))
+    query: ListOblRelationshipsQuery,
   ) {
-    return this.relationships.listForAccount(query.account);
+    return this.relationships.listForAccount(query.account, query);
+  }
+
+  @Get('arbitration')
+  async listArbitration(
+    @Query(new ZodQueryPipe(listOblArbitrationQuerySchema))
+    query: ListOblArbitrationQuery,
+  ) {
+    return this.arbitration.listForAccount(query.account, query);
   }
 
   @Get('contracts/:contractId')

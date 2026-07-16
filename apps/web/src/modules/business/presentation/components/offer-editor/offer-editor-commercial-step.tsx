@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { isOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
 
 import {
   getOfferTerms,
@@ -24,6 +25,9 @@ export function OfferEditorCommercialStep({
 }: OfferEditorCommercialStepProps) {
   const { t } = useI18n();
   const terms = getOfferTerms(fields);
+  const amountUsd = terms.amountUsd ?? '';
+  const amountUsdInvalid =
+    amountUsd.trim() !== '' && !isOblUsdAmount(amountUsd, 'positive');
 
   return (
     <div className="flex flex-col gap-4">
@@ -50,10 +54,17 @@ export function OfferEditorCommercialStep({
         <input
           type="text"
           inputMode="decimal"
-          value={terms.amountUsd ?? ''}
+          value={amountUsd}
           onChange={(e) => onFieldsChange(mergeTerms(fields, { amountUsd: e.target.value }))}
-          className={offerEditorFieldClass}
+          aria-invalid={amountUsdInvalid}
+          className={[
+            offerEditorFieldClass,
+            amountUsdInvalid ? 'border-danger text-danger' : '',
+          ].join(' ')}
         />
+        {amountUsdInvalid ? (
+          <span className="text-caption text-danger">{t('business_field_amount_usd_invalid')}</span>
+        ) : null}
       </label>
       <label className={offerEditorLabelClass}>
         {t('business_field_currency')}

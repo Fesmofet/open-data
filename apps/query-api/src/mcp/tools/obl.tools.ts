@@ -14,7 +14,7 @@ export function registerOblTools(server: McpServer, deps: McpToolDeps): void {
         kind: z.enum(['offer', 'request']).optional(),
         tags: z.string().optional().describe('Comma-separated tags (AND)'),
         author: z.string().optional(),
-        limit: z.number().int().min(1).max(100).optional(),
+        limit: z.number().int().min(1).max(50).optional(),
         offset: z.number().int().min(0).optional(),
       }),
     },
@@ -102,10 +102,38 @@ export function registerOblTools(server: McpServer, deps: McpToolDeps): void {
       description: catalogDescription('get_obl_relationships'),
       inputSchema: z.object({
         account: z.string().min(1),
+        limit: z.number().int().min(1).max(50).optional(),
+        offset: z.number().int().min(0).optional(),
       }),
     },
     async (args) => {
-      const result = await deps.oblRelationships.listForAccount(args.account);
+      const result = await deps.oblRelationships.listForAccount(args.account, {
+        account: args.account,
+        limit: args.limit ?? 20,
+        offset: args.offset ?? 0,
+      });
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_obl_arbitration',
+    {
+      description: catalogDescription('get_obl_arbitration'),
+      inputSchema: z.object({
+        account: z.string().min(1),
+        status: z.enum(['open', 'resolved']).optional(),
+        limit: z.number().int().min(1).max(50).optional(),
+        cursor: z.string().optional(),
+      }),
+    },
+    async (args) => {
+      const result = await deps.oblArbitration.listForAccount(args.account, {
+        account: args.account,
+        status: args.status ?? 'open',
+        limit: args.limit ?? 20,
+        cursor: args.cursor,
+      });
       return jsonToolResult(result);
     },
   );

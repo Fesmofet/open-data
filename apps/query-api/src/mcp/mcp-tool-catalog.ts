@@ -440,6 +440,12 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/spec/open-business-layer.md',
   },
   {
+    name: 'get_obl_arbitration',
+    description: 'List open or resolved disputes assigned to an arbiter account.',
+    httpEquivalent: 'GET /query/v1/obl/arbitration',
+    specPath: 'docs/spec/obl/disputes.md',
+  },
+  {
     name: 'get_obl_contract',
     description: 'Get one OBL contract by contract_id.',
     httpEquivalent: 'GET /query/v1/obl/contracts/:contractId',

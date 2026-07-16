@@ -8,14 +8,14 @@ export type BusinessOffersListPageProps = {
 };
 
 export async function BusinessOffersListPage({ kind, tab }: BusinessOffersListPageProps) {
-  const { username, drafts, published } = await loadBusinessOffersList();
+  const { username, drafts, published } = await loadBusinessOffersList(tab);
   return (
     <BusinessOffersListClient
       username={username}
       kind={kind}
       tab={tab}
-      drafts={drafts}
-      published={published}
+      initialDrafts={drafts}
+      initialPublished={published}
     />
   );
 }

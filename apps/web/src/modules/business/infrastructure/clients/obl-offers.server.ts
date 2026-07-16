@@ -4,6 +4,9 @@ import {
   queryApiFetch,
   queryApiFetchLive,
 } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
+
+import type { OblOffsetPage } from '../../domain/obl-pagination.types';
 
 export type OblOfferApiRow = {
   offer_id: string;
@@ -23,6 +26,19 @@ export type OblOfferApiRow = {
   transaction_id: string;
 };
 
+function discoverCacheTag(params: {
+  kind?: 'offer' | 'request';
+  author?: string;
+  q?: string;
+}): string {
+  const parts = [
+    params.kind ?? 'all',
+    params.author?.trim().toLowerCase() ?? '',
+    params.q?.trim() ?? '',
+  ];
+  return queryApiCacheTags.oblDiscover(parts.join(':'));
+}
+
 export async function searchOblOffers(params: {
   q?: string;
   kind?: 'offer' | 'request';
@@ -39,8 +55,12 @@ export async function searchOblOffers(params: {
   if (params.limit !== undefined) q.set('limit', String(params.limit));
   if (params.offset !== undefined) q.set('offset', String(params.offset));
   const qs = q.toString();
-  return queryApiFetch<OblOfferApiRow[]>(
+  const cacheTags = params.author
+    ? [queryApiCacheTags.oblOffers(params.author)]
+    : [discoverCacheTag(params)];
+  return queryApiFetch<OblOffsetPage<OblOfferApiRow>>(
     `/query/v1/obl/offers/search${qs ? `?${qs}` : ''}`,
+    { cacheTags },
   );
 }
 

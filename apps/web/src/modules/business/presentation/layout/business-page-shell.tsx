@@ -20,6 +20,11 @@ const NAV_ITEMS: { id: BusinessNavId; href: string; labelKey: string }[] = [
     href: businessRoutes.relationships,
     labelKey: 'business_nav_relationships',
   },
+  {
+    id: 'arbitration',
+    href: businessRoutes.arbitration,
+    labelKey: 'business_nav_arbitration',
+  },
 ];
 
 export type BusinessLayoutNavProps = {

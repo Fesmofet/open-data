@@ -3,38 +3,47 @@ import type { OblContract, OblDispute, OblInvoice, OblOffer, OblPayment } from '
 import { normalizeHiveAccount } from '../../auth';
 import { OblRepository } from '../../repositories/obl.repository';
 import { computePairBalance } from './compute-pair-balance';
-import type { SearchOblOffersQuery } from './obl.schemas';
+import { buildOffsetPage } from './obl-pagination';
+import { filterByLedgerCutoff, normalizePair } from './obl-pair-utils';
+import type { OblLedgerListQuery, SearchOblOffersQuery } from './obl.schemas';
 
-function normalizePair(a: string, b: string): { pairLow: string; pairHigh: string } {
-  const x = a.trim();
-  const y = b.trim();
-  return x <= y ? { pairLow: x, pairHigh: y } : { pairLow: y, pairHigh: x };
+function toBalanceInvoices(invoices: readonly OblInvoice[]) {
+  return invoices.map((inv) => ({
+    debtor: inv.debtor,
+    creditor: inv.creditor,
+    amount_usd: String(inv.amount_usd),
+    final_amount_usd:
+      inv.final_amount_usd !== null && inv.final_amount_usd !== undefined
+        ? String(inv.final_amount_usd)
+        : null,
+    state: inv.state,
+  }));
 }
 
-function filterByLedgerCutoff<T extends { created_event_seq: bigint }>(
-  rows: readonly T[],
-  startedSeq: bigint | null,
-): T[] {
-  if (startedSeq === null) {
-    return [...rows];
-  }
-  return rows.filter((row) => row.created_event_seq >= startedSeq);
+function toBalancePayments(payments: readonly OblPayment[]) {
+  return payments.map((pay) => ({
+    payer: pay.payer,
+    receiver: pay.receiver,
+    amount_usd: String(pay.amount_usd),
+    state: pay.state,
+  }));
 }
 
 @Injectable()
 export class OblOffersService {
   constructor(private readonly obl: OblRepository) {}
 
-  async search(query: SearchOblOffersQuery): Promise<OblOffer[]> {
-    return this.obl.searchOffers({
+  async search(query: SearchOblOffersQuery) {
+    const rows = await this.obl.searchOffers({
       q: query.q,
       kind: query.kind,
       tags: query.tags,
       author: query.author ? normalizeHiveAccount(query.author) : undefined,
       status: query.status,
-      limit: query.limit,
+      limit: query.limit + 1,
       offset: query.offset,
     });
+    return buildOffsetPage(rows, query.limit);
   }
 
   async getOffer(offerId: string, version?: number): Promise<OblOffer | null> {
@@ -45,6 +54,17 @@ export class OblOffersService {
 @Injectable()
 export class OblLedgerService {
   constructor(private readonly obl: OblRepository) {}
+
+  private async resolvePair(accountA: string, accountB: string) {
+    const normalizedA = normalizeHiveAccount(accountA);
+    const normalizedB = normalizeHiveAccount(accountB);
+    if (normalizedA === normalizedB) {
+      throw new BadRequestException('accountA and accountB must differ');
+    }
+    const { pairLow, pairHigh } = normalizePair(normalizedA, normalizedB);
+    const startedSeq = await this.obl.findLedgerStartedSeq(pairLow, pairHigh);
+    return { normalizedA, normalizedB, pairLow, pairHigh, startedSeq };
+  }
 
   async getLedger(accountA: string, accountB: string): Promise<{
     accountA: string;
@@ -61,21 +81,16 @@ export class OblLedgerService {
     disputes: OblDispute[];
     balance: ReturnType<typeof computePairBalance>;
   }> {
-    const normalizedA = normalizeHiveAccount(accountA);
-    const normalizedB = normalizeHiveAccount(accountB);
-    if (normalizedA === normalizedB) {
-      throw new BadRequestException('accountA and accountB must differ');
-    }
+    const { normalizedA, normalizedB, pairLow, pairHigh, startedSeq } =
+      await this.resolvePair(accountA, accountB);
 
-    const { pairLow, pairHigh } = normalizePair(normalizedA, normalizedB);
-    const startedSeq = await this.obl.findLedgerStartedSeq(pairLow, pairHigh);
-
-    const [contracts, allInvoices, allPayments] = await Promise.all([
+    const [allContracts, allInvoices, allPayments] = await Promise.all([
       this.obl.listContractsForPairWithOffer(pairLow, pairHigh),
       this.obl.listInvoicesForPair(pairLow, pairHigh),
       this.obl.listPaymentsForPair(pairLow, pairHigh),
     ]);
 
+    const contracts = filterByLedgerCutoff(allContracts, startedSeq);
     const invoices = filterByLedgerCutoff(allInvoices, startedSeq);
     const payments = filterByLedgerCutoff(allPayments, startedSeq);
 
@@ -86,22 +101,8 @@ export class OblLedgerService {
     const balance = computePairBalance(
       normalizedA,
       normalizedB,
-      invoices.map((inv) => ({
-        debtor: inv.debtor,
-        creditor: inv.creditor,
-        amount_usd: String(inv.amount_usd),
-        final_amount_usd:
-          inv.final_amount_usd !== null && inv.final_amount_usd !== undefined
-            ? String(inv.final_amount_usd)
-            : null,
-        state: inv.state,
-      })),
-      payments.map((pay) => ({
-        payer: pay.payer,
-        receiver: pay.receiver,
-        amount_usd: String(pay.amount_usd),
-        state: pay.state,
-      })),
+      toBalanceInvoices(invoices),
+      toBalancePayments(payments),
     );
 
     return {
@@ -114,5 +115,61 @@ export class OblLedgerService {
       disputes,
       balance,
     };
+  }
+
+  async listPayments(query: OblLedgerListQuery) {
+    const { pairLow, pairHigh, startedSeq } = await this.resolvePair(
+      query.accountA,
+      query.accountB,
+    );
+    return this.obl.listPaymentsForPairPaginated(
+      pairLow,
+      pairHigh,
+      query.limit,
+      query.cursor,
+      startedSeq,
+    );
+  }
+
+  async listInvoices(query: OblLedgerListQuery) {
+    const { pairLow, pairHigh, startedSeq } = await this.resolvePair(
+      query.accountA,
+      query.accountB,
+    );
+    return this.obl.listInvoicesForPairPaginated(
+      pairLow,
+      pairHigh,
+      query.limit,
+      query.cursor,
+      startedSeq,
+    );
+  }
+
+  async listContracts(query: OblLedgerListQuery) {
+    const { pairLow, pairHigh, startedSeq } = await this.resolvePair(
+      query.accountA,
+      query.accountB,
+    );
+    return this.obl.listContractsForPairWithOfferPaginated(
+      pairLow,
+      pairHigh,
+      query.limit,
+      query.cursor,
+      startedSeq,
+    );
+  }
+
+  async listDisputes(query: OblLedgerListQuery) {
+    const { pairLow, pairHigh, startedSeq } = await this.resolvePair(
+      query.accountA,
+      query.accountB,
+    );
+    return this.obl.listDisputesForPairPaginated(
+      pairLow,
+      pairHigh,
+      query.limit,
+      query.cursor,
+      startedSeq,
+    );
   }
 }

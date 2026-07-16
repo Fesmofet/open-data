@@ -22,14 +22,21 @@ function isHiveSignerRedirectError(e: unknown): boolean {
   );
 }
 
-export function useOblBroadcast(account: string, counterparty?: string) {
+export function useOblBroadcast(
+  account: string,
+  counterparty?: string,
+  revalidateOptions?: Parameters<typeof revalidateOblAfterBroadcast>[2],
+) {
   useHydrateWalletProvider();
   const router = useRouter();
   const [phase, setPhase] = useState<BlockchainActionPhase>('drafting');
   const [error, setError] = useState<string | null>(null);
 
   const broadcast = useCallback(
-    async (operations: readonly HiveOperation[]): Promise<string | null> => {
+    async (
+      operations: readonly HiveOperation[],
+      revalidateOverride?: Parameters<typeof revalidateOblAfterBroadcast>[2],
+    ): Promise<string | null> => {
       setError(null);
       setPhase('wallet');
       try {
@@ -40,7 +47,11 @@ export function useOblBroadcast(account: string, counterparty?: string) {
         setPhase('indexing');
         await awaitTrxConfirmation(transactionId);
         await refreshAfterBroadcast(router, () =>
-          revalidateOblAfterBroadcast(account, counterparty),
+          revalidateOblAfterBroadcast(
+            account,
+            counterparty,
+            revalidateOverride ?? revalidateOptions,
+          ),
         );
         setPhase('confirmed');
         return transactionId;
@@ -54,7 +65,7 @@ export function useOblBroadcast(account: string, counterparty?: string) {
         return null;
       }
     },
-    [account, counterparty, router],
+    [account, counterparty, revalidateOptions, router],
   );
 
   return { broadcast, phase, isBusy: isOblBroadcastBusy(phase), setPhase, error, setError };

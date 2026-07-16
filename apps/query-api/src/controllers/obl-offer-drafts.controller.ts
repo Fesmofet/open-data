@@ -21,11 +21,13 @@ import {
   OblOfferDraftsService,
   createOblOfferDraftBodySchema,
   type CreateOblOfferDraftBody,
+  listOblOfferDraftsQuerySchema,
+  type ListOblOfferDraftsQuery,
   mutateOblOfferDraftQuerySchema,
   type MutateOblOfferDraftQuery,
+  type OblOfferDraftView,
   patchOblOfferDraftBodySchema,
   type PatchOblOfferDraftBody,
-  type OblOfferDraftView,
 } from '../domain/obl';
 import { ZodBodyPipe } from '../pipes/zod-body.pipe';
 import { ZodQueryPipe } from '../pipes/zod-query.pipe';
@@ -36,9 +38,13 @@ export class OblOfferDraftsController {
   constructor(private readonly drafts: OblOfferDraftsService) {}
 
   @Get()
-  async list(@Param('author') authorParam: string): Promise<OblOfferDraftView[]> {
+  async list(
+    @Param('author') authorParam: string,
+    @Query(new ZodQueryPipe(listOblOfferDraftsQuerySchema))
+    query: ListOblOfferDraftsQuery,
+  ) {
     const author = normalizeHiveAccount(authorParam);
-    return this.drafts.getList(author);
+    return this.drafts.getList(author, query);
   }
 
   @Get('one')

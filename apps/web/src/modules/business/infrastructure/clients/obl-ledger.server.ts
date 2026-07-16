@@ -4,8 +4,10 @@ import {
   queryApiFetch,
   queryApiFetchLive,
 } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 import type { PairBalanceView } from '../../domain/ledger.types';
+import type { OblCursorPage, OblOffsetPage } from '../../domain/obl-pagination.types';
 
 export type OblLedgerApiResponse = {
   accountA: string;
@@ -24,6 +26,7 @@ export type OblRelationshipApiRow = {
   contractCount: number;
   balance: PairBalanceView;
   lastActivityAt: string | null;
+  lastActivityEventSeq?: string | null;
 };
 
 export type OblContractApiRow = {
@@ -42,28 +45,111 @@ export type OblContractApiRow = {
   transaction_id: string;
 };
 
+function ledgerPairTags(accountA: string, accountB: string): string[] {
+  return [queryApiCacheTags.oblLedger(accountA, accountB)];
+}
+
+function ledgerSubListPath(
+  segment: 'payments' | 'invoices' | 'contracts' | 'disputes',
+  params: URLSearchParams,
+): string {
+  return `/query/v1/obl/ledger/${segment}?${params.toString()}`;
+}
+
+async function fetchOblLedgerSubList<T>(
+  segment: 'payments' | 'invoices' | 'contracts' | 'disputes',
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+  live = false,
+): Promise<OblCursorPage<T> | null> {
+  params.set('accountA', accountA);
+  params.set('accountB', accountB);
+  const path = ledgerSubListPath(segment, params);
+  const tags = ledgerPairTags(accountA, accountB);
+  if (live) {
+    return queryApiFetchLive<OblCursorPage<T>>(path);
+  }
+  return queryApiFetch<OblCursorPage<T>>(path, { cacheTags: tags });
+}
+
+export async function fetchOblBalance(accountA: string, accountB: string) {
+  const q = new URLSearchParams({ accountA, accountB });
+  return queryApiFetch<PairBalanceView>(`/query/v1/obl/balance?${q.toString()}`, {
+    cacheTags: ledgerPairTags(accountA, accountB),
+  });
+}
+
+export async function fetchOblBalanceLive(accountA: string, accountB: string) {
+  const q = new URLSearchParams({ accountA, accountB });
+  return queryApiFetchLive<PairBalanceView>(`/query/v1/obl/balance?${q.toString()}`);
+}
+
 export async function fetchOblLedger(accountA: string, accountB: string) {
   const q = new URLSearchParams({ accountA, accountB });
-  return queryApiFetch<OblLedgerApiResponse>(`/query/v1/obl/ledger?${q.toString()}`);
+  return queryApiFetch<OblLedgerApiResponse>(`/query/v1/obl/ledger?${q.toString()}`, {
+    cacheTags: ledgerPairTags(accountA, accountB),
+  });
 }
 
 export async function fetchOblLedgerLive(accountA: string, accountB: string) {
   const q = new URLSearchParams({ accountA, accountB });
-  return queryApiFetchLive<OblLedgerApiResponse>(
-    `/query/v1/obl/ledger?${q.toString()}`,
-  );
+  return queryApiFetchLive<OblLedgerApiResponse>(`/query/v1/obl/ledger?${q.toString()}`);
 }
 
-export async function fetchOblRelationships(account: string) {
+export async function fetchOblLedgerPayments(
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+) {
+  return fetchOblLedgerSubList<unknown>('payments', accountA, accountB, params);
+}
+
+export async function fetchOblLedgerInvoices(
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+) {
+  return fetchOblLedgerSubList<unknown>('invoices', accountA, accountB, params);
+}
+
+export async function fetchOblLedgerContracts(
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+) {
+  return fetchOblLedgerSubList<OblContractApiRow>('contracts', accountA, accountB, params);
+}
+
+export async function fetchOblLedgerDisputes(
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+) {
+  return fetchOblLedgerSubList<unknown>('disputes', accountA, accountB, params);
+}
+
+export async function fetchOblRelationships(
+  account: string,
+  pagination?: { limit?: number; offset?: number },
+) {
   const q = new URLSearchParams({ account });
-  return queryApiFetch<OblRelationshipApiRow[]>(
+  if (pagination?.limit !== undefined) {
+    q.set('limit', String(pagination.limit));
+  }
+  if (pagination?.offset !== undefined) {
+    q.set('offset', String(pagination.offset));
+  }
+  return queryApiFetch<OblOffsetPage<OblRelationshipApiRow>>(
     `/query/v1/obl/relationships?${q.toString()}`,
+    { cacheTags: [queryApiCacheTags.oblRelationships(account)] },
   );
 }
 
 export async function fetchOblContract(contractId: string) {
   return queryApiFetch<OblContractApiRow>(
     `/query/v1/obl/contracts/${encodeURIComponent(contractId)}`,
+    { cacheTags: [queryApiCacheTags.oblContract(contractId)] },
   );
 }
 
@@ -75,13 +161,15 @@ export async function resolveOfferAlreadySigned(
   if (!viewer || viewer === author) {
     return false;
   }
-  const ledger = await fetchOblLedger(viewer, author);
-  if (!ledger) {
+  const page = await fetchOblLedgerContracts(
+    viewer,
+    author,
+    new URLSearchParams({ limit: '50' }),
+  );
+  if (!page) {
     return false;
   }
-  return (ledger.contracts as Array<{ offer_id: string }>).some(
-    (contract) => contract.offer_id === offerId,
-  );
+  return page.items.some((contract) => contract.offer_id === offerId);
 }
 
 export async function convertUsdToWaiv(amountUsd: number) {

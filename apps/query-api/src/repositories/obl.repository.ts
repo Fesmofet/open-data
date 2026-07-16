@@ -12,6 +12,125 @@ import type {
 } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import {
+  buildCursorPageFromRows,
+  decodeOblCursor,
+  type CursorPage,
+} from '../domain/obl/obl-pagination';
+import { pairKey } from '../domain/obl/obl-pair-utils';
+
+export type OblPairRef = { pairLow: string; pairHigh: string };
+
+export type OblPairContractSummary = {
+  total: number;
+  asProvider: number;
+  asClient: number;
+};
+
+export type OblArbitrationJoinRow = {
+  dispute: OblDispute;
+  invoice: OblInvoice;
+  contract: OblContract;
+  offer_name: string | null;
+};
+
+type OblArbitrationRawRow = OblDispute & {
+  i_issuer: string;
+  i_debtor: string;
+  i_creditor: string;
+  i_contract_id: string;
+  i_amount_usd: OblInvoice['amount_usd'];
+  i_final_amount_usd: OblInvoice['final_amount_usd'];
+  i_details: OblInvoice['details'];
+  i_state: OblInvoice['state'];
+  i_pair_low: string;
+  i_pair_high: string;
+  i_created_event_seq: bigint;
+  i_transaction_id: string;
+  i_created_at: OblInvoice['created_at'];
+  c_contract_id: string;
+  c_offer_id: string;
+  c_offer_version: number;
+  c_provider: string;
+  c_client: string;
+  c_dispute_rule: OblContract['dispute_rule'];
+  c_arbiter: string | null;
+  c_metadata: OblContract['metadata'];
+  c_pair_low: string;
+  c_pair_high: string;
+  c_created_event_seq: bigint;
+  c_transaction_id: string;
+  c_created_at: OblContract['created_at'];
+  offer_name: string | null;
+};
+
+function mapArbitrationRawRow(row: OblArbitrationRawRow): OblArbitrationJoinRow {
+  const {
+    i_issuer,
+    i_debtor,
+    i_creditor,
+    i_contract_id,
+    i_amount_usd,
+    i_final_amount_usd,
+    i_details,
+    i_state,
+    i_pair_low,
+    i_pair_high,
+    i_created_event_seq,
+    i_transaction_id,
+    i_created_at,
+    c_contract_id,
+    c_offer_id,
+    c_offer_version,
+    c_provider,
+    c_client,
+    c_dispute_rule,
+    c_arbiter,
+    c_metadata,
+    c_pair_low,
+    c_pair_high,
+    c_created_event_seq,
+    c_transaction_id,
+    c_created_at,
+    offer_name,
+    ...dispute
+  } = row;
+  return {
+    dispute,
+    invoice: {
+      invoice_id: dispute.invoice_id,
+      contract_id: i_contract_id,
+      issuer: i_issuer,
+      debtor: i_debtor,
+      creditor: i_creditor,
+      amount_usd: i_amount_usd,
+      final_amount_usd: i_final_amount_usd,
+      details: i_details,
+      state: i_state,
+      pair_low: i_pair_low,
+      pair_high: i_pair_high,
+      created_event_seq: i_created_event_seq,
+      transaction_id: i_transaction_id,
+      created_at: i_created_at,
+    },
+    contract: {
+      contract_id: c_contract_id,
+      offer_id: c_offer_id,
+      offer_version: c_offer_version,
+      provider: c_provider,
+      client: c_client,
+      dispute_rule: c_dispute_rule,
+      arbiter: c_arbiter,
+      metadata: c_metadata,
+      pair_low: c_pair_low,
+      pair_high: c_pair_high,
+      created_event_seq: c_created_event_seq,
+      transaction_id: c_transaction_id,
+      created_at: c_created_at,
+    },
+    offer_name,
+  };
+}
 
 function jsonForJsonb(value: unknown): Record<string, unknown> {
   if (value === undefined || value === null) {
@@ -100,15 +219,445 @@ export class OblRepository {
     return contract?.created_event_seq ?? null;
   }
 
-  async listContractsForPair(pairLow: string, pairHigh: string): Promise<OblContract[]> {
-    return this.db
+  async listCounterpartiesPaginated(
+    account: string,
+    limit: number,
+    offset: number,
+  ): Promise<string[]> {
+    const asProvider = this.db
       .selectFrom('obl_contracts')
+      .select('client as counterparty')
+      .where('provider', '=', account);
+    const asClient = this.db
+      .selectFrom('obl_contracts')
+      .select('provider as counterparty')
+      .where('client', '=', account);
+    const union = asProvider.union(asClient).as('counterparties');
+    const rows = await this.db
+      .selectFrom(union)
+      .select('counterparty')
+      .distinct()
+      .orderBy('counterparty')
+      .limit(limit)
+      .offset(offset)
+      .execute();
+    return rows.map((row) => row.counterparty);
+  }
+
+  async summarizeContractsForAccountPairs(
+    account: string,
+    pairs: readonly OblPairRef[],
+  ): Promise<Map<string, OblPairContractSummary>> {
+    const result = new Map<string, OblPairContractSummary>();
+    if (pairs.length === 0) {
+      return result;
+    }
+    const rows = await this.db
+      .selectFrom('obl_contracts')
+      .select([
+        'pair_low',
+        'pair_high',
+        sql<number>`count(*)::int`.as('total'),
+        sql<number>`count(*) filter (where provider = ${account})::int`.as(
+          'as_provider',
+        ),
+        sql<number>`count(*) filter (where client = ${account})::int`.as('as_client'),
+      ])
+      .where((eb) =>
+        eb.or(
+          pairs.map((pair) =>
+            eb.and([
+              eb('pair_low', '=', pair.pairLow),
+              eb('pair_high', '=', pair.pairHigh),
+            ]),
+          ),
+        ),
+      )
+      .groupBy(['pair_low', 'pair_high'])
+      .execute();
+    for (const row of rows) {
+      result.set(pairKey(row.pair_low, row.pair_high), {
+        total: row.total,
+        asProvider: row.as_provider,
+        asClient: row.as_client,
+      });
+    }
+    return result;
+  }
+
+  async findLedgerStartedSeqsForPairs(
+    pairs: readonly OblPairRef[],
+  ): Promise<Map<string, bigint | null>> {
+    const result = new Map<string, bigint | null>();
+    if (pairs.length === 0) {
+      return result;
+    }
+    for (const pair of pairs) {
+      result.set(pairKey(pair.pairLow, pair.pairHigh), null);
+    }
+    const ledgerRows = await this.db
+      .selectFrom('obl_ledgers')
+      .select(['pair_low', 'pair_high', 'started_event_seq'])
+      .where((eb) =>
+        eb.or(
+          pairs.map((pair) =>
+            eb.and([
+              eb('pair_low', '=', pair.pairLow),
+              eb('pair_high', '=', pair.pairHigh),
+            ]),
+          ),
+        ),
+      )
+      .execute();
+    for (const row of ledgerRows) {
+      result.set(pairKey(row.pair_low, row.pair_high), row.started_event_seq);
+    }
+    const missing = pairs.filter(
+      (pair) => result.get(pairKey(pair.pairLow, pair.pairHigh)) === null,
+    );
+    if (missing.length === 0) {
+      return result;
+    }
+    const contractRows = await this.db
+      .selectFrom('obl_contracts')
+      .select([
+        'pair_low',
+        'pair_high',
+        sql<bigint>`min(created_event_seq)`.as('started_event_seq'),
+      ])
+      .where((eb) =>
+        eb.or(
+          missing.map((pair) =>
+            eb.and([
+              eb('pair_low', '=', pair.pairLow),
+              eb('pair_high', '=', pair.pairHigh),
+            ]),
+          ),
+        ),
+      )
+      .groupBy(['pair_low', 'pair_high'])
+      .execute();
+    for (const row of contractRows) {
+      result.set(pairKey(row.pair_low, row.pair_high), row.started_event_seq);
+    }
+    return result;
+  }
+
+  async latestContractActivitySeqForPairs(
+    pairs: readonly OblPairRef[],
+  ): Promise<Map<string, bigint | null>> {
+    const result = new Map<string, bigint | null>();
+    if (pairs.length === 0) {
+      return result;
+    }
+    const rows = await this.db
+      .selectFrom('obl_contracts')
+      .select([
+        'pair_low',
+        'pair_high',
+        sql<bigint>`max(created_event_seq)`.as('last_seq'),
+      ])
+      .where((eb) =>
+        eb.or(
+          pairs.map((pair) =>
+            eb.and([
+              eb('pair_low', '=', pair.pairLow),
+              eb('pair_high', '=', pair.pairHigh),
+            ]),
+          ),
+        ),
+      )
+      .groupBy(['pair_low', 'pair_high'])
+      .execute();
+    for (const row of rows) {
+      result.set(pairKey(row.pair_low, row.pair_high), row.last_seq);
+    }
+    return result;
+  }
+
+  async listInvoicesForPairs(pairs: readonly OblPairRef[]): Promise<OblInvoice[]> {
+    if (pairs.length === 0) {
+      return [];
+    }
+    return this.db
+      .selectFrom('obl_invoices')
+      .selectAll()
+      .where((eb) =>
+        eb.or(
+          pairs.map((pair) =>
+            eb.and([
+              eb('pair_low', '=', pair.pairLow),
+              eb('pair_high', '=', pair.pairHigh),
+            ]),
+          ),
+        ),
+      )
+      .execute();
+  }
+
+  async listPaymentsForPairs(pairs: readonly OblPairRef[]): Promise<OblPayment[]> {
+    if (pairs.length === 0) {
+      return [];
+    }
+    return this.db
+      .selectFrom('obl_payments')
+      .selectAll()
+      .where((eb) =>
+        eb.or(
+          pairs.map((pair) =>
+            eb.and([
+              eb('pair_low', '=', pair.pairLow),
+              eb('pair_high', '=', pair.pairHigh),
+            ]),
+          ),
+        ),
+      )
+      .execute();
+  }
+
+  async listContractsForPairWithOfferPaginated(
+    pairLow: string,
+    pairHigh: string,
+    limit: number,
+    cursor: string | undefined,
+    startedSeq: bigint | null,
+  ): Promise<CursorPage<
+    OblContract & {
+      offer_name: string;
+      offer_description: string | null;
+    }
+  >> {
+    const decoded = decodeOblCursor(cursor);
+    let qb = this.db
+      .selectFrom('obl_contracts as c')
+      .innerJoin('obl_offers as o', (join) =>
+        join
+          .onRef('o.offer_id', '=', 'c.offer_id')
+          .onRef('o.version', '=', 'c.offer_version'),
+      )
+      .selectAll('c')
+      .select(['o.name as offer_name', 'o.description as offer_description'])
+      .where('c.pair_low', '=', pairLow)
+      .where('c.pair_high', '=', pairHigh);
+    if (startedSeq !== null) {
+      qb = qb.where('c.created_event_seq', '>=', startedSeq);
+    }
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('c.created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('c.created_event_seq', '=', decoded.seq),
+            eb('c.contract_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = await qb
+      .orderBy('c.created_at', 'desc')
+      .orderBy('c.created_event_seq', 'desc')
+      .orderBy('c.contract_id', 'desc')
+      .limit(limit + 1)
+      .execute();
+    return buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.contract_id,
+    }));
+  }
+
+  async listInvoicesForPairPaginated(
+    pairLow: string,
+    pairHigh: string,
+    limit: number,
+    cursor: string | undefined,
+    startedSeq: bigint | null,
+  ): Promise<CursorPage<OblInvoice>> {
+    const decoded = decodeOblCursor(cursor);
+    let qb = this.db
+      .selectFrom('obl_invoices')
       .selectAll()
       .where('pair_low', '=', pairLow)
-      .where('pair_high', '=', pairHigh)
+      .where('pair_high', '=', pairHigh);
+    if (startedSeq !== null) {
+      qb = qb.where('created_event_seq', '>=', startedSeq);
+    }
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('created_event_seq', '=', decoded.seq),
+            eb('invoice_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = await qb
       .orderBy('created_at', 'desc')
       .orderBy('created_event_seq', 'desc')
+      .orderBy('invoice_id', 'desc')
+      .limit(limit + 1)
       .execute();
+    return buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.invoice_id,
+    }));
+  }
+
+  async listPaymentsForPairPaginated(
+    pairLow: string,
+    pairHigh: string,
+    limit: number,
+    cursor: string | undefined,
+    startedSeq: bigint | null,
+  ): Promise<CursorPage<OblPayment>> {
+    const decoded = decodeOblCursor(cursor);
+    let qb = this.db
+      .selectFrom('obl_payments')
+      .selectAll()
+      .where('pair_low', '=', pairLow)
+      .where('pair_high', '=', pairHigh);
+    if (startedSeq !== null) {
+      qb = qb.where('created_event_seq', '>=', startedSeq);
+    }
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('created_event_seq', '=', decoded.seq),
+            eb('payment_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = await qb
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
+      .orderBy('payment_id', 'desc')
+      .limit(limit + 1)
+      .execute();
+    return buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.payment_id,
+    }));
+  }
+
+  async listDisputesForPairPaginated(
+    pairLow: string,
+    pairHigh: string,
+    limit: number,
+    cursor: string | undefined,
+    startedSeq: bigint | null,
+  ): Promise<CursorPage<OblDispute>> {
+    const decoded = decodeOblCursor(cursor);
+    let qb = this.db
+      .selectFrom('obl_disputes as d')
+      .innerJoin('obl_invoices as i', 'i.invoice_id', 'd.invoice_id')
+      .selectAll('d')
+      .where('i.pair_low', '=', pairLow)
+      .where('i.pair_high', '=', pairHigh);
+    if (startedSeq !== null) {
+      qb = qb.where('d.created_event_seq', '>=', startedSeq);
+    }
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('d.created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('d.created_event_seq', '=', decoded.seq),
+            eb('d.dispute_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = await qb
+      .orderBy('d.created_at', 'desc')
+      .orderBy('d.created_event_seq', 'desc')
+      .orderBy('d.dispute_id', 'desc')
+      .limit(limit + 1)
+      .execute();
+    return buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.dispute_id,
+    }));
+  }
+
+  async listArbitrationDisputesForAccount(
+    account: string,
+    status: 'open' | 'resolved',
+    limit: number,
+    cursor: string | undefined,
+  ): Promise<CursorPage<OblArbitrationJoinRow>> {
+    const decoded = decodeOblCursor(cursor);
+    let qb = this.db
+      .selectFrom('obl_disputes as d')
+      .innerJoin('obl_invoices as i', 'i.invoice_id', 'd.invoice_id')
+      .innerJoin('obl_contracts as c', 'c.contract_id', 'i.contract_id')
+      .leftJoin('obl_offers as o', (join) =>
+        join
+          .onRef('o.offer_id', '=', 'c.offer_id')
+          .onRef('o.version', '=', 'c.offer_version'),
+      )
+      .selectAll('d')
+      .select([
+        'i.issuer as i_issuer',
+        'i.debtor as i_debtor',
+        'i.creditor as i_creditor',
+        'i.contract_id as i_contract_id',
+        'i.amount_usd as i_amount_usd',
+        'i.final_amount_usd as i_final_amount_usd',
+        'i.details as i_details',
+        'i.state as i_state',
+        'i.pair_low as i_pair_low',
+        'i.pair_high as i_pair_high',
+        'i.created_event_seq as i_created_event_seq',
+        'i.transaction_id as i_transaction_id',
+        'i.created_at as i_created_at',
+        'c.contract_id as c_contract_id',
+        'c.offer_id as c_offer_id',
+        'c.offer_version as c_offer_version',
+        'c.provider as c_provider',
+        'c.client as c_client',
+        'c.dispute_rule as c_dispute_rule',
+        'c.arbiter as c_arbiter',
+        'c.metadata as c_metadata',
+        'c.pair_low as c_pair_low',
+        'c.pair_high as c_pair_high',
+        'c.created_event_seq as c_created_event_seq',
+        'c.transaction_id as c_transaction_id',
+        'c.created_at as c_created_at',
+        'o.name as offer_name',
+      ])
+      .where('c.dispute_rule', '=', 'arbiter')
+      .where('c.arbiter', '=', account)
+      .where('d.status', '=', status);
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('d.created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('d.created_event_seq', '=', decoded.seq),
+            eb('d.dispute_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = (await qb
+      .orderBy('d.created_at', 'desc')
+      .orderBy('d.created_event_seq', 'desc')
+      .orderBy('d.dispute_id', 'desc')
+      .limit(limit + 1)
+      .execute()) as OblArbitrationRawRow[];
+    const page = buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.dispute_id,
+    }));
+    return {
+      items: page.items.map(mapArbitrationRawRow),
+      hasMore: page.hasMore,
+      nextCursor: page.nextCursor,
+    };
   }
 
   async listContractsForPairWithOffer(
@@ -219,23 +768,23 @@ export class OblRepository {
     pairHigh: string,
     account: string,
   ): Promise<{ total: number; asProvider: number; asClient: number }> {
-    const rows = await this.db
+    const row = await this.db
       .selectFrom('obl_contracts')
-      .select(['provider', 'client'])
+      .select([
+        sql<number>`count(*)::int`.as('total'),
+        sql<number>`count(*) filter (where provider = ${account})::int`.as(
+          'as_provider',
+        ),
+        sql<number>`count(*) filter (where client = ${account})::int`.as('as_client'),
+      ])
       .where('pair_low', '=', pairLow)
       .where('pair_high', '=', pairHigh)
-      .execute();
-    let asProvider = 0;
-    let asClient = 0;
-    for (const row of rows) {
-      if (row.provider === account) {
-        asProvider += 1;
-      }
-      if (row.client === account) {
-        asClient += 1;
-      }
-    }
-    return { total: rows.length, asProvider, asClient };
+      .executeTakeFirst();
+    return {
+      total: row?.total ?? 0,
+      asProvider: row?.as_provider ?? 0,
+      asClient: row?.as_client ?? 0,
+    };
   }
 
   async latestContractActivitySeq(
@@ -316,13 +865,20 @@ export class OblOfferDraftsRepository {
     return Number(result.numDeletedRows) > 0;
   }
 
-  async listByAuthor(author: string): Promise<OblOfferDraft[]> {
+  async listByAuthorPaginated(
+    author: string,
+    limit: number,
+    offset: number,
+  ): Promise<OblOfferDraft[]> {
     return this.db
       .selectFrom('obl_offer_drafts')
       .selectAll()
       .where('author', '=', author)
       .orderBy('last_updated', 'desc')
       .orderBy('draft_id', 'desc')
+      .limit(limit)
+      .offset(offset)
       .execute();
   }
+
 }

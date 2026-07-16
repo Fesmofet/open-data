@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
 
 import {
   OFFER_EDITOR_STEPS,
@@ -27,7 +28,12 @@ const offerTerminationSchema = z.object({
 
 const offerTermsSchema = z.object({
   pricingModel: z.enum(['fixed', 'hourly', 'custom']).optional(),
-  amountUsd: z.string().optional(),
+  amountUsd: z
+    .string()
+    .optional()
+    .refine((value) => value === undefined || value.trim() === '' || isOblUsdAmount(value, 'positive'), {
+      message: 'amount_usd_invalid',
+    }),
   currency: z.string().max(16).optional(),
   billingCycle: z.string().max(256).optional(),
   termination: offerTerminationSchema.optional(),

@@ -1,12 +1,25 @@
+import { buildRelationshipTabHref, type RelationshipTab } from './relationship-tab-url';
+import { buildArbitrationHref, parseArbitrationStatus, type ArbitrationStatus } from './arbitration-status-url';
+
 export type OblOfferKindRoute = 'offer' | 'request';
 
 export type OffersListTab = 'drafts' | 'published' | 'retired';
+
+export type { RelationshipTab } from './relationship-tab-url';
+export { buildRelationshipTabHref, parseRelationshipTab } from './relationship-tab-url';
+export type { ArbitrationStatus } from './arbitration-status-url';
+export {
+  ARBITRATION_STATUSES,
+  buildArbitrationHref,
+  parseArbitrationStatus,
+} from './arbitration-status-url';
 
 export type BusinessNavId =
   | 'discover'
   | 'offers'
   | 'requests'
-  | 'relationships';
+  | 'relationships'
+  | 'arbitration';
 
 export function businessNavIdForKind(kind: OblOfferKindRoute): BusinessNavId {
   return kind === 'request' ? 'requests' : 'offers';
@@ -36,8 +49,12 @@ export const businessRoutes = {
   offerVersion: (offerId: string, version: number) =>
     `${MANAGE_OFFERS}/${encodeURIComponent(offerId)}/versions/${version}`,
   relationships: '/business/relationships',
+  arbitration: '/business/arbitration',
+  arbitrationWithStatus: (status?: ArbitrationStatus) => buildArbitrationHref(status),
   relationship: (account: string) =>
     `/business/relationships/${encodeURIComponent(account)}`,
+  relationshipTab: (account: string, tab?: RelationshipTab) =>
+    buildRelationshipTabHref(account, tab),
   contract: (contractId: string) =>
     `/business/contracts/${encodeURIComponent(contractId)}`,
   publicOffer: (offerId: string, version: number) =>

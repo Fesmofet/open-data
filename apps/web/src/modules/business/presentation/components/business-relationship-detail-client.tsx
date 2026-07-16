@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useOblCustomJsonId } from '@/config/odl-network-provider';
+import { OptimisticTabButton } from '@/shared/presentation';
 
 import {
   buildConfirmPaymentOp,
@@ -27,6 +29,7 @@ import type {
   LedgerDisputeRow,
   LedgerInvoiceRow,
   LedgerPaymentRow,
+  PairBalanceView,
 } from '../../domain/ledger.types';
 import { sortByCreatedAtDesc } from '../../domain/ledger-sort';
 import {
@@ -36,7 +39,13 @@ import {
   newOblPaymentDeclareId,
 } from '../../domain/obl-ids';
 import { businessRoutes } from '../../domain/routes';
-import type { OblLedgerApiResponse } from '../../infrastructure/clients/obl-ledger.server';
+import {
+  buildRelationshipTabHref,
+  parseRelationshipTab,
+  type RelationshipTab,
+} from '../../domain/relationship-tab-url';
+import type { OblCursorPage } from '../../domain/obl-pagination.types';
+import type { OblContractApiRow } from '../../infrastructure/clients/obl-ledger.server';
 import { BalanceCards } from './balance-cards';
 import { BusinessConfirmPaymentModal } from './relationship/business-confirm-payment-modal';
 import { BusinessDeclarePaymentModal } from './relationship/business-declare-payment-modal';
@@ -47,9 +56,10 @@ import { DisputeSettlementSummary } from './relationship/dispute-settlement-summ
 import { RelationshipPaymentRow } from './relationship/relationship-payment-row';
 import { StateBadge } from './state-badge';
 import { useOblBroadcast } from '../hooks/use-obl-broadcast';
+import { useOblLedgerTabLists } from '../hooks/use-obl-ledger-tab-lists';
 import { BusinessPageShell } from '../layout/business-page-shell';
 
-type TabId = 'payments' | 'contracts' | 'invoices' | 'disputes';
+type TabId = RelationshipTab;
 
 const CONTRACT_DESCRIPTION_MAX = 300;
 
@@ -83,13 +93,8 @@ function invoiceStateBadgeVariant(
   return 'confirmed';
 }
 
-function castLedgerRows(ledger: OblLedgerApiResponse) {
-  return {
-    contracts: sortByCreatedAtDesc(ledger.contracts as LedgerContractRow[]),
-    invoices: sortByCreatedAtDesc(ledger.invoices as LedgerInvoiceRow[]),
-    payments: sortByCreatedAtDesc(ledger.payments as LedgerPaymentRow[]),
-    disputes: sortByCreatedAtDesc(ledger.disputes as LedgerDisputeRow[]),
-  };
+function castTabRows<T>(items: unknown[]): T[] {
+  return items as T[];
 }
 
 function hasOpenDisputeForInvoice(
@@ -130,25 +135,60 @@ function contractLabel(
 export function BusinessRelationshipDetailClient({
   username,
   counterparty,
-  ledger,
+  balance,
+  initialTab,
+  initialTabPages,
+  contractLabels,
 }: {
   username: string;
   counterparty: string;
-  ledger: OblLedgerApiResponse;
+  balance: PairBalanceView;
+  initialTab: RelationshipTab;
+  initialTabPages: Partial<Record<RelationshipTab, OblCursorPage<unknown>>>;
+  contractLabels: OblContractApiRow[];
 }) {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
   const oblCustomJsonId = useOblCustomJsonId();
   const { broadcast, isBusy, phase, error } = useOblBroadcast(username, counterparty);
-  const [tab, setTab] = useState<TabId>('payments');
+  const [tab, setTab] = useState<RelationshipTab>(initialTab);
+  useEffect(() => {
+    setTab(parseRelationshipTab(searchParams));
+  }, [searchParams]);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [declareModalOpen, setDeclareModalOpen] = useState(false);
   const [confirmPaymentRow, setConfirmPaymentRow] = useState<LedgerPaymentRow | null>(null);
   const [disputeInvoice, setDisputeInvoice] = useState<LedgerInvoiceRow | null>(null);
   const [resolveDisputeRow, setResolveDisputeRow] = useState<LedgerDisputeRow | null>(null);
 
-  const { contracts, invoices, payments, disputes } = useMemo(
-    () => castLedgerRows(ledger),
-    [ledger],
+  const { lists, sentinelRef } = useOblLedgerTabLists({
+    accountA: username,
+    accountB: counterparty,
+    activeTab: tab,
+    initialPages: initialTabPages,
+  });
+
+  const contracts = useMemo(() => {
+    const fromTab = sortByCreatedAtDesc(
+      castTabRows<LedgerContractRow>(lists.contracts.items),
+    );
+    if (fromTab.length > 0) {
+      return fromTab;
+    }
+    return sortByCreatedAtDesc(contractLabels as LedgerContractRow[]);
+  }, [contractLabels, lists.contracts.items]);
+
+  const invoices = useMemo(
+    () => sortByCreatedAtDesc(castTabRows<LedgerInvoiceRow>(lists.invoices.items)),
+    [lists.invoices.items],
+  );
+  const payments = useMemo(
+    () => sortByCreatedAtDesc(castTabRows<LedgerPaymentRow>(lists.payments.items)),
+    [lists.payments.items],
+  );
+  const disputes = useMemo(
+    () => sortByCreatedAtDesc(castTabRows<LedgerDisputeRow>(lists.disputes.items)),
+    [lists.disputes.items],
   );
 
   const resolveAuthority = useMemo(() => {
@@ -285,7 +325,7 @@ export function BusinessRelationshipDetailClient({
           </div>
         }
       >
-        <BalanceCards viewer={username} counterparty={counterparty} balance={ledger.balance} />
+        <BalanceCards viewer={username} counterparty={counterparty} balance={balance} />
         {phase === 'indexing' ? (
           <div className="mt-2">
             <StateBadge variant="indexing" />
@@ -295,17 +335,17 @@ export function BusinessRelationshipDetailClient({
 
         <div className="mt-6 flex flex-wrap gap-2 border-b border-border pb-2">
           {tabs.map((id) => (
-            <button
+            <OptimisticTabButton
               key={id}
-              type="button"
-              onClick={() => setTab(id)}
+              href={buildRelationshipTabHref(counterparty, id)}
+              method="replace"
               className={[
                 'rounded-btn px-3 py-1 text-body-sm',
                 tab === id ? 'bg-surface-alt font-weight-label text-heading' : 'text-fg-secondary',
               ].join(' ')}
             >
               {t(`business_tab_${id}`)}
-            </button>
+            </OptimisticTabButton>
           ))}
         </div>
 
@@ -460,6 +500,7 @@ export function BusinessRelationshipDetailClient({
               })}
             </div>
           ) : null}
+          <div ref={sentinelRef} className="h-4" aria-hidden />
         </div>
       </BusinessPageShell>
 

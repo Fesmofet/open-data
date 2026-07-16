@@ -35,7 +35,7 @@ export const searchOblOffersQuerySchema = z.object({
     ),
   author: z.string().min(1).max(32).optional(),
   status: z.enum(['active', 'retired', 'all']).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
@@ -57,6 +57,34 @@ export const oblAccountQuerySchema = z.object({
   account: z.string().min(1).max(32),
 });
 
+export const oblPaginationQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export const oblCursorListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().max(256).optional(),
+});
+
+export const listOblRelationshipsQuerySchema = oblAccountQuerySchema.extend(
+  oblPaginationQuerySchema.shape,
+);
+
+export const oblLedgerListQuerySchema = pairBalanceQuerySchema.and(
+  oblCursorListQuerySchema,
+);
+
+export const listOblOfferDraftsQuerySchema = oblPaginationQuerySchema;
+
+export const OBL_ARBITRATION_STATUSES = ['open', 'resolved'] as const;
+
+export const listOblArbitrationQuerySchema = oblAccountQuerySchema.extend({
+  status: z.enum(OBL_ARBITRATION_STATUSES).default('open'),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().max(256).optional(),
+});
+
 export type CreateOblOfferDraftBody = z.infer<typeof createOblOfferDraftBodySchema>;
 export type PatchOblOfferDraftBody = z.infer<typeof patchOblOfferDraftBodySchema>;
 export type MutateOblOfferDraftQuery = z.infer<typeof mutateOblOfferDraftQuerySchema>;
@@ -64,3 +92,9 @@ export type SearchOblOffersQuery = z.infer<typeof searchOblOffersQuerySchema>;
 export type PairBalanceQuery = z.infer<typeof pairBalanceQuerySchema>;
 export type UsdToWaivQuery = z.infer<typeof usdToWaivQuerySchema>;
 export type OblAccountQuery = z.infer<typeof oblAccountQuerySchema>;
+export type OblPaginationQuery = z.infer<typeof oblPaginationQuerySchema>;
+export type OblCursorListQuery = z.infer<typeof oblCursorListQuerySchema>;
+export type ListOblRelationshipsQuery = z.infer<typeof listOblRelationshipsQuerySchema>;
+export type OblLedgerListQuery = z.infer<typeof oblLedgerListQuerySchema>;
+export type ListOblOfferDraftsQuery = z.infer<typeof listOblOfferDraftsQuerySchema>;
+export type ListOblArbitrationQuery = z.infer<typeof listOblArbitrationQuerySchema>;

@@ -1,5 +1,6 @@
 'use client';
 
+import { isOblUsdAmount, parseOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
 export function RelationshipReadonlyField({
   label,
   value,
@@ -89,6 +90,17 @@ export function AccountPairSwapRow({
 }
 
 export function parsePositiveUsdAmount(raw: string): boolean {
-  const n = Number.parseFloat(raw.trim());
-  return Number.isFinite(n) && n > 0;
+  return isOblUsdAmount(raw, 'positive');
+}
+
+export function parseNonNegativeUsdAmount(raw: string): boolean {
+  return isOblUsdAmount(raw, 'nonnegative');
+}
+
+export function normalizePositiveUsdAmount(raw: string): string | null {
+  return parseOblUsdAmount(raw, 'positive');
+}
+
+export function normalizeNonNegativeUsdAmount(raw: string): string | null {
+  return parseOblUsdAmount(raw, 'nonnegative');
 }

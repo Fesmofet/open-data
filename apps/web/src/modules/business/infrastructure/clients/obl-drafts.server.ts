@@ -2,6 +2,8 @@ import 'server-only';
 
 import { queryApiDraftsFetch } from '@/modules/editor/infrastructure/query-api-drafts.server';
 
+import type { OblOffsetPage } from '../../domain/obl-pagination.types';
+
 export type OblOfferDraftView = {
   draftId: string;
   author: string;
@@ -22,11 +24,22 @@ function oblDraftsPath(author: string, query: Record<string, string | undefined>
   return `/query/v1/users/${encodeURIComponent(author)}/obl-drafts${qs ? `?${qs}` : ''}`;
 }
 
-export async function fetchOblDraftList(author: string): Promise<OblOfferDraftView[]> {
-  const result = await queryApiDraftsFetch<OblOfferDraftView[]>(oblDraftsPath(author), {
-    method: 'GET',
-  });
-  return result.ok ? result.value : [];
+export async function fetchOblDraftList(
+  author: string,
+  pagination?: { limit?: number; offset?: number },
+): Promise<OblOffsetPage<OblOfferDraftView> | null> {
+  const query: Record<string, string | undefined> = {};
+  if (pagination?.limit !== undefined) {
+    query.limit = String(pagination.limit);
+  }
+  if (pagination?.offset !== undefined) {
+    query.offset = String(pagination.offset);
+  }
+  const result = await queryApiDraftsFetch<OblOffsetPage<OblOfferDraftView>>(
+    oblDraftsPath(author, query),
+    { method: 'GET' },
+  );
+  return result.ok ? result.value : null;
 }
 
 export async function fetchOblDraftOne(

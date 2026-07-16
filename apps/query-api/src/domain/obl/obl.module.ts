@@ -4,6 +4,7 @@ import { OblOfferDraftsService } from './obl-offer-drafts.service';
 import { OblOffersService, OblLedgerService } from './obl-ledger.service';
 import { OblConversionService } from './obl-conversion.service';
 import { OblRelationshipsService } from './obl-relationships.service';
+import { OblArbitrationService } from './obl-arbitration.service';
 
 @Module({
   imports: [RepositoriesModule],
@@ -13,6 +14,7 @@ import { OblRelationshipsService } from './obl-relationships.service';
     OblLedgerService,
     OblConversionService,
     OblRelationshipsService,
+    OblArbitrationService,
   ],
   exports: [
     OblOfferDraftsService,
@@ -20,6 +22,7 @@ import { OblRelationshipsService } from './obl-relationships.service';
     OblLedgerService,
     OblConversionService,
     OblRelationshipsService,
+    OblArbitrationService,
   ],
 })
 export class OblModule {}

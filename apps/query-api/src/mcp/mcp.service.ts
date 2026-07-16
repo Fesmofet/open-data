@@ -75,6 +75,7 @@ import {
   UpsertHiveWalletExemptionEndpoint,
 } from '../domain/wallet';
 import {
+  OblArbitrationService,
   OblConversionService,
   OblLedgerService,
   OblOffersService,
@@ -151,6 +152,7 @@ export class McpService {
     private readonly oblLedger: OblLedgerService,
     private readonly oblConversion: OblConversionService,
     private readonly oblRelationships: OblRelationshipsService,
+    private readonly oblArbitration: OblArbitrationService,
   ) {}
 
   private buildDeps(): McpToolDeps {
@@ -216,6 +218,7 @@ export class McpService {
       oblLedger: this.oblLedger,
       oblConversion: this.oblConversion,
       oblRelationships: this.oblRelationships,
+      oblArbitration: this.oblArbitration,
     };
   }
 

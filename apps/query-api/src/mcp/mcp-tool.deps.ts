@@ -4,6 +4,7 @@ import type {
   OblLedgerService,
   OblOffersService,
   OblRelationshipsService,
+  OblArbitrationService,
 } from '../domain/obl';
 import type { GetDiscoverObjectsEndpoint } from '../domain/discover/get-discover-objects.endpoint';
 import type { GetDiscoverTagCategoriesEndpoint } from '../domain/discover/get-discover-tag-categories.endpoint';
@@ -137,4 +138,5 @@ export interface McpToolDeps {
   oblLedger: OblLedgerService;
   oblConversion: OblConversionService;
   oblRelationships: OblRelationshipsService;
+  oblArbitration: OblArbitrationService;
 }

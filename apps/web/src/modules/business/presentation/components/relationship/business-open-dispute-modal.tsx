@@ -6,7 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 
 import type { LedgerInvoiceRow } from '../../../domain/ledger.types';
-import { RelationshipReadonlyField, parsePositiveUsdAmount } from './relationship-modal-fields';
+import { RelationshipReadonlyField, parseNonNegativeUsdAmount } from './relationship-modal-fields';
 
 export type BusinessOpenDisputeModalProps = {
   open: boolean;
@@ -33,7 +33,7 @@ export function BusinessOpenDisputeModal({
     }
   }, [invoice]);
 
-  const canSubmit = !isBusy && invoice !== null && parsePositiveUsdAmount(proposedAmount);
+  const canSubmit = !isBusy && invoice !== null && parseNonNegativeUsdAmount(proposedAmount);
 
   if (!invoice) {
     return null;

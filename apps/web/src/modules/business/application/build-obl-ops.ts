@@ -10,8 +10,26 @@ import {
   buildOblPaymentDeclareOp,
 } from '@opden-data-layer/hive-broadcast';
 
+import { parseOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
+
 import type { OfferDraftFields } from '../domain/offer-form.types';
 import { newOblOfferId } from '../domain/obl-ids';
+
+function requirePositiveUsdAmount(raw: string): string {
+  const parsed = parseOblUsdAmount(raw, 'positive');
+  if (!parsed) {
+    throw new Error('invalid amount_usd');
+  }
+  return parsed;
+}
+
+function requireNonNegativeUsdAmount(raw: string): string {
+  const parsed = parseOblUsdAmount(raw, 'nonnegative');
+  if (!parsed) {
+    throw new Error('invalid amount_usd');
+  }
+  return parsed;
+}
 
 export function buildPublishOfferOp(input: {
   oblCustomJsonId: string;
@@ -111,7 +129,7 @@ export function buildIssueInvoiceOp(input: {
     issuer: input.issuer,
     debtor: input.debtor,
     creditor: input.creditor,
-    amountUsd: input.amountUsd,
+    amountUsd: requirePositiveUsdAmount(input.amountUsd),
     contractId: input.contractId,
     details: input.details,
     required_posting_auths: [input.issuer],
@@ -131,7 +149,7 @@ export function buildDeclarePaymentOp(input: {
     paymentId: input.paymentId,
     payer: input.payer,
     receiver: input.receiver,
-    amountUsd: input.amountUsd,
+    amountUsd: requirePositiveUsdAmount(input.amountUsd),
     ref: input.ref,
     required_posting_auths: [input.payer],
   });
@@ -150,7 +168,7 @@ export function buildConfirmPaymentOp(input: {
     id: input.oblCustomJsonId,
     paymentId: input.paymentId,
     receiver: input.receiver,
-    amountUsd: input.amountUsd,
+    amountUsd: requirePositiveUsdAmount(input.amountUsd),
     payer: input.payer,
     declarePaymentId: input.declarePaymentId,
     ref: input.ref,
@@ -170,7 +188,7 @@ export function buildOpenDisputeOp(input: {
     disputeId: input.disputeId,
     invoiceId: input.invoiceId,
     disputant: input.disputant,
-    proposedAmountUsd: input.proposedAmountUsd,
+    proposedAmountUsd: requireNonNegativeUsdAmount(input.proposedAmountUsd),
     required_posting_auths: [input.disputant],
   });
 }
@@ -185,7 +203,7 @@ export function buildResolveDisputeOp(input: {
     id: input.oblCustomJsonId,
     disputeId: input.disputeId,
     resolver: input.resolver,
-    finalAmountUsd: input.finalAmountUsd,
+    finalAmountUsd: requireNonNegativeUsdAmount(input.finalAmountUsd),
     required_posting_auths: [input.resolver],
   });
 }

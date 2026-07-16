@@ -20,7 +20,6 @@ import {
 import type { LedgerPaymentRow } from '../../../domain/ledger.types';
 import {
   extractPaymentRefNote,
-  getPartialRemainderSourceId,
   parsePaymentRefAuthorperm,
 } from '../../../domain/payment-ref';
 import { StateBadge } from '../state-badge';
@@ -65,19 +64,6 @@ function paymentDescription(
   viewer: string,
   t: (key: string) => string,
 ): ReactNode {
-  const partialRemainderOf = getPartialRemainderSourceId(payment.ref);
-  if (partialRemainderOf) {
-    const counterparty = payment.payer === viewer ? payment.receiver : payment.payer;
-    return payment.payer === viewer ? (
-      <>
-        {t('business_payment_partial_remainder_payer')}{' '}
-        <ProfileLink name={counterparty}>@{counterparty}</ProfileLink>
-      </>
-    ) : (
-      t('business_payment_partial_remainder_receiver')
-    );
-  }
-
   const postRef =
     payment.method === 'upvote_reward'
       ? parsePaymentRefAuthorperm(payment.ref)
@@ -149,9 +135,7 @@ export function RelationshipPaymentRow({
             <span className="text-caption text-fg-secondary">{payment.method}</span>
             {clickable ? (
               <span className="text-caption text-link">
-                {getPartialRemainderSourceId(payment.ref)
-                  ? t('business_payment_awaiting_confirm_remainder')
-                  : t('business_payment_awaiting_confirm')}
+                {t('business_payment_awaiting_confirm')}
               </span>
             ) : null}
           </div>

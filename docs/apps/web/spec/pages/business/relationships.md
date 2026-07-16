@@ -18,12 +18,13 @@ related:
 
 ## List (`/business/relationships`)
 
-`GET /query/v1/obl/relationships?account=` — counterparty, roles, contract count, pair balance.
+`GET /query/v1/obl/relationships?account=&limit=&offset=` — paginated `{ items, hasMore }`; infinite scroll on the client.
 
 ## Detail (`/business/relationships/:account`)
 
-- Three balance cards: Confirmed, Pending, Disputed (`BalanceCards` + `DirectionalUsd`). Buckets match [`mutual-ledger.md`](../../../../spec/obl/mutual-ledger.md): `payment_declare` → pending payments; `payment_confirm` → confirmed; disputed invoices → disputed bucket only.
+- Balance from `GET /query/v1/obl/balance`; tab lists load from `GET /query/v1/obl/ledger/{payments|contracts|invoices|disputes}` with cursor pagination and infinite scroll (only the active tab is fetched initially; other tabs lazy-load on first visit).
 - Tabs (default **Payments**): Payments, Contracts, Invoices, Disputes — no Overview tab.
+- Tab selection is URL-synced via `?tab=payments|contracts|invoices|disputes` (default omits query). Example: `/business/relationships/flowmaster?tab=invoices`.
 - All tab lists are ordered **newest first** by `created_at` (API + client sort).
 - Broadcast errors shown below balance cards on all tabs.
 - Header actions open modals (no inline forms on tabs):

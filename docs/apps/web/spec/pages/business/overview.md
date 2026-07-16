@@ -35,7 +35,7 @@ PR review: reject `#…`, `rgb(`, `text-sm`/`text-lg`, `rounded-md`, or inline c
 | Area | Gate |
 |------|------|
 | `/business/manage/**` | `requireBusinessUser()` → redirect `/sign-in` |
-| `/business/relationships/**`, `/business/contracts/**` | `requireBusinessUser()` |
+| `/business/relationships/**`, `/business/arbitration`, `/business/contracts/**` | `requireBusinessUser()` |
 | `/business`, `/business/offers`, `/business/requests` (discover) | Public |
 | `/offers/.../versions/:v`, `/requests/.../versions/:v` | Public read; sign requires wallet session |
 
@@ -54,6 +54,7 @@ Header entry: avatar menu → **Business** (`/business/offers` discover) (`logge
 | `/business/manage/offers/:offerId` | Owner detail, retire, new version |
 | `/business/manage/offers/:offerId/versions/:version` | Authenticated version read / sign |
 | `/business/relationships` | Counterparty list |
+| `/business/arbitration` | Arbiter dispute inbox ([arbitration.md](arbitration.md)) |
 | `/business/relationships/:account` | Balance cards + tabs |
 | `/business/contracts/:contractId` | Contract drill-down |
 | `/offers`, `/requests` | Redirect → discover |
@@ -72,7 +73,7 @@ Path builders: `modules/business/domain/routes.ts`.
 | Broadcast | `useOblBroadcast` + `useOblCustomJsonId` + `@opden-data-layer/hive-broadcast` |
 | USD→WAIV (client) | BFF `GET /api/business/convert-usd-to-waiv` |
 
-Child specs: [offers.md](offers.md), [relationships.md](relationships.md), [blockchain-actions.md](blockchain-actions.md).
+Child specs: [offers.md](offers.md), [relationships.md](relationships.md), [arbitration.md](arbitration.md), [blockchain-actions.md](blockchain-actions.md).
 
 ## Verification
 
