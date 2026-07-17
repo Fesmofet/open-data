@@ -36,4 +36,17 @@ function nestOptionalIgnorePlugins() {
   ];
 }
 
-module.exports = { nestOptionalIgnorePlugins };
+/**
+ * Suppress known webpack noise from Nest/Express/Kysely/load-esm dynamic requires
+ * and vendor packages that ship broken source maps (MCP SDK, iterare).
+ * Scoped to node_modules so first-party dynamic requires still warn.
+ */
+const nestIgnoreWarnings = [
+  {
+    module: /node_modules/,
+    message: /Critical dependency: the request of a dependency is an expression/,
+  },
+  /Failed to parse source map/,
+];
+
+module.exports = { nestOptionalIgnorePlugins, nestIgnoreWarnings };

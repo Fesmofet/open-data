@@ -55,3 +55,21 @@
 **Pattern:** Under full `strict`, Nest `useFactory (...args: unknown[])` fails `strictFunctionTypes` against Nest’s factory typing; Jest `mockResolvedValue(null)` fails when the mocked method is typed `T | undefined`.
 
 **Rule:** Use `useFactory (...args: any[])` at Nest factory boundaries; in specs use `undefined` (or widen the mock) to match the declared return, and `as unknown as T` for partial fixtures. Keep strict on Nest apps + `clients` only — do not flip `tsconfig.base.json` until other consumers are ready. Gate with `pnpm typecheck:nest` (webpack build alone is not enough).
+
+## Nx Next: plain `next.config.js`
+
+**Pattern:** `composePlugins()` / `withNx()` from `@nx/next` are deprecated (removed in Nx v24).
+
+**Rule:** Export a plain Next config (`module.exports = nextConfig`); drop `@nx/next` import and `nx: {}`. Workspace libs transpile without `withNx`.
+
+## Tailwind safelist + variants
+
+**Pattern:** Safelist regex like `/^sm:grid-cols-[1-6]$/` warns and matches nothing — patterns only match **base** utilities.
+
+**Rule:** Use `{ pattern: /^grid-cols-[1-6]$/, variants: ['sm', 'md', 'lg', 'xl'] }` for responsive dynamic classes (e.g. `buildCardGridClassName`).
+
+## Nest webpack: Critical dependency / broken vendor source maps
+
+**Pattern:** Nest/Express/Kysely/`load-esm` dynamic `require` → webpack `Critical dependency` warnings; MCP SDK / iterare → `source-map-loader` ENOENT in development. Not runtime bugs for this repo.
+
+**Rule:** Silence via shared `nestIgnoreWarnings` in `apps/nest-webpack.shared.js` (scoped to `node_modules` + source-map parse failures). Wire `ignoreWarnings: nestIgnoreWarnings` in each Nest `webpack.config.js`. Do not externalize packages just to quiet warnings.

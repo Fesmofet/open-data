@@ -1,10 +1,14 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { join } = require('path');
-const { nestOptionalIgnorePlugins } = require('../nest-webpack.shared.js');
+const {
+  nestOptionalIgnorePlugins,
+  nestIgnoreWarnings,
+} = require('../nest-webpack.shared.js');
 
 const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
+  ignoreWarnings: nestIgnoreWarnings,
   output: {
     path: join(__dirname, '../../dist/apps/scheduler'),
     clean: true,

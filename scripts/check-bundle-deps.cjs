@@ -24,6 +24,7 @@ const WEBPACK_APPS = [
   'query-api',
   'auth-api',
   'chain-indexer',
+  'knowledge-api',
   'notifications',
   'scheduler',
   'ipfs-gateway',

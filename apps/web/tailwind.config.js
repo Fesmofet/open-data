@@ -12,11 +12,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   safelist: [
-    { pattern: /^grid-cols-[1-6]$/ },
-    { pattern: /^sm:grid-cols-[1-6]$/ },
-    { pattern: /^md:grid-cols-[1-6]$/ },
-    { pattern: /^lg:grid-cols-[1-6]$/ },
-    { pattern: /^xl:grid-cols-[1-6]$/ },
+    // Patterns match base utilities only; responsive variants via `variants`.
+    // Needed for dynamic `buildCardGridClassName` (`sm:grid-cols-*`, etc.).
+    {
+      pattern: /^grid-cols-[1-6]$/,
+      variants: ['sm', 'md', 'lg', 'xl'],
+    },
     'text-success',
   ],
   content: [
