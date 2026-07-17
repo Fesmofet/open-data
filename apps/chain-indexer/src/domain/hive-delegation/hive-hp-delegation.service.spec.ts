@@ -38,7 +38,7 @@ describe('HiveHpDelegationService', () => {
       delegator: 'alice',
       delegatee: 'bob',
       vesting_shares: 46.13,
-      delegation_date: new Date('2024-01-01T00:00:00'),
+      delegation_date: new Date('2024-01-01T00:00:00.000Z'),
     });
   });
 

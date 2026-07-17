@@ -11,6 +11,7 @@ describe('OblTokenTransferParser', () => {
 
     await parser.parseBlock({
       refHiveBlockNumber: 500,
+      timestamp: '2024-01-01T00:00:00',
       transactions: [
         {
           contract: 'tokens',
@@ -52,6 +53,7 @@ describe('OblTokenTransferParser', () => {
 
     await parser.parseBlock({
       refHiveBlockNumber: 500,
+      timestamp: '2024-01-01T00:00:00',
       transactions: [
         {
           contract: 'tokens',
