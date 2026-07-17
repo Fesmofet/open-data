@@ -28,7 +28,7 @@ export class TribaldexClientModule {
 
   static forRootAsync(options: {
     useFactory: (
-      ...args: unknown[]
+      ...args: any[]
     ) => TribaldexClientModuleOptions | Promise<TribaldexClientModuleOptions>;
     inject?: Array<InjectionToken | OptionalFactoryDependency>;
     imports?: ModuleMetadata['imports'];

@@ -77,7 +77,7 @@ export class GetCategoryObjectsEndpoint {
       aggregatedObjectRepo: this.aggregatedObjectRepo,
       objectViewService: this.objectViewService,
       listItemsRecursiveCountService: this.listItemsRecursiveCountService,
-      parentObjectId: excludeObjectId,
+      parentObjectId: excludeObjectId ?? '',
       governance,
       locale: input.locale,
       contentBaseUrl,

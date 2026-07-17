@@ -47,11 +47,15 @@ export class HiveCustomJsonParser {
       this.rcDelegationService.handleRcCustomJson(payload);
 
     this.handlers = {
-      [odlId]: handleOdl,
-      [oblId]: handleObl,
       [HIVE_CUSTOM_JSON_ID.FOLLOW]: handleFollow,
       [HIVE_CUSTOM_JSON_ID.RC]: handleRc,
     };
+    if (odlId) {
+      this.handlers[odlId] = handleOdl;
+    }
+    if (oblId) {
+      this.handlers[oblId] = handleObl;
+    }
   }
 
   async parse(

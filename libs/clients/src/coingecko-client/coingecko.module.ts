@@ -26,8 +26,10 @@ export class CoinGeckoClientModule {
   }
 
   static forRootAsync(options: {
+    // Nest inject factories are typed loosely; callers narrow injected tokens.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     useFactory: (
-      ...args: unknown[]
+      ...args: any[]
     ) =>
       | CoinGeckoClientModuleOptions
       | Promise<CoinGeckoClientModuleOptions>;

@@ -58,7 +58,7 @@ describe('GetPostDiscussionEndpoint', () => {
         depth: '0',
         reblogged_users: ['viewer'],
         replies: ['bob/c1'],
-      } as HiveContentType,
+      } as unknown as HiveContentType,
       'bob/c1': {
         author: 'bob',
         permlink: 'c1',
@@ -67,7 +67,7 @@ describe('GetPostDiscussionEndpoint', () => {
         created: '2024-01-01T00:00:00',
         reblogged_users: [],
         active_votes: [],
-      } as HiveContentType,
+      } as unknown as HiveContentType,
     };
     hiveClient.getState.mockResolvedValue({ content });
     accounts.findByNames.mockResolvedValue([]);
@@ -88,7 +88,7 @@ describe('GetPostDiscussionEndpoint', () => {
         depth: '0',
         reblogged_users: [],
         replies: ['bob/c1'],
-      } as HiveContentType,
+      } as unknown as HiveContentType,
       'bob/c1': {
         author: 'bob',
         permlink: 'c1',
@@ -97,7 +97,7 @@ describe('GetPostDiscussionEndpoint', () => {
         created: '2024-01-01T00:00:00',
         reblogged_users: [],
         active_votes: [],
-      } as HiveContentType,
+      } as unknown as HiveContentType,
     };
     hiveClient.getState.mockResolvedValue({ content });
 

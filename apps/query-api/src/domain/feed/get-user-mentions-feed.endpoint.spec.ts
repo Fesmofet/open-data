@@ -97,7 +97,7 @@ describe('GetUserMentionsFeedEndpoint', () => {
   });
 
   it('returns null when profile account is missing', async () => {
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     const r = await endpoint.execute(
       'alice',
       { limit: 20, currency: 'USD', object_ids: [] },

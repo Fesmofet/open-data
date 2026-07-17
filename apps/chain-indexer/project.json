@@ -3,23 +3,32 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/chain-indexer/src",
   "projectType": "application",
-  "implicitDependencies": ["notifications-contract"],
+  "implicitDependencies": [
+    "hive-processor",
+    "hive-engine-processor"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
         "command": "webpack-cli build",
-        "args": ["--config-node-env=production"],
+        "args": [
+          "--config-node-env=production"
+        ],
         "cwd": "apps/chain-indexer"
       },
       "configurations": {
         "development": {
-          "args": ["--config-node-env=development"]
+          "args": [
+            "--config-node-env=development"
+          ]
         }
       }
     },
     "docker-image": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "executor": "nx:run-commands",
       "options": {
         "command": "echo CI builds the Docker image for this app"
@@ -29,7 +38,9 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "chain-indexer:build",
         "runBuildTargetDependencies": false
@@ -47,8 +58,14 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.app.json",
+        "cwd": "apps/chain-indexer"
+      }
     }
   },
-  "tags": [],
-  "implicitDependencies": ["hive-processor", "hive-engine-processor"]
+  "tags": []
 }

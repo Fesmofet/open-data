@@ -49,3 +49,9 @@
 **Pattern:** Nest `project.json` still passing `--node-env=production` fails after Nx migrate bumps webpack-cli to 7.
 
 **Rule:** Use `--config-node-env=production` / `development` instead.
+
+## Nest `strict: true`
+
+**Pattern:** Under full `strict`, Nest `useFactory (...args: unknown[])` fails `strictFunctionTypes` against Nest’s factory typing; Jest `mockResolvedValue(null)` fails when the mocked method is typed `T | undefined`.
+
+**Rule:** Use `useFactory (...args: any[])` at Nest factory boundaries; in specs use `undefined` (or widen the mock) to match the declared return, and `as unknown as T` for partial fixtures. Keep strict on Nest apps + `clients` only — do not flip `tsconfig.base.json` until other consumers are ready. Gate with `pnpm typecheck:nest` (webpack build alone is not enough).

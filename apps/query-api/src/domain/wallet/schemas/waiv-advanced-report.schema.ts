@@ -37,10 +37,12 @@ export const waivAdvancedReportBodySchema = z
       });
       return;
     }
-    if (!hasStart || !hasEnd) {
+    const startDate = data.startDate;
+    const endDate = data.endDate;
+    if (startDate === undefined || endDate === undefined) {
       return;
     }
-    if (data.startDate > data.endDate) {
+    if (startDate > endDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'startDate must be <= endDate',
@@ -48,7 +50,7 @@ export const waivAdvancedReportBodySchema = z
       });
     }
     const now = Math.floor(Date.now() / 1000);
-    if (data.endDate >= now) {
+    if (endDate >= now) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'endDate must be in the past',

@@ -55,7 +55,7 @@ describe('WaivStakeParser', () => {
         }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
@@ -68,7 +68,7 @@ describe('WaivStakeParser', () => {
       blockNumber: 1,
       transactions: [tx({ action: 'stake', logs: JSON.stringify({ events: [] }) })],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).not.toHaveBeenCalled();
   });
@@ -78,7 +78,7 @@ describe('WaivStakeParser', () => {
       blockNumber: 1,
       transactions: [tx({ action: 'stake', logs: 'not-json' })],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).not.toHaveBeenCalled();
   });
@@ -106,7 +106,7 @@ describe('WaivStakeParser', () => {
         }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
@@ -141,7 +141,7 @@ describe('WaivStakeParser', () => {
         }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
@@ -173,7 +173,7 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
@@ -213,7 +213,7 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
@@ -248,7 +248,7 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
@@ -278,7 +278,7 @@ describe('WaivStakeParser', () => {
         }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).not.toHaveBeenCalled();
   });
@@ -305,7 +305,7 @@ describe('WaivStakeParser', () => {
         }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(emit).not.toHaveBeenCalled();
   });

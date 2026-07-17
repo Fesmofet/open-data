@@ -13,11 +13,13 @@ export class UserObjectPowersRepository {
 
   async findByAccount(account: string): Promise<UserObjectPower | null> {
     try {
-      return await this.db
-        .selectFrom('user_object_powers')
-        .where('account', '=', account)
-        .selectAll()
-        .executeTakeFirst();
+      return (
+        (await this.db
+          .selectFrom('user_object_powers')
+          .where('account', '=', account)
+          .selectAll()
+          .executeTakeFirst()) ?? null
+      );
     } catch (e) {
       this.logger.error((e as Error).message);
       return null;

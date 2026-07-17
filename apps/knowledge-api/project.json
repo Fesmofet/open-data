@@ -3,31 +3,43 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/knowledge-api/src",
   "projectType": "application",
-  "tags": ["type:app"],
-  "implicitDependencies": ["knowledge"],
+  "tags": [
+    "type:app"
+  ],
+  "implicitDependencies": [
+    "knowledge"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
         "command": "webpack-cli build",
-        "args": ["--config-node-env=production"],
+        "args": [
+          "--config-node-env=production"
+        ],
         "cwd": "apps/knowledge-api"
       },
       "configurations": {
         "development": {
-          "args": ["--config-node-env=development"]
+          "args": [
+            "--config-node-env=development"
+          ]
         }
       }
     },
     "docker-image": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "executor": "nx:run-commands",
       "options": {
         "command": "echo CI builds the Docker image for this app"
       }
     },
     "prune-lockfile": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
@@ -39,16 +51,23 @@
       }
     },
     "copy-workspace-modules": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "cache": true,
-      "outputs": ["{workspaceRoot}/dist/apps/knowledge-api/workspace_modules"],
+      "outputs": [
+        "{workspaceRoot}/dist/apps/knowledge-api/workspace_modules"
+      ],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
         "buildTarget": "build"
       }
     },
     "prune": {
-      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "dependsOn": [
+        "prune-lockfile",
+        "copy-workspace-modules"
+      ],
       "executor": "nx:noop"
     },
     "test": {
@@ -60,7 +79,9 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "knowledge-api:build",
         "runBuildTargetDependencies": false
@@ -72,6 +93,13 @@
         "production": {
           "buildTarget": "knowledge-api:build:production"
         }
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.app.json",
+        "cwd": "apps/knowledge-api"
       }
     }
   }

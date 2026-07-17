@@ -28,7 +28,7 @@ export class HiveEngineConvertClientModule {
 
   static forRootAsync(options: {
     useFactory: (
-      ...args: unknown[]
+      ...args: any[]
     ) =>
       | HiveEngineConvertClientModuleOptions
       | Promise<HiveEngineConvertClientModuleOptions>;

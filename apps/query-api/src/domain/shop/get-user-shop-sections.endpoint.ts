@@ -113,12 +113,13 @@ export class GetUserShopSectionsEndpoint {
         return { sections: [], cursor: null, hasMore: false };
       }
 
-      filteredCounts = await this.objectCategoriesRepo.countObjectIdsByScopeForCategories({
+      const counts = await this.objectCategoriesRepo.countObjectIdsByScopeForCategories({
         ...scopeParams,
         categoryNames: candidates.map((c) => c.name),
       });
+      filteredCounts = counts;
 
-      const matching = candidates.filter((c) => (filteredCounts.get(c.name) ?? 0) > 0);
+      const matching = candidates.filter((c) => (counts.get(c.name) ?? 0) > 0);
       pageItems = matching.slice(0, query.sectionLimit);
       hasMore = matching.length > query.sectionLimit;
     } else {

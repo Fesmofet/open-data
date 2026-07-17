@@ -108,6 +108,47 @@ jobs:
         if: steps.paths.outputs.query_api == 'true'
         run: pnpm nx test query-api
 
+  nest-typecheck:
+    name: Nest apps + clients — TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: paths
+        with:
+          filters: |
+            nest:
+              - 'apps/auth-api/**'
+              - 'apps/chain-indexer/**'
+              - 'apps/query-api/**'
+              - 'apps/knowledge-api/**'
+              - 'apps/notifications/**'
+              - 'apps/ipfs-gateway/**'
+              - 'apps/scheduler/**'
+              - 'apps/stack-watchdog/**'
+              - 'libs/clients/**'
+              - 'tsconfig.base.json'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+
+      - uses: pnpm/action-setup@v4
+        if: steps.paths.outputs.nest == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.paths.outputs.nest == 'true'
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.paths.outputs.nest == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck Nest apps + clients (tsc --noEmit)
+        if: steps.paths.outputs.nest == 'true'
+        run: pnpm typecheck:nest
+
   web-verify:
     name: Web — locale JSON UTF-8 + TypeScript
     runs-on: ubuntu-latest

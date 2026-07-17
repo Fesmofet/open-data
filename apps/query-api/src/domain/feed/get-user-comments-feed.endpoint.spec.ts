@@ -45,7 +45,7 @@ describe('GetUserCommentsFeedEndpoint', () => {
   });
 
   it('returns null when account is missing', async () => {
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     const r = await endpoint.execute('alice', { limit: 20, sort: 'latest', currency: 'USD' }, undefined);
     expect(r).toBeNull();
     expect(hiveClient.getDiscussionsByComments).not.toHaveBeenCalled();

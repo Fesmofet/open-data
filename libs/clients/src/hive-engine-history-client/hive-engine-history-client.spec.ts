@@ -10,8 +10,8 @@ describe('HiveEngineHistoryClient', () => {
 
   it('builds accountHistory GET URL with query params', async () => {
     let capturedUrl = '';
-    global.fetch = jest.fn(async (url: string | URL) => {
-      capturedUrl = String(url);
+    global.fetch = jest.fn(async (input: RequestInfo | URL) => {
+      capturedUrl = String(input);
       return {
         ok: true,
         json: async () => [
@@ -25,7 +25,7 @@ describe('HiveEngineHistoryClient', () => {
           },
         ],
       } as unknown as Response;
-    });
+    }) as typeof fetch;
 
     const urlRotationService = {
       getManager: () => ({
@@ -60,13 +60,13 @@ describe('HiveEngineHistoryClient', () => {
 
   it('builds accountHistory GET URL with excludeSymbols', async () => {
     let capturedUrl = '';
-    global.fetch = jest.fn(async (url: string | URL) => {
-      capturedUrl = String(url);
+    global.fetch = jest.fn(async (input: RequestInfo | URL) => {
+      capturedUrl = String(input);
       return {
         ok: true,
         json: async () => [],
       } as unknown as Response;
-    });
+    }) as typeof fetch;
 
     const urlRotationService = {
       getManager: () => ({

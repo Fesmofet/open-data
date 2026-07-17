@@ -43,6 +43,7 @@
     "check:agent-docs": "tsx --tsconfig tsconfig.base.json scripts/check-agent-docs.ts",
     "clean:cache": "node scripts/clean-cache.cjs",
     "typecheck:web": "pnpm nx run web:typecheck",
+    "typecheck:nest": "pnpm nx run-many -t typecheck -p auth-api chain-indexer query-api knowledge-api notifications ipfs-gateway scheduler stack-watchdog clients",
     "scan:vulnerabilities": "osv-scanner scan source --config osv-scanner.toml -r . --format json --output-file osv-results.json",
     "verify:deps": "node scripts/verify-deps.cjs",
     "prepare": "husky"

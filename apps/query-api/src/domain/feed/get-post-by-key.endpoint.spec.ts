@@ -110,7 +110,7 @@ describe('GetPostByKeyEndpoint', () => {
     };
     objectProjection = {
       batchProject: jest.fn().mockImplementation(async (views, options) =>
-        views.map((v) => ({
+        views.map((v: { object_id: string; object_type: string }) => ({
           object_id: v.object_id,
           object_type: v.object_type,
           semantic_type: null,
@@ -172,7 +172,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findPostObjectsByKeys.mockResolvedValue([]);
     postsRepo.findActiveVoteSummaries.mockResolvedValue(new Map());
     hiveClient.getContent.mockResolvedValue(hivePost);
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     hiveClient.getAccounts.mockResolvedValue([
       {
         id: 1,
@@ -240,7 +240,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findActiveVoteSummaries.mockResolvedValue(
       new Map([['alice\0my-post', { totalCount: 0, previewVoters: [], voted: false }]]),
     );
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
 
     const r = await endpoint.execute('alice', 'my-post', 'en-US', undefined, undefined);
     expect(r).not.toBeNull();
@@ -270,7 +270,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findActiveVoteSummaries.mockResolvedValue(
       new Map([['alice\0my-post', { totalCount: 0, previewVoters: [], voted: false }]]),
     );
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     aggregatedObjectRepo.loadByObjectIds.mockResolvedValue({
       objects: [
         {
@@ -325,7 +325,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findActiveVoteSummaries.mockResolvedValue(
       new Map([['alice\0my-post', { totalCount: 0, previewVoters: [], voted: false }]]),
     );
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     aggregatedObjectRepo.loadByObjectIds.mockResolvedValue({
       objects: [
         {

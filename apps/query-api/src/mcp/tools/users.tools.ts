@@ -351,7 +351,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         fromSymbol: args.fromSymbol,
         toSymbol: args.toSymbol,
         amountIn: args.amountIn,
-        direction: args.direction,
+        direction: args.direction ?? 'exactInput',
         slippage: args.slippage,
       });
       if (!result) {
@@ -400,7 +400,7 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         outputSymbol: args.outputSymbol,
         quantity: args.quantity,
         address: args.address,
-        previewOnly: args.previewOnly,
+        previewOnly: args.previewOnly ?? false,
       });
       if (!result) {
         return toolError(`User not found: ${args.account}`);

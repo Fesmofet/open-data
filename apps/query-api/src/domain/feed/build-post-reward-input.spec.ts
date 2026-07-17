@@ -40,7 +40,7 @@ describe('buildPostRewardInputFromSources', () => {
       total_rewards_waiv: 0,
       beneficiaries: [],
       json_metadata: '{"tags":["waivio"]}',
-    } as Post;
+    } as unknown as Post;
 
     const input = buildPostRewardInputFromSources(
       {

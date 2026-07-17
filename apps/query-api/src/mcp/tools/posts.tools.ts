@@ -3,6 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
+import { VOTERS_PAGE_LIMIT } from '../../domain/feed/feed.constants';
 import {
   jsonToolResult,
   pickMcpContext,
@@ -104,7 +105,7 @@ export function registerPostTools(server: McpServer, deps: McpToolDeps): void {
         {
           direction: args.direction,
           contentType: args.contentType,
-          limit: args.limit,
+          limit: args.limit ?? VOTERS_PAGE_LIMIT,
           cursor: args.cursor,
         },
         args.currency,

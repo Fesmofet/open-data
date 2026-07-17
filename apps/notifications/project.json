@@ -3,24 +3,35 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/notifications/src",
   "projectType": "application",
-  "tags": ["type:app", "scope:domain"],
-  "implicitDependencies": ["notifications-contract"],
+  "tags": [
+    "type:app",
+    "scope:domain"
+  ],
+  "implicitDependencies": [
+    "notifications-contract"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
       "options": {
         "command": "webpack-cli build",
-        "args": ["--config-node-env=production"],
+        "args": [
+          "--config-node-env=production"
+        ],
         "cwd": "apps/notifications"
       },
       "configurations": {
         "development": {
-          "args": ["--config-node-env=development"]
+          "args": [
+            "--config-node-env=development"
+          ]
         }
       }
     },
     "docker-image": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "executor": "nx:run-commands",
       "options": {
         "command": "echo CI builds the Docker image for this app"
@@ -30,7 +41,9 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "options": {
         "buildTarget": "notifications:build",
         "runBuildTargetDependencies": false
@@ -47,6 +60,13 @@
     "test": {
       "options": {
         "passWithNoTests": true
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.app.json",
+        "cwd": "apps/notifications"
       }
     }
   }

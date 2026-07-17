@@ -91,9 +91,11 @@ await this.db.transaction().execute(async (trx) => {
 
 ### Type Safety
 
-- `strictNullChecks: true`. Prefer explicit types. Avoid widening `any`; prefer `unknown` for new code.
+- Nest apps (`auth-api`, `chain-indexer`, `query-api`, `knowledge-api`, `notifications`, `ipfs-gateway`, `scheduler`, `stack-watchdog`) and `libs/clients` **must** keep `"strict": true` on their project `tsconfig.json`. Do not reintroduce per-project `strict: false` (or disable individual strict flags) on those surfaces. Root `tsconfig.base.json` may remain non-strict for other consumers.
+- Prefer explicit types. Avoid widening `any`; prefer `unknown` for new code.
 - Use Zod for runtime validation of: env vars, blockchain payloads, HTTP request bodies.
 - Never trust external input (blockchain data, API requests, env vars).
+- Verify with `pnpm typecheck:nest` (or `pnpm nx run <project>:typecheck`).
 
 ### Configuration
 

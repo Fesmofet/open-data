@@ -28,7 +28,7 @@ export class EthGatewayClientModule {
 
   static forRootAsync(options: {
     useFactory: (
-      ...args: unknown[]
+      ...args: any[]
     ) => EthGatewayClientModuleOptions | Promise<EthGatewayClientModuleOptions>;
     inject?: Array<InjectionToken | OptionalFactoryDependency>;
     imports?: ModuleMetadata['imports'];

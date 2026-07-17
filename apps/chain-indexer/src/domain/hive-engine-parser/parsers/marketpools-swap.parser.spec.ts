@@ -54,7 +54,7 @@ describe('MarketpoolsSwapParser', () => {
         }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(insertSwapsBatch).toHaveBeenCalledWith([
       expect.objectContaining({
@@ -78,7 +78,7 @@ describe('MarketpoolsSwapParser', () => {
         swapTx({ errors: ['x'], events: [] }),
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(insertSwapsBatch).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe('MarketpoolsSwapParser', () => {
         },
       ],
       virtualTransactions: [],
-    } as HiveEngineBlock);
+    } as unknown as HiveEngineBlock);
 
     expect(insertSwapsBatch).not.toHaveBeenCalled();
   });

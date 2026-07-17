@@ -25,7 +25,7 @@ describe('PostUserEngineWithdrawQuoteEndpoint', () => {
   });
 
   it('returns null when account is missing', async () => {
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     await expect(
       endpoint.execute('ghost', {
         inputSymbol: 'WAIV',

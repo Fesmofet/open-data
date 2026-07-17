@@ -20,7 +20,7 @@ export function parseHiveAccountHistoryAssertContinueFrom(
     return undefined;
   }
 
-  const sequence = err.data.stack?.[0]?.data?.sequence;
+  const sequence = err.data.stack?.[0]?.data?.['sequence'];
   if (typeof sequence !== 'number' || !Number.isFinite(sequence)) {
     return undefined;
   }

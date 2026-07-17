@@ -110,6 +110,7 @@ describe('GetUserShopSectionsEndpoint', () => {
       {
         types: ['recipe'],
         path: [],
+        tags: [],
         cursor: 'missing-category',
         sectionLimit: 3,
       },

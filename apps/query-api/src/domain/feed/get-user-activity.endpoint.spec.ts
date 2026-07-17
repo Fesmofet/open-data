@@ -44,7 +44,7 @@ describe('GetUserActivityEndpoint', () => {
   });
 
   it('returns null when account is missing', async () => {
-    accounts.findByName.mockResolvedValue(null);
+    accounts.findByName.mockResolvedValue(undefined);
     await expect(endpoint.execute('alice', { limit: 500, filters: [] })).resolves.toBeNull();
   });
 

@@ -2,7 +2,20 @@ import { calculatePostExpertiseDeltas } from '@opden-data-layer/core';
 import { PostExpertiseService } from './post-expertise.service';
 
 describe('PostExpertiseService', () => {
-  const post = {
+  const post: {
+    author: string;
+    permlink: string;
+    pending_payout_value: string;
+    total_payout_value: string;
+    curator_payout_value: string;
+    max_accepted_payout: string;
+    total_payout_waiv: number;
+    total_rewards_waiv: number;
+    created_unix: number;
+    last_payout: string;
+    rewards_finalized_at: string;
+    expertise_applied_at: string | null;
+  } = {
     author: 'alice',
     permlink: 'post-1',
     pending_payout_value: '0.000 HBD',
