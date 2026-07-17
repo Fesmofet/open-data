@@ -15,6 +15,8 @@ updated_at: 2026-06-10
 
 Browse objects by type or users with optional text search and tag-category filters (AND semantics).
 
+Hub chrome: under `(app)/(hub)` with HOME / DATA / BUSINESS section nav (`AppSectionNav`). DATA is active on this route. See [home](../home/page.md).
+
 ## Routes
 
 | URL | Mode |
