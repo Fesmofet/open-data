@@ -42,6 +42,47 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:hive-broadcast',
   },
   {
+    path: 'docs/skills/obl-offers-contracts.md',
+    keywords: [
+      'sign obl contract',
+      'obl contract sign',
+      'publish obl offer',
+      'obl offer',
+      'signParams',
+      'obl offers and contracts',
+      'contract_sign',
+      'buildOblContractSignOp',
+    ],
+    reason: 'curated:obl-offers-contracts',
+  },
+  {
+    path: 'docs/skills/obl-ledger.md',
+    keywords: [
+      'obl balance',
+      'obl pair balance',
+      'mutual ledger',
+      'issue invoice',
+      'obl invoice',
+      'obl payment',
+      'get_obl_balance',
+      'buildOblInvoiceIssueOp',
+    ],
+    reason: 'curated:obl-ledger',
+  },
+  {
+    path: 'docs/skills/obl-disputes.md',
+    keywords: [
+      'obl dispute',
+      'resolve obl dispute',
+      'resolve dispute',
+      'obl arbitration',
+      'dispute_open',
+      'buildOblDisputeOpenOp',
+      'get_obl_arbitration',
+    ],
+    reason: 'curated:obl-disputes',
+  },
+  {
     path: 'docs/skills/build-tenant-site.md',
     keywords: [
       'create project',

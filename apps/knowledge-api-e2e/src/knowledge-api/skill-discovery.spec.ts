@@ -8,6 +8,9 @@ import {
   HIVE_BROADCAST_DISCOVERY_QUERIES,
   HIVE_DISCOVERY_QUERIES,
   LOCAL_DEV_QUERIES,
+  OBL_DISPUTES_DISCOVERY_QUERIES,
+  OBL_LEDGER_DISCOVERY_QUERIES,
+  OBL_OFFERS_DISCOVERY_QUERIES,
   PATHS,
   ROUTING_DISCOVERY_QUERIES,
   type SearchKnowledgeResponse,
@@ -125,5 +128,57 @@ describe('POST /knowledge/mcp — skill discovery', () => {
       expect(isError).toBe(false);
       assertTopResultIs(data.results, PATHS.agentWorkspace);
     });
+  });
+
+  describe('OBL offers and contracts', () => {
+    it.each(OBL_OFFERS_DISCOVERY_QUERIES)(
+      'finds $expectedPath for "$query"',
+      async ({ query, expectedPath }) => {
+        const { data, isError } = await mcpCallTool<SearchKnowledgeResponse>(
+          'search_knowledge',
+          { query, limit: 10 },
+        );
+        expect(isError).toBe(false);
+        assertSearchFindsSkill(data.results, expectedPath);
+      },
+    );
+
+    it('prefers OBL offers skill over hive broadcast for "sign obl contract"', async () => {
+      const { data, isError } = await mcpCallTool<SearchKnowledgeResponse>(
+        'search_knowledge',
+        { query: 'sign obl contract', limit: 10 },
+      );
+      expect(isError).toBe(false);
+      assertSearchFindsSkill(data.results, PATHS.oblOffersContracts);
+      assertTopResultIsNot(data.results, PATHS.hiveBroadcast);
+    });
+  });
+
+  describe('OBL mutual ledger', () => {
+    it.each(OBL_LEDGER_DISCOVERY_QUERIES)(
+      'finds $expectedPath for "$query"',
+      async ({ query, expectedPath }) => {
+        const { data, isError } = await mcpCallTool<SearchKnowledgeResponse>(
+          'search_knowledge',
+          { query, limit: 10 },
+        );
+        expect(isError).toBe(false);
+        assertSearchFindsSkill(data.results, expectedPath);
+      },
+    );
+  });
+
+  describe('OBL disputes and arbitration', () => {
+    it.each(OBL_DISPUTES_DISCOVERY_QUERIES)(
+      'finds $expectedPath for "$query"',
+      async ({ query, expectedPath }) => {
+        const { data, isError } = await mcpCallTool<SearchKnowledgeResponse>(
+          'search_knowledge',
+          { query, limit: 10 },
+        );
+        expect(isError).toBe(false);
+        assertSearchFindsSkill(data.results, expectedPath);
+      },
+    );
   });
 });

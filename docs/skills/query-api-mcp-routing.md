@@ -9,8 +9,12 @@ updated_at: 2026-06-11
 related:
   - docs/apps/query-api/spec/mcp.md
   - docs/apps/query-api/spec/overview.md
+  - docs/apps/query-api/spec/obl.md
   - docs/apps/query-api/spec/objects-resolve-nested.md
   - docs/skills/knowledge-api-routing.md
+  - docs/skills/obl-offers-contracts.md
+  - docs/skills/obl-ledger.md
+  - docs/skills/obl-disputes.md
   - docs/skills/build-tenant-site.md
   - docs/README.md
 ---
@@ -19,13 +23,14 @@ related:
 
 ## When to use
 
-- You need **live platform data** (objects, users, posts, feeds, shop listings, currency rates).
+- You need **live platform data** (objects, users, posts, feeds, shop listings, currency rates, **OBL** offers/ledger).
 - You are connected to **query-api** MCP (`POST /query/mcp`).
 - You already know what to fetch and need the right tool name or HTTP parity.
 
 ## When not to use
 
 - You need **how/why** a feature works — use **knowledge-api** (`search_knowledge`, `resolve_doc`, `docs/apps/query-api/spec/`).
+- OBL **write** workflows (publish, sign, invoice, pay, dispute) — knowledge skills `obl-offers-contracts`, `obl-ledger`, `obl-disputes` + broadcast.
 - You need to **write** drafts or authenticated mutations — not exposed via MCP.
 - You confuse `search` (live) with `search_knowledge` (indexed docs) — they are different servers.
 
@@ -52,6 +57,12 @@ related:
 | User shop | `get_user_categories`, `get_user_shop_objects`, `get_user_shop_sections` |
 | Post + comment tree | `get_post`, `get_post_discussion` |
 | Rates / rewards display | `get_currency_*`, `get_engine_*` |
+| OBL offer search / detail | `search_obl_offers`, `get_obl_offer` |
+| OBL contract by id | `get_obl_contract` |
+| OBL pair ledger / balance | `get_obl_ledger`, `get_obl_balance` |
+| OBL relationships list | `get_obl_relationships` |
+| OBL arbitration inbox | `get_obl_arbitration` |
+| USD → WAIV conversion hint | `convert_usd_to_waiv` |
 
 ## Contrast with knowledge-api
 
@@ -73,5 +84,6 @@ Canonical detail: [query-api MCP spec](../apps/query-api/spec/mcp.md).
 
 ## Verification
 
-- `tools/list` on `POST /query/mcp` includes `resolve_object`, `search`, `get_post_discussion`.
-- Resource `odl-query://catalog/tools` returns 30 tools.
+- `tools/list` on `POST /query/mcp` includes `resolve_object`, `search`, `get_post_discussion`, `search_obl_offers`, `get_obl_balance`.
+- Resource `odl-query://catalog/tools` lists all registered tools (includes OBL tools above).
+- OBL write playbooks: [obl-offers-contracts](obl-offers-contracts.md), [obl-ledger](obl-ledger.md), [obl-disputes](obl-disputes.md).

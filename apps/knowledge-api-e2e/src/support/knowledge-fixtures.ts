@@ -4,6 +4,9 @@ export const PATHS = {
   hiveBroadcast: 'docs/skills/hive-blockchain-broadcast.md',
   agentWorkspace: 'docs/skills/setup-workspace.md',
   localDev: 'docs/getting-started.md',
+  oblOffersContracts: 'docs/skills/obl-offers-contracts.md',
+  oblLedger: 'docs/skills/obl-ledger.md',
+  oblDisputes: 'docs/skills/obl-disputes.md',
 } as const;
 
 export const ALL_SKILL_PATHS = [
@@ -11,6 +14,9 @@ export const ALL_SKILL_PATHS = [
   PATHS.hiveSignup,
   PATHS.hiveBroadcast,
   PATHS.agentWorkspace,
+  PATHS.oblOffersContracts,
+  PATHS.oblLedger,
+  PATHS.oblDisputes,
 ] as const;
 
 export interface SearchResult {
@@ -116,6 +122,27 @@ export const LOCAL_DEV_QUERIES = [
   { query: 'local development environment', expectedPath: PATHS.localDev },
   { query: 'prepare local development environment', expectedPath: PATHS.localDev },
   { query: 'how to run the project locally', expectedPath: PATHS.localDev },
+] as const;
+
+export const OBL_OFFERS_DISCOVERY_QUERIES = [
+  { query: 'sign obl contract', expectedPath: PATHS.oblOffersContracts },
+  { query: 'publish obl offer', expectedPath: PATHS.oblOffersContracts },
+  { query: 'obl contract signParams metadata', expectedPath: PATHS.oblOffersContracts },
+  { query: 'buildOblContractSignOp', expectedPath: PATHS.oblOffersContracts },
+] as const;
+
+export const OBL_LEDGER_DISCOVERY_QUERIES = [
+  { query: 'obl pair balance', expectedPath: PATHS.oblLedger },
+  { query: 'issue invoice obl', expectedPath: PATHS.oblLedger },
+  { query: 'mutual ledger payments', expectedPath: PATHS.oblLedger },
+  { query: 'get_obl_balance', expectedPath: PATHS.oblLedger },
+] as const;
+
+export const OBL_DISPUTES_DISCOVERY_QUERIES = [
+  { query: 'resolve obl dispute', expectedPath: PATHS.oblDisputes },
+  { query: 'obl arbitration inbox', expectedPath: PATHS.oblDisputes },
+  { query: 'buildOblDisputeOpenOp', expectedPath: PATHS.oblDisputes },
+  { query: 'open obl dispute on invoice', expectedPath: PATHS.oblDisputes },
 ] as const;
 
 export function assertSearchFindsSkill(

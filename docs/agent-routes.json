@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T08:07:11.290Z",
+  "generated_at": "2026-07-17T08:13:27.169Z",
   "routes": [
     {
       "path": "docs/apps/auth-api/overview.md",
@@ -183,6 +183,26 @@
       ]
     },
     {
+      "path": "docs/skills/build-tenant-site.md",
+      "title": "Build project (tenant site) on ODL",
+      "description": "Build a user's web project on ODL. Default path — start from the waivio-pages-starter repo (static Next.js, GitHub Pages, Keychain, query-api client); agent uses its own GitHub account to fork, iterate, and deploy, sharing the Pages URL. Fallback path (server required) — fork apps/web from the open-data-layer monorepo.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "agent",
+        "web",
+        "query-api",
+        "tenant",
+        "create-project",
+        "site-builder",
+        "starter",
+        "github-pages",
+        "static-export",
+        "keychain",
+        "fork"
+      ]
+    },
+    {
       "path": "docs/skills/hive-account-signup.md",
       "title": "Hive account signup",
       "description": "Guide a user through creating a new Hive blockchain account via public signup providers.",
@@ -228,6 +248,55 @@
         "routing",
         "mcp",
         "first-visit"
+      ]
+    },
+    {
+      "path": "docs/skills/obl-disputes.md",
+      "title": "OBL disputes and arbitration",
+      "description": "Open and resolve OBL invoice disputes, apply dispute_rule and arbiter, and read the arbitration inbox.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "obl",
+        "disputes",
+        "arbitration",
+        "dispute_resolve",
+        "dispute_open",
+        "arbiter",
+        "business"
+      ]
+    },
+    {
+      "path": "docs/skills/obl-ledger.md",
+      "title": "OBL mutual ledger",
+      "description": "Issue OBL invoices, declare/confirm payments, and read pair balances, ledger history, and relationships.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "obl",
+        "ledger",
+        "invoice",
+        "payment",
+        "balance",
+        "mutual-ledger",
+        "relationships",
+        "business"
+      ]
+    },
+    {
+      "path": "docs/skills/obl-offers-contracts.md",
+      "title": "OBL offers and contracts",
+      "description": "Discover, publish, and sign OBL offers/contracts including signParams metadata and deterministic contract_id.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": [
+        "obl",
+        "offers",
+        "contracts",
+        "signParams",
+        "contract_sign",
+        "offer_publish",
+        "business"
       ]
     },
     {

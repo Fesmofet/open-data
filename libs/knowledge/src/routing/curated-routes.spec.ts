@@ -23,4 +23,22 @@ describe('curated-routes', () => {
     expect(hits[0]?.path).toBe('docs/skills/build-tenant-site.md');
     expect(hits[0]?.confidence).toBeGreaterThan(0);
   });
+
+  it('matches OBL offers/contracts intent', () => {
+    const hits = matchCuratedRoutes('sign obl contract');
+    expect(hits[0]?.path).toBe('docs/skills/obl-offers-contracts.md');
+    expect(hits[0]?.confidence).toBeGreaterThan(0);
+  });
+
+  it('matches OBL ledger intent', () => {
+    const hits = matchCuratedRoutes('obl pair balance');
+    expect(hits[0]?.path).toBe('docs/skills/obl-ledger.md');
+    expect(hits[0]?.confidence).toBeGreaterThan(0);
+  });
+
+  it('matches OBL disputes intent', () => {
+    const hits = matchCuratedRoutes('resolve obl dispute');
+    expect(hits[0]?.path).toBe('docs/skills/obl-disputes.md');
+    expect(hits[0]?.confidence).toBeGreaterThan(0);
+  });
 });

@@ -13,6 +13,9 @@ related:
   - docs/standards/docs-standards.md
   - docs/skills/hive-account-signup.md
   - docs/skills/hive-blockchain-broadcast.md
+  - docs/skills/obl-offers-contracts.md
+  - docs/skills/obl-ledger.md
+  - docs/skills/obl-disputes.md
   - docs/skills/build-tenant-site.md
 ---
 
@@ -37,7 +40,7 @@ Entry point for Open Data Layer documentation.
 | [Architecture overview](architecture/overview.md) | Four-service model, contracts |
 | [Specification index](spec/README.md) | Domain specs, data model, governance |
 | [Documentation standards](standards/docs-standards.md) | How we write docs |
-| [Skills](skills/setup-workspace.md) | Agent playbooks: [build a web project](skills/build-tenant-site.md) (default: waivio-pages-starter → GitHub Pages), [workspace setup](skills/setup-workspace.md), [Hive signup](skills/hive-account-signup.md), [Hive broadcast](skills/hive-blockchain-broadcast.md) |
+| [Skills](skills/setup-workspace.md) | Agent playbooks: [build a web project](skills/build-tenant-site.md) (default: waivio-pages-starter → GitHub Pages), [workspace setup](skills/setup-workspace.md), [Hive signup](skills/hive-account-signup.md), [Hive broadcast](skills/hive-blockchain-broadcast.md), [OBL offers/contracts](skills/obl-offers-contracts.md), [OBL ledger](skills/obl-ledger.md), [OBL disputes](skills/obl-disputes.md) |
 | [Migrations](operations/migrations.md) | Kysely migrator, CLI, snapshots |
 | [Portainer (VPS deploy)](deployment/portainer.md) | Docker UI (localhost-only); optional manual `apps` updates alongside stack-watchdog |
 

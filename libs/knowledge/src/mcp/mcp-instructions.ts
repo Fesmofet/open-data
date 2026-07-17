@@ -21,6 +21,10 @@ Key paths:
 - docs/getting-started.md — local dev (Docker, migrate, pnpm nx serve)
 - docs/skills/hive-account-signup.md — new Hive account
 - docs/skills/hive-blockchain-broadcast.md — sign and broadcast chain ops
+- docs/skills/query-api-mcp-routing.md — live-data query-api MCP tools (incl. OBL reads)
+- docs/skills/obl-offers-contracts.md — OBL discover/publish/sign contracts
+- docs/skills/obl-ledger.md — OBL invoices, payments, balances
+- docs/skills/obl-disputes.md — OBL disputes and arbitration
 - docs/skills/build-tenant-site.md — create web project; fork apps/web (Next.js); never standalone .html; object-menu or custom UI + query-api
 - docs/apps/<app>/spec/ — feature specs
 

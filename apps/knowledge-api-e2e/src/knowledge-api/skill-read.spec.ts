@@ -76,6 +76,33 @@ describe('POST /knowledge/mcp — read skills', () => {
     expect(data.results.some((r) => r.file_path === PATHS.localDev)).toBe(true);
   });
 
+  it('get_context returns compact chunks for OBL offers and contracts', async () => {
+    const { data, isError } = await mcpCallTool<GetContextResponse>('get_context', {
+      topic: 'sign obl contract',
+      max_chunks: 8,
+    });
+    expect(isError).toBe(false);
+    expect(data.results.some((r) => r.file_path === PATHS.oblOffersContracts)).toBe(true);
+  });
+
+  it('get_context returns compact chunks for OBL ledger', async () => {
+    const { data, isError } = await mcpCallTool<GetContextResponse>('get_context', {
+      topic: 'obl pair balance',
+      max_chunks: 8,
+    });
+    expect(isError).toBe(false);
+    expect(data.results.some((r) => r.file_path === PATHS.oblLedger)).toBe(true);
+  });
+
+  it('get_context returns compact chunks for OBL disputes', async () => {
+    const { data, isError } = await mcpCallTool<GetContextResponse>('get_context', {
+      topic: 'resolve obl dispute',
+      max_chunks: 8,
+    });
+    expect(isError).toBe(false);
+    expect(data.results.some((r) => r.file_path === PATHS.oblDisputes)).toBe(true);
+  });
+
   it('get_file returns full markdown from discovered hive signup search path', async () => {
     const hit = await searchTopPath('hive account signup');
     const { data, isError } = await mcpCallTool<GetFileResponse>('get_file', {
@@ -98,6 +125,36 @@ describe('POST /knowledge/mcp — read skills', () => {
     expect(data.body).toContain('Hive blockchain broadcast (ODL)');
     expect(data.body).toContain('custom_json');
     expect(data.body).toContain('@hiveio/dhive');
+  });
+
+  it('get_file returns OBL offers and contracts skill with builders', async () => {
+    const { data, isError } = await mcpCallTool<GetFileResponse>('get_file', {
+      path: PATHS.oblOffersContracts,
+    });
+    expect(isError).toBe(false);
+    expect(data.body).toContain('OBL offers and contracts');
+    expect(data.body).toContain('buildOblContractSignOp');
+    expect(data.body).toContain('obl-mainnet');
+  });
+
+  it('get_file returns OBL ledger skill with balance tool', async () => {
+    const { data, isError } = await mcpCallTool<GetFileResponse>('get_file', {
+      path: PATHS.oblLedger,
+    });
+    expect(isError).toBe(false);
+    expect(data.body).toContain('OBL mutual ledger');
+    expect(data.body).toContain('get_obl_balance');
+    expect(data.body).toContain('buildOblInvoiceIssueOp');
+  });
+
+  it('get_file returns OBL disputes skill with arbitration', async () => {
+    const { data, isError } = await mcpCallTool<GetFileResponse>('get_file', {
+      path: PATHS.oblDisputes,
+    });
+    expect(isError).toBe(false);
+    expect(data.body).toContain('OBL disputes and arbitration');
+    expect(data.body).toContain('buildOblDisputeOpenOp');
+    expect(data.body).toContain('get_obl_arbitration');
   });
 
   it('get_file returns controlled error for missing path', async () => {

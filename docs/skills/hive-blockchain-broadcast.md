@@ -11,6 +11,9 @@ related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
+  - docs/skills/obl-offers-contracts.md
+  - docs/skills/obl-ledger.md
+  - docs/skills/obl-disputes.md
   - docs/spec/README.md
   - docs/apps/web/spec/object-create-broadcast.md
   - docs/apps/chain-indexer/spec/odl-pipeline.md
@@ -32,7 +35,12 @@ Build, sign, and broadcast Hive transactions for **ODL** (`custom_json` envelope
 
 - Account signup — [hive-account-signup.md](hive-account-signup.md).
 - Read-only queries — use **query-api** / Postgres (indexed state), not broadcast.
+- **OBL business lifecycle** (offers, contracts, invoices, payments, disputes) — use [obl-offers-contracts](obl-offers-contracts.md), [obl-ledger](obl-ledger.md), [obl-disputes](obl-disputes.md); those skills call `buildObl*` then return here for custody/sign.
 - Server-side auth login — [auth-api challenge flow](../apps/auth-api/spec/challenge-flow.md) (signature verify only, not chain write).
+
+### OBL envelopes (short)
+
+OBL `custom_json` ids are **`obl-mainnet` / `obl-testnet`** (not `odl-*`). Build with `@opden-data-layer/hive-broadcast` helpers: `buildOblOfferPublishOp`, `buildOblContractSignOp`, `buildOblInvoiceIssueOp`, `buildOblPaymentDeclareOp`, `buildOblPaymentConfirmOp`, `buildOblDisputeOpenOp`, `buildOblDisputeResolveOp`, etc. Full cycle playbooks: skills above.
 
 ## Key custody (decide with the user first)
 
@@ -303,6 +311,7 @@ MCP smoke:
 
 - [Hive account signup](hive-account-signup.md) — account + key custody choice
 - [Setup workspace](setup-workspace.md) — clone repo for libs
+- [OBL offers and contracts](obl-offers-contracts.md) · [OBL ledger](obl-ledger.md) · [OBL disputes](obl-disputes.md)
 - [Object create broadcast](../apps/web/spec/object-create-broadcast.md) — chunking / IPFS
 - [ODL pipeline](../apps/chain-indexer/spec/odl-pipeline.md) — what indexer accepts
 - [Objects domain](../spec/objects-domain.md) — ResolvedView after indexing
