@@ -5,6 +5,8 @@ export { BusinessRelationshipsClient } from './presentation/components/business-
 export { BusinessArbitrationClient } from './presentation/components/business-arbitration-client';
 export { BusinessRelationshipDetailClient } from './presentation/components/business-relationship-detail-client';
 export { BusinessContractClient } from './presentation/components/business-contract-client';
+export { BusinessInvoiceClient } from './presentation/components/business-invoice-client';
+export { BusinessDisputeClient } from './presentation/components/business-dispute-client';
 export { BusinessOfferDetailClient } from './presentation/components/business-offer-detail-client';
 export { PublicOffersListClient } from './presentation/components/public-offers-list-client';
 export { PublicOfferPageClient } from './presentation/components/public-offer-page-client';

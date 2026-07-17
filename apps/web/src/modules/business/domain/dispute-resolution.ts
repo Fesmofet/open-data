@@ -64,18 +64,6 @@ export function truncateText(value: string, maxLength: number): string {
   return `${value.slice(0, maxLength).trimEnd()}…`;
 }
 
-export function formatLedgerDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return iso;
-  }
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 export function formatUsdDisplay(value: string | null | undefined): string {
   if (value == null || value === '') {
     return '—';

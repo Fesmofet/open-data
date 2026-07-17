@@ -34,9 +34,17 @@ related:
 - **Payments tab** — `RelationshipPaymentRow` uses wallet history shell (`WalletHistoryRowShell` + `WaivWalletAmount` / `WalletDualAmount`): outgoing (viewer is payer) red with `-`, incoming green with `+`; amount formatting via `formatWalletHistoryQuantity` (same rules as WAIV history). When `declared_amount_usd !== amount_usd` (partial confirm), declared amount shown in neutral/black and confirmed amount with sign/color. Optional `ref` note (`note` / `memo` / `report`) shown under the row; `upvote_reward` rows with `ref.authorperm` link to the rewarded post.
 - **Dispute invoice** — disputable invoice rows show **Dispute** → `BusinessOpenDisputeModal`. After indexing, invoice state is `disputed` and appears in the Disputed balance card.
 - **Contracts tab** — cards with offer name, description (truncated to 300 chars), `contract_id`, `created_at`; link to contract detail.
-- **Invoices tab** — each row shows linked contract (offer name · id), `created_at`, state badge.
-- **Disputes tab** — lists disputes with `created_at`; open disputes show **Resolve dispute** for the authorized resolver per contract `dispute_rule` → `BusinessResolveDisputeModal` → `dispute_resolve`.
+- **Invoices tab** — each row shows linked contract (offer name · id) as a link to contract detail; `invoice_id` links to invoice detail; `created_at`, state badge.
+- **Disputes tab** — lists disputes with `created_at`; `dispute_id` and `invoice_id` link to detail pages; contract (via linked invoice) links to contract detail when present; open disputes show **Resolve dispute** for the authorized resolver per contract `dispute_rule` → `BusinessResolveDisputeModal` → `dispute_resolve`.
+
+## Invoice (`/business/invoices/:invoiceId`)
+
+`GET /query/v1/obl/invoices/:invoiceId` — parties, amounts, state, optional contract summary, relationship links.
+
+## Dispute (`/business/disputes/:disputeId`)
+
+`GET /query/v1/obl/disputes/:disputeId` — status, settlement summary, links to invoice and contract.
 
 ## Contract (`/business/contracts/:contractId`)
 
-`GET /query/v1/obl/contracts/:contractId` — offer link, provider/client, dispute rule.
+`GET /query/v1/obl/contracts/:contractId` — offer name/description when present, offer link, contract id, provider/client, dispute rule, arbiter (when set), created_at, transaction id, metadata.

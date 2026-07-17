@@ -38,11 +38,53 @@ export type OblContractApiRow = {
   dispute_rule: 'client' | 'provider' | 'arbiter';
   arbiter: string | null;
   metadata: Record<string, unknown>;
-  offer_name: string;
+  offer_name: string | null;
   offer_description: string | null;
   created_event_seq: string;
   created_at: string;
   transaction_id: string;
+};
+
+export type OblContractSummaryApiRow = OblContractApiRow;
+
+export type OblInvoiceApiRow = {
+  invoice_id: string;
+  contract_id: string | null;
+  issuer: string;
+  debtor: string;
+  creditor: string;
+  amount_usd: string;
+  final_amount_usd: string | null;
+  details: Record<string, unknown>;
+  state: string;
+  created_event_seq: string;
+  transaction_id: string;
+  created_at: string;
+};
+
+export type OblInvoiceDetailApiResponse = {
+  invoice: OblInvoiceApiRow;
+  contract: OblContractSummaryApiRow | null;
+};
+
+export type OblDisputeApiRow = {
+  dispute_id: string;
+  invoice_id: string;
+  disputant: string;
+  proposed_amount_usd: string;
+  status: 'open' | 'resolved';
+  final_amount_usd: string | null;
+  resolver: string | null;
+  created_event_seq: string;
+  resolved_event_seq: string | null;
+  transaction_id: string;
+  created_at: string;
+};
+
+export type OblDisputeDetailApiResponse = {
+  dispute: OblDisputeApiRow;
+  invoice: OblInvoiceApiRow;
+  contract: OblContractSummaryApiRow | null;
 };
 
 function ledgerPairTags(accountA: string, accountB: string): string[] {
@@ -150,6 +192,20 @@ export async function fetchOblContract(contractId: string) {
   return queryApiFetch<OblContractApiRow>(
     `/query/v1/obl/contracts/${encodeURIComponent(contractId)}`,
     { cacheTags: [queryApiCacheTags.oblContract(contractId)] },
+  );
+}
+
+export async function fetchOblInvoice(invoiceId: string) {
+  return queryApiFetch<OblInvoiceDetailApiResponse>(
+    `/query/v1/obl/invoices/${encodeURIComponent(invoiceId)}`,
+    { cacheTags: [queryApiCacheTags.oblInvoice(invoiceId)] },
+  );
+}
+
+export async function fetchOblDispute(disputeId: string) {
+  return queryApiFetch<OblDisputeDetailApiResponse>(
+    `/query/v1/obl/disputes/${encodeURIComponent(disputeId)}`,
+    { cacheTags: [queryApiCacheTags.oblDispute(disputeId)] },
   );
 }
 

@@ -9,6 +9,8 @@ export async function revalidateOblAfterBroadcast(
   counterparty?: string,
   options?: {
     contractId?: string;
+    invoiceId?: string;
+    disputeId?: string;
     discover?: boolean;
     drafts?: boolean;
     refreshArbitration?: boolean;
@@ -30,6 +32,12 @@ export async function revalidateOblAfterBroadcast(
   }
   if (options?.contractId) {
     updateTag(queryApiCacheTags.oblContract(options.contractId));
+  }
+  if (options?.invoiceId) {
+    updateTag(queryApiCacheTags.oblInvoice(options.invoiceId));
+  }
+  if (options?.disputeId) {
+    updateTag(queryApiCacheTags.oblDispute(options.disputeId));
   }
   if (options?.refreshArbitration) {
     updateTag(queryApiCacheTags.oblArbitration(account, 'open'));

@@ -57,6 +57,10 @@ export const businessRoutes = {
     buildRelationshipTabHref(account, tab),
   contract: (contractId: string) =>
     `/business/contracts/${encodeURIComponent(contractId)}`,
+  invoice: (invoiceId: string) =>
+    `/business/invoices/${encodeURIComponent(invoiceId)}`,
+  dispute: (disputeId: string) =>
+    `/business/disputes/${encodeURIComponent(disputeId)}`,
   publicOffer: (offerId: string, version: number) =>
     `/offers/${encodeURIComponent(offerId)}/versions/${version}`,
   publicRequest: (offerId: string, version: number) =>

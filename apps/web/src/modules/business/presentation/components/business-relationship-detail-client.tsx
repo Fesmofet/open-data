@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useOblCustomJsonId } from '@/config/odl-network-provider';
+import { ActivityTimestamp } from '@/modules/user-activity/presentation/components/activity-timestamp';
 import { OptimisticTabButton } from '@/shared/presentation';
 
 import {
@@ -19,7 +20,6 @@ import {
   canViewerResolveDispute,
   disputeAuthorityForInvoice,
   findInvoiceForDispute,
-  formatLedgerDate,
   formatUsdDisplay,
   shortContractId,
   truncateText,
@@ -130,6 +130,13 @@ function contractLabel(
     return contractId;
   }
   return `${contract.offer_name} · ${shortContractId(contract.contract_id)}`;
+}
+
+function contractHref(contractId: string | null | undefined): string | null {
+  if (!contractId) {
+    return null;
+  }
+  return businessRoutes.contract(contractId);
 }
 
 export function BusinessRelationshipDetailClient({
@@ -369,7 +376,8 @@ export function BusinessRelationshipDetailClient({
                   ) : null}
                   <p className="mt-2 font-mono text-caption text-fg-secondary">{c.contract_id}</p>
                   <p className="mt-1 text-caption text-fg-secondary">
-                    {t('business_field_created_at')}: {formatLedgerDate(c.created_at)}
+                    {t('business_field_created_at')}:{' '}
+                    <ActivityTimestamp timestamp={c.created_at} />
                   </p>
                 </Link>
               ))}
@@ -385,6 +393,7 @@ export function BusinessRelationshipDetailClient({
                 const detailSummary = invoiceDetailSummary(inv.details);
                 const disputable = canDisputeInvoice(inv, username, disputes);
                 const linkedContract = contractLabel(inv.contract_id, contracts);
+                const linkedContractUrl = contractHref(inv.contract_id);
                 const showSettled =
                   inv.state === 'resolved' &&
                   inv.final_amount_usd != null &&
@@ -396,7 +405,12 @@ export function BusinessRelationshipDetailClient({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span>
-                        {inv.invoice_id}
+                        <Link
+                          href={businessRoutes.invoice(inv.invoice_id)}
+                          className="text-link"
+                        >
+                          {inv.invoice_id}
+                        </Link>
                         {showSettled ? (
                           <>
                             {' '}
@@ -414,11 +428,19 @@ export function BusinessRelationshipDetailClient({
                     </p>
                     {linkedContract ? (
                       <p className="mt-1 text-caption text-fg-secondary">
-                        {t('business_invoice_contract_label')}: {linkedContract}
+                        {t('business_invoice_contract_label')}:{' '}
+                        {linkedContractUrl ? (
+                          <Link href={linkedContractUrl} className="text-link">
+                            {linkedContract}
+                          </Link>
+                        ) : (
+                          linkedContract
+                        )}
                       </p>
                     ) : null}
                     <p className="mt-1 text-caption text-fg-secondary">
-                      {t('business_field_created_at')}: {formatLedgerDate(inv.created_at)}
+                      {t('business_field_created_at')}:{' '}
+                      <ActivityTimestamp timestamp={inv.created_at} />
                     </p>
                     {detailSummary ? (
                       <p className="mt-2 text-caption text-fg-secondary">{detailSummary}</p>
@@ -469,21 +491,44 @@ export function BusinessRelationshipDetailClient({
               {disputes.map((d) => {
                 const resolvable = canViewerResolveDispute(username, d, invoices, contracts);
                 const linkedInvoice = findInvoiceForDispute(d, invoices);
+                const linkedContract = contractLabel(linkedInvoice?.contract_id, contracts);
+                const linkedContractUrl = contractHref(linkedInvoice?.contract_id);
                 return (
                   <div
                     key={d.dispute_id}
                     className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span>{d.dispute_id}</span>
+                      <Link
+                        href={businessRoutes.dispute(d.dispute_id)}
+                        className="text-link"
+                      >
+                        {d.dispute_id}
+                      </Link>
                       <StateBadge variant={d.status === 'open' ? 'disputed' : 'resolved'} />
                     </div>
                     <p className="mt-1 text-caption text-fg-secondary">
-                      {t('business_field_invoice')}: {d.invoice_id}
+                      {t('business_field_invoice')}:{' '}
+                      <Link href={businessRoutes.invoice(d.invoice_id)} className="text-link">
+                        {d.invoice_id}
+                      </Link>
                     </p>
+                    {linkedContract ? (
+                      <p className="mt-1 text-caption text-fg-secondary">
+                        {t('business_invoice_contract_label')}:{' '}
+                        {linkedContractUrl ? (
+                          <Link href={linkedContractUrl} className="text-link">
+                            {linkedContract}
+                          </Link>
+                        ) : (
+                          linkedContract
+                        )}
+                      </p>
+                    ) : null}
                     <DisputeSettlementSummary dispute={d} invoice={linkedInvoice} />
                     <p className="mt-2 text-caption text-fg-secondary">
-                      {t('business_field_created_at')}: {formatLedgerDate(d.created_at)}
+                      {t('business_field_created_at')}:{' '}
+                      <ActivityTimestamp timestamp={d.created_at} />
                     </p>
                     {resolvable ? (
                       <button

@@ -127,4 +127,14 @@ export class OblController {
   async getContract(@Param('contractId') contractId: string) {
     return this.relationships.getContract(contractId);
   }
+
+  @Get('invoices/:invoiceId')
+  async getInvoice(@Param('invoiceId') invoiceId: string) {
+    return this.relationships.getInvoice(invoiceId);
+  }
+
+  @Get('disputes/:disputeId')
+  async getDispute(@Param('disputeId') disputeId: string) {
+    return this.relationships.getDispute(disputeId);
+  }
 }

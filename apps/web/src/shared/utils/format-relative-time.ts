@@ -1,6 +1,20 @@
 import type { LocaleId } from '@/i18n/types';
 
 /**
+ * Absolute local date+time for detail views (not list cards).
+ */
+export function formatAbsoluteDateTime(iso: string, locale: LocaleId): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    return iso;
+  }
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(d);
+}
+
+/**
  * Relative time for feed cards and notifications; falls back to medium date for older items.
  */
 export function formatRelativeFeedTime(iso: string, locale: LocaleId): string {

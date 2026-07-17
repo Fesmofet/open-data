@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { ActivityTimestamp } from '@/modules/user-activity/presentation/components/activity-timestamp';
 import { useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
 
 import {
@@ -174,7 +175,9 @@ export function BusinessOffersListClient({
                       </p>
                       <p className="text-caption text-fg-secondary">
                         {t('business_last_edited')}{' '}
-                        {new Date(draft.lastUpdated * 1000).toLocaleString()}
+                        <ActivityTimestamp
+                          timestamp={new Date(draft.lastUpdated * 1000).toISOString()}
+                        />
                       </p>
                     </div>
                     <Link

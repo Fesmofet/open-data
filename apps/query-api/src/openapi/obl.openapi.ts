@@ -121,6 +121,16 @@ const oblContractSchema = registry.register(
   }),
 );
 
+const oblContractDetailSchema = registry.register(
+  'OblContractDetail',
+  oblContractSchema.extend({
+    metadata: z.unknown(),
+    offer_name: z.string().nullable(),
+    offer_description: z.string().nullable(),
+    created_at: z.string(),
+  }),
+);
+
 const oblArbitrationRowSchema = registry.register(
   'OblArbitrationRow',
   z.object({
@@ -139,6 +149,37 @@ const oblArbitrationRowSchema = registry.register(
       provider: z.string(),
       client: z.string(),
     }),
+  }),
+);
+
+const oblContractSummarySchema = registry.register(
+  'OblContractSummary',
+  oblContractSchema.extend({
+    metadata: z.unknown(),
+    offer_name: z.string().nullable(),
+    offer_description: z.string().nullable(),
+    created_at: z.string(),
+  }),
+);
+
+const oblInvoiceDetailSchema = registry.register(
+  'OblInvoiceDetail',
+  z.object({
+    invoice: oblInvoiceSchema.extend({ issuer: z.string() }),
+    contract: oblContractSummarySchema.nullable(),
+  }),
+);
+
+const oblDisputeDetailSchema = registry.register(
+  'OblDisputeDetail',
+  z.object({
+    dispute: oblDisputeSchema.extend({
+      disputant: z.string(),
+      resolver: z.string().nullable(),
+      resolved_event_seq: z.string().nullable(),
+    }),
+    invoice: oblInvoiceSchema.extend({ issuer: z.string() }),
+    contract: oblContractSummarySchema.nullable(),
   }),
 );
 
@@ -458,8 +499,48 @@ registry.registerPath({
   },
   responses: {
     200: {
-      description: 'Contract row',
-      content: { 'application/json': { schema: oblContractSchema } },
+      description: 'Contract row with offer summary',
+      content: { 'application/json': { schema: oblContractDetailSchema } },
+    },
+    404: {
+      description: 'Not found',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/invoices/{invoiceId}',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Get one OBL invoice by id with optional contract summary',
+  request: {
+    params: z.object({ invoiceId: z.string() }),
+  },
+  responses: {
+    200: {
+      description: 'Invoice detail row',
+      content: { 'application/json': { schema: oblInvoiceDetailSchema } },
+    },
+    404: {
+      description: 'Not found',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/disputes/{disputeId}',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Get one OBL dispute by id with linked invoice and contract',
+  request: {
+    params: z.object({ disputeId: z.string() }),
+  },
+  responses: {
+    200: {
+      description: 'Dispute detail row',
+      content: { 'application/json': { schema: oblDisputeDetailSchema } },
     },
     404: {
       description: 'Not found',

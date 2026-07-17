@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useOblCustomJsonId } from '@/config/odl-network-provider';
+import { ActivityTimestamp } from '@/modules/user-activity/presentation/components/activity-timestamp';
 import { OptimisticNavLink, useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
 
 import { buildResolveDisputeOp } from '../../application/build-obl-ops';
@@ -12,7 +13,6 @@ import {
   buildArbitrationHref,
   type ArbitrationStatus,
 } from '../../domain/arbitration-status-url';
-import { formatLedgerDate } from '../../domain/dispute-resolution';
 import type { DisputeAuthority } from '../../domain/dispute-resolution';
 import type {
   LedgerContractRow,
@@ -180,7 +180,8 @@ export function BusinessArbitrationClient({
                           @{row.pair.provider} ↔ @{row.pair.client}
                         </p>
                         <p className="text-caption text-fg-secondary">
-                          {row.offerName} · {formatLedgerDate(row.dispute.created_at)}
+                          {row.offerName} ·{' '}
+                          <ActivityTimestamp timestamp={row.dispute.created_at} />
                         </p>
                         <DisputeSettlementSummary
                           dispute={row.dispute}

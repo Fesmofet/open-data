@@ -38,6 +38,8 @@ Domain: `apps/query-api/src/domain/obl/`
 | GET | `/query/v1/obl/ledger/payments|invoices|contracts|disputes` | Cursor pages: `limit`, `cursor?` |
 | GET | `/query/v1/obl/balance?accountA=&accountB=` |
 | GET | `/query/v1/obl/contracts/:contractId` |
+| GET | `/query/v1/obl/invoices/:invoiceId` |
+| GET | `/query/v1/obl/disputes/:disputeId` |
 | GET | `/query/v1/obl/convert/usd-to-waiv?amountUsd=` |
 
 ## MCP tools

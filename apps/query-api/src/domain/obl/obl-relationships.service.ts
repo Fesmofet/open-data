@@ -4,11 +4,29 @@ import { OblRepository } from '../../repositories/obl.repository';
 import { computePairBalance } from './compute-pair-balance';
 import { buildOffsetPage, type OffsetPage } from './obl-pagination';
 import {
+  serializeOblContract,
+  serializeOblDispute,
+  serializeOblInvoice,
+} from './obl-row-serialize';
+import {
   filterByLedgerCutoff,
   normalizePair,
   pairKey,
 } from './obl-pair-utils';
 import type { ListOblRelationshipsQuery } from './obl.schemas';
+
+export type OblContractSummary = ReturnType<typeof serializeOblContract>;
+
+export type OblInvoiceDetailRow = {
+  invoice: ReturnType<typeof serializeOblInvoice>;
+  contract: OblContractSummary | null;
+};
+
+export type OblDisputeDetailRow = {
+  dispute: ReturnType<typeof serializeOblDispute>;
+  invoice: ReturnType<typeof serializeOblInvoice>;
+  contract: OblContractSummary | null;
+};
 
 export type OblRelationshipRow = {
   counterparty: string;
@@ -115,10 +133,59 @@ export class OblRelationshipsService {
   }
 
   async getContract(contractId: string) {
-    const contract = await this.obl.findContract(contractId);
+    const contract = await this.obl.findContractWithOffer(contractId);
     if (!contract) {
       throw new NotFoundException('OBL contract not found');
     }
-    return contract;
+    return serializeOblContract(
+      contract,
+      contract.offer_name,
+      contract.offer_description,
+    );
+  }
+
+  async getInvoice(invoiceId: string): Promise<OblInvoiceDetailRow> {
+    const invoice = await this.obl.findInvoiceById(invoiceId);
+    if (!invoice) {
+      throw new NotFoundException('OBL invoice not found');
+    }
+    const contractRow = invoice.contract_id
+      ? await this.obl.findContractWithOffer(invoice.contract_id)
+      : null;
+    return {
+      invoice: serializeOblInvoice(invoice),
+      contract: contractRow
+        ? serializeOblContract(
+            contractRow,
+            contractRow.offer_name,
+            contractRow.offer_description,
+          )
+        : null,
+    };
+  }
+
+  async getDispute(disputeId: string): Promise<OblDisputeDetailRow> {
+    const dispute = await this.obl.findDisputeById(disputeId);
+    if (!dispute) {
+      throw new NotFoundException('OBL dispute not found');
+    }
+    const invoice = await this.obl.findInvoiceById(dispute.invoice_id);
+    if (!invoice) {
+      throw new NotFoundException('OBL invoice not found');
+    }
+    const contractRow = invoice.contract_id
+      ? await this.obl.findContractWithOffer(invoice.contract_id)
+      : null;
+    return {
+      dispute: serializeOblDispute(dispute),
+      invoice: serializeOblInvoice(invoice),
+      contract: contractRow
+        ? serializeOblContract(
+            contractRow,
+            contractRow.offer_name,
+            contractRow.offer_description,
+          )
+        : null,
+    };
   }
 }

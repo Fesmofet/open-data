@@ -742,6 +742,43 @@ export class OblRepository {
     return row ?? null;
   }
 
+  async findContractWithOffer(
+    contractId: string,
+  ): Promise<
+    (OblContract & { offer_name: string | null; offer_description: string | null }) | null
+  > {
+    const row = await this.db
+      .selectFrom('obl_contracts as c')
+      .leftJoin('obl_offers as o', (join) =>
+        join
+          .onRef('o.offer_id', '=', 'c.offer_id')
+          .onRef('o.version', '=', 'c.offer_version'),
+      )
+      .selectAll('c')
+      .select(['o.name as offer_name', 'o.description as offer_description'])
+      .where('c.contract_id', '=', contractId)
+      .executeTakeFirst();
+    return row ?? null;
+  }
+
+  async findInvoiceById(invoiceId: string): Promise<OblInvoice | null> {
+    const row = await this.db
+      .selectFrom('obl_invoices')
+      .selectAll()
+      .where('invoice_id', '=', invoiceId)
+      .executeTakeFirst();
+    return row ?? null;
+  }
+
+  async findDisputeById(disputeId: string): Promise<OblDispute | null> {
+    const row = await this.db
+      .selectFrom('obl_disputes')
+      .selectAll()
+      .where('dispute_id', '=', disputeId)
+      .executeTakeFirst();
+    return row ?? null;
+  }
+
   async listCounterpartiesForAccount(account: string): Promise<string[]> {
     const asProvider = await this.db
       .selectFrom('obl_contracts')
