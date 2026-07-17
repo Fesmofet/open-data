@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "@opden-data-layer/core": ["../../libs/core/src/index.ts"],
@@ -40,10 +39,18 @@
       ],
       "@opden-data-layer/migrations": ["../../libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["../../libs/clients/src/index.ts"],
-      "@opden-data-layer/objects-domain": ["../../libs/objects-domain/src/index.ts"],
-      "@opden-data-layer/site-canonical": ["../../libs/site-canonical/src/index.ts"],
-      "@opden-data-layer/hive-processor": ["../../libs/hive-processor/src/index.ts"],
-      "@opden-data-layer/hive-broadcast": ["../../libs/hive-broadcast/src/index.ts"]
+      "@opden-data-layer/objects-domain": [
+        "../../libs/objects-domain/src/index.ts"
+      ],
+      "@opden-data-layer/site-canonical": [
+        "../../libs/site-canonical/src/index.ts"
+      ],
+      "@opden-data-layer/hive-processor": [
+        "../../libs/hive-processor/src/index.ts"
+      ],
+      "@opden-data-layer/hive-broadcast": [
+        "../../libs/hive-broadcast/src/index.ts"
+      ]
     },
     "jsx": "preserve",
     "strict": true,

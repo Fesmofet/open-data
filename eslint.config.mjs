@@ -39,4 +39,11 @@ export default [
     // Override or add rules here
     rules: {},
   },
+  {
+    // Nest apps share apps/nest-webpack.shared.js via relative require.
+    files: ['**/webpack.config.js', '**/webpack.config.*.js'],
+    rules: {
+      '@nx/enforce-module-boundaries': 'off',
+    },
+  },
 ];

@@ -28,7 +28,7 @@ export class UserObjectExpertiseRepository {
     account: string,
     scope: UserExpertiseScope,
   ) {
-    let q = this.db
+    const q = this.db
       .selectFrom('user_object_expertise')
       .innerJoin('objects_core', 'objects_core.object_id', 'user_object_expertise.object_id')
       .where('user_object_expertise.account', '=', account)

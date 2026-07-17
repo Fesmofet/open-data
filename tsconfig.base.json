@@ -4,7 +4,7 @@
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -13,54 +13,57 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "baseUrl": ".",
     "paths": {
-      "@opden-data-layer/core": ["libs/core/src/index.ts"],
+      "@opden-data-layer/core": ["./libs/core/src/index.ts"],
       "@opden-data-layer/core/object-type-registry": [
-        "libs/core/src/object-type-registry/index.ts"
+        "./libs/core/src/object-type-registry/index.ts"
       ],
       "@opden-data-layer/core/update-registry": [
-        "libs/core/src/update-registry/index.ts"
+        "./libs/core/src/update-registry/index.ts"
       ],
       "@opden-data-layer/core/update-types": [
-        "libs/core/src/update-registry/update-types.ts"
+        "./libs/core/src/update-registry/update-types.ts"
       ],
       "@opden-data-layer/core/post-related-images": [
-        "libs/core/src/post-related-images/index.ts"
+        "./libs/core/src/post-related-images/index.ts"
       ],
       "@opden-data-layer/core/hive-account-history": [
-        "libs/core/src/hive-account-history/index.ts"
+        "./libs/core/src/hive-account-history/index.ts"
       ],
       "@opden-data-layer/core/hive-engine-history": [
-        "libs/core/src/hive-engine-history/index.ts"
+        "./libs/core/src/hive-engine-history/index.ts"
       ],
       "@opden-data-layer/core/hive-advanced-report": [
-        "libs/core/src/hive-advanced-report/index.ts"
+        "./libs/core/src/hive-advanced-report/index.ts"
       ],
       "@opden-data-layer/core/waiv-advanced-report": [
-        "libs/core/src/waiv-advanced-report/index.ts"
+        "./libs/core/src/waiv-advanced-report/index.ts"
       ],
       "@opden-data-layer/core/constants": [
-        "libs/core/src/constants/index.ts"
+        "./libs/core/src/constants/index.ts"
       ],
       "@opden-data-layer/core/utils/numeric-string": [
-        "libs/core/src/utils/numeric-string.ts"
+        "./libs/core/src/utils/numeric-string.ts"
       ],
-      "@opden-data-layer/migrations": ["libs/migrations/src/index.ts"],
-      "@opden-data-layer/clients": ["libs/clients/src/index.ts"],
-      "@opden-data-layer/objects-domain": ["libs/objects-domain/src/index.ts"],
-      "@opden-data-layer/site-canonical": ["libs/site-canonical/src/index.ts"],
-      "@opden-data-layer/hive-processor": ["libs/hive-processor/src/index.ts"],
-      "@opden-data-layer/hive-broadcast": ["libs/hive-broadcast/src/index.ts"],
+      "@opden-data-layer/migrations": ["./libs/migrations/src/index.ts"],
+      "@opden-data-layer/clients": ["./libs/clients/src/index.ts"],
+      "@opden-data-layer/objects-domain": ["./libs/objects-domain/src/index.ts"],
+      "@opden-data-layer/site-canonical": ["./libs/site-canonical/src/index.ts"],
+      "@opden-data-layer/hive-processor": ["./libs/hive-processor/src/index.ts"],
+      "@opden-data-layer/hive-broadcast": ["./libs/hive-broadcast/src/index.ts"],
       "@opden-data-layer/hive-engine-processor": [
-        "libs/hive-engine-processor/src/index.ts"
+        "./libs/hive-engine-processor/src/index.ts"
       ],
-      "@opden-data-layer/currency": ["libs/currency/src/index.ts"],
+      "@opden-data-layer/currency": ["./libs/currency/src/index.ts"],
       "@opden-data-layer/notifications-contract": [
-        "libs/notifications-contract/src/index.ts"
+        "./libs/notifications-contract/src/index.ts"
       ],
-      "@opden-data-layer/knowledge": ["libs/knowledge/src/index.ts"]
-    }
+      "@opden-data-layer/knowledge": ["./libs/knowledge/src/index.ts"]
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "esModuleInterop": true
   },
   "exclude": ["node_modules", "tmp"]
 }

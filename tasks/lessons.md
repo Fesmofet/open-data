@@ -31,3 +31,21 @@
 **Pattern:** `created_at_unix` (or offsets) may round-trip through JSON as **strings**. Strict `z.number()` in `decodeUpdatesCursor` fails → cursor is dropped → every “load more” repeats the **first page** → broken global order and “infinite” pagination.
 
 **Rule:** Use **`z.coerce.number().int()`** in cursor payloads; **`Number()` / `Math.trunc`** when encoding and before keyset `WHERE`. If encoding fails, return **`hasMore: false`** so the client stops. Optionally **dedupe by `update_id`** when appending on the client.
+
+## TypeScript 6: paths without baseUrl
+
+**Pattern:** Removing `baseUrl` without rewriting `paths` to `./…` relative entries → `TS5090` and Nx graph plugin parse failures.
+
+**Rule:** Every `paths` value must start with `./` or `../` relative to the tsconfig that owns it. Prefer Node/`Write` for JSON (no UTF-8 BOM); PowerShell `Set-Content`/`ConvertTo-Json` can inject BOM and break Nx.
+
+## TypeScript 6 + ts-jest
+
+**Pattern:** ts-jest ≤29.4.9 forces `moduleResolution: node10` on the CJS path → `TS5107` under TypeScript 6 even when specs say `bundler`.
+
+**Rule:** Use **ts-jest ≥29.4.11**, keep `moduleResolution: "bundler"` in `tsconfig.spec.json`, and do **not** rely on `ignoreDeprecations`.
+
+## webpack-cli 7
+
+**Pattern:** Nest `project.json` still passing `--node-env=production` fails after Nx migrate bumps webpack-cli to 7.
+
+**Rule:** Use `--config-node-env=production` / `development` instead.

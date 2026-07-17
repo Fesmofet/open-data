@@ -7,8 +7,8 @@ export function formatHiveReputation(rawReputation: number | undefined): number 
     return 25;
   }
 
-  let neg = rawReputation < 0;
-  let rep = neg ? -rawReputation : rawReputation;
+  const neg = rawReputation < 0;
+  const rep = neg ? -rawReputation : rawReputation;
   let logRep = Math.log10(rep);
   logRep = Math.max(logRep - 9, 0);
   if (logRep < 0) {

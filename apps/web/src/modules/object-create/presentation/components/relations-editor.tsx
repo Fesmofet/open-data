@@ -106,7 +106,7 @@ export function RelationsEditor({
                     });
                     onUpdateField(entry.entryKey, v);
                   }}
-                  onValidityChange={() => {}}
+                  onValidityChange={() => undefined}
                   hideUpdateTypeHeading={false}
                 />
                 {duplicateMessage ? (
