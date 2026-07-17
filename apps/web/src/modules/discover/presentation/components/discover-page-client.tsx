@@ -35,7 +35,7 @@ function DiscoverPageContent({ viewerUsername = null }: DiscoverPageClientProps)
     !usersMode && objectType != null && objectTypeHasTagCategoryFilters(objectType);
 
   return (
-    <div className="mx-auto w-full max-w-container-page px-gutter sm:px-gutter-sm">
+    <div className="mx-auto w-full max-w-container-page px-gutter pt-section-y-sm sm:px-gutter-sm">
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
         <DiscoverSidebar usersMode={usersMode} objectType={objectType} q={q} sort={sort} />
         <div className="relative z-10 min-w-0">

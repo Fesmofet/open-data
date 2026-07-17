@@ -50,7 +50,7 @@ export function AppSectionNav() {
       <ShellInset>
         <nav
           aria-label={t('app_section_nav_aria')}
-          className="flex flex-wrap items-end gap-x-2 gap-y-1"
+          className="flex flex-wrap items-end justify-center gap-x-2 gap-y-1"
         >
           {TABS.map((tab) => {
             const active = tab.isActive(pathname);
