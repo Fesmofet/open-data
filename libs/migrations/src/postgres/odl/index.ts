@@ -40,6 +40,7 @@ import * as m00039 from './00039_obl_payments_contract_and_created_at';
 import * as m00040 from './00040_obl_payments_declared_amount';
 import * as m00041 from './00041_obl_list_indexes';
 import * as m00042 from './00042_obl_arbitration_indexes';
+import * as m00043 from './00043_object_status_closed_privacy_erasure';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -92,4 +93,8 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00040_obl_payments_declared_amount': { up: m00040.up, down: m00040.down },
   '00041_obl_list_indexes': { up: m00041.up, down: m00041.down },
   '00042_obl_arbitration_indexes': { up: m00042.up, down: m00042.down },
+  '00043_object_status_closed_privacy_erasure': {
+    up: m00043.up,
+    down: m00043.down,
+  },
 };

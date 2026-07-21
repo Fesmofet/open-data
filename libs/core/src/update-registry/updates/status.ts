@@ -6,11 +6,17 @@ export const OBJECT_STATUS_VALUES = [
   'active',
   'relisted',
   'unavailable',
+  'closed',
+  'privacy_erasure',
   'nsfw',
   'flagged',
 ] as const;
 
 export type ObjectStatus = (typeof OBJECT_STATUS_VALUES)[number];
+
+/** Statuses allowed on direct object page resolve (`/object/:id`). Currently all values. */
+export const OBJECT_PAGE_VISIBLE_STATUSES: readonly ObjectStatus[] =
+  OBJECT_STATUS_VALUES;
 
 export const UPDATE_STATUS_SCHEMA = z
   .object({

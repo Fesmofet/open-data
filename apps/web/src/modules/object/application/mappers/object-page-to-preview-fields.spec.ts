@@ -13,6 +13,7 @@ function minimalModel(
     avatarUrl: 'https://cdn.example/avatar.jpg',
     coverImageUrl: null,
     kindLabel: 'shop',
+    lifecycleStatus: 'active',
     tagline: null,
     displayWeightLabel: null,
     objectTypeKey: 'shop',

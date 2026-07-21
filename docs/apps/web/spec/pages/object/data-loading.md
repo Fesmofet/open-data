@@ -36,7 +36,11 @@ Wrapped in **`react.cache()`** — shared by metadata and page body.
 - **`viewer`** — cookie auth username or `null` → `X-Viewer`
 - **`includeSeo: true`** for metadata path — see [seo.md](../../seo.md)
 
-### Fallback
+### Query API visibility
+
+Object page resolve (`POST /query/v1/objects/resolve`) loads **any** `objects_core.status`. Search, discover, favorites, and nested/ref cards of other objects still restrict to `status = 'active'`. Non-active objects show a lifecycle badge in the hero when `status !== 'active'`.
+
+## Fallback
 
 - Demo objects: `DEMO_OBJECT_IDS` → `mockModelFromDemoPreset` when API returns null
 - Missing object → `notFound()` in `page.tsx`

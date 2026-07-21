@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OBJECT_PAGE_VISIBLE_STATUSES } from '@opden-data-layer/core';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
@@ -40,7 +41,10 @@ export class GetObjectByIdEndpoint {
   async execute(input: GetObjectByIdInput): Promise<ProjectedObjectWithCounts | null> {
     const { objects, voterWaivPowers, rankVoteProjection } = await this.aggregatedObjectRepo.loadByObjectIds(
       [input.objectId],
-      { viewerAccount: input.viewerAccount },
+      {
+        viewerAccount: input.viewerAccount,
+        statuses: OBJECT_PAGE_VISIBLE_STATUSES,
+      },
     );
     const agg = objects[0];
     if (!agg) {

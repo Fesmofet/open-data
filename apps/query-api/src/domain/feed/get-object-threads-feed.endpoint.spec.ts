@@ -48,7 +48,7 @@ function threadRow(author: string, permlink: string, created_unix: number): Thre
 
 describe('GetObjectThreadsFeedEndpoint', () => {
   let threadsRepo: jest.Mocked<Pick<ThreadsRepository, 'findObjectThreadsFeed'>>;
-  let objectsCoreRepo: jest.Mocked<Pick<ObjectsCoreRepository, 'findByObjectId'>>;
+  let objectsCoreRepo: jest.Mocked<Pick<ObjectsCoreRepository, 'findByObjectIdForPage'>>;
   let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByNames'>>;
   let userAccountMutesRepo: jest.Mocked<Pick<UserAccountMutesRepository, 'listMutedForMuters'>>;
   let endpoint: GetObjectThreadsFeedEndpoint;
@@ -58,7 +58,7 @@ describe('GetObjectThreadsFeedEndpoint', () => {
       findObjectThreadsFeed: jest.fn().mockResolvedValue([]),
     };
     objectsCoreRepo = {
-      findByObjectId: jest.fn().mockResolvedValue({ object_id: 'waivio', object_type: 'hashtag' }),
+      findByObjectIdForPage: jest.fn().mockResolvedValue({ object_id: 'waivio', object_type: 'hashtag' }),
     };
     accounts = { findByNames: jest.fn() };
     userAccountMutesRepo = {
@@ -84,7 +84,7 @@ describe('GetObjectThreadsFeedEndpoint', () => {
   });
 
   it('returns null when object does not exist', async () => {
-    objectsCoreRepo.findByObjectId.mockResolvedValue(undefined);
+    objectsCoreRepo.findByObjectIdForPage.mockResolvedValue(undefined);
     await expect(
       endpoint.execute('missing', { limit: 20, sort: 'latest', currency: 'USD' }),
     ).resolves.toBeNull();

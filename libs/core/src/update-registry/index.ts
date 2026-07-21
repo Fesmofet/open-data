@@ -72,6 +72,7 @@ export { UPDATE_CONTENT_POSITION } from './updates/content-position';
 export { UPDATE_HTML_CONTENT } from './updates/html-content';
 export { UPDATE_CONTENT_VIEW } from './updates/content-view';
 export {
+  OBJECT_PAGE_VISIBLE_STATUSES,
   OBJECT_STATUS_VALUES,
   type ObjectStatus,
   UPDATE_STATUS,

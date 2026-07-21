@@ -25,6 +25,8 @@ export type ObjectHeroProps = {
   tagline: string | null;
   displayWeightLabel: string | null;
   kindLabel: string;
+  /** Translated lifecycle status badge when not `active`. */
+  statusBadgeLabel: string | null;
   isEditMode: boolean;
   isFollowing: boolean;
   isBell: boolean;
@@ -82,6 +84,7 @@ export function ObjectHero({
   tagline,
   displayWeightLabel,
   kindLabel,
+  statusBadgeLabel,
   isEditMode,
   isFollowing,
   isBell,
@@ -235,6 +238,16 @@ export function ObjectHero({
                   </span>
                 ) : null}
               </div>
+              {statusBadgeLabel ? (
+                <p
+                  className={[
+                    'mt-1 text-caption font-weight-label uppercase tracking-caption text-error',
+                    hasCoverPhoto ? 'hero-on-photo-status' : '',
+                  ].join(' ')}
+                >
+                  {statusBadgeLabel}
+                </p>
+              ) : null}
               {subtitleTitle != null || canEditTitle ? (
                 canEditTitle ? (
                   <button

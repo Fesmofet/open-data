@@ -29,7 +29,7 @@ export class GetObjectThreadsFeedEndpoint {
       return null;
     }
 
-    const core = await this.objectsCoreRepo.findByObjectId(trimmedId);
+    const core = await this.objectsCoreRepo.findByObjectIdForPage(trimmedId);
     if (!core) {
       return null;
     }

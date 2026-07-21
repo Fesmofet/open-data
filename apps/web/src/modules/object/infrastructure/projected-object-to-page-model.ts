@@ -744,6 +744,10 @@ export function projectedObjectWithCountsToPageModel(
     avatarUrl: objectFields.image(viewLike) ?? null,
     coverImageUrl: coverImageUrl(fields),
     kindLabel,
+    lifecycleStatus:
+      typeof api.status === 'string' && api.status.trim().length > 0
+        ? api.status.trim()
+        : 'active',
     tagline,
     displayWeightLabel:
       api.weight != null && Number.isFinite(api.weight)

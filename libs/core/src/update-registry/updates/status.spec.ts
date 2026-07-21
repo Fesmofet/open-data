@@ -22,7 +22,14 @@ describe('UPDATE_STATUS_SCHEMA', () => {
   });
 
   it('accepts non-relisted statuses without link', () => {
-    for (const title of ['active', 'unavailable', 'nsfw', 'flagged'] as const) {
+    for (const title of [
+      'active',
+      'unavailable',
+      'closed',
+      'privacy_erasure',
+      'nsfw',
+      'flagged',
+    ] as const) {
       expect(
         UPDATE_STATUS_SCHEMA.safeParse({ title }).success,
       ).toBe(true);

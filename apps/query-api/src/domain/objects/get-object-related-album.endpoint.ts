@@ -54,7 +54,7 @@ export class ObjectRelatedAlbumQuerySupport {
     locale: string,
     governanceObjectIdFromHeader?: string,
   ): Promise<string[] | null> {
-    const core = await this.objectsCore.findByObjectId(objectId);
+    const core = await this.objectsCore.findByObjectIdForPage(objectId);
     if (!core) {
       return null;
     }

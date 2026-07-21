@@ -6,6 +6,7 @@ import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { objectStatusLabelKey } from '@/modules/object/domain/object-status-label';
 
 import {
   parseStatusFormValue,
@@ -15,13 +16,6 @@ import {
 import { validateUpdateValue } from '../../application/update-value-form.utils';
 import { ObjectRefSearchField } from './object-ref-search-field';
 
-const STATUS_LABEL_KEYS: Record<SelectableStatusValue, string> = {
-  unavailable: 'unavailable',
-  relisted: 'relisted',
-  nsfw: 'append_form_NSFW',
-  flagged: 'append_form_flagged',
-};
-
 export type StatusUpdateFormProps = {
   value: unknown;
   onChange: (value: unknown) => void;
@@ -30,6 +24,8 @@ export type StatusUpdateFormProps = {
   label?: string;
   /** Current object id — excluded from relisted target picker. */
   excludeObjectId?: string;
+  /** Registry object type for type-dependent status labels (e.g. closed). */
+  objectType?: string;
 };
 
 export function StatusUpdateForm({
@@ -39,6 +35,7 @@ export function StatusUpdateForm({
   hideLegend = false,
   label,
   excludeObjectId,
+  objectType,
 }: StatusUpdateFormProps) {
   const { t } = useI18n();
   const definition = UPDATE_REGISTRY[UPDATE_TYPES.STATUS];
@@ -82,7 +79,7 @@ export function StatusUpdateForm({
         >
           {STATUS_FORM_SELECTABLE_VALUES.map((opt) => (
             <option key={opt} value={opt}>
-              {t(STATUS_LABEL_KEYS[opt])}
+              {t(objectStatusLabelKey(opt, objectType))}
             </option>
           ))}
         </select>

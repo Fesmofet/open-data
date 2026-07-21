@@ -9,6 +9,7 @@ export const projectedObjectViewSchema = z.object({
   object_id: z.string(),
   object_type: z.string(),
   semantic_type: z.string().nullable(),
+  status: z.string().optional(),
   weight: z.number().nullable().optional(),
   fields: z.record(z.string(), z.unknown()),
   hasAdministrativeAuthority: z.boolean().optional().default(false),

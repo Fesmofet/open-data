@@ -45,7 +45,7 @@ export class GetObjectUpdatesFeedEndpoint {
   ) {}
 
   async execute(input: GetObjectUpdatesFeedInput): Promise<ObjectUpdatesFeedResponseDto | null> {
-    const core = await this.objectsCore.findByObjectId(input.objectId);
+    const core = await this.objectsCore.findByObjectIdForPage(input.objectId);
     if (!core) {
       return null;
     }

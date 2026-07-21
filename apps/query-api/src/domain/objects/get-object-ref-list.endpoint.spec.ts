@@ -5,7 +5,7 @@ describe('GetObjectRefListEndpoint', () => {
   const governance = { platform: {}, merged: {} } as never;
 
   function makeEndpoint(deps: {
-    core: { findByObjectId: jest.Mock };
+    core: { findByObjectIdForPage: jest.Mock };
     aggregated: { loadByObjectIds: jest.Mock };
     viewService: { resolve: jest.Mock };
     governanceResolver: { resolveMergedForObjectView: jest.Mock };
@@ -24,7 +24,7 @@ describe('GetObjectRefListEndpoint', () => {
     const config = { get: jest.fn().mockReturnValue('https://ipfs.io') };
 
     return new GetObjectRefListEndpoint(
-      { findByObjectId: deps.core.findByObjectId } as never,
+      { findByObjectIdForPage: deps.core.findByObjectIdForPage } as never,
       { loadByObjectIds: deps.aggregated.loadByObjectIds } as never,
       deps.viewService as never,
       deps.governanceResolver as never,
@@ -45,7 +45,7 @@ describe('GetObjectRefListEndpoint', () => {
 
   it('returns null when object is missing', async () => {
     const endpoint = makeEndpoint({
-      core: { findByObjectId: jest.fn().mockResolvedValue(null) },
+      core: { findByObjectIdForPage: jest.fn().mockResolvedValue(null) },
       aggregated: { loadByObjectIds: jest.fn() },
       viewService: { resolve: jest.fn() },
       governanceResolver: { resolveMergedForObjectView: jest.fn().mockResolvedValue(governance) },
@@ -70,7 +70,7 @@ describe('GetObjectRefListEndpoint', () => {
     };
 
     const endpoint = makeEndpoint({
-      core: { findByObjectId: jest.fn().mockResolvedValue({ object_id: 'host' }) },
+      core: { findByObjectIdForPage: jest.fn().mockResolvedValue({ object_id: 'host' }) },
       aggregated: {
         loadByObjectIds: jest.fn().mockResolvedValue({
           objects: [{ core: { object_id: 'host' }, updates: [] }],

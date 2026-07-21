@@ -306,6 +306,8 @@ export type ObjectPageViewModel = {
   coverImageUrl: string | null;
   /** Badge next to title (e.g. Shop) — plain text from API or mock. */
   kindLabel: string;
+  /** Lifecycle `objects_core.status` from query-api (e.g. `active`, `closed`). */
+  lifecycleStatus: string;
   /** Short subtitle under title (e.g. business category). */
   tagline: string | null;
   /** Legacy-style numeric badge label next to type (e.g. weight score). */

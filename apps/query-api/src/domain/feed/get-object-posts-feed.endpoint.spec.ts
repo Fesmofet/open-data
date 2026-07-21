@@ -76,7 +76,7 @@ describe('GetObjectPostsFeedEndpoint', () => {
     Pick<PostsRepository, 'findObjectPostsFeed' | 'findPostsFeedRowsByKeys'>
   >;
   let objectsCoreRepo: jest.Mocked<
-    Pick<ObjectsCoreRepository, 'findByObjectId' | 'findObjectIdsByMetaGroupId' | 'findRelistingObjectIds'>
+    Pick<ObjectsCoreRepository, 'findByObjectIdForPage' | 'findObjectIdsByMetaGroupId' | 'findRelistingObjectIds'>
   >;
   let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByName'>>;
   let aggregatedObjectRepo: jest.Mocked<Pick<AggregatedObjectRepository, 'loadByObjectIds'>>;
@@ -94,7 +94,7 @@ describe('GetObjectPostsFeedEndpoint', () => {
       findPostsFeedRowsByKeys: jest.fn().mockResolvedValue([]),
     };
     objectsCoreRepo = {
-      findByObjectId: jest.fn().mockResolvedValue({ object_id: 'waivio', object_type: 'hashtag' }),
+      findByObjectIdForPage: jest.fn().mockResolvedValue({ object_id: 'waivio', object_type: 'hashtag' }),
       findObjectIdsByMetaGroupId: jest.fn().mockResolvedValue([]),
       findRelistingObjectIds: jest.fn().mockResolvedValue([]),
     };

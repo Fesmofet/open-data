@@ -1,5 +1,7 @@
 export const STATUS_FORM_SELECTABLE_VALUES = [
   'unavailable',
+  'closed',
+  'privacy_erasure',
   'relisted',
   'nsfw',
   'flagged',

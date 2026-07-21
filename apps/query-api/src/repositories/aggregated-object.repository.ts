@@ -1,5 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
+import type { ObjectStatus } from '@opden-data-layer/core';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type {
@@ -29,6 +30,8 @@ export interface LoadAggregatedObjectsOptions {
    * Use when resolving ref summaries without `aggregateRating`.
    */
   includeRankVoteProjection?: boolean;
+  /** Core row statuses to include. Default `['active']` for lists and ref cards. */
+  statuses?: readonly ObjectStatus[];
 }
 
 /**
@@ -222,11 +225,12 @@ export class AggregatedObjectRepository {
     }
 
     try {
+      const statuses = options?.statuses ?? (['active'] as const);
       const [cores, updates, validityVotes, authorities] = await Promise.all([
         this.db
           .selectFrom('objects_core')
           .where('object_id', 'in', objectIds)
-          .where('status', '=', 'active')
+          .where('status', 'in', [...statuses])
           .selectAll()
           .execute(),
         this.db

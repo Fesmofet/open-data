@@ -10,6 +10,10 @@ import type {
   AuthoritySubType,
 } from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
+import {
+  objectStatusLabelKey,
+  shouldShowObjectStatusBadge,
+} from '@/modules/object/domain/object-status-label';
 import { RELATED_ALBUM_NAME } from '@opden-data-layer/core/post-related-images';
 import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
 import { ObjectGalleryViewer } from '@/modules/object/presentation/components/object-gallery-viewer';
@@ -37,6 +41,7 @@ import {
 } from '@/modules/object/domain/object-page-url.constants';
 import { ObjectPageCenterSkeleton } from '@/modules/object/presentation/components/object-page-loading-skeleton';
 import { useEffectiveNav, useInstantNavigation } from '@/shared/presentation';
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
@@ -89,11 +94,16 @@ export function ObjectPageShellClient({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const effectiveNav = useEffectiveNav();
   const { navigateInstant, isNavigating } = useInstantNavigation();
   const { openLogin } = useLoginModal();
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
+
+  const statusBadgeLabel = shouldShowObjectStatusBadge(model.lifecycleStatus)
+    ? t(objectStatusLabelKey(model.lifecycleStatus, model.objectTypeKey))
+    : null;
 
   const [isEditMode, setEditMode] = useState(false);
   const [isFollowing, setFollowing] = useState(model.isFollowing);
@@ -530,6 +540,7 @@ export function ObjectPageShellClient({
             tagline={model.tagline}
             displayWeightLabel={model.displayWeightLabel}
             kindLabel={model.kindLabel}
+            statusBadgeLabel={statusBadgeLabel}
             isEditMode={isEditMode}
             isFollowing={isFollowing}
             isBell={viewerBell}

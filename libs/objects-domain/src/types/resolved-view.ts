@@ -87,6 +87,8 @@ export interface ResolvedObjectView {
   creator: string;
   weight: number | null;
   meta_group_id: string | null;
+  /** Lifecycle status from `objects_core.status`. */
+  status: string;
   /**
    * Site canonical from `objects_core` (`https://...` only, variant B), not from update resolution.
    * Same value as `AggregatedObject.core.canonical` for this object.

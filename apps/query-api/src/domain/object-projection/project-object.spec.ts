@@ -12,6 +12,7 @@ function baseView(fields: Record<string, ResolvedField>): ResolvedObjectView {
     creator: 'creator',
     weight: null,
     meta_group_id: null,
+    status: 'active',
     canonical: null,
     fields,
   };

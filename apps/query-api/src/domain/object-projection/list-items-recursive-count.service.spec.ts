@@ -33,6 +33,7 @@ function listView(objectId: string, childIds: string[]): ResolvedObjectView {
     creator: 'c',
     weight: null,
     meta_group_id: null,
+    status: 'active',
     canonical: null,
     fields: {
       [UPDATE_TYPES.LIST_ITEM]: {

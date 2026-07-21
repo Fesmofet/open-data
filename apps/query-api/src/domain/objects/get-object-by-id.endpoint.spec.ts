@@ -27,6 +27,7 @@ function projectedFixture(objectId: string): ProjectedObject {
     object_id: objectId,
     object_type: 'x',
     semantic_type: null,
+    status: 'active',
     weight: null,
     fields: {},
     hasAdministrativeAuthority: false,
@@ -102,6 +103,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };
@@ -218,6 +220,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };
@@ -315,6 +318,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };
@@ -385,6 +389,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };

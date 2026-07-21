@@ -25,7 +25,7 @@ export class GetObjectExpertsEndpoint {
       return null;
     }
 
-    const core = await this.objectsCore.findByObjectId(id);
+    const core = await this.objectsCore.findByObjectIdForPage(id);
     if (!core) {
       return null;
     }

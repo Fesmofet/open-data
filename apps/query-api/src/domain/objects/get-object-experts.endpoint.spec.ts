@@ -15,7 +15,7 @@ describe('GetObjectExpertsEndpoint', () => {
     followedSubset?: string[];
   }) {
     const objectsCore = {
-      findByObjectId: jest.fn().mockResolvedValue(
+      findByObjectIdForPage: jest.fn().mockResolvedValue(
         overrides && 'core' in overrides ? overrides.core : { object_id: objectId },
       ),
     };

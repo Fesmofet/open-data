@@ -59,6 +59,8 @@ export interface ProjectedObject {
   object_id: string;
   object_type: string;
   semantic_type: string | null;
+  /** From `objects_core.status`. */
+  status: string;
   /** From `objects_core.weight`. */
   weight: number | null;
   fields: Record<string, unknown>;

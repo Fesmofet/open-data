@@ -26,7 +26,7 @@ describe('GetObjectOptionsEndpoint', () => {
 
   it('returns null when object does not exist', async () => {
     const objectsCore = {
-      findByObjectId: jest.fn().mockResolvedValue(null),
+      findByObjectIdForPage: jest.fn().mockResolvedValue(null),
     } as unknown as ObjectsCoreRepository;
 
     const endpoint = new GetObjectOptionsEndpoint(
@@ -42,7 +42,7 @@ describe('GetObjectOptionsEndpoint', () => {
 
   it('returns empty options when object type does not support option', async () => {
     const objectsCore = {
-      findByObjectId: jest.fn().mockResolvedValue({
+      findByObjectIdForPage: jest.fn().mockResolvedValue({
         object_id: 'list-1',
         object_type: 'list',
         meta_group_id: null,
@@ -70,7 +70,7 @@ describe('GetObjectOptionsEndpoint', () => {
 
   it('aggregates options from meta_group siblings', async () => {
     const objectsCore = {
-      findByObjectId: jest.fn().mockResolvedValue({
+      findByObjectIdForPage: jest.fn().mockResolvedValue({
         object_id: 'prod-a',
         object_type: 'product',
         meta_group_id: 'grp-1',
@@ -162,7 +162,7 @@ describe('GetObjectOptionsEndpoint', () => {
 
   it('preserves sibling order for duplicate-value dedupe (first wins)', async () => {
     const objectsCore = {
-      findByObjectId: jest.fn().mockResolvedValue({
+      findByObjectIdForPage: jest.fn().mockResolvedValue({
         object_id: 'prod-a',
         object_type: 'product',
         meta_group_id: 'grp-1',
@@ -228,7 +228,7 @@ describe('GetObjectOptionsEndpoint', () => {
 
   it('caps sibling load at OPTIONS_SIBLING_CAP', async () => {
     const objectsCore = {
-      findByObjectId: jest.fn().mockResolvedValue({
+      findByObjectIdForPage: jest.fn().mockResolvedValue({
         object_id: 'prod-a',
         object_type: 'product',
         meta_group_id: 'grp-1',

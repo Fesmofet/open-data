@@ -38,7 +38,6 @@ import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectTagsLeftRailSection } from './object-tags-left-rail-section';
-import { ObjectStatusLeftRailSection } from './object-status-left-rail-section';
 import { LeftRailTelephonesContent } from './left-rail-telephone-row';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
 import { ObjectOptionsSection } from './object-options-section';
@@ -877,16 +876,7 @@ export function ObjectLeftRailPanel({
           case 'status':
             return (
               <div key={`status-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <ObjectStatusLeftRailSection
-                  headingLabel={block.headingLabel}
-                  objectId={objectId}
-                  viewerUsername={viewerUsername}
-                  count={railBlockCount('status')}
-                  onViewUpdates={makeOnViewUpdates('status')}
-                  onAdd={makeOnAdd('status')}
-                  addLabel={addLabel}
-                  onRequireLogin={onRequireLogin}
-                />
+                <LeftRailEditToolbar {...editToolbarProps('status', block.headingLabel)} />
               </div>
             );
           case 'compareAtPrice':

@@ -1,4 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
+import { OBJECT_PAGE_VISIBLE_STATUSES } from '@opden-data-layer/core';
+import type { ObjectStatus } from '@opden-data-layer/core';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
@@ -20,6 +22,16 @@ export class ObjectsCoreRepository {
       .selectFrom('objects_core')
       .where('object_id', '=', objectId)
       .where('status', '=', 'active')
+      .selectAll()
+      .executeTakeFirst();
+  }
+
+  /** Object page and tabs — any lifecycle status allowed on direct `/object/:id`. */
+  async findByObjectIdForPage(objectId: string) {
+    return this.db
+      .selectFrom('objects_core')
+      .where('object_id', '=', objectId)
+      .where('status', 'in', [...OBJECT_PAGE_VISIBLE_STATUSES])
       .selectAll()
       .executeTakeFirst();
   }
