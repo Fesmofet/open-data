@@ -50,8 +50,8 @@ jest.mock('./object-center-breadcrumbs', () => ({
   ObjectCenterBreadcrumbs: () => null,
 }));
 
-jest.mock('./object-nested-page-body', () => ({
-  ObjectNestedPageBody: () => null,
+jest.mock('./object-page-content-body', () => ({
+  ObjectPageContentBody: () => null,
 }));
 
 import { ObjectPrimaryContent } from './object-primary-content';

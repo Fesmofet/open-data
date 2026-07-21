@@ -106,6 +106,8 @@ export type ObjectGalleryViewerProps = {
   updateTypeCounts?: Record<string, number>;
   /** Post-derived Related album — no on-chain votes or add-to-album actions. */
   isVirtualRelatedAlbum?: boolean;
+  /** Embedded page HTML images — viewer chrome only (no creator, votes, or footer). */
+  isReadOnlyGallery?: boolean;
 };
 
 export function ObjectGalleryViewer({
@@ -121,6 +123,7 @@ export function ObjectGalleryViewer({
   supportedUpdateTypes,
   updateTypeCounts,
   isVirtualRelatedAlbum = false,
+  isReadOnlyGallery = false,
 }: ObjectGalleryViewerProps) {
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -151,10 +154,11 @@ export function ObjectGalleryViewer({
   const count = photos.length;
   const currentPhoto = photos[activeIndex];
   const displayName = objectName.trim() || objectId;
+  const isOnChainGallery = !isVirtualRelatedAlbum && !isReadOnlyGallery;
   const canSetAvatar =
-    !isVirtualRelatedAlbum && supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
+    isOnChainGallery && supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
   const canAddToAlbum =
-    !isVirtualRelatedAlbum &&
+    isOnChainGallery &&
     supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
   const otherGalleryAlbums = useMemo(
     () => allGalleryAlbums.filter((entry) => entry.name !== album.name),
@@ -197,7 +201,7 @@ export function ObjectGalleryViewer({
   }, [activeIndex, currentPhoto?.url, currentPhoto?.cid]);
 
   useEffect(() => {
-    if (isVirtualRelatedAlbum) {
+    if (!isOnChainGallery) {
       return;
     }
     let cancelled = false;
@@ -209,7 +213,7 @@ export function ObjectGalleryViewer({
     return () => {
       cancelled = true;
     };
-  }, [isVirtualRelatedAlbum, objectId]);
+  }, [isOnChainGallery, objectId]);
 
   useEffect(() => {
     setVoteError(null);
@@ -401,7 +405,36 @@ export function ObjectGalleryViewer({
     return null;
   }
 
-  const galleryHeader = (
+  const galleryHeader = isReadOnlyGallery ? (
+      <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
+        <div aria-hidden />
+        <span className="gallery-chrome-text tabular-nums text-body-sm font-weight-label">
+          {activeIndex + 1} / {count}
+        </span>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
+            aria-label={t('object_gallery_zoom_out')}
+            onClick={zoomOut}
+            disabled={zoom <= MIN_ZOOM}
+          />
+          <button
+            type="button"
+            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
+            aria-label={t('object_gallery_zoom_in')}
+            onClick={zoomIn}
+            disabled={zoom >= MAX_ZOOM}
+          />
+          <button
+            type="button"
+            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
+            aria-label={t('close')}
+            onClick={onClose}
+          />
+        </div>
+      </header>
+  ) : (
       <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
         <div className="flex min-w-0 items-center justify-start gap-2">
           {currentStat.creator ? (
@@ -626,7 +659,9 @@ export function ObjectGalleryViewer({
       </div>
   );
 
-  const galleryFooter = isVirtualRelatedAlbum ? (
+  const galleryFooter = isReadOnlyGallery
+    ? null
+    : isVirtualRelatedAlbum ? (
       <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
         {currentPhoto?.postAuthor ? (
           <Link

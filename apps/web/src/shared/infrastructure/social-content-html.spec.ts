@@ -19,4 +19,10 @@ describe('linkifyBareImageUrls', () => {
       'see <img src="https://example.com/a.png" alt="" /> here',
     );
   });
+
+  it('does not wrap URLs already inside img src attributes', () => {
+    const html =
+      '<p><img src="https://images.waivio.io/photo.jpg" alt="a"></p>';
+    expect(linkifyBareImageUrls(html)).toBe(html);
+  });
 });

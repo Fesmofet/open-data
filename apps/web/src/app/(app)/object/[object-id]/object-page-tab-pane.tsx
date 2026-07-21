@@ -38,6 +38,8 @@ import { loadMoreCategoryObjectsAction } from './category/load-more-category-obj
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { useObjectPageShell } from './object-page-shell-context';
 import { resolveCategoryNameForObjectPage } from './object-page-search';
+import { resolveHostPageContent } from '@/modules/object/domain/resolve-host-page-content';
+import { resolveGalleryPhotosAlbum } from '@/modules/object/domain/resolve-gallery-photos-album';
 
 export type ObjectPageTabPaneProps = {
   model: ObjectPageViewModel;
@@ -57,8 +59,6 @@ export type ObjectPageTabPaneProps = {
   relatedAlbumInitialPage?: RelatedAlbumListView | null;
   initialNestedStack: ObjectNestedViewResolved[];
   defaultNestedContent: ObjectNestedViewResolved | null;
-  objectPageBody?: ReactNode;
-  objectDescriptionBody?: ReactNode;
   updatesFeedSlot?: ReactNode;
   postsFeedSlot?: ReactNode;
   threadsFeedSlot?: ReactNode;
@@ -82,8 +82,6 @@ export function ObjectPageTabPane({
   relatedAlbumInitialPage = null,
   initialNestedStack,
   defaultNestedContent,
-  objectPageBody,
-  objectDescriptionBody,
   updatesFeedSlot = null,
   postsFeedSlot = null,
   threadsFeedSlot = null,
@@ -298,6 +296,16 @@ export function ObjectPageTabPane({
 
   const menuRootName = defaultNestedContent?.name ?? null;
 
+  const hostPageContent = useMemo(
+    () => resolveHostPageContent(model),
+    [model.objectType, model.objectTypeKey, model.pageContent, model.legalText],
+  );
+
+  const galleryPhotosAlbum = useMemo(
+    () => resolveGalleryPhotosAlbum(model.galleryAlbums, model.previewGallery),
+    [model.galleryAlbums, model.previewGallery],
+  );
+
   return (
     <ObjectPrimaryContent
       objectId={model.objectId}
@@ -322,8 +330,10 @@ export function ObjectPageTabPane({
       objectSimilarFeed={objectSimilarFeed}
       objectAddOnFeed={objectAddOnFeed}
       objectCategoryFeed={objectCategoryFeed}
-      objectPageBody={objectPageBody}
-      objectDescriptionBody={objectDescriptionBody}
+      hostPageContent={hostPageContent}
+      descriptionContent={model.descriptionContent}
+      previewGallery={model.previewGallery}
+      galleryPhotosAlbum={galleryPhotosAlbum}
       galleryAlbums={model.galleryAlbums}
       onChainGalleryAlbumNames={model.onChainGalleryAlbumNames}
       activeGalleryAlbum={activeGalleryAlbum}

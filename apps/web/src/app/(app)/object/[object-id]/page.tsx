@@ -9,8 +9,6 @@ import {
   isObjectTypeEligibleForRelatedAlbum,
 } from '@opden-data-layer/core/post-related-images';
 
-import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
-import { ObjectDescriptionBody } from '@/modules/object/presentation/components/object-description-body';
 import {
   ObjectPageUpdatesFeedSkeleton,
 } from '@/modules/object/presentation/components/object-page-loading-skeleton';
@@ -329,26 +327,6 @@ export default async function ObjectDetailPage({
 
   const initialNestedStack = sanitizeNestedStack(pathIds, initialNestedStackRaw);
 
-  const hostHtmlBody =
-    model.objectTypeKey === 'legal_document'
-      ? model.legalText
-      : model.objectType === 'page'
-        ? model.pageContent
-        : null;
-  const objectPageBody = hostHtmlBody
-    ? <ObjectPageBody rawContent={hostHtmlBody} />
-    : undefined;
-
-  const objectDescriptionBody =
-    initialPrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT
-      ? (
-          <ObjectDescriptionBody
-            descriptionContent={model.descriptionContent}
-            galleryPhotos={model.previewGallery}
-          />
-        )
-      : undefined;
-
   const galleryAlbumRaw = firstSearchParam(sp, OBJECT_PAGE_GALLERY_ALBUM_PARAM)?.trim();
   const initialGalleryAlbum = galleryAlbumRaw
     ? (() => {
@@ -422,8 +400,6 @@ export default async function ObjectDetailPage({
         relatedAlbumInitialPage={relatedAlbumInitialPage}
         initialNestedStack={initialNestedStack}
         defaultNestedContent={defaultNestedContent}
-        objectPageBody={objectPageBody}
-        objectDescriptionBody={objectDescriptionBody}
         updatesFeedSlot={updatesFeedSlot}
         postsFeedSlot={postsFeedSlot}
         threadsFeedSlot={threadsFeedSlot}

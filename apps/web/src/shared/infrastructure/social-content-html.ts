@@ -14,6 +14,15 @@ export function linkifyHiveMentions(content: string): string {
   });
 }
 
+/** Linkify bare image URLs in text nodes only — skip URLs inside HTML tags/attributes. */
 export function linkifyBareImageUrls(content: string): string {
-  return content.replace(BARE_IMAGE_URL_RE, (match) => `<img src="${match}" alt="" />`);
+  return content.replace(/(<[^>]+>)|([^<]+)/g, (match, tag: string | undefined, text: string | undefined) => {
+    if (tag) {
+      return tag;
+    }
+    if (!text) {
+      return match;
+    }
+    return text.replace(BARE_IMAGE_URL_RE, (url) => `<img src="${url}" alt="" />`);
+  });
 }

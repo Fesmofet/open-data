@@ -16,6 +16,7 @@ import type {
   ObjectSwitcherKind,
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
+import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 
 import { resolveNestedObjectContentAction } from '../../application/actions/resolve-nested-object-content.action';
 import { resolveNestedObjectPathAction } from '../../application/actions/resolve-nested-object-path.action';
@@ -36,7 +37,8 @@ import { ObjectRelatedAlbumSection } from './object-related-album-section';
 import { RELATED_ALBUM_NAME } from '@opden-data-layer/core/post-related-images';
 import type { RelatedAlbumListView, RelatedAlbumPreviewView } from '../../domain/related-album.types';
 import { ObjectListContent } from './object-list-content';
-import { ObjectNestedPageBody } from './object-nested-page-body';
+import { ObjectDescriptionBody } from './object-description-body';
+import { ObjectPageContentBody } from './object-page-content-body';
 import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
 
 const REVIEWS_SEGMENT = 'reviews';
@@ -160,10 +162,11 @@ export type ObjectPrimaryContentProps = {
   objectSimilarFeed?: ReactNode | null;
   objectAddOnFeed?: ReactNode | null;
   objectCategoryFeed?: ReactNode | null;
-  /** Server-rendered page body for top-level page-type object. */
-  objectPageBody?: ReactNode;
-  /** Server-rendered description body for `/object/:id/description`. */
-  objectDescriptionBody?: ReactNode;
+  /** Raw page body for standalone page-type / legal_document host objects. */
+  hostPageContent?: string | null;
+  descriptionContent?: string | null;
+  previewGallery?: ProjectedGalleryPhotoView[];
+  galleryPhotosAlbum?: ProjectedGalleryAlbumView | null;
   galleryAlbums?: ProjectedGalleryAlbumView[];
   onChainGalleryAlbumNames?: readonly string[];
   activeGalleryAlbum?: string | null;
@@ -202,8 +205,10 @@ export function ObjectPrimaryContent({
   objectSimilarFeed,
   objectAddOnFeed,
   objectCategoryFeed,
-  objectPageBody,
-  objectDescriptionBody,
+  hostPageContent = null,
+  descriptionContent = null,
+  previewGallery = [],
+  galleryPhotosAlbum = null,
   galleryAlbums = [],
   onChainGalleryAlbumNames = [],
   activeGalleryAlbum = null,
@@ -475,12 +480,22 @@ export function ObjectPrimaryContent({
       );
     }
 
-    if (nestedStack.length === 0 && objectPageBody) {
-      return objectPageBody;
+    if (currentView.pageContentHtml) {
+      return (
+        <ObjectPageContentBody
+          html={currentView.pageContentHtml}
+          onOpenGalleryPhoto={onOpenGalleryPhoto}
+        />
+      );
     }
 
-    if (currentView.pageContentHtml) {
-      return <ObjectNestedPageBody html={currentView.pageContentHtml} />;
+    if (nestedStack.length === 0 && hostPageContent?.trim()) {
+      return (
+        <ObjectPageContentBody
+          html={hostPageContent}
+          onOpenGalleryPhoto={onOpenGalleryPhoto}
+        />
+      );
     }
 
     if (currentView.objectType === 'page' || objectTypeKey === 'legal_document') {
@@ -507,18 +522,28 @@ export function ObjectPrimaryContent({
     currentView,
     navigateInColumn,
     nestedStack.length,
-    objectPageBody,
+    hostPageContent,
     objectTypeKey,
     sortedListItems,
     title,
     viewerUsername,
     onRequireLogin,
+    onOpenGalleryPhoto,
   ]);
 
   if (activePrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+    const hasDescription =
+      Boolean(descriptionContent?.trim()) || previewGallery.length > 0;
     return (
       <FeedColumn>
-        {objectDescriptionBody ?? (
+        {hasDescription ? (
+          <ObjectDescriptionBody
+            descriptionContent={descriptionContent}
+            galleryPhotos={previewGallery}
+            galleryPhotosAlbum={galleryPhotosAlbum}
+            onOpenGalleryPhoto={onOpenGalleryPhoto}
+          />
+        ) : (
           <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
             <p className="text-fg">This object has no description yet.</p>
           </div>

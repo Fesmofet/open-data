@@ -10,11 +10,13 @@ import type {
   AuthoritySubType,
 } from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
+import { resolveGalleryPhotosAlbum } from '@/modules/object/domain/resolve-gallery-photos-album';
 import {
   objectStatusLabelKey,
   shouldShowObjectStatusBadge,
 } from '@/modules/object/domain/object-status-label';
 import { RELATED_ALBUM_NAME } from '@opden-data-layer/core/post-related-images';
+import { isPageContentVirtualGalleryAlbum } from '@/modules/object/domain/build-page-content-gallery-album';
 import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
 import { ObjectGalleryViewer } from '@/modules/object/presentation/components/object-gallery-viewer';
 import {
@@ -432,16 +434,10 @@ export function ObjectPageShellClient({
     router,
   ]);
 
-  const galleryPhotosAlbum = useMemo(() => {
-    const photosAlbum = model.galleryAlbums.find((album) => album.name === 'Photos');
-    if (photosAlbum) {
-      return photosAlbum;
-    }
-    if (model.previewGallery.length > 0) {
-      return { name: 'Photos', items: model.previewGallery };
-    }
-    return null;
-  }, [model.galleryAlbums, model.previewGallery]);
+  const galleryPhotosAlbum = useMemo(
+    () => resolveGalleryPhotosAlbum(model.galleryAlbums, model.previewGallery),
+    [model.galleryAlbums, model.previewGallery],
+  );
 
   const leftRailEditContext =
     isEditMode && viewerUsername
@@ -592,6 +588,7 @@ export function ObjectPageShellClient({
           supportedUpdateTypes={supportedUpdateTypes}
           updateTypeCounts={model.updateTypeCounts}
           isVirtualRelatedAlbum={galleryFullView.album.name === RELATED_ALBUM_NAME}
+          isReadOnlyGallery={isPageContentVirtualGalleryAlbum(galleryFullView.album)}
         />
       ) : null}
     </ObjectPageShellProvider>

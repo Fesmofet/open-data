@@ -16,8 +16,11 @@ export { ObjectMenuItemsStatic } from './components/object-menu-items-static';
 export type { ObjectMenuItemsStaticProps } from './components/object-menu-items-static';
 export { ObjectListContent } from './components/object-list-content';
 export type { ObjectListContentProps } from './components/object-list-content';
-export { ObjectNestedPageBody } from './components/object-nested-page-body';
-export type { ObjectNestedPageBodyProps } from './components/object-nested-page-body';
+export { ObjectPageContentBody, ObjectNestedPageBody } from './components/object-page-content-body';
+export type {
+  ObjectPageContentBodyProps,
+  ObjectNestedPageBodyProps,
+} from './components/object-page-content-body';
 export { ObjectCenterBreadcrumbs } from './components/object-center-breadcrumbs';
 export type { ObjectCenterBreadcrumbsProps } from './components/object-center-breadcrumbs';
 export { ObjectPrimaryNav } from './components/object-primary-nav';
