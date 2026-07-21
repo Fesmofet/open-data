@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { FeedColumn } from '@/shared/presentation/layout';
 import { useInstantNavigation } from '@/shared/presentation';
@@ -717,6 +717,7 @@ export function ObjectPrimaryContent({
     <FeedColumn>
       {isMenuLanding && menuRootName && defaultNestedContent ? (
         <ObjectCenterBreadcrumbs
+          key="center-breadcrumbs"
           rootObjectId={defaultNestedContent.objectId}
           rootName={menuRootName}
           stack={nestedStack.map((e) => ({ objectId: e.objectId, name: e.name }))}
@@ -725,13 +726,17 @@ export function ObjectPrimaryContent({
       ) : null}
       {onReviewsCenter && currentView.objectType === 'default' ? (
         <ObjectWriteReviewPrompt
+          key="write-review-prompt"
           objectId={objectId}
           viewerUsername={viewerUsername}
           onRequireLogin={onRequireLogin}
         />
       ) : null}
       {onReviewsCenter && feedSubTabs.length > 0 ? (
-        <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
+        <div
+          key="feed-sub-nav"
+          className="rounded-card border border-border bg-bg px-card-padding pt-2"
+        >
           <ObjectFeedSubNav
             tabs={feedSubTabs}
             activeSegment={activeFeedSubSegment}
@@ -739,11 +744,13 @@ export function ObjectPrimaryContent({
           />
         </div>
       ) : null}
-      {onReviewsPostsTab && objectPostsFeed != null
-        ? objectPostsFeed
-        : onReviewsThreadsTab && objectThreadsFeed != null
-          ? objectThreadsFeed
-          : renderTypeContent()}
+      {onReviewsPostsTab && objectPostsFeed != null ? (
+        <Fragment key="reviews-posts-feed">{objectPostsFeed}</Fragment>
+      ) : onReviewsThreadsTab && objectThreadsFeed != null ? (
+        <Fragment key="reviews-threads-feed">{objectThreadsFeed}</Fragment>
+      ) : (
+        <Fragment key="center-type-content">{renderTypeContent()}</Fragment>
+      )}
     </FeedColumn>
   );
 }

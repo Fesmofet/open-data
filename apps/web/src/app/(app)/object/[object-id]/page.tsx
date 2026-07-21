@@ -352,7 +352,7 @@ export default async function ObjectDetailPage({
 
   const updatesFeedSlot =
     initialPrimarySegment === 'updates' ? (
-      <Suspense fallback={<ObjectPageUpdatesFeedSkeleton />}>
+      <Suspense key="object-updates-feed" fallback={<ObjectPageUpdatesFeedSkeleton />}>
         <ObjectPageUpdatesFeedSection
           objectId={objectId}
           model={model}
@@ -365,7 +365,7 @@ export default async function ObjectDetailPage({
 
   const postsFeedSlot =
     initialPrimarySegment === 'reviews' ? (
-      <Suspense fallback={<FeedPostsLoadingSkeleton />}>
+      <Suspense key="object-posts-feed" fallback={<FeedPostsLoadingSkeleton />}>
         <ObjectPagePostsFeedSection
           objectId={objectId}
           viewerUsername={viewerUsername}
@@ -374,7 +374,11 @@ export default async function ObjectDetailPage({
     ) : null;
 
   const threadsFeedSlot = (
-    <ObjectThreadsFeedList objectId={objectId} currentUsername={viewerUsername} />
+    <ObjectThreadsFeedList
+      key="object-threads-feed"
+      objectId={objectId}
+      currentUsername={viewerUsername}
+    />
   );
 
   return (
