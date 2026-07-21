@@ -38,7 +38,23 @@ Normative rules for raster images in `apps/web`: when to use Next.js [`Image`](h
 - **`images.minimumCacheTTL`** — set to **86400** (24h) to reduce repeated optimization work for stable UGC URLs.
 - **Adding hosts:** prefer documenting new first-party or CDN hosts in this file when they become common; the broad pattern is a pragmatic default, not a security boundary for private data.
 
-**Future:** if traffic or abuse becomes an issue, move to an **image proxy** (validate URL, cache at the edge) and tighten `remotePatterns` to that proxy plus static CDNs.
+## Hive `0x0` image proxy (UGC)
+
+Dead or flaky UGC hosts (e.g. legacy **`ipfs.busy.org`**) break feed previews and post body `<img>` tags. At **display** time, wrap remote URLs with Hive’s CDN (legacy Waivio `getProxyImageURL` / `getImagePathPost`):
+
+`https://images.hive.blog/0x0/{originalUrl}`
+
+| Helper | Path |
+|--------|------|
+| `getProxyImageUrl` / `getImagePathPost` / `stripHiveImageProxyPrefix` | `apps/web/src/shared/infrastructure/image/get-proxy-image-url.ts` (also re-exported from `@/shared/presentation`) |
+
+**Skip proxy** when the URL contains: `waivio.nyc3.digitaloceanspaces` / `nyc3.digitaloceanspaces`, `i.imgur.com`, `sephora.com`, `.avif`, or video poster CDNs (`vumbnail.com`, `i.ytimg.com`, `img.youtube.com` — Hive returns 403). Hive **avatar** paths (`images.hive.blog/u/…`) are left unchanged. Relative `/…` and `data:` URLs are left unchanged.
+
+**Already on `images.hive.blog/{W}x{H}/…` or `/p/…`:** some stored thumbs (e.g. `1280x0/https://ipfs.busy.org/…`) 400 alone but work when wrapped again as `0x0/{fullHiveUrl}`. Direct Hive assets (`/DQm…`, `/u/…` avatars) and standard `0x0/{external}` are left as-is.
+
+**Applied at display (not in query-api payloads):** feed card / grid preview `Image` src, explicit avatar URLs (`resolveAvatarUrl`), post/comment body and feed excerpt HTML (`transformTags.img`, optional `data-fallback-src`), SEO OG / Article JSON-LD remote thumbs. Canonical `thumbnailUrl` from the API stays unproxied so excerpt omit-matching still works.
+
+Base58 Hive `800x600/p/…` preview mode is **not** used here — feed/body historically used `0x0/`; `next/image` handles resize for cards.
 
 ## `sizes` and layout
 
@@ -62,7 +78,7 @@ Use **`fill`** when the visual box is defined by a parent (`relative` + height/a
 
 ## Markdown content
 
-When post bodies are rendered as Markdown/HTML, use normal **`<img>`** tags with **`loading="lazy"`** unless there is a dedicated pipeline that supplies dimensions and a single remote policy. Do not block Markdown on the default image optimizer.
+When post bodies are rendered as Markdown/HTML, use normal **`<img>`** tags with **`loading="lazy"`** unless there is a dedicated pipeline that supplies dimensions and a single remote policy. Do not block Markdown on the default image optimizer. Body/excerpt pipelines rewrite remote `img` `src` through the [Hive `0x0` image proxy](#hive-0x0-image-proxy-ugc) before render.
 
 ## IPFS object images (CID)
 

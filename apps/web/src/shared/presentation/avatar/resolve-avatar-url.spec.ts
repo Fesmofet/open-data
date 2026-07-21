@@ -1,24 +1,36 @@
 import { resolveAvatarUrl } from './resolve-avatar-url';
 
 describe('resolveAvatarUrl', () => {
-  it('returns explicit avatarUrl when non-empty', () => {
+  it('returns Hive-proxied explicit avatarUrl when non-empty', () => {
     expect(
       resolveAvatarUrl({
         username: 'alice',
         avatarUrl: 'https://example.com/a.png',
         size: 40,
       }),
-    ).toBe('https://example.com/a.png');
+    ).toBe('https://images.hive.blog/0x0/https://example.com/a.png');
   });
 
-  it('trims avatarUrl', () => {
+  it('trims avatarUrl before proxying', () => {
     expect(
       resolveAvatarUrl({
         username: 'alice',
         avatarUrl: '  https://example.com/a.png  ',
         size: 40,
       }),
-    ).toBe('https://example.com/a.png');
+    ).toBe('https://images.hive.blog/0x0/https://example.com/a.png');
+  });
+
+  it('skips proxy for Spaces avatar URLs', () => {
+    const spaces =
+      'https://waivio.nyc3.digitaloceanspaces.com/avatar.png';
+    expect(
+      resolveAvatarUrl({
+        username: 'alice',
+        avatarUrl: spaces,
+        size: 40,
+      }),
+    ).toBe(spaces);
   });
 
   it('uses Hive small when size <= 64 and no avatarUrl', () => {

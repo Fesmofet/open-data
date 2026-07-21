@@ -4,7 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import {
+  getImagePathPost,
+  shouldUnoptimizeRemoteImage,
+} from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import { useStoryPreviewMediaUrl } from '../hooks/use-story-preview-media-url';
@@ -48,6 +51,9 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
     story.videoThumbnailUrl,
     story.thumbnailUrl,
   );
+  const previewMediaDisplayUrl = previewMediaUrl
+    ? getImagePathPost(previewMediaUrl)
+    : null;
   const showVideoBadge = Boolean(story.videoEmbedUrl ?? story.videoThumbnailUrl);
   const label = tileLabel(story);
   const [previewFailed, setPreviewFailed] = useState(false);
@@ -58,14 +64,14 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
 
   const inner = (
     <div className="relative aspect-square w-full overflow-hidden bg-surface-control">
-      {previewMediaUrl && !previewFailed ? (
+      {previewMediaDisplayUrl && !previewFailed ? (
         <Image
-          src={previewMediaUrl}
+          src={previewMediaDisplayUrl}
           alt=""
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
           className="object-cover"
-          unoptimized={shouldUnoptimizeRemoteImage(previewMediaUrl)}
+          unoptimized={shouldUnoptimizeRemoteImage(previewMediaDisplayUrl)}
           onError={() => setPreviewFailed(true)}
         />
       ) : previewMediaUrl && previewFailed ? (

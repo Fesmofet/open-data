@@ -48,6 +48,14 @@ describe('feedExcerptToSafeHtml', () => {
     expect(html).toContain('<img');
   });
 
+  it('proxies non-skipped excerpt images through Hive 0x0', () => {
+    const src =
+      'https://ipfs.busy.org/ipfs/QmQ2G2GCrBVmwAQ8J6RCKZRrsXWByWAB6NGNaS6hCGa7go';
+    const html = feedExcerptToSafeHtml(`<p><img src="${src}" alt=""></p>`);
+    expect(html).toContain(`https://images.hive.blog/0x0/${src}`);
+    expect(html).toContain(`data-fallback-src="${src}"`);
+  });
+
   it('strips 3Speak links and poster images when player is shown in the card', () => {
     const poster = 'https://cdn.example.com/poster.jpg';
     const html = feedExcerptToSafeHtml(

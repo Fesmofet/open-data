@@ -15,12 +15,17 @@ const basePost: PostSeoInput = {
 };
 
 describe('buildArticleJsonLd', () => {
-  it('builds Article schema with title and image', () => {
+  it('builds Article schema with title and Hive-proxied image', () => {
     const json = buildArticleJsonLd(basePost, 'https://site.com/@alice/hello-world');
     expect(json['@type']).toBe('Article');
     expect(json.headline).toBe('Hello World');
-    expect(json.image).toBe('https://cdn.example/thumb.jpg');
+    expect(json.image).toBe(
+      'https://images.hive.blog/0x0/https://cdn.example/thumb.jpg',
+    );
     expect(json.mainEntityOfPage).toBe('https://site.com/@alice/hello-world');
+    expect((json.author as { image?: string }).image).toBe(
+      'https://images.hive.blog/0x0/https://cdn.example/alice.jpg',
+    );
   });
 
   it('falls back to excerpt when title is missing', () => {

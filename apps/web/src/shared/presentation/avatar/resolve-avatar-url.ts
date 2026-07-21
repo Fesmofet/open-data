@@ -1,3 +1,5 @@
+import { getProxyImageUrl } from '../../infrastructure/image/get-proxy-image-url';
+
 const HIVE_AVATAR_BASE = 'https://images.hive.blog/u';
 
 export type ResolveAvatarUrlInput = {
@@ -12,11 +14,12 @@ export type ResolveAvatarUrlInput = {
 /**
  * Resolves the image URL for a user avatar: explicit URL first, else Hive default by username and size.
  * Returns `null` when there is no usable URL (e.g. empty username with no avatar).
+ * Explicit URLs go through the Hive `0x0` image proxy (dead gateways like ipfs.busy.org).
  */
 export function resolveAvatarUrl(input: ResolveAvatarUrlInput): string | null {
   const trimmed = input.avatarUrl?.trim();
   if (trimmed) {
-    return trimmed;
+    return getProxyImageUrl(trimmed);
   }
   const name = input.username.trim();
   if (!name) {

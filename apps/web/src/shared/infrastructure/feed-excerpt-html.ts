@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
+import { getProxyImageUrl } from './image/get-proxy-image-url';
 import {
   linkifyBareImageUrls,
   linkifyHiveMentions,
@@ -16,7 +17,7 @@ const FEED_CONTENT_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: ['a', 'p', 'br', 'strong', 'em', 'code', 'span', 'ul', 'ol', 'li', 'img'],
   allowedAttributes: {
     a: ['href', 'title', 'target', 'rel'],
-    img: ['src', 'alt', 'title', 'class'],
+    img: ['src', 'alt', 'title', 'class', 'data-fallback-src'],
   },
   transformTags: {
     a: (tagName, attribs) => {
@@ -29,6 +30,23 @@ const FEED_CONTENT_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
           ...(isProfileLink
             ? {}
             : { target: '_blank', rel: 'noopener noreferrer' }),
+        },
+      };
+    },
+    img: (tagName, attribs) => {
+      const originalSrc = attribs.src?.trim() ?? '';
+      if (!originalSrc) {
+        return { tagName, attribs };
+      }
+      const proxied = getProxyImageUrl(originalSrc);
+      return {
+        tagName,
+        attribs: {
+          ...attribs,
+          src: proxied,
+          ...(proxied !== originalSrc
+            ? { 'data-fallback-src': originalSrc }
+            : {}),
         },
       };
     },

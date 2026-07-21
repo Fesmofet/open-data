@@ -9,6 +9,7 @@ import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html
 import { isThreeSpeakEmbedUrl } from '@/shared/infrastructure/three-speak-preview';
 import {
   AVATAR_PLACEHOLDER_SRC,
+  getImagePathPost,
   shouldUnoptimizeRemoteImage,
   StatHoverTooltip,
   UserAvatar,
@@ -137,6 +138,10 @@ export function Story({
     story.videoThumbnailUrl,
     story.thumbnailUrl,
   );
+  /** Display URL (Hive `0x0` proxy); omit matching still uses raw `previewMediaUrl`. */
+  const previewMediaDisplayUrl = previewMediaUrl
+    ? getImagePathPost(previewMediaUrl)
+    : null;
   const showPreviewBlock = isThreeSpeakVideo
     ? Boolean(story.videoEmbedUrl)
     : Boolean(previewMediaUrl);
@@ -221,6 +226,7 @@ export function Story({
           >
             {taggedObjects.map((o) => {
               const chipImage = objectFields.image(o);
+              const chipImageSrc = chipImage ? getImagePathPost(chipImage) : null;
               const chipName = objectFields.name(o);
               const chipLabel = chipName ?? o.object_id;
               return (
@@ -232,15 +238,15 @@ export function Story({
                     className="inline-flex rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
                     <span className="flex size-10 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface-control">
-                      {chipImage ? (
+                      {chipImageSrc ? (
                         <Image
-                          src={chipImage}
+                          src={chipImageSrc}
                           alt=""
                           className="size-full object-cover"
                           width={40}
                           height={40}
                           sizes="40px"
-                          unoptimized={shouldUnoptimizeRemoteImage(chipImage)}
+                          unoptimized={shouldUnoptimizeRemoteImage(chipImageSrc)}
                         />
                       ) : (
                         <Image
@@ -361,10 +367,10 @@ export function Story({
                 >
                   Preview unavailable
                 </div>
-              ) : previewMediaUrl ? (
+              ) : previewMediaDisplayUrl ? (
                 <div className={previewMediaLandscape ? 'relative w-full' : 'relative'}>
                   <Image
-                    src={previewMediaUrl}
+                    src={previewMediaDisplayUrl}
                     alt=""
                     width={1200}
                     height={800}
@@ -379,7 +385,7 @@ export function Story({
                         ? undefined
                         : { maxHeight: FEED_STORY_PORTRAIT_PREVIEW_MAX_PX }
                     }
-                    unoptimized={shouldUnoptimizeRemoteImage(previewMediaUrl)}
+                    unoptimized={shouldUnoptimizeRemoteImage(previewMediaDisplayUrl)}
                     onLoad={(event) => {
                       const img = event.currentTarget;
                       setPreviewMediaLandscape(img.naturalWidth >= img.naturalHeight);

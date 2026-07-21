@@ -11,6 +11,11 @@ export { useLockBodyScroll } from './hooks/use-lock-body-scroll';
 export { useModalScrollLock } from './hooks/use-modal-scroll-lock';
 export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
 export {
+  getImagePathPost,
+  getProxyImageUrl,
+  stripHiveImageProxyPrefix,
+} from '../infrastructure/image/get-proxy-image-url';
+export {
   AVATAR_PLACEHOLDER_SRC,
   OBJECT_LOGO_FRAME_CLASS,
   OBJECT_LOGO_IMAGE_CLASS,

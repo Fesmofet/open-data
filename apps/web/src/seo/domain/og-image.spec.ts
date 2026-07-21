@@ -29,6 +29,17 @@ describe('resolveOgImageUrl', () => {
     ).toBe('https://site.com/cover.jpg');
   });
 
+  it('proxies remote UGC candidates through Hive 0x0', () => {
+    expect(
+      resolveOgImageUrl(
+        ['https://ipfs.busy.org/ipfs/QmExample'],
+        origin,
+      ),
+    ).toBe(
+      'https://images.hive.blog/0x0/https://ipfs.busy.org/ipfs/QmExample',
+    );
+  });
+
   it('falls back to default OG image', () => {
     expect(resolveOgImageUrl([], origin)).toBe(
       'https://site.com/opengraph-image.png',

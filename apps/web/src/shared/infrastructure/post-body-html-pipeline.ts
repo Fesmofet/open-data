@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
+import { getProxyImageUrl } from './image/get-proxy-image-url';
 import { linkifyBareImageUrls, linkifyHiveMentions } from './social-content-html';
 
 /**
@@ -162,7 +163,17 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   ],
   allowedAttributes: {
     ...sanitizeHtml.defaults.allowedAttributes,
-    img: ['src', 'alt', 'title', 'width', 'height', 'class', 'srcset', 'sizes'],
+    img: [
+      'src',
+      'alt',
+      'title',
+      'width',
+      'height',
+      'class',
+      'srcset',
+      'sizes',
+      'data-fallback-src',
+    ],
     a: ['href', 'name', 'target', 'rel', 'class', 'title'],
     iframe: [
       'src',
@@ -188,6 +199,25 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     'www.dailymotion.com',
     'embed.twitch.tv',
   ],
+  transformTags: {
+    img: (tagName, attribs) => {
+      const originalSrc = attribs.src?.trim() ?? '';
+      if (!originalSrc) {
+        return { tagName, attribs };
+      }
+      const proxied = getProxyImageUrl(originalSrc);
+      return {
+        tagName,
+        attribs: {
+          ...attribs,
+          src: proxied,
+          ...(proxied !== originalSrc
+            ? { 'data-fallback-src': originalSrc }
+            : {}),
+        },
+      };
+    },
+  },
 };
 
 /** Markdown or HTML post body → safe HTML for display. Client and server safe. */

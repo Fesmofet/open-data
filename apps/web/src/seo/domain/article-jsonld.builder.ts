@@ -1,3 +1,5 @@
+import { getImagePathPost, getProxyImageUrl } from '@/shared/infrastructure/image/get-proxy-image-url';
+
 import type { PostSeoInput } from './metadata.types';
 
 export function buildArticleJsonLd(
@@ -8,7 +10,11 @@ export function buildArticleJsonLd(
     input.title?.trim() ||
     input.excerpt.trim().slice(0, 110) ||
     `${input.authorName}/${input.permlink}`;
-  const image = input.thumbnailUrl ?? input.videoThumbnailUrl ?? undefined;
+  const imageRaw = input.thumbnailUrl ?? input.videoThumbnailUrl ?? undefined;
+  const image = imageRaw ? getImagePathPost(imageRaw) || undefined : undefined;
+  const authorAvatar = input.authorAvatarUrl
+    ? getProxyImageUrl(input.authorAvatarUrl) || undefined
+    : undefined;
 
   return {
     '@context': 'https://schema.org',
@@ -22,7 +28,7 @@ export function buildArticleJsonLd(
       '@type': 'Person',
       name: input.authorDisplayName ?? input.authorName,
       identifier: `@${input.authorName}`,
-      ...(input.authorAvatarUrl ? { image: input.authorAvatarUrl } : {}),
+      ...(authorAvatar ? { image: authorAvatar } : {}),
     },
   };
 }

@@ -26,4 +26,21 @@ describe('sanitizePostBodyHtml', () => {
     expect(html).toContain('play.3speak.tv');
     expect(html).toContain('blog-post-3speak-embed');
   });
+
+  it('proxies remote body images through Hive 0x0', () => {
+    const src =
+      'https://ipfs.busy.org/ipfs/QmQ2G2GCrBVmwAQ8J6RCKZRrsXWByWAB6NGNaS6hCGa7go';
+    const html = sanitizePostBodyHtml(`![image](${src})`);
+    expect(html).toContain(`https://images.hive.blog/0x0/${src}`);
+    expect(html).toContain(`data-fallback-src="${src}"`);
+  });
+
+  it('does not re-proxy digitaloceanspaces images', () => {
+    const src =
+      'https://waivio.nyc3.digitaloceanspaces.com/1562259409_photo.jpg';
+    const html = sanitizePostBodyHtml(`<p><img src="${src}" alt=""></p>`);
+    expect(html).toContain(`src="${src}"`);
+    expect(html).not.toContain('images.hive.blog/0x0');
+    expect(html).not.toContain('data-fallback-src');
+  });
 });
