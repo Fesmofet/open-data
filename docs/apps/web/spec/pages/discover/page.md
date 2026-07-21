@@ -36,8 +36,8 @@ Hub chrome: under `(app)/(hub)` with HOME / DATA / BUSINESS section nav (`AppSec
 ### Object feed
 
 - Filters: `object_type`, optional FTS `q`, `tags[]` (each tag = `category:value` encoding, e.g. `Cuisine:asian`; AND across all selected tags; both `value_json.category` and `value_json.value` must match).
-- Sort: `newest` (default, `objects_core.seq DESC`), `oldest`, `rank` (`weight DESC`).
-- Cursor: opaque base64 JSON (`seq`, `weight`, `object_id`, `sort`).
+- Sort: `rank` (default, `objects_core.weight DESC`), `newest` (`created_at DESC`), `oldest`.
+- Cursor: opaque base64 JSON (`created_at`, `weight`, `object_id`, `sort`).
 - Cards: projected with shop card update types (`name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`).
 
 ### User feed (`?users=1`)

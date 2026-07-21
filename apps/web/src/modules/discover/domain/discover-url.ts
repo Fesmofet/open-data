@@ -55,7 +55,7 @@ export function parseDiscoverPageState(source: DiscoverSearchParamsSource): Disc
   );
   const sortRaw = readSearchParam(source, 'sort');
   const sort =
-    sortRaw === 'oldest' || sortRaw === 'rank' || sortRaw === 'newest' ? sortRaw : 'newest';
+    sortRaw === 'oldest' || sortRaw === 'rank' || sortRaw === 'newest' ? sortRaw : 'rank';
 
   return { usersMode, objectType, q, tags, sort };
 }
@@ -96,7 +96,7 @@ export function buildDiscoverHref(params: DiscoverUrlParams): string {
       sp.append('tags', t);
     }
   }
-  if (params.sort && params.sort !== 'newest') {
+  if (params.sort && params.sort !== 'rank') {
     sp.set('sort', params.sort);
   }
   const qs = sp.toString();

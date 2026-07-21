@@ -28,7 +28,7 @@ export const discoverObjectsQuerySchema = z.object({
       return arr.map((s) => s.trim()).filter((s) => s.length > 0);
     }),
   sort: discoverSortSchema
-    .default('newest')
+    .default('rank')
     .describe('Sort order: newest, oldest, or rank'),
   cursor: z.string().optional().describe('Opaque pagination cursor from prior response'),
   limit: z.coerce

@@ -125,10 +125,10 @@ export class DiscoverRepository {
               ? sql`AND oc.created_at > ${cursorCreatedAt}`
               : params.sort === 'rank'
                 ? sql`AND (
-                  COALESCE(oc.weight, -1) < COALESCE(${cursor.weight}, -1)
+                  COALESCE(oc.weight, -1::float8) < COALESCE(${cursor.weight}::float8, -1::float8)
                   OR (
-                    COALESCE(oc.weight, -1) = COALESCE(${cursor.weight}, -1)
-                    AND oc.object_id < ${cursor.object_id}
+                    COALESCE(oc.weight, -1::float8) = COALESCE(${cursor.weight}::float8, -1::float8)
+                    AND oc.object_id > ${cursor.object_id}
                   )
                 )`
                 : sql``
@@ -424,9 +424,9 @@ export class DiscoverRepository {
 
       const cursorFilter = cursor
         ? sql`AND (
-            COALESCE(ac.wobjects_weight, -1) < COALESCE(${cursor.wobjects_weight}, -1)
+            COALESCE(ac.wobjects_weight, -1::float8) < COALESCE(${cursor.wobjects_weight}::float8, -1::float8)
             OR (
-              COALESCE(ac.wobjects_weight, -1) = COALESCE(${cursor.wobjects_weight}, -1)
+              COALESCE(ac.wobjects_weight, -1::float8) = COALESCE(${cursor.wobjects_weight}::float8, -1::float8)
               AND ac.name > ${cursor.name}
             )
           )`

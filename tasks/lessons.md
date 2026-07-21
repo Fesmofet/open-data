@@ -32,6 +32,12 @@
 
 **Rule:** Use **`z.coerce.number().int()`** in cursor payloads; **`Number()` / `Math.trunc`** when encoding and before keyset `WHERE`. If encoding fails, return **`hasMore: false`** so the client stops. Optionally **dedupe by `update_id`** when appending on the client.
 
+## query-api: float weight keyset + integer COALESCE sentinel
+
+**Pattern:** `COALESCE(${cursor.weight}, -1)` with a JS float makes Postgres infer the bound param as **integer** → `invalid input syntax for type integer: "9.71…"`. Discover page 2 fails and returns empty/`hasMore: false`.
+
+**Rule:** For `double precision` / float columns, use **`-1::float8`** and **`${value}::float8`** in keyset filters (same for `wobjects_weight`). Coerce cursor weight with `Number()` on decode. ASC secondary keys use `>` (not `<`).
+
 ## TypeScript 6: paths without baseUrl
 
 **Pattern:** Removing `baseUrl` without rewriting `paths` to `./…` relative entries → `TS5090` and Nx graph plugin parse failures.

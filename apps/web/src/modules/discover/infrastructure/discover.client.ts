@@ -33,7 +33,7 @@ export async function fetchDiscoverObjects(
       sp.append('tags', t);
     }
   }
-  sp.set('sort', params.sort ?? 'newest');
+  sp.set('sort', params.sort ?? 'rank');
   if (params.cursor?.trim()) {
     sp.set('cursor', params.cursor.trim());
   }

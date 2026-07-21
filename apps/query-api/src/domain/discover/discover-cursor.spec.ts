@@ -31,4 +31,22 @@ describe('discover object cursor', () => {
     ).toString('base64url');
     expect(decodeDiscoverObjectCursor(legacy)).toBeNull();
   });
+
+  it('coerces string weight to number', () => {
+    const encoded = Buffer.from(
+      JSON.stringify({
+        sort: 'rank',
+        created_at: '2019-04-11T13:33:22.034Z',
+        weight: '9.712621939999998',
+        object_id: 'obj-1',
+      }),
+      'utf8',
+    ).toString('base64url');
+    expect(decodeDiscoverObjectCursor(encoded)).toEqual({
+      sort: 'rank',
+      created_at: '2019-04-11T13:33:22.034Z',
+      weight: 9.712621939999998,
+      object_id: 'obj-1',
+    });
+  });
 });

@@ -32,14 +32,24 @@ describe('buildDiscoverHref', () => {
       type: 'product',
       q: 'test',
       tags: ['Flavor:Bitter', 'Type:Backpack'],
-      sort: 'rank',
+      sort: 'newest',
     });
     const url = new URL(href, 'http://local');
     expect(url.pathname).toBe('/discover');
     expect(url.searchParams.get('type')).toBe('product');
     expect(url.searchParams.get('q')).toBe('test');
     expect(url.searchParams.getAll('tags')).toEqual(['Flavor:Bitter', 'Type:Backpack']);
-    expect(url.searchParams.get('sort')).toBe('rank');
+    expect(url.searchParams.get('sort')).toBe('newest');
+  });
+
+  it('omits sort when default rank', () => {
+    const href = buildDiscoverHref({
+      type: 'product',
+      sort: 'rank',
+    });
+    const url = new URL(href, 'http://local');
+    expect(url.searchParams.get('sort')).toBeNull();
+    expect(href).toBe('/discover?type=product');
   });
 
   it('builds users mode URL', () => {
@@ -62,7 +72,7 @@ describe('parseDiscoverPageState', () => {
       objectType: DEFAULT_DISCOVER_OBJECT_TYPE,
       q: '',
       tags: [],
-      sort: 'newest',
+      sort: 'rank',
     });
   });
 

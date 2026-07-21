@@ -31,7 +31,16 @@ export function decodeDiscoverObjectCursor(raw: string): DiscoverObjectCursorPay
     ) {
       return null;
     }
-    return parsed;
+    const weight =
+      parsed.weight == null
+        ? null
+        : typeof parsed.weight === 'number'
+          ? parsed.weight
+          : Number(parsed.weight);
+    if (weight != null && !Number.isFinite(weight)) {
+      return null;
+    }
+    return { ...parsed, weight };
   } catch {
     return null;
   }
@@ -58,7 +67,16 @@ export function decodeDiscoverUserCursor(raw: string): DiscoverUserCursorPayload
     if (typeof parsed !== 'object' || parsed === null || typeof parsed.name !== 'string') {
       return null;
     }
-    return parsed;
+    const wobjects_weight =
+      parsed.wobjects_weight == null
+        ? null
+        : typeof parsed.wobjects_weight === 'number'
+          ? parsed.wobjects_weight
+          : Number(parsed.wobjects_weight);
+    if (wobjects_weight != null && !Number.isFinite(wobjects_weight)) {
+      return null;
+    }
+    return { ...parsed, wobjects_weight };
   } catch {
     return null;
   }
