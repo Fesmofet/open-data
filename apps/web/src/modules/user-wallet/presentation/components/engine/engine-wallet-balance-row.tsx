@@ -7,15 +7,13 @@ import type { EngineTokenBalanceRowView } from '../../../domain/types/engine-wal
 import { EngineWalletTokenIcon } from './engine-wallet-token-icon';
 
 function formatUsdEstimate(value: number, locale: string): string {
-  if (!Number.isFinite(value) || value <= 0) {
-    return '—';
-  }
+  const amount = Number.isFinite(value) && value > 0 ? value : 0;
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(amount);
 }
 
 type EngineWalletBalanceRowProps = {
@@ -28,42 +26,35 @@ export function EngineWalletBalanceRow({ token }: EngineWalletBalanceRowProps) {
   const balance = formatEngineTokenAmountDisplay(token.balance);
   const hasStake =
     token.stakingEnabled && stake !== '0' && stake.length > 0;
+  const usd = formatUsdEstimate(token.usdEstimate, locale);
 
   return (
-    <div className="flex gap-3 py-3">
+    <div className="flex items-center gap-4 py-4">
       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface">
         <EngineWalletTokenIcon symbol={token.symbol} iconUrl={token.iconUrl} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-body-sm">
-            {token.symbol}{' '}
-            <span className="text-muted">
-              ({formatUsdEstimate(token.usdEstimate, locale)})
-            </span>
-          </p>
-          <p className="shrink-0 text-right text-body-sm font-weight-strong">
-            {hasStake ? (
-              <span className="text-caption text-muted">
-                {t('wallet_liquid_short')}{' '}
-              </span>
-            ) : null}
-            {balance} {token.symbol}
-          </p>
-        </div>
-        <div className="mt-1 flex items-start justify-between gap-3">
-          <p className="text-caption text-muted">{token.name}</p>
+        <p className="text-body font-weight-strong text-fg">{token.symbol}</p>
+        <p className="text-body-sm text-muted">{token.name}</p>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-0.5">
+        <p className="text-body-sm text-muted tabular-nums">
           {hasStake ? (
-            <p className="shrink-0 text-right text-body-sm">
-              <span className="text-caption text-muted">
-                {t('wallet_staked_short')}{' '}
-              </span>
-              <span className="font-weight-strong">
-                {stake} {token.symbol}
-              </span>
-            </p>
+            <span className="text-caption">
+              {t('wallet_liquid_short')}{' '}
+            </span>
           ) : null}
-        </div>
+          {balance}
+        </p>
+        <p className="text-body font-weight-strong text-fg tabular-nums">{usd}</p>
+        {hasStake ? (
+          <p className="text-body-sm tabular-nums">
+            <span className="text-caption text-muted">
+              {t('wallet_staked_short')}{' '}
+            </span>
+            <span className="font-weight-strong text-fg">{stake}</span>
+          </p>
+        ) : null}
       </div>
     </div>
   );
