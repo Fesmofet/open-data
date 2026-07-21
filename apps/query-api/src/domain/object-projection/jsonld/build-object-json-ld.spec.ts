@@ -8,6 +8,7 @@ describe('buildObjectJsonLd', () => {
     object_id: 'obj-1',
     object_type: OBJECT_TYPES.PRODUCT,
     semantic_type: null,
+    status: 'active',
     weight: 1,
     fields: {
       name: 'Widget',

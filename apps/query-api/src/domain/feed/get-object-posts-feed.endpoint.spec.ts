@@ -31,6 +31,7 @@ function resolvedView(overrides: Partial<ResolvedObjectView> = {}): ResolvedObje
     creator: 'alice',
     weight: 10,
     meta_group_id: null,
+    status: 'active',
     canonical: null,
     fields: {},
     ...overrides,

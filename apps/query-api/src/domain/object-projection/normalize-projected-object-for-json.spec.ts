@@ -30,6 +30,7 @@ describe('normalizeProjectedObjectForJson', () => {
       object_id: 'y',
       object_type: 'recipe',
       semantic_type: null,
+      status: 'active',
       weight: 1.5,
       fields: {},
       hasAdministrativeAuthority: false,

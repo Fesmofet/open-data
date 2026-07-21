@@ -25,6 +25,7 @@ function projected(id: string, image?: string): ProjectedObject {
     object_id: id,
     object_type: 'item',
     semantic_type: null,
+    status: 'active',
     weight: null,
     fields: image ? { image } : {},
     hasAdministrativeAuthority: false,

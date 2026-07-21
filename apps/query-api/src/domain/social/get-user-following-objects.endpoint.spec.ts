@@ -46,6 +46,7 @@ describe('GetUserFollowingObjectsEndpoint', () => {
       creator: 'c',
       weight: 5,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };
@@ -80,6 +81,7 @@ describe('GetUserFollowingObjectsEndpoint', () => {
       object_id: 'o1',
       object_type: 'restaurant',
       semantic_type: null,
+      status: 'active',
       weight: 5,
       fields: {},
       hasAdministrativeAuthority: false,

@@ -87,6 +87,7 @@ describe('GetUserFavoritesEndpoint', () => {
       creator: 'c',
       weight: 5,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };
@@ -121,6 +122,7 @@ describe('GetUserFavoritesEndpoint', () => {
       object_id: 'o1',
       object_type: 'restaurant',
       semantic_type: null,
+      status: 'active',
       weight: 5,
       fields: { name: 'Cafe' },
       hasAdministrativeAuthority: true,

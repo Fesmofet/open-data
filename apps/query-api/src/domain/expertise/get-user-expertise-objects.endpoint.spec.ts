@@ -70,6 +70,7 @@ describe('GetUserExpertiseObjectsEndpoint', () => {
       creator: 'c',
       weight: 5,
       meta_group_id: null,
+      status: 'active',
       canonical: null,
       fields: {},
     };
@@ -104,6 +105,7 @@ describe('GetUserExpertiseObjectsEndpoint', () => {
       object_id: 'o1',
       object_type: 'restaurant',
       semantic_type: null,
+      status: 'active',
       weight: 5,
       fields: { name: 'Cafe' },
       hasAdministrativeAuthority: false,

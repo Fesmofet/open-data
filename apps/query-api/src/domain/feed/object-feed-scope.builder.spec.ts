@@ -15,6 +15,7 @@ function baseView(overrides: Partial<ResolvedObjectView> = {}): ResolvedObjectVi
     creator: 'alice',
     weight: 10,
     meta_group_id: null,
+    status: 'active',
     canonical: null,
     fields: {},
     ...overrides,
