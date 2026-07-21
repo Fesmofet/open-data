@@ -16,8 +16,8 @@ import { WAIV_WITHDRAW_OUTPUT_SYMBOLS } from '../../../domain/waiv-withdraw-outp
 import { useWalletModal } from '../wallet/wallet-modal-context';
 import { WalletDelegationsListModal } from '../wallet/wallet-delegations-list-modal';
 import { WalletPowerDownProgressModal } from '../wallet/wallet-power-down-progress-modal';
+import { WalletSummaryHeader } from '../shared/wallet-summary-header';
 import {
-  PersonIcon,
   PowerIcon,
   WaivTokenIcon,
   WaivWalletBalanceRow,
@@ -90,111 +90,109 @@ export function WaivWalletSummary({
     : [];
 
   return (
-    <section className="rounded-card border border-border bg-surface p-card-padding shadow-card">
-      <WaivWalletBalanceRow
-        icon={<WaivTokenIcon />}
-        iconFullBleed
-        title={t('waiv_token')}
-        subtitle={t('liquid_waiv_tokens')}
-        amount={summary.display.liquidWaiv}
-        amountSuffix="WAIV"
-        actions={
-          actions
-            ? {
-                primaryLabel: t('power_up'),
-                onPrimary: actions.openPowerUp,
-                menuItems: waivTokenMenuItems,
-              }
-            : null
-        }
+    <section className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+      <WalletSummaryHeader
+        tone="waiv"
+        title={t('waiv_tokens')}
+        subtitle={t('waiv_tokens_info')}
+        estAccountValueLabel={t('est_account_value')}
+        estAccountValue={`${summary.display.estAccountValueUsd} USD`}
       />
-      <WaivWalletBalanceRow
-        icon={<PowerIcon />}
-        iconVariant="accent"
-        title={`${t('waiv_wallet')} Power`}
-        subtitle={t('staked_waiv_tokens')}
-        amount={summary.display.waivPower}
-        amountSuffix="WP"
-        showBorderBottom={
-          !summary.flags.showPowerDownRow && !summary.flags.showDelegationsRow
-        }
-        actions={
-          actions
-            ? {
-                primaryLabel: t('delegate'),
-                onPrimary: actions.openDelegate,
-                menuItems: [
-                  {
-                    id: 'power-down',
-                    label: t('power_down'),
-                    onSelect: actions.openPowerDown,
-                  },
-                ],
-              }
-            : null
-        }
-      />
-      {summary.flags.showPowerDownRow ? (
+      <div className="p-card-padding">
         <WaivWalletBalanceRow
-          reserveIconSpace
-          title={t('power_down')}
-          subtitle={formatNextPowerDownSubtitle(
-            summary.powerDown?.nextUnstakeAt,
-            locale,
-            t('next_power_down'),
-          )}
-          amount={formatEngineTokenAmountDisplay(summary.balance.pendingUnstake)}
-          amountSuffix="WP"
-          amountOnClick={() => setPowerDownProgressOpen(true)}
-          amountTooltip={powerDownTooltip}
-          showBorderBottom={!summary.flags.showDelegationsRow}
+          icon={<WaivTokenIcon />}
+          iconFullBleed
+          title={t('waiv_token')}
+          subtitle={t('liquid_waiv_tokens')}
+          amount={summary.display.liquidWaiv}
+          amountSuffix="WAIV"
           actions={
             actions
               ? {
-                  primaryLabel: t('cancel'),
-                  onPrimary: actions.openCancelPowerDown,
+                  primaryLabel: t('power_up'),
+                  onPrimary: actions.openPowerUp,
+                  menuItems: waivTokenMenuItems,
                 }
               : null
           }
         />
-      ) : null}
-      {summary.flags.showDelegationsRow ? (
         <WaivWalletBalanceRow
-          reserveIconSpace
-          title={`${t('waiv_wallet')} ${t('activity_delegation')}`}
-          subtitle={t('manage_delegations')}
-          amount={summary.display.delegationsNet}
+          icon={<PowerIcon />}
+          iconVariant="accent"
+          title={`${t('waiv_wallet')} Power`}
+          subtitle={t('staked_waiv_tokens')}
+          amount={summary.display.waivPower}
           amountSuffix="WP"
-          amountOnClick={() => setWaivDelegationsOpen(true)}
-          amountTooltip={t('wallet_wp_delegations_tooltip')}
-          showBorderBottom={false}
+          showBorderBottom={
+            !summary.flags.showPowerDownRow && !summary.flags.showDelegationsRow
+          }
           actions={
             actions
               ? {
-                  primaryLabel: t('manage'),
-                  onPrimary: actions.openManage,
+                  primaryLabel: t('delegate'),
+                  onPrimary: actions.openDelegate,
                   menuItems: [
                     {
-                      id: 'delegate',
-                      label: t('delegate'),
-                      onSelect: actions.openDelegate,
+                      id: 'power-down',
+                      label: t('power_down'),
+                      onSelect: actions.openPowerDown,
                     },
                   ],
                 }
               : null
           }
         />
-      ) : null}
-      <div className="mt-2 flex items-center gap-4 border-t border-border pt-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
-          <PersonIcon />
-        </div>
-        <p className="flex-1 text-body font-weight-strong text-fg">
-          {t('est_account_value')}
-        </p>
-        <p className="text-body font-weight-strong text-fg tabular-nums">
-          {summary.display.estAccountValueUsd} USD
-        </p>
+        {summary.flags.showPowerDownRow ? (
+          <WaivWalletBalanceRow
+            reserveIconSpace
+            title={t('power_down')}
+            subtitle={formatNextPowerDownSubtitle(
+              summary.powerDown?.nextUnstakeAt,
+              locale,
+              t('next_power_down'),
+            )}
+            amount={formatEngineTokenAmountDisplay(summary.balance.pendingUnstake)}
+            amountSuffix="WP"
+            amountOnClick={() => setPowerDownProgressOpen(true)}
+            amountTooltip={powerDownTooltip}
+            showBorderBottom={!summary.flags.showDelegationsRow}
+            actions={
+              actions
+                ? {
+                    primaryLabel: t('cancel'),
+                    onPrimary: actions.openCancelPowerDown,
+                  }
+                : null
+            }
+          />
+        ) : null}
+        {summary.flags.showDelegationsRow ? (
+          <WaivWalletBalanceRow
+            reserveIconSpace
+            title={`${t('waiv_wallet')} ${t('activity_delegation')}`}
+            subtitle={t('manage_delegations')}
+            amount={summary.display.delegationsNet}
+            amountSuffix="WP"
+            amountOnClick={() => setWaivDelegationsOpen(true)}
+            amountTooltip={t('wallet_wp_delegations_tooltip')}
+            showBorderBottom={false}
+            actions={
+              actions
+                ? {
+                    primaryLabel: t('manage'),
+                    onPrimary: actions.openManage,
+                    menuItems: [
+                      {
+                        id: 'delegate',
+                        label: t('delegate'),
+                        onSelect: actions.openDelegate,
+                      },
+                    ],
+                  }
+                : null
+            }
+          />
+        ) : null}
       </div>
       {summary.flags.showPowerDownRow ? (
         <WalletPowerDownProgressModal

@@ -19,6 +19,7 @@ import { WalletDelegationsListModal } from '../wallet/wallet-delegations-list-mo
 import { WalletPowerDownProgressModal } from '../wallet/wallet-power-down-progress-modal';
 import { WalletRcDetailsModal } from '../wallet/wallet-rc-details-modal';
 import { WalletSavingsWithdrawProgressModal } from '../wallet/wallet-savings-withdraw-progress-modal';
+import { WalletSummaryHeader } from '../shared/wallet-summary-header';
 import {
   HbdSavingsShieldIcon,
   HbdTokenIcon,
@@ -26,7 +27,6 @@ import {
   HiveSavingsShieldIcon,
   HiveTokenIcon,
   HiveWalletBalanceRow,
-  PersonIcon,
 } from './hive-wallet-balance-row';
 
 export type HiveWalletSummaryProps = {
@@ -121,7 +121,15 @@ export function HiveWalletSummary({
   );
 
   return (
-    <section className="rounded-card border border-border bg-surface p-card-padding shadow-card">
+    <section className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+      <WalletSummaryHeader
+        tone="hive"
+        title={t('hive_tokens')}
+        subtitle={t('hive_tokens_info')}
+        estAccountValueLabel={t('est_account_value')}
+        estAccountValue={`${summary.display.estAccountValueUsd} USD`}
+      />
+      <div className="p-card-padding">
       <HiveWalletBalanceRow
         icon={<HiveTokenIcon />}
         iconFullBleed
@@ -418,16 +426,6 @@ export function HiveWalletSummary({
           }
         />
       ) : null}
-      <div className="mt-2 flex items-center gap-4 border-t border-border pt-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center text-muted">
-          <PersonIcon />
-        </div>
-        <p className="flex-1 text-body font-weight-strong text-fg">
-          {t('est_account_value')}
-        </p>
-        <p className="text-body font-weight-strong text-fg tabular-nums">
-          {summary.display.estAccountValueUsd} USD
-        </p>
       </div>
       {summary.rc ? (
         <WalletRcDetailsModal

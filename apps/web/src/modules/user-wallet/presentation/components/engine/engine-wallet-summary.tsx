@@ -3,6 +3,7 @@
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { EngineWalletSummaryView } from '../../../domain/types/engine-wallet-view';
+import { WalletSummaryHeader } from '../shared/wallet-summary-header';
 import { EngineWalletBalanceRow } from './engine-wallet-balance-row';
 
 export type EngineWalletSummaryProps = {
@@ -20,16 +21,19 @@ export function EngineWalletSummary({ summary }: EngineWalletSummaryProps) {
   }).format(summary.estimatedAccountValueUsd);
 
   return (
-    <section className="rounded-card border border-border bg-surface/80 p-card-padding">
-      <div className="divide-y divide-border">
+    <section className="overflow-hidden rounded-card border border-border bg-surface">
+      <WalletSummaryHeader
+        tone="engine"
+        title={t('hive_engine_tokens')}
+        subtitle={t('hive_engine_tokens_info')}
+        estAccountValueLabel={t('est_account_value')}
+        estAccountValue={estValue}
+      />
+      <div className="divide-y divide-border p-card-padding">
         {combined.map((token) => (
           <EngineWalletBalanceRow key={token.symbol} token={token} />
         ))}
       </div>
-      <p className="mt-4 border-t border-border pt-3 text-body-sm text-muted">
-        {t('est_account_value')}:{' '}
-        <span className="font-weight-strong text-fg">{estValue}</span>
-      </p>
     </section>
   );
 }
