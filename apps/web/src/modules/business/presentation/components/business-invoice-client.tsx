@@ -8,6 +8,7 @@ import { formatAbsoluteDateTime } from '@/shared/utils/format-relative-time';
 import { formatUsdDisplay, shortContractId } from '../../domain/dispute-resolution';
 import { businessRoutes } from '../../domain/routes';
 import type { OblInvoiceDetailApiResponse } from '../../infrastructure/clients/obl-ledger.server';
+import { InvoiceObligationLinesTable } from './relationship/invoice-obligation-lines-table';
 import { BusinessPageShell } from '../layout/business-page-shell';
 import { StateBadge } from './state-badge';
 
@@ -29,6 +30,8 @@ function invoiceStateBadgeVariant(
 export function BusinessInvoiceClient({ detail }: { detail: OblInvoiceDetailApiResponse }) {
   const { t, locale } = useI18n();
   const { invoice, contract } = detail;
+  const lines = invoice.lines ?? [];
+  const isMulti = (invoice.kind === 'multi' || lines.length > 1);
   const showSettled =
     invoice.state === 'resolved' &&
     invoice.final_amount_usd != null &&
@@ -56,6 +59,14 @@ export function BusinessInvoiceClient({ detail }: { detail: OblInvoiceDetailApiR
           <dt className="text-fg-secondary">{t('business_field_creditor')}</dt>
           <dd>@{invoice.creditor}</dd>
         </div>
+        {isMulti ? (
+          <div className="sm:col-span-2">
+            <dt className="mb-2 text-fg-secondary">{t('business_invoice_beneficiaries')}</dt>
+            <dd>
+              <InvoiceObligationLinesTable lines={lines} totalUsd={invoice.amount_usd} />
+            </dd>
+          </div>
+        ) : null}
         <div>
           <dt className="text-fg-secondary">{t('business_field_amount_usd')}</dt>
           <dd>

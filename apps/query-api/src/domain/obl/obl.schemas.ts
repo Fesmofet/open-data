@@ -85,6 +85,12 @@ export const listOblArbitrationQuerySchema = oblAccountQuerySchema.extend({
   cursor: z.string().max(256).optional(),
 });
 
+export const listOblDisputeResolutionQuerySchema = oblAccountQuerySchema.extend({
+  status: z.enum(OBL_ARBITRATION_STATUSES).default('open'),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().max(256).optional(),
+});
+
 export type CreateOblOfferDraftBody = z.infer<typeof createOblOfferDraftBodySchema>;
 export type PatchOblOfferDraftBody = z.infer<typeof patchOblOfferDraftBodySchema>;
 export type MutateOblOfferDraftQuery = z.infer<typeof mutateOblOfferDraftQuerySchema>;
@@ -98,3 +104,4 @@ export type ListOblRelationshipsQuery = z.infer<typeof listOblRelationshipsQuery
 export type OblLedgerListQuery = z.infer<typeof oblLedgerListQuerySchema>;
 export type ListOblOfferDraftsQuery = z.infer<typeof listOblOfferDraftsQuerySchema>;
 export type ListOblArbitrationQuery = z.infer<typeof listOblArbitrationQuerySchema>;
+export type ListOblDisputeResolutionQuery = z.infer<typeof listOblDisputeResolutionQuerySchema>;

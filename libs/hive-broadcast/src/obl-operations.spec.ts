@@ -4,6 +4,7 @@ import {
   buildOblOfferRetireOp,
   buildOblContractSignOp,
   buildOblInvoiceIssueOp,
+  buildOblInvoiceIssueBeneficiariesOp,
   buildOblPaymentDeclareOp,
   buildOblPaymentConfirmOp,
   buildOblDisputeOpenOp,
@@ -123,6 +124,27 @@ describe('obl-operations', () => {
       amountUsd: 10,
     });
     expect(JSON.parse(op.json).events[0].action).toBe('invoice_issue');
+  });
+
+  it('buildOblInvoiceIssueBeneficiariesOp emits beneficiaries invoice_issue', () => {
+    const op = buildOblInvoiceIssueBeneficiariesOp({
+      id: 'obl-mainnet',
+      invoiceId: 'inv-2',
+      issuer: 'organizer',
+      debtor: 'sponsor',
+      contractId: 'c-1',
+      beneficiaries: [
+        { beneficiary: 'winner', amountUsd: '50' },
+        { beneficiary: 'referral', amountUsd: '5', role: 'referral_fee' },
+      ],
+    });
+    const payload = JSON.parse(op.json).events[0].payload as {
+      beneficiaries: Array<{ beneficiary: string; amount_usd: string; role?: string }>;
+      creditor?: string;
+    };
+    expect(payload.creditor).toBeUndefined();
+    expect(payload.beneficiaries).toHaveLength(2);
+    expect(payload.beneficiaries[1].role).toBe('referral_fee');
   });
 
   it('buildOblPaymentDeclareOp emits payment_declare', () => {

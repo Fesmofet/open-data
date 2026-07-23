@@ -1,28 +1,34 @@
 import { BadRequestException } from '@nestjs/common';
-import type { OblInvoice, OblPayment } from '@opden-data-layer/core';
+import type { OblInvoiceLineView } from './obl-invoice-line';
+import type { OblPayment } from '@opden-data-layer/core';
 import { OblLedgerService } from './obl-ledger.service';
 import type { OblRepository } from '../../repositories/obl.repository';
 
-function invoice(
+function invoiceLine(
   id: string,
   seq: bigint,
-  state: OblInvoice['state'] = 'confirmed',
-): OblInvoice {
+  state: OblInvoiceLineView['state'] = 'confirmed',
+): OblInvoiceLineView {
   return {
     invoice_id: id,
     contract_id: null,
     issuer: 'alice',
     debtor: 'bob',
-    creditor: 'alice',
-    amount_usd: '100.00000000',
-    final_amount_usd: null,
+    kind: 'single',
     details: {},
-    state,
-    pair_low: 'alice',
-    pair_high: 'bob',
     created_event_seq: seq,
     transaction_id: 'tx',
     created_at: new Date('2026-01-01T00:00:00.000Z'),
+    line_id: `${id}:0`,
+    creditor: 'alice',
+    beneficiary: 'alice',
+    amount_usd: '100.00000000',
+    final_amount_usd: null,
+    state,
+    role: null,
+    dispute_group: id,
+    pair_low: 'alice',
+    pair_high: 'bob',
   };
 }
 
@@ -54,8 +60,8 @@ describe('OblLedgerService', () => {
       findLedgerStartedSeq: jest.fn().mockResolvedValue(startedSeq),
       listContractsForPairWithOffer: jest.fn().mockResolvedValue([]),
       listInvoicesForPair: jest.fn().mockResolvedValue([
-        invoice('pre', BigInt(10)),
-        invoice('post', BigInt(60)),
+        invoiceLine('pre', BigInt(10)),
+        invoiceLine('post', BigInt(60)),
       ]),
       listPaymentsForPair: jest.fn().mockResolvedValue([
         payment('pay-pre', BigInt(20)),

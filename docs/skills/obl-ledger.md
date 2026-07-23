@@ -6,7 +6,7 @@ type: skill
 status: active
 scope: platform
 tags: [obl, ledger, invoice, payment, balance, mutual-ledger, relationships, business]
-updated_at: 2026-07-17
+updated_at: 2026-07-23
 related:
   - docs/skills/obl-offers-contracts.md
   - docs/skills/obl-disputes.md
@@ -65,11 +65,13 @@ Balance buckets (confirmed / pending / disputed) — [mutual-ledger.md](../spec/
 
 ## Steps — issue invoice
 
-1. Know `issuer`, `debtor`, `creditor`, `amountUsd` (strict USD decimal; no `1dfdf.5`-style junk).
-2. Optional `contractId` when the invoice belongs to a signed contract.
-3. Optional `details` JSON — omit when empty (do not send `{}`).
-4. Client id: `inv-{uuid}` (or project convention).
+1. **Classic single:** `issuer`, `debtor`, `creditor`, `amountUsd`.
+2. **Attestor / beneficiary / multi:** `issuer`, `debtor`, `contractId` (governing contract), `beneficiaries: [{ beneficiary, amountUsd, role? }]`.
+3. Optional `details` JSON — omit when empty.
+4. Client id: `inv-{uuid}`.
 5. Build and broadcast:
+
+**Classic single** — `buildOblInvoiceIssueOp`:
 
 ```ts
 import { buildOblInvoiceIssueOp } from '@opden-data-layer/hive-broadcast';
@@ -85,7 +87,29 @@ const op = buildOblInvoiceIssueOp({
 });
 ```
 
-6. **Gotcha:** if the pair has no started ledger yet, invoice stays `pending` until a contract starts the ledger, then promotes to `confirmed`.
+**Attestor / multi-beneficiary** — use `buildOblEnvelopeOp` until a dedicated builder exists:
+
+```ts
+import { buildOblEnvelopeOp } from '@opden-data-layer/hive-broadcast';
+
+const op = buildOblEnvelopeOp({
+  id: 'obl-mainnet',
+  action: 'invoice_issue',
+  required_posting_auths: ['organizer'],
+  payload: {
+    invoice_id: 'inv-…',
+    issuer: 'organizer',
+    debtor: 'sponsor',
+    contract_id: 'contract-…', // required for attestor
+    beneficiaries: [
+      { beneficiary: 'winner', amount_usd: '50.00', role: 'user_reward' },
+      { beneficiary: 'referral', amount_usd: '5.00', role: 'referral_fee' },
+    ],
+  },
+});
+```
+
+6. **Gotcha:** if the debt pair has no started ledger yet, classic lines stay `pending` until a ledger exists for `(debtor, beneficiary)` — see [contracts.md](../spec/obl/contracts.md). Attestor invoices auto-start the debt-pair ledger per line.
 
 ## Steps — payments
 

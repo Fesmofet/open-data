@@ -14,6 +14,7 @@ export async function revalidateOblAfterBroadcast(
     discover?: boolean;
     drafts?: boolean;
     refreshArbitration?: boolean;
+    refreshDisputeResolution?: boolean;
     ledgerPairs?: Array<{ accountA: string; accountB: string }>;
   },
 ): Promise<void> {
@@ -42,6 +43,10 @@ export async function revalidateOblAfterBroadcast(
   if (options?.refreshArbitration) {
     updateTag(queryApiCacheTags.oblArbitration(account, 'open'));
     updateTag(queryApiCacheTags.oblArbitration(account, 'resolved'));
+  }
+  if (options?.refreshDisputeResolution) {
+    updateTag(queryApiCacheTags.oblDisputeResolution(account, 'open'));
+    updateTag(queryApiCacheTags.oblDisputeResolution(account, 'resolved'));
   }
   if (options?.ledgerPairs) {
     for (const pair of options.ledgerPairs) {

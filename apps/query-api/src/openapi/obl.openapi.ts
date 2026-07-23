@@ -75,17 +75,42 @@ const oblPaymentSchema = registry.register(
   }),
 );
 
-const oblInvoiceSchema = registry.register(
-  'OblInvoice',
+const oblObligationLineSchema = registry.register(
+  'OblObligationLine',
   z.object({
+    line_id: z.string(),
     invoice_id: z.string(),
     debtor: z.string(),
+    beneficiary: z.string(),
     creditor: z.string(),
     amount_usd: z.string(),
     final_amount_usd: z.string().nullable(),
     state: z.enum(['confirmed', 'pending', 'disputed', 'resolved', 'void']),
+    dispute_group: z.string(),
+    role: z.string().nullable(),
+    created_event_seq: z.string(),
+    created_at: z.string(),
+    transaction_id: z.string(),
+  }),
+);
+
+const oblInvoiceSchema = registry.register(
+  'OblInvoice',
+  z.object({
+    invoice_id: z.string(),
+    issuer: z.string().optional(),
+    debtor: z.string(),
+    creditor: z.string().nullable(),
+    kind: z.enum(['single', 'multi']).optional(),
+    amount_usd: z.string().nullable(),
+    final_amount_usd: z.string().nullable(),
+    state: z.enum(['confirmed', 'pending', 'disputed', 'resolved', 'void']).nullable(),
     contract_id: z.string().nullable(),
     details: z.unknown(),
+    line_id: z.string().optional(),
+    beneficiary: z.string().optional(),
+    role: z.string().nullable().optional(),
+    lines: z.array(oblObligationLineSchema).optional(),
     created_event_seq: z.string(),
     created_at: z.string(),
     transaction_id: z.string(),

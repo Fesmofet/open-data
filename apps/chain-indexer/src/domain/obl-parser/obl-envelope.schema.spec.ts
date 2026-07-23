@@ -38,4 +38,18 @@ describe('obl-envelope amount_usd validation', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('accepts beneficiaries array for multi invoice', () => {
+    const result = invoiceIssuePayloadSchema.safeParse({
+      invoice_id: 'inv-2',
+      issuer: 'organizer',
+      debtor: 'sponsor',
+      contract_id: 'c-1',
+      beneficiaries: [
+        { beneficiary: 'winner', amount_usd: '5' },
+        { beneficiary: 'referral', amount_usd: '1', role: 'referral_fee' },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
 });

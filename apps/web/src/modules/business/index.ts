@@ -3,6 +3,7 @@ export { BusinessOffersListClient } from './presentation/components/business-off
 export { BusinessOfferEditorClient } from './presentation/components/business-offer-editor-client';
 export { BusinessRelationshipsClient } from './presentation/components/business-relationships-client';
 export { BusinessArbitrationClient } from './presentation/components/business-arbitration-client';
+export { BusinessDisputeResolutionClient } from './presentation/components/business-dispute-resolution-client';
 export { BusinessRelationshipDetailClient } from './presentation/components/business-relationship-detail-client';
 export { BusinessContractClient } from './presentation/components/business-contract-client';
 export { BusinessInvoiceClient } from './presentation/components/business-invoice-client';

@@ -10,7 +10,7 @@ import { businessRoutes } from '../../domain/routes';
 import type { OblOffsetPage } from '../../domain/obl-pagination.types';
 import { loadMoreOblRelationshipsAction } from '../../infrastructure/actions/load-more-obl.server';
 import type { OblRelationshipApiRow } from '../../infrastructure/clients/obl-ledger.server';
-import { DirectionalUsd } from './directional-usd';
+import { RelationshipRowBalance } from './relationship-row-balance';
 import {
   BusinessEmptyState,
   BusinessPageShell,
@@ -80,12 +80,10 @@ export function BusinessRelationshipsClient({
                       {row.roles.join(', ')} · {row.contractCount}{' '}
                       {t('business_contracts')}
                     </p>
-                    <DirectionalUsd
+                    <RelationshipRowBalance
                       viewer={username}
                       counterparty={row.counterparty}
-                      accountA={row.balance.accountA}
-                      accountB={row.balance.accountB}
-                      bucket={row.balance.confirmed}
+                      balance={row.balance}
                     />
                   </div>
                   <Link

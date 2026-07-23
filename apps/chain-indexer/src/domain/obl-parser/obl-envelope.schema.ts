@@ -52,15 +52,34 @@ export const contractSignPayloadSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-export const invoiceIssuePayloadSchema = z.object({
-  invoice_id: z.string().min(1).max(256),
-  issuer: z.string().min(1).max(32),
-  debtor: z.string().min(1).max(32),
-  creditor: z.string().min(1).max(32),
+const beneficiaryLineSchema = z.object({
+  beneficiary: z.string().min(1).max(32),
   amount_usd: oblPositiveUsdAmountSchema,
-  contract_id: z.string().min(1).max(256).optional(),
-  details: z.record(z.string(), z.unknown()).optional(),
+  role: z.string().min(1).max(64).optional(),
 });
+
+export const invoiceIssuePayloadSchema = z
+  .object({
+    invoice_id: z.string().min(1).max(256),
+    issuer: z.string().min(1).max(32),
+    debtor: z.string().min(1).max(32),
+    creditor: z.string().min(1).max(32).optional(),
+    amount_usd: oblPositiveUsdAmountSchema.optional(),
+    beneficiaries: z.array(beneficiaryLineSchema).min(1).optional(),
+    contract_id: z.string().min(1).max(256).optional(),
+    details: z.record(z.string(), z.unknown()).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasLegacy = data.creditor !== undefined && data.amount_usd !== undefined;
+    const hasBeneficiaries =
+      data.beneficiaries !== undefined && data.beneficiaries.length > 0;
+    if (hasLegacy === hasBeneficiaries) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'invoice_issue: provide either creditor+amount_usd or beneficiaries',
+      });
+    }
+  });
 
 export const paymentDeclarePayloadSchema = z.object({
   payment_id: z.string().min(1).max(256),

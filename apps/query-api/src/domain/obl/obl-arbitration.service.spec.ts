@@ -6,15 +6,17 @@ import { OblArbitrationService } from './obl-arbitration.service';
 describe('OblArbitrationService', () => {
   let service: OblArbitrationService;
   const listArbitrationDisputesForAccount = jest.fn();
+  const listLinesForInvoices = jest.fn();
 
   beforeEach(async () => {
     listArbitrationDisputesForAccount.mockReset();
+    listLinesForInvoices.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OblArbitrationService,
         {
           provide: OblRepository,
-          useValue: { listArbitrationDisputesForAccount },
+          useValue: { listArbitrationDisputesForAccount, listLinesForInvoices },
         },
       ],
     }).compile();
@@ -43,13 +45,8 @@ describe('OblArbitrationService', () => {
             contract_id: 'c1',
             issuer: 'bob',
             debtor: 'alice',
-            creditor: 'bob',
-            amount_usd: '100',
-            final_amount_usd: null,
+            kind: 'single',
             details: {},
-            state: 'disputed',
-            pair_low: 'alice',
-            pair_high: 'bob',
             created_event_seq: BigInt(9),
             transaction_id: 'tx0',
             created_at: new Date('2026-01-01T00:00:00.000Z'),
@@ -76,6 +73,25 @@ describe('OblArbitrationService', () => {
       nextCursor: null,
     });
 
+    listLinesForInvoices.mockResolvedValue([
+      {
+        line_id: 'inv1:0',
+        invoice_id: 'inv1',
+        debtor: 'alice',
+        beneficiary: 'bob',
+        amount_usd: '100',
+        final_amount_usd: null,
+        state: 'disputed',
+        dispute_group: 'inv1',
+        role: null,
+        pair_low: 'alice',
+        pair_high: 'bob',
+        created_event_seq: BigInt(9),
+        transaction_id: 'tx0',
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    ]);
+
     const result = await service.listForAccount('CAROL', {
       account: 'carol',
       status: 'open',
@@ -89,6 +105,7 @@ describe('OblArbitrationService', () => {
       20,
       undefined,
     );
+    expect(listLinesForInvoices).toHaveBeenCalledWith(['inv1']);
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.offerName).toBe('Design sprint');
     expect(result.items[0]?.pair).toEqual({ provider: 'bob', client: 'alice' });

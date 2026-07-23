@@ -29,11 +29,26 @@ export class DisputeOpenHandler implements OdlActionHandler {
       this.logger.warn('dispute_open: invoice not found');
       return;
     }
-    if (data.disputant !== invoice.debtor && data.disputant !== invoice.creditor) {
+
+    const lines = await this.oblRepository.listLinesForInvoice(data.invoice_id);
+    if (lines.length === 0) {
+      this.logger.warn('dispute_open: invoice has no obligation lines');
+      return;
+    }
+
+    const isParty =
+      data.disputant === invoice.debtor ||
+      lines.some((line) => line.beneficiary === data.disputant);
+    if (!isParty) {
       this.logger.warn('dispute_open: disputant not party to invoice');
       return;
     }
-    if (invoice.state === 'disputed' || invoice.state === 'void' || invoice.state === 'resolved') {
+
+    if (lines.some((line) => line.state === 'disputed' || line.state === 'void')) {
+      this.logger.warn('dispute_open: invoice not disputable');
+      return;
+    }
+    if (lines.every((line) => line.state === 'resolved')) {
       this.logger.warn('dispute_open: invoice not disputable');
       return;
     }
@@ -77,7 +92,7 @@ export class DisputeOpenHandler implements OdlActionHandler {
         },
         trx,
       );
-      await this.oblRepository.updateInvoice(
+      await this.oblRepository.updateLinesStateForInvoice(
         data.invoice_id,
         { state: 'disputed' },
         trx,

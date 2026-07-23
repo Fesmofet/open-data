@@ -1,23 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { OblContract, OblDispute, OblInvoice, OblOffer, OblPayment } from '@opden-data-layer/core';
+import type { OblContract, OblDispute, OblOffer, OblPayment } from '@opden-data-layer/core';
 import { normalizeHiveAccount } from '../../auth';
 import { OblRepository } from '../../repositories/obl.repository';
 import { computePairBalance } from './compute-pair-balance';
 import { buildOffsetPage } from './obl-pagination';
 import { filterByLedgerCutoff, normalizePair } from './obl-pair-utils';
+import { toBalanceInvoiceRow, type OblInvoiceLineView } from './obl-invoice-line';
 import type { OblLedgerListQuery, SearchOblOffersQuery } from './obl.schemas';
 
-function toBalanceInvoices(invoices: readonly OblInvoice[]) {
-  return invoices.map((inv) => ({
-    debtor: inv.debtor,
-    creditor: inv.creditor,
-    amount_usd: String(inv.amount_usd),
-    final_amount_usd:
-      inv.final_amount_usd !== null && inv.final_amount_usd !== undefined
-        ? String(inv.final_amount_usd)
-        : null,
-    state: inv.state,
-  }));
+function toBalanceInvoices(invoices: readonly OblInvoiceLineView[]) {
+  return invoices.map((inv) => toBalanceInvoiceRow(inv));
 }
 
 function toBalancePayments(payments: readonly OblPayment[]) {
@@ -76,7 +68,7 @@ export class OblLedgerService {
         offer_description: string | null;
       }
     >;
-    invoices: OblInvoice[];
+    invoices: OblInvoiceLineView[];
     payments: OblPayment[];
     disputes: OblDispute[];
     balance: ReturnType<typeof computePairBalance>;

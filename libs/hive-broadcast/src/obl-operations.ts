@@ -217,6 +217,47 @@ export function buildOblInvoiceIssueOp(input: BuildOblInvoiceIssueOpInput): Cust
   });
 }
 
+export type OblBeneficiaryLineInput = {
+  readonly beneficiary: string;
+  readonly amountUsd: number | string;
+  readonly role?: string;
+};
+
+export type BuildOblInvoiceIssueBeneficiariesOpInput = {
+  readonly id: string;
+  readonly invoiceId: string;
+  readonly issuer: string;
+  readonly debtor: string;
+  readonly beneficiaries: readonly OblBeneficiaryLineInput[];
+  readonly contractId?: string;
+  readonly details?: Record<string, unknown>;
+  readonly required_posting_auths?: readonly string[];
+};
+
+export function buildOblInvoiceIssueBeneficiariesOp(
+  input: BuildOblInvoiceIssueBeneficiariesOpInput,
+): CustomJsonOp {
+  return buildOblEnvelopeOp({
+    id: input.id,
+    action: 'invoice_issue',
+    required_posting_auths: input.required_posting_auths ?? [input.issuer],
+    payload: {
+      invoice_id: input.invoiceId,
+      issuer: input.issuer,
+      debtor: input.debtor,
+      beneficiaries: input.beneficiaries.map((line) => ({
+        beneficiary: line.beneficiary,
+        amount_usd: line.amountUsd,
+        ...(line.role !== undefined && line.role.trim().length > 0
+          ? { role: line.role.trim() }
+          : {}),
+      })),
+      ...(input.contractId !== undefined ? { contract_id: input.contractId } : {}),
+      ...(input.details !== undefined ? { details: input.details } : {}),
+    },
+  });
+}
+
 export type BuildOblPaymentDeclareOpInput = {
   readonly id: string;
   readonly paymentId: string;

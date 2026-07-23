@@ -44,6 +44,18 @@ related:
 
 `lastActivityAt` is retained for compatibility; prefer `lastActivityEventSeq` (chain event sequence, not a timestamp).
 
+## Counterparty discovery
+
+A counterparty is any account that shares an OBL relationship edge with `account`:
+
+- `obl_contracts` — provider/client pair
+- `obl_obligation_lines` — debtor/beneficiary pair (split invoices, third-party beneficiaries)
+- `obl_payments` — payer/receiver pair
+
+Pairs that exist only via obligation lines or payments (no contract) appear in the list with `contractCount: 0` and empty `roles`. Balance still uses per-pair invoice lines and payments after the ledger cutoff (no ledger → no cutoff).
+
+`lastActivityEventSeq` is the max `created_event_seq` across contracts, obligation lines, and payments for that pair.
+
 ## Balance semantics
 
 Per-row `balance` uses invoices and payments for the pair after the ledger `started_event_seq` cutoff (same rules as [`mutual-ledger.md`](mutual-ledger.md)). Computed in one batch query per page — no per-counterparty full ledger fetch.

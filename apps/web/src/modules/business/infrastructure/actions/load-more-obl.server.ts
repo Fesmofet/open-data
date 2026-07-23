@@ -4,6 +4,7 @@ import { queryApiFetchLive } from '@/modules/user-profile/infrastructure/clients
 
 import type { RelationshipTab } from '../../domain/relationship-tab-url';
 import type { ArbitrationStatus } from '../../domain/arbitration-status-url';
+import type { DisputeResolutionStatus } from '../../domain/dispute-resolution-status-url';
 import type { OblCursorPage, OblOffsetPage } from '../../domain/obl-pagination.types';
 import type { OblOfferDraftView } from '../clients/obl-drafts.server';
 import {
@@ -23,6 +24,10 @@ import {
   fetchOblArbitration,
   type ArbitrationDisputeApiRow,
 } from '../clients/obl-arbitration.server';
+import {
+  fetchOblDisputeResolution,
+  type DisputeResolutionApiRow,
+} from '../clients/obl-dispute-resolution.server';
 import type { PairBalanceView } from '../../domain/ledger.types';
 
 export async function loadMorePublicOffersAction(input: {
@@ -79,6 +84,19 @@ export async function loadMoreOblArbitrationAction(
   cursor: string,
 ): Promise<OblCursorPage<ArbitrationDisputeApiRow>> {
   const page = await fetchOblArbitration(
+    account,
+    { status, limit: 20, cursor },
+    true,
+  );
+  return page ?? { items: [], hasMore: false, nextCursor: null };
+}
+
+export async function loadMoreOblDisputeResolutionAction(
+  account: string,
+  status: DisputeResolutionStatus,
+  cursor: string,
+): Promise<OblCursorPage<DisputeResolutionApiRow>> {
+  const page = await fetchOblDisputeResolution(
     account,
     { status, limit: 20, cursor },
     true,

@@ -9,11 +9,11 @@ export default async function BusinessDisputePage({
 }: {
   params: Promise<{ disputeId: string }>;
 }) {
-  await requireBusinessUser();
+  const { username } = await requireBusinessUser();
   const { disputeId } = await params;
   const detail = await fetchOblDispute(decodeURIComponent(disputeId));
   if (!detail) {
     notFound();
   }
-  return <BusinessDisputeClient detail={detail} />;
+  return <BusinessDisputeClient username={username} detail={detail} />;
 }

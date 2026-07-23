@@ -1,7 +1,35 @@
-import type { OblContract, OblDispute, OblInvoice } from '@opden-data-layer/core';
+import type {
+  OblContract,
+  OblDispute,
+  OblInvoice,
+  OblObligationLine,
+} from '@opden-data-layer/core';
+import type { OblInvoiceLineView } from './obl-invoice-line';
+import { aggregateInvoiceLineView } from './obl-invoice-line';
 
 function toIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : String(value);
+}
+
+export function serializeOblObligationLine(row: OblObligationLine) {
+  return {
+    line_id: row.line_id,
+    invoice_id: row.invoice_id,
+    debtor: row.debtor,
+    beneficiary: row.beneficiary,
+    creditor: row.beneficiary,
+    amount_usd: String(row.amount_usd),
+    final_amount_usd:
+      row.final_amount_usd !== null && row.final_amount_usd !== undefined
+        ? String(row.final_amount_usd)
+        : null,
+    state: row.state,
+    dispute_group: row.dispute_group,
+    role: row.role,
+    created_event_seq: row.created_event_seq.toString(),
+    transaction_id: row.transaction_id,
+    created_at: toIso(row.created_at),
+  };
 }
 
 export function serializeOblDispute(row: OblDispute) {
@@ -26,24 +54,59 @@ export function serializeOblDispute(row: OblDispute) {
   };
 }
 
-export function serializeOblInvoice(row: OblInvoice) {
+export function serializeOblInvoiceLine(row: OblInvoiceLineView) {
   return {
     invoice_id: row.invoice_id,
     contract_id: row.contract_id,
     issuer: row.issuer,
     debtor: row.debtor,
+    kind: row.kind,
     creditor: row.creditor,
-    amount_usd: String(row.amount_usd),
-    final_amount_usd:
-      row.final_amount_usd !== null && row.final_amount_usd !== undefined
-        ? String(row.final_amount_usd)
-        : null,
+    amount_usd: row.amount_usd,
+    final_amount_usd: row.final_amount_usd,
     details: row.details,
     state: row.state,
+    line_id: row.line_id,
+    beneficiary: row.beneficiary,
+    role: row.role,
     created_event_seq: row.created_event_seq.toString(),
     transaction_id: row.transaction_id,
     created_at: toIso(row.created_at),
   };
+}
+
+export function serializeOblInvoiceFromHeader(
+  header: OblInvoice,
+  lines: readonly OblObligationLine[],
+) {
+  const view = aggregateInvoiceLineView(header, lines);
+  if (!view) {
+    return {
+      invoice_id: header.invoice_id,
+      contract_id: header.contract_id,
+      issuer: header.issuer,
+      debtor: header.debtor,
+      kind: header.kind,
+      creditor: null,
+      amount_usd: null,
+      final_amount_usd: null,
+      details: header.details,
+      state: null,
+      lines: lines.map(serializeOblObligationLine),
+      created_event_seq: header.created_event_seq.toString(),
+      transaction_id: header.transaction_id,
+      created_at: toIso(header.created_at),
+    };
+  }
+  return {
+    ...serializeOblInvoiceLine(view),
+    lines: lines.map(serializeOblObligationLine),
+  };
+}
+
+/** @deprecated Use serializeOblInvoiceLine for list rows or serializeOblInvoiceFromHeader for detail. */
+export function serializeOblInvoice(row: OblInvoiceLineView) {
+  return serializeOblInvoiceLine(row);
 }
 
 export function serializeOblContract(

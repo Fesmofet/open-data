@@ -3,6 +3,7 @@ import {
   buildOblDisputeOpenOp,
   buildOblDisputeResolveOp,
   buildOblInvoiceIssueOp,
+  buildOblInvoiceIssueBeneficiariesOp,
   buildOblOfferPublishOp,
   buildOblOfferRetireOp,
   buildOblOfferUpdateOp,
@@ -12,6 +13,8 @@ import {
 
 import { parseOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
 
+import type { BeneficiaryLineDraft } from '../domain/invoice-issue';
+import { normalizeHiveAccountInput } from '../domain/invoice-issue';
 import type { OfferDraftFields } from '../domain/offer-form.types';
 import { newOblOfferId } from '../domain/obl-ids';
 
@@ -130,6 +133,31 @@ export function buildIssueInvoiceOp(input: {
     debtor: input.debtor,
     creditor: input.creditor,
     amountUsd: requirePositiveUsdAmount(input.amountUsd),
+    contractId: input.contractId,
+    details: input.details,
+    required_posting_auths: [input.issuer],
+  });
+}
+
+export function buildIssueSplitInvoiceOp(input: {
+  oblCustomJsonId: string;
+  invoiceId: string;
+  issuer: string;
+  debtor: string;
+  beneficiaries: readonly BeneficiaryLineDraft[];
+  contractId?: string;
+  details?: Record<string, unknown>;
+}) {
+  return buildOblInvoiceIssueBeneficiariesOp({
+    id: input.oblCustomJsonId,
+    invoiceId: input.invoiceId,
+    issuer: input.issuer,
+    debtor: normalizeHiveAccountInput(input.debtor),
+    beneficiaries: input.beneficiaries.map((line) => ({
+      beneficiary: normalizeHiveAccountInput(line.beneficiary),
+      amountUsd: requirePositiveUsdAmount(line.amountUsd),
+      role: line.role?.trim() || undefined,
+    })),
     contractId: input.contractId,
     details: input.details,
     required_posting_auths: [input.issuer],

@@ -151,4 +151,20 @@ describe('computePairBalance', () => {
     expect(balance.pending.netUsd).toBe('0.00000000');
     expect(balance.disputed.netUsd).toBe('0.00000000');
   });
+
+  it('nets beneficiary obligation in cross-party pair', () => {
+    const invoices: BalanceInvoiceRow[] = [
+      {
+        debtor: 'sponsor',
+        creditor: 'winnerA',
+        amount_usd: '50.00000000',
+        final_amount_usd: null,
+        state: 'confirmed',
+      },
+    ];
+
+    const balance = computePairBalance('sponsor', 'winnerA', invoices, []);
+    expect(balance.confirmed.owesAtoB).toBe('50.00000000');
+    expect(balance.confirmed.netUsd).toBe('-50.00000000');
+  });
 });

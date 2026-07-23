@@ -30,6 +30,8 @@ export type UserRefSearchFieldProps = {
   updateType?: string;
   /** Translated field name for duplicate messages when `label` is hidden. */
   fieldLabel?: string;
+  /** Override search input placeholder (default: delegation search i18n). */
+  searchPlaceholder?: string;
 };
 
 type DropdownRect = {
@@ -153,6 +155,7 @@ export function UserRefSearchField({
   excludeAccountNames = [],
   updateType = '',
   fieldLabel: fieldLabelProp,
+  searchPlaceholder,
 }: UserRefSearchFieldProps) {
   const { t } = useI18n();
   const listId = useId();
@@ -413,7 +416,9 @@ export function UserRefSearchField({
             ref={inputRef}
             type="search"
             className="w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
-            placeholder={t('object_edit_delegation_search_placeholder')}
+            placeholder={
+              searchPlaceholder ?? t('object_edit_delegation_search_placeholder')
+            }
             value={searchQuery}
             onChange={(e) => {
               setDuplicateAlertFromList(null);

@@ -9,17 +9,24 @@ describe('OblRelationshipsService detail getters', () => {
   const findInvoiceById = jest.fn();
   const findDisputeById = jest.fn();
   const findContractWithOffer = jest.fn();
+  const listLinesForInvoice = jest.fn();
 
   beforeEach(async () => {
     findInvoiceById.mockReset();
     findDisputeById.mockReset();
     findContractWithOffer.mockReset();
+    listLinesForInvoice.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OblRelationshipsService,
         {
           provide: OblRepository,
-          useValue: { findInvoiceById, findDisputeById, findContractWithOffer },
+          useValue: {
+            findInvoiceById,
+            findDisputeById,
+            findContractWithOffer,
+            listLinesForInvoice,
+          },
         },
       ],
     }).compile();
@@ -58,17 +65,30 @@ describe('OblRelationshipsService detail getters', () => {
       contract_id: 'c-1',
       issuer: 'alice',
       debtor: 'bob',
-      creditor: 'alice',
-      amount_usd: '100',
-      final_amount_usd: null,
+      kind: 'single',
       details: {},
-      state: 'confirmed',
-      pair_low: 'alice',
-      pair_high: 'bob',
       created_event_seq: BigInt(10),
       transaction_id: 'tx1',
       created_at: new Date('2026-01-01T00:00:00.000Z'),
     });
+    listLinesForInvoice.mockResolvedValue([
+      {
+        line_id: 'inv-1:0',
+        invoice_id: 'inv-1',
+        debtor: 'bob',
+        beneficiary: 'alice',
+        amount_usd: '100',
+        final_amount_usd: null,
+        state: 'confirmed',
+        dispute_group: 'inv-1',
+        role: null,
+        pair_low: 'alice',
+        pair_high: 'bob',
+        created_event_seq: BigInt(10),
+        transaction_id: 'tx1',
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    ]);
     findContractWithOffer.mockResolvedValue({
       contract_id: 'c-1',
       offer_id: 'offer-1',
@@ -117,17 +137,30 @@ describe('OblRelationshipsService detail getters', () => {
       contract_id: 'c-1',
       issuer: 'alice',
       debtor: 'bob',
-      creditor: 'alice',
-      amount_usd: '100',
-      final_amount_usd: null,
+      kind: 'single',
       details: {},
-      state: 'disputed',
-      pair_low: 'alice',
-      pair_high: 'bob',
       created_event_seq: BigInt(10),
       transaction_id: 'tx1',
       created_at: new Date('2026-01-01T00:00:00.000Z'),
     });
+    listLinesForInvoice.mockResolvedValue([
+      {
+        line_id: 'inv-1:0',
+        invoice_id: 'inv-1',
+        debtor: 'bob',
+        beneficiary: 'alice',
+        amount_usd: '100',
+        final_amount_usd: null,
+        state: 'disputed',
+        dispute_group: 'inv-1',
+        role: null,
+        pair_low: 'alice',
+        pair_high: 'bob',
+        created_event_seq: BigInt(10),
+        transaction_id: 'tx1',
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    ]);
     findContractWithOffer.mockResolvedValue(null);
 
     const result = await service.getDispute('d-1');

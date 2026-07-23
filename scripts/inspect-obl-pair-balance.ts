@@ -82,11 +82,19 @@ async function main(): Promise<void> {
       .execute();
 
     const allInvoices = await db
-      .selectFrom('obl_invoices')
-      .selectAll()
-      .where('pair_low', '=', pairLow)
-      .where('pair_high', '=', pairHigh)
-      .orderBy('created_event_seq', 'asc')
+      .selectFrom('obl_obligation_lines as l')
+      .innerJoin('obl_invoices as i', 'i.invoice_id', 'l.invoice_id')
+      .select([
+        'l.debtor',
+        'l.beneficiary',
+        'l.amount_usd',
+        'l.final_amount_usd',
+        'l.state',
+        'l.created_event_seq',
+      ])
+      .where('l.pair_low', '=', pairLow)
+      .where('l.pair_high', '=', pairHigh)
+      .orderBy('l.created_event_seq', 'asc')
       .execute();
 
     const allPayments = await db
@@ -120,7 +128,7 @@ async function main(): Promise<void> {
       accountB,
       invoices.map((inv) => ({
         debtor: inv.debtor,
-        creditor: inv.creditor,
+        creditor: inv.beneficiary,
         amount_usd: String(inv.amount_usd),
         final_amount_usd:
           inv.final_amount_usd !== null && inv.final_amount_usd !== undefined

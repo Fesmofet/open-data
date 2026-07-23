@@ -5,6 +5,11 @@ import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { disputeResolvePayloadSchema } from '../obl-envelope.schema';
 import { toUsdString } from '../obl.utils';
 
+function sumAmountUsd(lines: readonly { amount_usd: string }[]): string {
+  const total = lines.reduce((sum, line) => sum + Number(line.amount_usd), 0);
+  return total.toFixed(8);
+}
+
 @Injectable()
 export class DisputeResolveHandler implements OdlActionHandler {
   readonly action = 'dispute_resolve';
@@ -35,7 +40,13 @@ export class DisputeResolveHandler implements OdlActionHandler {
       this.logger.warn('dispute_resolve: invoice not found');
       return;
     }
-    if (invoice.state !== 'disputed') {
+
+    const lines = await this.oblRepository.listLinesForInvoice(dispute.invoice_id);
+    if (lines.length === 0) {
+      this.logger.warn('dispute_resolve: invoice has no obligation lines');
+      return;
+    }
+    if (!lines.every((line) => line.state === 'disputed')) {
       this.logger.warn('dispute_resolve: invoice is not disputed');
       return;
     }
@@ -46,7 +57,7 @@ export class DisputeResolveHandler implements OdlActionHandler {
 
     const disputeRule: OblDisputeRule = contract?.dispute_rule ?? 'client';
     const arbiter = contract?.arbiter ?? null;
-    const provider = contract?.provider ?? invoice.creditor;
+    const provider = contract?.provider ?? lines[0].beneficiary;
     const client = contract?.client ?? invoice.debtor;
 
     if (!this.canResolve(disputeRule, arbiter, provider, client, data.resolver)) {
@@ -62,6 +73,18 @@ export class DisputeResolveHandler implements OdlActionHandler {
       return;
     }
 
+    const totalAmount = sumAmountUsd(lines);
+    const isMulti = lines.length > 1;
+
+    if (isMulti) {
+      const finalNum = Number(finalUsd);
+      const totalNum = Number(totalAmount);
+      if (finalNum !== 0 && finalNum !== totalNum) {
+        this.logger.warn('dispute_resolve: multi invoice requires all-void or all-confirm');
+        return;
+      }
+    }
+
     await this.oblRepository.runInTransaction(async (trx) => {
       await this.oblRepository.resolveDispute(
         data.dispute_id,
@@ -72,7 +95,28 @@ export class DisputeResolveHandler implements OdlActionHandler {
         },
         trx,
       );
-      await this.oblRepository.updateInvoice(
+
+      if (isMulti && Number(finalUsd) === 0) {
+        await this.oblRepository.updateLinesStateForInvoice(
+          dispute.invoice_id,
+          { state: 'void', final_amount_usd: '0.00000000' },
+          trx,
+        );
+        return;
+      }
+
+      if (isMulti) {
+        for (const line of lines) {
+          await this.oblRepository.updateLine(
+            line.line_id,
+            { state: 'resolved', final_amount_usd: String(line.amount_usd) },
+            trx,
+          );
+        }
+        return;
+      }
+
+      await this.oblRepository.updateLinesStateForInvoice(
         dispute.invoice_id,
         { state: 'resolved', final_amount_usd: finalUsd },
         trx,

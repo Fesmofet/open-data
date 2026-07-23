@@ -49,10 +49,13 @@ export type LedgerInvoiceRow = {
   contract_id: string | null;
   debtor: string;
   creditor: string;
+  beneficiary?: string;
   issuer: string;
   amount_usd: string;
   final_amount_usd?: string | null;
+  kind?: 'single' | 'multi';
   state: 'confirmed' | 'pending' | 'disputed' | 'resolved' | 'void';
+  role?: string | null;
   details?: Record<string, unknown>;
   created_at: string;
 };

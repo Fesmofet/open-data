@@ -2,17 +2,19 @@ import { Injectable } from '@nestjs/common';
 
 import { normalizeHiveAccount } from '../../auth';
 import { OblRepository } from '../../repositories/obl.repository';
+import type { OblObligationLine } from '@opden-data-layer/core';
 import type { CursorPage } from './obl-pagination';
+import { aggregateInvoiceLineView } from './obl-invoice-line';
 import {
   serializeOblContract,
   serializeOblDispute,
-  serializeOblInvoice,
+  serializeOblInvoiceLine,
 } from './obl-row-serialize';
 import type { ListOblArbitrationQuery } from './obl.schemas';
 
 export type ArbitrationDisputeRow = {
   dispute: ReturnType<typeof serializeOblDispute>;
-  invoice: ReturnType<typeof serializeOblInvoice>;
+  invoice: ReturnType<typeof serializeOblInvoiceLine>;
   contract: ReturnType<typeof serializeOblContract>;
   offerName: string;
   pair: { provider: string; client: string };
@@ -33,17 +35,33 @@ export class OblArbitrationService {
       query.limit,
       query.cursor,
     );
-    return {
-      items: page.items.map((row) => ({
+    const invoiceIds = [...new Set(page.items.map((row) => row.invoice.invoice_id))];
+    const allLines = await this.obl.listLinesForInvoices(invoiceIds);
+    const linesByInvoice = new Map<string, OblObligationLine[]>();
+    for (const line of allLines) {
+      const bucket = linesByInvoice.get(line.invoice_id) ?? [];
+      bucket.push(line);
+      linesByInvoice.set(line.invoice_id, bucket);
+    }
+    const items = page.items.map((row) => {
+      const lines = linesByInvoice.get(row.invoice.invoice_id) ?? [];
+      const view = aggregateInvoiceLineView(row.invoice, lines);
+      if (!view) {
+        throw new Error(`OBL invoice ${row.invoice.invoice_id} has no obligation lines`);
+      }
+      return {
         dispute: serializeOblDispute(row.dispute),
-        invoice: serializeOblInvoice(row.invoice),
+        invoice: serializeOblInvoiceLine(view),
         contract: serializeOblContract(row.contract, row.offer_name),
         offerName: row.offer_name ?? '',
         pair: {
           provider: row.contract.provider,
           client: row.contract.client,
         },
-      })),
+      };
+    });
+    return {
+      items,
       hasMore: page.hasMore,
       nextCursor: page.nextCursor,
     };

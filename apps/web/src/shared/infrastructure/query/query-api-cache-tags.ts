@@ -78,4 +78,6 @@ export const queryApiCacheTags = {
     `query-api:obl:${accountName.trim().toLowerCase()}:relationships`,
   oblArbitration: (accountName: string, status: 'open' | 'resolved') =>
     `query-api:obl:${accountName.trim().toLowerCase()}:arbitration:${status}`,
+  oblDisputeResolution: (accountName: string, status: 'open' | 'resolved') =>
+    `query-api:obl:${accountName.trim().toLowerCase()}:dispute-resolution:${status}`,
 } as const;

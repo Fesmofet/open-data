@@ -99,7 +99,7 @@ export class ContractSignHandler implements OdlActionHandler {
           },
           trx,
         );
-        await this.oblRepository.promotePendingInvoicesForPair(pairLow, pairHigh, trx);
+        await this.oblRepository.promotePendingLinesForPair(pairLow, pairHigh, trx);
       }
     });
   }

@@ -1,9 +1,16 @@
 import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
+import { z } from 'zod';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { invoiceIssuePayloadSchema } from '../obl-envelope.schema';
 import { normalizePair, toUsdString, asJsonValue } from '../obl.utils';
+
+type NormalizedLine = {
+  beneficiary: string;
+  amountUsd: string;
+  role?: string;
+};
 
 @Injectable()
 export class InvoiceIssueHandler implements OdlActionHandler {
@@ -23,10 +30,6 @@ export class InvoiceIssueHandler implements OdlActionHandler {
       this.logger.warn('invoice_issue: issuer mismatch');
       return;
     }
-    if (data.issuer !== data.debtor && data.issuer !== data.creditor) {
-      this.logger.warn('invoice_issue: issuer must be debtor or creditor');
-      return;
-    }
 
     const existing = await this.oblRepository.findInvoice(data.invoice_id);
     if (existing) {
@@ -34,31 +37,114 @@ export class InvoiceIssueHandler implements OdlActionHandler {
       return;
     }
 
-    const { pairLow, pairHigh } = normalizePair(data.debtor, data.creditor);
-    const hasLedger = await this.oblRepository.hasLedgerForPair(pairLow, pairHigh);
-    const state = hasLedger ? 'confirmed' : 'pending';
+    const lines = this.normalizeLines(data);
+    const kind = lines.length > 1 ? 'multi' : 'single';
 
-    let amountUsd: string;
-    try {
-      amountUsd = toUsdString(data.amount_usd);
-    } catch {
-      this.logger.warn('invoice_issue: invalid amount_usd');
-      return;
+    const isAttestorIssue = this.isAttestorIssue(data.issuer, data.debtor, lines);
+    let authorizedByGoverning = false;
+
+    if (isAttestorIssue) {
+      if (!data.contract_id) {
+        this.logger.warn('invoice_issue: contract_id required for attestor invoice');
+        return;
+      }
+      const contract = await this.oblRepository.findContract(data.contract_id);
+      if (!contract) {
+        this.logger.warn('invoice_issue: governing contract not found');
+        return;
+      }
+      const parties = new Set([contract.provider, contract.client]);
+      if (!parties.has(data.issuer) || !parties.has(data.debtor)) {
+        this.logger.warn('invoice_issue: issuer and debtor must be parties to governing contract');
+        return;
+      }
+      authorizedByGoverning = true;
     }
 
-    await this.oblRepository.insertInvoice({
-      invoice_id: data.invoice_id,
-      contract_id: data.contract_id ?? null,
-      issuer: data.issuer,
-      debtor: data.debtor,
-      creditor: data.creditor,
-      amount_usd: amountUsd,
-      final_amount_usd: null,
-      details: asJsonValue(data.details ?? {}),
-      state,
-      created_event_seq: ctx.eventSeq,
-      transaction_id: ctx.transactionId,
-      created_at: hiveBlockTimestampToDate(ctx.timestamp),
+    const createdAt = hiveBlockTimestampToDate(ctx.timestamp);
+
+    await this.oblRepository.runInTransaction(async (trx) => {
+      await this.oblRepository.insertInvoice(
+        {
+          invoice_id: data.invoice_id,
+          contract_id: data.contract_id ?? null,
+          issuer: data.issuer,
+          debtor: data.debtor,
+          kind,
+          details: asJsonValue(data.details ?? {}),
+          created_event_seq: ctx.eventSeq,
+          transaction_id: ctx.transactionId,
+          created_at: createdAt,
+        },
+        trx,
+      );
+
+      const obligationLines = [];
+      for (let index = 0; index < lines.length; index += 1) {
+        const line = lines[index];
+        const { pairLow, pairHigh } = normalizePair(data.debtor, line.beneficiary);
+        let state: 'confirmed' | 'pending' = 'pending';
+
+        if (authorizedByGoverning) {
+          state = 'confirmed';
+          await this.oblRepository.insertLedger(
+            {
+              pair_low: pairLow,
+              pair_high: pairHigh,
+              started_event_seq: ctx.eventSeq,
+            },
+            trx,
+          );
+        } else if (await this.oblRepository.hasLedgerForPair(pairLow, pairHigh, trx)) {
+          state = 'confirmed';
+        }
+
+        obligationLines.push({
+          line_id: `${data.invoice_id}:${index}`,
+          invoice_id: data.invoice_id,
+          debtor: data.debtor,
+          beneficiary: line.beneficiary,
+          amount_usd: line.amountUsd,
+          final_amount_usd: null,
+          state,
+          dispute_group: data.invoice_id,
+          role: line.role ?? null,
+          created_event_seq: ctx.eventSeq,
+          transaction_id: ctx.transactionId,
+          created_at: createdAt,
+        });
+      }
+
+      await this.oblRepository.insertObligationLines(obligationLines, trx);
     });
+  }
+
+  private normalizeLines(
+    data: z.infer<typeof invoiceIssuePayloadSchema>,
+  ): NormalizedLine[] {
+    if (data.beneficiaries !== undefined) {
+      return data.beneficiaries.map((row) => ({
+        beneficiary: row.beneficiary,
+        amountUsd: row.amount_usd,
+        role: row.role,
+      }));
+    }
+    return [
+      {
+        beneficiary: data.creditor!,
+        amountUsd: data.amount_usd!,
+      },
+    ];
+  }
+
+  private isAttestorIssue(
+    issuer: string,
+    debtor: string,
+    lines: readonly NormalizedLine[],
+  ): boolean {
+    if (issuer === debtor) {
+      return false;
+    }
+    return !lines.some((line) => line.beneficiary === issuer);
   }
 }

@@ -5,8 +5,10 @@ import {
   OblOffersService,
   OblRelationshipsService,
   OblArbitrationService,
+  OblDisputeResolutionService,
   listOblRelationshipsQuerySchema,
   listOblArbitrationQuerySchema,
+  listOblDisputeResolutionQuerySchema,
   oblAccountQuerySchema,
   oblLedgerListQuerySchema,
   pairBalanceQuerySchema,
@@ -14,6 +16,7 @@ import {
   usdToWaivQuerySchema,
   type ListOblRelationshipsQuery,
   type ListOblArbitrationQuery,
+  type ListOblDisputeResolutionQuery,
   type OblLedgerListQuery,
   type PairBalanceQuery,
   type SearchOblOffersQuery,
@@ -29,6 +32,7 @@ export class OblController {
     private readonly conversion: OblConversionService,
     private readonly relationships: OblRelationshipsService,
     private readonly arbitration: OblArbitrationService,
+    private readonly disputeResolution: OblDisputeResolutionService,
   ) {}
 
   @Get('offers/search')
@@ -121,6 +125,14 @@ export class OblController {
     query: ListOblArbitrationQuery,
   ) {
     return this.arbitration.listForAccount(query.account, query);
+  }
+
+  @Get('dispute-resolution')
+  async listDisputeResolution(
+    @Query(new ZodQueryPipe(listOblDisputeResolutionQuerySchema))
+    query: ListOblDisputeResolutionQuery,
+  ) {
+    return this.disputeResolution.listForAccount(query.account, query);
   }
 
   @Get('contracts/:contractId')

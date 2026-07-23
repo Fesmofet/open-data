@@ -25,6 +25,11 @@ const NAV_ITEMS: { id: BusinessNavId; href: string; labelKey: string }[] = [
     href: businessRoutes.arbitration,
     labelKey: 'business_nav_arbitration',
   },
+  {
+    id: 'dispute-resolution',
+    href: businessRoutes.disputeResolution,
+    labelKey: 'business_nav_dispute_resolution',
+  },
 ];
 
 export type BusinessLayoutNavProps = {

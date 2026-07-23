@@ -17,10 +17,13 @@ export type DisputeAuthority = {
 export function disputeAuthorityForInvoice(
   invoice: LedgerInvoiceRow,
   contracts: readonly LedgerContractRow[],
+  governingContract?: LedgerContractRow | null,
 ): DisputeAuthority {
-  const contract = invoice.contract_id
-    ? contracts.find((c) => c.contract_id === invoice.contract_id)
-    : undefined;
+  const contract =
+    governingContract ??
+    (invoice.contract_id
+      ? contracts.find((c) => c.contract_id === invoice.contract_id)
+      : undefined);
 
   const rule = contract?.dispute_rule ?? 'client';
   const provider = contract?.provider ?? invoice.creditor;
@@ -37,20 +40,32 @@ export function disputeAuthorityForInvoice(
   return { rule, resolverAccount, provider, client, arbiter };
 }
 
+export type CanViewerResolveDisputeOptions = {
+  invoice?: LedgerInvoiceRow | null;
+  governingContract?: LedgerContractRow | null;
+};
+
 export function canViewerResolveDispute(
   viewer: string,
   dispute: LedgerDisputeRow,
   invoices: readonly LedgerInvoiceRow[],
   contracts: readonly LedgerContractRow[],
+  options?: CanViewerResolveDisputeOptions,
 ): boolean {
   if (dispute.status !== 'open') {
     return false;
   }
-  const invoice = invoices.find((inv) => inv.invoice_id === dispute.invoice_id);
+  const invoice =
+    options?.invoice ??
+    invoices.find((inv) => inv.invoice_id === dispute.invoice_id);
   if (!invoice) {
     return false;
   }
-  const authority = disputeAuthorityForInvoice(invoice, contracts);
+  const authority = disputeAuthorityForInvoice(
+    invoice,
+    contracts,
+    options?.governingContract,
+  );
   if (authority.rule === 'arbiter' && !authority.arbiter) {
     return false;
   }

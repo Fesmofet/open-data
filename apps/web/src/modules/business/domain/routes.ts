@@ -1,5 +1,14 @@
 import { buildRelationshipTabHref, type RelationshipTab } from './relationship-tab-url';
-import { buildArbitrationHref, parseArbitrationStatus, type ArbitrationStatus } from './arbitration-status-url';
+import {
+  buildArbitrationHref,
+  parseArbitrationStatus,
+  type ArbitrationStatus,
+} from './arbitration-status-url';
+import {
+  buildDisputeResolutionHref,
+  parseDisputeResolutionStatus,
+  type DisputeResolutionStatus,
+} from './dispute-resolution-status-url';
 
 export type OblOfferKindRoute = 'offer' | 'request';
 
@@ -13,13 +22,20 @@ export {
   buildArbitrationHref,
   parseArbitrationStatus,
 } from './arbitration-status-url';
+export type { DisputeResolutionStatus } from './dispute-resolution-status-url';
+export {
+  DISPUTE_RESOLUTION_STATUSES,
+  buildDisputeResolutionHref,
+  parseDisputeResolutionStatus,
+} from './dispute-resolution-status-url';
 
 export type BusinessNavId =
   | 'discover'
   | 'offers'
   | 'requests'
   | 'relationships'
-  | 'arbitration';
+  | 'arbitration'
+  | 'dispute-resolution';
 
 export function businessNavIdForKind(kind: OblOfferKindRoute): BusinessNavId {
   return kind === 'request' ? 'requests' : 'offers';
@@ -51,6 +67,9 @@ export const businessRoutes = {
   relationships: '/business/relationships',
   arbitration: '/business/arbitration',
   arbitrationWithStatus: (status?: ArbitrationStatus) => buildArbitrationHref(status),
+  disputeResolution: '/business/dispute-resolution',
+  disputeResolutionWithStatus: (status?: DisputeResolutionStatus) =>
+    buildDisputeResolutionHref(status),
   relationship: (account: string) =>
     `/business/relationships/${encodeURIComponent(account)}`,
   relationshipTab: (account: string, tab?: RelationshipTab) =>

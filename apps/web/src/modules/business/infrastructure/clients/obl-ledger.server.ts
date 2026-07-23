@@ -47,6 +47,22 @@ export type OblContractApiRow = {
 
 export type OblContractSummaryApiRow = OblContractApiRow;
 
+export type OblObligationLineApiRow = {
+  line_id: string;
+  invoice_id: string;
+  debtor: string;
+  beneficiary: string;
+  creditor: string;
+  amount_usd: string;
+  final_amount_usd: string | null;
+  state: string;
+  dispute_group: string;
+  role: string | null;
+  created_event_seq: string;
+  transaction_id: string;
+  created_at: string;
+};
+
 export type OblInvoiceApiRow = {
   invoice_id: string;
   contract_id: string | null;
@@ -57,6 +73,8 @@ export type OblInvoiceApiRow = {
   final_amount_usd: string | null;
   details: Record<string, unknown>;
   state: string;
+  kind?: 'single' | 'multi';
+  lines?: OblObligationLineApiRow[];
   created_event_seq: string;
   transaction_id: string;
   created_at: string;

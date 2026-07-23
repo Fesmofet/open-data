@@ -6,10 +6,13 @@ import type {
   NewOblInvoice,
   NewOblLedger,
   NewOblOffer,
+  NewOblObligationLine,
   NewOblPayment,
   OblContract,
   OblDispute,
   OblInvoice,
+  OblInvoiceState,
+  OblObligationLine,
   OblOffer,
   OblOfferStatus,
   OblPayment,
@@ -256,19 +259,89 @@ export class OblRepository {
     }
   }
 
-  async updateInvoice(
+  async insertObligationLines(
+    rows: readonly NewOblObligationLine[],
+    trx?: DbExecutor,
+  ): Promise<void> {
+    if (rows.length === 0) {
+      return;
+    }
+    try {
+      await this.executor(trx).insertInto('obl_obligation_lines').values(rows).execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
+  async listLinesForInvoice(
     invoiceId: string,
+    trx?: DbExecutor,
+  ): Promise<OblObligationLine[]> {
+    try {
+      return await this.executor(trx)
+        .selectFrom('obl_obligation_lines')
+        .where('invoice_id', '=', invoiceId)
+        .selectAll()
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
+
+  async updateLine(
+    lineId: string,
     patch: {
-      state?: OblInvoice['state'];
+      state?: OblInvoiceState;
       final_amount_usd?: string | null;
     },
     trx?: DbExecutor,
   ): Promise<void> {
     try {
       await this.executor(trx)
-        .updateTable('obl_invoices')
+        .updateTable('obl_obligation_lines')
+        .set(patch)
+        .where('line_id', '=', lineId)
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
+  async updateLinesStateForInvoice(
+    invoiceId: string,
+    patch: {
+      state?: OblInvoiceState;
+      final_amount_usd?: string | null;
+    },
+    trx?: DbExecutor,
+  ): Promise<void> {
+    try {
+      await this.executor(trx)
+        .updateTable('obl_obligation_lines')
         .set(patch)
         .where('invoice_id', '=', invoiceId)
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
+  async promotePendingLinesForPair(
+    pairLow: string,
+    pairHigh: string,
+    trx?: DbExecutor,
+  ): Promise<void> {
+    try {
+      await this.executor(trx)
+        .updateTable('obl_obligation_lines')
+        .set({ state: 'confirmed' })
+        .where('pair_low', '=', pairLow)
+        .where('pair_high', '=', pairHigh)
+        .where('state', '=', 'pending')
         .execute();
     } catch (e) {
       this.logger.error((e as Error).message);
@@ -281,18 +354,7 @@ export class OblRepository {
     pairHigh: string,
     trx?: DbExecutor,
   ): Promise<void> {
-    try {
-      await this.executor(trx)
-        .updateTable('obl_invoices')
-        .set({ state: 'confirmed' })
-        .where('pair_low', '=', pairLow)
-        .where('pair_high', '=', pairHigh)
-        .where('state', '=', 'pending')
-        .execute();
-    } catch (e) {
-      this.logger.error((e as Error).message);
-      throw e;
-    }
+    await this.promotePendingLinesForPair(pairLow, pairHigh, trx);
   }
 
   async insertPayment(row: NewOblPayment, trx?: DbExecutor): Promise<void> {

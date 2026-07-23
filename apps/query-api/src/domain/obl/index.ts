@@ -10,5 +10,9 @@ export { OblOfferDraftsService, type OblOfferDraftView } from './obl-offer-draft
 export { OblOffersService, OblLedgerService } from './obl-ledger.service';
 export { OblRelationshipsService, type OblInvoiceDetailRow, type OblDisputeDetailRow } from './obl-relationships.service';
 export { OblArbitrationService, type ArbitrationDisputeRow } from './obl-arbitration.service';
+export {
+  OblDisputeResolutionService,
+  type DisputeResolutionRow,
+} from './obl-dispute-resolution.service';
 export { OblConversionService } from './obl-conversion.service';
 export { OblModule } from './obl.module';

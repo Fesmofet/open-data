@@ -45,6 +45,7 @@ describe('ContractSignHandler', () => {
   let hasLedgerForPair: jest.Mock;
   let runInTransaction: jest.Mock;
   let insertContract: jest.Mock;
+  let promotePendingLinesForPair: jest.Mock;
 
   beforeEach(() => {
     findOfferVersion = jest.fn();
@@ -53,6 +54,7 @@ describe('ContractSignHandler', () => {
     hasLedgerForPair = jest.fn().mockResolvedValue(false);
     runInTransaction = jest.fn(async (fn: (trx: unknown) => Promise<void>) => fn({}));
     insertContract = jest.fn().mockResolvedValue(undefined);
+    promotePendingLinesForPair = jest.fn();
     handler = new ContractSignHandler({
       findOfferVersion,
       findContract,
@@ -61,7 +63,7 @@ describe('ContractSignHandler', () => {
       runInTransaction,
       insertContract,
       insertLedger: jest.fn(),
-      promotePendingInvoicesForPair: jest.fn(),
+      promotePendingLinesForPair,
     } as unknown as OblRepository);
   });
 
@@ -138,5 +140,43 @@ describe('ContractSignHandler', () => {
       }),
       expect.anything(),
     );
+  });
+
+  it('promotes pending lines when ledger did not exist', async () => {
+    findOfferVersion.mockResolvedValue(baseOffer);
+    hasLedgerForPair.mockResolvedValue(false);
+    await handler.handle(
+      {
+        contract_id: 'c-1',
+        offer_id: 'offer-1',
+        offer_version: 1,
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+      ctx('bob'),
+    );
+    expect(promotePendingLinesForPair).toHaveBeenCalledWith(
+      'alice',
+      'bob',
+      expect.anything(),
+    );
+  });
+
+  it('skips promote when ledger already existed', async () => {
+    findOfferVersion.mockResolvedValue(baseOffer);
+    hasLedgerForPair.mockResolvedValue(true);
+    await handler.handle(
+      {
+        contract_id: 'c-1',
+        offer_id: 'offer-1',
+        offer_version: 1,
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+      ctx('bob'),
+    );
+    expect(promotePendingLinesForPair).not.toHaveBeenCalled();
   });
 });

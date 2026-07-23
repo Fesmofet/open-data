@@ -47,6 +47,41 @@ export function viewerNetUsd(
   return net;
 }
 
+export function shouldShowPendingWhenSettled(
+  viewer: string,
+  accountA: string,
+  accountB: string,
+  confirmed: DirectionalUsdView,
+  pending: DirectionalUsdView,
+): boolean {
+  return (
+    viewerNetUsd(viewer, accountA, accountB, confirmed.netUsd) === 0 &&
+    viewerNetUsd(viewer, accountA, accountB, pending.netUsd) !== 0
+  );
+}
+
+export function formatPendingBalanceLine(
+  viewer: string,
+  counterparty: string,
+  accountA: string,
+  accountB: string,
+  pending: DirectionalUsdView,
+  t: (key: string) => string,
+): string {
+  const viewerNet = viewerNetUsd(viewer, accountA, accountB, pending.netUsd);
+  if (viewerNet > 0) {
+    return t('business_balance_pending_counterparty_owes_you')
+      .replace('@account', `@${counterparty}`)
+      .replace('$amount', formatDisplayUsd(viewerNet));
+  }
+  if (viewerNet < 0) {
+    return t('business_balance_pending_you_owe_counterparty')
+      .replace('@account', `@${counterparty}`)
+      .replace('$amount', formatDisplayUsd(Math.abs(viewerNet)));
+  }
+  return '';
+}
+
 export type DirectionalUsdProps = {
   viewer: string;
   counterparty: string;

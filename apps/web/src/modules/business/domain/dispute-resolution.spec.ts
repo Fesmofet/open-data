@@ -47,4 +47,19 @@ describe('dispute-resolution', () => {
     expect(canViewerResolveDispute('bob', dispute, [invoice], [contract])).toBe(true);
     expect(canViewerResolveDispute('alice', dispute, [invoice], [contract])).toBe(false);
   });
+
+  it('resolves provider rule using governing contract outside pair contracts list', () => {
+    const providerContract: LedgerContractRow = {
+      ...contract,
+      dispute_rule: 'provider',
+      provider: 'alice',
+      client: 'bob',
+    };
+    expect(
+      canViewerResolveDispute('alice', dispute, [], [], {
+        invoice,
+        governingContract: providerContract,
+      }),
+    ).toBe(true);
+  });
 });

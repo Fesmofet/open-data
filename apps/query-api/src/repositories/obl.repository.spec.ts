@@ -120,4 +120,59 @@ describe('OblRepository', () => {
     expect(where).toHaveBeenCalledWith('d.status', '=', 'open');
     expect(execute).toHaveBeenCalled();
   });
+
+  it('listResolverDisputesForAccount filters provider and client resolver rules', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const where = jest.fn();
+    const chain: Record<string, jest.Mock> = { where };
+    const handler: ProxyHandler<object> = {
+      get(_target, prop) {
+        if (prop === 'execute') {
+          return execute;
+        }
+        if (!chain[String(prop)]) {
+          chain[String(prop)] = jest.fn().mockReturnValue(new Proxy({}, handler));
+        }
+        return chain[String(prop)];
+      },
+    };
+    where.mockReturnValue(new Proxy({}, handler));
+    const db = new Proxy({}, handler) as Kysely<unknown>;
+    const repo = new OblRepository(db as never);
+
+    await repo.listResolverDisputesForAccount('bob', 'open', 20, undefined);
+
+    expect(where).toHaveBeenCalledWith('d.status', '=', 'open');
+    expect(execute).toHaveBeenCalled();
+  });
+
+  it('listDisputesForPairPaginated orders by created_at not dispute_id', async () => {
+    const execute = jest.fn().mockResolvedValue([]);
+    const orderBy = jest.fn();
+    const distinctOn = jest.fn();
+    const chain: Record<string, jest.Mock> = { orderBy, distinctOn };
+    const handler: ProxyHandler<object> = {
+      get(_target, prop) {
+        if (prop === 'execute') {
+          return execute;
+        }
+        if (!chain[String(prop)]) {
+          chain[String(prop)] = jest.fn().mockReturnValue(new Proxy({}, handler));
+        }
+        return chain[String(prop)];
+      },
+    };
+    orderBy.mockReturnValue(new Proxy({}, handler));
+    const db = new Proxy({}, handler) as Kysely<unknown>;
+    const repo = new OblRepository(db as never);
+
+    await repo.listDisputesForPairPaginated('alice', 'bob', 20, undefined, null);
+
+    expect(distinctOn).not.toHaveBeenCalled();
+    expect(orderBy).toHaveBeenCalledWith('d.created_at', 'desc');
+    expect(orderBy).toHaveBeenCalledWith('d.created_event_seq', 'desc');
+    expect(orderBy).toHaveBeenCalledWith('d.dispute_id', 'desc');
+    expect(orderBy.mock.calls[0]).toEqual(['d.created_at', 'desc']);
+    expect(execute).toHaveBeenCalled();
+  });
 });

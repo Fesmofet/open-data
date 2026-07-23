@@ -13,6 +13,7 @@ import {
   buildConfirmPaymentOp,
   buildDeclarePaymentOp,
   buildIssueInvoiceOp,
+  buildIssueSplitInvoiceOp,
   buildOpenDisputeOp,
   buildResolveDisputeOp,
 } from '../../application/build-obl-ops';
@@ -31,6 +32,7 @@ import type {
   LedgerPaymentRow,
   PairBalanceView,
 } from '../../domain/ledger.types';
+import { groupLedgerInvoiceRows, type InvoiceIssueSubmitPayload } from '../../domain/invoice-issue';
 import { sortByCreatedAtDesc } from '../../domain/ledger-sort';
 import {
   newOblDisputeId,
@@ -113,7 +115,10 @@ function canDisputeInvoice(
     return false;
   }
   if (username !== invoice.debtor && username !== invoice.creditor) {
-    return false;
+    const beneficiary = invoice.beneficiary ?? invoice.creditor;
+    if (username !== beneficiary) {
+      return false;
+    }
   }
   return !hasOpenDisputeForInvoice(disputes, invoice.invoice_id);
 }
@@ -186,7 +191,10 @@ export function BusinessRelationshipDetailClient({
   }, [contractLabels, lists.contracts.items]);
 
   const invoices = useMemo(
-    () => sortByCreatedAtDesc(castTabRows<LedgerInvoiceRow>(lists.invoices.items)),
+    () =>
+      groupLedgerInvoiceRows(
+        sortByCreatedAtDesc(castTabRows<LedgerInvoiceRow>(lists.invoices.items)),
+      ),
     [lists.invoices.items],
   );
   const payments = useMemo(
@@ -202,11 +210,14 @@ export function BusinessRelationshipDetailClient({
     if (!resolveDisputeRow) {
       return null;
     }
-    const invoice = invoices.find((inv) => inv.invoice_id === resolveDisputeRow.invoice_id);
+    const invoice = findInvoiceForDispute(resolveDisputeRow, invoices);
     if (!invoice) {
       return null;
     }
-    return disputeAuthorityForInvoice(invoice, contracts);
+    const governingContract = invoice.contract_id
+      ? contracts.find((c) => c.contract_id === invoice.contract_id)
+      : undefined;
+    return disputeAuthorityForInvoice(invoice, contracts, governingContract);
   }, [resolveDisputeRow, invoices, contracts]);
 
   const resolveInvoice = useMemo(() => {
@@ -216,22 +227,31 @@ export function BusinessRelationshipDetailClient({
     return findInvoiceForDispute(resolveDisputeRow, invoices) ?? null;
   }, [resolveDisputeRow, invoices]);
 
-  async function issueInvoice(
-    amountUsd: string,
-    parties: { debtor: string; creditor: string },
-    contractId?: string,
-    details?: Record<string, unknown>,
-  ) {
+  async function issueInvoice(payload: InvoiceIssueSubmitPayload) {
+    if (payload.mode === 'simple') {
+      await broadcast([
+        buildIssueInvoiceOp({
+          oblCustomJsonId,
+          invoiceId: newOblInvoiceId(),
+          issuer: username,
+          debtor: payload.parties.debtor,
+          creditor: payload.parties.creditor,
+          amountUsd: payload.amountUsd,
+          contractId: payload.contractId,
+          details: payload.details,
+        }),
+      ]);
+      return;
+    }
     await broadcast([
-      buildIssueInvoiceOp({
+      buildIssueSplitInvoiceOp({
         oblCustomJsonId,
         invoiceId: newOblInvoiceId(),
         issuer: username,
-        debtor: parties.debtor,
-        creditor: parties.creditor,
-        amountUsd,
-        contractId,
-        details,
+        debtor: payload.debtor,
+        beneficiaries: payload.beneficiaries,
+        contractId: payload.contractId,
+        details: payload.details,
       }),
     ]);
   }
@@ -421,7 +441,12 @@ export function BusinessRelationshipDetailClient({
                           <> · ${inv.amount_usd}</>
                         )}
                       </span>
-                      <StateBadge variant={invoiceStateBadgeVariant(inv.state)} />
+                        <StateBadge variant={invoiceStateBadgeVariant(inv.state)} />
+                        {inv.kind === 'multi' ? (
+                          <span className="text-caption text-fg-secondary">
+                            {t('business_invoice_kind_multi')}
+                          </span>
+                        ) : null}
                     </div>
                     <p className="mt-1 text-caption text-fg-secondary">
                       @{inv.debtor} → @{inv.creditor}
@@ -489,8 +514,14 @@ export function BusinessRelationshipDetailClient({
                 <p className="text-body-sm text-fg-secondary">{t('business_disputes_empty')}</p>
               ) : null}
               {disputes.map((d) => {
-                const resolvable = canViewerResolveDispute(username, d, invoices, contracts);
                 const linkedInvoice = findInvoiceForDispute(d, invoices);
+                const governingContract = linkedInvoice?.contract_id
+                  ? contracts.find((c) => c.contract_id === linkedInvoice.contract_id)
+                  : undefined;
+                const resolvable = canViewerResolveDispute(username, d, invoices, contracts, {
+                  invoice: linkedInvoice,
+                  governingContract,
+                });
                 const linkedContract = contractLabel(linkedInvoice?.contract_id, contracts);
                 const linkedContractUrl = contractHref(linkedInvoice?.contract_id);
                 return (
@@ -554,6 +585,7 @@ export function BusinessRelationshipDetailClient({
         onClose={() => setInvoiceModalOpen(false)}
         isBusy={isBusy}
         issuer={username}
+        counterparty={counterparty}
         debtor={counterparty}
         creditor={username}
         contracts={contracts}

@@ -6,25 +6,26 @@ import { buildOffsetPage, type OffsetPage } from './obl-pagination';
 import {
   serializeOblContract,
   serializeOblDispute,
-  serializeOblInvoice,
+  serializeOblInvoiceFromHeader,
 } from './obl-row-serialize';
 import {
   filterByLedgerCutoff,
   normalizePair,
   pairKey,
 } from './obl-pair-utils';
+import { toBalanceInvoiceRow } from './obl-invoice-line';
 import type { ListOblRelationshipsQuery } from './obl.schemas';
 
 export type OblContractSummary = ReturnType<typeof serializeOblContract>;
 
 export type OblInvoiceDetailRow = {
-  invoice: ReturnType<typeof serializeOblInvoice>;
+  invoice: ReturnType<typeof serializeOblInvoiceFromHeader>;
   contract: OblContractSummary | null;
 };
 
 export type OblDisputeDetailRow = {
   dispute: ReturnType<typeof serializeOblDispute>;
-  invoice: ReturnType<typeof serializeOblInvoice>;
+  invoice: ReturnType<typeof serializeOblInvoiceFromHeader>;
   contract: OblContractSummary | null;
 };
 
@@ -101,16 +102,7 @@ export class OblRelationshipsService {
       const balance = computePairBalance(
         account,
         counterparty,
-        invoices.map((inv) => ({
-          debtor: inv.debtor,
-          creditor: inv.creditor,
-          amount_usd: String(inv.amount_usd),
-          final_amount_usd:
-            inv.final_amount_usd !== null && inv.final_amount_usd !== undefined
-              ? String(inv.final_amount_usd)
-              : null,
-          state: inv.state,
-        })),
+        invoices.map((inv) => toBalanceInvoiceRow(inv)),
         payments.map((pay) => ({
           payer: pay.payer,
           receiver: pay.receiver,
@@ -149,11 +141,12 @@ export class OblRelationshipsService {
     if (!invoice) {
       throw new NotFoundException('OBL invoice not found');
     }
+    const lines = await this.obl.listLinesForInvoice(invoiceId);
     const contractRow = invoice.contract_id
       ? await this.obl.findContractWithOffer(invoice.contract_id)
       : null;
     return {
-      invoice: serializeOblInvoice(invoice),
+      invoice: serializeOblInvoiceFromHeader(invoice, lines),
       contract: contractRow
         ? serializeOblContract(
             contractRow,
@@ -173,12 +166,13 @@ export class OblRelationshipsService {
     if (!invoice) {
       throw new NotFoundException('OBL invoice not found');
     }
+    const lines = await this.obl.listLinesForInvoice(dispute.invoice_id);
     const contractRow = invoice.contract_id
       ? await this.obl.findContractWithOffer(invoice.contract_id)
       : null;
     return {
       dispute: serializeOblDispute(dispute),
-      invoice: serializeOblInvoice(invoice),
+      invoice: serializeOblInvoiceFromHeader(invoice, lines),
       contract: contractRow
         ? serializeOblContract(
             contractRow,

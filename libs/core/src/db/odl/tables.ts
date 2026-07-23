@@ -82,6 +82,7 @@ export interface OdlDatabase {
   obl_offers: OblOffersTable;
   obl_contracts: OblContractsTable;
   obl_invoices: OblInvoicesTable;
+  obl_obligation_lines: OblObligationLinesTable;
   obl_ledgers: OblLedgersTable;
   obl_payments: OblPaymentsTable;
   obl_disputes: OblDisputesTable;
@@ -1131,6 +1132,7 @@ export type OblInvoiceState =
   | 'disputed'
   | 'resolved'
   | 'void';
+export type OblInvoiceKind = 'single' | 'multi';
 export type OblPaymentMethod = 'token_transfer' | 'upvote_reward' | 'offchain';
 export type OblPaymentState = 'confirmed' | 'pending';
 export type OblDisputeStatus = 'open' | 'resolved';
@@ -1183,13 +1185,8 @@ export interface OblInvoicesTable {
   contract_id: string | null;
   issuer: string;
   debtor: string;
-  creditor: string;
-  amount_usd: ColumnType<string, number | string, number | string>;
-  final_amount_usd: ColumnType<string | null, number | string | null, number | string | null>;
+  kind: OblInvoiceKind;
   details: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
-  state: OblInvoiceState;
-  pair_low: Generated<string>;
-  pair_high: Generated<string>;
   created_event_seq: bigint;
   transaction_id: string;
   created_at: ColumnType<Date, Date | string | undefined, Date | string>;
@@ -1198,6 +1195,27 @@ export interface OblInvoicesTable {
 export type OblInvoice = Selectable<OblInvoicesTable>;
 export type NewOblInvoice = Insertable<OblInvoicesTable>;
 export type OblInvoiceUpdate = Updateable<OblInvoicesTable>;
+
+export interface OblObligationLinesTable {
+  line_id: string;
+  invoice_id: string;
+  debtor: string;
+  beneficiary: string;
+  amount_usd: ColumnType<string, number | string, number | string>;
+  final_amount_usd: ColumnType<string | null, number | string | null, number | string | null>;
+  state: OblInvoiceState;
+  dispute_group: string;
+  role: string | null;
+  pair_low: Generated<string>;
+  pair_high: Generated<string>;
+  created_event_seq: bigint;
+  transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type OblObligationLine = Selectable<OblObligationLinesTable>;
+export type NewOblObligationLine = Insertable<OblObligationLinesTable>;
+export type OblObligationLineUpdate = Updateable<OblObligationLinesTable>;
 
 export interface OblLedgersTable {
   pair_low: string;
