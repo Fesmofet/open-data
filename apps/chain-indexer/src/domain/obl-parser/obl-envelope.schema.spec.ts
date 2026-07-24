@@ -1,6 +1,8 @@
 import {
   invoiceIssuePayloadSchema,
   paymentDeclarePayloadSchema,
+  reportCreatePayloadSchema,
+  serviceOrderCreatePayloadSchema,
 } from './obl-envelope.schema';
 
 describe('obl-envelope amount_usd validation', () => {
@@ -49,6 +51,43 @@ describe('obl-envelope amount_usd validation', () => {
         { beneficiary: 'winner', amount_usd: '5' },
         { beneficiary: 'referral', amount_usd: '1', role: 'referral_fee' },
       ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts service_order_create payload', () => {
+    const result = serviceOrderCreatePayloadSchema.safeParse({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      creator: 'alice',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('requires contract_id or service_order_id for report_create', () => {
+    const missing = reportCreatePayloadSchema.safeParse({
+      report_id: 'r-1',
+      author: 'alice',
+    });
+    expect(missing.success).toBe(false);
+
+    const ok = reportCreatePayloadSchema.safeParse({
+      report_id: 'r-1',
+      author: 'alice',
+      service_order_id: 'so-1',
+    });
+    expect(ok.success).toBe(true);
+  });
+
+  it('accepts optional service_order_id and report_id on invoice issue', () => {
+    const result = invoiceIssuePayloadSchema.safeParse({
+      invoice_id: 'inv-3',
+      issuer: 'alice',
+      debtor: 'bob',
+      creditor: 'alice',
+      amount_usd: '1',
+      service_order_id: 'so-1',
+      report_id: 'r-1',
     });
     expect(result.success).toBe(true);
   });

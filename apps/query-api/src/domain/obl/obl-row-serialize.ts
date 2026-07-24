@@ -3,6 +3,8 @@ import type {
   OblDispute,
   OblInvoice,
   OblObligationLine,
+  OblReport,
+  OblServiceOrder,
 } from '@opden-data-layer/core';
 import type { OblInvoiceLineView } from './obl-invoice-line';
 import { aggregateInvoiceLineView } from './obl-invoice-line';
@@ -58,6 +60,8 @@ export function serializeOblInvoiceLine(row: OblInvoiceLineView) {
   return {
     invoice_id: row.invoice_id,
     contract_id: row.contract_id,
+    service_order_id: row.service_order_id,
+    report_id: row.report_id,
     issuer: row.issuer,
     debtor: row.debtor,
     kind: row.kind,
@@ -84,6 +88,8 @@ export function serializeOblInvoiceFromHeader(
     return {
       invoice_id: header.invoice_id,
       contract_id: header.contract_id,
+      service_order_id: header.service_order_id,
+      report_id: header.report_id,
       issuer: header.issuer,
       debtor: header.debtor,
       kind: header.kind,
@@ -107,6 +113,35 @@ export function serializeOblInvoiceFromHeader(
 /** @deprecated Use serializeOblInvoiceLine for list rows or serializeOblInvoiceFromHeader for detail. */
 export function serializeOblInvoice(row: OblInvoiceLineView) {
   return serializeOblInvoiceLine(row);
+}
+
+export function serializeOblServiceOrder(row: OblServiceOrder) {
+  return {
+    service_order_id: row.service_order_id,
+    contract_id: row.contract_id,
+    creator: row.creator,
+    provider: row.provider,
+    client: row.client,
+    details: row.details,
+    created_event_seq: row.created_event_seq.toString(),
+    transaction_id: row.transaction_id,
+    created_at: toIso(row.created_at),
+  };
+}
+
+export function serializeOblReport(row: OblReport) {
+  return {
+    report_id: row.report_id,
+    contract_id: row.contract_id,
+    service_order_id: row.service_order_id,
+    author: row.author,
+    provider: row.provider,
+    client: row.client,
+    details: row.details,
+    created_event_seq: row.created_event_seq.toString(),
+    transaction_id: row.transaction_id,
+    created_at: toIso(row.created_at),
+  };
 }
 
 export function serializeOblContract(

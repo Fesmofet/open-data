@@ -70,6 +70,10 @@ export const businessRoutes = {
   disputeResolution: '/business/dispute-resolution',
   disputeResolutionWithStatus: (status?: DisputeResolutionStatus) =>
     buildDisputeResolutionHref(status),
+  serviceOrder: (serviceOrderId: string) =>
+    `/business/service-orders/${encodeURIComponent(serviceOrderId)}`,
+  report: (reportId: string) =>
+    `/business/reports/${encodeURIComponent(reportId)}`,
   relationship: (account: string) =>
     `/business/relationships/${encodeURIComponent(account)}`,
   relationshipTab: (account: string, tab?: RelationshipTab) =>

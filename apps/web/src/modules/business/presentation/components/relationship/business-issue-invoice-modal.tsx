@@ -68,6 +68,8 @@ export function BusinessIssueInvoiceModal({
   const [detailsJson, setDetailsJson] = useState('');
   const [detailsError, setDetailsError] = useState<string | null>(null);
   const [contractId, setContractId] = useState('');
+  const [serviceOrderId, setServiceOrderId] = useState('');
+  const [reportId, setReportId] = useState('');
   const [parties, setParties] = useState({ debtor, creditor });
   const [splitDebtor, setSplitDebtor] = useState(debtor);
   const [beneficiaries, setBeneficiaries] = useState<BeneficiaryLineDraft[]>([
@@ -82,6 +84,8 @@ export function BusinessIssueInvoiceModal({
       setParties({ debtor, creditor });
       setSplitDebtor(debtor);
       setContractId(contracts[0]?.contract_id ?? '');
+      setServiceOrderId('');
+      setReportId('');
       setBeneficiaries([emptyBeneficiaryLine()]);
     }
   }, [open, debtor, creditor, contracts]);
@@ -214,6 +218,8 @@ export function BusinessIssueInvoiceModal({
         amountUsd: amount,
         parties,
         contractId: contractId || undefined,
+        serviceOrderId: serviceOrderId.trim() || undefined,
+        reportId: reportId.trim() || undefined,
         details,
       });
     } else {
@@ -226,6 +232,8 @@ export function BusinessIssueInvoiceModal({
           role: line.role?.trim() || undefined,
         })),
         contractId: contractId || undefined,
+        serviceOrderId: serviceOrderId.trim() || undefined,
+        reportId: reportId.trim() || undefined,
         details,
       });
     }
@@ -530,6 +538,27 @@ export function BusinessIssueInvoiceModal({
           ) : (
             <p className="text-caption text-fg-secondary">{t('business_field_no_contract')}</p>
           )}
+
+          <label className="flex flex-col gap-1 text-body-sm">
+            {t('business_field_service_order')}
+            <input
+              type="text"
+              value={serviceOrderId}
+              onChange={(e) => setServiceOrderId(e.target.value)}
+              className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
+              placeholder={t('business_invoice_optional_link_placeholder')}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-body-sm">
+            {t('business_field_report')}
+            <input
+              type="text"
+              value={reportId}
+              onChange={(e) => setReportId(e.target.value)}
+              className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
+              placeholder={t('business_invoice_optional_link_placeholder')}
+            />
+          </label>
 
           <label className="flex flex-col gap-1 text-body-sm">
             {t('business_invoice_details_label')}

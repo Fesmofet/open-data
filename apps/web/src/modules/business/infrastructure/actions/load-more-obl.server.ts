@@ -13,6 +13,8 @@ import {
   fetchOblLedgerDisputes,
   fetchOblLedgerInvoices,
   fetchOblLedgerPayments,
+  fetchOblLedgerReports,
+  fetchOblLedgerServiceOrders,
   fetchOblRelationships,
   type OblContractApiRow,
   type OblRelationshipApiRow,
@@ -104,7 +106,9 @@ export async function loadMoreOblDisputeResolutionAction(
   return page ?? { items: [], hasMore: false, nextCursor: null };
 }
 
-function ledgerTabPath(tab: RelationshipTab): string {
+function ledgerTabPath(
+  tab: RelationshipTab,
+): 'payments' | 'invoices' | 'contracts' | 'disputes' | 'service-orders' | 'reports' {
   if (tab === 'payments') {
     return 'payments';
   }
@@ -113,6 +117,12 @@ function ledgerTabPath(tab: RelationshipTab): string {
   }
   if (tab === 'contracts') {
     return 'contracts';
+  }
+  if (tab === 'service-orders') {
+    return 'service-orders';
+  }
+  if (tab === 'reports') {
+    return 'reports';
   }
   return 'disputes';
 }
@@ -159,6 +169,20 @@ export async function fetchOblLedgerTabPage(
   }
   if (tab === 'contracts') {
     return (await fetchOblLedgerContracts(accountA, accountB, params)) ?? {
+      items: [],
+      hasMore: false,
+      nextCursor: null,
+    };
+  }
+  if (tab === 'service-orders') {
+    return (await fetchOblLedgerServiceOrders(accountA, accountB, params)) ?? {
+      items: [],
+      hasMore: false,
+      nextCursor: null,
+    };
+  }
+  if (tab === 'reports') {
+    return (await fetchOblLedgerReports(accountA, accountB, params)) ?? {
       items: [],
       hasMore: false,
       nextCursor: null,

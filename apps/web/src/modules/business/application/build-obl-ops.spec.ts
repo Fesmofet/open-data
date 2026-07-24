@@ -1,4 +1,9 @@
-import { buildIssueSplitInvoiceOp } from './build-obl-ops';
+import {
+  buildCreateReportOp,
+  buildCreateServiceOrderOp,
+  buildIssueInvoiceOp,
+  buildIssueSplitInvoiceOp,
+} from './build-obl-ops';
 
 describe('buildIssueSplitInvoiceOp', () => {
   it('normalizes debtor and beneficiary accounts and emits beneficiaries payload', () => {
@@ -39,5 +44,57 @@ describe('buildIssueSplitInvoiceOp', () => {
         beneficiaries: [{ beneficiary: 'winner', amountUsd: '0' }],
       }),
     ).toThrow('invalid amount_usd');
+  });
+});
+
+describe('buildCreateServiceOrderOp', () => {
+  it('emits service_order_create with creator posting auth', () => {
+    const op = buildCreateServiceOrderOp({
+      oblCustomJsonId: 'obl-mainnet',
+      serviceOrderId: 'so-1',
+      contractId: 'c-1',
+      creator: 'alice',
+      details: { note: 'x' },
+    });
+    const envelope = JSON.parse(op.json).events[0];
+    expect(envelope.action).toBe('service_order_create');
+    expect(envelope.payload.service_order_id).toBe('so-1');
+    expect(op.required_posting_auths).toEqual(['alice']);
+  });
+});
+
+describe('buildCreateReportOp', () => {
+  it('emits report_create with author posting auth', () => {
+    const op = buildCreateReportOp({
+      oblCustomJsonId: 'obl-mainnet',
+      reportId: 'r-1',
+      author: 'bob',
+      serviceOrderId: 'so-1',
+    });
+    const envelope = JSON.parse(op.json).events[0];
+    expect(envelope.action).toBe('report_create');
+    expect(envelope.payload.report_id).toBe('r-1');
+    expect(op.required_posting_auths).toEqual(['bob']);
+  });
+});
+
+describe('buildIssueInvoiceOp', () => {
+  it('threads optional service order and report ids', () => {
+    const op = buildIssueInvoiceOp({
+      oblCustomJsonId: 'obl-mainnet',
+      invoiceId: 'inv-1',
+      issuer: 'alice',
+      debtor: 'bob',
+      creditor: 'alice',
+      amountUsd: '10',
+      serviceOrderId: 'so-1',
+      reportId: 'r-1',
+    });
+    const payload = JSON.parse(op.json).events[0].payload as {
+      service_order_id?: string;
+      report_id?: string;
+    };
+    expect(payload.service_order_id).toBe('so-1');
+    expect(payload.report_id).toBe('r-1');
   });
 });

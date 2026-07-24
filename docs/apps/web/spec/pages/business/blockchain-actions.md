@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, business, blockchain]
-updated_at: 2026-07-16
+updated_at: 2026-07-24
 related:
   - docs/apps/web/spec/pages/business/overview.md
 ---
@@ -17,7 +17,7 @@ related:
 
 ## Flow
 
-`useOblBroadcast`: wallet → broadcast → `awaitTrxConfirmation` → `revalidateOblAfterBroadcast` (tags: offers, ledger, relationships).
+`useOblBroadcast`: wallet → broadcast → `awaitTrxConfirmation` → `revalidateOblAfterBroadcast` (tags: offers, ledger, relationships; optional `contractId`, `invoiceId`, `disputeId`, `serviceOrderId`, `reportId`).
 
 ## Custom JSON id
 
@@ -31,13 +31,15 @@ Client broadcasts use `useOblCustomJsonId()` from `OdlNetworkProvider` (server e
 
 ## Builders
 
-`application/build-obl-ops.ts` wraps `@opden-data-layer/hive-broadcast` for publish, update, retire, sign (with optional `metadata`), invoice (with optional `details` + `contractId`), payment declare/confirm (confirm supports `declarePaymentId` and partial amount), dispute open/resolve.
+`application/build-obl-ops.ts` wraps `@opden-data-layer/hive-broadcast` for publish, update, retire, sign (with optional `metadata`), invoice (optional `details`, `contractId`, `serviceOrderId`, `reportId`), service order create, report create, payment declare/confirm (confirm supports `declarePaymentId` and partial amount), dispute open/resolve.
 
 Relationship modals:
 
 | Modal | Op |
 |-------|-----|
-| Issue invoice | `buildIssueInvoiceOp` |
+| Issue invoice | `buildIssueInvoiceOp` / `buildIssueSplitInvoiceOp` |
+| Create service order | `buildCreateServiceOrderOp` |
+| Create report | `buildCreateReportOp` |
 | Record payment | `buildDeclarePaymentOp` |
 | Confirm payment | `buildConfirmPaymentOp` + `declarePaymentId` |
 | Open dispute | `buildOpenDisputeOp` |

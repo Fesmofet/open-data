@@ -80,6 +80,8 @@ export {
   buildOblPaymentConfirmOp,
   buildOblDisputeOpenOp,
   buildOblDisputeResolveOp,
+  buildOblServiceOrderCreateOp,
+  buildOblReportCreateOp,
   type BuildOblEnvelopeOpInput,
   type BuildOblOfferPublishOpInput,
   type BuildOblOfferUpdateOpInput,
@@ -92,4 +94,6 @@ export {
   type BuildOblPaymentConfirmOpInput,
   type BuildOblDisputeOpenOpInput,
   type BuildOblDisputeResolveOpInput,
+  type BuildOblServiceOrderCreateOpInput,
+  type BuildOblReportCreateOpInput,
 } from './obl-operations';

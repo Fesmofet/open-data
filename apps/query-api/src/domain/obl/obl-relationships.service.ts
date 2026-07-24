@@ -7,6 +7,8 @@ import {
   serializeOblContract,
   serializeOblDispute,
   serializeOblInvoiceFromHeader,
+  serializeOblReport,
+  serializeOblServiceOrder,
 } from './obl-row-serialize';
 import {
   filterByLedgerCutoff,
@@ -21,6 +23,19 @@ export type OblContractSummary = ReturnType<typeof serializeOblContract>;
 export type OblInvoiceDetailRow = {
   invoice: ReturnType<typeof serializeOblInvoiceFromHeader>;
   contract: OblContractSummary | null;
+  serviceOrder: ReturnType<typeof serializeOblServiceOrder> | null;
+  report: ReturnType<typeof serializeOblReport> | null;
+};
+
+export type OblServiceOrderDetailRow = {
+  serviceOrder: ReturnType<typeof serializeOblServiceOrder>;
+  contract: OblContractSummary | null;
+};
+
+export type OblReportDetailRow = {
+  report: ReturnType<typeof serializeOblReport>;
+  contract: OblContractSummary | null;
+  serviceOrder: ReturnType<typeof serializeOblServiceOrder> | null;
 };
 
 export type OblDisputeDetailRow = {
@@ -145,6 +160,12 @@ export class OblRelationshipsService {
     const contractRow = invoice.contract_id
       ? await this.obl.findContractWithOffer(invoice.contract_id)
       : null;
+    const serviceOrderRow = invoice.service_order_id
+      ? await this.obl.findServiceOrderById(invoice.service_order_id)
+      : null;
+    const reportRow = invoice.report_id
+      ? await this.obl.findReportById(invoice.report_id)
+      : null;
     return {
       invoice: serializeOblInvoiceFromHeader(invoice, lines),
       contract: contractRow
@@ -154,6 +175,50 @@ export class OblRelationshipsService {
             contractRow.offer_description,
           )
         : null,
+      serviceOrder: serviceOrderRow ? serializeOblServiceOrder(serviceOrderRow) : null,
+      report: reportRow ? serializeOblReport(reportRow) : null,
+    };
+  }
+
+  async getServiceOrder(serviceOrderId: string): Promise<OblServiceOrderDetailRow> {
+    const serviceOrder = await this.obl.findServiceOrderById(serviceOrderId);
+    if (!serviceOrder) {
+      throw new NotFoundException('OBL service order not found');
+    }
+    const contractRow = await this.obl.findContractWithOffer(serviceOrder.contract_id);
+    return {
+      serviceOrder: serializeOblServiceOrder(serviceOrder),
+      contract: contractRow
+        ? serializeOblContract(
+            contractRow,
+            contractRow.offer_name,
+            contractRow.offer_description,
+          )
+        : null,
+    };
+  }
+
+  async getReport(reportId: string): Promise<OblReportDetailRow> {
+    const report = await this.obl.findReportById(reportId);
+    if (!report) {
+      throw new NotFoundException('OBL report not found');
+    }
+    const contractRow = report.contract_id
+      ? await this.obl.findContractWithOffer(report.contract_id)
+      : null;
+    const serviceOrderRow = report.service_order_id
+      ? await this.obl.findServiceOrderById(report.service_order_id)
+      : null;
+    return {
+      report: serializeOblReport(report),
+      contract: contractRow
+        ? serializeOblContract(
+            contractRow,
+            contractRow.offer_name,
+            contractRow.offer_description,
+          )
+        : null,
+      serviceOrder: serviceOrderRow ? serializeOblServiceOrder(serviceOrderRow) : null,
     };
   }
 

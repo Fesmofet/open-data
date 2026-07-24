@@ -37,7 +37,7 @@ PR review: reject `#…`, `rgb(`, `text-sm`/`text-lg`, `rounded-md`, or inline c
 | Area | Gate |
 |------|------|
 | `/business/manage/**` | `requireBusinessUser()` → redirect `/sign-in` |
-| `/business/relationships/**`, `/business/arbitration`, `/business/contracts/**`, `/business/invoices/**`, `/business/disputes/**` | `requireBusinessUser()` |
+| `/business/relationships/**`, `/business/arbitration`, `/business/contracts/**`, `/business/invoices/**`, `/business/disputes/**`, `/business/service-orders/**`, `/business/reports/**` | `requireBusinessUser()` |
 | `/business`, `/business/offers`, `/business/requests` (discover) | Public |
 | `/offers/.../versions/:v`, `/requests/.../versions/:v` | Public read; sign requires wallet session |
 
@@ -60,6 +60,8 @@ Header entry: avatar menu → **Business** (`/business/offers` discover) (`logge
 | `/business/relationships/:account` | Balance cards + tabs |
 | `/business/contracts/:contractId` | Contract drill-down |
 | `/business/invoices/:invoiceId` | Invoice drill-down |
+| `/business/service-orders/:serviceOrderId` | Service order drill-down |
+| `/business/reports/:reportId` | Report drill-down |
 | `/business/disputes/:disputeId` | Dispute drill-down |
 | `/offers`, `/requests` | Redirect → discover |
 | `/offers/:id/versions/:v`, `/requests/:id/versions/:v` | Public sign + disclosures |

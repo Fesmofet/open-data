@@ -89,6 +89,20 @@ export class OblController {
     return this.ledger.listDisputes(query);
   }
 
+  @Get('ledger/service-orders')
+  async listLedgerServiceOrders(
+    @Query(new ZodQueryPipe(oblLedgerListQuerySchema)) query: OblLedgerListQuery,
+  ) {
+    return this.ledger.listServiceOrders(query);
+  }
+
+  @Get('ledger/reports')
+  async listLedgerReports(
+    @Query(new ZodQueryPipe(oblLedgerListQuerySchema)) query: OblLedgerListQuery,
+  ) {
+    return this.ledger.listReports(query);
+  }
+
   @Get('ledger')
   async getLedger(
     @Query(new ZodQueryPipe(pairBalanceQuerySchema)) query: PairBalanceQuery,
@@ -143,6 +157,16 @@ export class OblController {
   @Get('invoices/:invoiceId')
   async getInvoice(@Param('invoiceId') invoiceId: string) {
     return this.relationships.getInvoice(invoiceId);
+  }
+
+  @Get('service-orders/:serviceOrderId')
+  async getServiceOrder(@Param('serviceOrderId') serviceOrderId: string) {
+    return this.relationships.getServiceOrder(serviceOrderId);
+  }
+
+  @Get('reports/:reportId')
+  async getReport(@Param('reportId') reportId: string) {
+    return this.relationships.getReport(reportId);
   }
 
   @Get('disputes/:disputeId')

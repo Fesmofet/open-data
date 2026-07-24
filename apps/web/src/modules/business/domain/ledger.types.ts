@@ -47,6 +47,8 @@ export type OblRelationshipRow = {
 export type LedgerInvoiceRow = {
   invoice_id: string;
   contract_id: string | null;
+  service_order_id?: string | null;
+  report_id?: string | null;
   debtor: string;
   creditor: string;
   beneficiary?: string;
@@ -93,5 +95,30 @@ export type LedgerContractRow = {
   arbiter: string | null;
   offer_name: string;
   offer_description: string | null;
+  created_at: string;
+};
+
+export type LedgerServiceOrderRow = {
+  service_order_id: string;
+  contract_id: string;
+  creator: string;
+  provider: string;
+  client: string;
+  details: Record<string, unknown>;
+  created_event_seq: string;
+  transaction_id: string;
+  created_at: string;
+};
+
+export type LedgerReportRow = {
+  report_id: string;
+  contract_id: string | null;
+  service_order_id: string | null;
+  author: string;
+  provider: string;
+  client: string;
+  details: Record<string, unknown>;
+  created_event_seq: string;
+  transaction_id: string;
   created_at: string;
 };

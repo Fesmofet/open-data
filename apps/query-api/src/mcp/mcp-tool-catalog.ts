@@ -451,6 +451,18 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     httpEquivalent: 'GET /query/v1/obl/contracts/:contractId',
     specPath: 'docs/spec/open-business-layer.md',
   },
+  {
+    name: 'get_obl_service_order',
+    description: 'Get one OBL service order by service_order_id with optional contract summary.',
+    httpEquivalent: 'GET /query/v1/obl/service-orders/:serviceOrderId',
+    specPath: 'docs/spec/obl/service-orders.md',
+  },
+  {
+    name: 'get_obl_report',
+    description: 'Get one OBL report by report_id with optional contract and service order.',
+    httpEquivalent: 'GET /query/v1/obl/reports/:reportId',
+    specPath: 'docs/spec/obl/reports.md',
+  },
 ] as const;
 
 export const REGISTERED_MCP_TOOL_NAMES: readonly string[] = QUERY_MCP_TOOL_CATALOG.map(

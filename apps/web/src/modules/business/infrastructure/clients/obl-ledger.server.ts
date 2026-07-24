@@ -63,9 +63,47 @@ export type OblObligationLineApiRow = {
   created_at: string;
 };
 
+export type OblServiceOrderApiRow = {
+  service_order_id: string;
+  contract_id: string;
+  creator: string;
+  provider: string;
+  client: string;
+  details: Record<string, unknown>;
+  created_event_seq: string;
+  transaction_id: string;
+  created_at: string;
+};
+
+export type OblReportApiRow = {
+  report_id: string;
+  contract_id: string | null;
+  service_order_id: string | null;
+  author: string;
+  provider: string;
+  client: string;
+  details: Record<string, unknown>;
+  created_event_seq: string;
+  transaction_id: string;
+  created_at: string;
+};
+
+export type OblServiceOrderDetailApiResponse = {
+  serviceOrder: OblServiceOrderApiRow;
+  contract: OblContractSummaryApiRow | null;
+};
+
+export type OblReportDetailApiResponse = {
+  report: OblReportApiRow;
+  contract: OblContractSummaryApiRow | null;
+  serviceOrder: OblServiceOrderApiRow | null;
+};
+
 export type OblInvoiceApiRow = {
   invoice_id: string;
   contract_id: string | null;
+  service_order_id?: string | null;
+  report_id?: string | null;
   issuer: string;
   debtor: string;
   creditor: string;
@@ -83,6 +121,8 @@ export type OblInvoiceApiRow = {
 export type OblInvoiceDetailApiResponse = {
   invoice: OblInvoiceApiRow;
   contract: OblContractSummaryApiRow | null;
+  serviceOrder: OblServiceOrderApiRow | null;
+  report: OblReportApiRow | null;
 };
 
 export type OblDisputeApiRow = {
@@ -109,15 +149,20 @@ function ledgerPairTags(accountA: string, accountB: string): string[] {
   return [queryApiCacheTags.oblLedger(accountA, accountB)];
 }
 
-function ledgerSubListPath(
-  segment: 'payments' | 'invoices' | 'contracts' | 'disputes',
-  params: URLSearchParams,
-): string {
+type OblLedgerSubListSegment =
+  | 'payments'
+  | 'invoices'
+  | 'contracts'
+  | 'disputes'
+  | 'service-orders'
+  | 'reports';
+
+function ledgerSubListPath(segment: OblLedgerSubListSegment, params: URLSearchParams): string {
   return `/query/v1/obl/ledger/${segment}?${params.toString()}`;
 }
 
 async function fetchOblLedgerSubList<T>(
-  segment: 'payments' | 'invoices' | 'contracts' | 'disputes',
+  segment: OblLedgerSubListSegment,
   accountA: string,
   accountB: string,
   params: URLSearchParams,
@@ -189,6 +234,27 @@ export async function fetchOblLedgerDisputes(
   return fetchOblLedgerSubList<unknown>('disputes', accountA, accountB, params);
 }
 
+export async function fetchOblLedgerServiceOrders(
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+) {
+  return fetchOblLedgerSubList<OblServiceOrderApiRow>(
+    'service-orders',
+    accountA,
+    accountB,
+    params,
+  );
+}
+
+export async function fetchOblLedgerReports(
+  accountA: string,
+  accountB: string,
+  params: URLSearchParams,
+) {
+  return fetchOblLedgerSubList<OblReportApiRow>('reports', accountA, accountB, params);
+}
+
 export async function fetchOblRelationships(
   account: string,
   pagination?: { limit?: number; offset?: number },
@@ -217,6 +283,20 @@ export async function fetchOblInvoice(invoiceId: string) {
   return queryApiFetch<OblInvoiceDetailApiResponse>(
     `/query/v1/obl/invoices/${encodeURIComponent(invoiceId)}`,
     { cacheTags: [queryApiCacheTags.oblInvoice(invoiceId)] },
+  );
+}
+
+export async function fetchOblServiceOrder(serviceOrderId: string) {
+  return queryApiFetch<OblServiceOrderDetailApiResponse>(
+    `/query/v1/obl/service-orders/${encodeURIComponent(serviceOrderId)}`,
+    { cacheTags: [queryApiCacheTags.oblServiceOrder(serviceOrderId)] },
+  );
+}
+
+export async function fetchOblReport(reportId: string) {
+  return queryApiFetch<OblReportDetailApiResponse>(
+    `/query/v1/obl/reports/${encodeURIComponent(reportId)}`,
+    { cacheTags: [queryApiCacheTags.oblReport(reportId)] },
   );
 }
 

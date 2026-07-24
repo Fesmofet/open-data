@@ -6,12 +6,14 @@ type: spec
 status: active
 scope: platform
 tags: [obl, business-layer]
-updated_at: 2026-07-14
+updated_at: 2026-07-24
 related:
   - docs/spec/obl/mutual-ledger.md
   - docs/spec/obl/contracts.md
   - docs/spec/obl/payments.md
   - docs/spec/obl/disputes.md
+  - docs/spec/obl/service-orders.md
+  - docs/spec/obl/reports.md
   - docs/apps/chain-indexer/spec/obl-parser.md
   - docs/apps/query-api/spec/obl.md
 ---
@@ -27,7 +29,9 @@ Waivio indexes OBL on-chain history and computes per-pair **Mutual Ledger** bala
 
 ## Lifecycle
 
-`draft` (off-chain, query-api) → `offer_publish` → `contract_sign` → invoices / payments / disputes.
+`draft` (off-chain, query-api) → `offer_publish` → `contract_sign` → optional `service_order_create` / `report_create` → `invoice_issue` → payments / disputes.
+
+On-chain actions include: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve` (see [chain-indexer obl-parser](../apps/chain-indexer/spec/obl-parser.md)).
 
 Drafts are editable off-chain (`obl_offer_drafts`). Publishing freezes a version on-chain.
 
@@ -48,6 +52,8 @@ Catalog ODL objects remain on `odl-mainnet` / `odl-testnet`.
 | [contracts.md](obl/contracts.md) | Offers, contracts, invoices |
 | [payments.md](obl/payments.md) | On-chain WAIV, upvote rewards, off-chain |
 | [disputes.md](obl/disputes.md) | Dispute open/resolve rules |
+| [service-orders.md](obl/service-orders.md) | Immutable service orders |
+| [reports.md](obl/reports.md) | Immutable reports |
 
 ## App specs
 

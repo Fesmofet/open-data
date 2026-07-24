@@ -10,6 +10,8 @@ import type {
   OblOfferDraft,
   OblOfferDraftUpdate,
   OblPayment,
+  OblReport,
+  OblServiceOrder,
 } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
@@ -45,6 +47,8 @@ type OblArbitrationRawRow = OblDispute & {
   i_debtor: string;
   i_kind: OblInvoice['kind'];
   i_contract_id: string | null;
+  i_service_order_id: string | null;
+  i_report_id: string | null;
   i_details: OblInvoice['details'];
   i_created_event_seq: bigint;
   i_transaction_id: string;
@@ -72,6 +76,8 @@ function mapArbitrationRawRow(row: OblArbitrationRawRow): OblArbitrationJoinRow 
     i_debtor,
     i_kind,
     i_contract_id,
+    i_service_order_id,
+    i_report_id,
     i_details,
     i_created_event_seq,
     i_transaction_id,
@@ -97,6 +103,8 @@ function mapArbitrationRawRow(row: OblArbitrationRawRow): OblArbitrationJoinRow 
     invoice: {
       invoice_id: i_invoice_id,
       contract_id: i_contract_id,
+      service_order_id: i_service_order_id,
+      report_id: i_report_id,
       issuer: i_issuer,
       debtor: i_debtor,
       kind: i_kind,
@@ -142,6 +150,8 @@ export class OblRepository {
       .select([
         'i.invoice_id',
         'i.contract_id',
+        'i.service_order_id',
+        'i.report_id',
         'i.issuer',
         'i.debtor',
         'i.kind',
@@ -165,6 +175,8 @@ export class OblRepository {
     rows: Array<{
       invoice_id: string;
       contract_id: string | null;
+      service_order_id: string | null;
+      report_id: string | null;
       issuer: string;
       debtor: string;
       kind: OblInvoice['kind'];
@@ -755,6 +767,8 @@ export class OblRepository {
         'i.debtor as i_debtor',
         'i.kind as i_kind',
         'i.contract_id as i_contract_id',
+        'i.service_order_id as i_service_order_id',
+        'i.report_id as i_report_id',
         'i.details as i_details',
         'i.created_event_seq as i_created_event_seq',
         'i.transaction_id as i_transaction_id',
@@ -1054,6 +1068,118 @@ export class OblRepository {
       .orderBy('created_event_seq', 'desc')
       .executeTakeFirst();
     return row?.created_event_seq ?? null;
+  }
+
+  async findServiceOrderById(serviceOrderId: string): Promise<OblServiceOrder | null> {
+    const row = await this.db
+      .selectFrom('obl_service_orders')
+      .selectAll()
+      .where('service_order_id', '=', serviceOrderId)
+      .executeTakeFirst();
+    return row ?? null;
+  }
+
+  async findReportById(reportId: string): Promise<OblReport | null> {
+    const row = await this.db
+      .selectFrom('obl_reports')
+      .selectAll()
+      .where('report_id', '=', reportId)
+      .executeTakeFirst();
+    return row ?? null;
+  }
+
+  async listServiceOrdersForPairPaginated(
+    pairLow: string,
+    pairHigh: string,
+    limit: number,
+    cursor: string | undefined,
+    startedSeq: bigint | null,
+  ): Promise<CursorPage<OblServiceOrder>> {
+    const decoded = decodeOblCursor(cursor);
+    const governingContracts = this.governingContractIdsSubquery(pairLow, pairHigh);
+    let qb = this.db
+      .selectFrom('obl_service_orders')
+      .selectAll()
+      .where((eb) =>
+        eb.or([
+          eb.and([
+            eb('pair_low', '=', pairLow),
+            eb('pair_high', '=', pairHigh),
+          ]),
+          eb('contract_id', 'in', governingContracts),
+        ]),
+      );
+    if (startedSeq !== null) {
+      qb = qb.where('created_event_seq', '>=', startedSeq);
+    }
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('created_event_seq', '=', decoded.seq),
+            eb('service_order_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = await qb
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
+      .orderBy('service_order_id', 'desc')
+      .limit(limit + 1)
+      .execute();
+    return buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.service_order_id,
+    }));
+  }
+
+  async listReportsForPairPaginated(
+    pairLow: string,
+    pairHigh: string,
+    limit: number,
+    cursor: string | undefined,
+    startedSeq: bigint | null,
+  ): Promise<CursorPage<OblReport>> {
+    const decoded = decodeOblCursor(cursor);
+    const governingContracts = this.governingContractIdsSubquery(pairLow, pairHigh);
+    let qb = this.db
+      .selectFrom('obl_reports')
+      .selectAll()
+      .where((eb) =>
+        eb.or([
+          eb.and([
+            eb('pair_low', '=', pairLow),
+            eb('pair_high', '=', pairHigh),
+          ]),
+          eb('contract_id', 'in', governingContracts),
+        ]),
+      );
+    if (startedSeq !== null) {
+      qb = qb.where('created_event_seq', '>=', startedSeq);
+    }
+    if (decoded) {
+      qb = qb.where((eb) =>
+        eb.or([
+          eb('created_event_seq', '<', decoded.seq),
+          eb.and([
+            eb('created_event_seq', '=', decoded.seq),
+            eb('report_id', '<', decoded.id),
+          ]),
+        ]),
+      );
+    }
+    const rows = await qb
+      .orderBy('created_at', 'desc')
+      .orderBy('created_event_seq', 'desc')
+      .orderBy('report_id', 'desc')
+      .limit(limit + 1)
+      .execute();
+    return buildCursorPageFromRows(rows, limit, (row) => ({
+      seq: row.created_event_seq,
+      id: row.report_id,
+    }));
   }
 }
 

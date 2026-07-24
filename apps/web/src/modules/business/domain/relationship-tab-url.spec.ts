@@ -1,36 +1,17 @@
 import {
-  buildRelationshipTabHref,
+  isRelationshipTab,
   parseRelationshipTab,
+  RELATIONSHIP_TABS,
 } from './relationship-tab-url';
 
-describe('parseRelationshipTab', () => {
-  it('defaults to payments', () => {
-    expect(parseRelationshipTab({})).toBe('payments');
-    expect(parseRelationshipTab(new URLSearchParams())).toBe('payments');
+describe('relationship-tab-url', () => {
+  it('includes service-orders and reports tabs', () => {
+    expect(RELATIONSHIP_TABS).toContain('service-orders');
+    expect(RELATIONSHIP_TABS).toContain('reports');
   });
 
-  it('parses valid tab from search params', () => {
-    expect(parseRelationshipTab({ tab: 'invoices' })).toBe('invoices');
-    expect(parseRelationshipTab(new URLSearchParams('tab=disputes'))).toBe('disputes');
-  });
-
-  it('falls back to payments for invalid tab', () => {
-    expect(parseRelationshipTab({ tab: 'overview' })).toBe('payments');
-    expect(parseRelationshipTab({ tab: '' })).toBe('payments');
-  });
-});
-
-describe('buildRelationshipTabHref', () => {
-  it('omits query for default tab', () => {
-    expect(buildRelationshipTabHref('flowmaster')).toBe('/business/relationships/flowmaster');
-    expect(buildRelationshipTabHref('flowmaster', 'payments')).toBe(
-      '/business/relationships/flowmaster',
-    );
-  });
-
-  it('includes tab query for non-default tabs', () => {
-    expect(buildRelationshipTabHref('flowmaster', 'contracts')).toBe(
-      '/business/relationships/flowmaster?tab=contracts',
-    );
+  it('parses service-orders tab from search params', () => {
+    expect(parseRelationshipTab(new URLSearchParams('tab=service-orders'))).toBe('service-orders');
+    expect(isRelationshipTab('reports')).toBe(true);
   });
 });

@@ -3,6 +3,8 @@ import { businessRoutes } from './routes';
 export const RELATIONSHIP_TABS = [
   'payments',
   'contracts',
+  'service-orders',
+  'reports',
   'invoices',
   'disputes',
 ] as const;

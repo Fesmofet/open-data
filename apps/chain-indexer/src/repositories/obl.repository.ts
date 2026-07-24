@@ -8,6 +8,8 @@ import type {
   NewOblOffer,
   NewOblObligationLine,
   NewOblPayment,
+  NewOblReport,
+  NewOblServiceOrder,
   OblContract,
   OblDispute,
   OblInvoice,
@@ -16,6 +18,8 @@ import type {
   OblOffer,
   OblOfferStatus,
   OblPayment,
+  OblReport,
+  OblServiceOrder,
 } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
@@ -462,6 +466,57 @@ export class OblRepository {
         .set({ ...patch, status: 'resolved' })
         .where('dispute_id', '=', disputeId)
         .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
+  async findServiceOrder(
+    serviceOrderId: string,
+    trx?: DbExecutor,
+  ): Promise<OblServiceOrder | null> {
+    try {
+      return (
+        (await this.executor(trx)
+          .selectFrom('obl_service_orders')
+          .where('service_order_id', '=', serviceOrderId)
+          .selectAll()
+          .executeTakeFirst()) ?? null
+      );
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
+
+  async insertServiceOrder(row: NewOblServiceOrder, trx?: DbExecutor): Promise<void> {
+    try {
+      await this.executor(trx).insertInto('obl_service_orders').values(row).execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
+  async findReport(reportId: string, trx?: DbExecutor): Promise<OblReport | null> {
+    try {
+      return (
+        (await this.executor(trx)
+          .selectFrom('obl_reports')
+          .where('report_id', '=', reportId)
+          .selectAll()
+          .executeTakeFirst()) ?? null
+      );
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
+
+  async insertReport(row: NewOblReport, trx?: DbExecutor): Promise<void> {
+    try {
+      await this.executor(trx).insertInto('obl_reports').values(row).execute();
     } catch (e) {
       this.logger.error((e as Error).message);
       throw e;

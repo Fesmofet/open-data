@@ -67,6 +67,9 @@ export const queryApiCacheTags = {
     `query-api:obl:invoice:${invoiceId.trim()}`,
   oblDispute: (disputeId: string) =>
     `query-api:obl:dispute:${disputeId.trim()}`,
+  oblServiceOrder: (serviceOrderId: string) =>
+    `query-api:obl:service-order:${serviceOrderId.trim()}`,
+  oblReport: (reportId: string) => `query-api:obl:report:${reportId.trim()}`,
   oblLedger: (accountA: string, accountB: string) => {
     const a = accountA.trim().toLowerCase();
     const b = accountB.trim().toLowerCase();

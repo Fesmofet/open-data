@@ -22,7 +22,7 @@ OpenAPI schemas: `apps/query-api/src/openapi/obl.openapi.ts`
 
 ## Data model (read path)
 
-- **`obl_invoices`** — header only: `issuer`, `debtor`, `kind` (`single` | `multi`), optional `contract_id`, `details`.
+- **`obl_invoices`** — header only: `issuer`, `debtor`, `kind` (`single` | `multi`), optional `contract_id`, optional `service_order_id` / `report_id`, `details`.
 - **`obl_obligation_lines`** — netting source: one row per beneficiary line (`debtor`, `beneficiary`, `amount_usd`, `state`, `role?`, `dispute_group`).
 - List endpoints return **one row per obligation line** (joined with header). Field `creditor` is a backward-compatible alias for `beneficiary`.
 - `GET /obl/invoices/:invoiceId` returns header fields plus full `lines[]` array.
@@ -48,16 +48,18 @@ Multi-line invoices in **list** views may aggregate amounts in arbitration/legac
 | GET | `/query/v1/obl/relationships?account=` | `limit`/`offset` → `{ items, hasMore }`; batch balance (no N× full ledger) |
 | GET | `/query/v1/obl/arbitration?account=` | `status` `open` \| `resolved` (default `open`); cursor page of dispute + invoice + contract + offer name |
 | GET | `/query/v1/obl/ledger?accountA=&accountB=` | Full ledger (legacy); contracts respect `started_event_seq` cutoff |
-| GET | `/query/v1/obl/ledger/payments\|invoices\|contracts\|disputes` | Cursor pages: `limit`, `cursor?` — invoices/disputes scoped via `obl_obligation_lines` pair |
+| GET | `/query/v1/obl/ledger/payments\|invoices\|contracts\|disputes\|service-orders\|reports` | Cursor pages: `limit`, `cursor?` — invoices/disputes scoped via `obl_obligation_lines` pair |
 | GET | `/query/v1/obl/balance?accountA=&accountB=` |
 | GET | `/query/v1/obl/contracts/:contractId` |
-| GET | `/query/v1/obl/invoices/:invoiceId` | Header + `lines[]`, `kind` |
+| GET | `/query/v1/obl/invoices/:invoiceId` | Header + `lines[]`, `kind`; may include linked service order / report |
+| GET | `/query/v1/obl/service-orders/:serviceOrderId` |
+| GET | `/query/v1/obl/reports/:reportId` |
 | GET | `/query/v1/obl/disputes/:disputeId` |
 | GET | `/query/v1/obl/convert/usd-to-waiv?amountUsd=` |
 
 ## MCP tools
 
-`search_obl_offers`, `get_obl_offer`, `get_obl_ledger`, `get_obl_balance`, `get_obl_relationships`, `get_obl_arbitration`, `get_obl_contract`, `convert_usd_to_waiv`
+`search_obl_offers`, `get_obl_offer`, `get_obl_ledger`, `get_obl_balance`, `get_obl_relationships`, `get_obl_arbitration`, `get_obl_contract`, `get_obl_service_order`, `get_obl_report`, `convert_usd_to_waiv`
 
 ## Verification
 

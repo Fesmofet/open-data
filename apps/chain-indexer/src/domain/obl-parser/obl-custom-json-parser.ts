@@ -14,6 +14,8 @@ import { PaymentDeclareHandler } from './handlers/payment-declare.handler';
 import { PaymentConfirmHandler } from './handlers/payment-confirm.handler';
 import { DisputeOpenHandler } from './handlers/dispute-open.handler';
 import { DisputeResolveHandler } from './handlers/dispute-resolve.handler';
+import { ServiceOrderCreateHandler } from './handlers/service-order-create.handler';
+import { ReportCreateHandler } from './handlers/report-create.handler';
 
 @Injectable()
 export class OblCustomJsonParser {
@@ -30,6 +32,8 @@ export class OblCustomJsonParser {
     private readonly paymentConfirmHandler: PaymentConfirmHandler,
     private readonly disputeOpenHandler: DisputeOpenHandler,
     private readonly disputeResolveHandler: DisputeResolveHandler,
+    private readonly serviceOrderCreateHandler: ServiceOrderCreateHandler,
+    private readonly reportCreateHandler: ReportCreateHandler,
     private readonly governanceCache: GovernanceCacheService,
   ) {
     this.handlerMap = {
@@ -42,6 +46,8 @@ export class OblCustomJsonParser {
       [this.paymentConfirmHandler.action]: this.paymentConfirmHandler,
       [this.disputeOpenHandler.action]: this.disputeOpenHandler,
       [this.disputeResolveHandler.action]: this.disputeResolveHandler,
+      [this.serviceOrderCreateHandler.action]: this.serviceOrderCreateHandler,
+      [this.reportCreateHandler.action]: this.reportCreateHandler,
     };
   }
 

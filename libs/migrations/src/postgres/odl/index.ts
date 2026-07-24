@@ -42,6 +42,7 @@ import * as m00041 from './00041_obl_list_indexes';
 import * as m00042 from './00042_obl_arbitration_indexes';
 import * as m00043 from './00043_object_status_closed_privacy_erasure';
 import * as m00044 from './00044_obl_obligation_lines';
+import * as m00045 from './00045_obl_service_orders_reports';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -99,4 +100,5 @@ export const MIGRATIONS: Record<string, Migration> = {
     down: m00043.down,
   },
   '00044_obl_obligation_lines': { up: m00044.up, down: m00044.down },
+  '00045_obl_service_orders_reports': { up: m00045.up, down: m00045.down },
 };

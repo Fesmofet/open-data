@@ -11,6 +11,8 @@ import { OptimisticTabButton } from '@/shared/presentation';
 
 import {
   buildConfirmPaymentOp,
+  buildCreateReportOp,
+  buildCreateServiceOrderOp,
   buildDeclarePaymentOp,
   buildIssueInvoiceOp,
   buildIssueSplitInvoiceOp,
@@ -30,6 +32,8 @@ import type {
   LedgerDisputeRow,
   LedgerInvoiceRow,
   LedgerPaymentRow,
+  LedgerReportRow,
+  LedgerServiceOrderRow,
   PairBalanceView,
 } from '../../domain/ledger.types';
 import { groupLedgerInvoiceRows, type InvoiceIssueSubmitPayload } from '../../domain/invoice-issue';
@@ -39,6 +43,8 @@ import {
   newOblInvoiceId,
   newOblPaymentConfirmId,
   newOblPaymentDeclareId,
+  newOblReportId,
+  newOblServiceOrderId,
 } from '../../domain/obl-ids';
 import { businessRoutes } from '../../domain/routes';
 import {
@@ -49,6 +55,8 @@ import {
 import type { OblCursorPage } from '../../domain/obl-pagination.types';
 import type { OblContractApiRow } from '../../infrastructure/clients/obl-ledger.server';
 import { BalanceCards } from './balance-cards';
+import { BusinessCreateReportModal } from './relationship/business-create-report-modal';
+import { BusinessCreateServiceOrderModal } from './relationship/business-create-service-order-modal';
 import { BusinessConfirmPaymentModal } from './relationship/business-confirm-payment-modal';
 import { BusinessDeclarePaymentModal } from './relationship/business-declare-payment-modal';
 import { BusinessIssueInvoiceModal } from './relationship/business-issue-invoice-modal';
@@ -168,6 +176,8 @@ export function BusinessRelationshipDetailClient({
     setTab(parseRelationshipTab(searchParams));
   }, [searchParams]);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [serviceOrderModalOpen, setServiceOrderModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   const [declareModalOpen, setDeclareModalOpen] = useState(false);
   const [confirmPaymentRow, setConfirmPaymentRow] = useState<LedgerPaymentRow | null>(null);
   const [disputeInvoice, setDisputeInvoice] = useState<LedgerInvoiceRow | null>(null);
@@ -205,6 +215,15 @@ export function BusinessRelationshipDetailClient({
     () => sortByCreatedAtDesc(castTabRows<LedgerDisputeRow>(lists.disputes.items)),
     [lists.disputes.items],
   );
+  const serviceOrders = useMemo(
+    () =>
+      sortByCreatedAtDesc(castTabRows<LedgerServiceOrderRow>(lists['service-orders'].items)),
+    [lists['service-orders'].items],
+  );
+  const reports = useMemo(
+    () => sortByCreatedAtDesc(castTabRows<LedgerReportRow>(lists.reports.items)),
+    [lists.reports.items],
+  );
 
   const resolveAuthority = useMemo(() => {
     if (!resolveDisputeRow) {
@@ -228,32 +247,93 @@ export function BusinessRelationshipDetailClient({
   }, [resolveDisputeRow, invoices]);
 
   async function issueInvoice(payload: InvoiceIssueSubmitPayload) {
+    const invoiceId = newOblInvoiceId();
+    const revalidateOverride = {
+      invoiceId,
+      contractId: payload.contractId,
+      serviceOrderId: payload.serviceOrderId,
+      reportId: payload.reportId,
+    };
     if (payload.mode === 'simple') {
-      await broadcast([
-        buildIssueInvoiceOp({
-          oblCustomJsonId,
-          invoiceId: newOblInvoiceId(),
-          issuer: username,
-          debtor: payload.parties.debtor,
-          creditor: payload.parties.creditor,
-          amountUsd: payload.amountUsd,
-          contractId: payload.contractId,
-          details: payload.details,
-        }),
-      ]);
+      await broadcast(
+        [
+          buildIssueInvoiceOp({
+            oblCustomJsonId,
+            invoiceId,
+            issuer: username,
+            debtor: payload.parties.debtor,
+            creditor: payload.parties.creditor,
+            amountUsd: payload.amountUsd,
+            contractId: payload.contractId,
+            serviceOrderId: payload.serviceOrderId,
+            reportId: payload.reportId,
+            details: payload.details,
+          }),
+        ],
+        revalidateOverride,
+      );
       return;
     }
-    await broadcast([
-      buildIssueSplitInvoiceOp({
-        oblCustomJsonId,
-        invoiceId: newOblInvoiceId(),
-        issuer: username,
-        debtor: payload.debtor,
-        beneficiaries: payload.beneficiaries,
-        contractId: payload.contractId,
-        details: payload.details,
-      }),
-    ]);
+    await broadcast(
+      [
+        buildIssueSplitInvoiceOp({
+          oblCustomJsonId,
+          invoiceId,
+          issuer: username,
+          debtor: payload.debtor,
+          beneficiaries: payload.beneficiaries,
+          contractId: payload.contractId,
+          serviceOrderId: payload.serviceOrderId,
+          reportId: payload.reportId,
+          details: payload.details,
+        }),
+      ],
+      revalidateOverride,
+    );
+  }
+
+  async function createServiceOrder(input: {
+    contractId: string;
+    details?: Record<string, unknown>;
+  }) {
+    const serviceOrderId = newOblServiceOrderId();
+    await broadcast(
+      [
+        buildCreateServiceOrderOp({
+          oblCustomJsonId,
+          serviceOrderId,
+          contractId: input.contractId,
+          creator: username,
+          details: input.details,
+        }),
+      ],
+      { serviceOrderId, contractId: input.contractId },
+    );
+  }
+
+  async function createReport(input: {
+    contractId?: string;
+    serviceOrderId?: string;
+    details?: Record<string, unknown>;
+  }) {
+    const reportId = newOblReportId();
+    await broadcast(
+      [
+        buildCreateReportOp({
+          oblCustomJsonId,
+          reportId,
+          author: username,
+          contractId: input.contractId,
+          serviceOrderId: input.serviceOrderId,
+          details: input.details,
+        }),
+      ],
+      {
+        reportId,
+        contractId: input.contractId,
+        serviceOrderId: input.serviceOrderId,
+      },
+    );
   }
 
   async function recordPayment(
@@ -323,7 +403,14 @@ export function BusinessRelationshipDetailClient({
     ]);
   }
 
-  const tabs: TabId[] = ['payments', 'contracts', 'invoices', 'disputes'];
+  const tabs: TabId[] = [
+    'payments',
+    'contracts',
+    'service-orders',
+    'reports',
+    'invoices',
+    'disputes',
+  ];
 
   return (
     <>
@@ -340,6 +427,22 @@ export function BusinessRelationshipDetailClient({
               className="rounded-btn bg-accent px-3 py-1 text-body-sm text-accent-fg disabled:opacity-50"
             >
               {t('business_create_invoice')}
+            </button>
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => setServiceOrderModalOpen(true)}
+              className="rounded-btn border border-border px-3 py-1 text-body-sm disabled:opacity-50"
+            >
+              {t('business_create_service_order')}
+            </button>
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => setReportModalOpen(true)}
+              className="rounded-btn border border-border px-3 py-1 text-body-sm disabled:opacity-50"
+            >
+              {t('business_create_report')}
             </button>
             <button
               type="button"
@@ -404,6 +507,86 @@ export function BusinessRelationshipDetailClient({
             </div>
           ) : null}
 
+          {tab === 'service-orders' ? (
+            <div className="flex flex-col gap-3">
+              {serviceOrders.length === 0 ? (
+                <p className="text-body-sm text-fg-secondary">
+                  {t('business_service_orders_empty')}
+                </p>
+              ) : null}
+              {serviceOrders.map((so) => {
+                const linkedContract = contractLabel(so.contract_id, contracts);
+                const linkedContractUrl = contractHref(so.contract_id);
+                return (
+                  <Link
+                    key={so.service_order_id}
+                    href={businessRoutes.serviceOrder(so.service_order_id)}
+                    className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm hover:bg-surface-alt"
+                  >
+                    <h3 className="font-weight-label text-heading">{so.service_order_id}</h3>
+                    {linkedContract ? (
+                      <p className="mt-2 text-caption text-fg-secondary">
+                        {t('business_field_contract')}:{' '}
+                        {linkedContractUrl ? (
+                          <span className="text-link">{linkedContract}</span>
+                        ) : (
+                          linkedContract
+                        )}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-caption text-fg-secondary">
+                      {t('business_field_created_at')}:{' '}
+                      <ActivityTimestamp timestamp={so.created_at} />
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {tab === 'reports' ? (
+            <div className="flex flex-col gap-3">
+              {reports.length === 0 ? (
+                <p className="text-body-sm text-fg-secondary">{t('business_reports_empty')}</p>
+              ) : null}
+              {reports.map((rep) => {
+                const linkedContract = contractLabel(rep.contract_id, contracts);
+                const linkedContractUrl = contractHref(rep.contract_id);
+                return (
+                  <Link
+                    key={rep.report_id}
+                    href={businessRoutes.report(rep.report_id)}
+                    className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm hover:bg-surface-alt"
+                  >
+                    <h3 className="font-weight-label text-heading">{rep.report_id}</h3>
+                    <p className="mt-1 text-caption text-fg-secondary">
+                      {t('business_field_author')}: @{rep.author}
+                    </p>
+                    {linkedContract ? (
+                      <p className="mt-1 text-caption text-fg-secondary">
+                        {t('business_field_contract')}:{' '}
+                        {linkedContractUrl ? (
+                          <span className="text-link">{linkedContract}</span>
+                        ) : (
+                          linkedContract
+                        )}
+                      </p>
+                    ) : null}
+                    {rep.service_order_id ? (
+                      <p className="mt-1 text-caption text-fg-secondary">
+                        {t('business_field_service_order')}: {rep.service_order_id}
+                      </p>
+                    ) : null}
+                    <p className="mt-1 text-caption text-fg-secondary">
+                      {t('business_field_created_at')}:{' '}
+                      <ActivityTimestamp timestamp={rep.created_at} />
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+
           {tab === 'invoices' ? (
             <div className="flex flex-col gap-3">
               {invoices.length === 0 ? (
@@ -461,6 +644,25 @@ export function BusinessRelationshipDetailClient({
                         ) : (
                           linkedContract
                         )}
+                      </p>
+                    ) : null}
+                    {inv.service_order_id ? (
+                      <p className="mt-1 text-caption text-fg-secondary">
+                        {t('business_field_service_order')}:{' '}
+                        <Link
+                          href={businessRoutes.serviceOrder(inv.service_order_id)}
+                          className="text-link"
+                        >
+                          {inv.service_order_id}
+                        </Link>
+                      </p>
+                    ) : null}
+                    {inv.report_id ? (
+                      <p className="mt-1 text-caption text-fg-secondary">
+                        {t('business_field_report')}:{' '}
+                        <Link href={businessRoutes.report(inv.report_id)} className="text-link">
+                          {inv.report_id}
+                        </Link>
                       </p>
                     ) : null}
                     <p className="mt-1 text-caption text-fg-secondary">
@@ -590,6 +792,20 @@ export function BusinessRelationshipDetailClient({
         creditor={username}
         contracts={contracts}
         onSubmit={issueInvoice}
+      />
+      <BusinessCreateServiceOrderModal
+        open={serviceOrderModalOpen}
+        onClose={() => setServiceOrderModalOpen(false)}
+        isBusy={isBusy}
+        contracts={contracts}
+        onSubmit={createServiceOrder}
+      />
+      <BusinessCreateReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        isBusy={isBusy}
+        contracts={contracts}
+        onSubmit={createReport}
       />
       <BusinessDeclarePaymentModal
         open={declareModalOpen}

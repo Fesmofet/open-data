@@ -49,6 +49,8 @@ export function useOblLedgerTabLists(input: {
   const [lists, setLists] = useState<Record<RelationshipTab, TabListState>>(() => ({
     payments: fromPage(input.initialPages.payments),
     contracts: fromPage(input.initialPages.contracts),
+    'service-orders': fromPage(input.initialPages['service-orders']),
+    reports: fromPage(input.initialPages.reports),
     invoices: fromPage(input.initialPages.invoices),
     disputes: fromPage(input.initialPages.disputes),
   }));
@@ -57,6 +59,8 @@ export function useOblLedgerTabLists(input: {
     setLists({
       payments: fromPage(input.initialPages.payments),
       contracts: fromPage(input.initialPages.contracts),
+      'service-orders': fromPage(input.initialPages['service-orders']),
+      reports: fromPage(input.initialPages.reports),
       invoices: fromPage(input.initialPages.invoices),
       disputes: fromPage(input.initialPages.disputes),
     });

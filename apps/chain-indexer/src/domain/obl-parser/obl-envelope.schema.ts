@@ -67,6 +67,8 @@ export const invoiceIssuePayloadSchema = z
     amount_usd: oblPositiveUsdAmountSchema.optional(),
     beneficiaries: z.array(beneficiaryLineSchema).min(1).optional(),
     contract_id: z.string().min(1).max(256).optional(),
+    service_order_id: z.string().min(1).max(256).optional(),
+    report_id: z.string().min(1).max(256).optional(),
     details: z.record(z.string(), z.unknown()).optional(),
   })
   .superRefine((data, ctx) => {
@@ -111,6 +113,33 @@ export const disputeResolvePayloadSchema = z.object({
   final_amount_usd: oblNonNegativeUsdAmountSchema,
 });
 
+export const serviceOrderCreatePayloadSchema = z.object({
+  service_order_id: z.string().min(1).max(256),
+  contract_id: z.string().min(1).max(256),
+  creator: z.string().min(1).max(32),
+  details: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const reportCreatePayloadSchema = z
+  .object({
+    report_id: z.string().min(1).max(256),
+    author: z.string().min(1).max(32),
+    contract_id: z.string().min(1).max(256).optional(),
+    service_order_id: z.string().min(1).max(256).optional(),
+    details: z.record(z.string(), z.unknown()).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasContract = data.contract_id !== undefined && data.contract_id.length > 0;
+    const hasServiceOrder =
+      data.service_order_id !== undefined && data.service_order_id.length > 0;
+    if (!hasContract && !hasServiceOrder) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'report_create: provide contract_id and/or service_order_id',
+      });
+    }
+  });
+
 const oblEventSchema = z.object({
   action: z.enum([
     'offer_publish',
@@ -122,6 +151,8 @@ const oblEventSchema = z.object({
     'payment_confirm',
     'dispute_open',
     'dispute_resolve',
+    'service_order_create',
+    'report_create',
   ]),
   v: z.number().int().min(1),
   event_id: z.string().uuid().optional(),

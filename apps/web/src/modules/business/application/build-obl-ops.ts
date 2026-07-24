@@ -9,6 +9,8 @@ import {
   buildOblOfferUpdateOp,
   buildOblPaymentConfirmOp,
   buildOblPaymentDeclareOp,
+  buildOblReportCreateOp,
+  buildOblServiceOrderCreateOp,
 } from '@opden-data-layer/hive-broadcast';
 
 import { parseOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
@@ -124,6 +126,8 @@ export function buildIssueInvoiceOp(input: {
   creditor: string;
   amountUsd: string;
   contractId?: string;
+  serviceOrderId?: string;
+  reportId?: string;
   details?: Record<string, unknown>;
 }) {
   return buildOblInvoiceIssueOp({
@@ -134,6 +138,8 @@ export function buildIssueInvoiceOp(input: {
     creditor: input.creditor,
     amountUsd: requirePositiveUsdAmount(input.amountUsd),
     contractId: input.contractId,
+    serviceOrderId: input.serviceOrderId,
+    reportId: input.reportId,
     details: input.details,
     required_posting_auths: [input.issuer],
   });
@@ -146,6 +152,8 @@ export function buildIssueSplitInvoiceOp(input: {
   debtor: string;
   beneficiaries: readonly BeneficiaryLineDraft[];
   contractId?: string;
+  serviceOrderId?: string;
+  reportId?: string;
   details?: Record<string, unknown>;
 }) {
   return buildOblInvoiceIssueBeneficiariesOp({
@@ -159,6 +167,8 @@ export function buildIssueSplitInvoiceOp(input: {
       role: line.role?.trim() || undefined,
     })),
     contractId: input.contractId,
+    serviceOrderId: input.serviceOrderId,
+    reportId: input.reportId,
     details: input.details,
     required_posting_auths: [input.issuer],
   });
@@ -233,5 +243,41 @@ export function buildResolveDisputeOp(input: {
     resolver: input.resolver,
     finalAmountUsd: requireNonNegativeUsdAmount(input.finalAmountUsd),
     required_posting_auths: [input.resolver],
+  });
+}
+
+export function buildCreateServiceOrderOp(input: {
+  oblCustomJsonId: string;
+  serviceOrderId: string;
+  contractId: string;
+  creator: string;
+  details?: Record<string, unknown>;
+}) {
+  return buildOblServiceOrderCreateOp({
+    id: input.oblCustomJsonId,
+    serviceOrderId: input.serviceOrderId,
+    contractId: input.contractId,
+    creator: input.creator,
+    details: input.details,
+    required_posting_auths: [input.creator],
+  });
+}
+
+export function buildCreateReportOp(input: {
+  oblCustomJsonId: string;
+  reportId: string;
+  author: string;
+  contractId?: string;
+  serviceOrderId?: string;
+  details?: Record<string, unknown>;
+}) {
+  return buildOblReportCreateOp({
+    id: input.oblCustomJsonId,
+    reportId: input.reportId,
+    author: input.author,
+    contractId: input.contractId,
+    serviceOrderId: input.serviceOrderId,
+    details: input.details,
+    required_posting_auths: [input.author],
   });
 }

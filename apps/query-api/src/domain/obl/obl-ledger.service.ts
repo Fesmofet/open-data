@@ -164,4 +164,69 @@ export class OblLedgerService {
       startedSeq,
     );
   }
+
+  async listServiceOrders(query: OblLedgerListQuery) {
+    const { pairLow, pairHigh, startedSeq } = await this.resolvePair(
+      query.accountA,
+      query.accountB,
+    );
+    const page = await this.obl.listServiceOrdersForPairPaginated(
+      pairLow,
+      pairHigh,
+      query.limit,
+      query.cursor,
+      startedSeq,
+    );
+    return {
+      items: page.items.map((row) => ({
+        service_order_id: row.service_order_id,
+        contract_id: row.contract_id,
+        creator: row.creator,
+        provider: row.provider,
+        client: row.client,
+        details: row.details,
+        created_event_seq: row.created_event_seq.toString(),
+        transaction_id: row.transaction_id,
+        created_at:
+          row.created_at instanceof Date
+            ? row.created_at.toISOString()
+            : String(row.created_at),
+      })),
+      hasMore: page.hasMore,
+      nextCursor: page.nextCursor,
+    };
+  }
+
+  async listReports(query: OblLedgerListQuery) {
+    const { pairLow, pairHigh, startedSeq } = await this.resolvePair(
+      query.accountA,
+      query.accountB,
+    );
+    const page = await this.obl.listReportsForPairPaginated(
+      pairLow,
+      pairHigh,
+      query.limit,
+      query.cursor,
+      startedSeq,
+    );
+    return {
+      items: page.items.map((row) => ({
+        report_id: row.report_id,
+        contract_id: row.contract_id,
+        service_order_id: row.service_order_id,
+        author: row.author,
+        provider: row.provider,
+        client: row.client,
+        details: row.details,
+        created_event_seq: row.created_event_seq.toString(),
+        transaction_id: row.transaction_id,
+        created_at:
+          row.created_at instanceof Date
+            ? row.created_at.toISOString()
+            : String(row.created_at),
+      })),
+      hasMore: page.hasMore,
+      nextCursor: page.nextCursor,
+    };
+  }
 }

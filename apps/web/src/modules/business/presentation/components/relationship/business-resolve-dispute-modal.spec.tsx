@@ -165,6 +165,8 @@ describe('BusinessResolveDisputeModal', () => {
         ],
       },
       contract: null,
+      serviceOrder: null,
+      report: null,
     });
 
     renderModal(multiInvoice);
@@ -226,6 +228,8 @@ describe('BusinessResolveDisputeModal', () => {
         ],
       },
       contract: null,
+      serviceOrder: null,
+      report: null,
     });
 
     renderModal(singleInvoice);

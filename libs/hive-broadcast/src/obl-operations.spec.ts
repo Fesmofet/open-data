@@ -9,6 +9,8 @@ import {
   buildOblPaymentConfirmOp,
   buildOblDisputeOpenOp,
   buildOblDisputeResolveOp,
+  buildOblServiceOrderCreateOp,
+  buildOblReportCreateOp,
 } from './obl-operations';
 
 describe('obl-operations', () => {
@@ -187,5 +189,51 @@ describe('obl-operations', () => {
       finalAmountUsd: 8,
     });
     expect(JSON.parse(op.json).events[0].action).toBe('dispute_resolve');
+  });
+
+  it('buildOblServiceOrderCreateOp emits service_order_create', () => {
+    const op = buildOblServiceOrderCreateOp({
+      id: 'obl-mainnet',
+      serviceOrderId: 'so-1',
+      contractId: 'c-1',
+      creator: 'alice',
+      details: { scope: 'api' },
+    });
+    const event = JSON.parse(op.json).events[0];
+    expect(event.action).toBe('service_order_create');
+    expect(event.payload.service_order_id).toBe('so-1');
+    expect(op.required_posting_auths).toEqual(['alice']);
+  });
+
+  it('buildOblReportCreateOp emits report_create', () => {
+    const op = buildOblReportCreateOp({
+      id: 'obl-mainnet',
+      reportId: 'r-1',
+      author: 'bob',
+      serviceOrderId: 'so-1',
+    });
+    const event = JSON.parse(op.json).events[0];
+    expect(event.action).toBe('report_create');
+    expect(event.payload.report_id).toBe('r-1');
+    expect(op.required_posting_auths).toEqual(['bob']);
+  });
+
+  it('buildOblInvoiceIssueOp includes optional service_order_id and report_id', () => {
+    const op = buildOblInvoiceIssueOp({
+      id: 'obl-mainnet',
+      invoiceId: 'inv-1',
+      issuer: 'alice',
+      debtor: 'bob',
+      creditor: 'alice',
+      amountUsd: 10,
+      serviceOrderId: 'so-1',
+      reportId: 'r-1',
+    });
+    const payload = JSON.parse(op.json).events[0].payload as {
+      service_order_id?: string;
+      report_id?: string;
+    };
+    expect(payload.service_order_id).toBe('so-1');
+    expect(payload.report_id).toBe('r-1');
   });
 });

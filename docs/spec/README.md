@@ -128,6 +128,8 @@ Details: [architecture overview](../architecture/overview.md).
 | [obl/contracts.md](obl/contracts.md) | Offers, contracts, invoices, drafts |
 | [obl/payments.md](obl/payments.md) | WAIV transfer, upvote, off-chain |
 | [obl/disputes.md](obl/disputes.md) | Dispute rules and resolution |
+| [obl/service-orders.md](obl/service-orders.md) | Immutable service orders per contract |
+| [obl/reports.md](obl/reports.md) | Immutable reports (contract / service order) |
 
 ### Library integration
 
@@ -184,7 +186,7 @@ Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`. Governanc
 - Main network `custom_json.id`: `obl-mainnet`
 - Test network `custom_json.id`: `obl-testnet`
 
-Actions: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
+Actions: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
 
 See [open-business-layer.md](open-business-layer.md).
 
@@ -200,4 +202,4 @@ Envelope shape (both ODL and OBL):
 
 Actions (ODL in `waivio` / platform id): `object_create`, `update_create`, `update_vote`, `rank_vote`.
 
-Actions (OBL in `obl-mainnet` / `obl-testnet`): `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`. See [open-business-layer.md](open-business-layer.md).
+Actions (OBL in `obl-mainnet` / `obl-testnet`): `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`. See [open-business-layer.md](open-business-layer.md).

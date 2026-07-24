@@ -11,6 +11,8 @@ export async function revalidateOblAfterBroadcast(
     contractId?: string;
     invoiceId?: string;
     disputeId?: string;
+    serviceOrderId?: string;
+    reportId?: string;
     discover?: boolean;
     drafts?: boolean;
     refreshArbitration?: boolean;
@@ -39,6 +41,12 @@ export async function revalidateOblAfterBroadcast(
   }
   if (options?.disputeId) {
     updateTag(queryApiCacheTags.oblDispute(options.disputeId));
+  }
+  if (options?.serviceOrderId) {
+    updateTag(queryApiCacheTags.oblServiceOrder(options.serviceOrderId));
+  }
+  if (options?.reportId) {
+    updateTag(queryApiCacheTags.oblReport(options.reportId));
   }
   if (options?.refreshArbitration) {
     updateTag(queryApiCacheTags.oblArbitration(account, 'open'));

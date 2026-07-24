@@ -106,6 +106,8 @@ const oblInvoiceSchema = registry.register(
     final_amount_usd: z.string().nullable(),
     state: z.enum(['confirmed', 'pending', 'disputed', 'resolved', 'void']).nullable(),
     contract_id: z.string().nullable(),
+    service_order_id: z.string().nullable().optional(),
+    report_id: z.string().nullable().optional(),
     details: z.unknown(),
     line_id: z.string().optional(),
     beneficiary: z.string().optional(),
@@ -187,11 +189,61 @@ const oblContractSummarySchema = registry.register(
   }),
 );
 
+const oblServiceOrderSchema = registry.register(
+  'OblServiceOrder',
+  z.object({
+    service_order_id: z.string(),
+    contract_id: z.string(),
+    creator: z.string(),
+    provider: z.string(),
+    client: z.string(),
+    details: z.unknown(),
+    created_event_seq: z.string(),
+    transaction_id: z.string(),
+    created_at: z.string(),
+  }),
+);
+
+const oblReportSchema = registry.register(
+  'OblReport',
+  z.object({
+    report_id: z.string(),
+    contract_id: z.string().nullable(),
+    service_order_id: z.string().nullable(),
+    author: z.string(),
+    provider: z.string(),
+    client: z.string(),
+    details: z.unknown(),
+    created_event_seq: z.string(),
+    transaction_id: z.string(),
+    created_at: z.string(),
+  }),
+);
+
+const oblServiceOrderDetailSchema = registry.register(
+  'OblServiceOrderDetail',
+  z.object({
+    serviceOrder: oblServiceOrderSchema,
+    contract: oblContractSummarySchema.nullable(),
+  }),
+);
+
+const oblReportDetailSchema = registry.register(
+  'OblReportDetail',
+  z.object({
+    report: oblReportSchema,
+    contract: oblContractSummarySchema.nullable(),
+    serviceOrder: oblServiceOrderSchema.nullable(),
+  }),
+);
+
 const oblInvoiceDetailSchema = registry.register(
   'OblInvoiceDetail',
   z.object({
     invoice: oblInvoiceSchema.extend({ issuer: z.string() }),
     contract: oblContractSummarySchema.nullable(),
+    serviceOrder: oblServiceOrderSchema.nullable(),
+    report: oblReportSchema.nullable(),
   }),
 );
 
@@ -463,6 +515,52 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get',
+  path: '/query/v1/obl/ledger/service-orders',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Paginated service orders for an account pair',
+  request: {
+    query: z.object({
+      accountA: z.string().min(1).max(32),
+      accountB: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of service orders',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblServiceOrderSchema) },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/ledger/reports',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Paginated reports for an account pair',
+  request: {
+    query: z.object({
+      accountA: z.string().min(1).max(32),
+      accountB: z.string().min(1).max(32),
+      limit: z.coerce.number().int().min(1).max(50).optional(),
+      cursor: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Cursor page of reports',
+      content: {
+        'application/json': { schema: oblCursorPageSchema(oblReportSchema) },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
   path: '/query/v1/obl/relationships',
   tags: [queryApiOpenApiTags.obl],
   summary: 'List OBL counterparties and per-pair balance for an account',
@@ -546,6 +644,46 @@ registry.registerPath({
     200: {
       description: 'Invoice detail row',
       content: { 'application/json': { schema: oblInvoiceDetailSchema } },
+    },
+    404: {
+      description: 'Not found',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/service-orders/{serviceOrderId}',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Get one OBL service order by id',
+  request: {
+    params: z.object({ serviceOrderId: z.string() }),
+  },
+  responses: {
+    200: {
+      description: 'Service order detail row',
+      content: { 'application/json': { schema: oblServiceOrderDetailSchema } },
+    },
+    404: {
+      description: 'Not found',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/obl/reports/{reportId}',
+  tags: [queryApiOpenApiTags.obl],
+  summary: 'Get one OBL report by id',
+  request: {
+    params: z.object({ reportId: z.string() }),
+  },
+  responses: {
+    200: {
+      description: 'Report detail row',
+      content: { 'application/json': { schema: oblReportDetailSchema } },
     },
     404: {
       description: 'Not found',

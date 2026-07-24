@@ -9,6 +9,8 @@ import type {
 export type OblInvoiceLineView = {
   invoice_id: string;
   contract_id: string | null;
+  service_order_id: string | null;
+  report_id: string | null;
   issuer: string;
   debtor: string;
   kind: OblInvoiceKind;
@@ -36,6 +38,8 @@ export type OblInvoiceWithLines = {
 export function mapInvoiceLineJoin(row: {
   invoice_id: string;
   contract_id: string | null;
+  service_order_id: string | null;
+  report_id: string | null;
   issuer: string;
   debtor: string;
   kind: OblInvoiceKind;
@@ -56,6 +60,8 @@ export function mapInvoiceLineJoin(row: {
   return {
     invoice_id: row.invoice_id,
     contract_id: row.contract_id,
+    service_order_id: row.service_order_id,
+    report_id: row.report_id,
     issuer: row.issuer,
     debtor: row.debtor,
     kind: row.kind,

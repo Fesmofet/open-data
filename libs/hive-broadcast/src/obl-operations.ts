@@ -29,7 +29,9 @@ type OblEnvelopeAction =
   | 'payment_declare'
   | 'payment_confirm'
   | 'dispute_open'
-  | 'dispute_resolve';
+  | 'dispute_resolve'
+  | 'service_order_create'
+  | 'report_create';
 
 export type BuildOblEnvelopeOpInput = {
   readonly id: string;
@@ -196,6 +198,8 @@ export type BuildOblInvoiceIssueOpInput = {
   readonly creditor: string;
   readonly amountUsd: number | string;
   readonly contractId?: string;
+  readonly serviceOrderId?: string;
+  readonly reportId?: string;
   readonly details?: Record<string, unknown>;
   readonly required_posting_auths?: readonly string[];
 };
@@ -212,6 +216,8 @@ export function buildOblInvoiceIssueOp(input: BuildOblInvoiceIssueOpInput): Cust
       creditor: input.creditor,
       amount_usd: input.amountUsd,
       ...(input.contractId !== undefined ? { contract_id: input.contractId } : {}),
+      ...(input.serviceOrderId !== undefined ? { service_order_id: input.serviceOrderId } : {}),
+      ...(input.reportId !== undefined ? { report_id: input.reportId } : {}),
       ...(input.details !== undefined ? { details: input.details } : {}),
     },
   });
@@ -230,6 +236,8 @@ export type BuildOblInvoiceIssueBeneficiariesOpInput = {
   readonly debtor: string;
   readonly beneficiaries: readonly OblBeneficiaryLineInput[];
   readonly contractId?: string;
+  readonly serviceOrderId?: string;
+  readonly reportId?: string;
   readonly details?: Record<string, unknown>;
   readonly required_posting_auths?: readonly string[];
 };
@@ -253,6 +261,8 @@ export function buildOblInvoiceIssueBeneficiariesOp(
           : {}),
       })),
       ...(input.contractId !== undefined ? { contract_id: input.contractId } : {}),
+      ...(input.serviceOrderId !== undefined ? { service_order_id: input.serviceOrderId } : {}),
+      ...(input.reportId !== undefined ? { report_id: input.reportId } : {}),
       ...(input.details !== undefined ? { details: input.details } : {}),
     },
   });
@@ -352,6 +362,56 @@ export function buildOblDisputeResolveOp(input: BuildOblDisputeResolveOpInput): 
       dispute_id: input.disputeId,
       resolver: input.resolver,
       final_amount_usd: input.finalAmountUsd,
+    },
+  });
+}
+
+export type BuildOblServiceOrderCreateOpInput = {
+  readonly id: string;
+  readonly serviceOrderId: string;
+  readonly contractId: string;
+  readonly creator: string;
+  readonly details?: Record<string, unknown>;
+  readonly required_posting_auths?: readonly string[];
+};
+
+export function buildOblServiceOrderCreateOp(
+  input: BuildOblServiceOrderCreateOpInput,
+): CustomJsonOp {
+  return buildOblEnvelopeOp({
+    id: input.id,
+    action: 'service_order_create',
+    required_posting_auths: input.required_posting_auths ?? [input.creator],
+    payload: {
+      service_order_id: input.serviceOrderId,
+      contract_id: input.contractId,
+      creator: input.creator,
+      ...(input.details !== undefined ? { details: input.details } : {}),
+    },
+  });
+}
+
+export type BuildOblReportCreateOpInput = {
+  readonly id: string;
+  readonly reportId: string;
+  readonly author: string;
+  readonly contractId?: string;
+  readonly serviceOrderId?: string;
+  readonly details?: Record<string, unknown>;
+  readonly required_posting_auths?: readonly string[];
+};
+
+export function buildOblReportCreateOp(input: BuildOblReportCreateOpInput): CustomJsonOp {
+  return buildOblEnvelopeOp({
+    id: input.id,
+    action: 'report_create',
+    required_posting_auths: input.required_posting_auths ?? [input.author],
+    payload: {
+      report_id: input.reportId,
+      author: input.author,
+      ...(input.contractId !== undefined ? { contract_id: input.contractId } : {}),
+      ...(input.serviceOrderId !== undefined ? { service_order_id: input.serviceOrderId } : {}),
+      ...(input.details !== undefined ? { details: input.details } : {}),
     },
   });
 }

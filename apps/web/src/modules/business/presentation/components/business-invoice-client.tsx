@@ -29,7 +29,7 @@ function invoiceStateBadgeVariant(
 
 export function BusinessInvoiceClient({ detail }: { detail: OblInvoiceDetailApiResponse }) {
   const { t, locale } = useI18n();
-  const { invoice, contract } = detail;
+  const { invoice, contract, serviceOrder, report } = detail;
   const lines = invoice.lines ?? [];
   const isMulti = (invoice.kind === 'multi' || lines.length > 1);
   const showSettled =
@@ -89,6 +89,39 @@ export function BusinessInvoiceClient({ detail }: { detail: OblInvoiceDetailApiR
                 {shortContractId(contract.contract_id)}
               </Link>
             </dd>
+          </div>
+        ) : null}
+        {serviceOrder ? (
+          <div>
+            <dt className="text-fg-secondary">{t('business_field_service_order')}</dt>
+            <dd>
+              <Link
+                href={businessRoutes.serviceOrder(serviceOrder.service_order_id)}
+                className="text-link"
+              >
+                {serviceOrder.service_order_id}
+              </Link>
+            </dd>
+          </div>
+        ) : invoice.service_order_id ? (
+          <div>
+            <dt className="text-fg-secondary">{t('business_field_service_order')}</dt>
+            <dd className="font-mono text-caption">{invoice.service_order_id}</dd>
+          </div>
+        ) : null}
+        {report ? (
+          <div>
+            <dt className="text-fg-secondary">{t('business_field_report')}</dt>
+            <dd>
+              <Link href={businessRoutes.report(report.report_id)} className="text-link">
+                {report.report_id}
+              </Link>
+            </dd>
+          </div>
+        ) : invoice.report_id ? (
+          <div>
+            <dt className="text-fg-secondary">{t('business_field_report')}</dt>
+            <dd className="font-mono text-caption">{invoice.report_id}</dd>
           </div>
         ) : null}
         <div>

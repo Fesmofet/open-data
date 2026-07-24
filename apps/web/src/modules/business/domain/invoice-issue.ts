@@ -14,6 +14,8 @@ export type InvoiceIssueSubmitPayload =
       amountUsd: string;
       parties: { debtor: string; creditor: string };
       contractId?: string;
+      serviceOrderId?: string;
+      reportId?: string;
       details?: Record<string, unknown>;
     }
   | {
@@ -21,6 +23,8 @@ export type InvoiceIssueSubmitPayload =
       debtor: string;
       beneficiaries: BeneficiaryLineDraft[];
       contractId?: string;
+      serviceOrderId?: string;
+      reportId?: string;
       details?: Record<string, unknown>;
     };
 

@@ -10,12 +10,16 @@ describe('OblRelationshipsService detail getters', () => {
   const findDisputeById = jest.fn();
   const findContractWithOffer = jest.fn();
   const listLinesForInvoice = jest.fn();
+  const findServiceOrderById = jest.fn();
+  const findReportById = jest.fn();
 
   beforeEach(async () => {
     findInvoiceById.mockReset();
     findDisputeById.mockReset();
     findContractWithOffer.mockReset();
     listLinesForInvoice.mockReset();
+    findServiceOrderById.mockReset();
+    findReportById.mockReset();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OblRelationshipsService,
@@ -26,6 +30,8 @@ describe('OblRelationshipsService detail getters', () => {
             findDisputeById,
             findContractWithOffer,
             listLinesForInvoice,
+            findServiceOrderById,
+            findReportById,
           },
         },
       ],
@@ -168,5 +174,124 @@ describe('OblRelationshipsService detail getters', () => {
     expect(result.dispute.dispute_id).toBe('d-1');
     expect(result.invoice.invoice_id).toBe('inv-1');
     expect(result.contract).toBeNull();
+  });
+
+  it('getInvoice includes linked service order and report when present', async () => {
+    findInvoiceById.mockResolvedValue({
+      invoice_id: 'inv-1',
+      contract_id: 'c-1',
+      service_order_id: 'so-1',
+      report_id: 'r-1',
+      issuer: 'alice',
+      debtor: 'bob',
+      kind: 'single',
+      details: {},
+      created_event_seq: BigInt(10),
+      transaction_id: 'tx1',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    listLinesForInvoice.mockResolvedValue([]);
+    findContractWithOffer.mockResolvedValue(null);
+    findServiceOrderById.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      creator: 'alice',
+      provider: 'alice',
+      client: 'bob',
+      details: {},
+      created_event_seq: BigInt(9),
+      transaction_id: 'txso',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    findReportById.mockResolvedValue({
+      report_id: 'r-1',
+      contract_id: 'c-1',
+      service_order_id: 'so-1',
+      author: 'bob',
+      provider: 'alice',
+      client: 'bob',
+      details: {},
+      created_event_seq: BigInt(9),
+      transaction_id: 'txr',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    const result = await service.getInvoice('inv-1');
+
+    expect(result.serviceOrder?.service_order_id).toBe('so-1');
+    expect(result.report?.report_id).toBe('r-1');
+  });
+
+  it('getServiceOrder returns service order and contract', async () => {
+    findServiceOrderById.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      creator: 'alice',
+      provider: 'alice',
+      client: 'bob',
+      details: {},
+      created_event_seq: BigInt(9),
+      transaction_id: 'txso',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    findContractWithOffer.mockResolvedValue({
+      contract_id: 'c-1',
+      offer_id: 'offer-1',
+      offer_version: 1,
+      provider: 'alice',
+      client: 'bob',
+      dispute_rule: 'client',
+      arbiter: null,
+      metadata: {},
+      pair_low: 'alice',
+      pair_high: 'bob',
+      created_event_seq: BigInt(8),
+      transaction_id: 'txc',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+      offer_name: 'Sprint',
+      offer_description: null,
+    });
+
+    const result = await service.getServiceOrder('so-1');
+
+    expect(result.serviceOrder.service_order_id).toBe('so-1');
+    expect(result.contract?.offer_name).toBe('Sprint');
+  });
+
+  it('getServiceOrder throws when missing', async () => {
+    findServiceOrderById.mockResolvedValue(null);
+    await expect(service.getServiceOrder('missing')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('getReport returns report with optional service order', async () => {
+    findReportById.mockResolvedValue({
+      report_id: 'r-1',
+      contract_id: 'c-1',
+      service_order_id: 'so-1',
+      author: 'bob',
+      provider: 'alice',
+      client: 'bob',
+      details: {},
+      created_event_seq: BigInt(9),
+      transaction_id: 'txr',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    findContractWithOffer.mockResolvedValue(null);
+    findServiceOrderById.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      creator: 'alice',
+      provider: 'alice',
+      client: 'bob',
+      details: {},
+      created_event_seq: BigInt(9),
+      transaction_id: 'txso',
+      created_at: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    const result = await service.getReport('r-1');
+
+    expect(result.report.report_id).toBe('r-1');
+    expect(result.serviceOrder?.service_order_id).toBe('so-1');
   });
 });

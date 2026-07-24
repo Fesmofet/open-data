@@ -86,6 +86,8 @@ export interface OdlDatabase {
   obl_ledgers: OblLedgersTable;
   obl_payments: OblPaymentsTable;
   obl_disputes: OblDisputesTable;
+  obl_service_orders: OblServiceOrdersTable;
+  obl_reports: OblReportsTable;
   obl_offer_drafts: OblOfferDraftsTable;
 }
 
@@ -1183,6 +1185,8 @@ export type OblContractUpdate = Updateable<OblContractsTable>;
 export interface OblInvoicesTable {
   invoice_id: string;
   contract_id: string | null;
+  service_order_id: string | null;
+  report_id: string | null;
   issuer: string;
   debtor: string;
   kind: OblInvoiceKind;
@@ -1266,6 +1270,43 @@ export interface OblDisputesTable {
 export type OblDispute = Selectable<OblDisputesTable>;
 export type NewOblDispute = Insertable<OblDisputesTable>;
 export type OblDisputeUpdate = Updateable<OblDisputesTable>;
+
+export interface OblServiceOrdersTable {
+  service_order_id: string;
+  contract_id: string;
+  creator: string;
+  provider: string;
+  client: string;
+  pair_low: Generated<string>;
+  pair_high: Generated<string>;
+  details: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  created_event_seq: bigint;
+  transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type OblServiceOrder = Selectable<OblServiceOrdersTable>;
+export type NewOblServiceOrder = Insertable<OblServiceOrdersTable>;
+export type OblServiceOrderUpdate = Updateable<OblServiceOrdersTable>;
+
+export interface OblReportsTable {
+  report_id: string;
+  contract_id: string | null;
+  service_order_id: string | null;
+  author: string;
+  provider: string;
+  client: string;
+  pair_low: Generated<string>;
+  pair_high: Generated<string>;
+  details: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  created_event_seq: bigint;
+  transaction_id: string;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type OblReport = Selectable<OblReportsTable>;
+export type NewOblReport = Insertable<OblReportsTable>;
+export type OblReportUpdate = Updateable<OblReportsTable>;
 
 export interface OblOfferDraftsTable {
   author: string;

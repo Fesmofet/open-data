@@ -43,6 +43,8 @@ describe('InvoiceIssueHandler', () => {
   let insertInvoice: jest.Mock;
   let insertObligationLines: jest.Mock;
   let insertLedger: jest.Mock;
+  let findServiceOrder: jest.Mock;
+  let findReport: jest.Mock;
 
   beforeEach(() => {
     findInvoice = jest.fn().mockResolvedValue(null);
@@ -51,6 +53,8 @@ describe('InvoiceIssueHandler', () => {
     insertInvoice = jest.fn().mockResolvedValue(undefined);
     insertObligationLines = jest.fn().mockResolvedValue(undefined);
     insertLedger = jest.fn().mockResolvedValue(undefined);
+    findServiceOrder = jest.fn();
+    findReport = jest.fn();
     runInTransaction = jest.fn(async (fn: (trx: unknown) => Promise<void>) => fn({}));
     handler = new InvoiceIssueHandler({
       findInvoice,
@@ -60,6 +64,8 @@ describe('InvoiceIssueHandler', () => {
       insertInvoice,
       insertObligationLines,
       insertLedger,
+      findServiceOrder,
+      findReport,
     } as unknown as OblRepository);
   });
 
@@ -170,6 +176,121 @@ describe('InvoiceIssueHandler', () => {
         expect.objectContaining({ beneficiary: 'winner' }),
         expect.objectContaining({ beneficiary: 'referral', role: 'referral_fee' }),
       ]),
+      expect.anything(),
+    );
+  });
+
+  it('stores service_order_id and report_id when refs validate', async () => {
+    hasLedgerForPair.mockResolvedValue(true);
+    findServiceOrder.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+    });
+    findReport.mockResolvedValue({
+      report_id: 'r-1',
+      contract_id: 'c-1',
+      service_order_id: 'so-1',
+    });
+    await handler.handle(
+      {
+        invoice_id: 'inv-refs',
+        issuer: 'organizer',
+        debtor: 'sponsor',
+        creditor: 'organizer',
+        amount_usd: '10',
+        contract_id: 'c-1',
+        service_order_id: 'so-1',
+        report_id: 'r-1',
+      },
+      ctx('organizer'),
+    );
+    expect(insertInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service_order_id: 'so-1',
+        report_id: 'r-1',
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('nulls missing service_order_id and keeps invoice', async () => {
+    hasLedgerForPair.mockResolvedValue(true);
+    findServiceOrder.mockResolvedValue(null);
+    await handler.handle(
+      {
+        invoice_id: 'inv-so-miss',
+        issuer: 'alice',
+        debtor: 'bob',
+        creditor: 'alice',
+        amount_usd: '10',
+        service_order_id: 'so-missing',
+      },
+      ctx('alice'),
+    );
+    expect(insertInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service_order_id: null,
+        report_id: null,
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('nulls service_order_id on contract mismatch', async () => {
+    hasLedgerForPair.mockResolvedValue(true);
+    findServiceOrder.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-other',
+    });
+    await handler.handle(
+      {
+        invoice_id: 'inv-so-mismatch',
+        issuer: 'organizer',
+        debtor: 'sponsor',
+        creditor: 'organizer',
+        amount_usd: '10',
+        contract_id: 'c-1',
+        service_order_id: 'so-1',
+      },
+      ctx('organizer'),
+    );
+    expect(insertInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service_order_id: null,
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('nulls report_id when report service_order disagrees with resolved SO', async () => {
+    hasLedgerForPair.mockResolvedValue(true);
+    findServiceOrder.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+    });
+    findReport.mockResolvedValue({
+      report_id: 'r-1',
+      contract_id: 'c-1',
+      service_order_id: 'so-other',
+    });
+    await handler.handle(
+      {
+        invoice_id: 'inv-rep-mismatch',
+        issuer: 'organizer',
+        debtor: 'sponsor',
+        creditor: 'organizer',
+        amount_usd: '10',
+        contract_id: 'c-1',
+        service_order_id: 'so-1',
+        report_id: 'r-1',
+      },
+      ctx('organizer'),
+    );
+    expect(insertInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service_order_id: 'so-1',
+        report_id: null,
+      }),
       expect.anything(),
     );
   });

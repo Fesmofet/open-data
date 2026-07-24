@@ -151,4 +151,32 @@ export function registerOblTools(server: McpServer, deps: McpToolDeps): void {
       return jsonToolResult(result);
     },
   );
+
+  server.registerTool(
+    'get_obl_service_order',
+    {
+      description: catalogDescription('get_obl_service_order'),
+      inputSchema: z.object({
+        service_order_id: z.string().min(1),
+      }),
+    },
+    async (args) => {
+      const result = await deps.oblRelationships.getServiceOrder(args.service_order_id);
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_obl_report',
+    {
+      description: catalogDescription('get_obl_report'),
+      inputSchema: z.object({
+        report_id: z.string().min(1),
+      }),
+    },
+    async (args) => {
+      const result = await deps.oblRelationships.getReport(args.report_id);
+      return jsonToolResult(result);
+    },
+  );
 }

@@ -62,12 +62,15 @@ export class InvoiceIssueHandler implements OdlActionHandler {
     }
 
     const createdAt = hiveBlockTimestampToDate(ctx.timestamp);
+    const { serviceOrderId, reportId } = await this.resolveInvoiceRefs(data);
 
     await this.oblRepository.runInTransaction(async (trx) => {
       await this.oblRepository.insertInvoice(
         {
           invoice_id: data.invoice_id,
           contract_id: data.contract_id ?? null,
+          service_order_id: serviceOrderId,
+          report_id: reportId,
           issuer: data.issuer,
           debtor: data.debtor,
           kind,
@@ -146,5 +149,47 @@ export class InvoiceIssueHandler implements OdlActionHandler {
       return false;
     }
     return !lines.some((line) => line.beneficiary === issuer);
+  }
+
+  private async resolveInvoiceRefs(
+    data: z.infer<typeof invoiceIssuePayloadSchema>,
+  ): Promise<{ serviceOrderId: string | null; reportId: string | null }> {
+    let serviceOrderId: string | null = data.service_order_id ?? null;
+    let reportId: string | null = data.report_id ?? null;
+    const invoiceContractId = data.contract_id ?? null;
+
+    if (serviceOrderId) {
+      const serviceOrder = await this.oblRepository.findServiceOrder(serviceOrderId);
+      if (!serviceOrder) {
+        this.logger.warn('invoice_issue: service_order_id not found, ignoring');
+        serviceOrderId = null;
+      } else if (invoiceContractId && serviceOrder.contract_id !== invoiceContractId) {
+        this.logger.warn('invoice_issue: service_order contract mismatch, ignoring');
+        serviceOrderId = null;
+      }
+    }
+
+    if (reportId) {
+      const report = await this.oblRepository.findReport(reportId);
+      if (!report) {
+        this.logger.warn('invoice_issue: report_id not found, ignoring');
+        reportId = null;
+      } else {
+        const reportContractId = report.contract_id;
+        if (invoiceContractId && reportContractId && reportContractId !== invoiceContractId) {
+          this.logger.warn('invoice_issue: report contract mismatch, ignoring');
+          reportId = null;
+        } else if (
+          serviceOrderId &&
+          report.service_order_id &&
+          report.service_order_id !== serviceOrderId
+        ) {
+          this.logger.warn('invoice_issue: report service_order mismatch, ignoring');
+          reportId = null;
+        }
+      }
+    }
+
+    return { serviceOrderId, reportId };
   }
 }

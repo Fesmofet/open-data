@@ -110,6 +110,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_obl_offer` | `GET /query/v1/obl/offers/:offerId` | [obl.md](obl.md) |
 | `get_obl_ledger` | `GET /query/v1/obl/ledger` | [mutual-ledger.md](../../spec/obl/mutual-ledger.md) |
 | `get_obl_balance` | `GET /query/v1/obl/balance` | [mutual-ledger.md](../../spec/obl/mutual-ledger.md) |
+| `get_obl_service_order` | `GET /query/v1/obl/service-orders/:serviceOrderId` | [service-orders.md](../../spec/obl/service-orders.md) |
+| `get_obl_report` | `GET /query/v1/obl/reports/:reportId` | [reports.md](../../spec/obl/reports.md) |
 | `convert_usd_to_waiv` | `GET /query/v1/obl/convert/usd-to-waiv` | [payments.md](../../spec/obl/payments.md) |
 
 ## Cursor MCP config
