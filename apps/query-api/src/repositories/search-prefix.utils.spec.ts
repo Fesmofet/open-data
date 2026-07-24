@@ -5,6 +5,10 @@ describe('prefixUpperBound', () => {
     expect(prefixUpperBound('grampo')).toBe('grampp');
   });
 
+  it('handles dotted Hive account prefixes', () => {
+    expect(prefixUpperBound('shadow.hunter')).toBe('shadow.huntes');
+  });
+
   it('returns empty string unchanged', () => {
     expect(prefixUpperBound('')).toBe('');
   });

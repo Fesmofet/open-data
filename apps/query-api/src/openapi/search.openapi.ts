@@ -52,7 +52,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.search],
   summary: 'Predictive search (objects + users)',
   description:
-    'Objects: autocomplete FTS on `name`, `title`, or `description` updates (`search_vector`), or optional substring on `object_id` when id-shaped; `status = active`; collapsed to one hit per `meta_group_id` (highest `weight`). Results are projected via `ObjectProjectionService` (`name`, `image`, `parent`). Users: prefix btree range on `accounts_current.name`, sorted by Waiv object weight and followers (max 5). Optional `X-Viewer` sets `is_following` via `user_subscriptions`. Respects `X-Governance-Object-Id` and locale like other read endpoints. Tab counts: use `GET /search/counts`.',
+    'Objects: autocomplete FTS on `name`, `title`, or `description` updates (`search_vector`), or optional substring on `object_id` when id-shaped; `status = active`; collapsed to one hit per `meta_group_id` (highest `weight`). Results are projected via `ObjectProjectionService` (`name`, `image`, `parent`). Users: prefix btree range on `accounts_current.name`, exact name match first, then Waiv object weight and followers (max 5). Optional `X-Viewer` sets `is_following` via `user_subscriptions`. Respects `X-Governance-Object-Id` and locale like other read endpoints. Tab counts: use `GET /search/counts`.',
   request: {
     query: z.object({
       q: z.string().min(1).max(100).openapi({ description: 'Search text.' }),

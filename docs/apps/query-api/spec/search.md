@@ -94,7 +94,7 @@ Object SQL and user SQL for `/search` run **in parallel** in `GetSearchEndpoint`
 ## Query plan — users (`/search`)
 
 1. `accounts_current` where `name >= lower(escape(:q))` and `name < upperBound(prefix)` (btree range on PK; Hive names are stored lowercase).
-2. Order by `wobjects_weight DESC NULLS LAST`, `followers_count DESC`.
+2. Order by **exact** `name = lower(trim(:q))` first, then `wobjects_weight DESC NULLS LAST`, `followers_count DESC`.
 3. Cap at **5** rows.
 4. If `X-Viewer` is set, `is_following` = existence of `user_subscriptions (follower, following)`.
 

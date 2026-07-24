@@ -206,7 +206,8 @@ export class SearchRepository {
   }
 
   /**
-   * Prefix match on `accounts_current.name` (btree range on PK), ordered by Waiv object weight then followers.
+   * Prefix match on `accounts_current.name` (btree range on PK), ordered by exact name match,
+   * then Waiv object weight then followers.
    */
   async searchUsers(queryText: string, limit: number, viewer?: string | null): Promise<SearchUserRow[]> {
     const trimmed = queryText.trim();
@@ -237,6 +238,7 @@ export class SearchRepository {
         ])
         .where('name', '>=', prefix)
         .where('name', '<', upper)
+        .orderBy(sql`CASE WHEN name = ${prefix} THEN 0 ELSE 1 END`)
         .orderBy(sql`wobjects_weight desc nulls last`)
         .orderBy('followers_count', 'desc')
         .limit(limit)
