@@ -15,6 +15,7 @@ function viewWithItems(
     weight: null,
     meta_group_id: null,
     canonical: null,
+    status: 'active',
     fields: {
       [UPDATE_TYPES.TAG_CATEGORY_ITEM]: {
         update_type: UPDATE_TYPES.TAG_CATEGORY_ITEM,

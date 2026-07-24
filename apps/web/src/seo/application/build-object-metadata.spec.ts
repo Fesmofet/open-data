@@ -1,3 +1,5 @@
+import { getImagePathPost } from '@/shared/infrastructure/image/get-proxy-image-url';
+
 import { buildObjectMetadata } from '../application/build-object-metadata';
 import type { ObjectSeoInput } from './metadata.types';
 
@@ -22,7 +24,7 @@ describe('buildObjectMetadata', () => {
     const meta = buildObjectMetadata(baseInput);
     expect(meta.twitter?.card).toBe('summary_large_image');
     expect(meta.openGraph?.images).toEqual([
-      { url: 'https://cdn.example/cover.jpg' },
+      { url: getImagePathPost('https://cdn.example/cover.jpg') },
     ]);
     expect(meta.alternates?.canonical).toBe('https://custom.example/object/obj-1');
     expect(meta.keywords).toBe('italian, pizza');
