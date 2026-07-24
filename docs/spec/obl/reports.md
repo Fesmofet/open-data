@@ -1,3 +1,17 @@
+---
+id: obl-reports
+title: OBL reports
+description: Immutable report_create records linked to contracts or service orders; query-api and web surfaces.
+type: spec
+status: active
+scope: platform
+tags: [obl, reports]
+updated_at: 2026-07-24
+related:
+  - docs/spec/obl/service-orders.md
+  - docs/spec/obl/contracts.md
+---
+
 # OBL reports
 
 Immutable records authored by a contract party. They may link to a **contract**, a **service order**, or both (at least one required on chain). Informational only — no ledger effect.

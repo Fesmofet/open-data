@@ -1,3 +1,17 @@
+---
+id: obl-service-orders
+title: OBL service orders
+description: service_order_create lifecycle, contract-linked details, optional schema prefill on web.
+type: spec
+status: active
+scope: platform
+tags: [obl, service-orders]
+updated_at: 2026-07-24
+related:
+  - docs/spec/obl/contracts.md
+  - docs/spec/obl/reports.md
+---
+
 # OBL service orders
 
 Immutable records that reference a **signed contract** between provider and client. They do not move balances; they document work or scope before invoices and reports.
