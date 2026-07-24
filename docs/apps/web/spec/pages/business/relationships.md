@@ -32,9 +32,9 @@ Each row shows the **confirmed** balance summary (`DirectionalUsd`). When confir
 - All tab lists are ordered **newest first** by `created_at` (API + client sort).
 - Broadcast errors shown below balance cards on all tabs.
 - Header actions open modals (no inline forms on tabs):
-  - **Create invoice** — `BusinessIssueInvoiceModal`: issuer fixed to viewer; optional governing `contract_id`; optional `service_order_id` / `report_id` text fields; **Simple** / **Split payment** modes (see existing split/attestor rules); supporting-info JSON optional.
-  - **Create service order** — `BusinessCreateServiceOrderModal`: contract dropdown (signed contracts for the pair), optional `details` JSON; `service_order_create`.
-  - **Create report** — `BusinessCreateReportModal`: optional contract and/or service order id (at least one required on chain), optional `details` JSON; `report_create`.
+  - **Create invoice** — `BusinessIssueInvoiceModal`: issuer fixed to viewer; optional governing `contract_id`; optional `service_order_id` / `report_id` text fields; **Simple** / **Split payment** modes (see existing split/attestor rules); optional supporting info via **Object Builder** (`details`).
+  - **Create service order** — `BusinessCreateServiceOrderModal`: contract dropdown (signed contracts for the pair), optional `details` via **Object Builder** (prefill from contract `service_order_schema` when present); `service_order_create`.
+  - **Create report** — `BusinessCreateReportModal`: optional contract and/or service order id (at least one required on chain), optional `details` via **Object Builder**; `report_create`.
   - **Record payment** — `BusinessDeclarePaymentModal` (unchanged).
 - **Confirm payment**, **Payments tab**, **Dispute invoice** — unchanged (see prior spec text in git history if needed).
 - **Contracts tab** — cards with offer name, description (truncated to 300 chars), `contract_id`, `created_at`; link to contract detail.

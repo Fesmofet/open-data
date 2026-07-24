@@ -61,6 +61,7 @@ type OblArbitrationRawRow = OblDispute & {
   c_dispute_rule: OblContract['dispute_rule'];
   c_arbiter: string | null;
   c_metadata: OblContract['metadata'];
+  c_service_order_schema: OblContract['service_order_schema'];
   c_pair_low: string;
   c_pair_high: string;
   c_created_event_seq: bigint;
@@ -90,6 +91,7 @@ function mapArbitrationRawRow(row: OblArbitrationRawRow): OblArbitrationJoinRow 
     c_dispute_rule,
     c_arbiter,
     c_metadata,
+    c_service_order_schema,
     c_pair_low,
     c_pair_high,
     c_created_event_seq,
@@ -122,6 +124,7 @@ function mapArbitrationRawRow(row: OblArbitrationRawRow): OblArbitrationJoinRow 
       dispute_rule: c_dispute_rule,
       arbiter: c_arbiter,
       metadata: c_metadata,
+      service_order_schema: c_service_order_schema,
       pair_low: c_pair_low,
       pair_high: c_pair_high,
       created_event_seq: c_created_event_seq,
@@ -781,6 +784,7 @@ export class OblRepository {
         'c.dispute_rule as c_dispute_rule',
         'c.arbiter as c_arbiter',
         'c.metadata as c_metadata',
+        'c.service_order_schema as c_service_order_schema',
         'c.pair_low as c_pair_low',
         'c.pair_high as c_pair_high',
         'c.created_event_seq as c_created_event_seq',

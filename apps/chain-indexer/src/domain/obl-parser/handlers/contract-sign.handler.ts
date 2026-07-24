@@ -1,4 +1,4 @@
-import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
+import { hiveBlockTimestampToDate, serviceOrderSchemaFromOfferTerms } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
@@ -71,6 +71,7 @@ export class ContractSignHandler implements OdlActionHandler {
     }
 
     const hadLedger = await this.oblRepository.hasLedgerForPair(pairLow, pairHigh);
+    const serviceOrderSchema = serviceOrderSchemaFromOfferTerms(offer.terms);
 
     await this.oblRepository.runInTransaction(async (trx) => {
       await this.oblRepository.insertContract(
@@ -83,6 +84,9 @@ export class ContractSignHandler implements OdlActionHandler {
           dispute_rule: offer.dispute_rule,
           arbiter: offer.arbiter,
           metadata: asJsonValue(data.metadata ?? {}),
+          service_order_schema: serviceOrderSchema
+            ? asJsonValue(serviceOrderSchema)
+            : null,
           created_event_seq: ctx.eventSeq,
           transaction_id: ctx.transactionId,
           created_at: hiveBlockTimestampToDate(ctx.timestamp),

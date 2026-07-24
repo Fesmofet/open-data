@@ -11,12 +11,12 @@ import { deterministicContractId } from '../../domain/obl-ids';
 import {
   buildMetadataFromSignValues,
   missingRequiredSignParams,
-  parseMetadataJson,
   parseOfferTerms,
 } from '../../domain/offer-terms';
 import { businessRoutes } from '../../domain/routes';
 import type { OblOfferApiRow } from '../../infrastructure/clients/obl-offers.server';
 import { BusinessDisclosure } from './business-disclosure';
+import { ObjectBuilder } from './object-builder';
 import { StateBadge } from './state-badge';
 import { useOblBroadcast } from '../hooks/use-obl-broadcast';
 
@@ -36,8 +36,8 @@ export function PublicOfferPageClient({
   const counterparty = offer.author;
   const { broadcast, phase, isBusy, error } = useOblBroadcast(viewer ?? '', counterparty);
   const [ack, setAck] = useState(false);
-  const [metadataJson, setMetadataJson] = useState('{}');
-  const [metadataJsonError, setMetadataJsonError] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<Record<string, unknown>>({});
+  const [metadataValid, setMetadataValid] = useState(true);
   const [signValues, setSignValues] = useState<Record<string, string>>({});
 
   const parsedTerms = useMemo(() => parseOfferTerms(offer.terms), [offer.terms]);
@@ -59,9 +59,7 @@ export function PublicOfferPageClient({
 
   const canSubmitSign =
     ack &&
-    (useGuidedForm
-      ? missingRequired.length === 0
-      : metadataJsonError === null && parseMetadataJson(metadataJson) !== null);
+    (useGuidedForm ? missingRequired.length === 0 : metadataValid);
 
   async function onSign() {
     if (!viewer || !ack) {
@@ -71,16 +69,12 @@ export function PublicOfferPageClient({
     const client = offer.kind === 'offer' ? viewer : offer.author;
     const signer = viewer;
 
-    let metadata: Record<string, unknown> | undefined;
+    let metadataPayload: Record<string, unknown> | undefined;
     if (useGuidedForm) {
-      metadata = buildMetadataFromSignValues(signParams, signValues);
+      metadataPayload = buildMetadataFromSignValues(signParams, signValues);
     } else {
-      const parsed = parseMetadataJson(metadataJson);
-      if (parsed === null) {
-        setMetadataJsonError(t('business_sign_metadata_invalid_json'));
-        return;
-      }
-      metadata = Object.keys(parsed).length > 0 ? parsed : undefined;
+      metadataPayload =
+        Object.keys(metadata).length > 0 ? metadata : undefined;
     }
 
     const op = buildSignContractOp({
@@ -91,20 +85,9 @@ export function PublicOfferPageClient({
       provider,
       client,
       signer,
-      metadata,
+      metadata: metadataPayload,
     });
     await broadcast([op]);
-  }
-
-  function onMetadataJsonChange(value: string) {
-    setMetadataJson(value);
-    if (value.trim().length === 0) {
-      setMetadataJsonError(null);
-      return;
-    }
-    setMetadataJsonError(
-      parseMetadataJson(value) === null ? t('business_sign_metadata_invalid_json') : null,
-    );
   }
 
   return (
@@ -174,19 +157,15 @@ export function PublicOfferPageClient({
               ) : null}
             </div>
           ) : (
-            <label className="flex flex-col gap-1 text-body-sm">
-              {t('business_sign_metadata_label')}
-              <textarea
-                value={metadataJson}
-                onChange={(e) => onMetadataJsonChange(e.target.value)}
-                rows={5}
-                className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
-                placeholder='{"targets":["obj-1"],"governance":"gov-1"}'
-              />
-              {metadataJsonError ? (
-                <span className="text-caption text-error">{metadataJsonError}</span>
-              ) : null}
-            </label>
+            <ObjectBuilder
+              value={{}}
+              label={t('business_sign_metadata_label')}
+              disabled={isBusy}
+              onChange={(next, valid) => {
+                setMetadata(next);
+                setMetadataValid(valid);
+              }}
+            />
           )}
 
           <label className="flex items-start gap-2 text-body-sm">

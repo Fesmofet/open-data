@@ -22,7 +22,7 @@ import {
 } from '../../../domain/invoice-issue';
 import type { LedgerContractRow } from '../../../domain/ledger.types';
 import { shortContractId } from '../../../domain/dispute-resolution';
-import { parseMetadataJson } from '../../../domain/offer-terms';
+import { ObjectBuilder } from '../object-builder';
 import { StateBadge } from '../state-badge';
 import {
   AccountPairSwapRow,
@@ -65,8 +65,9 @@ export function BusinessIssueInvoiceModal({
   const [ack, setAck] = useState(false);
   const [mode, setMode] = useState<InvoiceIssueMode>('simple');
   const [amount, setAmount] = useState('10');
-  const [detailsJson, setDetailsJson] = useState('');
-  const [detailsError, setDetailsError] = useState<string | null>(null);
+  const [details, setDetails] = useState<Record<string, unknown>>({});
+  const [detailsValid, setDetailsValid] = useState(true);
+  const [detailsBuilderKey, setDetailsBuilderKey] = useState(0);
   const [contractId, setContractId] = useState('');
   const [serviceOrderId, setServiceOrderId] = useState('');
   const [reportId, setReportId] = useState('');
@@ -87,6 +88,9 @@ export function BusinessIssueInvoiceModal({
       setServiceOrderId('');
       setReportId('');
       setBeneficiaries([emptyBeneficiaryLine()]);
+      setDetails({});
+      setDetailsValid(true);
+      setDetailsBuilderKey((key) => key + 1);
     }
   }, [open, debtor, creditor, contracts]);
 
@@ -140,17 +144,6 @@ export function BusinessIssueInvoiceModal({
     setSplitDebtor(next);
   }
 
-  function onDetailsChange(value: string) {
-    setDetailsJson(value);
-    if (value.trim().length === 0) {
-      setDetailsError(null);
-      return;
-    }
-    setDetailsError(
-      parseMetadataJson(value) === null ? t('business_invoice_details_invalid_json') : null,
-    );
-  }
-
   const selfBeneficiary =
     mode === 'split' && issuerInBeneficiaries(issuer, beneficiaries);
   const attestor =
@@ -174,7 +167,7 @@ export function BusinessIssueInvoiceModal({
   const canSubmitSimple =
     mode === 'simple' &&
     !isBusy &&
-    detailsError === null &&
+    detailsValid &&
     validateSimpleIssue({
       viewer: issuer,
       counterparty,
@@ -186,7 +179,7 @@ export function BusinessIssueInvoiceModal({
   const canSubmitSplit =
     mode === 'split' &&
     !isBusy &&
-    detailsError === null &&
+    detailsValid &&
     validateSplitIssue({
       issuer,
       debtor: splitDebtor,
@@ -198,16 +191,8 @@ export function BusinessIssueInvoiceModal({
   const canSubmit = mode === 'simple' ? canSubmitSimple : canSubmitSplit;
 
   async function handleSubmit() {
-    const trimmed = detailsJson.trim();
-    let details: Record<string, unknown> | undefined;
-    if (trimmed.length > 0) {
-      const parsed = parseMetadataJson(trimmed);
-      if (parsed === null) {
-        setDetailsError(t('business_invoice_details_invalid_json'));
-        return;
-      }
-      details = Object.keys(parsed).length > 0 ? parsed : undefined;
-    }
+    const detailsPayload =
+      Object.keys(details).length > 0 ? details : undefined;
 
     if (mode === 'simple') {
       if (!parsePositiveUsdAmount(amount)) {
@@ -220,7 +205,7 @@ export function BusinessIssueInvoiceModal({
         contractId: contractId || undefined,
         serviceOrderId: serviceOrderId.trim() || undefined,
         reportId: reportId.trim() || undefined,
-        details,
+        details: detailsPayload,
       });
     } else {
       await onSubmit({
@@ -234,7 +219,7 @@ export function BusinessIssueInvoiceModal({
         contractId: contractId || undefined,
         serviceOrderId: serviceOrderId.trim() || undefined,
         reportId: reportId.trim() || undefined,
-        details,
+        details: detailsPayload,
       });
     }
     onClose();
@@ -560,17 +545,16 @@ export function BusinessIssueInvoiceModal({
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-body-sm">
-            {t('business_invoice_details_label')}
-            <textarea
-              value={detailsJson}
-              onChange={(e) => onDetailsChange(e.target.value)}
-              rows={4}
-              className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
-              placeholder='{"report":"https://…","memo":"Work completed"}'
-            />
-            {detailsError ? <span className="text-caption text-error">{detailsError}</span> : null}
-          </label>
+          <ObjectBuilder
+            key={detailsBuilderKey}
+            value={{}}
+            label={t('business_invoice_details_label')}
+            disabled={isBusy}
+            onChange={(next, valid) => {
+              setDetails(next);
+              setDetailsValid(valid);
+            }}
+          />
         </div>
       )}
     </ModalShell>

@@ -22,7 +22,7 @@ Table `obl_service_orders` (see migration `00045_obl_service_orders_reports.ts`)
 
 ## Web
 
-Relationship detail tabs **Service orders** and actions **Create service order**. Detail route `/business/service-orders/:id`.
+Relationship detail tabs **Service orders** and actions **Create service order**. When the contract has `service_order_schema`, the create modal pre-fills **Object Builder** fields as a recommendation (editable). Detail route `/business/service-orders/:id`.
 
 ## Related
 

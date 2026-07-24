@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -28,6 +29,7 @@ export function BusinessOfferDetailClient({
   const router = useRouter();
   const oblCustomJsonId = useOblCustomJsonId();
   const { broadcast, phase, isBusy, error } = useOblBroadcast(username);
+  const [newVersionErrorKey, setNewVersionErrorKey] = useState<string | null>(null);
   const isOwner = username === offer.author;
   const publicHref =
     offer.kind === 'offer'
@@ -45,6 +47,7 @@ export function BusinessOfferDetailClient({
   }
 
   async function onNewVersion() {
+    setNewVersionErrorKey(null);
     const draft = await createOblDraftAction(username, {
       kind: offer.kind,
       fields: {
@@ -61,7 +64,18 @@ export function BusinessOfferDetailClient({
       },
     });
     if (draft.ok) {
-      router.push(businessRoutes.offerDraft(offer.kind, draft.value.draftId));
+      const draftId = draft.value.draftId?.trim();
+      if (draftId) {
+        router.push(businessRoutes.offerDraft(offer.kind, draftId));
+        return;
+      }
+      setNewVersionErrorKey('business_draft_create_error_generic');
+      return;
+    }
+    if (draft.error.code === 'unauthorized') {
+      setNewVersionErrorKey('business_draft_create_error_unauthorized');
+    } else {
+      setNewVersionErrorKey('business_draft_create_error_generic');
     }
   }
 
@@ -125,6 +139,11 @@ export function BusinessOfferDetailClient({
 
         {phase === 'indexing' ? <StateBadge variant="indexing" /> : null}
         {error ? <p className="text-body-sm text-error">{error}</p> : null}
+        {newVersionErrorKey ? (
+          <p className="text-body-sm text-error" role="alert">
+            {t(newVersionErrorKey)}
+          </p>
+        ) : null}
       </div>
     </BusinessPageShell>
   );

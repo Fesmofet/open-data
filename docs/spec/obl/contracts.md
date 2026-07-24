@@ -18,7 +18,7 @@ related:
 ## Tables
 
 - `obl_offers` — versioned templates (`PK offer_id, version`); `created_at`
-- `obl_contracts` — signed instances (1 offer : many contracts); `created_at`, `metadata` JSONB
+- `obl_contracts` — signed instances (1 offer : many contracts); `created_at`, `metadata` JSONB, optional `service_order_schema` JSONB (snapshot from `offer.terms.serviceOrderSchema` at `contract_sign`)
 - `obl_service_orders` — immutable scope/work orders per contract; see [service-orders.md](service-orders.md)
 - `obl_reports` — immutable reports linked to contract and/or service order; see [reports.md](reports.md)
 - `obl_invoices` — invoice header (`issuer`, `debtor`, `kind`, optional `contract_id`, optional `service_order_id`, optional `report_id`, `details`); `created_at`
@@ -32,7 +32,7 @@ related:
 | `offer_publish` | `author` | New offer version |
 | `offer_update` | `author` | Append version |
 | `offer_retire` | `author` | Mark retired |
-| `contract_sign` | counterparty (`signer`) | Create contract; may start ledger. **One contract per `offer_id` + account pair** (deterministic `contract_id`, unique index). Optional `metadata` JSONB. |
+| `contract_sign` | counterparty (`signer`) | Create contract; may start ledger. **One contract per `offer_id` + account pair** (deterministic `contract_id`, unique index). Optional `metadata` JSONB. Copies optional `service_order_schema` from the signed offer version’s `terms.serviceOrderSchema`. |
 | `service_order_create` | `creator` | Immutable service order for a signed contract; creator must be provider or client. Optional `details`. |
 | `report_create` | `author` | Immutable report; at least one of `contract_id` / `service_order_id`; author must be a contract party. Optional `details`. |
 | `invoice_issue` | `issuer` | Header + obligation line(s). Optional `service_order_id` / `report_id` (informational; indexer nulls invalid refs). **Legacy:** `creditor` + `amount_usd` (single line). **Multi:** `beneficiaries[]` with `{ beneficiary, amount_usd, role? }` (2+ lines → `kind=multi`). Attestor invoices (issuer not debtor/beneficiary) require `contract_id` (governing contract with issuer + debtor). Auto-starts ledger per debt pair when authorized by governing contract. |
@@ -56,6 +56,7 @@ Dispute resolution authority is read from the invoice header's `contract_id` (go
 
 - `terms.termination` — `{ mode: 'instant' | 'notice', who: 'client' | 'provider' | 'both', noticeDays?: number, notes?: string }`
 - `terms.signParams` (optional) — `[{ key, label, required? }]` — when set, sign UI renders guided fields that populate `metadata`.
+- `terms.serviceOrderSchema` (optional) — JSON Schema object describing recommended `details` for `service_order_create`. Sanitized at `contract_sign` into `obl_contracts.service_order_schema` (not re-read from the offer row later).
 
 ## Drafts
 

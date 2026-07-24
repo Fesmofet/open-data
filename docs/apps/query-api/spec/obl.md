@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [obl, query-api]
-updated_at: 2026-07-23
+updated_at: 2026-07-24
 related:
   - docs/spec/open-business-layer.md
   - docs/apps/query-api/spec/overview.md
@@ -23,6 +23,7 @@ OpenAPI schemas: `apps/query-api/src/openapi/obl.openapi.ts`
 ## Data model (read path)
 
 - **`obl_invoices`** — header only: `issuer`, `debtor`, `kind` (`single` | `multi`), optional `contract_id`, optional `service_order_id` / `report_id`, `details`.
+- **`obl_contracts`** — signed offer instances; serialized contract objects include optional `service_order_schema` (JSON Schema snapshot from offer `terms.serviceOrderSchema` at sign). Present on relationship ledger contract lists, contract detail, and arbitration/dispute joins.
 - **`obl_obligation_lines`** — netting source: one row per beneficiary line (`debtor`, `beneficiary`, `amount_usd`, `state`, `role?`, `dispute_group`).
 - List endpoints return **one row per obligation line** (joined with header). Field `creditor` is a backward-compatible alias for `beneficiary`.
 - `GET /obl/invoices/:invoiceId` returns header fields plus full `lines[]` array.

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { isOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
+import {
+  isServiceOrderSchemaValid,
+  sanitizeServiceOrderSchema,
+} from '@opden-data-layer/core/utils/service-order-schema';
 
 import {
   OFFER_EDITOR_STEPS,
@@ -38,6 +42,7 @@ const offerTermsSchema = z.object({
   billingCycle: z.string().max(256).optional(),
   termination: offerTerminationSchema.optional(),
   signParams: z.array(offerSignParamSchema).max(32).optional(),
+  serviceOrderSchema: z.record(z.string(), z.unknown()).optional(),
 });
 
 const offerFieldsSchema = z.object({
@@ -132,6 +137,10 @@ function hasText(value: string | undefined | null): boolean {
   return (value?.trim() ?? '').length > 0;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function optionalText(value: string | undefined | null): string | undefined {
   const trimmed = value?.trim() ?? '';
   return trimmed.length > 0 ? trimmed : undefined;
@@ -197,6 +206,17 @@ export function normalizeOfferDraftForPublish(state: OfferDraftState): OfferDraf
   terms.currency = optionalText(terms.currency);
   terms.billingCycle = optionalText(terms.billingCycle);
   terms.signParams = cleanSignParams(terms.signParams);
+  const rawSchema = terms.serviceOrderSchema;
+  if (isRecord(rawSchema) && Object.keys(rawSchema).length > 0) {
+    const sanitized = sanitizeServiceOrderSchema(rawSchema);
+    if (sanitized) {
+      terms.serviceOrderSchema = sanitized;
+    } else {
+      delete terms.serviceOrderSchema;
+    }
+  } else {
+    delete terms.serviceOrderSchema;
+  }
   const cleanedTermination = cleanTermination(getOfferTermination(fields));
   if (cleanedTermination) {
     terms.termination = cleanedTermination;
@@ -222,6 +242,9 @@ function publishIssueStep(path: readonly PropertyKey[]): OfferEditorStep {
   }
   if (joined.includes('serviceRef') || joined.includes('signParams')) {
     return 'service';
+  }
+  if (joined.includes('serviceOrderSchema')) {
+    return 'schema';
   }
   if (joined.includes('terms') || joined.includes('pricingModel') || joined.includes('amountUsd')) {
     return 'commercial';
@@ -298,6 +321,13 @@ export function computeStepCompleteness(
     }
     case 'service':
       return hasText(fields.serviceRef) ? 'complete' : 'empty';
+    case 'schema': {
+      const schema = getOfferTerms(fields).serviceOrderSchema;
+      if (!isRecord(schema) || Object.keys(schema).length === 0) {
+        return 'empty';
+      }
+      return 'complete';
+    }
     case 'commercial': {
       const hasPricing = hasText(terms.pricingModel);
       const hasAmount = hasText(terms.amountUsd);
@@ -344,12 +374,6 @@ export function computeStepCompleteness(
 }
 
 export function validateOfferDraftForPublish(state: OfferDraftState): PublishValidationResult {
-  const normalized = normalizeOfferDraftForPublish(state);
-  const parsed = offerDraftPublishSchema.safeParse(normalized);
-  if (parsed.success) {
-    return { ok: true };
-  }
-
   const errors: Partial<Record<OfferEditorStep, string[]>> = {};
 
   const pushError = (step: OfferEditorStep, code: PublishErrorCode) => {
@@ -359,10 +383,23 @@ export function validateOfferDraftForPublish(state: OfferDraftState): PublishVal
     }
   };
 
-  for (const issue of parsed.error.issues) {
-    const step = publishIssueStep(issue.path);
-    const code = publishIssueCode(issue.message, issue.path);
-    pushError(step, code);
+  const rawSchema = getOfferTerms(state.fields).serviceOrderSchema;
+  if (
+    isRecord(rawSchema) &&
+    Object.keys(rawSchema).length > 0 &&
+    !isServiceOrderSchemaValid(rawSchema)
+  ) {
+    pushError('schema', 'field_invalid');
+  }
+
+  const normalized = normalizeOfferDraftForPublish(state);
+  const parsed = offerDraftPublishSchema.safeParse(normalized);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const step = publishIssueStep(issue.path);
+      const code = publishIssueCode(issue.message, issue.path);
+      pushError(step, code);
+    }
   }
 
   if (!hasText(normalized.fields.name)) {
@@ -379,6 +416,10 @@ export function validateOfferDraftForPublish(state: OfferDraftState): PublishVal
     if (days === undefined || days <= 0) {
       pushError('termination', 'termination_notice_days_required');
     }
+  }
+
+  if (Object.keys(errors).length === 0) {
+    return { ok: true };
   }
 
   return { ok: false, errors };

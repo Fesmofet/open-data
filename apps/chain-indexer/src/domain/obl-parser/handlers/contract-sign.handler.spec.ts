@@ -142,6 +142,63 @@ describe('ContractSignHandler', () => {
     );
   });
 
+  it('copies service order schema from offer terms', async () => {
+    const schema = {
+      type: 'object',
+      properties: { id: { type: 'string' } },
+    };
+    findOfferVersion.mockResolvedValue({
+      ...baseOffer,
+      terms: { serviceOrderSchema: schema },
+    });
+    await handler.handle(
+      {
+        contract_id: 'c-1',
+        offer_id: 'offer-1',
+        offer_version: 1,
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+      ctx('bob'),
+    );
+    expect(insertContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service_order_schema: schema,
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('stores null service_order_schema when offer schema sanitizes to empty', async () => {
+    findOfferVersion.mockResolvedValue({
+      ...baseOffer,
+      terms: {
+        serviceOrderSchema: {
+          type: 'object',
+          properties: { __proto__: { type: 'string' } },
+        },
+      },
+    });
+    await handler.handle(
+      {
+        contract_id: 'c-1',
+        offer_id: 'offer-1',
+        offer_version: 1,
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+      ctx('bob'),
+    );
+    expect(insertContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service_order_schema: null,
+      }),
+      expect.anything(),
+    );
+  });
+
   it('promotes pending lines when ledger did not exist', async () => {
     findOfferVersion.mockResolvedValue(baseOffer);
     hasLedgerForPair.mockResolvedValue(false);

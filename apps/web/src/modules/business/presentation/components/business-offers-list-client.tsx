@@ -46,6 +46,7 @@ export function BusinessOffersListClient({
   const { t } = useI18n();
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const [createErrorKey, setCreateErrorKey] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const draftsState = useSyncedPaginatedList(initialDrafts);
   const publishedState = useSyncedPaginatedList(initialPublished);
@@ -107,13 +108,25 @@ export function BusinessOffersListClient({
 
   async function onCreateDraft() {
     setCreating(true);
+    setCreateErrorKey(null);
     try {
       const result = await createOblDraftAction(username, {
         kind,
         fields: { name: '' },
       });
       if (result.ok) {
-        router.push(businessRoutes.offerDraft(kind, result.value.draftId));
+        const draftId = result.value.draftId?.trim();
+        if (draftId) {
+          router.push(businessRoutes.offerDraft(kind, draftId));
+          return;
+        }
+        setCreateErrorKey('business_draft_create_error_generic');
+        return;
+      }
+      if (result.error.code === 'unauthorized') {
+        setCreateErrorKey('business_draft_create_error_unauthorized');
+      } else {
+        setCreateErrorKey('business_draft_create_error_generic');
       }
     } finally {
       setCreating(false);
@@ -126,14 +139,21 @@ export function BusinessOffersListClient({
       title={title}
       subtitle={subtitle}
       actions={
-        <button
-          type="button"
-          disabled={creating}
-          onClick={() => void onCreateDraft()}
-          className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg disabled:opacity-50"
-        >
-          {creating ? '…' : createLabel}
-        </button>
+        <div className="flex flex-col items-end gap-2">
+          {createErrorKey ? (
+            <p className="max-w-sm text-end text-caption text-error" role="alert">
+              {t(createErrorKey)}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            disabled={creating}
+            onClick={() => void onCreateDraft()}
+            className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg disabled:opacity-50"
+          >
+            {creating ? '…' : createLabel}
+          </button>
+        </div>
       }
     >
       <div className="mb-4 flex flex-wrap gap-2">

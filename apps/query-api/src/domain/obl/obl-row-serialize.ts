@@ -160,6 +160,7 @@ export function serializeOblContract(
     metadata: row.metadata,
     offer_name: offerName ?? null,
     offer_description: offerDescription ?? null,
+    service_order_schema: row.service_order_schema ?? null,
     created_event_seq: row.created_event_seq.toString(),
     transaction_id: row.transaction_id,
     created_at: toIso(row.created_at),

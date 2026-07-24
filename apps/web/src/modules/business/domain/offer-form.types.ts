@@ -22,6 +22,7 @@ export type OfferTerms = {
   billingCycle?: string;
   termination?: OfferTerminationTerms;
   signParams?: OfferSignParam[];
+  serviceOrderSchema?: Record<string, unknown>;
 };
 
 export type OfferDraftFields = {
@@ -44,6 +45,7 @@ export type OfferDraftFields = {
 export const OFFER_EDITOR_STEPS = [
   'basics',
   'service',
+  'schema',
   'commercial',
   'billing',
   'termination',

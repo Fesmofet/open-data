@@ -24,8 +24,8 @@ related:
 
 ## Draft editor (`/business/manage/offers/drafts/:draftId` or `/business/manage/requests/drafts/:draftId`)
 
-- Eight steps (`OFFER_EDITOR_STEPS` in `offer-form.types.ts`); debounced PATCH autosave (~800ms).
-- All steps have real fields: basics (incl. tags), service (`service_ref` + optional `terms.signParams`), commercial (`terms`), billing, termination (`terms.termination`), disputes, legal (`legal_ref` + off-chain `legalText`).
+- Nine steps (`OFFER_EDITOR_STEPS` in `offer-form.types.ts`); debounced PATCH autosave (~800ms).
+- All steps have real fields: basics (incl. tags), service (`service_ref` + optional `terms.signParams`), **schema** (optional `terms.serviceOrderSchema` via hybrid JSON Schema builder), commercial (`terms`), billing, termination (`terms.termination`), disputes, legal (`legal_ref` + off-chain `legalText`).
 - **Full preview:** header button opens scrollable modal; **Open in new tab** → `.../drafts/:draftId/preview`.
 - Publish validation via `offer-draft.schema.ts` (Zod); review step shows readiness checklist; publish blocked until `name` (+ arbiter when required).
 - New version flow: clone sets `publishedOfferId` → publish uses `offer_update`; first publish uses `offer_publish`.
@@ -51,4 +51,4 @@ Retire (`buildRetireOfferOp`), new version (clone fields into new draft). Links 
 ## Public sign
 
 - `/offers/:id/versions/:v`, `/requests/:id/versions/:v` — unchanged.
-- Sign page — mandatory ledger + auto-payment disclosures before `buildSignContractOp`. If viewer already signed this offer with the author, sign form is hidden. Counterparty supplies `metadata` via guided fields when `terms.signParams` is set, else optional JSON textarea.
+- Sign page — mandatory ledger + auto-payment disclosures before `buildSignContractOp`. If viewer already signed this offer with the author, sign form is hidden. Counterparty supplies `metadata` via guided fields when `terms.signParams` is set, else optional **Object Builder** custom properties (`ObjectBuilder` in `public-offer-page-client.tsx`).

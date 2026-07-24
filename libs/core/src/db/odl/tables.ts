@@ -1171,6 +1171,11 @@ export interface OblContractsTable {
   dispute_rule: OblDisputeRule;
   arbiter: string | null;
   metadata: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  service_order_schema: ColumnType<
+    JsonValue | null,
+    JsonValue | null | undefined,
+    JsonValue | null
+  >;
   pair_low: Generated<string>;
   pair_high: Generated<string>;
   created_event_seq: bigint;

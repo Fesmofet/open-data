@@ -16,6 +16,7 @@ import { OfferEditorCommercialStep } from './offer-editor/offer-editor-commercia
 import { OfferEditorDisputesStep } from './offer-editor/offer-editor-disputes-step';
 import { OfferEditorLegalStep } from './offer-editor/offer-editor-legal-step';
 import { OfferEditorReviewStep } from './offer-editor/offer-editor-review-step';
+import { OfferEditorSchemaStep } from './offer-editor/offer-editor-schema-step';
 import { OfferEditorServiceStep } from './offer-editor/offer-editor-service-step';
 import { OfferEditorTerminationStep } from './offer-editor/offer-editor-termination-step';
 import { OfferFullPreview } from './offer-full-preview';
@@ -98,6 +99,12 @@ export function BusinessOfferEditorClient({
             <OfferEditorServiceStep
               username={username}
               kind={editor.kind}
+              fields={editor.fields}
+              onFieldsChange={editor.setFields}
+            />
+          ) : null}
+          {editor.step === 'schema' ? (
+            <OfferEditorSchemaStep
               fields={editor.fields}
               onFieldsChange={editor.setFields}
             />

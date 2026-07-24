@@ -35,6 +35,7 @@ function toLedgerContract(
     arbiter: contract.arbiter,
     offer_name: contract.offer_name ?? contract.contract_id,
     offer_description: contract.offer_description ?? null,
+    service_order_schema: contract.service_order_schema ?? null,
     created_at: contract.created_at,
   };
 }

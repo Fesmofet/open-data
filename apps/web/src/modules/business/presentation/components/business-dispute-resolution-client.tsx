@@ -42,6 +42,7 @@ function toLedgerContract(row: DisputeResolutionApiRow): LedgerContractRow {
     arbiter: row.contract.arbiter,
     offer_name: row.offerName,
     offer_description: row.contract.offer_description ?? null,
+    service_order_schema: row.contract.service_order_schema ?? null,
     created_at: row.contract.created_at,
   };
 }

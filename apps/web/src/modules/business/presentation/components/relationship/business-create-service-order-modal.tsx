@@ -7,7 +7,8 @@ import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 
 import { shortContractId } from '../../../domain/dispute-resolution';
 import type { LedgerContractRow } from '../../../domain/ledger.types';
-import { parseMetadataJson } from '../../../domain/offer-terms';
+import { emptyValueFromSchema } from '../../../domain/service-order-schema';
+import { ObjectBuilder } from '../object-builder';
 
 export type BusinessCreateServiceOrderModalProps = {
   open: boolean;
@@ -30,31 +31,49 @@ export function BusinessCreateServiceOrderModal({
   const { t } = useI18n();
   const titleId = 'business-create-service-order-modal-title';
   const [contractId, setContractId] = useState('');
-  const [detailsJson, setDetailsJson] = useState('');
-  const [detailsError, setDetailsError] = useState<string | null>(null);
+  const [details, setDetails] = useState<Record<string, unknown>>({});
+  const [detailsValid, setDetailsValid] = useState(true);
+  const [detailsBuilderKey, setDetailsBuilderKey] = useState(0);
+
+  function applyContractPrefill(nextContractId: string) {
+    const selected = contracts.find((c) => c.contract_id === nextContractId);
+    const schema = selected?.service_order_schema;
+    if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
+      setDetails(emptyValueFromSchema(schema));
+    } else {
+      setDetails({});
+    }
+    setDetailsValid(true);
+    setDetailsBuilderKey((key) => key + 1);
+  }
 
   useEffect(() => {
     if (open) {
-      setContractId(contracts[0]?.contract_id ?? '');
-      setDetailsJson('');
-      setDetailsError(null);
+      const initialId = contracts[0]?.contract_id ?? '';
+      setContractId(initialId);
+      if (initialId) {
+        applyContractPrefill(initialId);
+      } else {
+        setDetails({});
+        setDetailsValid(true);
+        setDetailsBuilderKey((key) => key + 1);
+      }
     }
   }, [open, contracts]);
 
-  const canSubmit = !isBusy && contractId.trim().length > 0 && detailsError === null;
+  const selectedContract = contracts.find((c) => c.contract_id === contractId);
+  const hasSchemaPrefill =
+    selectedContract?.service_order_schema !== null &&
+    selectedContract?.service_order_schema !== undefined &&
+    Object.keys(selectedContract.service_order_schema).length > 0;
+
+  const canSubmit =
+    !isBusy && contractId.trim().length > 0 && detailsValid;
 
   async function handleSubmit() {
-    const trimmed = detailsJson.trim();
-    let details: Record<string, unknown> | undefined;
-    if (trimmed.length > 0) {
-      const parsed = parseMetadataJson(trimmed);
-      if (parsed === null) {
-        setDetailsError(t('business_invoice_details_invalid_json'));
-        return;
-      }
-      details = Object.keys(parsed).length > 0 ? parsed : undefined;
-    }
-    await onSubmit({ contractId, details });
+    const detailsPayload =
+      Object.keys(details).length > 0 ? details : undefined;
+    await onSubmit({ contractId, details: detailsPayload });
     onClose();
   }
 
@@ -104,7 +123,11 @@ export function BusinessCreateServiceOrderModal({
             {t('business_field_contract')}
             <select
               value={contractId}
-              onChange={(e) => setContractId(e.target.value)}
+              onChange={(e) => {
+                const nextId = e.target.value;
+                setContractId(nextId);
+                applyContractPrefill(nextId);
+              }}
               className="rounded-btn border border-border px-3 py-2"
             >
               {contracts.map((c) => (
@@ -115,20 +138,21 @@ export function BusinessCreateServiceOrderModal({
             </select>
           </label>
         )}
-        <label className="flex flex-col gap-1 text-body-sm">
-          {t('business_service_order_details_label')}
-          <textarea
-            value={detailsJson}
-            onChange={(e) => {
-              setDetailsJson(e.target.value);
-              setDetailsError(null);
-            }}
-            rows={4}
-            className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
-            placeholder="{}"
-          />
-          {detailsError ? <span className="text-caption text-error">{detailsError}</span> : null}
-        </label>
+        {hasSchemaPrefill ? (
+          <p className="text-caption text-fg-secondary">
+            {t('business_service_order_schema_prefill_hint')}
+          </p>
+        ) : null}
+        <ObjectBuilder
+          key={detailsBuilderKey}
+          value={details}
+          label={t('business_service_order_details_label')}
+          disabled={isBusy}
+          onChange={(next, valid) => {
+            setDetails(next);
+            setDetailsValid(valid);
+          }}
+        />
       </div>
     </ModalShell>
   );

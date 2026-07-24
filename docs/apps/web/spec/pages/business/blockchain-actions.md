@@ -43,3 +43,5 @@ Relationship modals:
 | Record payment | `buildDeclarePaymentOp` |
 | Confirm payment | `buildConfirmPaymentOp` + `declarePaymentId` |
 | Open dispute | `buildOpenDisputeOp` |
+
+Optional `metadata` (contract sign), `details` (invoice, service order, report), and payment `ref` are edited in the UI with **`ObjectBuilder`** (`presentation/components/object-builder/`) — typed key/value rows, one nested object level, scalar arrays, validation (duplicate keys, dangerous keys, limits). Replaces raw JSON textareas.

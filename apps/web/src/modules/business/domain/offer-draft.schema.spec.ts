@@ -111,4 +111,53 @@ describe('offer-draft.schema', () => {
       notes: 'Any time',
     });
   });
+
+  it('marks schema step empty without serviceOrderSchema', () => {
+    const state = baseState();
+    expect(computeStepCompleteness('schema', state)).toBe('empty');
+  });
+
+  it('marks schema step complete when serviceOrderSchema is set', () => {
+    const state = baseState();
+    state.fields.terms = {
+      serviceOrderSchema: {
+        type: 'object',
+        properties: { id: { type: 'string' } },
+      },
+    };
+    expect(computeStepCompleteness('schema', state)).toBe('complete');
+  });
+
+  it('sanitizes serviceOrderSchema on normalize for publish', () => {
+    const state = baseState();
+    state.fields.terms = {
+      serviceOrderSchema: {
+        type: 'object',
+        properties: {
+          __proto__: { type: 'string' },
+          ok: { type: 'string' },
+        },
+      },
+    };
+    const normalized = normalizeOfferDraftForPublish(state);
+    expect(normalized.fields.terms?.serviceOrderSchema).toEqual({
+      type: 'object',
+      properties: { ok: { type: 'string' } },
+    });
+  });
+
+  it('blocks publish when serviceOrderSchema is invalid', () => {
+    const state = baseState();
+    state.fields.terms = {
+      serviceOrderSchema: {
+        type: 'object',
+        properties: { '': { type: 'string' } },
+      },
+    };
+    const result = validateOfferDraftForPublish(state);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.schema).toContain('field_invalid');
+    }
+  });
 });

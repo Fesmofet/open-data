@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 
-import { parseMetadataJson } from '../../../domain/offer-terms';
+import { ObjectBuilder } from '../object-builder';
 import {
   AccountPairSwapRow,
   parsePositiveUsdAmount,
@@ -37,43 +37,27 @@ export function BusinessDeclarePaymentModal({
   const { t } = useI18n();
   const titleId = 'business-declare-payment-modal-title';
   const [amount, setAmount] = useState('5');
-  const [refJson, setRefJson] = useState('');
-  const [refError, setRefError] = useState<string | null>(null);
+  const [ref, setRef] = useState<Record<string, unknown>>({});
+  const [refValid, setRefValid] = useState(true);
+  const [refBuilderKey, setRefBuilderKey] = useState(0);
   const [parties, setParties] = useState({ payer, receiver });
 
   useEffect(() => {
     if (open) {
       setParties({ payer, receiver });
+      setRef({});
+      setRefValid(true);
+      setRefBuilderKey((key) => key + 1);
     }
   }, [open, payer, receiver]);
 
   const isReceiverConfirm = parties.receiver === viewer;
 
-  function onRefChange(value: string) {
-    setRefJson(value);
-    if (value.trim().length === 0) {
-      setRefError(null);
-      return;
-    }
-    setRefError(
-      parseMetadataJson(value) === null ? t('business_payment_ref_invalid_json') : null,
-    );
-  }
-
-  const canSubmit = !isBusy && parsePositiveUsdAmount(amount) && refError === null;
+  const canSubmit = !isBusy && parsePositiveUsdAmount(amount) && refValid;
 
   async function handleSubmit() {
-    const trimmed = refJson.trim();
-    let ref: Record<string, unknown> | undefined;
-    if (trimmed.length > 0) {
-      const parsed = parseMetadataJson(trimmed);
-      if (parsed === null) {
-        setRefError(t('business_payment_ref_invalid_json'));
-        return;
-      }
-      ref = Object.keys(parsed).length > 0 ? parsed : undefined;
-    }
-    await onSubmit(amount, parties, ref);
+    const refPayload = Object.keys(ref).length > 0 ? ref : undefined;
+    await onSubmit(amount, parties, refPayload);
     onClose();
   }
 
@@ -151,17 +135,16 @@ export function BusinessDeclarePaymentModal({
             className="rounded-btn border border-border px-3 py-2"
           />
         </label>
-        <label className="flex flex-col gap-1 text-body-sm">
-          {t('business_payment_ref_label')}
-          <textarea
-            value={refJson}
-            onChange={(e) => onRefChange(e.target.value)}
-            rows={4}
-            className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
-            placeholder='{"note":"Paid via bank transfer","txid":"..."}'
-          />
-          {refError ? <span className="text-caption text-error">{refError}</span> : null}
-        </label>
+        <ObjectBuilder
+          key={refBuilderKey}
+          value={{}}
+          label={t('business_payment_ref_label')}
+          disabled={isBusy}
+          onChange={(next, valid) => {
+            setRef(next);
+            setRefValid(valid);
+          }}
+        />
       </div>
     </ModalShell>
   );
