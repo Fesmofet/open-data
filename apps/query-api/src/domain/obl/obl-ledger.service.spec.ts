@@ -12,6 +12,8 @@ function invoiceLine(
   return {
     invoice_id: id,
     contract_id: null,
+    service_order_id: null,
+    report_id: null,
     issuer: 'alice',
     debtor: 'bob',
     kind: 'single',

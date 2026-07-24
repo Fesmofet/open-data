@@ -4,6 +4,8 @@ import { aggregateInvoiceLineView } from './obl-invoice-line';
 const header: OblInvoice = {
   invoice_id: 'inv-1',
   contract_id: 'c-1',
+  service_order_id: null,
+  report_id: null,
   issuer: 'alice',
   debtor: 'bob',
   kind: 'single',
