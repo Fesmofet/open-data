@@ -31,6 +31,11 @@ Public login wall at `/sign-in` for unauthenticated visitors (e.g. after proxy r
 
 - Centered card with heading and `LoginWall` from `@/modules/auth`.
 - Wallet providers (Keychain, HiveSigner, HiveAuth) — see [auth.md](../../auth.md).
+- If the visitor already has a valid session, the page server-redirects to `/`.
+
+## Post-login navigation
+
+Keychain/HiveAuth on this wall use a **full document navigation** to `/` (not `router.push` + `router.refresh`) so new httpOnly cookies are visible to the proxy on the next request — same outcome as HiveSigner’s server redirect callback.
 
 ## SEO
 

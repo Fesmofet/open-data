@@ -50,6 +50,7 @@ export function createAuthBffClient(): IAuthBffClient {
     }): Promise<ChallengeResponse> {
       const res = await fetch(`${BFF_BASE}/challenge`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       });
@@ -64,6 +65,7 @@ export function createAuthBffClient(): IAuthBffClient {
     }): Promise<SessionResponse> {
       const res = await fetch(`${BFF_BASE}/verify/keychain`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       });
@@ -77,6 +79,7 @@ export function createAuthBffClient(): IAuthBffClient {
     }): Promise<SessionResponse> {
       const res = await fetch(`${BFF_BASE}/verify/hiveauth`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       });
@@ -86,6 +89,7 @@ export function createAuthBffClient(): IAuthBffClient {
     async refresh(): Promise<SessionResponse> {
       const res = await fetch(`${BFF_BASE}/refresh`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
@@ -95,6 +99,7 @@ export function createAuthBffClient(): IAuthBffClient {
     async logout(): Promise<{ ok: true }> {
       const res = await fetch(`${BFF_BASE}/logout`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
