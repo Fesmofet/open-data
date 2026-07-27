@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import type { HiveEngineCustomJsonPayload } from '@opden-data-layer/hive-broadcast';
 
+import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
@@ -11,10 +12,22 @@ import type { EngineWithdrawListApiResponse } from '../../../application/dto/eng
 import { formatHiveAmount } from '../../../domain/hive-wallet-amount';
 import { validateEngineTokenAmount } from '../../../domain/engine-token-form-validation';
 import {
+  matchQrSchemeToWithdrawPair,
+  parsePaymentQrUri,
+} from '../../../domain/payment-qr-uri';
+import { solveWithdrawInputForTargetReceive } from '../../../domain/solve-withdraw-input-for-target-receive';
+import { findEngineTokenUsdRate } from '../../../domain/wallet-engine-usd-rate';
+import type { WalletWithdrawModalState } from '../../../domain/wallet-modal-types';
+import {
+  findWithdrawPair,
+  resolveInitialWithdrawSymbols,
+  uniqueWithdrawInputOptions,
+  withdrawOutputOptions,
+} from '../../../domain/withdraw-modal-defaults';
+import {
   fetchEngineWithdrawList,
   fetchEngineWithdrawQuote,
 } from '../../../infrastructure/clients/engine-swap.client';
-import type { WalletWithdrawModalState } from '../../../domain/wallet-modal-types';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
 import {
@@ -23,31 +36,14 @@ import {
 } from '../../utils/withdraw-quote-error-message';
 import { WalletModalBalanceLine } from '../shared/wallet-modal-balance-line';
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
+import { useWalletBalances } from './wallet-balances-context';
 import { WalletAssetAmountField } from './wallet-asset-amount-field';
+import { WalletQrScannerModal } from './wallet-qr-scanner-modal';
 
 const WITHDRAW_FEE_PERCENT = 0.75;
 const HIVE_WALLET_OUTPUTS = new Set(['HIVE', 'HBD']);
 
 type WithdrawToken = EngineWithdrawListApiResponse['tokens'][number];
-
-function pairKey(token: WithdrawToken): string {
-  return `${token.inputSymbol}:${token.outputSymbol}`;
-}
-
-function resolveInitialPairKey(
-  tokens: WithdrawToken[],
-  inputSymbol?: string,
-  outputSymbol?: string,
-): string {
-  if (inputSymbol && outputSymbol) {
-    const preferred = `${inputSymbol.trim().toUpperCase()}:${outputSymbol.trim().toUpperCase()}`;
-    const match = tokens.find((item) => pairKey(item) === preferred);
-    if (match) {
-      return pairKey(match);
-    }
-  }
-  return tokens[0] ? pairKey(tokens[0]) : '';
-}
 
 function formatWithdrawReceiveAmount(
   amount: number,
@@ -75,17 +71,21 @@ export function WalletWithdrawModal({
   const { t } = useI18n();
   const titleId = useId();
   const broadcast = useEngineTokenBroadcast(account);
+  const { waivSummary, engineSummary } = useWalletBalances();
 
   const [withdrawList, setWithdrawList] = useState<WithdrawToken[]>([]);
   const [listError, setListError] = useState<string | null>(null);
   const [listLoading, setListLoading] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('');
+  const [inputSymbol, setInputSymbol] = useState('');
+  const [outputSymbol, setOutputSymbol] = useState('');
   const [quantity, setQuantity] = useState('');
   const [address, setAddress] = useState('');
   const [predictiveAmount, setPredictiveAmount] = useState<number | null>(null);
   const [customJson, setCustomJson] = useState<HiveEngineCustomJsonPayload[]>([]);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrSolving, setQrSolving] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -100,19 +100,20 @@ export function WalletWithdrawModal({
           return;
         }
         setWithdrawList(result.tokens);
-        setSelectedKey(
-          resolveInitialPairKey(
-            result.tokens,
-            state.inputSymbol,
-            state.outputSymbol,
-          ),
+        const initial = resolveInitialWithdrawSymbols(
+          result.tokens,
+          state.inputSymbol,
+          state.outputSymbol,
         );
+        setInputSymbol(initial.inputSymbol);
+        setOutputSymbol(initial.outputSymbol);
       })
       .catch(() => {
         if (!cancelled) {
           setListError(t('wallet_withdraw_quote_failed'));
           setWithdrawList([]);
-          setSelectedKey('');
+          setInputSymbol('');
+          setOutputSymbol('');
         }
       })
       .finally(() => {
@@ -126,8 +127,18 @@ export function WalletWithdrawModal({
   }, [open, account, state.inputSymbol, state.outputSymbol, t]);
 
   const selectedPair = useMemo(
-    () => withdrawList.find((item) => pairKey(item) === selectedKey) ?? null,
-    [withdrawList, selectedKey],
+    () => findWithdrawPair(withdrawList, inputSymbol, outputSymbol),
+    [withdrawList, inputSymbol, outputSymbol],
+  );
+
+  const payOptions = useMemo(
+    () => uniqueWithdrawInputOptions(withdrawList),
+    [withdrawList],
+  );
+
+  const receiveOptions = useMemo(
+    () => withdrawOutputOptions(withdrawList, inputSymbol),
+    [withdrawList, inputSymbol],
   );
 
   useEffect(() => {
@@ -140,10 +151,18 @@ export function WalletWithdrawModal({
     setCustomJson([]);
     setQuoteError(null);
     broadcast.setError(null);
-  }, [open, selectedKey, account]);
+  }, [open, inputSymbol, outputSymbol, account]);
 
-  const externalAddress = selectedPair?.requiresExternalAddress ? address.trim() : '';
-  const previewOnly = Boolean(selectedPair?.requiresExternalAddress && !externalAddress);
+  const externalAddress = selectedPair?.requiresExternalAddress
+    ? address.trim()
+    : '';
+  const previewOnly = Boolean(
+    selectedPair?.requiresExternalAddress && !externalAddress,
+  );
+
+  const quoteAddress = selectedPair?.requiresExternalAddress
+    ? externalAddress
+    : account;
 
   useEffect(() => {
     if (!open || !selectedPair || !quantity) {
@@ -169,7 +188,7 @@ export function WalletWithdrawModal({
         inputSymbol: selectedPair.inputSymbol,
         outputSymbol: selectedPair.outputSymbol,
         quantity,
-        address: selectedPair.requiresExternalAddress ? externalAddress : account,
+        address: quoteAddress,
         previewOnly,
       })
         .then((result) => {
@@ -203,7 +222,7 @@ export function WalletWithdrawModal({
     account,
     selectedPair,
     quantity,
-    externalAddress,
+    quoteAddress,
     previewOnly,
     t,
   ]);
@@ -243,6 +262,20 @@ export function WalletWithdrawModal({
     );
   }, [quoteLoading, predictiveAmount, selectedPair, quantity, quoteError]);
 
+  const waivUsd = waivSummary?.rates.waivUsd ?? 0;
+  const estimatedUsd = useMemo(() => {
+    const parsed = Number.parseFloat(quantity);
+    if (!Number.isFinite(parsed) || parsed <= 0 || !selectedPair) {
+      return 0;
+    }
+    const rate = findEngineTokenUsdRate(
+      selectedPair.balanceSymbol,
+      waivUsd,
+      engineSummary,
+    );
+    return parsed * rate;
+  }, [quantity, selectedPair, waivUsd, engineSummary]);
+
   const minimumHint = selectedPair
     ? formatWithdrawMinimumHint(t, selectedPair)
     : null;
@@ -258,7 +291,8 @@ export function WalletWithdrawModal({
     predictiveAmount > 0 &&
     customJson.length > 0 &&
     !quoteLoading &&
-    !previewOnly;
+    !previewOnly &&
+    !qrSolving;
 
   const handleSubmit = async () => {
     if (!selectedPair || !canSubmit) {
@@ -270,163 +304,259 @@ export function WalletWithdrawModal({
     }
   };
 
+  const handleQrAccept = useCallback(
+    async (raw: string) => {
+      const parsed = parsePaymentQrUri(raw);
+      if (parsed.address) {
+        setAddress(parsed.address);
+      }
+      const schemeMatch = matchQrSchemeToWithdrawPair(
+        parsed.scheme,
+        withdrawList,
+      );
+      if (schemeMatch) {
+        setInputSymbol(schemeMatch.inputSymbol);
+        setOutputSymbol(schemeMatch.outputSymbol);
+      }
+      if (parsed.amount === null || !Number.isFinite(parsed.amount)) {
+        return;
+      }
+      const pair =
+        schemeMatch !== null
+          ? findWithdrawPair(
+              withdrawList,
+              schemeMatch.inputSymbol,
+              schemeMatch.outputSymbol,
+            )
+          : selectedPair;
+      if (!pair) {
+        return;
+      }
+      const addrForQuote = pair.requiresExternalAddress
+        ? parsed.address.trim()
+        : account;
+      if (pair.requiresExternalAddress && !addrForQuote) {
+        return;
+      }
+      setQrSolving(true);
+      try {
+        const maxInput = Number.parseFloat(pair.balance);
+        const solved = await solveWithdrawInputForTargetReceive({
+          targetReceive: parsed.amount,
+          maxInput,
+          fetchQuote: async (q) => {
+            const result = await fetchEngineWithdrawQuote(account, {
+              inputSymbol: pair.inputSymbol,
+              outputSymbol: pair.outputSymbol,
+              quantity: q,
+              address: addrForQuote,
+              previewOnly: false,
+            });
+            return {
+              predictiveAmount: result.predictiveAmount,
+              error: result.error,
+            };
+          },
+        });
+        if (solved.ok) {
+          setQuantity(solved.quantity);
+        }
+      } finally {
+        setQrSolving(false);
+      }
+    },
+    [account, withdrawList, selectedPair],
+  );
+
+  const showQrButton =
+    selectedPair && !HIVE_WALLET_OUTPUTS.has(selectedPair.outputSymbol);
+
   return (
-    <AppModal open={open} onClose={onClose} labelledBy={titleId}>
-      <div className="p-card-padding">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <h2 id={titleId} className="text-section font-weight-strong text-fg">
-            {t('withdraw')}
-          </h2>
-          <AppModalCloseButton onClose={onClose} />
-        </div>
+    <>
+      <AppModal open={open} onClose={onClose} labelledBy={titleId}>
+        <div className="p-card-padding">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <h2 id={titleId} className="text-section font-weight-strong text-fg">
+              {t('withdraw')}
+            </h2>
+            <AppModalCloseButton onClose={onClose} />
+          </div>
 
-        <div className="space-y-3 text-body-sm text-muted">
-          <p>
-            {t('withdraw_info_part1')}{' '}
-            <a
-              href="https://hive-engine.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent underline"
-            >
-              Hive-Engine.com
-            </a>
-            .
-          </p>
-          <p>
-            {t('there_is_a')} {WITHDRAW_FEE_PERCENT}% {t('fee_on_withdrawals')}.
-          </p>
-          <p>{t('withdraw_info_part2')}</p>
-        </div>
-
-        <div className="mt-6 space-y-4">
-          {listLoading ? (
-            <AppLoader layout="center" label={t('activity_loading')} />
-          ) : null}
-          {listError ? <p className="text-body-sm text-error">{listError}</p> : null}
-          {!listLoading && !listError && withdrawList.length === 0 ? (
-            <p className="text-body-sm text-muted">{t('wallet_withdraw_no_pairs')}</p>
-          ) : null}
-
-          {selectedPair ? (
-            <>
-              <div>
-                <WalletModalFieldLabel>{t('withdraw')}</WalletModalFieldLabel>
-                <select
-                  className="mt-1 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body"
-                  value={selectedKey}
-                  onChange={(e) => setSelectedKey(e.target.value)}
-                >
-                  {withdrawList.map((item) => (
-                    <option key={pairKey(item)} value={pairKey(item)}>
-                      {item.label} ({item.balance} {item.balanceSymbol})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <WalletAssetAmountField
-                label={t('amount')}
-                value={quantity}
-                onChange={setQuantity}
-                asset={selectedPair.balanceSymbol}
-                onAssetChange={() => undefined}
-                options={[
-                  {
-                    value: selectedPair.balanceSymbol,
-                    label: selectedPair.balanceSymbol,
-                    balance: selectedPair.balance,
-                  },
-                ]}
-                assetDisabled
-                maxAmount={selectedPair.balance}
-                placeholder={t('amount_placeholder')}
-              />
-              <WalletModalBalanceLine
-                amount={selectedPair.balance}
-                symbol={selectedPair.balanceSymbol}
-                onSelect={() => setQuantity(selectedPair.balance)}
-              />
-              {insufficientFunds ? (
-                <p className="text-body-sm text-error">{t('amount_error_funds')}</p>
-              ) : null}
-              {lowSwapHiveBalance ? (
-                <p className="text-body-sm text-error">
-                  {t('wallet_withdraw_min_swap_hive')}
-                </p>
-              ) : null}
-
-              <div>
-                <WalletModalFieldLabel>{t('receive')}</WalletModalFieldLabel>
-                <div className="mt-1 flex gap-2">
-                  <input
-                    disabled
-                    readOnly
-                    className="min-w-0 flex-1 rounded-btn border border-border bg-surface px-3 py-2 text-body disabled:cursor-not-allowed disabled:opacity-70"
-                    value={receiveValue}
-                  />
-                  <div className="rounded-btn border border-border bg-surface px-3 py-2 text-body">
-                    {selectedPair.outputSymbol}
-                  </div>
-                </div>
-                {quoteLoading ? (
-                  <AppLoader size="sm" label={t('activity_loading')} className="mt-2" />
-                ) : null}
-              </div>
-
-              {minimumHint ? (
-                <p className="text-body-sm text-muted">{minimumHint}</p>
-              ) : null}
-
-              <div>
-                <WalletModalFieldLabel>{t('destination_address')}</WalletModalFieldLabel>
-                {HIVE_WALLET_OUTPUTS.has(selectedPair.outputSymbol) ? (
-                  <div className="mt-1 rounded-btn border border-border bg-surface px-3 py-2 text-body">
-                    @{account}
-                  </div>
-                ) : (
-                  <input
-                    className="mt-1 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder={t('enter_address')}
-                  />
-                )}
-              </div>
-            </>
-          ) : null}
-
-          {quoteError ? <p className="text-body-sm text-error">{quoteError}</p> : null}
-          {previewOnly && quantity && !quoteError && !quoteLoading ? (
-            <p className="text-body-sm text-muted">{t('enter_address')}</p>
-          ) : null}
-          {broadcast.error ? (
-            <p className="text-body-sm text-error">
-              {t(engineTokenBroadcastErrorMessageKey(broadcast.error))}
+          <div className="space-y-2 text-body-sm text-muted">
+            <p>
+              {t('wallet_withdraw_processed_by')}{' '}
+              <a
+                href="https://hive-engine.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline"
+              >
+                Hive-Engine.com
+              </a>
+              .
             </p>
-          ) : null}
-        </div>
+            <p>{t('wallet_withdraw_fee_line')}</p>
+          </div>
 
-        <p className="mt-4 text-body-sm text-muted">{t('withdraw_info_part3')}</p>
+          <div className="mt-6 space-y-4">
+            {listLoading ? (
+              <AppLoader layout="center" label={t('activity_loading')} />
+            ) : null}
+            {listError ? (
+              <p className="text-body-sm text-error">{listError}</p>
+            ) : null}
+            {!listLoading && !listError && withdrawList.length === 0 ? (
+              <p className="text-body-sm text-muted">{t('wallet_withdraw_no_pairs')}</p>
+            ) : null}
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            className="rounded-btn border border-border bg-surface px-4 py-2 text-body font-weight-strong text-fg"
-            onClick={onClose}
-          >
-            {t('cancel')}
-          </button>
-          <button
-            type="button"
-            className="rounded-btn bg-accent px-4 py-2 text-body font-weight-strong text-accent-fg disabled:opacity-50"
-            disabled={!canSubmit || broadcast.pending}
-            onClick={() => void handleSubmit()}
-          >
-            {broadcast.pending ? '…' : t('withdraw')}
-          </button>
+            {selectedPair ? (
+              <>
+                <div>
+                  <WalletModalFieldLabel>
+                    {t('wallet_withdraw_you_pay')}
+                  </WalletModalFieldLabel>
+                  <WalletAssetAmountField
+                    value={quantity}
+                    onChange={setQuantity}
+                    asset={inputSymbol}
+                    onAssetChange={(nextInput) => {
+                      setInputSymbol(nextInput);
+                      const outputs = withdrawOutputOptions(
+                        withdrawList,
+                        nextInput,
+                      );
+                      setOutputSymbol(outputs[0]?.value ?? '');
+                    }}
+                    options={payOptions}
+                    assetDisabled={listLoading || payOptions.length === 0}
+                    searchableAsset
+                    maxAmount={selectedPair.balance}
+                    placeholder={t('amount_placeholder')}
+                  />
+                  <WalletModalBalanceLine
+                    amount={selectedPair.balance}
+                    symbol={selectedPair.balanceSymbol}
+                    onSelect={() => setQuantity(selectedPair.balance)}
+                  />
+                  {insufficientFunds ? (
+                    <p className="text-body-sm text-error">
+                      {t('amount_error_funds')}
+                    </p>
+                  ) : null}
+                  {lowSwapHiveBalance ? (
+                    <p className="text-body-sm text-error">
+                      {t('wallet_withdraw_min_swap_hive')}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <WalletModalFieldLabel>
+                    {t('wallet_withdraw_receive')}
+                  </WalletModalFieldLabel>
+                  <WalletAssetAmountField
+                    value={receiveValue}
+                    onChange={() => undefined}
+                    asset={outputSymbol}
+                    onAssetChange={(nextOutput) => {
+                      setOutputSymbol(nextOutput);
+                    }}
+                    options={receiveOptions}
+                    assetDisabled={
+                      listLoading || receiveOptions.length === 0
+                    }
+                    searchableAsset
+                    maxAmount="0"
+                    amountReadOnly
+                  />
+                  {quoteLoading || qrSolving ? (
+                    <AppLoader
+                      size="sm"
+                      label={t('activity_loading')}
+                      className="mt-2"
+                    />
+                  ) : null}
+                  <p className="mt-2 text-body-sm text-muted">
+                    {interpolateMessage(t('wallet_withdraw_value_usd'), {
+                      amount: estimatedUsd.toFixed(2),
+                    })}
+                  </p>
+                </div>
+
+                {minimumHint ? (
+                  <p className="text-body-sm text-muted">{minimumHint}</p>
+                ) : null}
+
+                <div>
+                  <WalletModalFieldLabel>
+                    {t('destination_address')}
+                  </WalletModalFieldLabel>
+                  {HIVE_WALLET_OUTPUTS.has(selectedPair.outputSymbol) ? (
+                    <div className="mt-1 rounded-btn border border-border bg-surface px-3 py-2 text-body">
+                      @{account}
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex gap-2">
+                      <input
+                        className="min-w-0 flex-1 rounded-btn border border-border bg-bg px-3 py-2 text-body"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder={t('wallet_withdraw_address_placeholder')}
+                      />
+                      {showQrButton ? (
+                        <button
+                          type="button"
+                          className="shrink-0 rounded-btn border border-border bg-surface px-3 py-2 text-body-sm font-weight-strong text-fg"
+                          onClick={() => setQrOpen(true)}
+                        >
+                          {t('qr_scanner')}
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : null}
+
+            {quoteError ? (
+              <p className="text-body-sm text-error">{quoteError}</p>
+            ) : null}
+            {broadcast.error ? (
+              <p className="text-body-sm text-error">
+                {t(engineTokenBroadcastErrorMessageKey(broadcast.error))}
+              </p>
+            ) : null}
+          </div>
+
+          <p className="mt-4 text-body-sm text-muted">
+            {t('wallet_withdraw_hivesigner_note')}
+          </p>
+
+          <div className="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-btn border border-border bg-surface px-4 py-2 text-body font-weight-strong text-fg"
+              onClick={onClose}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              type="button"
+              className="rounded-btn bg-accent px-4 py-2 text-body font-weight-strong text-accent-fg disabled:opacity-50"
+              disabled={!canSubmit || broadcast.pending}
+              onClick={() => void handleSubmit()}
+            >
+              {broadcast.pending ? '…' : t('withdraw')}
+            </button>
+          </div>
         </div>
-      </div>
-    </AppModal>
+      </AppModal>
+
+      <WalletQrScannerModal
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        onAccept={(raw) => void handleQrAccept(raw)}
+      />
+    </>
   );
 }

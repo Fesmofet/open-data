@@ -2586,5 +2586,16 @@
   "wallet_deposit_instructions_credited_to": "will be credited to",
   "wallet_deposit_instructions_lead_account": "Send {symbol} to the account below.",
   "wallet_deposit_instructions_lead_address": "Send {symbol} to the address below.",
-  "wallet_deposit_instructions_confirmed_prefix": "Once confirmed, the equivalent amount of"
+  "wallet_deposit_instructions_confirmed_prefix": "Once confirmed, the equivalent amount of",
+  "wallet_withdraw_address_placeholder": "Paste a valid address.",
+  "wallet_withdraw_fee_line": "Fee: 0.75% (+ network fees)",
+  "wallet_withdraw_hivesigner_note": "You'll be redirected to HiveSigner to authorize.",
+  "wallet_withdraw_network_fee_note": "Standard network transfer fees will also be subtracted from the amount.",
+  "wallet_withdraw_processed_by": "Withdrawals are processed by",
+  "wallet_withdraw_receive": "Receive",
+  "wallet_withdraw_you_pay": "You pay",
+  "qr_code_scanner": "QR code scanner",
+  "wallet_qr_accept": "Accept",
+  "wallet_qr_scan_result": "Scan result",
+  "wallet_withdraw_value_usd": "Value: {amount} USD"
 }

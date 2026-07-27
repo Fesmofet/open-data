@@ -53,7 +53,7 @@ Shared modal context: `ProfileMainWalletModalShell` in `(main)/layout.tsx` wraps
 - **Transfer / Power / Delegate** — all held HE tokens via asset selector (plus HIVE/HBD/WAIV where applicable).
 - **Swap** — `POST .../engine/swap/quote` (debounced, stale-response safe); honors sidebar `fromSymbol`. USD estimate uses WAIV summary rates prefetched on ENGINE tab too.
 - **Deposit** — converter-api routing (`account`, `memo`, or `address`); list refetches on each open. HIVE uses hivepegged buy routing.
-- **Withdraw** — `POST .../engine/withdraw/quote` with optional `previewOnly` (no address) for receive preview; server validates min/fee on final leg only. Structured `errorCode` / `errorParams` map to i18n in the web app.
+- **Withdraw** — Two-sided UI: **You pay** (input token + amount) and **Receive** (quoted output + output token selector). Quotes use `POST .../engine/withdraw/quote` with input `quantity`; `previewOnly` when an external destination address is missing. USD estimate uses wallet balance rates on the pay amount. External destinations support a camera **QR scanner** (legacy URI format `scheme:address?amount=`); optional QR amount is resolved via iterative quotes (not client rate tables). Hive/HBD outputs use `@account` as destination (no QR). Server validates min/fee on final leg; `errorCode` / `errorParams` map to i18n.
 
 ## Layout
 

@@ -70,6 +70,7 @@
     "@nestjs/swagger": "^11.4.4",
     "@nestjs/websockets": "^11.1.24",
     "@tanstack/react-virtual": "^3.14.3",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "axios": "^1.18.1",
     "bignumber.js": "^11.1.5",
     "class-transformer": "^0.5.1",
