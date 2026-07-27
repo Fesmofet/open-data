@@ -50,7 +50,7 @@ On the WAIV tab, each token row still exposes **Transfer** and a withdraw submen
 
 Shared modal context: `ProfileMainWalletModalShell` in `(main)/layout.tsx` wraps sidebar + center column. `TransfersWalletPageClient` provides balances and a single `WalletModalsGate`.
 
-- **Transfer / Power / Delegate** — all held HE tokens via asset selector (plus HIVE/HBD/WAIV where applicable).
+- **Transfer / Power / Delegate** — all held HE tokens via asset selector (plus HIVE/HBD/WAIV where applicable). Transfer dialog: **Value** / **Available** copy, searchable asset list (balances in menu, symbol only on trigger), HiveSigner footer.
 - **Swap** — `POST .../engine/swap/quote` (debounced, stale-response safe); honors sidebar `fromSymbol`. UI labels **You pay** / **You receive** (receive amount is quote-only: no max control, non-clickable current balance). USD estimate uses WAIV summary rates prefetched on ENGINE tab too.
 - **Deposit** — converter-api routing (`account`, `memo`, or `address`); list refetches on each open. HIVE uses hivepegged buy routing.
 - **Withdraw** — Two-sided UI: **You pay** (input token + amount) and **Receive** (quoted output + output token selector). Quotes use `POST .../engine/withdraw/quote` with input `quantity`; `previewOnly` when an external destination address is missing. USD estimate uses wallet balance rates on the pay amount. External destinations support a camera **QR scanner** (legacy URI format `scheme:address?amount=`); optional QR amount is resolved via iterative quotes (not client rate tables). Hive/HBD outputs use `@account` as destination (no QR). Server validates min/fee on final leg; `errorCode` / `errorParams` map to i18n.

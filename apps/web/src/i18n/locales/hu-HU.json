@@ -2607,5 +2607,9 @@
   "wallet_swap_max_price_impact_label": "Maximum price impact",
   "wallet_swap_price_impact": "Price impact",
   "wallet_swap_price_impact_helper": "Select the maximum price impact permitted for this swap. If exceeded, the swap will be cancelled.",
-  "wallet_swap_transaction_value": "Transaction value: {amount} USD"
+  "wallet_swap_transaction_value": "Transaction value: {amount} USD",
+  "wallet_transfer_amount_placeholder": "Amount",
+  "wallet_transfer_memo_placeholder": "Optional message",
+  "wallet_transfer_search_users": "Search users...",
+  "wallet_transfer_value_usd": "Value: {amount} USD"
 }

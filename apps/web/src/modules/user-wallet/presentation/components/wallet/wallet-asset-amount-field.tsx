@@ -31,6 +31,10 @@ export type WalletAssetAmountFieldProps<T extends string> = {
   searchableAsset?: boolean;
   /** When false, asset select shows label only (power modal). */
   showBalanceInAssetSelect?: boolean;
+  /** Searchable dropdown: show balances in menu (default: showBalanceInAssetSelect). */
+  showBalanceInAssetMenu?: boolean;
+  /** Searchable dropdown: closed trigger shows symbol only (default: !showBalanceInAssetSelect). */
+  showTokenOnlyOnAssetTrigger?: boolean;
 };
 
 export function WalletAssetAmountField<T extends string>({
@@ -47,11 +51,18 @@ export function WalletAssetAmountField<T extends string>({
   showMaxButton = true,
   searchableAsset = false,
   showBalanceInAssetSelect = true,
+  showBalanceInAssetMenu,
+  showTokenOnlyOnAssetTrigger,
 }: WalletAssetAmountFieldProps<T>) {
   const { t } = useI18n();
   const inputId = useId();
   const maxNumeric = Number.parseFloat(maxAmount);
   const canUseMax = Number.isFinite(maxNumeric) && maxNumeric > 0;
+  const balanceInMenu = showBalanceInAssetMenu ?? showBalanceInAssetSelect;
+  const showLabelOnTrigger =
+    showTokenOnlyOnAssetTrigger === undefined
+      ? !showBalanceInAssetSelect
+      : !showTokenOnlyOnAssetTrigger;
 
   return (
     <div>
@@ -94,8 +105,8 @@ export function WalletAssetAmountField<T extends string>({
               onChange={onAssetChange}
               disabled={assetDisabled || options.length <= 1}
               ariaLabel={t('object_edit_wallet_symbol')}
-              showBalanceInMenu={showBalanceInAssetSelect}
-              showLabelOnTrigger={!showBalanceInAssetSelect}
+              showBalanceInMenu={balanceInMenu}
+              showLabelOnTrigger={showLabelOnTrigger}
             />
           ) : (
           <select

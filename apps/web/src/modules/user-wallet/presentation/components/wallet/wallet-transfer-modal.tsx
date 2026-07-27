@@ -132,13 +132,15 @@ export function WalletTransferModal({
       ? t('transfer_to_savings_title')
       : t('transfer_modal_title');
 
-  const estimatedUsdLabel = useMemo(() => {
-    const estimate =
-      balanceConfig?.validation === 'hive'
-        ? `${estimateHiveUsdValue(amount, balanceConfig.tokenUsdRate)} USD`
-        : `${formatEngineTokenUsdEstimate(amount, balanceConfig?.tokenUsdRate ?? 0)} USD`;
-    return interpolateMessage(t('estimated_value'), { estimate });
-  }, [amount, balanceConfig, t]);
+  const estimatedUsdAmount = useMemo(() => {
+    if (!balanceConfig) {
+      return '0.00';
+    }
+    if (balanceConfig.validation === 'hive') {
+      return estimateHiveUsdValue(amount, balanceConfig.tokenUsdRate);
+    }
+    return formatEngineTokenUsdEstimate(amount, balanceConfig.tokenUsdRate ?? 0);
+  }, [amount, balanceConfig]);
 
   const canSubmit = useMemo(() => {
     if (!balanceConfig) {
@@ -286,6 +288,7 @@ export function WalletTransferModal({
                   }}
                   excludeAccountNames={[account]}
                   fieldLabel={t('to')}
+                  searchPlaceholder={t('wallet_transfer_search_users')}
                 />
               )}
             </div>
@@ -306,14 +309,22 @@ export function WalletTransferModal({
             options={assetOptions}
             assetDisabled={assetLocked}
             maxAmount={balanceConfig?.maxAmount ?? '0'}
-            placeholder={t('amount_placeholder')}
+            placeholder={t('wallet_transfer_amount_placeholder')}
+            searchableAsset
+            showBalanceInAssetMenu
+            showTokenOnlyOnAssetTrigger
           />
-          <p className="text-body-sm text-muted">{estimatedUsdLabel}</p>
+          <p className="text-body-sm text-muted">
+            {interpolateMessage(t('wallet_transfer_value_usd'), {
+              amount: estimatedUsdAmount,
+            })}
+          </p>
           {balanceConfig ? (
             <WalletModalBalanceLine
               amount={balanceConfig.maxAmount}
               symbol={balanceConfig.symbol}
               onSelect={() => setAmount(balanceConfig.maxAmount)}
+              labelKey="available"
             />
           ) : null}
           <div>
@@ -327,11 +338,13 @@ export function WalletTransferModal({
               className="mt-1 w-full resize-y rounded-btn border border-border bg-bg px-3 py-2 text-body text-fg read-only:bg-surface"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
-              placeholder={t('memo_placeholder')}
+              placeholder={t('wallet_transfer_memo_placeholder')}
             />
           </div>
         </div>
-        <p className="mt-4 text-body-sm text-muted">{t('transfer_modal_info')}</p>
+        <p className="mt-4 text-body-sm text-muted">
+          {t('wallet_withdraw_hivesigner_note')}
+        </p>
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">
             {validationError}
