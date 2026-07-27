@@ -27,6 +27,8 @@ export type WalletAssetAmountFieldProps<T extends string> = {
   amountReadOnly?: boolean;
   /** Search/filter token list (swap modal). */
   searchableAsset?: boolean;
+  /** When false, asset select shows label only (power modal). */
+  showBalanceInAssetSelect?: boolean;
 };
 
 export function WalletAssetAmountField<T extends string>({
@@ -41,6 +43,7 @@ export function WalletAssetAmountField<T extends string>({
   placeholder,
   amountReadOnly = false,
   searchableAsset = false,
+  showBalanceInAssetSelect = true,
 }: WalletAssetAmountFieldProps<T>) {
   const { t } = useI18n();
   const inputId = useId();
@@ -86,6 +89,8 @@ export function WalletAssetAmountField<T extends string>({
               onChange={onAssetChange}
               disabled={assetDisabled || options.length <= 1}
               ariaLabel={t('object_edit_wallet_symbol')}
+              showBalanceInMenu={showBalanceInAssetSelect}
+              showLabelOnTrigger={!showBalanceInAssetSelect}
             />
           ) : (
           <select
@@ -100,7 +105,9 @@ export function WalletAssetAmountField<T extends string>({
             ) : (
               options.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label} ({formatWalletModalBalanceDisplay(option.balance)})
+                  {showBalanceInAssetSelect
+                    ? `${option.label} (${formatWalletModalBalanceDisplay(option.balance)})`
+                    : option.label}
                 </option>
               ))
             )}

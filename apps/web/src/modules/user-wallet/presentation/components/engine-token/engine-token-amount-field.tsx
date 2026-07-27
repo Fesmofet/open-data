@@ -12,6 +12,8 @@ export type EngineTokenAmountFieldProps = {
   onChange: (value: string) => void;
   maxAmount: string;
   placeholder?: string;
+  /** Fixed suffix in the amount row (e.g. WAIV / WAIV Power). */
+  assetSuffix?: string;
 };
 
 export function EngineTokenAmountField({
@@ -20,6 +22,7 @@ export function EngineTokenAmountField({
   onChange,
   maxAmount,
   placeholder,
+  assetSuffix,
 }: EngineTokenAmountFieldProps) {
   const { t } = useI18n();
   const inputId = useId();
@@ -54,6 +57,11 @@ export function EngineTokenAmountField({
           >
             {t('max')}
           </button>
+          {assetSuffix ? (
+            <div className="shrink-0 border-l border-border bg-surface px-2 py-2 text-body-sm text-fg">
+              {assetSuffix}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

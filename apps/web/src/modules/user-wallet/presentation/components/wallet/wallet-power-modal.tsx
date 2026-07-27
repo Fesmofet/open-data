@@ -9,6 +9,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import { AppModal, AppModalCloseButton } from '@/shared/presentation';
 
 import {
@@ -28,6 +29,16 @@ import {
   parseHiveAmount,
 } from '../../../domain/hive-wallet-amount';
 import {
+  getWalletPowerAssetSelectLabel,
+  getWalletPowerDownLiquidSymbol,
+  getWalletPowerReceiveSuffix,
+} from '../../../domain/wallet-power-labels';
+import {
+  computeWeeklyPowerDownUnlock,
+  getWalletPowerDownWeeks,
+} from '../../../domain/wallet-power-schedule';
+import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
+import {
   getWalletPowerBalanceConfig,
   listWalletMainAssetOptions,
 } from '../../../domain/wallet-modal-balances';
@@ -36,8 +47,9 @@ import { isEngineTokenAsset } from '../../../domain/wallet-modal-types';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { useHiveBroadcast } from '../../hooks/use-hive-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
-import { EngineTokenPowerNotice } from '../engine-token/engine-token-power-notice';
+import { WalletPowerNotice } from '../shared/wallet-power-notice';
 import { WalletModalBalanceLine } from '../shared/wallet-modal-balance-line';
+import { WalletModalReadonlyAmountRow } from '../shared/wallet-modal-readonly-amount-row';
 import { useWalletBalances } from './wallet-balances-context';
 import { WalletAssetAmountField } from './wallet-asset-amount-field';
 
@@ -87,6 +99,14 @@ export function WalletPowerModal({
     [asset, state.mode, waivSummary, hiveSummary, engineSummary],
   );
 
+  const powerLabels = useMemo(
+    () => ({
+      waivPower: t('wallet_waiv_power'),
+      hivePower: t('wallet_hive_power_label'),
+    }),
+    [t],
+  );
+
   const assetOptions = useMemo(() => {
     return listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary).map(
       (value) => {
@@ -97,14 +117,48 @@ export function WalletPowerModal({
           hiveSummary,
           engineSummary,
         );
-      const powerLabel = value === 'WAIV' ? 'WP' : 'HP';
-      return {
-        value,
-        label: state.mode === 'down' ? powerLabel : value,
-        balance: config?.maxAmount ?? '0',
-      };
+        return {
+          value,
+          label: getWalletPowerAssetSelectLabel(value, state.mode, powerLabels),
+          balance: config?.maxAmount ?? '0',
+        };
+      },
+    );
+  }, [engineSummary, hiveSummary, powerLabels, state.mode, waivSummary]);
+
+  const previewReceiveValue = useMemo(() => {
+    if (state.mode !== 'up' || !balanceConfig) {
+      return '';
+    }
+    const parsed =
+      balanceConfig.validation === 'hive'
+        ? parseHiveAmount(amount)
+        : parseEngineTokenAmount(amount);
+    if (parsed === null || parsed <= 0) {
+      return '';
+    }
+    return formatWalletModalBalanceDisplay(String(parsed));
+  }, [amount, balanceConfig, state.mode]);
+
+  const previewUnlockValue = useMemo(() => {
+    if (state.mode !== 'down' || !balanceConfig) {
+      return '';
+    }
+    const parsed =
+      balanceConfig.validation === 'hive'
+        ? parseHiveAmount(amount)
+        : parseEngineTokenAmount(amount);
+    const weeks = getWalletPowerDownWeeks(asset);
+    const weekly = computeWeeklyPowerDownUnlock(parsed, weeks);
+    if (!weekly) {
+      return '';
+    }
+    const liquidSymbol = getWalletPowerDownLiquidSymbol(asset);
+    return interpolateMessage(t('wallet_power_unlock_weekly'), {
+      amount: weekly,
+      symbol: liquidSymbol,
     });
-  }, [engineSummary, hiveSummary, state.mode, waivSummary]);
+  }, [amount, asset, balanceConfig, state.mode, t]);
 
   const canSubmit = useMemo(() => {
     if (!balanceConfig) {
@@ -216,16 +270,31 @@ export function WalletPowerModal({
           }}
           options={assetOptions}
           maxAmount={balanceConfig?.maxAmount ?? '0'}
-          placeholder={`0.000 ${balanceConfig?.balanceSymbol ?? asset}`}
+          placeholder={t('amount')}
+          showBalanceInAssetSelect={false}
         />
         {balanceConfig ? (
           <WalletModalBalanceLine
             amount={balanceConfig.maxAmount}
             symbol={balanceConfig.balanceSymbol}
             onSelect={() => setAmount(balanceConfig.maxAmount)}
+            labelKey="available"
           />
         ) : null}
-        <EngineTokenPowerNotice />
+        {state.mode === 'up' ? (
+          <WalletModalReadonlyAmountRow
+            label={t('wallet_power_you_receive')}
+            value={previewReceiveValue}
+            suffix={getWalletPowerReceiveSuffix(asset, powerLabels)}
+          />
+        ) : (
+          <WalletModalReadonlyAmountRow
+            label={t('wallet_power_unlock_schedule')}
+            value={previewUnlockValue}
+            suffix={getWalletPowerDownLiquidSymbol(asset)}
+          />
+        )}
+        <WalletPowerNotice mode={state.mode} />
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">
             {validationError}

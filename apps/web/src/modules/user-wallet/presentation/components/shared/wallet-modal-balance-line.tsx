@@ -10,6 +10,7 @@ export type WalletModalBalanceLineProps = {
   onSelect: () => void;
   /** When set, shown instead of formatting `amount` (e.g. RC billions). */
   displayAmount?: string;
+  labelKey?: 'balance_amount' | 'available';
 };
 
 export function WalletModalBalanceLine({
@@ -17,6 +18,7 @@ export function WalletModalBalanceLine({
   symbol,
   onSelect,
   displayAmount,
+  labelKey = 'balance_amount',
 }: WalletModalBalanceLineProps) {
   const { t } = useI18n();
   const maxNumeric = Number.parseFloat(amount);
@@ -25,7 +27,7 @@ export function WalletModalBalanceLine({
 
   return (
     <p className="mt-2 text-body-sm text-muted">
-      {t('balance_amount')}:{' '}
+      {t(labelKey)}:{' '}
       <button
         type="button"
         className="border-b border-dotted border-muted text-fg hover:text-accent disabled:cursor-default disabled:border-none disabled:hover:text-fg"

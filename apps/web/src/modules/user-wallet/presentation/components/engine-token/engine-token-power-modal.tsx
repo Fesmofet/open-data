@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import {
   AppModal,
   AppModalCloseButton,
@@ -16,12 +17,18 @@ import {
   formatEngineTokenQuantity,
   parseEngineTokenAmount,
 } from '../../../domain/engine-token-amount';
+import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
+import {
+  computeWeeklyPowerDownUnlock,
+  getWalletPowerDownWeeks,
+} from '../../../domain/wallet-power-schedule';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
+import { WalletModalBalanceLine } from '../shared/wallet-modal-balance-line';
+import { WalletModalReadonlyAmountRow } from '../shared/wallet-modal-readonly-amount-row';
+import { WalletPowerNotice } from '../shared/wallet-power-notice';
 import { EngineTokenAmountField } from './engine-token-amount-field';
 import type { EngineTokenPowerModalState } from './engine-token-modal-context';
-import { EngineTokenPowerNotice } from './engine-token-power-notice';
-import { WalletModalBalanceLine } from '../shared/wallet-modal-balance-line';
 
 export type EngineTokenPowerModalProps = {
   open: boolean;
@@ -41,6 +48,14 @@ export function EngineTokenPowerModal({
   const { broadcast, pending, error, setError } = useEngineTokenBroadcast(account);
   const maxAmount =
     state.mode === 'up' ? (state.maxLiquid ?? '0') : (state.maxStake ?? '0');
+  const balanceSymbol =
+    state.mode === 'up' ? state.symbol : state.symbol === 'WAIV' ? 'WP' : state.symbol;
+  const assetSuffix =
+    state.mode === 'up'
+      ? state.symbol
+      : state.symbol === 'WAIV'
+        ? t('wallet_waiv_power')
+        : state.symbol;
   const [amount, setAmount] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -48,6 +63,33 @@ export function EngineTokenPowerModal({
     () => validateEngineTokenAmount(amount, maxAmount) === null,
     [amount, maxAmount],
   );
+
+  const previewReceiveValue = useMemo(() => {
+    if (state.mode !== 'up') {
+      return '';
+    }
+    const parsed = parseEngineTokenAmount(amount);
+    if (parsed === null || parsed <= 0) {
+      return '';
+    }
+    return formatWalletModalBalanceDisplay(String(parsed));
+  }, [amount, state.mode]);
+
+  const previewUnlockValue = useMemo(() => {
+    if (state.mode !== 'down') {
+      return '';
+    }
+    const parsed = parseEngineTokenAmount(amount);
+    const weeks = getWalletPowerDownWeeks(state.symbol);
+    const weekly = computeWeeklyPowerDownUnlock(parsed, weeks);
+    if (!weekly) {
+      return '';
+    }
+    return interpolateMessage(t('wallet_power_unlock_weekly'), {
+      amount: weekly,
+      symbol: state.symbol,
+    });
+  }, [amount, state.mode, state.symbol, t]);
 
   const onSubmit = async () => {
     setError(null);
@@ -89,14 +131,31 @@ export function EngineTokenPowerModal({
             setValidationError(null);
           }}
           maxAmount={maxAmount}
-          placeholder={`0.000 ${state.symbol}`}
+          placeholder={t('amount')}
+          assetSuffix={assetSuffix}
         />
         <WalletModalBalanceLine
           amount={maxAmount}
-          symbol={state.symbol}
+          symbol={balanceSymbol}
           onSelect={() => setAmount(maxAmount)}
+          labelKey="available"
         />
-        <EngineTokenPowerNotice />
+        {state.mode === 'up' ? (
+          <WalletModalReadonlyAmountRow
+            label={t('wallet_power_you_receive')}
+            value={previewReceiveValue}
+            suffix={
+              state.symbol === 'WAIV' ? t('wallet_waiv_power') : state.symbol
+            }
+          />
+        ) : (
+          <WalletModalReadonlyAmountRow
+            label={t('wallet_power_unlock_schedule')}
+            value={previewUnlockValue}
+            suffix={state.symbol}
+          />
+        )}
+        <WalletPowerNotice mode={state.mode} />
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">
             {validationError}

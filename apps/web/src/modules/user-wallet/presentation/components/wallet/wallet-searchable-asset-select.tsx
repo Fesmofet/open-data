@@ -51,6 +51,8 @@ export type WalletSearchableAssetSelectProps<T extends string> = {
   onChange: (value: T) => void;
   disabled?: boolean;
   ariaLabel?: string;
+  showBalanceInMenu?: boolean;
+  showLabelOnTrigger?: boolean;
 };
 
 export function WalletSearchableAssetSelect<T extends string>({
@@ -59,6 +61,8 @@ export function WalletSearchableAssetSelect<T extends string>({
   onChange,
   disabled = false,
   ariaLabel,
+  showBalanceInMenu = true,
+  showLabelOnTrigger = false,
 }: WalletSearchableAssetSelectProps<T>) {
   const { t } = useI18n();
   const listboxId = useId();
@@ -180,9 +184,11 @@ export function WalletSearchableAssetSelect<T extends string>({
                       onClick={() => pickOption(option.value)}
                     >
                       <span>{option.label}</span>
-                      <span className="text-caption text-muted">
-                        {formatWalletModalBalanceDisplay(option.balance)}
-                      </span>
+                      {showBalanceInMenu ? (
+                        <span className="text-caption text-muted">
+                          {formatWalletModalBalanceDisplay(option.balance)}
+                        </span>
+                      ) : null}
                     </button>
                   </li>
                 ))
@@ -210,7 +216,9 @@ export function WalletSearchableAssetSelect<T extends string>({
           setOpen((current) => !current);
         }}
       >
-        {(selected?.value ?? value) || '…'}
+        {showLabelOnTrigger
+          ? (selected?.label ?? value) || '…'
+          : (selected?.value ?? value) || '…'}
       </button>
       {menu}
     </>
