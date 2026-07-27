@@ -41,14 +41,17 @@ export default async function UserProfileTransfersPage({
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
 
+  const loadsWalletSummaries =
+    walletType === 'WAIV' || walletType === 'HIVE' || walletType === 'ENGINE';
+
   const [waiv, hive, engine] = await Promise.all([
-    walletType === 'WAIV' || walletType === 'HIVE' || walletType === 'ENGINE'
+    loadsWalletSummaries
       ? getWaivWalletSummaryQuery(accountName)
       : Promise.resolve({ summary: null, error: null }),
-    walletType === 'WAIV' || walletType === 'HIVE' || walletType === 'ENGINE'
+    loadsWalletSummaries
       ? getHiveWalletSummaryQuery(accountName)
       : Promise.resolve({ summary: null, error: null }),
-    walletType === 'ENGINE' || walletType === 'WAIV'
+    loadsWalletSummaries
       ? getEngineWalletSummaryQuery(accountName)
       : Promise.resolve({ summary: null, error: null }),
   ]);
@@ -60,6 +63,7 @@ export default async function UserProfileTransfersPage({
         viewerUsername={user?.username ?? null}
         waivSummary={waiv.summary}
         hiveSummary={hive.summary}
+        engineSummary={engine.summary}
       >
         <TransfersWalletShell
           accountName={accountName}

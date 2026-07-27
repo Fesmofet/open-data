@@ -24,6 +24,7 @@ Returns live Hive Engine token balances for the profile account:
 |-------|-------------|
 | `pinnedTokens` | Always four rows: `SWAP.HIVE`, `SWAP.LTC`, `SWAP.BTC`, `SWAP.ETH` (zero balance when absent on chain) |
 | `tokens` | Other tokens with liquid or staked balance ≥ `0.001`, excluding `WAIV` and pinned SWAP symbols |
+| `powerEligibleTokens` | Staking-enabled tokens with any liquid or staked balance (no `0.001` display floor), excluding `ENGINE_WALLET_EXCLUDED_SYMBOLS` only — used for power up/down asset lists |
 | `estimatedAccountValueUsd` | Sum of row `usdEstimate` values |
 | `rates.hiveUsd` | HIVE/USD spot from currency market info |
 
@@ -31,6 +32,8 @@ Returns live Hive Engine token balances for the profile account:
 
 - Pinned SWAP.* → `CurrencyQueryService.enginePoolsUsdCsv`
 - Other tokens → `market.metrics.lastPrice` (in HIVE) × `rates.hiveUsd`
+
+Each token row includes `unstakingCooldown` and `numberTransactions` from Hive Engine `tokens` metadata (defaults `0`). Power-down unlock preview in the web app uses `numberTransactions` for per-installment amount and `unstakingCooldown / numberTransactions` for period copy (7 days → “every week”; WAIV/HIVE L1 use fixed 4/13 weekly installments).
 
 ### `POST /query/v1/users/{name}/wallet/engine/history`
 

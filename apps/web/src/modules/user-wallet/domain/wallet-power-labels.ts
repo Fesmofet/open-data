@@ -22,20 +22,29 @@ export function getWalletPowerAssetSelectLabel(
   return asset;
 }
 
-export function getWalletPowerReceiveSuffix(
+export function getWalletPowerReceiveSuffix(asset: WalletMainAsset): string {
+  return `${asset} Power`;
+}
+
+/** Asset label on the amount row (power down shows staked / power form). */
+export function getWalletPowerAmountAssetLabel(
   asset: WalletMainAsset,
-  labels: {
-    waivPower: string;
-    hivePower: string;
-  },
+  mode: PowerModalMode,
 ): string {
-  if (asset === 'WAIV') {
-    return labels.waivPower;
+  if (mode === 'up') {
+    return asset;
   }
-  if (asset === 'HIVE') {
-    return labels.hivePower;
+  return getWalletPowerReceiveSuffix(asset);
+}
+
+export function getWalletPowerDownBalanceSymbol(
+  asset: WalletMainAsset,
+  mode: PowerModalMode,
+): string {
+  if (mode === 'up') {
+    return asset;
   }
-  return asset;
+  return getWalletPowerReceiveSuffix(asset);
 }
 
 export function getWalletPowerDownLiquidSymbol(asset: WalletMainAsset): string {

@@ -18,17 +18,18 @@ import {
   parseEngineTokenAmount,
 } from '../../../domain/engine-token-amount';
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
-import {
-  computeWeeklyPowerDownUnlock,
-  getWalletPowerDownWeeks,
-} from '../../../domain/wallet-power-schedule';
+import { formatPowerDownUnlockPreview } from '../../../domain/wallet-power-schedule';
+import { getWalletPowerAmountAssetLabel, getWalletPowerReceiveSuffix } from '../../../domain/wallet-power-labels';
+import { findPowerEligibleEngineRow } from '../../../domain/wallet-modal-balances';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
 import { engineTokenBroadcastErrorMessageKey } from '../../utils/engine-token-broadcast-error-message';
 import { WalletModalBalanceLine } from '../shared/wallet-modal-balance-line';
 import { WalletModalReadonlyAmountRow } from '../shared/wallet-modal-readonly-amount-row';
 import { WalletPowerNotice } from '../shared/wallet-power-notice';
+import { useWalletBalances } from '../wallet/wallet-balances-context';
 import { EngineTokenAmountField } from './engine-token-amount-field';
 import type { EngineTokenPowerModalState } from './engine-token-modal-context';
+import type { WalletMainAsset } from '../../../domain/wallet-modal-types';
 
 export type EngineTokenPowerModalProps = {
   open: boolean;
@@ -45,17 +46,18 @@ export function EngineTokenPowerModal({
 }: EngineTokenPowerModalProps) {
   const { t } = useI18n();
   const titleId = useId();
+  const { engineSummary } = useWalletBalances();
   const { broadcast, pending, error, setError } = useEngineTokenBroadcast(account);
   const maxAmount =
     state.mode === 'up' ? (state.maxLiquid ?? '0') : (state.maxStake ?? '0');
   const balanceSymbol =
-    state.mode === 'up' ? state.symbol : state.symbol === 'WAIV' ? 'WP' : state.symbol;
-  const assetSuffix =
     state.mode === 'up'
       ? state.symbol
-      : state.symbol === 'WAIV'
-        ? t('wallet_waiv_power')
-        : state.symbol;
+      : getWalletPowerReceiveSuffix(state.symbol as WalletMainAsset);
+  const assetSuffix = getWalletPowerAmountAssetLabel(
+    state.symbol as WalletMainAsset,
+    state.mode,
+  );
   const [amount, setAmount] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -80,16 +82,15 @@ export function EngineTokenPowerModal({
       return '';
     }
     const parsed = parseEngineTokenAmount(amount);
-    const weeks = getWalletPowerDownWeeks(state.symbol);
-    const weekly = computeWeeklyPowerDownUnlock(parsed, weeks);
-    if (!weekly) {
-      return '';
-    }
-    return interpolateMessage(t('wallet_power_unlock_weekly'), {
-      amount: weekly,
-      symbol: state.symbol,
+    return formatPowerDownUnlockPreview({
+      asset: state.symbol as WalletMainAsset,
+      parsedAmount: parsed,
+      liquidSymbol: state.symbol,
+      engineMeta: findPowerEligibleEngineRow(engineSummary, state.symbol),
+      translate: t,
+      interpolate: interpolateMessage,
     });
-  }, [amount, state.mode, state.symbol, t]);
+  }, [amount, engineSummary, state.mode, state.symbol, t]);
 
   const onSubmit = async () => {
     setError(null);
@@ -144,9 +145,7 @@ export function EngineTokenPowerModal({
           <WalletModalReadonlyAmountRow
             label={t('wallet_power_you_receive')}
             value={previewReceiveValue}
-            suffix={
-              state.symbol === 'WAIV' ? t('wallet_waiv_power') : state.symbol
-            }
+            suffix={getWalletPowerReceiveSuffix(state.symbol as WalletMainAsset)}
           />
         ) : (
           <WalletModalReadonlyAmountRow

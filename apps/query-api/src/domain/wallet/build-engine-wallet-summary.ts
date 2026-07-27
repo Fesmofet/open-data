@@ -113,7 +113,74 @@ function buildTokenRow(params: {
     precision: params.token?.precision ?? 3,
     usdEstimate: params.usdEstimate,
     isPinned: params.isPinned,
+    unstakingCooldown: Number(params.token?.unstakingCooldown ?? 0),
+    numberTransactions: Number(params.token?.numberTransactions ?? 0),
   };
+}
+
+function isPinnedSwapSymbol(symbol: string): symbol is EnginePinnedSwapSymbol {
+  return (ENGINE_PINNED_SWAP_SYMBOLS as readonly string[]).includes(symbol);
+}
+
+export function listPowerEligibleEngineRows(params: {
+  accountBalances: readonly HiveEngineTokenBalance[];
+  tokenMetadata: readonly HiveEngineToken[];
+  swapUsdBySymbol: ReadonlyMap<string, number>;
+  marketMetrics: readonly HiveEngineMarketMetric[];
+  hiveUsd: number;
+}): EngineTokenBalanceRow[] {
+  const tokens = tokenInfoBySymbol(params.tokenMetadata);
+  const metrics = new Map(
+    params.marketMetrics.map((row) => [row.symbol, row]),
+  );
+  const excluded = new Set<string>(ENGINE_WALLET_EXCLUDED_SYMBOLS);
+  const seen = new Set<string>();
+  const rows: EngineTokenBalanceRow[] = [];
+
+  const tryAdd = (symbol: string, balance: HiveEngineTokenBalance) => {
+    if (excluded.has(symbol)) {
+      return;
+    }
+    if (seen.has(symbol)) {
+      return;
+    }
+    const token = tokens.get(symbol);
+    if (!token?.stakingEnabled) {
+      return;
+    }
+    if (
+      parseAmount(balance.balance) <= 0 &&
+      parseAmount(balance.stake) <= 0
+    ) {
+      return;
+    }
+    seen.add(symbol);
+    const isPinned = isPinnedSwapSymbol(symbol);
+    const usdEstimate = isPinned
+      ? usdForPinnedSymbol(symbol, balance, params.swapUsdBySymbol)
+      : usdForOtherSymbol(balance, metrics.get(symbol), params.hiveUsd);
+    rows.push(
+      buildTokenRow({
+        symbol,
+        balance,
+        token,
+        usdEstimate,
+        isPinned,
+      }),
+    );
+  };
+
+  for (const balance of params.accountBalances) {
+    tryAdd(balance.symbol, balance);
+  }
+
+  rows.sort((a, b) => {
+    const totalA = parseAmount(a.balance) + parseAmount(a.stake);
+    const totalB = parseAmount(b.balance) + parseAmount(b.stake);
+    return totalB - totalA || a.symbol.localeCompare(b.symbol);
+  });
+
+  return rows;
 }
 
 export function buildEngineWalletSummary(params: {
@@ -125,6 +192,7 @@ export function buildEngineWalletSummary(params: {
 }): {
   pinnedTokens: EngineTokenBalanceRow[];
   tokens: EngineTokenBalanceRow[];
+  powerEligibleTokens: EngineTokenBalanceRow[];
   estimatedAccountValueUsd: number;
 } {
   const balances = balanceBySymbol(params.accountBalances);
@@ -184,9 +252,18 @@ export function buildEngineWalletSummary(params: {
     0,
   );
 
+  const powerEligibleTokens = listPowerEligibleEngineRows({
+    accountBalances: params.accountBalances,
+    tokenMetadata: params.tokenMetadata,
+    swapUsdBySymbol: params.swapUsdBySymbol,
+    marketMetrics: params.marketMetrics,
+    hiveUsd: params.hiveUsd,
+  });
+
   return {
     pinnedTokens,
     tokens: otherRows,
+    powerEligibleTokens,
     estimatedAccountValueUsd,
   };
 }

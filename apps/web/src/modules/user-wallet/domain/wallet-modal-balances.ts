@@ -7,6 +7,7 @@ import {
   type WalletTransferAsset,
 } from './wallet-modal-types';
 import { HIVE_RC_DELEGATOR_RESERVE } from '../constants/hive-rc';
+import { getWalletPowerDownBalanceSymbol } from './wallet-power-labels';
 
 export type WalletAmountValidation = 'engine' | 'hive';
 
@@ -34,6 +35,45 @@ function findEngineTokenRow(
     [...engineSummary.pinnedTokens, ...engineSummary.tokens].find(
       (row) => row.symbol === symbol,
     ) ?? null
+  );
+}
+
+export function findPowerEligibleEngineRow(
+  engineSummary: EngineWalletSummaryView | null | undefined,
+  symbol: string,
+) {
+  if (!engineSummary) {
+    return null;
+  }
+  const fromPowerList = engineSummary.powerEligibleTokens?.find(
+    (row) => row.symbol === symbol,
+  );
+  if (fromPowerList) {
+    return fromPowerList;
+  }
+  const fromPinned = engineSummary.pinnedTokens.find(
+    (row) => row.symbol === symbol,
+  );
+  if (fromPinned) {
+    return fromPinned;
+  }
+  return findEngineTokenRow(engineSummary, symbol);
+}
+
+function listEnginePowerEligibleRows(
+  engineSummary: EngineWalletSummaryView | null | undefined,
+) {
+  if (!engineSummary) {
+    return [];
+  }
+  if ((engineSummary.powerEligibleTokens?.length ?? 0) > 0) {
+    return engineSummary.powerEligibleTokens ?? [];
+  }
+  return [...engineSummary.pinnedTokens, ...engineSummary.tokens].filter(
+    (row) =>
+      row.stakingEnabled &&
+      (Number.parseFloat(row.balance) > 0 ||
+        Number.parseFloat(row.stake) > 0),
   );
 }
 
@@ -117,17 +157,17 @@ export function getWalletPowerBalanceConfig(
     if (asset === 'WAIV' && waiv) {
       return {
         maxAmount: mode === 'up' ? waiv.balance.liquid : waiv.balance.stake,
-        balanceSymbol: mode === 'up' ? 'WAIV' : 'WP',
+        balanceSymbol: getWalletPowerDownBalanceSymbol(asset, mode),
         validation: 'engine',
       };
     }
-    const row = findEngineTokenRow(engineSummary, asset);
+    const row = findPowerEligibleEngineRow(engineSummary, asset);
     if (!row || !row.stakingEnabled) {
       return null;
     }
     return {
       maxAmount: mode === 'up' ? row.balance : row.stake,
-      balanceSymbol: asset,
+      balanceSymbol: getWalletPowerDownBalanceSymbol(asset, mode),
       validation: 'engine',
     };
   }
@@ -138,7 +178,7 @@ export function getWalletPowerBalanceConfig(
 
   return {
     maxAmount: mode === 'up' ? hive.balance.liquidHive : hive.balance.hivePower,
-    balanceSymbol: mode === 'up' ? 'HIVE' : 'HP',
+    balanceSymbol: getWalletPowerDownBalanceSymbol(asset, mode),
     validation: 'hive',
   };
 }
@@ -216,22 +256,23 @@ export function listWalletTransferAssetOptions(
   }
 
   const options: WalletTransferAsset[] = [];
-  const engineAssets = listEngineTransferAssets(engineSummary);
-  for (const symbol of engineAssets) {
-    if (!options.includes(symbol)) {
-      options.push(symbol);
-    }
-  }
-  if (waiv && !options.includes('WAIV')) {
-    options.unshift('WAIV');
+  if (waiv) {
+    options.push('WAIV');
   }
   if (hive) {
-    if (!options.includes('HIVE')) {
-      options.push('HIVE');
+    options.push('HIVE');
+    options.push('HBD');
+  }
+  for (const symbol of listEngineTransferAssets(engineSummary)) {
+    if (
+      symbol === 'WAIV' ||
+      symbol === 'HIVE' ||
+      symbol === 'HBD' ||
+      options.includes(symbol)
+    ) {
+      continue;
     }
-    if (!options.includes('HBD')) {
-      options.push('HBD');
-    }
+    options.push(symbol);
   }
   return options;
 }
@@ -242,18 +283,66 @@ export function listWalletMainAssetOptions(
   engineSummary?: EngineWalletSummaryView | null,
 ): WalletMainAsset[] {
   const options: WalletMainAsset[] = [];
-  for (const symbol of listEnginePowerAssets(engineSummary)) {
-    if (!options.includes(symbol)) {
-      options.push(symbol);
-    }
+  if (waiv) {
+    options.push('WAIV');
   }
-  if (waiv && !options.includes('WAIV')) {
-    options.unshift('WAIV');
-  }
-  if (hive && !options.includes('HIVE')) {
+  if (hive) {
     options.push('HIVE');
   }
+  for (const symbol of listEnginePowerAssets(engineSummary)) {
+    if (symbol === 'WAIV' || symbol === 'HIVE' || options.includes(symbol)) {
+      continue;
+    }
+    options.push(symbol);
+  }
   return options;
+}
+
+export function listWalletPowerAssetOptions(
+  mode: 'up' | 'down',
+  waiv: WaivWalletSummaryView | null,
+  hive: HiveWalletSummaryView | null,
+  engineSummary?: EngineWalletSummaryView | null,
+): WalletMainAsset[] {
+  const options: WalletMainAsset[] = [];
+
+  for (const row of listEnginePowerEligibleRows(engineSummary)) {
+    const liquid = Number.parseFloat(row.balance);
+    const stake = Number.parseFloat(row.stake);
+    const eligible =
+      mode === 'up' ? liquid > 0 : stake > 0;
+    if (
+      !eligible ||
+      row.symbol === 'WAIV' ||
+      row.symbol === 'HIVE' ||
+      options.includes(row.symbol)
+    ) {
+      continue;
+    }
+    options.push(row.symbol);
+  }
+
+  const header: WalletMainAsset[] = [];
+  if (waiv) {
+    const waivEligible =
+      mode === 'up'
+        ? Number.parseFloat(waiv.balance.liquid) > 0
+        : Number.parseFloat(waiv.balance.stake) > 0;
+    if (waivEligible) {
+      header.push('WAIV');
+    }
+  }
+  if (hive) {
+    const hiveEligible =
+      mode === 'up'
+        ? Number.parseFloat(hive.balance.liquidHive) > 0
+        : Number.parseFloat(hive.balance.hivePower) > 0;
+    if (hiveEligible) {
+      header.push('HIVE');
+    }
+  }
+
+  return [...header, ...options];
 }
 
 function parseRcInteger(value: string): number {

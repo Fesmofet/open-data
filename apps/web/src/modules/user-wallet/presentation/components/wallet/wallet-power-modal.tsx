@@ -29,18 +29,16 @@ import {
   parseHiveAmount,
 } from '../../../domain/hive-wallet-amount';
 import {
-  getWalletPowerAssetSelectLabel,
+  getWalletPowerAmountAssetLabel,
   getWalletPowerDownLiquidSymbol,
   getWalletPowerReceiveSuffix,
 } from '../../../domain/wallet-power-labels';
-import {
-  computeWeeklyPowerDownUnlock,
-  getWalletPowerDownWeeks,
-} from '../../../domain/wallet-power-schedule';
+import { formatPowerDownUnlockPreview } from '../../../domain/wallet-power-schedule';
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
 import {
+  findPowerEligibleEngineRow,
   getWalletPowerBalanceConfig,
-  listWalletMainAssetOptions,
+  listWalletPowerAssetOptions,
 } from '../../../domain/wallet-modal-balances';
 import type { WalletMainAsset, WalletPowerModalState } from '../../../domain/wallet-modal-types';
 import { isEngineTokenAsset } from '../../../domain/wallet-modal-types';
@@ -99,17 +97,14 @@ export function WalletPowerModal({
     [asset, state.mode, waivSummary, hiveSummary, engineSummary],
   );
 
-  const powerLabels = useMemo(
-    () => ({
-      waivPower: t('wallet_waiv_power'),
-      hivePower: t('wallet_hive_power_label'),
-    }),
-    [t],
-  );
-
   const assetOptions = useMemo(() => {
-    return listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary).map(
-      (value) => {
+    return listWalletPowerAssetOptions(
+      state.mode,
+      waivSummary,
+      hiveSummary,
+      engineSummary,
+    )
+      .map((value) => {
         const config = getWalletPowerBalanceConfig(
           value,
           state.mode,
@@ -119,12 +114,18 @@ export function WalletPowerModal({
         );
         return {
           value,
-          label: getWalletPowerAssetSelectLabel(value, state.mode, powerLabels),
+          label: getWalletPowerAmountAssetLabel(value, state.mode),
           balance: config?.maxAmount ?? '0',
+          config,
         };
-      },
-    );
-  }, [engineSummary, hiveSummary, powerLabels, state.mode, waivSummary]);
+      })
+      .filter(
+        (row) =>
+          row.config !== null &&
+          Number.parseFloat(row.config.maxAmount) > 0,
+      )
+      .map(({ value, label, balance }) => ({ value, label, balance }));
+  }, [engineSummary, hiveSummary, state.mode, waivSummary]);
 
   const previewReceiveValue = useMemo(() => {
     if (state.mode !== 'up' || !balanceConfig) {
@@ -148,17 +149,16 @@ export function WalletPowerModal({
       balanceConfig.validation === 'hive'
         ? parseHiveAmount(amount)
         : parseEngineTokenAmount(amount);
-    const weeks = getWalletPowerDownWeeks(asset);
-    const weekly = computeWeeklyPowerDownUnlock(parsed, weeks);
-    if (!weekly) {
-      return '';
-    }
     const liquidSymbol = getWalletPowerDownLiquidSymbol(asset);
-    return interpolateMessage(t('wallet_power_unlock_weekly'), {
-      amount: weekly,
-      symbol: liquidSymbol,
+    return formatPowerDownUnlockPreview({
+      asset,
+      parsedAmount: parsed,
+      liquidSymbol,
+      engineMeta: findPowerEligibleEngineRow(engineSummary, asset),
+      translate: t,
+      interpolate: interpolateMessage,
     });
-  }, [amount, asset, balanceConfig, state.mode, t]);
+  }, [amount, asset, balanceConfig, engineSummary, state.mode, t]);
 
   const canSubmit = useMemo(() => {
     if (!balanceConfig) {
@@ -271,7 +271,9 @@ export function WalletPowerModal({
           options={assetOptions}
           maxAmount={balanceConfig?.maxAmount ?? '0'}
           placeholder={t('amount')}
-          showBalanceInAssetSelect={false}
+          searchableAsset
+          showBalanceInAssetMenu
+          showTokenOnlyOnAssetTrigger={state.mode === 'up'}
         />
         {balanceConfig ? (
           <WalletModalBalanceLine
@@ -285,7 +287,7 @@ export function WalletPowerModal({
           <WalletModalReadonlyAmountRow
             label={t('wallet_power_you_receive')}
             value={previewReceiveValue}
-            suffix={getWalletPowerReceiveSuffix(asset, powerLabels)}
+            suffix={getWalletPowerReceiveSuffix(asset)}
           />
         ) : (
           <WalletModalReadonlyAmountRow

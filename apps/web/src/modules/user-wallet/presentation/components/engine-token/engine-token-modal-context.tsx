@@ -15,6 +15,8 @@ export type EngineTokenPowerModalState = {
   symbol: string;
   maxLiquid?: string;
   maxStake?: string;
+  unstakingCooldown?: number;
+  numberTransactions?: number;
 };
 
 export type EngineTokenTransferModalState = {

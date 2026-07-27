@@ -10,12 +10,15 @@ export type EngineTokenBalanceRowView = {
   precision: number;
   usdEstimate: number;
   isPinned: boolean;
+  unstakingCooldown: number;
+  numberTransactions: number;
 };
 
 export type EngineWalletSummaryView = {
   account: string;
   pinnedTokens: EngineTokenBalanceRowView[];
   tokens: EngineTokenBalanceRowView[];
+  powerEligibleTokens: EngineTokenBalanceRowView[];
   estimatedAccountValueUsd: number;
   rates: {
     hiveUsd: number;

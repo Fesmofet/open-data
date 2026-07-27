@@ -2571,6 +2571,7 @@
   "wallet_power_you_receive": "You receive",
   "wallet_power_unlock_schedule": "Unlock schedule",
   "wallet_power_unlock_weekly": "{amount} {symbol} every week",
+  "wallet_power_unlock_every_days": "{amount} {symbol} every {days} days",
   "power_up_modal_important_lead": "Power Up is instant. Power Down releases funds over time:",
   "power_down_modal_important_lead": "Power Down begins immediately, but your liquid tokens are released over time:",
   "wallet_deposit_processed_by": "Deposits are processed by",

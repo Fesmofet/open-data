@@ -167,5 +167,56 @@ describe('buildEngineWalletSummary', () => {
 
     expect(summary.tokens).toHaveLength(0);
     expect(summary.pinnedTokens).toHaveLength(4);
+    expect(summary.powerEligibleTokens).toHaveLength(0);
+  });
+
+  it('includes stakeable dust balances in powerEligibleTokens but not tokens', () => {
+    const summary = buildEngineWalletSummary({
+      accountBalances: [
+        {
+          _id: 1,
+          account: 'alice',
+          symbol: 'DUST',
+          balance: '0.0001',
+          stake: '0',
+          pendingUnstake: '0',
+          delegationsIn: '0',
+          delegationsOut: '0',
+          pendingUndelegations: '0',
+        },
+      ],
+      tokenMetadata: [
+        {
+          _id: 1,
+          issuer: 'dust',
+          symbol: 'DUST',
+          name: 'Dust Token',
+          metadata: '{}',
+          precision: 3,
+          maxSupply: '0',
+          supply: '0',
+          circulatingSupply: '0',
+          stakingEnabled: true,
+          unstakingCooldown: 14,
+          numberTransactions: 2,
+          delegationEnabled: false,
+          undelegationCooldown: 0,
+        },
+      ],
+      swapUsdBySymbol: new Map([
+        ['SWAP.HIVE', 0],
+        ['SWAP.LTC', 0],
+        ['SWAP.BTC', 0],
+        ['SWAP.ETH', 0],
+      ]),
+      marketMetrics: [],
+      hiveUsd: 0,
+    });
+
+    expect(summary.tokens).toHaveLength(0);
+    expect(summary.powerEligibleTokens).toHaveLength(1);
+    expect(summary.powerEligibleTokens[0]?.symbol).toBe('DUST');
+    expect(summary.powerEligibleTokens[0]?.unstakingCooldown).toBe(14);
+    expect(summary.powerEligibleTokens[0]?.numberTransactions).toBe(2);
   });
 });
