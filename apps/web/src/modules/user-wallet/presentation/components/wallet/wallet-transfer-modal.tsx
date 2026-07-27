@@ -124,7 +124,7 @@ export function WalletTransferModal({
         };
       },
     );
-  }, [savingsMode, waivSummary, hiveSummary]);
+  }, [savingsMode, waivSummary, hiveSummary, engineSummary]);
 
   const title = state.fromSavings
     ? t('transfer_from_savings_title')

@@ -36,7 +36,7 @@ export function WalletManageDelegationsModal({
 }: WalletManageDelegationsModalProps) {
   const { t } = useI18n();
   const titleId = useId();
-  const { waivSummary, hiveSummary } = useWalletBalances();
+  const { waivSummary, hiveSummary, engineSummary } = useWalletBalances();
   const engineBroadcast = useEngineTokenBroadcast(account);
   const hiveBroadcast = useHiveBroadcast(account);
 
@@ -47,8 +47,8 @@ export function WalletManageDelegationsModal({
   const [loadError, setLoadError] = useState(false);
 
   const assetOptions = useMemo(
-    () => listWalletMainAssetOptions(waivSummary, hiveSummary),
-    [waivSummary, hiveSummary],
+    () => listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary),
+    [engineSummary, hiveSummary, waivSummary],
   );
 
   useEffect(() => {

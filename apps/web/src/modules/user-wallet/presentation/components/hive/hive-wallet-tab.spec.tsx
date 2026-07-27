@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
 
 import { I18nProvider } from '@/i18n/providers/i18n-provider';
@@ -10,10 +10,6 @@ import { HiveWalletTab } from './hive-wallet-tab';
 
 jest.mock('../wallet/transfers-hive-wallet-view', () => ({
   TransfersHiveWalletView: () => <div data-testid="transfers-hive-wallet-view" />,
-}));
-
-jest.mock('../wallet/unified-wallet-modal-host', () => ({
-  UnifiedWalletModalHost: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 jest.mock('../wallet/wallet-modal-context', () => ({

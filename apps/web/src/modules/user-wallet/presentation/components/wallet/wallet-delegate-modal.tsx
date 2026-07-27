@@ -95,8 +95,8 @@ export function WalletDelegateModal({
   );
 
   const assetOptions = useMemo(() => {
-    return listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary).map(
-      (value) => {
+    return listWalletMainAssetOptions(waivSummary, hiveSummary, engineSummary)
+      .map((value) => {
         const config = getWalletDelegateBalanceConfig(
           value,
           waivSummary,
@@ -105,11 +105,17 @@ export function WalletDelegateModal({
         );
         return {
           value,
-          label: isEngineTokenAsset(value) ? value : 'HP',
+          label: value,
           balance: config?.maxAmount ?? '0',
+          config,
         };
-      },
-    );
+      })
+      .filter(
+        (row) =>
+          row.config !== null &&
+          Number.parseFloat(row.config.maxAmount) > 0,
+      )
+      .map(({ value, label, balance }) => ({ value, label, balance }));
   }, [engineSummary, hiveSummary, waivSummary]);
 
   const hiveDelegationMinHp = useMemo(() => {
@@ -278,6 +284,9 @@ export function WalletDelegateModal({
             }}
             options={assetOptions}
             maxAmount={balanceConfig?.maxAmount ?? '0'}
+            searchableAsset
+            showBalanceInAssetMenu
+            showTokenOnlyOnAssetTrigger
           />
         </div>
         {balanceConfig ? (

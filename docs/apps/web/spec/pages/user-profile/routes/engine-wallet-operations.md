@@ -48,7 +48,9 @@ On the WAIV tab, each token row still exposes **Transfer** and a withdraw submen
 
 ## Modals
 
-Shared modal context: `ProfileMainWalletModalShell` in `(main)/layout.tsx` wraps sidebar + center column. `TransfersWalletPageClient` provides balances and a single `WalletModalsGate`.
+Shared modal context: `ProfileMainWalletModalShell` in `(main)/layout.tsx` wraps the profile main column and right rail with `WalletModalProvider` only. The left account sidebar does **not** mount a second provider, balances context, or modal gate.
+
+On `/@name/transfers`, `TransfersWalletPageClient` alone provides account-scoped `WalletBalancesProvider` and the single `WalletModalsGate` (unified transfer/power/delegate/manage/swap/deposit/withdraw modals — no parallel engine-token modal host).
 
 - **Transfer / Power / Delegate** — all held HE tokens via asset selector (plus HIVE/HBD/WAIV where applicable). Transfer dialog: **Value** / **Available** copy, searchable asset list (balances in menu, symbol only on trigger), HiveSigner footer.
 - **Swap** — `POST .../engine/swap/quote` (debounced, stale-response safe); honors sidebar `fromSymbol`. UI labels **You pay** / **You receive** (receive amount is quote-only: no max control, non-clickable current balance). USD estimate uses WAIV summary rates prefetched on ENGINE tab too.

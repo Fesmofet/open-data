@@ -28,7 +28,7 @@ function WalletActionButton({
     <button
       type="button"
       className={[
-        'w-full rounded-btn px-4 py-2 text-body font-weight-strong',
+        'flex w-full min-w-0 items-center justify-center rounded-btn px-4 py-2 text-center text-body font-weight-strong',
         variant === 'primary'
           ? 'bg-accent text-accent-fg'
           : 'border border-border bg-surface-control text-fg',
@@ -68,7 +68,7 @@ function WalletActionsTopButtons({
         variant="primary"
         onClick={() => openModal({ kind: 'transfer', asset: defaultAsset })}
       />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 [&>*]:min-w-0">
         <WalletActionButton
           label={t('power_up')}
           onClick={() => openModal({ kind: 'power', mode: 'up', asset: defaultAsset })}
@@ -108,7 +108,7 @@ function WalletActionsBottomButtons({
         variant="primary"
         onClick={() => openModal({ kind: 'swap', fromSymbol: 'WAIV' })}
       />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 [&>*]:min-w-0">
         <WalletActionButton
           label={t('deposit')}
           onClick={() => openModal({ kind: 'deposit' })}
