@@ -3294,5 +3294,22 @@
   "wallet_power_unlock_schedule": "Unlock schedule",
   "wallet_power_unlock_weekly": "{amount} {symbol} every week",
   "power_up_modal_important_lead": "Power Up is instant. Power Down releases funds over time:",
-  "power_down_modal_important_lead": "Power Down begins immediately, but your liquid tokens are released over time:"
+  "power_down_modal_important_lead": "Power Down begins immediately, but your liquid tokens are released over time:",
+  "wallet_deposit_processed_by": "Deposits are processed by",
+  "wallet_deposit_swap_explainer": "When you deposit a supported cryptocurrency, you receive the corresponding SWAP token in your account. For example, depositing BTC credits your account with SWAP.BTC, which can be traded or withdrawn through Hive Engine.",
+  "wallet_deposit_fee_line": "Fee: 0.75% (minimum fee may apply) + standard network fees",
+  "wallet_deposit_step_asset": "Deposit asset:",
+  "wallet_deposit_step_instructions": "Deposit instructions",
+  "wallet_deposit_instructions_account": "Send {symbol} to the account below. Once confirmed, the equivalent amount of {swapSymbol} will be credited to @{account}.",
+  "wallet_deposit_instructions_address": "Send {symbol} to the address below. Once confirmed, the equivalent amount of {swapSymbol} will be credited to @{account}.",
+  "wallet_deposit_send_to": "Send to",
+  "wallet_deposit_required_memo": "Required memo",
+  "wallet_deposit_memo_warning": "Warning: Deposits without the required memo may be permanently lost.",
+  "wallet_deposit_instructions_send": "Send",
+  "wallet_deposit_instructions_to_account": "to the account below. Once confirmed, the equivalent amount of",
+  "wallet_deposit_instructions_to_address": "to the address below. Once confirmed, the equivalent amount of",
+  "wallet_deposit_instructions_credited_to": "will be credited to",
+  "wallet_deposit_instructions_lead_account": "Send {symbol} to the account below.",
+  "wallet_deposit_instructions_lead_address": "Send {symbol} to the address below.",
+  "wallet_deposit_instructions_confirmed_prefix": "Once confirmed, the equivalent amount of"
 }

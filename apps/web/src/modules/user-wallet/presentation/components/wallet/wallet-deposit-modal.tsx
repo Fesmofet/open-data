@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
 import type { EngineDepositListApiResponse } from '../../../application/dto/engine-swap-api.schema';
@@ -15,8 +16,48 @@ import { isHiveL1TransferAsset } from '../../../domain/wallet-modal-types';
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
 import { useWalletModal } from './wallet-modal-context';
 
+function WalletDepositInstructionsParagraph({
+  variant,
+  symbol,
+  swapSymbol,
+  account,
+}: {
+  variant: 'account' | 'address';
+  symbol: string;
+  swapSymbol: string;
+  account: string;
+}) {
+  const { t } = useI18n();
+  const leadKey =
+    variant === 'account'
+      ? 'wallet_deposit_instructions_lead_account'
+      : 'wallet_deposit_instructions_lead_address';
+  const highlight = 'font-weight-strong text-fg';
+
+  return (
+    <p className="mt-2 text-body-sm text-muted">
+      <span className={highlight}>
+        {interpolateMessage(t(leadKey), { symbol })}
+      </span>{' '}
+      {t('wallet_deposit_instructions_confirmed_prefix')}{' '}
+      <span className={highlight}>{swapSymbol}</span>{' '}
+      {t('wallet_deposit_instructions_credited_to')}{' '}
+      <span className={highlight}>@{account}</span>.
+    </p>
+  );
+}
+
 function depositQrCodeUrl(value: string): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(value)}`;
+}
+
+/** Pretty-print JSON memos for display; copy still uses the raw chain memo. */
+function formatDepositMemoForDisplay(raw: string): string {
+  try {
+    return JSON.stringify(JSON.parse(raw) as unknown, null, 2);
+  } catch {
+    return raw;
+  }
 }
 
 export type WalletDepositModalProps = {
@@ -136,6 +177,9 @@ export function WalletDepositModal({
   const swapSymbol = selectedToken?.swapSymbol ?? `SWAP.${symbol}`;
   const hasInstructions =
     !loading && !error && Boolean(address || accountTarget || memo || pair);
+  const showDepositInstructions =
+    !loading && hasInstructions && Boolean(accountTarget || address);
+  const memoDisplay = memo ? formatDepositMemoForDisplay(memo) : '';
   const canContinue =
     hasInstructions &&
     Boolean(accountTarget && memo && isHiveL1TransferAsset(symbol));
@@ -168,7 +212,7 @@ export function WalletDepositModal({
 
         <div className="space-y-4 text-body-sm text-muted">
           <p>
-            {t('all_crypto_deposits_are_processed_by')}{' '}
+            {t('wallet_deposit_processed_by')}{' '}
             <a
               href="https://hive-engine.com/"
               target="_blank"
@@ -177,16 +221,16 @@ export function WalletDepositModal({
             >
               Hive-Engine.com
             </a>
-            . {t('deposit_info')}
+            .
           </p>
-          <p>{t('fee_on_deposits')}</p>
-          <p>{t('pay_standard_network_fees')}</p>
+          <p>{t('wallet_deposit_swap_explainer')}</p>
+          <p>{t('wallet_deposit_fee_line')}</p>
         </div>
 
         <div className="mt-6 space-y-4">
           <div>
             <p className="text-body-sm font-weight-strong text-fg">
-              1. {t('select_the_crypto_token_to_deposit')}
+              1. {t('wallet_deposit_step_asset')}
             </p>
             <select
               className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body"
@@ -204,7 +248,7 @@ export function WalletDepositModal({
 
           <div>
             <p className="text-body-sm font-weight-strong text-fg">
-              2. {t('follow_the_deposit_instructions')}
+              2. {t('wallet_deposit_step_instructions')}
             </p>
             {listError ? (
               <p className="mt-2 text-body-sm text-error">{listError}</p>
@@ -220,15 +264,13 @@ export function WalletDepositModal({
             {loading ? (
               <AppLoader size="sm" label={t('activity_loading')} className="mt-2" />
             ) : null}
-            {!loading && hasInstructions ? (
-              <p className="mt-2 text-body-sm text-muted">
-                {t('deposit_instructions_part1')}{' '}
-                <span className="font-weight-strong text-fg">{symbol}</span>{' '}
-                {t('deposit_instructions_part2')}{' '}
-                <span className="font-weight-strong text-fg">{swapSymbol}</span> in the{' '}
-                <span className="font-weight-strong text-fg">@{account}</span>{' '}
-                {t('deposit_instructions_part3')}
-              </p>
+            {showDepositInstructions ? (
+              <WalletDepositInstructionsParagraph
+                variant={accountTarget ? 'account' : 'address'}
+                symbol={symbol}
+                swapSymbol={swapSymbol}
+                account={account}
+              />
             ) : null}
 
             {address ? (
@@ -264,7 +306,7 @@ export function WalletDepositModal({
 
             {accountTarget ? (
               <div className="mt-3">
-                <WalletModalFieldLabel>{t('deposit_account')}</WalletModalFieldLabel>
+                <WalletModalFieldLabel>{t('wallet_deposit_send_to')}</WalletModalFieldLabel>
                 <div className="mt-1 flex gap-2">
                   <input
                     readOnly
@@ -285,23 +327,26 @@ export function WalletDepositModal({
             {memo ? (
               <div className="mt-3">
                 <WalletModalFieldLabel>
-                  {t('memo')} ({t('required_field')})
+                  {t('wallet_deposit_required_memo')}
                 </WalletModalFieldLabel>
-                <div className="mt-1 flex gap-2">
-                  <input
+                <div className="mt-1 flex items-start gap-2">
+                  <textarea
                     readOnly
-                    className="min-w-0 flex-1 rounded-btn border border-border bg-surface px-3 py-2 text-body-sm"
-                    value={memo}
+                    rows={Math.min(10, Math.max(4, memoDisplay.split('\n').length))}
+                    className="min-w-0 flex-1 resize-none whitespace-pre-wrap break-words rounded-btn border border-border bg-surface px-3 py-2 font-mono text-body-sm text-fg"
+                    value={memoDisplay}
                   />
                   <button
                     type="button"
-                    className="rounded-btn border border-border px-3 py-2 text-body-sm"
+                    className="self-start rounded-btn border border-border px-3 py-2 text-body-sm"
                     onClick={() => void copy(memo)}
                   >
                     {t('copy_button')}
                   </button>
                 </div>
-                <p className="mt-2 text-body-sm text-error">{t('memo_attention')}</p>
+                <p className="mt-2 text-body-sm text-error">
+                  {t('wallet_deposit_memo_warning')}
+                </p>
               </div>
             ) : null}
 
