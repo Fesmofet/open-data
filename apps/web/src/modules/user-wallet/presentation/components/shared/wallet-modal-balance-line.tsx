@@ -10,7 +10,9 @@ export type WalletModalBalanceLineProps = {
   onSelect: () => void;
   /** When set, shown instead of formatting `amount` (e.g. RC billions). */
   displayAmount?: string;
-  labelKey?: 'balance_amount' | 'available';
+  labelKey?: 'balance_amount' | 'available' | 'current_balance';
+  /** When false, balance is plain text (receive/quote rows). Default true. */
+  interactive?: boolean;
 };
 
 export function WalletModalBalanceLine({
@@ -19,11 +21,23 @@ export function WalletModalBalanceLine({
   onSelect,
   displayAmount,
   labelKey = 'balance_amount',
+  interactive = true,
 }: WalletModalBalanceLineProps) {
   const { t } = useI18n();
   const maxNumeric = Number.parseFloat(amount);
   const canSelect = Number.isFinite(maxNumeric) && maxNumeric > 0;
   const renderedAmount = displayAmount ?? formatWalletModalBalanceDisplay(amount);
+
+  if (!interactive) {
+    return (
+      <p className="mt-2 text-body-sm text-muted">
+        {t(labelKey)}:{' '}
+        <span className="text-fg">
+          {renderedAmount} {symbol}
+        </span>
+      </p>
+    );
+  }
 
   return (
     <p className="mt-2 text-body-sm text-muted">

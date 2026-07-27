@@ -413,7 +413,7 @@ export function WalletWithdrawModal({
               <>
                 <div>
                   <WalletModalFieldLabel>
-                    {t('wallet_withdraw_you_pay')}
+                    {t('wallet_you_pay')}
                   </WalletModalFieldLabel>
                   <WalletAssetAmountField
                     value={quantity}
@@ -452,7 +452,7 @@ export function WalletWithdrawModal({
 
                 <div>
                   <WalletModalFieldLabel>
-                    {t('wallet_withdraw_receive')}
+                    {t('wallet_you_receive')}
                   </WalletModalFieldLabel>
                   <WalletAssetAmountField
                     value={receiveValue}
@@ -468,6 +468,7 @@ export function WalletWithdrawModal({
                     searchableAsset
                     maxAmount="0"
                     amountReadOnly
+                    showMaxButton={false}
                   />
                   {quoteLoading || qrSolving ? (
                     <AppLoader

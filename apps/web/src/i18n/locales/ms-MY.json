@@ -2597,5 +2597,12 @@
   "qr_code_scanner": "QR code scanner",
   "wallet_qr_accept": "Accept",
   "wallet_qr_scan_result": "Scan result",
-  "wallet_withdraw_value_usd": "Value: {amount} USD"
+  "wallet_withdraw_value_usd": "Value: {amount} USD",
+  "current_balance": "Current balance",
+  "wallet_you_pay": "You pay",
+  "wallet_you_receive": "You receive",
+  "wallet_swap_max_price_impact_label": "Maximum price impact",
+  "wallet_swap_price_impact": "Price impact",
+  "wallet_swap_price_impact_helper": "Select the maximum price impact permitted for this swap. If exceeded, the swap will be cancelled.",
+  "wallet_swap_transaction_value": "Transaction value: {amount} USD"
 }

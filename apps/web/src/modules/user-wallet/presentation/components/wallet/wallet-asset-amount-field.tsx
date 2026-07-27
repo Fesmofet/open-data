@@ -25,6 +25,8 @@ export type WalletAssetAmountFieldProps<T extends string> = {
   maxAmount: string;
   placeholder?: string;
   amountReadOnly?: boolean;
+  /** When false, hides the max control (quoted/receive rows). Default true. */
+  showMaxButton?: boolean;
   /** Search/filter token list (swap modal). */
   searchableAsset?: boolean;
   /** When false, asset select shows label only (power modal). */
@@ -42,6 +44,7 @@ export function WalletAssetAmountField<T extends string>({
   maxAmount,
   placeholder,
   amountReadOnly = false,
+  showMaxButton = true,
   searchableAsset = false,
   showBalanceInAssetSelect = true,
 }: WalletAssetAmountFieldProps<T>) {
@@ -69,19 +72,21 @@ export function WalletAssetAmountField<T extends string>({
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
           />
-          <button
-            type="button"
-            className="shrink-0 self-center px-2 text-caption text-muted hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!canUseMax || amountReadOnly}
-            onClick={() => {
-              if (!canUseMax) {
-                return;
-              }
-              onChange(maxAmount);
-            }}
-          >
-            {t('max')}
-          </button>
+          {showMaxButton && !amountReadOnly ? (
+            <button
+              type="button"
+              className="shrink-0 self-center px-2 text-caption text-muted hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!canUseMax}
+              onClick={() => {
+                if (!canUseMax) {
+                  return;
+                }
+                onChange(maxAmount);
+              }}
+            >
+              {t('max')}
+            </button>
+          ) : null}
           {searchableAsset ? (
             <WalletSearchableAssetSelect
               value={asset}

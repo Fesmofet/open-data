@@ -5,6 +5,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import type { HiveEngineCustomJsonPayload } from '@opden-data-layer/hive-broadcast';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
 import { fetchEngineSwapList, fetchEngineSwapQuote } from '../../../infrastructure/clients/engine-swap.client';
@@ -292,7 +293,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
           ) : (
             <>
           <div>
-            <WalletModalFieldLabel>{t('from')}</WalletModalFieldLabel>
+            <WalletModalFieldLabel>{t('wallet_you_pay')}</WalletModalFieldLabel>
             <WalletAssetAmountField
               value={fromAmount}
               onChange={(value) => {
@@ -317,6 +318,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
                 amount={fromToken.balance}
                 symbol={fromToken.symbol}
                 onSelect={() => setFromAmount(fromToken.balance)}
+                labelKey="available"
               />
             ) : null}
           </div>
@@ -326,7 +328,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
           </div>
 
           <div>
-            <WalletModalFieldLabel>{t('to')}</WalletModalFieldLabel>
+            <WalletModalFieldLabel>{t('wallet_you_receive')}</WalletModalFieldLabel>
             <WalletAssetAmountField
               value={toAmount}
               onChange={() => undefined}
@@ -340,27 +342,34 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
               searchableAsset
               maxAmount="0"
               amountReadOnly
+              showMaxButton={false}
             />
             {toToken ? (
               <WalletModalBalanceLine
                 amount={toToken.balance}
                 symbol={toToken.symbol}
                 onSelect={() => undefined}
+                labelKey="current_balance"
+                interactive={false}
               />
             ) : null}
           </div>
 
           <div className="space-y-1 text-body-sm text-muted">
             <p>
-              {t('estimated_transaction_value')}: {estimatedUsd.toFixed(2)} USD
+              {interpolateMessage(t('wallet_swap_transaction_value'), {
+                amount: estimatedUsd.toFixed(2),
+              })}
             </p>
             <p>
-              {t('estimated_price_impact')}: {priceImpact}%
+              {t('wallet_swap_price_impact')}: {priceImpact}%
             </p>
           </div>
 
           <div className="space-y-2">
-            <WalletModalFieldLabel>{t('max_price_impact')}</WalletModalFieldLabel>
+            <WalletModalFieldLabel>
+              {t('wallet_swap_max_price_impact_label')}
+            </WalletModalFieldLabel>
             <div className="flex flex-wrap gap-2">
               {SWAP_IMPACT_PERCENT_OPTIONS.map((imp) => (
                 <button
@@ -379,10 +388,14 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
                 </button>
               ))}
             </div>
-            <p className="text-body-sm text-muted">{t('swaptokens_info')}</p>
+            <p className="text-body-sm text-muted">
+              {t('wallet_swap_price_impact_helper')}
+            </p>
           </div>
 
-          <p className="text-body-sm text-muted">{t('SwapTokens__hiveEngineInfo')}</p>
+          <p className="text-body-sm text-muted">
+            {t('wallet_withdraw_hivesigner_note')}
+          </p>
 
           {validationError ? (
             <p className="text-body-sm text-error" role="alert">
@@ -420,7 +433,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
             disabled={!canSubmit}
             onClick={() => void handleSubmit()}
           >
-            {t('submit')}
+            {t('swap_tokens')}
           </button>
         </div>
       </div>
