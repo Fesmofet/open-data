@@ -9,7 +9,7 @@ import {
   WAIV_WALLET_HISTORY_BUFFER,
 } from '@opden-data-layer/core/hive-engine-history';
 
-import { HiveEngineSwapsRepository } from '../../repositories';
+import { HiveEngineSwapsRepository, HiveEngineDepositRecordsRepository } from '../../repositories';
 import {
   decodeWaivWalletHistoryCursor,
   encodeWaivWalletHistoryCursor,
@@ -19,6 +19,7 @@ import {
 } from './waiv-wallet-history-cursor';
 import {
   itemCursorParts,
+  mapDepositRecordRow,
   mapRpcHistoryEntry,
   mapSwapRow,
   type WaivWalletHistoryItemDto,
@@ -47,6 +48,7 @@ export class EngineWalletHistoryPagerService {
   constructor(
     private readonly historyClient: HiveEngineHistoryClient,
     private readonly swapsRepo: HiveEngineSwapsRepository,
+    private readonly depositRecordsRepo: HiveEngineDepositRecordsRepository,
   ) {}
 
   async collectPage(
@@ -57,7 +59,7 @@ export class EngineWalletHistoryPagerService {
       : null;
     const fetchLimit = params.limit + WAIV_WALLET_HISTORY_BUFFER;
 
-    const [rpcResult, swaps] = await Promise.all([
+    const [rpcResult, swaps, deposits] = await Promise.all([
       this.collectRpcRows({
         account: params.account,
         limit: fetchLimit,
@@ -68,11 +70,17 @@ export class EngineWalletHistoryPagerService {
         fetchLimit,
         cursorPayload?.timestamp ?? null,
       ),
+      this.depositRecordsRepo.findForEngineWallet(
+        params.account,
+        fetchLimit,
+        cursorPayload?.timestamp ?? null,
+      ),
     ]);
 
     const merged = filterEngineHistoryItems([
       ...rpcResult.entries.map(mapRpcHistoryEntry),
       ...swaps.map(mapSwapRow),
+      ...deposits.map(mapDepositRecordRow),
     ]);
 
     const sorted = sortHistoryItems(merged);

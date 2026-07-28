@@ -4,6 +4,7 @@ import type { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
 import { HIVE_CUSTOM_JSON_ID } from '../../constants/hive-parser';
 import { OdlCustomJsonParser } from '../odl-parser/odl-custom-json-parser';
 import { OblCustomJsonParser } from '../obl-parser/obl-custom-json-parser';
+import { OslCustomJsonParser } from '../osl-parser/osl-custom-json-parser';
 import { FollowSocialService } from '../hive-social/follow-social.service';
 import { HiveRcDelegationService } from '../hive-delegation/hive-rc-delegation.service';
 import type { HiveOperationHandlerContext } from './hive-handler-context';
@@ -21,12 +22,14 @@ export class HiveCustomJsonParser {
   constructor(
     private readonly odlParser: OdlCustomJsonParser,
     private readonly oblParser: OblCustomJsonParser,
+    private readonly oslParser: OslCustomJsonParser,
     private readonly configService: ConfigService,
     private readonly followSocial: FollowSocialService,
     private readonly rcDelegationService: HiveRcDelegationService,
   ) {
     const odlId = this.configService.get<string>('hive.odlCustomJsonId');
     const oblId = this.configService.get<string>('hive.oblCustomJsonId');
+    const oslId = this.configService.get<string>('hive.oslCustomJsonId');
 
     const handleOdl: CustomJsonIdHandler = (payload, context) => {
       const account =
@@ -38,6 +41,12 @@ export class HiveCustomJsonParser {
       const account =
         payload.required_posting_auths[0] ?? payload.required_auths[0] ?? '';
       return this.oblParser.parse(payload.json, account, context);
+    };
+
+    const handleOsl: CustomJsonIdHandler = (payload, context) => {
+      const account =
+        payload.required_posting_auths[0] ?? payload.required_auths[0] ?? '';
+      return this.oslParser.parse(payload.json, account, context);
     };
 
     const handleFollow: CustomJsonIdHandler = (payload, context) =>
@@ -55,6 +64,9 @@ export class HiveCustomJsonParser {
     }
     if (oblId) {
       this.handlers[oblId] = handleObl;
+    }
+    if (oslId) {
+      this.handlers[oslId] = handleOsl;
     }
   }
 

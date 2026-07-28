@@ -1,8 +1,9 @@
 import type { HiveEngineAccountHistoryEntry } from '@opden-data-layer/clients';
-import type { HiveEngineSwap, HiveEngineWaivAirdrop } from '@opden-data-layer/core';
+import type { HiveEngineSwap, HiveEngineWaivAirdrop, HiveEngineDepositRecord } from '@opden-data-layer/core';
 import {
   classifyWaivEngineOperation,
   WAIV_WALLET_HISTORY_AIRDROP_OP,
+  WAIV_WALLET_HISTORY_DEPOSIT_OP,
   WAIV_WALLET_HISTORY_SWAP_OP,
   type WaivWalletHistoryRowKind,
 } from '@opden-data-layer/core/hive-engine-history';
@@ -270,6 +271,31 @@ export function mapAirdropRow(row: HiveEngineWaivAirdrop): WaivWalletHistoryItem
       tokenState: row.token_state,
       transactionId: row.transaction_id,
       blockNumber: row.block_number,
+    },
+  };
+}
+
+export function mapDepositRecordRow(
+  row: HiveEngineDepositRecord,
+): WaivWalletHistoryItemDto {
+  const id = String(row.id);
+  return {
+    id: `deposit:${id}`,
+    timestamp: toIsoTimestampFromDate(row.block_timestamp),
+    operation: WAIV_WALLET_HISTORY_DEPOSIT_OP,
+    kind: 'deposit_instruction',
+    source: 'deposit',
+    payload: {
+      account: row.account,
+      destination: row.destination,
+      symbolIn: row.symbol_in,
+      symbolOut: row.symbol_out,
+      pair: row.pair,
+      exRate: row.ex_rate,
+      depositAccount: row.deposit_account,
+      address: row.address,
+      memo: row.memo,
+      transactionId: row.transaction_id,
     },
   };
 }

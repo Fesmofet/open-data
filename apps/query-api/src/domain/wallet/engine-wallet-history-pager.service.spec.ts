@@ -5,6 +5,7 @@ describe('EngineWalletHistoryPagerService', () => {
     accountHistoryWithStatus: jest.fn(),
   };
   const swapsRepo = { findByAccount: jest.fn() };
+  const depositRecordsRepo = { findForEngineWallet: jest.fn() };
 
   let pager: EngineWalletHistoryPagerService;
 
@@ -13,8 +14,10 @@ describe('EngineWalletHistoryPagerService', () => {
     pager = new EngineWalletHistoryPagerService(
       historyClient as never,
       swapsRepo as never,
+      depositRecordsRepo as never,
     );
     swapsRepo.findByAccount.mockResolvedValue([]);
+    depositRecordsRepo.findForEngineWallet.mockResolvedValue([]);
   });
 
   it('merges RPC and swap rows newest first', async () => {

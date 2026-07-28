@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const waivHistorySourceSchema = z.enum(['rpc', 'swap', 'airdrop']);
+const waivHistorySourceSchema = z.enum(['rpc', 'swap', 'airdrop', 'deposit']);
 
 const cursorPayloadSchema = z.object({
   timestamp: z.number().int().nonnegative(),
@@ -39,8 +39,18 @@ export function compareWaivHistoryCursorsDesc(
     return right.timestamp - left.timestamp;
   }
   if (left.source !== right.source) {
-    const rank = (source: WaivWalletHistorySource) =>
-      source === 'rpc' ? 2 : source === 'swap' ? 1 : 0;
+    const rank = (source: WaivWalletHistorySource) => {
+      if (source === 'deposit') {
+        return 4;
+      }
+      if (source === 'rpc') {
+        return 3;
+      }
+      if (source === 'swap') {
+        return 2;
+      }
+      return 0;
+    };
     return rank(right.source) - rank(left.source);
   }
   return right.tieId.localeCompare(left.tieId);

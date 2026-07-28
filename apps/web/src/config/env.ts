@@ -6,6 +6,7 @@ import {
   parseOdlNetwork,
   resolveOblCustomJsonId,
   resolveOdlCustomJsonId,
+  resolveOslCustomJsonId,
 } from './odl-network';
 
 /**
@@ -92,4 +93,5 @@ export const env = {
   odlCustomJsonId: resolveOdlCustomJsonId(odlNetwork),
   /** Hive `custom_json.id` for server-side OBL envelope builders. */
   oblCustomJsonId: resolveOblCustomJsonId(odlNetwork),
+  oslCustomJsonId: resolveOslCustomJsonId(odlNetwork),
 };

@@ -20,6 +20,7 @@ import {
   ConvertIcon,
   SuccessIcon,
   SwapIcon,
+  WalletIcon,
   XIcon,
 } from '../../hive/history/wallet-history-icons';
 import { WalletPowerLightningIcon } from '../../shared/wallet-row-icons';
@@ -407,6 +408,35 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
           {row.tokenState ? (
             <span className="block text-body-sm text-muted">{row.tokenState}</span>
           ) : null}
+        </WalletHistoryRowShell>
+      );
+    case 'deposit_instruction':
+      return (
+        <WalletHistoryRowShell timestamp={row.timestamp} icon={<WalletIcon />}>
+          <div className="space-y-1 break-words text-body-sm">
+            <span className="block">{t('deposit_instruction')}</span>
+            {row.rateLabel ? (
+              <div>
+                <span className="font-bold">{t('deposit_instruction_rate')}</span> {row.rateLabel}
+              </div>
+            ) : null}
+            {row.depositAccount ? (
+              <div>
+                <span className="font-bold">{t('deposit_instruction_send_to')}</span>{' '}
+                {row.depositAccount}
+              </div>
+            ) : null}
+            {row.memo ? (
+              <div className="break-words">
+                <span className="font-bold">{t('memo')}:</span> {row.memo}
+              </div>
+            ) : null}
+            {row.address ? (
+              <div className="break-all">
+                <span className="font-bold">{t('deposit_instruction_address')}</span> {row.address}
+              </div>
+            ) : null}
+          </div>
         </WalletHistoryRowShell>
       );
     case 'generic':

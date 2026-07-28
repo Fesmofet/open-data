@@ -26,17 +26,18 @@ Incoming (`to = name`) and outgoing (`from = name`) rows from Hive Engine `token
 
 ### `POST /query/v1/users/{name}/wallet/waiv/history`
 
-Paginated WAIV wallet transaction history for the transfers tab. Merges three sources (legacy parity):
+Paginated WAIV wallet transaction history for the transfers tab. Merges four sources (legacy parity):
 
 | Source | Content |
 |--------|---------|
 | Hive Engine `accountHistory` RPC | `symbol=WAIV`, ops from legacy `HISTORY_API_OPS`; optional reward ops when `showRewards=true` |
 | PG `hive_engine_swaps` | Atomic `marketpools_swapTokens` rows where `symbol_in` or `symbol_out` is WAIV |
 | PG `hive_engine_waiv_airdrops` | Historical `airdrops_newAirdrop` rows |
+| PG `hive_engine_deposit_records` | Deposit instruction rows where `symbol_in` or `symbol_out` is WAIV (`operation`: `hive_engine_deposit`, `kind`: `deposit_instruction`) |
 
 **Body:** `{ limit?: number; cursor?: string; showRewards?: boolean }` — default `showRewards=false`, `limit=20`.
 
-**Response:** `{ items, cursor, hasMore }` — each item has `id`, `timestamp` (ISO), `operation`, `kind` (row classifier), `source` (`rpc` \| `swap` \| `airdrop`), `payload`.
+**Response:** `{ items, cursor, hasMore }` — each item has `id`, `timestamp` (ISO), `operation`, `kind` (row classifier), `source` (`rpc` \| `swap` \| `airdrop` \| `deposit`), `payload`.
 
 **Payload enrichment (RPC):**
 

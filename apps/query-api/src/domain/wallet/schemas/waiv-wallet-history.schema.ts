@@ -15,7 +15,7 @@ export const waivWalletHistoryItemSchema = z.object({
   timestamp: z.string(),
   operation: z.string(),
   kind: z.string(),
-  source: z.enum(['rpc', 'swap', 'airdrop']),
+  source: z.enum(['rpc', 'swap', 'airdrop', 'deposit']),
   payload: z.record(z.string(), z.unknown()),
 });
 

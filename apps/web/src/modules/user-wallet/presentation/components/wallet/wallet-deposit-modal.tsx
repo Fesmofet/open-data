@@ -15,6 +15,7 @@ import type { WalletDepositModalState } from '../../../domain/wallet-modal-types
 import { isHiveL1TransferAsset } from '../../../domain/wallet-modal-types';
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
 import { useWalletModal } from './wallet-modal-context';
+import { useDepositInstructionBroadcast } from '../../hooks/use-deposit-instruction-broadcast';
 
 function WalletDepositInstructionsParagraph({
   variant,
@@ -74,6 +75,11 @@ export function WalletDepositModal({
 }: WalletDepositModalProps) {
   const { t } = useI18n();
   const { openModal } = useWalletModal();
+  const {
+    broadcast: broadcastDepositInstruction,
+    pending: depositBroadcastPending,
+    error: depositBroadcastError,
+  } = useDepositInstructionBroadcast(account);
   const titleId = useId();
   const [depositList, setDepositList] = useState<EngineDepositListApiResponse | null>(
     null,
@@ -85,6 +91,7 @@ export function WalletDepositModal({
   const [memo, setMemo] = useState<string | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [pair, setPair] = useState<string | null>(null);
+  const [exRate, setExRate] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -141,6 +148,7 @@ export function WalletDepositModal({
     setMemo(null);
     setAddress(null);
     setPair(null);
+    setExRate(1);
     void fetchEngineDepositAddress(account, symbol)
       .then((result) => {
         if (cancelled) {
@@ -150,6 +158,7 @@ export function WalletDepositModal({
         setMemo(result.memo);
         setAddress(result.address);
         setPair(result.pair);
+        setExRate(result.exRate ?? 1);
         setError(null);
       })
       .catch(() => {
@@ -185,18 +194,50 @@ export function WalletDepositModal({
     Boolean(accountTarget && memo && isHiveL1TransferAsset(symbol));
   const canDone = hasInstructions && !canContinue;
 
+  const postDepositInstruction = async (): Promise<boolean> => {
+    if (!hasInstructions || !pair) {
+      return false;
+    }
+    return broadcastDepositInstruction({
+      destination: account,
+      symbolIn: symbol,
+      symbolOut: swapSymbol,
+      pair,
+      exRate,
+      memo,
+      depositAccount: accountTarget,
+      address,
+    });
+  };
+
   const onContinue = () => {
-    if (!canContinue || !accountTarget || !memo) {
+    if (!canContinue || !accountTarget || !memo || depositBroadcastPending) {
       return;
     }
-    onClose();
-    openModal({
-      kind: 'transfer',
-      asset: symbol,
-      presetTo: accountTarget,
-      presetMemo: memo,
-      lockAsset: true,
-      lockRecipient: true,
+    void postDepositInstruction().then((ok) => {
+      if (!ok) {
+        return;
+      }
+      onClose();
+      openModal({
+        kind: 'transfer',
+        asset: symbol,
+        presetTo: accountTarget,
+        presetMemo: memo,
+        lockAsset: true,
+        lockRecipient: true,
+      });
+    });
+  };
+
+  const onDone = () => {
+    if (!canDone || depositBroadcastPending) {
+      return;
+    }
+    void postDepositInstruction().then((ok) => {
+      if (ok) {
+        onClose();
+      }
     });
   };
 
@@ -351,6 +392,11 @@ export function WalletDepositModal({
             ) : null}
 
             {error ? <p className="mt-2 text-body-sm text-error">{error}</p> : null}
+            {depositBroadcastError ? (
+              <p className="mt-2 text-body-sm text-error" role="alert">
+                {t('wallet_deposit_unavailable')}
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -365,7 +411,8 @@ export function WalletDepositModal({
           {canContinue ? (
             <button
               type="button"
-              className="rounded-btn bg-accent px-4 py-2 text-body font-weight-strong text-accent-fg"
+              className="rounded-btn bg-accent px-4 py-2 text-body font-weight-strong text-accent-fg disabled:opacity-50"
+              disabled={depositBroadcastPending}
               onClick={onContinue}
             >
               {t('continue')}
@@ -374,8 +421,9 @@ export function WalletDepositModal({
           {canDone ? (
             <button
               type="button"
-              className="rounded-btn bg-accent px-4 py-2 text-body font-weight-strong text-accent-fg"
-              onClick={onClose}
+              className="rounded-btn bg-accent px-4 py-2 text-body font-weight-strong text-accent-fg disabled:opacity-50"
+              disabled={depositBroadcastPending}
+              onClick={onDone}
             >
               {t('done')}
             </button>

@@ -43,10 +43,11 @@ Paginated Hive Engine wallet history for `?type=ENGINE`. Merges:
 |--------|---------|
 | Hive Engine History API | All ops from legacy `HISTORY_API_OPS`; **WAIV rows filtered server-side** (history nodes ignore `excludeSymbols`) |
 | PG `hive_engine_swaps` | All indexed `marketpools_swapTokens` rows for the account (including WAIV↔SWAP.* legs) |
+| PG `hive_engine_deposit_records` | Deposit instructions where neither leg is WAIV (ENGINE tab filter) |
 
 **Body:** `{ limit?: number; cursor?: string }` — default `limit=20`.
 
-**Response:** `{ items, cursor, hasMore }` — each item has `source`: `rpc` \| `swap` (no airdrops).
+**Response:** `{ items, cursor, hasMore }` — each item has `source`: `rpc` \| `swap` \| `deposit` (no airdrops).
 
 Row display rules: [engine-wallet-history.md](../../web/spec/pages/user-profile/routes/engine-wallet-history.md).
 

@@ -5,7 +5,7 @@ const waivWalletHistoryItemApiSchema = z.object({
   timestamp: z.string(),
   operation: z.string(),
   kind: z.string(),
-  source: z.enum(['rpc', 'swap', 'airdrop']),
+  source: z.enum(['rpc', 'swap', 'airdrop', 'deposit']),
   payload: z.record(z.string(), z.unknown()),
 });
 
@@ -49,6 +49,7 @@ const waivWalletHistoryRowKindSchema = z.enum([
   'beneficiary_reward',
   'swap',
   'airdrop',
+  'deposit_instruction',
   'generic',
 ]);
 
@@ -166,6 +167,17 @@ const waivWalletHistoryRowViewSchema = z.discriminatedUnion('kind', [
     timestamp: z.string(),
     amountView: waivAmountViewSchema,
     tokenState: z.string(),
+  }),
+  z.object({
+    kind: z.literal('deposit_instruction'),
+    id: z.string(),
+    timestamp: z.string(),
+    symbolIn: z.string(),
+    symbolOut: z.string(),
+    rateLabel: z.string(),
+    depositAccount: z.string(),
+    address: z.string(),
+    memo: z.string(),
   }),
   z.object({
     kind: z.literal('generic'),

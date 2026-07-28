@@ -108,7 +108,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.userWallet],
   summary: 'User WAIV wallet transaction history',
   description:
-    'Paginated WAIV wallet history merged from Hive Engine accountHistory RPC, indexed swaps, and WAIV airdrops.',
+    'Paginated WAIV wallet history merged from Hive Engine accountHistory RPC, indexed swaps, WAIV airdrops, and deposit instruction rows (`hive_engine_deposit_records`). Item `source`: `rpc`, `swap`, `airdrop`, or `deposit`.',
   request: {
     params: z.object({ name: accountNameParam }),
     body: {
@@ -214,7 +214,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.userWallet],
   summary: 'User Hive Engine wallet transaction history',
   description:
-    'Paginated Hive Engine wallet history merged from accountHistory RPC (excluding WAIV) and indexed swaps.',
+    'Paginated Hive Engine wallet history merged from accountHistory RPC (excluding WAIV), indexed swaps, and deposit instruction rows (`hive_engine_deposit_records`). Item `source`: `rpc`, `swap`, or `deposit`.',
   request: {
     params: z.object({ name: accountNameParam }),
     body: {

@@ -6,6 +6,7 @@ describe('WaivWalletHistoryPagerService', () => {
   };
   const swapsRepo = { findWaivByAccount: jest.fn() };
   const airdropsRepo = { findByAccount: jest.fn() };
+  const depositRecordsRepo = { findForWaivWallet: jest.fn() };
 
   let pager: WaivWalletHistoryPagerService;
 
@@ -15,9 +16,11 @@ describe('WaivWalletHistoryPagerService', () => {
       historyClient as never,
       swapsRepo as never,
       airdropsRepo as never,
+      depositRecordsRepo as never,
     );
     swapsRepo.findWaivByAccount.mockResolvedValue([]);
     airdropsRepo.findByAccount.mockResolvedValue([]);
+    depositRecordsRepo.findForWaivWallet.mockResolvedValue([]);
   });
 
   it('merges RPC and PG rows newest first', async () => {
@@ -164,5 +167,45 @@ describe('WaivWalletHistoryPagerService', () => {
     expect(result.rpcUnavailable).toBe(true);
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.operation).toBe('marketpools_swapTokens');
+  });
+
+  it('merges deposit instruction rows from PG', async () => {
+    historyClient.accountHistoryWithStatus.mockResolvedValue({
+      unavailable: false,
+      entries: [],
+    });
+    depositRecordsRepo.findForWaivWallet.mockResolvedValue([
+      {
+        id: BigInt(7),
+        account: 'alice',
+        transaction_id: 'dep-1',
+        ref_hive_block_number: 1,
+        block_timestamp: new Date(500_000),
+        destination: 'alice',
+        symbol_in: 'HIVE',
+        symbol_out: 'WAIV',
+        pair: 'HIVE/WAIV',
+        ex_rate: 1.0075,
+        deposit_account: 'honey-swap',
+        address: null,
+        memo: 'm1',
+        symbols: ['HIVE', 'WAIV'],
+        created_at: new Date(500_000),
+      },
+    ]);
+
+    const result = await pager.collectPage({
+      account: 'alice',
+      limit: 5,
+      cursor: null,
+      showRewards: false,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      operation: 'hive_engine_deposit',
+      kind: 'deposit_instruction',
+      source: 'deposit',
+    });
   });
 });

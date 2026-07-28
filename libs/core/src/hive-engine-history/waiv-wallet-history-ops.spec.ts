@@ -27,6 +27,7 @@ describe('waiv-wallet-history-ops', () => {
   it('classifyWaivEngineOperation maps primary ops', () => {
     expect(classifyWaivEngineOperation('tokens_transfer')).toBe('transfer');
     expect(classifyWaivEngineOperation('marketpools_swapTokens')).toBe('swap');
+    expect(classifyWaivEngineOperation('hive_engine_deposit')).toBe('deposit_instruction');
     expect(classifyWaivEngineOperation('airdrops_newAirdrop')).toBe('airdrop');
     expect(classifyWaivEngineOperation('tokens_create')).toBe('generic');
     expect(classifyWaivEngineOperation('tokens_unstakeDone')).toBe('power_down_done');

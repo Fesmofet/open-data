@@ -41,7 +41,7 @@ describe('GetUserEngineWalletHistoryEndpoint', () => {
     );
   });
 
-  it('returns pager result with rpc and swap items only', async () => {
+  it('returns pager result including deposit instruction rows', async () => {
     pager.collectPage.mockResolvedValue({
       items: [
         {
@@ -51,6 +51,14 @@ describe('GetUserEngineWalletHistoryEndpoint', () => {
           timestamp: '2020-01-01T00:00:00.000Z',
           kind: 'transfer',
           payload: { symbol: 'DEC' },
+        },
+        {
+          id: 'deposit:7',
+          operation: 'hive_engine_deposit',
+          source: 'deposit',
+          timestamp: '2020-01-02T00:00:00.000Z',
+          kind: 'deposit_instruction',
+          payload: { symbolIn: 'HIVE', symbolOut: 'SWAP.HIVE' },
         },
         {
           id: 'swap:1',
@@ -66,7 +74,8 @@ describe('GetUserEngineWalletHistoryEndpoint', () => {
       rpcUnavailable: false,
     });
     const result = await endpoint.execute('alice', { limit: 10 });
-    expect(result?.items).toHaveLength(2);
+    expect(result?.items).toHaveLength(3);
+    expect(result?.items.some((i) => i.source === 'deposit')).toBe(true);
     expect(result?.hasMore).toBe(true);
     expect(pager.collectPage).toHaveBeenCalledWith(
       expect.objectContaining({ account: 'alice', limit: 10 }),

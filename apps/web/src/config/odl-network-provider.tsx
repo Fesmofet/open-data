@@ -6,10 +6,12 @@ import { CUSTOM_JSON_ID } from './odl-network';
 
 const OdlCustomJsonIdContext = createContext<string>(CUSTOM_JSON_ID.ODL_MAINNET);
 const OblCustomJsonIdContext = createContext<string>(CUSTOM_JSON_ID.OBL_MAINNET);
+const OslCustomJsonIdContext = createContext<string>(CUSTOM_JSON_ID.OSL_MAINNET);
 
 export type OdlNetworkProviderProps = {
   customJsonId: string;
   oblCustomJsonId: string;
+  oslCustomJsonId: string;
   children: ReactNode;
 };
 
@@ -20,12 +22,15 @@ export type OdlNetworkProviderProps = {
 export function OdlNetworkProvider({
   customJsonId,
   oblCustomJsonId,
+  oslCustomJsonId,
   children,
 }: OdlNetworkProviderProps) {
   return (
     <OdlCustomJsonIdContext.Provider value={customJsonId}>
       <OblCustomJsonIdContext.Provider value={oblCustomJsonId}>
-        {children}
+        <OslCustomJsonIdContext.Provider value={oslCustomJsonId}>
+          {children}
+        </OslCustomJsonIdContext.Provider>
       </OblCustomJsonIdContext.Provider>
     </OdlCustomJsonIdContext.Provider>
   );
@@ -37,4 +42,8 @@ export function useOdlCustomJsonId(): string {
 
 export function useOblCustomJsonId(): string {
   return useContext(OblCustomJsonIdContext);
+}
+
+export function useOslCustomJsonId(): string {
+  return useContext(OslCustomJsonIdContext);
 }

@@ -97,3 +97,9 @@ export {
   type BuildOblServiceOrderCreateOpInput,
   type BuildOblReportCreateOpInput,
 } from './obl-operations';
+export {
+  buildOslEnvelopeOp,
+  buildOslHiveEngineDepositOp,
+  type BuildOslEnvelopeOpInput,
+  type BuildOslHiveEngineDepositOpInput,
+} from './osl-operations';

@@ -35,6 +35,7 @@
     "migrate:mongo-currency-rates": "tsx --env-file=.env scripts/migrate-mongo-to-pg/currency/currency-rates.ts",
     "migrate:mongo-hive-engine-swaps": "tsx --env-file=.env scripts/migrate-mongo-to-pg/swaps/index.ts",
     "migrate:mongo-hive-engine-waiv-airdrops": "tsx --env-file=.env scripts/migrate-mongo-to-pg/waiv-airdrops/index.ts",
+    "migrate:mongo-hive-engine-deposit-records": "tsx --env-file=.env scripts/migrate-mongo-to-pg/deposit-records/index.ts",
     "backfill:threads": "tsx --env-file=.env scripts/backfill-threads.ts",
     "backfill:user-object-powers": "tsx --env-file=.env scripts/backfill-user-object-powers.ts",
     "backfill:object-categories": "tsx --env-file=.env scripts/backfill-object-categories.ts",

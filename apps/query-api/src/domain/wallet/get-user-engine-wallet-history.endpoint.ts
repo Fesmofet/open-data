@@ -50,8 +50,10 @@ export class GetUserEngineWalletHistoryEndpoint {
 
     return {
       items: result.items.filter(
-        (item): item is typeof item & { source: 'rpc' | 'swap' } =>
-          item.source === 'rpc' || item.source === 'swap',
+        (item): item is typeof item & { source: 'rpc' | 'swap' | 'deposit' } =>
+          item.source === 'rpc' ||
+          item.source === 'swap' ||
+          item.source === 'deposit',
       ),
       cursor: result.cursor,
       hasMore: result.hasMore,

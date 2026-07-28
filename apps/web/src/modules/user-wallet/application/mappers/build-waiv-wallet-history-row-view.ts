@@ -12,6 +12,7 @@ import {
   formatWalletHistoryQuantity,
   WAIV_FRACTION_PRECISION,
 } from '../../domain/waiv-wallet-history-amount-format';
+import { formatDepositInstructionRate } from '../../domain/deposit-instruction';
 
 function asString(value: unknown): string {
   return typeof value === 'string' ? value : value != null ? String(value) : '';
@@ -385,6 +386,27 @@ export function buildWaivWalletHistoryRowView(
         amountView: amountView(p.quantity, 'WP', 'positive', '+'),
         tokenState: asString(p.tokenState),
       };
+    case 'deposit_instruction': {
+      const exRateRaw = p.exRate;
+      const exRate =
+        typeof exRateRaw === 'number'
+          ? exRateRaw
+          : Number.parseFloat(asString(exRateRaw));
+      const symbolIn = asString(p.symbolIn);
+      const symbolOut = asString(p.symbolOut);
+      return {
+        ...base,
+        kind: 'deposit_instruction',
+        symbolIn,
+        symbolOut,
+        rateLabel: Number.isFinite(exRate)
+          ? formatDepositInstructionRate(exRate, symbolIn, symbolOut)
+          : '',
+        depositAccount: asString(p.depositAccount),
+        address: asString(p.address),
+        memo: asString(p.memo),
+      };
+    }
     default: {
       const qty = asString(p.quantity);
       return {

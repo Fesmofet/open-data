@@ -36,4 +36,12 @@ describe('waiv-wallet-history-cursor', () => {
     expect(isWaivHistoryRowOlderThan(gmamba, jeff)).toBe(true);
     expect(isWaivHistoryRowOlderThan(jeff, gmamba)).toBe(false);
   });
+
+  it('ranks deposit instruction above rpc at the same timestamp', () => {
+    const ts = 1_700_000_000;
+    const deposit = rowCursorFromParts(ts, '7', 'deposit');
+    const rpc = rowCursorFromParts(ts, 'tx-1', 'rpc');
+    expect(isWaivHistoryRowOlderThan(rpc, deposit)).toBe(true);
+    expect(isWaivHistoryRowOlderThan(deposit, rpc)).toBe(false);
+  });
 });

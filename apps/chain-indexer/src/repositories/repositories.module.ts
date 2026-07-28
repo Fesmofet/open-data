@@ -27,6 +27,7 @@ import { PostObjectRelatedImagesRepository } from './post-object-related-images.
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
+import { HiveEngineDepositRecordsRepository } from './hive-engine-deposit-records.repository';
 import { OblRepository } from './obl.repository';
 
 @Module({
@@ -59,6 +60,7 @@ import { OblRepository } from './obl.repository';
     UserDelegationsRepository,
     UserRcDelegationsRepository,
     HiveEngineSwapsRepository,
+    HiveEngineDepositRecordsRepository,
     OblRepository,
   ],
   exports: [
@@ -90,6 +92,7 @@ import { OblRepository } from './obl.repository';
     UserDelegationsRepository,
     UserRcDelegationsRepository,
     HiveEngineSwapsRepository,
+    HiveEngineDepositRecordsRepository,
     OblRepository,
   ],
 })

@@ -1,6 +1,7 @@
 import {
   buildRpcHistoryTieId,
   mapAirdropRow,
+  mapDepositRecordRow,
   mapRpcHistoryEntry,
   mapSwapRow,
 } from './waiv-wallet-history-item-dtos';
@@ -88,6 +89,38 @@ describe('waiv-wallet-history-item-dtos', () => {
     });
     expect(item.kind).toBe('airdrop');
     expect(item.payload.tokenState).toBe('liquid');
+  });
+
+  it('maps deposit instruction row', () => {
+    const item = mapDepositRecordRow({
+      id: BigInt(9),
+      account: 'gobag',
+      transaction_id: 'tx-dep',
+      ref_hive_block_number: 90_000_000,
+      block_timestamp: new Date('2024-01-04T00:00:00.000Z'),
+      destination: 'gobag',
+      symbol_in: 'HIVE',
+      symbol_out: 'SWAP.HIVE',
+      pair: 'HIVE -> SWAP.HIVE',
+      ex_rate: 1.0075,
+      deposit_account: 'honey-swap',
+      address: null,
+      memo: '{"id":"ssc-mainnet-hive"}',
+      symbols: ['HIVE', 'SWAP.HIVE'],
+      created_at: new Date('2024-01-04T00:00:00.000Z'),
+    });
+    expect(item).toMatchObject({
+      id: 'deposit:9',
+      operation: 'hive_engine_deposit',
+      kind: 'deposit_instruction',
+      source: 'deposit',
+      payload: {
+        symbolIn: 'HIVE',
+        symbolOut: 'SWAP.HIVE',
+        depositAccount: 'honey-swap',
+        exRate: 1.0075,
+      },
+    });
   });
 
   it('buildRpcHistoryTieId disambiguates reward rows in the same transaction', () => {

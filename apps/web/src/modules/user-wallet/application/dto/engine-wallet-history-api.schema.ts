@@ -12,7 +12,7 @@ export const engineWalletHistoryResponseSchema = waivWalletHistoryResponseSchema
       timestamp: z.string(),
       operation: z.string(),
       kind: z.string(),
-      source: z.enum(['rpc', 'swap']),
+      source: z.enum(['rpc', 'swap', 'airdrop', 'deposit']),
       payload: z.record(z.string(), z.unknown()),
     }),
   ),

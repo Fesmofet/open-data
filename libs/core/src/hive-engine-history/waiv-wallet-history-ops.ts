@@ -47,6 +47,7 @@ export type WaivWalletHistoryRpcOp = (typeof WAIV_WALLET_HISTORY_RPC_OPS)[number
 
 export const WAIV_WALLET_HISTORY_SWAP_OP = 'marketpools_swapTokens' as const;
 export const WAIV_WALLET_HISTORY_AIRDROP_OP = 'airdrops_newAirdrop' as const;
+export const WAIV_WALLET_HISTORY_DEPOSIT_OP = 'hive_engine_deposit' as const;
 
 export const WAIV_WALLET_HISTORY_BUFFER = 100;
 
@@ -81,6 +82,7 @@ export type WaivWalletHistoryRowKind =
   | 'beneficiary_reward'
   | 'swap'
   | 'airdrop'
+  | 'deposit_instruction'
   | 'generic';
 
 export function classifyWaivEngineOperation(
@@ -135,6 +137,8 @@ export function classifyWaivEngineOperation(
       return 'swap';
     case WAIV_WALLET_HISTORY_AIRDROP_OP:
       return 'airdrop';
+    case WAIV_WALLET_HISTORY_DEPOSIT_OP:
+      return 'deposit_instruction';
     default:
       return 'generic';
   }

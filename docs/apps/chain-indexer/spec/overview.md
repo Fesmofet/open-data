@@ -89,6 +89,7 @@ flowchart LR
 | [Object status](object-status.md) | `objects_core.status`; admin-only updates via governance cache; query-api exposes `active` only |
 | [WAIV post reward](waiv-post-reward.md) | Root-post WAIV fields from HE `comments` parser; reconcile + finalize in scheduler |
 | [Hive Engine swaps](hive-engine-swaps.md) | Atomic `marketpools/swapTokens` rows in `hive_engine_swaps` from HE logs |
+| [OSL parser](osl-parser.md) | Open Social Layer `custom_json` (`osl-mainnet` / `osl-testnet`); [`hive_engine_deposit`](osl-hive-engine-deposit.md) → `hive_engine_deposit_records` |
 
 **WAIV voting weight:** [waiv-power.md](../../../spec/waiv-power.md) — `user_object_powers`, ODL-triggered create events, Hive Engine stake/delegate increments.
 

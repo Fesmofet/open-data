@@ -17,7 +17,7 @@ export const engineWalletHistoryItemSchema = z.object({
   timestamp: z.string(),
   operation: z.string(),
   kind: z.string(),
-  source: z.enum(['rpc', 'swap']),
+  source: z.enum(['rpc', 'swap', 'deposit']),
   payload: z.record(z.string(), z.unknown()),
 });
 

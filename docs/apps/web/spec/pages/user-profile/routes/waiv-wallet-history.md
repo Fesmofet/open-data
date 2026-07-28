@@ -45,6 +45,7 @@ related:
 | `comments_beneficiaryReward` | `beneficiary_reward` | `curator_rewards` + post link + `(comment)` |
 | `marketpools_swapTokens` | `swap` | `swap` |
 | `airdrops_newAirdrop` | `airdrop` | `waiv_airdrop` |
+| `hive_engine_deposit` (PG `hive_engine_deposit_records`) | `deposit_instruction` | `deposit_instruction` + Rate / Send to / Memo / Address lines |
 
 ## Amount display rules
 
@@ -53,6 +54,7 @@ related:
 - **Formatting:** `formatWalletHistoryQuantity` — trim trailing zeros; `|value| >= 1` → 3 dp with grouping; sub-unit with leading zeros → compact 2 sig digits (e.g. `0.00026163` → `0.00026`); max 8 dp for WAIV precision.
 - **Market trade rate:** `{price} per WAIV` under timestamp; price = `quantityHive / quantityTokens` (string math, 8 dp).
 - **Swap rate:** `{rate} {symbolOut} per {symbolIn}` under timestamp (string divide, 3 dp display).
+- **Deposit instruction:** Title `deposit_instruction`; optional lines **Rate:** (`1 {symbolIn} > {ex_rate - 0.0075} {symbolOut}`), **Send to:** (`deposit_account`), **Memo:**, **Address:** (`break-all`) — legacy `DelegateInstructionCard` (not `deposit_instructions_part*` modal copy). At the same unix timestamp, merged feed ranks **`deposit` above `rpc`** so the instruction row appears before a hivepegged deposit in the same second.
 - **Limit place order:** `{locked} {symA} → {qty} {symB}`; footer `{price} per {symbol}`. Buy locks SWAP.HIVE; sell locks WAIV.
 - **Transfer memo:** plain text, `break-all text-caption text-muted` (no HTML).
 

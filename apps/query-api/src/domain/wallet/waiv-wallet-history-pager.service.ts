@@ -11,6 +11,7 @@ import {
 import {
   HiveEngineSwapsRepository,
   HiveEngineWaivAirdropsRepository,
+  HiveEngineDepositRecordsRepository,
 } from '../../repositories';
 import {
   decodeWaivWalletHistoryCursor,
@@ -22,6 +23,7 @@ import {
 import {
   itemCursorParts,
   mapAirdropRow,
+  mapDepositRecordRow,
   mapRpcHistoryEntry,
   mapSwapRow,
   type WaivWalletHistoryItemDto,
@@ -49,6 +51,7 @@ export class WaivWalletHistoryPagerService {
     private readonly historyClient: HiveEngineHistoryClient,
     private readonly swapsRepo: HiveEngineSwapsRepository,
     private readonly airdropsRepo: HiveEngineWaivAirdropsRepository,
+    private readonly depositRecordsRepo: HiveEngineDepositRecordsRepository,
   ) {}
 
   async collectPage(
@@ -59,7 +62,7 @@ export class WaivWalletHistoryPagerService {
       : null;
     const fetchLimit = params.limit + WAIV_WALLET_HISTORY_BUFFER;
 
-    const [rpcResult, swaps, airdrops] = await Promise.all([
+    const [rpcResult, swaps, airdrops, deposits] = await Promise.all([
       this.collectRpcRows({
         account: params.account,
         limit: fetchLimit,
@@ -76,12 +79,18 @@ export class WaivWalletHistoryPagerService {
         fetchLimit,
         cursorPayload?.timestamp ?? null,
       ),
+      this.depositRecordsRepo.findForWaivWallet(
+        params.account,
+        fetchLimit,
+        cursorPayload?.timestamp ?? null,
+      ),
     ]);
 
     const merged = [
       ...rpcResult.entries.map(mapRpcHistoryEntry),
       ...swaps.map(mapSwapRow),
       ...airdrops.map(mapAirdropRow),
+      ...deposits.map(mapDepositRecordRow),
     ];
 
     const sorted = sortHistoryItems(merged);

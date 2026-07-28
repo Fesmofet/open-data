@@ -18,13 +18,13 @@ related:
 
 ## Data flow
 
-`POST /api/users/{name}/wallet/engine/history` (BFF) → `POST /query/v1/users/{name}/wallet/engine/history` → merged RPC + PG swap rows → `buildWaivWalletHistoryPageViews` → `WaivWalletHistoryRow`.
+`POST /api/users/{name}/wallet/engine/history` (BFF) → `POST /query/v1/users/{name}/wallet/engine/history` → merged RPC + PG swap + deposit instruction rows → `buildWaivWalletHistoryPageViews` → `WaivWalletHistoryRow`.
 
 WAIV-specific **RPC** rows are excluded at the API layer: History API `excludeSymbols` is sent for legacy parity but **not honored** by public history nodes — query-api filters WAIV server-side during RPC collection. **PG swaps are not filtered** (WAIV↔SWAP.* pool swaps remain visible).
 
 ## Row mapping
 
-Uses the same operation → kind → label rules as [waiv-wallet-history.md](waiv-wallet-history.md). There is **no** “Show author and curators rewards” toggle on the ENGINE tab (reward ops are omitted from the RPC ops filter).
+Uses the same operation → kind → label rules as [waiv-wallet-history.md](waiv-wallet-history.md), including **`deposit_instruction`** rows from `hive_engine_deposit_records` (non-WAIV deposit pairs on the ENGINE tab). There is **no** “Show author and curators rewards” toggle on the ENGINE tab (reward ops are omitted from the RPC ops filter).
 
 ## Client behavior
 

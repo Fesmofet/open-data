@@ -28,6 +28,7 @@ import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 import { WalletExemptionsRepository } from './wallet-exemptions.repository';
 import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 import { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';
+import { HiveEngineDepositRecordsRepository } from './hive-engine-deposit-records.repository';
 import { WaivGeneratedReportsRepository } from './waiv-generated-reports.repository';
 import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
 
@@ -62,6 +63,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     WalletExemptionsRepository,
     HiveEngineSwapsRepository,
     HiveEngineWaivAirdropsRepository,
+    HiveEngineDepositRecordsRepository,
     WaivGeneratedReportsRepository,
     OblRepository,
     OblOfferDraftsRepository,
@@ -96,6 +98,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     WalletExemptionsRepository,
     HiveEngineSwapsRepository,
     HiveEngineWaivAirdropsRepository,
+    HiveEngineDepositRecordsRepository,
     WaivGeneratedReportsRepository,
     OblRepository,
     OblOfferDraftsRepository,

@@ -27,6 +27,7 @@ All bulk importers accept `--skip-indexes` (drops secondary indexes before inser
 | `pnpm migrate:mongo-currency-rates` | `currency_rates` collection JSON | `currency_rates` |
 | `pnpm migrate:mongo-hive-engine-swaps` | `EngineAccountHistory` swap rows JSON | `hive_engine_swaps` |
 | `pnpm migrate:mongo-hive-engine-waiv-airdrops` | `EngineAccountHistory` WAIV airdrop rows JSON | `hive_engine_waiv_airdrops` |
+| `pnpm migrate:mongo-hive-engine-deposit-records` | `EngineAccountHistory` `createDepositRecord` rows JSON | `hive_engine_deposit_records` |
 
 ### Objects (wobjects)
 
@@ -144,6 +145,22 @@ mongoexport --collection=engineaccounthistories \
 ```
 
 Maps legacy fields into `hive_engine_waiv_airdrops` (one-time historical data; no chain-indexer parser). See [`docs/spec/data-model/hive-engine-waiv-airdrops.md`](../../docs/spec/data-model/hive-engine-waiv-airdrops.md).
+
+### Hive Engine deposit instructions (`EngineAccountHistory` collection)
+
+```bash
+pnpm migrate:mongo-hive-engine-deposit-records <path-to-engine_deposit_records.json> [--dry-run] [--skip-indexes]
+```
+
+Mongo export (`createDepositRecord` rows only — legacy `waivio_hive_engine` on-chain format):
+
+```bash
+mongoexport --collection=engineaccounthistories \
+  --query='{"operation":"createDepositRecord"}' \
+  --out=engine_deposit_records.json --jsonArray
+```
+
+Maps legacy camelCase fields into `hive_engine_deposit_records`. New on-chain writes use OSL `hive_engine_deposit` (indexed by chain-indexer). See [`docs/spec/data-model/hive-engine-deposit-records.md`](../../docs/spec/data-model/hive-engine-deposit-records.md).
 
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 

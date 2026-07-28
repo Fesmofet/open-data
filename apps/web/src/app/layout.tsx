@@ -69,6 +69,7 @@ export default async function RootLayout({
             <OdlNetworkProvider
               customJsonId={env.odlCustomJsonId}
               oblCustomJsonId={env.oblCustomJsonId}
+              oslCustomJsonId={env.oslCustomJsonId}
             >
               <IpfsContentBaseProvider contentBaseUrl={ipfsContentBaseUrl}>
                 <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>

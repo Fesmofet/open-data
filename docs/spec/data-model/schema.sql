@@ -645,6 +645,34 @@ CREATE INDEX idx_hes_symbols_gin
   ON hive_engine_swaps USING GIN (symbols);
 
 -- ---------------------------------------------------------------------------
+-- hive_engine_deposit_records (OSL hive_engine_deposit + legacy Mongo import)
+-- ---------------------------------------------------------------------------
+CREATE TABLE hive_engine_deposit_records (
+  id                      BIGSERIAL PRIMARY KEY,
+  account                 TEXT NOT NULL,
+  transaction_id          TEXT NOT NULL,
+  ref_hive_block_number   INTEGER NOT NULL,
+  block_timestamp         TIMESTAMPTZ NOT NULL,
+  destination             TEXT NOT NULL,
+  symbol_in               TEXT NOT NULL,
+  symbol_out              TEXT NOT NULL,
+  pair                    TEXT NOT NULL,
+  ex_rate                 DOUBLE PRECISION NOT NULL,
+  deposit_account         TEXT,
+  address                 TEXT,
+  memo                    TEXT,
+  symbols                 TEXT[] GENERATED ALWAYS AS (ARRAY[symbol_in, symbol_out]) STORED,
+  created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (transaction_id, account)
+);
+
+CREATE INDEX idx_hedr_account_ts_id
+  ON hive_engine_deposit_records (account, block_timestamp DESC, id DESC);
+
+CREATE INDEX idx_hedr_symbols_gin
+  ON hive_engine_deposit_records USING GIN (symbols);
+
+-- ---------------------------------------------------------------------------
 -- hive_engine_waiv_airdrops (historical WAIV airdrops; Mongo import only)
 -- ---------------------------------------------------------------------------
 CREATE TABLE hive_engine_waiv_airdrops (

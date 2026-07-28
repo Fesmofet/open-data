@@ -77,6 +77,7 @@ export interface OdlDatabase {
   wallet_exemptions: WalletExemptionsTable;
   hive_engine_swaps: HiveEngineSwapsTable;
   hive_engine_waiv_airdrops: HiveEngineWaivAirdropsTable;
+  hive_engine_deposit_records: HiveEngineDepositRecordsTable;
   waiv_generated_reports: WaivGeneratedReportsTable;
   waiv_generated_report_rows: WaivGeneratedReportRowsTable;
   obl_offers: OblOffersTable;
@@ -1060,6 +1061,32 @@ export interface HiveEngineWaivAirdropsTable {
 export type HiveEngineWaivAirdrop = Selectable<HiveEngineWaivAirdropsTable>;
 export type NewHiveEngineWaivAirdrop = Insertable<HiveEngineWaivAirdropsTable>;
 export type HiveEngineWaivAirdropUpdate = Updateable<HiveEngineWaivAirdropsTable>;
+
+// ---------------------------------------------------------------------------
+// hive_engine_deposit_records (OSL hive_engine_deposit + legacy Mongo import)
+// ---------------------------------------------------------------------------
+
+export interface HiveEngineDepositRecordsTable {
+  id: Generated<bigint>;
+  account: string;
+  transaction_id: string;
+  ref_hive_block_number: number;
+  block_timestamp: ColumnType<Date, Date | string, Date | string>;
+  destination: string;
+  symbol_in: string;
+  symbol_out: string;
+  pair: string;
+  ex_rate: number;
+  deposit_account: string | null;
+  address: string | null;
+  memo: string | null;
+  symbols: Generated<string[]>;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type HiveEngineDepositRecord = Selectable<HiveEngineDepositRecordsTable>;
+export type NewHiveEngineDepositRecord = Insertable<HiveEngineDepositRecordsTable>;
+export type HiveEngineDepositRecordUpdate = Updateable<HiveEngineDepositRecordsTable>;
 
 // ---------------------------------------------------------------------------
 // waiv_generated_reports (async WAIV advanced report jobs)

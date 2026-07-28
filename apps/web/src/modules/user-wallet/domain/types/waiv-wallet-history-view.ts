@@ -34,6 +34,7 @@ export type WaivWalletHistoryRowKind =
   | 'beneficiary_reward'
   | 'swap'
   | 'airdrop'
+  | 'deposit_instruction'
   | 'generic';
 
 export type WaivMarketOrderType = 'buy' | 'sell' | 'marketbuy' | 'marketsell';
@@ -161,6 +162,17 @@ export type WaivWalletHistoryRowView =
       timestamp: string;
       amountView: WaivAmountView;
       tokenState: string;
+    }
+  | {
+      kind: 'deposit_instruction';
+      id: string;
+      timestamp: string;
+      symbolIn: string;
+      symbolOut: string;
+      rateLabel: string;
+      depositAccount: string;
+      address: string;
+      memo: string;
     }
   | {
       kind: 'generic';

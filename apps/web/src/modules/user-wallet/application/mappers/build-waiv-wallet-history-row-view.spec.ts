@@ -142,4 +142,28 @@ describe('buildWaivWalletHistoryRowView', () => {
     expect(view.amountView.amount).toBe('0.00026');
     expect(view.authorperm).toBe('@author/post-slug');
   });
+
+  it('maps deposit instruction with fee-adjusted rate label', () => {
+    const view = buildWaivWalletHistoryRowView(
+      item({
+        kind: 'deposit_instruction',
+        operation: 'hive_engine_deposit',
+        source: 'deposit',
+        payload: {
+          symbolIn: 'HIVE',
+          symbolOut: 'SWAP.HIVE',
+          exRate: 1.0075,
+          depositAccount: 'honey-swap',
+          memo: 'alice',
+        },
+      }),
+      'alice',
+    );
+    if (view.kind !== 'deposit_instruction') {
+      throw new Error('expected deposit_instruction');
+    }
+    expect(view.rateLabel).toBe('1 HIVE > 1 SWAP.HIVE');
+    expect(view.depositAccount).toBe('honey-swap');
+    expect(view.memo).toBe('alice');
+  });
 });

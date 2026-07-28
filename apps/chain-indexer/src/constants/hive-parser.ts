@@ -22,6 +22,8 @@ export const CUSTOM_JSON_ID = Object.freeze({
   ODL_TESTNET: 'odl-testnet',
   OBL_MAINNET: 'obl-mainnet',
   OBL_TESTNET: 'obl-testnet',
+  OSL_MAINNET: 'osl-mainnet',
+  OSL_TESTNET: 'osl-testnet',
   WAIVIO_OPERATIONS: 'waivio_operations',
   HIVE_ENGINE: 'ssc-mainnet-hive',
 } as const);
