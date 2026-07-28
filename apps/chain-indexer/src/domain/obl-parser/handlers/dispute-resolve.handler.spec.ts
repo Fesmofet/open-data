@@ -6,6 +6,8 @@ import { DisputeResolveHandler } from './dispute-resolve.handler';
 const invoiceHeader: OblInvoice = {
   invoice_id: 'inv-1',
   contract_id: null,
+  service_order_id: null,
+  report_id: null,
   issuer: 'alice',
   debtor: 'bob',
   kind: 'single',

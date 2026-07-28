@@ -12,6 +12,7 @@ const governingContract: OblContract = {
   dispute_rule: 'client',
   arbiter: null,
   metadata: {},
+  service_order_schema: null,
   pair_low: 'organizer',
   pair_high: 'sponsor',
   created_event_seq: BigInt(1),
