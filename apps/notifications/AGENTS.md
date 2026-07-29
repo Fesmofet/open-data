@@ -21,6 +21,7 @@ WebSocket gateway (`@nestjs/platform-ws`, native `ws`): JWT auth on HTTP upgrade
 - `domain/` — router, feed service, user notification item shape
 - `ws/` — gateway, registry, subscriptions, heartbeat
 - `consumers/` — `INotificationConsumer` + Redis Stream implementation
+- `telegram/` — Bot API client, poller, sender queue, enqueue hook
 
 ## Rules
 

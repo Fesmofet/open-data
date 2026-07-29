@@ -16,6 +16,7 @@ import {
   UserBellRecipientStrategy,
 } from './routing/recipient-strategies';
 import { NotificationSettingsService } from './settings/notification-settings.service';
+import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { NotificationSettingsService } from './settings/notification-settings.se
     RepositoriesModule,
     CurrencyModule.register({ kyselyToken: KYSELY, includeCollectService: false }),
     forwardRef(() => WsModule),
+    TelegramModule,
   ],
   providers: [
     NotificationFeedService,

@@ -4,6 +4,7 @@ import type { NotificationFeedService } from './notification-feed.service';
 import type { RecipientStrategyRegistry } from './routing/recipient-strategies';
 import type { NotificationSettingsService } from './settings/notification-settings.service';
 import type { SubscriptionService } from '../ws/subscription.service';
+import type { TelegramNotificationService } from '../telegram/telegram-notification.service';
 
 describe('NotificationRouterService', () => {
   const feedService = {
@@ -24,6 +25,10 @@ describe('NotificationRouterService', () => {
     notifyTrxProcessed: jest.fn(),
   } as unknown as SubscriptionService;
 
+  const telegramNotification = {
+    enqueue: jest.fn(),
+  } as unknown as TelegramNotificationService;
+
   let router: NotificationRouterService;
 
   beforeEach(() => {
@@ -33,6 +38,7 @@ describe('NotificationRouterService', () => {
       subscriptionService,
       recipientRegistry,
       settingsService,
+      telegramNotification,
     );
   });
 

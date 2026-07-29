@@ -7,6 +7,8 @@ module.exports = {
   moduleNameMapper: {
     ...(nxPreset.moduleNameMapper ?? {}),
     '^marked$': '<rootDir>/src/test-mocks/marked.ts',
+    '^@opden-data-layer/notifications-messages/testing$':
+      '<rootDir>/../../libs/notifications-messages/src/testing/index.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/apps/web',

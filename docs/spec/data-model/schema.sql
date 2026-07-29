@@ -245,6 +245,18 @@ CREATE TABLE user_notification_settings (
 );
 
 -- ---------------------------------------------------------------------------
+-- telegram_subscriptions (Telegram notifications channel)
+-- ---------------------------------------------------------------------------
+CREATE TABLE telegram_subscriptions (
+  chat_id    BIGINT NOT NULL,
+  account    TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+  created_at BIGINT NOT NULL,
+  PRIMARY KEY (chat_id, account)
+);
+
+CREATE INDEX telegram_subscriptions_account_idx ON telegram_subscriptions (account);
+
+-- ---------------------------------------------------------------------------
 -- user_referrals (ReferralsSchema)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_referrals (

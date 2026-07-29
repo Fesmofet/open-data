@@ -10,7 +10,7 @@ export function applyMessageParams(
 ): string {
   let out = template;
   for (const [key, value] of Object.entries(params)) {
-    out = out.replaceAll(`{${key}}`, value);
+    out = out.split(`{${key}}`).join(value);
   }
   return out;
 }
@@ -21,7 +21,9 @@ export function renderPlainText(
   options: RenderPlainTextOptions = {},
 ): string {
   const template =
-    dictionary[message.key] ?? dictionary.notification_generic_default_message ?? message.key;
+    dictionary[message.key] ??
+    dictionary['notification_generic_default_message'] ??
+    message.key;
   const body = applyMessageParams(template, message.params);
   if (!message.href) {
     return body;

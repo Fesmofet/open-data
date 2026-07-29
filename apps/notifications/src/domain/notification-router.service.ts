@@ -4,6 +4,7 @@ import { NotificationFeedService } from './notification-feed.service';
 import { RecipientStrategyRegistry } from './routing/recipient-strategies';
 import { NotificationSettingsService } from './settings/notification-settings.service';
 import { SubscriptionService } from '../ws/subscription.service';
+import { TelegramNotificationService } from '../telegram/telegram-notification.service';
 
 @Injectable()
 export class NotificationRouterService {
@@ -12,6 +13,7 @@ export class NotificationRouterService {
     private readonly subscriptionService: SubscriptionService,
     private readonly recipientRegistry: RecipientStrategyRegistry,
     private readonly settingsService: NotificationSettingsService,
+    private readonly telegramNotification: TelegramNotificationService,
   ) {}
 
   async route(event: AnyNotificationEvent): Promise<void> {
@@ -43,6 +45,7 @@ export class NotificationRouterService {
         continue;
       }
       await this.feedService.addToFeed(username, item);
+      await this.telegramNotification.enqueue(username, event, item.id);
     }
   }
 

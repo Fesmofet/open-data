@@ -29,5 +29,12 @@ export default () => {
       pingTimeoutMs: env.WS_PING_TIMEOUT_MS,
       maxConnectionsPerUser: env.WS_MAX_CONNECTIONS_PER_USER,
     },
+    telegram: {
+      botToken: env.TELEGRAM_BOT_TOKEN?.trim() || null,
+      botUsername: env.TELEGRAM_BOT_USERNAME,
+      webPublicOrigin: env.WEB_PUBLIC_ORIGIN,
+      pollTimeoutSec: env.TELEGRAM_POLL_TIMEOUT_SEC,
+      sendRatePerSec: env.TELEGRAM_SEND_RATE_PER_SEC,
+    },
   };
 };

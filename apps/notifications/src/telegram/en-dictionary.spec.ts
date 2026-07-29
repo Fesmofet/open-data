@@ -1,7 +1,7 @@
 import { NOTIFICATION_EVENT_TYPES } from '@opden-data-layer/notifications-contract';
 import { buildNotificationMessage } from '@opden-data-layer/notifications-messages';
 import { minimalNotificationEventPayload } from '@opden-data-layer/notifications-messages/testing';
-import * as enUS from '../../../../i18n/locales/en-US.json';
+import { EN_NOTIFICATION_DICTIONARY } from './en-dictionary';
 
 const baseEnvelope = {
   occurredAt: '2026-01-01T00:00:00.000Z',
@@ -11,25 +11,8 @@ const baseEnvelope = {
   actor: 'alice',
 };
 
-describe('Notifications UI i18n keys (en-US)', () => {
-  it('defines shell keys for bell and page', () => {
-    const keys = [
-      'notifications',
-      'notifications_empty_message',
-      'notification_following_username',
-      'notification_upvoted_username_post',
-      'notification_generic_default_message',
-      'see_all',
-    ] as const;
-
-    for (const key of keys) {
-      const value = enUS[key];
-      expect(typeof value).toBe('string');
-      expect((value as string).length).toBeGreaterThan(0);
-    }
-  });
-
-  it('defines en-US strings for every message-builder key', () => {
+describe('EN_NOTIFICATION_DICTIONARY', () => {
+  it('defines en strings for every message-builder key', () => {
     const keys = new Set<string>();
     for (const type of NOTIFICATION_EVENT_TYPES) {
       const message = buildNotificationMessage({
@@ -41,7 +24,7 @@ describe('Notifications UI i18n keys (en-US)', () => {
     }
 
     for (const key of keys) {
-      const value = enUS[key as keyof typeof enUS];
+      const value = EN_NOTIFICATION_DICTIONARY[key];
       expect(typeof value).toBe('string');
       expect((value as string).length).toBeGreaterThan(0);
     }

@@ -45,3 +45,4 @@ WebSocket URL: `ws://<host>:<PORT>/notifications` (default port `7200`).
 | Transport | [transport.md](spec/transport.md) |
 | Routing | [routing.md](spec/routing.md) |
 | Message builder | [message-builder.md](spec/message-builder.md) |
+| Telegram channel | [telegram-channel.md](spec/telegram-channel.md) |

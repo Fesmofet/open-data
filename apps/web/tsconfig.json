@@ -59,6 +59,9 @@
       ],
       "@opden-data-layer/notifications-messages": [
         "../../libs/notifications-messages/src/index.ts"
+      ],
+      "@opden-data-layer/notifications-messages/testing": [
+        "../../libs/notifications-messages/src/testing/index.ts"
       ]
     },
     "jsx": "preserve",

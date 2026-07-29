@@ -14,6 +14,11 @@ export const notificationsEnvSchema = z.object({
   WS_PING_INTERVAL_MS: z.coerce.number().optional().default(30_000),
   WS_PING_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
   WS_MAX_CONNECTIONS_PER_USER: z.coerce.number().int().min(1).optional().default(5),
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_BOT_USERNAME: z.string().optional().default('WaivioNotificationsBot'),
+  WEB_PUBLIC_ORIGIN: z.string().url().optional().default('http://localhost:3000'),
+  TELEGRAM_POLL_TIMEOUT_SEC: z.coerce.number().optional().default(30),
+  TELEGRAM_SEND_RATE_PER_SEC: z.coerce.number().optional().default(25),
 });
 
 export type NotificationsEnv = z.infer<typeof notificationsEnvSchema>;

@@ -37,7 +37,7 @@ Pure functions only — no Nest, React, or i18n runtime.
 ## Channels
 
 - **Web**: `format-notification.ts` calls `buildNotificationMessage`, then `NotificationMessageText` renders i18n templates with `paramHrefs` as accent `Link` segments.
-- **Telegram (future)**: `renderPlainText(message, dict, { baseUrl })` in the same lib.
+- **Telegram**: `renderPlainText(message, dict, { baseUrl })` in the same lib; copy in `apps/notifications/src/telegram/en-dictionary.ts` (en-US).
 
 ## Adding a type
 
