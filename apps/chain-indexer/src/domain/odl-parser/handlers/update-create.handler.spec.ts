@@ -3,6 +3,7 @@ import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
 import {
+  defaultNotificationEmitter,
   defaultUpdateCreateUserRefDeps,
   defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
@@ -76,6 +77,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(
@@ -115,6 +117,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     const ctx = { ...baseCtx, creator: 'owner' };
@@ -172,6 +175,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     const ctx = { ...baseCtx, creator: 'owner' };
@@ -214,6 +218,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     const ctx = { ...baseCtx, creator: 'owner' };
@@ -259,6 +264,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     const ctx = { ...baseCtx, creator: 'owner' };
@@ -302,6 +308,7 @@ describe('UpdateCreateHandler write guard', () => {
         runner,
         validityVotesDeps.validityVotesRepository,
         eventEmitter,
+      defaultNotificationEmitter(),
       );
 
       const ctx: OdlEventContext = {
@@ -369,6 +376,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(

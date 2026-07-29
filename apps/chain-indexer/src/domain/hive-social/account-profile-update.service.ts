@@ -3,6 +3,8 @@ import { AccountsCurrentRepository } from '../../repositories/accounts-current.r
 import { AccountSyncQueueRepository } from '../../repositories/account-sync-queue.repository';
 import type { AccountCurrentUpdate } from '@opden-data-layer/core';
 import { parseJsonObject, profileAliasAndImageFromHiveStrings } from './account-hive-metadata.util';
+import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 
 /**
  * Hive `account_update` → display fields on accounts_current only (no upsert).
@@ -15,13 +17,29 @@ export class AccountProfileUpdateService {
   constructor(
     private readonly accounts: AccountsCurrentRepository,
     private readonly accountSyncQueue: AccountSyncQueueRepository,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
-  async handleAccountUpdate(payload: Record<string, unknown>): Promise<void> {
+  async handleAccountUpdate(
+    payload: Record<string, unknown>,
+    ctx?: HiveOperationHandlerContext,
+  ): Promise<void> {
     const account =
       typeof payload['account'] === 'string' ? payload['account'].trim() : '';
     if (!account) {
       return;
+    }
+
+    if (payload['owner'] !== undefined && ctx) {
+      this.notificationEmitter.emitWithContext(
+        this.notificationEmitter.hiveContext(ctx),
+        {
+          type: 'change_password',
+          objectId: null,
+          actor: account,
+          payload: { account },
+        },
+      );
     }
 
     const jmRaw = payload['json_metadata'];

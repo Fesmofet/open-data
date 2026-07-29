@@ -2,10 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
-import {
-  BATCH_IMPORT_COMPLETED_NOTIFICATION_EVENT,
-  BatchImportCompletedNotificationPayload,
-} from '../notification-adapter/events/notification-domain-events';
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 import { IpfsClient } from '@opden-data-layer/clients';
 import { Readable, type Duplex } from 'node:stream';
 import { chain } from 'stream-chain';
@@ -41,6 +38,7 @@ export class BatchImportWorker {
     private readonly ipfsClient: IpfsClient,
     private readonly config: ConfigService,
     private readonly emitter: EventEmitter2,
+    private readonly notificationEmitter: NotificationEmitterService,
     private readonly objectCreateHandler: ObjectCreateHandler,
     private readonly updateCreateHandler: UpdateCreateHandler,
     private readonly updateVoteHandler: UpdateVoteHandler,
@@ -104,15 +102,14 @@ export class BatchImportWorker {
       return;
     }
 
-    this.emitter.emit(
-      BATCH_IMPORT_COMPLETED_NOTIFICATION_EVENT,
-      new BatchImportCompletedNotificationPayload(
-        ref,
-        ctx.creator,
-        ctx.blockNum,
-        ctx.transactionId,
-        new Date().toISOString(),
-      ),
+    this.notificationEmitter.emitWithContext(
+      this.notificationEmitter.odlContext(ctx),
+      {
+        type: 'batch_import_completed',
+        objectId: null,
+        actor: ctx.creator,
+        payload: { cid: ref },
+      },
     );
   }
 

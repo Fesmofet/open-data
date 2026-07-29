@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
 import { SocialGraphRepository } from '../../repositories/social-graph.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
@@ -10,12 +9,7 @@ import {
   parseFollowCustomJsonArray,
 } from './follow-json.parse';
 import { ReblogSocialService } from './reblog-social.service';
-import {
-  FOLLOW_NOTIFICATION_EVENT,
-  FollowNotificationPayload,
-  TRX_PROCESSED_NOTIFICATION_EVENT,
-  TrxProcessedNotificationPayload,
-} from '../notification-adapter/events/notification-domain-events';
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 
 @Injectable()
 export class FollowSocialService {
@@ -25,7 +19,7 @@ export class FollowSocialService {
     private readonly configService: ConfigService,
     private readonly socialGraph: SocialGraphRepository,
     private readonly reblogSocial: ReblogSocialService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
   private isFollowHandlerEnabled(): boolean {
@@ -169,27 +163,18 @@ export class FollowSocialService {
     action: 'follow' | 'unfollow',
     context: HiveOperationHandlerContext,
   ): void {
-    this.eventEmitter.emit(
-      FOLLOW_NOTIFICATION_EVENT,
-      new FollowNotificationPayload(
-        follower,
-        following,
-        action,
-        context.blockNum,
-        context.transaction.transaction_id,
-        context.timestamp,
-      ),
+    this.notificationEmitter.emitWithContext(
+      this.notificationEmitter.hiveContext(context),
+      {
+        type: 'follow',
+        objectId: null,
+        actor: follower,
+        payload: { following, action },
+      },
     );
   }
 
   private emitTrxProcessed(context: HiveOperationHandlerContext): void {
-    this.eventEmitter.emit(
-      TRX_PROCESSED_NOTIFICATION_EVENT,
-      new TrxProcessedNotificationPayload(
-        context.transaction.transaction_id,
-        context.blockNum,
-        context.timestamp,
-      ),
-    );
+    this.notificationEmitter.emitTrxProcessedHive(context);
   }
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import {
   countUnread,
+  clearLastSeen,
   getLastSeen,
   prependNotificationItem,
   setLastSeen,
@@ -26,16 +27,35 @@ export function useNotificationFeed(username: string): UseNotificationFeedResult
   const [isLoading, setIsLoading] = useState(true);
 
   const syncUnread = useCallback(
-    (nextItems: UserNotificationItem[]) => {
-      setUnreadCount(countUnread(nextItems, getLastSeen(username)));
+    (nextItems: UserNotificationItem[], lastReadTimestampMs?: number | null) => {
+      if (
+        lastReadTimestampMs !== undefined &&
+        lastReadTimestampMs !== null &&
+        Number.isFinite(lastReadTimestampMs)
+      ) {
+        if (lastReadTimestampMs === 0) {
+          clearLastSeen(username);
+        } else {
+          setLastSeen(username, new Date(lastReadTimestampMs).toISOString());
+        }
+      }
+      setUnreadCount(
+        countUnread(nextItems, getLastSeen(username), lastReadTimestampMs),
+      );
     },
     [username],
   );
 
   const markRead = useCallback(() => {
-    const now = new Date().toISOString();
-    setLastSeen(username, now);
-    setUnreadCount(0);
+    const client = getNotificationsWsClient();
+    void client?.markRead().then((serverTs) => {
+      const iso =
+        serverTs !== null && Number.isFinite(serverTs)
+          ? new Date(serverTs).toISOString()
+          : new Date().toISOString();
+      setLastSeen(username, iso);
+      setUnreadCount(0);
+    });
   }, [username]);
 
   useEffect(() => {
@@ -51,31 +71,55 @@ export function useNotificationFeed(username: string): UseNotificationFeedResult
         }
         return;
       }
-      const fetched = await client.getNotifications();
+      const snapshot = await client.getNotifications();
       if (cancelled) {
         return;
       }
-      setItems(fetched);
-      syncUnread(fetched);
+      setItems(snapshot.items);
+      syncUnread(snapshot.items, snapshot.lastReadTimestamp);
       setIsLoading(false);
     }
 
     void loadInitial();
 
-    const unsubscribe = client?.addNotificationListener((item) => {
+    const unsubscribeNotify = client?.addNotificationListener((item) => {
       setItems((prev) => {
         const next = prependNotificationItem(prev, item);
         if (next === prev) {
           return prev;
         }
-        setUnreadCount((c) => c + 1);
+        const unreadDelta = countUnread([item], getLastSeen(username));
+        if (unreadDelta > 0) {
+          setUnreadCount((c) => c + 1);
+        }
         return next;
       });
     });
 
+    const unsubscribeReconnect = client?.addReconnectListener(() => {
+      void (async () => {
+        if (cancelled || !client) {
+          return;
+        }
+        const snapshot = await client.getNotifications();
+        if (cancelled) {
+          return;
+        }
+        setItems((prev) => {
+          let merged = prev;
+          for (const item of snapshot.items) {
+            merged = prependNotificationItem(merged, item);
+          }
+          return merged;
+        });
+        syncUnread(snapshot.items, snapshot.lastReadTimestamp);
+      })();
+    });
+
     return () => {
       cancelled = true;
-      unsubscribe?.();
+      unsubscribeNotify?.();
+      unsubscribeReconnect?.();
     };
   }, [username, syncUnread]);
 

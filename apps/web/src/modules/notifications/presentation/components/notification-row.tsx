@@ -1,14 +1,16 @@
 'use client';
 
+import Link from 'next/link';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { UserAvatar } from '@/shared/presentation';
 import { formatRelativeFeedTime } from '@/shared/utils/format-relative-time';
 
 import {
-  applyNotificationParams,
   formatNotification,
   notificationIconType,
 } from '../../domain/format-notification';
 import type { UserNotificationItem } from '../../infrastructure/notifications-ws-client';
+import { NotificationMessageText } from './notification-message-text';
 
 function BellIcon({ className }: { className?: string }) {
   return (
@@ -84,6 +86,8 @@ function NotificationTypeIcon({ item }: { item: UserNotificationItem }) {
   return <BellIcon className={className} />;
 }
 
+const AVATAR_SIZE = 36;
+
 export type NotificationRowProps = {
   item: UserNotificationItem;
 };
@@ -91,16 +95,47 @@ export type NotificationRowProps = {
 export function NotificationRow({ item }: NotificationRowProps) {
   const { t, locale } = useI18n();
   const formatted = formatNotification(item);
-  const message = applyNotificationParams(t(formatted.key), formatted.params);
+  const template = t(formatted.key);
   const timeLabel = formatRelativeFeedTime(item.occurredAt, locale);
+  const actor = formatted.actor?.trim();
+  const hasInlineLinks = Object.values(formatted.paramHrefs ?? {}).some(
+    (href) => href.trim().length > 0,
+  );
+  const rowClassName = `flex gap-3 px-3 py-2.5 ${
+    !hasInlineLinks && formatted.href ? 'hover:bg-bg-muted' : ''
+  }`;
 
-  return (
-    <div className="flex gap-3 px-3 py-2.5">
-      <NotificationTypeIcon item={item} />
+  const content = (
+    <>
+      {actor ? (
+        <UserAvatar username={actor} size={AVATAR_SIZE} displayName={actor} />
+      ) : (
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center">
+          <NotificationTypeIcon item={item} />
+        </span>
+      )}
       <div className="min-w-0 flex-1">
-        <p className="text-body-sm text-fg leading-body">{message}</p>
+        <NotificationMessageText
+          template={template}
+          params={formatted.params}
+          paramHrefs={formatted.paramHrefs}
+        />
         <p className="mt-0.5 text-nano text-fg-muted">{timeLabel}</p>
       </div>
-    </div>
+    </>
   );
+
+  if (!hasInlineLinks && formatted.href) {
+    return (
+      <Link
+        href={formatted.href}
+        className={rowClassName}
+        suppressHydrationWarning
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={rowClassName}>{content}</div>;
 }

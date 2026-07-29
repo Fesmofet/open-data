@@ -1,3 +1,4 @@
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 import { Test } from '@nestjs/testing';
 import { UserDelegationsRepository } from '../../repositories/user-delegations.repository';
 import { HiveHpDelegationService } from './hive-hp-delegation.service';
@@ -18,6 +19,13 @@ describe('HiveHpDelegationService', () => {
       providers: [
         HiveHpDelegationService,
         { provide: UserDelegationsRepository, useValue: repo },
+        {
+          provide: NotificationEmitterService,
+          useValue: {
+            emitWithContext: jest.fn(),
+            hiveContext: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

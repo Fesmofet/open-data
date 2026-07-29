@@ -2,7 +2,11 @@
 
 import { NOTIFICATIONS_WS_URL } from '@/config/client-env';
 
-import { GET_NOTIFICATIONS_TIMEOUT_MS } from '../constants';
+import {
+  GET_NOTIFICATIONS_TIMEOUT_MS,
+  WS_RECONNECT_INITIAL_MS,
+  WS_RECONNECT_MAX_MS,
+} from '../constants';
 
 type WsEnvelope = {
   event?: string;
@@ -17,7 +21,12 @@ type PendingTrx = {
 
 type PendingGetNotifications = {
   correlationId: string;
-  resolve: (items: UserNotificationItem[]) => void;
+  resolve: (snapshot: NotificationFeedSnapshot) => void;
+};
+
+type PendingMarkRead = {
+  correlationId: string;
+  resolve: (lastReadTimestamp: number | null) => void;
 };
 
 function sleep(ms: number): Promise<void> {
@@ -35,12 +44,19 @@ export interface UserNotificationItem {
   payload: Record<string, unknown>;
 }
 
+export type NotificationFeedSnapshot = {
+  items: UserNotificationItem[];
+  lastReadTimestamp: number | null;
+};
+
 export interface NotificationsWsClient {
   subscribeTrx(trxId: string): Promise<void>;
-  getNotifications(): Promise<UserNotificationItem[]>;
+  getNotifications(): Promise<NotificationFeedSnapshot>;
+  markRead(): Promise<number | null>;
   addNotificationListener(
     handler: (item: UserNotificationItem) => void,
   ): () => void;
+  addReconnectListener(handler: () => void): () => void;
   close(): void;
 }
 
@@ -86,19 +102,67 @@ function parseNotificationItems(raw: unknown): UserNotificationItem[] {
   return items;
 }
 
-class NotificationsWsClientImpl implements NotificationsWsClient {
+function reconnectDelayMs(attempt: number): number {
+  const base = Math.min(
+    WS_RECONNECT_MAX_MS,
+    WS_RECONNECT_INITIAL_MS * 2 ** attempt,
+  );
+  const jitter = Math.floor(Math.random() * 250);
+  return base + jitter;
+}
+
+export class NotificationsWsClientImpl implements NotificationsWsClient {
   private ws: WebSocket | null = null;
   private connectPromise: Promise<void> | null = null;
+  private intentionalClose = false;
+  private reconnectAttempt = 0;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private hadSuccessfulConnection = false;
   private readonly pendingByCorrelation = new Map<string, PendingTrx>();
   private readonly pendingGetNotifications = new Map<
     string,
     PendingGetNotifications
   >();
+  private readonly pendingMarkRead = new Map<string, PendingMarkRead>();
   private readonly notificationListeners = new Set<
     (item: UserNotificationItem) => void
   >();
+  private readonly reconnectListeners = new Set<() => void>();
+  private readonly boundOnVisibilityChange: () => void;
+  private readonly boundOnOnline: () => void;
 
-  constructor(private readonly baseUrl: string) {}
+  constructor(private readonly baseUrl: string) {
+    this.boundOnVisibilityChange = () => {
+      if (typeof document === 'undefined') {
+        return;
+      }
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+      if (this.intentionalClose) {
+        return;
+      }
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        return;
+      }
+      void this.ensureConnected().catch(() => undefined);
+    };
+    this.boundOnOnline = () => {
+      if (this.intentionalClose) {
+        return;
+      }
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        return;
+      }
+      void this.ensureConnected().catch(() => undefined);
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.boundOnVisibilityChange);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', this.boundOnOnline);
+    }
+  }
 
   async subscribeTrx(trxId: string): Promise<void> {
     const normalized = trxId.trim();
@@ -135,31 +199,31 @@ class NotificationsWsClientImpl implements NotificationsWsClient {
     });
   }
 
-  async getNotifications(): Promise<UserNotificationItem[]> {
+  async getNotifications(): Promise<NotificationFeedSnapshot> {
     try {
       await this.ensureConnected();
     } catch {
-      return [];
+      return { items: [], lastReadTimestamp: null };
     }
 
     const ws = this.ws;
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      return [];
+      return { items: [], lastReadTimestamp: null };
     }
 
     const correlationId = crypto.randomUUID();
 
-    return new Promise<UserNotificationItem[]>((resolve) => {
+    return new Promise<NotificationFeedSnapshot>((resolve) => {
       const timeout = setTimeout(() => {
         this.pendingGetNotifications.delete(correlationId);
-        resolve([]);
+        resolve({ items: [], lastReadTimestamp: null });
       }, GET_NOTIFICATIONS_TIMEOUT_MS);
 
       this.pendingGetNotifications.set(correlationId, {
         correlationId,
-        resolve: (items) => {
+        resolve: (snapshot) => {
           clearTimeout(timeout);
-          resolve(items);
+          resolve(snapshot);
         },
       });
 
@@ -172,28 +236,126 @@ class NotificationsWsClientImpl implements NotificationsWsClient {
     });
   }
 
+  async markRead(): Promise<number | null> {
+    try {
+      await this.ensureConnected();
+    } catch {
+      return null;
+    }
+    const ws = this.ws;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      return null;
+    }
+    const correlationId = crypto.randomUUID();
+    return new Promise<number | null>((resolve) => {
+      const timeout = setTimeout(() => {
+        this.pendingMarkRead.delete(correlationId);
+        resolve(null);
+      }, GET_NOTIFICATIONS_TIMEOUT_MS);
+      this.pendingMarkRead.set(correlationId, {
+        correlationId,
+        resolve: (ts) => {
+          clearTimeout(timeout);
+          resolve(ts);
+        },
+      });
+      ws.send(
+        JSON.stringify({
+          event: 'mark_read',
+          data: { correlationId },
+        }),
+      );
+    });
+  }
+
   addNotificationListener(
     handler: (item: UserNotificationItem) => void,
   ): () => void {
     this.notificationListeners.add(handler);
+    void this.ensureConnected().catch(() => undefined);
     return () => {
       this.notificationListeners.delete(handler);
     };
   }
 
+  addReconnectListener(handler: () => void): () => void {
+    this.reconnectListeners.add(handler);
+    return () => {
+      this.reconnectListeners.delete(handler);
+    };
+  }
+
   close(): void {
+    this.intentionalClose = true;
+    this.clearReconnectTimer();
+    if (typeof document !== 'undefined') {
+      document.removeEventListener(
+        'visibilitychange',
+        this.boundOnVisibilityChange,
+      );
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', this.boundOnOnline);
+    }
     this.ws?.close();
     this.ws = null;
     this.connectPromise = null;
-    for (const pending of this.pendingByCorrelation.values()) {
-      pending.resolve();
-    }
+    this.rejectPendingRpcOnDisconnect();
     this.pendingByCorrelation.clear();
+    this.notificationListeners.clear();
+    this.reconnectListeners.clear();
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
+  private rejectPendingRpcOnDisconnect(): void {
     for (const pending of this.pendingGetNotifications.values()) {
-      pending.resolve([]);
+      pending.resolve({ items: [], lastReadTimestamp: null });
     }
     this.pendingGetNotifications.clear();
-    this.notificationListeners.clear();
+    for (const pending of this.pendingMarkRead.values()) {
+      pending.resolve(null);
+    }
+    this.pendingMarkRead.clear();
+  }
+
+  private scheduleReconnect(): void {
+    if (this.intentionalClose) {
+      return;
+    }
+    if (this.reconnectTimer !== null) {
+      return;
+    }
+    const delay = reconnectDelayMs(this.reconnectAttempt);
+    this.reconnectAttempt += 1;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      void this.ensureConnected()
+        .catch(() => {
+          this.scheduleReconnect();
+        });
+    }, delay);
+  }
+
+  private notifyReconnectListeners(): void {
+    for (const listener of this.reconnectListeners) {
+      listener();
+    }
+  }
+
+  private handleSocketClose(): void {
+    this.ws = null;
+    this.connectPromise = null;
+    this.pendingByCorrelation.clear();
+    this.rejectPendingRpcOnDisconnect();
+    if (!this.intentionalClose) {
+      this.scheduleReconnect();
+    }
   }
 
   private async ensureConnected(): Promise<void> {
@@ -230,17 +392,19 @@ class NotificationsWsClientImpl implements NotificationsWsClient {
       const ws = new WebSocket(url.toString());
       this.ws = ws;
 
-      ws.onopen = () => resolve();
+      ws.onopen = () => {
+        const isReconnect = this.hadSuccessfulConnection;
+        this.hadSuccessfulConnection = true;
+        this.reconnectAttempt = 0;
+        this.clearReconnectTimer();
+        resolve();
+        if (isReconnect) {
+          this.notifyReconnectListeners();
+        }
+      };
       ws.onerror = () => reject(new Error('ws_connect_failed'));
       ws.onclose = () => {
-        for (const pending of this.pendingByCorrelation.values()) {
-          pending.resolve();
-        }
-        this.pendingByCorrelation.clear();
-        for (const pending of this.pendingGetNotifications.values()) {
-          pending.resolve([]);
-        }
-        this.pendingGetNotifications.clear();
+        this.handleSocketClose();
       };
       ws.onmessage = (ev) => {
         this.handleMessage(ev.data);
@@ -269,6 +433,11 @@ class NotificationsWsClientImpl implements NotificationsWsClient {
 
     if (envelope.event === 'get_notifications') {
       this.handleGetNotificationsResponse(envelope.data);
+      return;
+    }
+
+    if (envelope.event === 'mark_read') {
+      this.handleMarkReadResponse(envelope.data);
       return;
     }
 
@@ -310,16 +479,55 @@ class NotificationsWsClientImpl implements NotificationsWsClient {
     this.pendingGetNotifications.delete(correlationId);
     const status = typeof data.status === 'string' ? data.status : '';
     if (status !== 'ok') {
-      pending.resolve([]);
+      pending.resolve({ items: [], lastReadTimestamp: null });
       return;
     }
-    pending.resolve(parseNotificationItems(data.items));
+    const lastReadTimestamp =
+      typeof data.lastReadTimestamp === 'number' &&
+      Number.isFinite(data.lastReadTimestamp)
+        ? data.lastReadTimestamp
+        : null;
+    pending.resolve({
+      items: parseNotificationItems(data.items),
+      lastReadTimestamp,
+    });
+  }
+
+  private handleMarkReadResponse(data: Record<string, unknown>): void {
+    const correlationId =
+      typeof data.correlationId === 'string' ? data.correlationId.trim() : '';
+    if (!correlationId) {
+      return;
+    }
+    const pending = this.pendingMarkRead.get(correlationId);
+    if (!pending) {
+      return;
+    }
+    this.pendingMarkRead.delete(correlationId);
+    const status = typeof data.status === 'string' ? data.status : '';
+    if (status !== 'ok') {
+      pending.resolve(null);
+      return;
+    }
+    const lastReadTimestamp =
+      typeof data.lastReadTimestamp === 'number' &&
+      Number.isFinite(data.lastReadTimestamp)
+        ? data.lastReadTimestamp
+        : null;
+    pending.resolve(lastReadTimestamp);
   }
 }
 
 let runtimeWsUrl: string | undefined;
 let singleton: NotificationsWsClient | null | undefined;
 let singletonForUrl: string | undefined;
+
+/** For unit tests — bypasses singleton. */
+export function createNotificationsWsClient(
+  baseUrl: string,
+): NotificationsWsClient {
+  return new NotificationsWsClientImpl(baseUrl);
+}
 
 /** Called from `NotificationsWsConfigProvider` (server passes runtime compose URL). */
 export function configureNotificationsWsUrl(url: string): void {

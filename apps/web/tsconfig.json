@@ -53,6 +53,12 @@
       ],
       "@opden-data-layer/hive-broadcast": [
         "../../libs/hive-broadcast/src/index.ts"
+      ],
+      "@opden-data-layer/notifications-contract": [
+        "../../libs/notifications-contract/src/index.ts"
+      ],
+      "@opden-data-layer/notifications-messages": [
+        "../../libs/notifications-messages/src/index.ts"
       ]
     },
     "jsx": "preserve",

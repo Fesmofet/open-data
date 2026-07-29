@@ -6,6 +6,8 @@ export const redisKey = {
   hiveBlockNumber: () => buildRedisKey(APP, 'cache', 'hive', 'block-number'),
   governanceSnapshot: (objectId: string) =>
     buildRedisKey(APP, 'cache', 'governance', 'snapshot', objectId),
+  objectName: (objectId: string) =>
+    buildRedisKey(APP, 'cache', 'object-name', objectId),
   accountPostingJson: (accountName: string) =>
     buildRedisKey(APP, 'cache', 'posting_json_metadata', accountName),
   waivRewardPool: () => buildRedisKey(APP, 'cache', 'waiv-reward-pool'),

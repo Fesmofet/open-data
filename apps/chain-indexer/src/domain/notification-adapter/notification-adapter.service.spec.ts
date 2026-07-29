@@ -1,34 +1,31 @@
 import { NotificationAdapterService } from './notification-adapter.service';
-import {
-  BatchImportCompletedNotificationPayload,
-  FollowNotificationPayload,
-  ObjectCreatedNotificationPayload,
-  TrxProcessedNotificationPayload,
-  VoteCastNotificationPayload,
-} from './events/notification-domain-events';
+import type { ObjectNameResolverService } from './object-name-resolver.service';
 import { InMemoryNotificationPublisher } from './publishers/in-memory.publisher';
 
 describe('NotificationAdapterService', () => {
   let publisher: InMemoryNotificationPublisher;
+  let objectNameResolver: { resolve: jest.Mock };
   let service: NotificationAdapterService;
 
   beforeEach(() => {
     publisher = new InMemoryNotificationPublisher();
-    service = new NotificationAdapterService(publisher);
+    objectNameResolver = { resolve: jest.fn() };
+    service = new NotificationAdapterService(
+      publisher,
+      objectNameResolver as unknown as ObjectNameResolverService,
+    );
   });
 
-  it('maps vote cast domain event to contract shape', async () => {
-    await service.onVoteCast(
-      new VoteCastNotificationPayload(
-        'obj-1',
-        'upd-1',
-        'voter',
-        'for',
-        100,
-        'trx-1',
-        '2026-01-01T00:00:00.000Z',
-      ),
-    );
+  it('publishes contract events unchanged', async () => {
+    await service.onNotification({
+      type: 'update_vote_cast',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 100,
+      trxId: 'trx-1',
+      objectId: 'obj-1',
+      actor: 'voter',
+      payload: { updateId: 'upd-1', vote: 'for' },
+    });
 
     expect(publisher.published).toHaveLength(1);
     expect(publisher.published[0]).toEqual({
@@ -40,74 +37,57 @@ describe('NotificationAdapterService', () => {
       actor: 'voter',
       payload: { updateId: 'upd-1', vote: 'for' },
     });
+    expect(objectNameResolver.resolve).not.toHaveBeenCalled();
   });
 
-  it('maps follow domain event to contract shape', async () => {
-    await service.onFollow(
-      new FollowNotificationPayload(
-        'alice',
-        'bob',
-        'follow',
-        1,
-        'trx-f',
-        '2026-01-01T00:00:00.000Z',
-      ),
-    );
+  it('enriches object_update when objectName is null', async () => {
+    objectNameResolver.resolve.mockResolvedValue('Borkor Restaurant');
 
+    await service.onNotification({
+      type: 'object_update',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 100,
+      trxId: 'trx-1',
+      objectId: 'rcl-borkor',
+      actor: 'alice',
+      payload: {
+        updateId: 'upd-1',
+        updateType: 'description',
+        objectName: null,
+        authorPermlink: 'rcl-borkor',
+      },
+    });
+
+    expect(objectNameResolver.resolve).toHaveBeenCalledWith('rcl-borkor');
+    expect(publisher.published).toHaveLength(1);
     expect(publisher.published[0]).toMatchObject({
-      type: 'follow',
-      actor: 'alice',
-      payload: { following: 'bob', action: 'follow' },
+      type: 'object_update',
+      payload: {
+        objectName: 'Borkor Restaurant',
+        authorPermlink: 'rcl-borkor',
+      },
     });
   });
 
-  it('maps object created and trx processed events', async () => {
-    await service.onObjectCreated(
-      new ObjectCreatedNotificationPayload(
-        'obj',
-        'upd',
-        'name',
-        'creator',
-        2,
-        'trx-o',
-        '2026-01-01T00:00:00.000Z',
-      ),
-    );
-    await service.onTrxProcessed(
-      new TrxProcessedNotificationPayload('trx-o', 2, '2026-01-01T00:00:00.000Z'),
-    );
-
-    expect(publisher.published[0].type).toBe('object_created');
-    expect(publisher.published[1]).toEqual({
-      type: 'trx_processed',
+  it('publishes object_update unchanged when resolver returns null', async () => {
+    objectNameResolver.resolve.mockResolvedValue(null);
+    const event = {
+      type: 'object_update' as const,
       occurredAt: '2026-01-01T00:00:00.000Z',
-      blockNum: 2,
-      trxId: 'trx-o',
-      objectId: null,
-      actor: null,
-      payload: {},
-    });
-  });
-
-  it('maps batch import completed domain event to contract shape', async () => {
-    await service.onBatchImportCompleted(
-      new BatchImportCompletedNotificationPayload(
-        'bafyCid',
-        'alice',
-        3,
-        'trx-b',
-        '2026-01-01T00:00:00.000Z',
-      ),
-    );
-
-    expect(publisher.published[0]).toEqual({
-      type: 'batch_import_completed',
-      occurredAt: '2026-01-01T00:00:00.000Z',
-      blockNum: 3,
-      trxId: 'trx-b',
-      objectId: null,
+      blockNum: 100,
+      trxId: 'trx-1',
+      objectId: 'rcl-borkor',
       actor: 'alice',
-      payload: { cid: 'bafyCid' },
-    });
+      payload: {
+        updateId: 'upd-1',
+        updateType: 'description',
+        objectName: null,
+        authorPermlink: 'rcl-borkor',
+      },
+    };
+
+    await service.onNotification(event);
+
+    expect(publisher.published[0]).toEqual(event);
   });
 });

@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { RedisClientFactory } from '@opden-data-layer/clients';
-import type { NotificationEvent } from '@opden-data-layer/notifications-contract';
+import { notificationEventSchema } from '@opden-data-layer/notifications-contract';
 import {
   NOTIFICATION_CONSUMER_GROUP,
   NOTIFICATION_STREAM_DATA_FIELD,
@@ -86,9 +86,9 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
       return;
     }
 
-    let event: NotificationEvent;
+    let parsed: ReturnType<typeof notificationEventSchema.safeParse>;
     try {
-      event = JSON.parse(raw) as NotificationEvent;
+      parsed = notificationEventSchema.safeParse(JSON.parse(raw));
     } catch {
       this.logger.warn(`Stream entry ${entryId} has invalid JSON`);
       await redis.xAck(
@@ -99,8 +99,18 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
       return;
     }
 
+    if (!parsed.success) {
+      this.logger.warn(`Stream entry ${entryId} failed schema validation`);
+      await redis.xAck(
+        NOTIFICATION_STREAM_KEY,
+        NOTIFICATION_CONSUMER_GROUP,
+        entryId,
+      );
+      return;
+    }
+
     try {
-      await this.router.route(event);
+      await this.router.route(parsed.data);
       await redis.xAck(
         NOTIFICATION_STREAM_KEY,
         NOTIFICATION_CONSUMER_GROUP,

@@ -32,6 +32,7 @@ jest.mock('@opden-data-layer/core', () => {
 
 import { UpdateCreateHandler } from './update-create.handler';
 import { mockObjectsCore, defaultUpdateCreateValidityVotesDeps } from './update-create.handler.spec-helpers';
+import { defaultNotificationEmitter } from './update-create.handler.spec-helpers';
 
 describe('UpdateCreateHandler user_ref', () => {
   const baseCtx: OdlEventContext = {
@@ -94,6 +95,7 @@ describe('UpdateCreateHandler user_ref', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(
@@ -147,6 +149,7 @@ describe('UpdateCreateHandler user_ref', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(
@@ -211,6 +214,7 @@ describe('UpdateCreateHandler user_ref', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(

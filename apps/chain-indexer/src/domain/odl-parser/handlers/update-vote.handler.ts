@@ -34,12 +34,7 @@ import {
   TagCategoryItemMutatedEvent,
   TAG_CATEGORY_ITEM_MUTATED_EVENT,
 } from '../tag-category-item-mutated.event';
-import {
-  TRX_PROCESSED_NOTIFICATION_EVENT,
-  TrxProcessedNotificationPayload,
-  VOTE_CAST_NOTIFICATION_EVENT,
-  VoteCastNotificationPayload,
-} from '../../notification-adapter/events/notification-domain-events';
+import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 
 @Injectable()
 export class UpdateVoteHandler implements OdlActionHandler {
@@ -52,6 +47,7 @@ export class UpdateVoteHandler implements OdlActionHandler {
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly writeGuardRunner: WriteGuardRunner,
     private readonly eventEmitter: EventEmitter2,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -202,29 +198,38 @@ export class UpdateVoteHandler implements OdlActionHandler {
       USER_OBJECT_POWERS_CREATE_EVENT,
       new UserObjectPowersCreateEvent(ctx.creator),
     );
-    this.eventEmitter.emit(
-      VOTE_CAST_NOTIFICATION_EVENT,
-      new VoteCastNotificationPayload(
-        object_id,
-        update_id,
-        voter,
-        vote,
-        ctx.blockNum,
-        ctx.transactionId,
-        ctx.timestamp,
-      ),
-    );
+    const isRejectVote = vote === 'against';
+    if (isRejectVote) {
+      this.notificationEmitter.emitWithContext(
+        this.notificationEmitter.odlContext(ctx),
+        {
+          type: 'object_update_reject',
+          objectId: object_id,
+          actor: voter,
+          payload: {
+            updateId: update_id,
+            updateType: votedUpdate.update_type,
+            objectName: null,
+            authorPermlink: object_id,
+            voter,
+          },
+        },
+      );
+    } else {
+      this.notificationEmitter.emitWithContext(
+        this.notificationEmitter.odlContext(ctx),
+        {
+          type: 'update_vote_cast',
+          objectId: object_id,
+          actor: voter,
+          payload: { updateId: update_id, vote },
+        },
+      );
+    }
     this.emitTrxProcessed(ctx);
   }
 
   private emitTrxProcessed(ctx: OdlEventContext): void {
-    this.eventEmitter.emit(
-      TRX_PROCESSED_NOTIFICATION_EVENT,
-      new TrxProcessedNotificationPayload(
-        ctx.transactionId,
-        ctx.blockNum,
-        ctx.timestamp,
-      ),
-    );
+    this.notificationEmitter.emitTrxProcessedOdl(ctx);
   }
 }

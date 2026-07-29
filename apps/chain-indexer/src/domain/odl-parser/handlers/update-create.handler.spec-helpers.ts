@@ -6,6 +6,8 @@ import type {
   ValidityVotesRepository,
 } from '../../../repositories';
 
+import type { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
+
 /** Minimal `objects_core` row for UpdateCreateHandler unit tests. */
 export function mockObjectsCore(
   row: Omit<ObjectsCore, 'created_at'>,
@@ -41,4 +43,20 @@ export function defaultUpdateCreateValidityVotesDeps(): {
       createIfAbsent: jest.fn().mockResolvedValue(undefined),
     } as unknown as ValidityVotesRepository,
   };
+}
+
+export function defaultNotificationEmitter(): NotificationEmitterService {
+  return {
+    emitWithContext: jest.fn(),
+    emitTrxProcessedOdl: jest.fn(),
+    odlContext: jest.fn().mockReturnValue({
+      blockNum: 1,
+      trxId: 'tx1',
+      occurredAt: new Date().toISOString(),
+    }),
+    emit: jest.fn(),
+    hiveContext: jest.fn(),
+    emitTrxProcessedHive: jest.fn(),
+    emitTrxProcessed: jest.fn(),
+  } as unknown as NotificationEmitterService;
 }

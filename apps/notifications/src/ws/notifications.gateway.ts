@@ -10,6 +10,7 @@ import {
 } from '@nestjs/websockets';
 import WebSocket from 'ws';
 import { NotificationFeedService } from '../domain/notification-feed.service';
+import { NotificationReadCursorRepository } from '../repositories/notification-read-cursor.repository';
 import { ConnectionRegistryService } from './connection-registry.service';
 import { SubscriptionService } from './subscription.service';
 import { wsSendJson } from './ws-message';
@@ -56,6 +57,7 @@ export class NotificationsGateway
     private readonly registry: ConnectionRegistryService,
     private readonly subscriptions: SubscriptionService,
     private readonly notificationFeed: NotificationFeedService,
+    private readonly readCursorRepository: NotificationReadCursorRepository,
   ) {}
 
   handleConnection(client: WebSocket, request: IncomingMessage): void {
@@ -165,10 +167,42 @@ export class NotificationsGateway
       return;
     }
     const items = await this.notificationFeed.getFeed(meta.userId);
+    const lastReadTimestamp =
+      await this.readCursorRepository.getLastReadTimestamp(meta.userId);
     wsSendJson(client, 'get_notifications', {
       correlationId,
       status: 'ok' as const,
       items,
+      lastReadTimestamp,
+    });
+  }
+
+  @SubscribeMessage('mark_read')
+  async handleMarkRead(
+    @ConnectedSocket() client: WebSocket,
+    @MessageBody() raw: unknown,
+  ): Promise<void> {
+    const correlationId =
+      raw !== null &&
+      typeof raw === 'object' &&
+      typeof (raw as Record<string, unknown>).correlationId === 'string'
+        ? String((raw as Record<string, unknown>).correlationId).trim()
+        : '';
+    const meta = this.registry.getMeta(client);
+    if (!meta) {
+      wsSendJson(client, 'mark_read', {
+        correlationId,
+        status: 'error' as const,
+        reason: 'not_authenticated',
+      });
+      return;
+    }
+    const now = Date.now();
+    await this.readCursorRepository.setLastReadTimestamp(meta.userId, now);
+    wsSendJson(client, 'mark_read', {
+      correlationId,
+      status: 'ok' as const,
+      lastReadTimestamp: now,
     });
   }
 }

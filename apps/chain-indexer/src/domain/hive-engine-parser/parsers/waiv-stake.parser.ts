@@ -6,6 +6,7 @@ import type {
   HiveEngineTokensLogs,
   HiveEngineTransaction,
 } from '@opden-data-layer/clients';
+import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 import {
   USER_OBJECT_POWERS_UPDATE_EVENT,
   UserObjectPowersUpdateEvent,
@@ -38,16 +39,27 @@ const ACTION_LOG_EVENTS: Record<string, readonly string[]> = {
  */
 @Injectable()
 export class WaivStakeParser implements HiveEngineSubParser {
-  constructor(private readonly eventEmitter: EventEmitter2) {}
+  private currentBlock: HiveEngineBlock | null = null;
+
+  constructor(
+    private readonly eventEmitter: EventEmitter2,
+    private readonly notificationEmitter: NotificationEmitterService,
+  ) {}
 
   async parseBlock(block: HiveEngineBlock): Promise<void> {
+    this.currentBlock = block;
     const txs = [...block.transactions, ...(block.virtualTransactions ?? [])];
     for (const tx of txs) {
       this.processTransaction(tx);
     }
+    this.currentBlock = null;
   }
 
   private processTransaction(tx: HiveEngineTransaction): void {
+    if (tx.contract === TOKENS_CONTRACT && tx.action === 'transfer') {
+      this.processTransfer(tx);
+      return;
+    }
     if (tx.contract !== TOKENS_CONTRACT || !TRACKED_ACTIONS.has(tx.action)) {
       return;
     }
@@ -77,7 +89,17 @@ export class WaivStakeParser implements HiveEngineSubParser {
     }
 
     switch (ev.event) {
-      case 'stake': {
+      case 'unstake': {
+        const account = String(ev.data.account ?? '').trim();
+        this.emitDelta(account, -quantity);
+        this.emitEngineNotification('engine_unstake', account, {
+          account,
+          amount: String(quantity),
+          symbol: WAIV_SYMBOL,
+        });
+        break;
+      }
+      case 'undelegateDone': {
         const account = String(ev.data.account ?? '').trim();
         this.emitDelta(account, quantity);
         break;
@@ -87,21 +109,34 @@ export class WaivStakeParser implements HiveEngineSubParser {
         const from = tx.sender.trim();
         this.emitDelta(from, -quantity);
         this.emitDelta(to, quantity);
+        this.emitEngineNotification('engine_delegate', from, {
+          from,
+          to,
+          amount: String(quantity),
+          symbol: WAIV_SYMBOL,
+        });
         break;
       }
       case 'undelegateStart': {
         const from = String(ev.data.from ?? '').trim();
         this.emitDelta(from, -quantity);
+        this.emitEngineNotification('engine_undelegate', from, {
+          from,
+          to: String(ev.data.to ?? '').trim(),
+          amount: String(quantity),
+          symbol: WAIV_SYMBOL,
+        });
         break;
       }
-      case 'unstake': {
-        const account = String(ev.data.account ?? '').trim();
-        this.emitDelta(account, -quantity);
-        break;
-      }
-      case 'undelegateDone': {
+      case 'stake': {
         const account = String(ev.data.account ?? '').trim();
         this.emitDelta(account, quantity);
+        this.emitEngineNotification('engine_stake', account, {
+          from: tx.sender.trim(),
+          to: account,
+          amount: String(quantity),
+          symbol: WAIV_SYMBOL,
+        });
         break;
       }
       default:
@@ -127,5 +162,52 @@ export class WaivStakeParser implements HiveEngineSubParser {
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent(trimmed, delta),
     );
+  }
+
+  private processTransfer(tx: HiveEngineTransaction): void {
+    const payload =
+      typeof tx.payload === 'string'
+        ? (JSON.parse(tx.payload) as Record<string, unknown>)
+        : (tx.payload as Record<string, unknown>);
+    const symbol = String(payload.symbol ?? '');
+    if (symbol !== WAIV_SYMBOL) {
+      return;
+    }
+    const from = tx.sender.trim();
+    const to = String(payload.to ?? '').trim();
+    const amount = String(payload.quantity ?? '0');
+    const memo = typeof payload.memo === 'string' ? payload.memo : null;
+    this.emitEngineNotification('engine_transfer', from, {
+      from,
+      to,
+      amount,
+      symbol,
+      memo,
+    });
+  }
+
+  private emitEngineNotification(
+    type:
+      | 'engine_transfer'
+      | 'engine_stake'
+      | 'engine_unstake'
+      | 'engine_delegate'
+      | 'engine_undelegate',
+    actor: string,
+    payload: Record<string, unknown>,
+  ): void {
+    const block = this.currentBlock;
+    if (!block) {
+      return;
+    }
+    this.notificationEmitter.emit({
+      type,
+      occurredAt: block.timestamp,
+      blockNum: block.refHiveBlockNumber || block.blockNumber,
+      trxId: null,
+      objectId: null,
+      actor,
+      payload,
+    } as Parameters<NotificationEmitterService['emit']>[0]);
   }
 }

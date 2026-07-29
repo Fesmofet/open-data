@@ -2,6 +2,7 @@ import { hiveBlockTimestampToDate } from '@opden-data-layer/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserDelegationsRepository } from '../../repositories/user-delegations.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 import {
   normalizeHiveAccountName,
   parseVestingSharesFromOperation,
@@ -17,7 +18,10 @@ export type DelegateVestingSharesPayload = {
 export class HiveHpDelegationService {
   private readonly logger = new Logger(HiveHpDelegationService.name);
 
-  constructor(private readonly userDelegations: UserDelegationsRepository) {}
+  constructor(
+    private readonly userDelegations: UserDelegationsRepository,
+    private readonly notificationEmitter: NotificationEmitterService,
+  ) {}
 
   async handleDelegateVestingShares(
     payload: DelegateVestingSharesPayload,
@@ -42,5 +46,19 @@ export class HiveHpDelegationService {
       vesting_shares: vestingShares,
       delegation_date: hiveBlockTimestampToDate(context.timestamp),
     });
+
+    this.notificationEmitter.emitWithContext(
+      this.notificationEmitter.hiveContext(context),
+      {
+        type: 'hp_delegation',
+        objectId: null,
+        actor: delegator,
+        payload: {
+          delegator,
+          delegatee,
+          amount: String(vestingShares),
+        },
+      },
+    );
   }
 }

@@ -68,7 +68,7 @@ describe('RedisStreamNotificationConsumer', () => {
       [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
     });
 
-    expect(router.route).toHaveBeenCalledWith(event);
+    expect(router.route).toHaveBeenCalledWith(expect.objectContaining(event));
     expect(redis.xAck).toHaveBeenCalledWith(
       NOTIFICATION_STREAM_KEY,
       NOTIFICATION_CONSUMER_GROUP,
@@ -105,7 +105,7 @@ describe('RedisStreamNotificationConsumer', () => {
         trxId: 't',
         objectId: null,
         actor: 'a',
-        payload: { following: 'b' },
+        payload: { following: 'b', action: 'follow' },
       }),
     });
 

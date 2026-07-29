@@ -1,0 +1,373 @@
+import { z } from 'zod';
+import type { NotificationEventType } from './notification-payloads';
+import { NOTIFICATION_EVENT_TYPES } from './notification-payloads';
+
+const envelopeSchema = {
+  occurredAt: z.string().min(1),
+  blockNum: z.number().int().nonnegative(),
+  trxId: z.string().nullable(),
+  objectId: z.string().nullable(),
+  actor: z.string().nullable(),
+};
+
+const replyPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  parentAuthor: z.string(),
+  parentPermlink: z.string(),
+  isRootPost: z.boolean(),
+  replyToPermlink: z.string().nullable().optional(),
+});
+
+const mentionPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  isRootPost: z.boolean(),
+  mentioned: z.string(),
+});
+
+const postRefPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  title: z.string(),
+});
+
+const myCommentPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  parentAuthor: z.string(),
+});
+
+const votePayload = z.object({
+  voter: z.string(),
+  author: z.string(),
+  permlink: z.string(),
+  weight: z.number(),
+});
+
+const myVotePayload = z.object({
+  voter: z.string(),
+  author: z.string(),
+  permlink: z.string(),
+  title: z.string().nullable(),
+});
+
+const reblogPayload = z.object({
+  account: z.string(),
+  author: z.string(),
+  permlink: z.string(),
+  title: z.string().nullable(),
+});
+
+const followPayload = z.object({
+  following: z.string(),
+  action: z.enum(['follow', 'unfollow']),
+});
+
+const bellObjectPostPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  title: z.string(),
+  wobjectPermlink: z.string(),
+  wobjectName: z.string(),
+});
+
+const bellThreadPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  authorPermlink: z.string(),
+});
+
+const threadAuthorFollowerPayload = z.object({
+  author: z.string(),
+  permlink: z.string(),
+  hashtags: z.array(z.string()),
+  mentions: z.array(z.string()),
+});
+
+const transferPayload = z.object({
+  from: z.string(),
+  to: z.string(),
+  amount: z.string(),
+  symbol: z.string(),
+  memo: z.string().nullable(),
+});
+
+const powerUpPayload = z.object({
+  from: z.string(),
+  to: z.string(),
+  amount: z.string(),
+});
+
+const powerDownPayload = z.object({
+  account: z.string(),
+  amount: z.string(),
+});
+
+const claimRewardPayload = z.object({
+  rewardHive: z.string(),
+  rewardHbd: z.string(),
+  rewardHp: z.string(),
+});
+
+const witnessVotePayload = z.object({
+  witness: z.string(),
+  approve: z.boolean(),
+});
+
+const fillOrderPayload = z.object({
+  currentPays: z.string(),
+  openPays: z.string(),
+  exchanger: z.string(),
+  orderId: z.number(),
+});
+
+const withdrawRoutePayload = z.object({
+  fromAccount: z.string(),
+  toAccount: z.string(),
+  percent: z.number(),
+  autoVest: z.boolean(),
+});
+
+const changeRecoveryPayload = z.object({
+  account: z.string(),
+  newRecoveryAccount: z.string(),
+});
+
+const changePasswordPayload = z.object({
+  account: z.string(),
+});
+
+const hpDelegationPayload = z.object({
+  delegator: z.string(),
+  delegatee: z.string(),
+  amount: z.string(),
+});
+
+const engineTransferPayload = transferPayload;
+
+const engineAmountPayload = z.object({
+  from: z.string(),
+  to: z.string(),
+  amount: z.string(),
+  symbol: z.string(),
+});
+
+const engineAccountAmountPayload = z.object({
+  account: z.string(),
+  amount: z.string(),
+  symbol: z.string(),
+});
+
+const objectUpdatePayload = z.object({
+  updateId: z.string(),
+  updateType: z.string(),
+  objectName: z.string().nullable(),
+  authorPermlink: z.string().nullable(),
+});
+
+const objectUpdateRejectPayload = objectUpdatePayload.extend({
+  voter: z.string(),
+});
+
+const objectStatusChangePayload = z.object({
+  objectName: z.string().nullable(),
+  authorPermlink: z.string(),
+  oldStatus: z.string(),
+  newStatus: z.string(),
+  account: z.string(),
+});
+
+const updateVoteCastPayload = z.object({
+  updateId: z.string(),
+  vote: z.string(),
+});
+
+const objectCreatedPayload = z.object({
+  updateId: z.string(),
+  updateType: z.string(),
+});
+
+const batchImportPayload = z.object({
+  cid: z.string(),
+});
+
+const emptyPayload = z.object({}).strict();
+
+const notificationEventVariants = [
+  z.object({ type: z.literal('reply'), ...envelopeSchema, payload: replyPayload }),
+  z.object({ type: z.literal('mention'), ...envelopeSchema, payload: mentionPayload }),
+  z.object({ type: z.literal('my_post'), ...envelopeSchema, payload: postRefPayload }),
+  z.object({
+    type: z.literal('my_comment'),
+    ...envelopeSchema,
+    payload: myCommentPayload,
+  }),
+  z.object({ type: z.literal('vote_like'), ...envelopeSchema, payload: votePayload }),
+  z.object({
+    type: z.literal('vote_downvote'),
+    ...envelopeSchema,
+    payload: votePayload,
+  }),
+  z.object({ type: z.literal('my_vote'), ...envelopeSchema, payload: myVotePayload }),
+  z.object({ type: z.literal('reblog'), ...envelopeSchema, payload: reblogPayload }),
+  z.object({ type: z.literal('follow'), ...envelopeSchema, payload: followPayload }),
+  z.object({ type: z.literal('bell_post'), ...envelopeSchema, payload: postRefPayload }),
+  z.object({
+    type: z.literal('bell_reblog'),
+    ...envelopeSchema,
+    payload: reblogPayload,
+  }),
+  z.object({
+    type: z.literal('bell_follow'),
+    ...envelopeSchema,
+    payload: z.object({ follower: z.string(), following: z.string() }),
+  }),
+  z.object({
+    type: z.literal('bell_object_post'),
+    ...envelopeSchema,
+    payload: bellObjectPostPayload,
+  }),
+  z.object({
+    type: z.literal('bell_thread'),
+    ...envelopeSchema,
+    payload: bellThreadPayload,
+  }),
+  z.object({
+    type: z.literal('thread_author_follower'),
+    ...envelopeSchema,
+    payload: threadAuthorFollowerPayload,
+  }),
+  z.object({
+    type: z.literal('transfer_in'),
+    ...envelopeSchema,
+    payload: transferPayload,
+  }),
+  z.object({
+    type: z.literal('transfer_out'),
+    ...envelopeSchema,
+    payload: transferPayload,
+  }),
+  z.object({
+    type: z.literal('transfer_from_savings'),
+    ...envelopeSchema,
+    payload: transferPayload,
+  }),
+  z.object({ type: z.literal('power_up'), ...envelopeSchema, payload: powerUpPayload }),
+  z.object({
+    type: z.literal('power_down'),
+    ...envelopeSchema,
+    payload: powerDownPayload,
+  }),
+  z.object({
+    type: z.literal('claim_reward'),
+    ...envelopeSchema,
+    payload: claimRewardPayload,
+  }),
+  z.object({
+    type: z.literal('witness_vote'),
+    ...envelopeSchema,
+    payload: witnessVotePayload,
+  }),
+  z.object({
+    type: z.literal('fill_order'),
+    ...envelopeSchema,
+    payload: fillOrderPayload,
+  }),
+  z.object({
+    type: z.literal('withdraw_route'),
+    ...envelopeSchema,
+    payload: withdrawRoutePayload,
+  }),
+  z.object({
+    type: z.literal('change_recovery_account'),
+    ...envelopeSchema,
+    payload: changeRecoveryPayload,
+  }),
+  z.object({
+    type: z.literal('change_password'),
+    ...envelopeSchema,
+    payload: changePasswordPayload,
+  }),
+  z.object({
+    type: z.literal('hp_delegation'),
+    ...envelopeSchema,
+    payload: hpDelegationPayload,
+  }),
+  z.object({
+    type: z.literal('engine_transfer'),
+    ...envelopeSchema,
+    payload: engineTransferPayload,
+  }),
+  z.object({
+    type: z.literal('engine_stake'),
+    ...envelopeSchema,
+    payload: engineAmountPayload,
+  }),
+  z.object({
+    type: z.literal('engine_unstake'),
+    ...envelopeSchema,
+    payload: engineAccountAmountPayload,
+  }),
+  z.object({
+    type: z.literal('engine_cancel_unstake'),
+    ...envelopeSchema,
+    payload: engineAccountAmountPayload,
+  }),
+  z.object({
+    type: z.literal('engine_delegate'),
+    ...envelopeSchema,
+    payload: engineAmountPayload,
+  }),
+  z.object({
+    type: z.literal('engine_undelegate'),
+    ...envelopeSchema,
+    payload: engineAmountPayload,
+  }),
+  z.object({
+    type: z.literal('object_update'),
+    ...envelopeSchema,
+    payload: objectUpdatePayload,
+  }),
+  z.object({
+    type: z.literal('object_update_reject'),
+    ...envelopeSchema,
+    payload: objectUpdateRejectPayload,
+  }),
+  z.object({
+    type: z.literal('object_status_change'),
+    ...envelopeSchema,
+    payload: objectStatusChangePayload,
+  }),
+  z.object({
+    type: z.literal('update_vote_cast'),
+    ...envelopeSchema,
+    payload: updateVoteCastPayload,
+  }),
+  z.object({
+    type: z.literal('object_created'),
+    ...envelopeSchema,
+    payload: objectCreatedPayload,
+  }),
+  z.object({
+    type: z.literal('batch_import_completed'),
+    ...envelopeSchema,
+    payload: batchImportPayload,
+  }),
+  z.object({
+    type: z.literal('trx_processed'),
+    ...envelopeSchema,
+    payload: emptyPayload,
+  }),
+] as const;
+
+export const notificationEventSchema = z.discriminatedUnion(
+  'type',
+  notificationEventVariants,
+);
+
+export type ParsedNotificationEvent = z.infer<typeof notificationEventSchema>;
+
+/** Runtime list mirrored from {@link NOTIFICATION_EVENT_TYPES}. */
+export const NOTIFICATION_EVENT_TYPE_LITERALS: readonly NotificationEventType[] =
+  NOTIFICATION_EVENT_TYPES;

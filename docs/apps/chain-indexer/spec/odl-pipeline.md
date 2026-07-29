@@ -78,6 +78,10 @@ For **`update_create`**, a **duplicate-value** check (`existsByObjectAndValue` â
 
 **Index-time exception:** [`ObjectStatusHandler`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/object-status.handler.ts) listens for **`OBJECT_STATUS_CREATED_EVENT`** (after a persisted `update_create` with `update_type: status`) and calls [`GovernanceCacheService.resolvePlatform()`](../../../../apps/chain-indexer/src/domain/governance/governance-cache.service.ts) so only platform **admins** can mutate `objects_core.status`. See [Object status](object-status.md).
 
+### Notification enrichment (ODL object names)
+
+ODL handlers emit `objectName: null` on `object_update`, `object_status_change`, and `object_update_reject`. Before the event is written to the notifications Redis stream, [`NotificationAdapterService`](../../../../apps/chain-indexer/src/domain/notification-adapter/notification-adapter.service.ts) fills `payload.objectName` via [`ObjectNameResolverService`](../../../../apps/chain-indexer/src/domain/notification-adapter/object-name-resolver.service.ts): `AggregatedObjectRepository` + `ObjectViewService` with `update_types: [name]` and locale `en-US`. Resolved names are cached at `chain-indexer:cache:object-name:{objectId}` (TTL 300s, see `OBJECT_NAME_CACHE_TTL_SECONDS`); the cache is cleared on `GOVERNANCE_OBJECT_MUTATED_EVENT`. See [notification event catalog](../../notifications/spec/event-catalog.md#objects-odl).
+
 ## 8) Batch import (`batch_import`)
 
 1. **`BatchImportHandler`** validates payload (`batchImportPayloadSchema`), then emits **`batch_import.process`** via `EventEmitter2`.
@@ -99,4 +103,4 @@ IPFS must be reachable at `IPFS_API_URL` when exercising this path.
 |------|------|
 | `apps/chain-indexer/src/domain/odl-parser/handlers/` | Per-action handlers |
 | `apps/chain-indexer/src/domain/odl-parser/batch-import.worker.ts` | IPFS stream + dispatch |
-| `apps/chain-indexer/src/repositories/` | SQL write path |
+| `apps/chain-indexer/src/domain/notification-adapter/` | Redis stream publish; ODL `objectName` enrichment |

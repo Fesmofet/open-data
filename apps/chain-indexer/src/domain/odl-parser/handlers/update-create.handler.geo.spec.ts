@@ -8,6 +8,7 @@ import {
   defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
+import { defaultNotificationEmitter } from './update-create.handler.spec-helpers';
 import { objectUpdateInsertValues } from '../../../repositories/object-update-insert-values';
 
 describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
@@ -56,6 +57,7 @@ describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
       new WriteGuardRunner([new GovernanceWriteGuard()]),
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       { emit: jest.fn() } as unknown as EventEmitter2,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(

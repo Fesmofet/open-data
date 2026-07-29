@@ -9,6 +9,14 @@ export const HIVE_OPERATION = Object.freeze({
   CREATE_CLAIMED_ACCOUNT: 'create_claimed_account',
   VOTE: 'vote',
   DELEGATE_VESTING_SHARES: 'delegate_vesting_shares',
+  TRANSFER_TO_VESTING: 'transfer_to_vesting',
+  WITHDRAW_VESTING: 'withdraw_vesting',
+  CLAIM_REWARD_BALANCE: 'claim_reward_balance',
+  ACCOUNT_WITNESS_VOTE: 'account_witness_vote',
+  CHANGE_RECOVERY_ACCOUNT: 'change_recovery_account',
+  SET_WITHDRAW_VESTING_ROUTE: 'set_withdraw_vesting_route',
+  TRANSFER_FROM_SAVINGS: 'transfer_from_savings',
+  FILL_ORDER: 'fill_order',
 } as const);
 
 /** Hive `custom_json` id for follow / reblog / mute (JSON array payload). */

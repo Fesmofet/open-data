@@ -29,15 +29,45 @@ export function setLastSeen(username: string, iso: string): void {
   storage.setItem(lastSeenStorageKey(username), iso);
 }
 
+/** Clears client read cursor (e.g. after re-seeding preview feed). */
+export function clearLastSeen(username: string): void {
+  const storage = notificationStorage();
+  if (!storage) {
+    return;
+  }
+  storage.removeItem(lastSeenStorageKey(username));
+}
+
 export function countUnread(
   items: UserNotificationItem[],
   lastSeen: string | null,
+  lastReadTimestampMs?: number | null,
 ): number {
-  if (!lastSeen) {
-    return items.length;
+  let localMs: number | null = null;
+  if (lastSeen) {
+    const parsed = new Date(lastSeen).getTime();
+    if (!Number.isNaN(parsed)) {
+      localMs = parsed;
+    }
   }
-  const seenMs = new Date(lastSeen).getTime();
-  if (Number.isNaN(seenMs)) {
+
+  let seenMs: number | null = null;
+  const hasServerCursor =
+    lastReadTimestampMs !== undefined &&
+    lastReadTimestampMs !== null &&
+    Number.isFinite(lastReadTimestampMs);
+
+  if (hasServerCursor) {
+    if (lastReadTimestampMs === 0) {
+      seenMs = 0;
+    } else {
+      seenMs = Math.max(lastReadTimestampMs!, localMs ?? 0);
+    }
+  } else if (localMs !== null) {
+    seenMs = localMs;
+  }
+
+  if (seenMs === null) {
     return items.length;
   }
   return items.filter((item) => {

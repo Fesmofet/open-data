@@ -9,6 +9,11 @@ describe('AccountProfileUpdateService', () => {
     enqueue: jest.fn(),
   };
 
+  const notificationEmitter = {
+    emitWithContext: jest.fn(),
+    hiveContext: jest.fn(),
+  };
+
   let service: AccountProfileUpdateService;
 
   beforeEach(() => {
@@ -16,6 +21,7 @@ describe('AccountProfileUpdateService', () => {
     service = new AccountProfileUpdateService(
       accounts as never,
       accountSyncQueue as never,
+      notificationEmitter as never,
     );
   });
 

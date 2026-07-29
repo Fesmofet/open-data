@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ObjectsDomainModule } from '@opden-data-layer/objects-domain';
 import { GovernanceModule } from '../governance/governance.module';
+import { NotificationAdapterModule } from '../notification-adapter/notification-adapter.module';
 import { RepositoriesModule } from '../../repositories';
 import { ObjectCreateHandler } from './handlers/object-create.handler';
 import { ObjectStatusHandler } from './handlers/object-status.handler';
@@ -30,7 +31,13 @@ import {
 } from './guards';
 
 @Module({
-  imports: [RepositoriesModule, GovernanceModule, ObjectsDomainModule, RankScoreModule],
+  imports: [
+    RepositoriesModule,
+    GovernanceModule,
+    ObjectsDomainModule,
+    RankScoreModule,
+    NotificationAdapterModule,
+  ],
   providers: [
     GovernanceWriteGuard,
     LegalDocumentWriteGuard,

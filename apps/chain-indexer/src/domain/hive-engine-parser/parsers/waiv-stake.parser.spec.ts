@@ -29,7 +29,10 @@ describe('WaivStakeParser', () => {
 
   beforeEach(() => {
     emit = jest.fn();
-    parser = new WaivStakeParser({ emit } as unknown as EventEmitter2);
+    parser = new WaivStakeParser(
+      { emit } as unknown as EventEmitter2,
+      { emit: jest.fn() } as unknown as import('../../notification-adapter/notification-emitter.service').NotificationEmitterService,
+    );
   });
 
   it('emits +quantity for stake from stake log event', async () => {

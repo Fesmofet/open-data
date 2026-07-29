@@ -13,6 +13,8 @@ import {
 import { CommentPostObjectBindService } from './comment-post-object-bind.service';
 import { PostUpsertService } from './post-upsert.service';
 import { ThreadParseService } from './thread-parse.service';
+import { HiveCommentNotificationService } from './hive-comment-notification.service';
+import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 
 @Injectable()
 export class CommentOperationOrchestrator {
@@ -24,12 +26,14 @@ export class CommentOperationOrchestrator {
     private readonly postsRepository: PostsRepository,
     private readonly threadsRepository: ThreadsRepository,
     private readonly commentPostObjectBind: CommentPostObjectBindService,
+    private readonly commentNotifications: HiveCommentNotificationService,
   ) {}
 
   async handleComment(
     payload: unknown,
-    blockTimestamp: string,
+    context: HiveOperationHandlerContext,
   ): Promise<void> {
+    const blockTimestamp = context.timestamp;
     const parsed = commentOperationPayloadSchema.safeParse(payload);
     if (!parsed.success) {
       this.logger.warn(`Invalid comment payload: ${parsed.error.message}`);
@@ -56,6 +60,8 @@ export class CommentOperationOrchestrator {
       );
       await this.commentPostObjectBind.tryBindObjectsFromComment(op, blockTimestamp);
     }
+
+    this.commentNotifications.emitForComment(op, context);
   }
 
   /**

@@ -5,6 +5,7 @@ import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-co
 import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import type { ReblogBranchPayload } from './follow-json.parse';
 import { AccountEnsureService } from './account-ensure.service';
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 
 @Injectable()
 export class ReblogSocialService {
@@ -14,6 +15,7 @@ export class ReblogSocialService {
     private readonly postsRepository: PostsRepository,
     private readonly postSyncQueueRepository: PostSyncQueueRepository,
     private readonly accountEnsure: AccountEnsureService,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
   async applyReblogFromFollowPayload(
@@ -59,5 +61,35 @@ export class ReblogSocialService {
       account: reblogger,
       reblogged_at_unix: rebloggedAtUnix,
     });
+
+    this.notificationEmitter.emitWithContext(
+      this.notificationEmitter.hiveContext(context),
+      {
+        type: 'reblog',
+        objectId: null,
+        actor: reblogger,
+        payload: {
+          account: reblogger,
+          author: srcAuthor,
+          permlink: srcPermlink,
+          title: source.title ?? null,
+        },
+      },
+    );
+
+    this.notificationEmitter.emitWithContext(
+      this.notificationEmitter.hiveContext(context),
+      {
+        type: 'bell_reblog',
+        objectId: null,
+        actor: reblogger,
+        payload: {
+          account: reblogger,
+          author: srcAuthor,
+          permlink: srcPermlink,
+          title: source.title ?? null,
+        },
+      },
+    );
   }
 }

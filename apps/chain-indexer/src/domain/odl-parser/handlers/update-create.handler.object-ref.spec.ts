@@ -37,6 +37,7 @@ import {
   defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
+import { defaultNotificationEmitter } from './update-create.handler.spec-helpers';
 
 describe('UpdateCreateHandler object_ref', () => {
   const baseCtx: OdlEventContext = {
@@ -105,6 +106,7 @@ describe('UpdateCreateHandler object_ref', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(
@@ -152,6 +154,7 @@ describe('UpdateCreateHandler object_ref', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(
@@ -199,6 +202,7 @@ describe('UpdateCreateHandler object_ref', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(

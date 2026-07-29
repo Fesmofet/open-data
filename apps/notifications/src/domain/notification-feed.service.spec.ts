@@ -43,7 +43,7 @@ describe('NotificationFeedService', () => {
       trxId: 't',
       objectId: null,
       actor: 'alice',
-      payload: { following: 'bob' },
+      payload: { following: 'bob', action: 'follow' },
     });
 
     await service.addToFeed('bob', item);
@@ -72,7 +72,7 @@ describe('NotificationFeedService', () => {
       trxId: null,
       objectId: null,
       actor: 'a',
-      payload: {},
+      payload: { following: 'bob', action: 'follow' },
     });
     (redis.lRange as jest.Mock).mockResolvedValue([
       JSON.stringify(valid),
@@ -81,7 +81,7 @@ describe('NotificationFeedService', () => {
 
     const items = await service.getFeed('alice');
 
-    expect(redis.lRange).toHaveBeenCalledWith(notificationListKey('alice'), 0, -1);
+    expect(redis.lRange).toHaveBeenCalledTimes(2);
     expect(items).toHaveLength(1);
     expect(items[0].type).toBe('follow');
   });

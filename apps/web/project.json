@@ -4,7 +4,11 @@
   "sourceRoot": "apps/web",
   "projectType": "application",
   "tags": [],
-  "implicitDependencies": ["hive-broadcast"],
+  "implicitDependencies": [
+    "hive-broadcast",
+    "notifications-contract",
+    "notifications-messages"
+  ],
   "// targets": "to see all targets run: nx show project web --web",
   "targets": {
     "dev": {

@@ -49,12 +49,7 @@ import {
   OBJECT_STATUS_CREATED_EVENT,
   ObjectStatusCreatedEvent,
 } from '../object-status-created.event';
-import {
-  OBJECT_CREATED_NOTIFICATION_EVENT,
-  ObjectCreatedNotificationPayload,
-  TRX_PROCESSED_NOTIFICATION_EVENT,
-  TrxProcessedNotificationPayload,
-} from '../../notification-adapter/events/notification-domain-events';
+import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 
 @Injectable()
 export class UpdateCreateHandler implements OdlActionHandler {
@@ -70,6 +65,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
     private readonly writeGuardRunner: WriteGuardRunner,
     private readonly validityVotesRepository: ValidityVotesRepository,
     private readonly eventEmitter: EventEmitter2,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -258,6 +254,21 @@ export class UpdateCreateHandler implements OdlActionHandler {
         OBJECT_STATUS_CREATED_EVENT,
         new ObjectStatusCreatedEvent(object_id, ctx.creator, statusPayload.title),
       );
+      this.notificationEmitter.emitWithContext(
+        this.notificationEmitter.odlContext(ctx),
+        {
+          type: 'object_status_change',
+          objectId: object_id,
+          actor: creator,
+          payload: {
+            objectName: null,
+            authorPermlink: object.object_id,
+            oldStatus: '',
+            newStatus: String(statusPayload.title),
+            account: creator,
+          },
+        },
+      );
     }
     if (update_type === UPDATE_TYPES.CATEGORY) {
       this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(object_id));
@@ -288,25 +299,20 @@ export class UpdateCreateHandler implements OdlActionHandler {
       USER_OBJECT_POWERS_CREATE_EVENT,
       new UserObjectPowersCreateEvent(creator),
     );
-    this.eventEmitter.emit(
-      OBJECT_CREATED_NOTIFICATION_EVENT,
-      new ObjectCreatedNotificationPayload(
-        object_id,
-        update_id,
-        update_type,
-        creator,
-        ctx.blockNum,
-        ctx.transactionId,
-        ctx.timestamp,
-      ),
+    this.notificationEmitter.emitWithContext(
+      this.notificationEmitter.odlContext(ctx),
+      {
+        type: 'object_update',
+        objectId: object_id,
+        actor: creator,
+        payload: {
+          updateId: update_id,
+          updateType: update_type,
+          objectName: null,
+          authorPermlink: object.object_id,
+        },
+      },
     );
-    this.eventEmitter.emit(
-      TRX_PROCESSED_NOTIFICATION_EVENT,
-      new TrxProcessedNotificationPayload(
-        ctx.transactionId,
-        ctx.blockNum,
-        ctx.timestamp,
-      ),
-    );
+    this.notificationEmitter.emitTrxProcessedOdl(ctx);
   }
 }

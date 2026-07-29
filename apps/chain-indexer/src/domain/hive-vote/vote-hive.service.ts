@@ -8,6 +8,7 @@ import { PostsRepository } from '../../repositories/posts.repository';
 import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import { voteOperationSchema } from './vote-hive.schema';
+import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 
 @Injectable()
 export class VoteHiveService {
@@ -18,6 +19,7 @@ export class VoteHiveService {
     private readonly postsRepository: PostsRepository,
     private readonly postSyncQueueRepository: PostSyncQueueRepository,
     private readonly postWaivReconcileQueue: PostWaivReconcileQueue,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
   async handleVote(
@@ -51,5 +53,30 @@ export class VoteHiveService {
     });
 
     await this.postWaivReconcileQueue.markDirty(author, permlink, enqueuedAt);
+
+    const emitCtx = this.notificationEmitter.hiveContext(context);
+    if (voter === author) {
+      const post = await this.postsRepository.findByKey(author, permlink);
+      this.notificationEmitter.emitWithContext(emitCtx, {
+        type: 'my_vote',
+        objectId: null,
+        actor: voter,
+        payload: {
+          voter,
+          author,
+          permlink,
+          title: post?.title ?? null,
+        },
+      });
+      return;
+    }
+
+    const type = weight < 0 ? 'vote_downvote' : 'vote_like';
+    this.notificationEmitter.emitWithContext(emitCtx, {
+      type,
+      objectId: null,
+      actor: voter,
+      payload: { voter, author, permlink, weight },
+    });
   }
 }

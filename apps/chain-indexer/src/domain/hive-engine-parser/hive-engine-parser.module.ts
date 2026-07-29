@@ -7,6 +7,7 @@ import {
 import { RepositoriesModule } from '../../repositories';
 import { OblParserModule } from '../obl-parser/obl-parser.module';
 import { WaivPostRewardModule } from '../waiv-post-reward/waiv-post-reward.module';
+import { NotificationAdapterModule } from '../notification-adapter/notification-adapter.module';
 import { HiveEngineCompositeParser } from './hive-engine-composite.parser';
 import {
   HIVE_ENGINE_SUB_PARSERS,
@@ -34,8 +35,9 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
     RepositoriesModule,
     OblParserModule,
     WaivPostRewardModule,
+    NotificationAdapterModule,
     HiveEngineProcessorModule.forRootAsync({
-      imports: [ConfigModule, WaivPostRewardModule, RepositoriesModule, OblParserModule],
+      imports: [ConfigModule, WaivPostRewardModule, RepositoriesModule, OblParserModule, NotificationAdapterModule],
       useFactory: (config: ConfigService) => {
         const he = config.get<{
           blockNumberKey: string;

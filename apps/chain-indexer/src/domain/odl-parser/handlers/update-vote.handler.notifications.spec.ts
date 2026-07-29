@@ -1,12 +1,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { NewValidityVote } from '@opden-data-layer/core';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
-import {
-  TRX_PROCESSED_NOTIFICATION_EVENT,
-  TrxProcessedNotificationPayload,
-  VOTE_CAST_NOTIFICATION_EVENT,
-  VoteCastNotificationPayload,
-} from '../../notification-adapter/events/notification-domain-events';
+import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner } from '../guards';
 import { UpdateVoteHandler } from './update-vote.handler';
@@ -37,7 +31,9 @@ describe('UpdateVoteHandler notifications', () => {
     creator: 'owner',
   };
 
-  function buildHandler(eventEmitter: EventEmitter2): UpdateVoteHandler {
+  function buildHandler(
+    notificationEmitter: NotificationEmitterService,
+  ): UpdateVoteHandler {
     return new UpdateVoteHandler(
       {
         create: jest.fn().mockResolvedValue(undefined),
@@ -52,14 +48,24 @@ describe('UpdateVoteHandler notifications', () => {
         findByObjectId: jest.fn().mockResolvedValue(core),
       } as unknown as import('../../../repositories').ObjectsCoreRepository,
       { check: jest.fn().mockReturnValue(null) } as unknown as WriteGuardRunner,
-      eventEmitter,
+      { emit: jest.fn() } as unknown as EventEmitter2,
+      notificationEmitter,
     );
   }
 
   it('emits vote cast and trx processed after creating a vote', async () => {
-    const emit = jest.fn();
-    const eventEmitter = { emit } as unknown as EventEmitter2;
-    const handler = buildHandler(eventEmitter);
+    const emitWithContext = jest.fn();
+    const emitTrxProcessedOdl = jest.fn();
+    const notificationEmitter = {
+      odlContext: jest.fn().mockReturnValue({
+        blockNum: ctx.blockNum,
+        trxId: ctx.transactionId,
+        occurredAt: ctx.timestamp,
+      }),
+      emitWithContext,
+      emitTrxProcessedOdl,
+    } as unknown as NotificationEmitterService;
+    const handler = buildHandler(notificationEmitter);
 
     await handler.handle(
       {
@@ -70,20 +76,26 @@ describe('UpdateVoteHandler notifications', () => {
       ctx,
     );
 
-    expect(emit).toHaveBeenCalledWith(
-      VOTE_CAST_NOTIFICATION_EVENT,
-      expect.any(VoteCastNotificationPayload),
+    expect(emitWithContext).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        type: 'update_vote_cast',
+        objectId: 'obj-1',
+        actor: 'voter',
+      }),
     );
-    expect(emit).toHaveBeenCalledWith(
-      TRX_PROCESSED_NOTIFICATION_EVENT,
-      expect.any(TrxProcessedNotificationPayload),
-    );
+    expect(emitTrxProcessedOdl).toHaveBeenCalledWith(ctx);
   });
 
   it('emits trx processed but not vote cast on vote remove', async () => {
-    const emit = jest.fn();
-    const eventEmitter = { emit } as unknown as EventEmitter2;
-    const handler = buildHandler(eventEmitter);
+    const emitWithContext = jest.fn();
+    const emitTrxProcessedOdl = jest.fn();
+    const notificationEmitter = {
+      odlContext: jest.fn(),
+      emitWithContext,
+      emitTrxProcessedOdl,
+    } as unknown as NotificationEmitterService;
+    const handler = buildHandler(notificationEmitter);
 
     await handler.handle(
       {
@@ -94,13 +106,10 @@ describe('UpdateVoteHandler notifications', () => {
       ctx,
     );
 
-    const voteCastCalls = emit.mock.calls.filter(
-      ([event]) => event === VOTE_CAST_NOTIFICATION_EVENT,
+    const voteCastCalls = emitWithContext.mock.calls.filter(
+      ([, body]) => body?.type === 'update_vote_cast',
     );
     expect(voteCastCalls).toHaveLength(0);
-    expect(emit).toHaveBeenCalledWith(
-      TRX_PROCESSED_NOTIFICATION_EVENT,
-      expect.any(TrxProcessedNotificationPayload),
-    );
+    expect(emitTrxProcessedOdl).toHaveBeenCalledWith(ctx);
   });
 });

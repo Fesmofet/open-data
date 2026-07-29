@@ -37,6 +37,7 @@ import {
   defaultUpdateCreateValidityVotesDeps,
   mockObjectsCore,
 } from './update-create.handler.spec-helpers';
+import { defaultNotificationEmitter } from './update-create.handler.spec-helpers';
 
 describe('UpdateCreateHandler localizable', () => {
   const baseCtx: OdlEventContext = {
@@ -87,6 +88,7 @@ describe('UpdateCreateHandler localizable', () => {
       runner,
       defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(

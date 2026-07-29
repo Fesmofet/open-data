@@ -79,6 +79,7 @@ flowchart LR
 | [Post languages](post-languages.md) | ELD detection on comment upsert → `post_languages` rows |
 | [Post related images sync](post-object-related-images-sync.md) | `post_object_related_images` from post `json_metadata.image` + `post_objects` |
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
+| [Wallet notifications](wallet-notifications.md) | Notify-only Hive L1 wallet ops → notification stream (no wallet history in PG) |
 | [Hive delegations](hive-delegations.md) | HP `delegate_vesting_shares` and RC `custom_json` id `rc` → `user_delegations` / `user_rc_delegations` |
 | [ODL pipeline](odl-pipeline.md) | Envelope, actions, repositories, write guards, batch import |
 | [OBL parser](obl-parser.md) | Open Business Layer `custom_json` actions, mutual ledger, payments, disputes |

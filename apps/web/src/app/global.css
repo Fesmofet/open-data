@@ -96,6 +96,34 @@
     @apply inline-flex shrink-0 rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
   }
 
+  /** Unread count in app header — same 32px circle as `UserAvatar` size={32}. */
+  .notification-header-unread-badge {
+    box-sizing: border-box;
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-circle);
+    background-color: var(--color-accent);
+    color: var(--color-accent-fg);
+    font-family: var(--font-label);
+    font-size: var(--font-size-nano);
+    font-weight: var(--font-weight-strong);
+    /* Same rem as height — stable vertical center at any browser zoom (no subpixel transform). */
+    line-height: 2rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .notification-header-unread-trigger {
+    @apply inline-flex size-8 shrink-0 items-center justify-center rounded-btn p-0 leading-none hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
+  }
+
   .app-header-menu-feed-link {
     @apply block w-full px-3 py-2 text-start text-body-sm text-fg hover:bg-ghost-surface;
   }

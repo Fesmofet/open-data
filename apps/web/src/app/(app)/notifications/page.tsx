@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
+import { getNotificationsTelegramBotUrl, getNotificationsTelegramBotUsername } from '@/config/get-notifications-telegram-bot';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { NotificationsPageClient } from '@/modules/notifications';
@@ -21,5 +22,11 @@ export default async function NotificationsPage() {
     redirect('/');
   }
 
-  return <NotificationsPageClient username={user.username} />;
+  return (
+    <NotificationsPageClient
+      username={user.username}
+      telegramBotUsername={getNotificationsTelegramBotUsername()}
+      telegramBotUrl={getNotificationsTelegramBotUrl()}
+    />
+  );
 }

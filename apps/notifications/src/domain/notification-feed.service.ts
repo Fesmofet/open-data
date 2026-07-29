@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { RedisClientFactory } from '@opden-data-layer/clients';
 import type { NotificationEvent } from '@opden-data-layer/notifications-contract';
 import {
+  legacyNotificationListKey,
   NOTIFICATION_EXPIRY_SEC,
   NOTIFICATION_LIST_MAX,
   notificationListKey,
@@ -54,18 +55,37 @@ export class NotificationFeedService {
 
   async getFeed(username: string): Promise<UserNotificationItem[]> {
     const key = notificationListKey(username);
+    const legacyKey = legacyNotificationListKey(username);
     try {
       const redis = this.redisFactory.getClient();
-      const raw = await redis.lRange(key, 0, -1);
+      const [raw, legacyRaw] = await Promise.all([
+        redis.lRange(key, 0, -1),
+        redis.lRange(legacyKey, 0, -1),
+      ]);
+      const merged = [...raw, ...legacyRaw];
       const items: UserNotificationItem[] = [];
-      for (const entry of raw) {
+      const seen = new Set<string>();
+      for (const entry of merged) {
         try {
-          items.push(JSON.parse(entry) as UserNotificationItem);
+          const item = JSON.parse(entry) as UserNotificationItem;
+          if (seen.has(item.id)) {
+            continue;
+          }
+          seen.add(item.id);
+          items.push(item);
         } catch {
           this.logger.warn(`Skipping corrupt notification entry for ${username}`);
         }
       }
-      return items;
+      items.sort((a, b) => {
+        const aMs = new Date(a.occurredAt).getTime();
+        const bMs = new Date(b.occurredAt).getTime();
+        if (Number.isNaN(aMs) || Number.isNaN(bMs)) {
+          return 0;
+        }
+        return bMs - aMs;
+      });
+      return items.slice(0, NOTIFICATION_LIST_MAX);
     } catch (err) {
       this.logger.error(
         `getFeed failed for ${username}: ${(err as Error).message}`,

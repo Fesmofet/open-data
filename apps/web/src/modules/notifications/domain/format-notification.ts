@@ -1,40 +1,55 @@
+import {
+  buildNotificationMessage,
+  type NotificationIcon,
+} from '@opden-data-layer/notifications-messages';
+import type { NotificationEventType } from '@opden-data-layer/notifications-contract';
 import type { UserNotificationItem } from '../infrastructure/notifications-ws-client';
 
-export type NotificationIconType = 'follow' | 'vote' | 'generic';
+export type NotificationIconType = 'follow' | 'vote' | 'reply' | 'wallet' | 'object' | 'bell' | 'generic';
 
 export type FormattedNotification = {
   key: string;
   params?: Record<string, string>;
+  href: string | null;
+  actor: string | null;
+  paramHrefs?: Readonly<Record<string, string>>;
 };
 
-export function formatNotification(item: UserNotificationItem): FormattedNotification {
-  const actor = item.actor?.trim() ?? '';
+function mapIcon(icon: NotificationIcon): NotificationIconType {
+  return icon;
+}
 
-  switch (item.type) {
-    case 'follow':
-      return {
-        key: 'notification_following_username',
-        params: { username: actor || '?' },
-      };
-    case 'update_vote_cast':
-      return {
-        key: 'notification_upvoted_username_post',
-        params: { username: actor || '?' },
-      };
-    default:
-      return { key: 'notification_generic_default_message' };
-  }
+export function formatNotification(item: UserNotificationItem): FormattedNotification {
+  const message = buildNotificationMessage({
+    type: item.type as NotificationEventType,
+    occurredAt: item.occurredAt,
+    blockNum: item.blockNum,
+    trxId: item.trxId,
+    objectId: item.objectId,
+    actor: item.actor,
+    payload: item.payload,
+  } as Parameters<typeof buildNotificationMessage>[0]);
+
+  return {
+    key: message.key,
+    params: { ...message.params },
+    href: message.href,
+    actor: message.actor,
+    paramHrefs: message.paramHrefs,
+  };
 }
 
 export function notificationIconType(item: UserNotificationItem): NotificationIconType {
-  switch (item.type) {
-    case 'follow':
-      return 'follow';
-    case 'update_vote_cast':
-      return 'vote';
-    default:
-      return 'generic';
-  }
+  const message = buildNotificationMessage({
+    type: item.type as NotificationEventType,
+    occurredAt: item.occurredAt,
+    blockNum: item.blockNum,
+    trxId: item.trxId,
+    objectId: item.objectId,
+    actor: item.actor,
+    payload: item.payload,
+  } as Parameters<typeof buildNotificationMessage>[0]);
+  return mapIcon(message.icon);
 }
 
 /** Substitutes `{param}` placeholders in an i18n template string. */

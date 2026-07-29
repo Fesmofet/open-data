@@ -4,6 +4,7 @@ import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner } from '../guards';
 import { TAG_CATEGORY_ITEM_MUTATED_EVENT } from '../tag-category-item-mutated.event';
 import { UpdateVoteHandler } from './update-vote.handler';
+import { defaultNotificationEmitter } from './update-create.handler.spec-helpers';
 
 describe('UpdateVoteHandler create_event_id', () => {
   const hiveTrxId = 'hive-trx-abc';
@@ -62,6 +63,7 @@ describe('UpdateVoteHandler create_event_id', () => {
       } as unknown as import('../../../repositories').ObjectsCoreRepository,
       { check: jest.fn().mockReturnValue(null) } as unknown as WriteGuardRunner,
       new EventEmitter2(),
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(
@@ -103,6 +105,7 @@ describe('UpdateVoteHandler create_event_id', () => {
       { findByObjectId: jest.fn().mockResolvedValue(core) } as never,
       { check: jest.fn().mockReturnValue(null) } as never,
       eventEmitter,
+      defaultNotificationEmitter(),
     );
 
     await handler.handle(

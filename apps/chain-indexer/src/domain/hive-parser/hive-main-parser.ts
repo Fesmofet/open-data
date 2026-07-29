@@ -1,90 +1,24 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
-import { HIVE_OPERATION } from '../../constants/hive-parser';
-import {
-  CustomJsonOperation,
-  Operation,
-} from '@hiveio/dhive/lib/chain/operation';
 import { HiveTransaction } from '@opden-data-layer/clients';
-import { HiveCustomJsonParser } from './hive-custom-json-parser';
-import {
-  HiveOperationHandler,
-  HiveOperationHandlerContext,
-} from './hive-handler-context';
-import { CommentOperationOrchestrator } from '../hive-comment/comment-orchestrator.service';
-import { AccountProfileUpdateService } from '../hive-social/account-profile-update.service';
-import { AccountEnsureService } from '../hive-social/account-ensure.service';
-import { VoteHiveService } from '../hive-vote/vote-hive.service';
-import { HiveHpDelegationService } from '../hive-delegation/hive-hp-delegation.service';
 import { AccountLastActivityService } from '../hive-social/account-last-activity.service';
+import type { HiveOperationHandlerContext } from './hive-handler-context';
+import {
+  HIVE_OPERATION_HANDLERS,
+  type RegisteredHiveOperationHandler,
+} from './hive-operation-handler';
 
 @Injectable()
 export class HiveMainParser {
   private readonly logger = new Logger(HiveMainParser.name);
-  private readonly handlers: Record<string, { handle: HiveOperationHandler<Operation[1]> }>;
+  private readonly handlers: Map<string, RegisteredHiveOperationHandler>;
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly customJsonParser: HiveCustomJsonParser,
-    private readonly commentOrchestrator: CommentOperationOrchestrator,
-    private readonly accountProfileUpdate: AccountProfileUpdateService,
-    private readonly accountEnsure: AccountEnsureService,
-    private readonly voteHiveService: VoteHiveService,
-    private readonly hpDelegationService: HiveHpDelegationService,
+    @Inject(HIVE_OPERATION_HANDLERS)
+    handlers: RegisteredHiveOperationHandler[],
     private readonly accountLastActivity: AccountLastActivityService,
   ) {
-    this.handlers = {
-      [HIVE_OPERATION.CUSTOM_JSON]: {
-        handle: (p, ctx) =>
-          this.customJsonParser.parse(p as CustomJsonOperation[1], ctx),
-      },
-      [HIVE_OPERATION.COMMENT]: {
-        handle: (p, ctx) =>
-          this.commentOrchestrator.handleComment(p, ctx.timestamp),
-      },
-      [HIVE_OPERATION.DELETE_COMMENT]: {
-        handle: async (p) => {
-          await this.commentOrchestrator.handleDeleteComment(p);
-        },
-      },
-      [HIVE_OPERATION.ACCOUNT_UPDATE]: {
-        handle: async (p) => {
-          await this.accountProfileUpdate.handleAccountUpdate(
-            p as Record<string, unknown>,
-          );
-        },
-      },
-      [HIVE_OPERATION.CREATE_ACCOUNT]: {
-        handle: async (p) => {
-          await this.accountEnsure.ensureFromCreateAccountPayload(
-            p as Record<string, unknown>,
-          );
-        },
-      },
-      [HIVE_OPERATION.CREATE_CLAIMED_ACCOUNT]: {
-        handle: async (p) => {
-          await this.accountEnsure.ensureFromCreateAccountPayload(
-            p as Record<string, unknown>,
-          );
-        },
-      },
-      [HIVE_OPERATION.VOTE]: {
-        handle: (p, ctx) =>
-          this.voteHiveService.handleVote(p as Record<string, unknown>, ctx),
-      },
-      [HIVE_OPERATION.DELEGATE_VESTING_SHARES]: {
-        handle: (p, ctx) =>
-          this.hpDelegationService.handleDelegateVestingShares(
-            p as {
-              delegator?: string;
-              delegatee?: string;
-              vesting_shares?: string | number;
-            },
-            ctx,
-          ),
-      },
-    };
+    this.handlers = new Map(handlers.map((h) => [h.operation, h]));
   }
 
   async parseBlock(block: SignedBlock): Promise<void> {
@@ -101,7 +35,7 @@ export class HiveMainParser {
       ][];
       for (let operationIndex = 0; operationIndex < operations.length; operationIndex++) {
         const [type, payload] = operations[operationIndex];
-        const handler = this.handlers[type];
+        const handler = this.handlers.get(type);
         if (!handler) continue;
 
         const context: HiveOperationHandlerContext = {

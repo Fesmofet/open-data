@@ -1,0 +1,2 @@
+export const OBJECT_NAME_CACHE_TTL_SECONDS = 300;
+export const OBJECT_NAME_RESOLVE_LOCALE = 'en-US';

@@ -72,6 +72,41 @@ describe('notification-feed-utils', () => {
     expect(countUnread(items, '2026-05-19T11:00:00.000Z')).toBe(1);
   });
 
+  it('countUnread prefers server lastReadTimestamp over local lastSeen', () => {
+    const items = [
+      item('1', '2026-05-19T10:00:00.000Z'),
+      item('2', '2026-05-19T12:00:00.000Z'),
+    ];
+    const serverMs = new Date('2026-05-19T11:30:00.000Z').getTime();
+    expect(countUnread(items, '2026-05-19T09:00:00.000Z', serverMs)).toBe(1);
+  });
+
+  it('countUnread treats server cursor 0 as all items with occurredAt after epoch', () => {
+    const items = [
+      item('1', '2026-05-19T10:00:00.000Z'),
+      item('2', '2026-05-19T11:00:00.000Z'),
+    ];
+    expect(countUnread(items, null, 0)).toBe(2);
+  });
+
+  it('countUnread ignores stale local lastSeen when server cursor is 0', () => {
+    const items = [
+      item('1', '2026-05-19T10:00:00.000Z'),
+      item('2', '2026-05-19T11:00:00.000Z'),
+    ];
+    expect(countUnread(items, '2026-05-19T15:00:00.000Z', 0)).toBe(2);
+  });
+
+  it('countUnread uses later of server and local read cursors', () => {
+    const items = [
+      item('1', '2026-05-19T10:00:00.000Z'),
+      item('2', '2026-05-19T12:00:00.000Z'),
+    ];
+    const serverMs = new Date('2026-05-19T11:30:00.000Z').getTime();
+    expect(countUnread(items, '2026-05-19T09:00:00.000Z', serverMs)).toBe(1);
+    expect(countUnread(items, '2026-05-19T13:00:00.000Z', serverMs)).toBe(0);
+  });
+
   it('setLastSeen and getLastSeen round-trip in localStorage', () => {
     const iso = '2026-05-19T15:00:00.000Z';
     setLastSeen(username, iso);

@@ -20,7 +20,16 @@ updated_at: 2026-06-10
 Logged-in users see activity notifications in two places:
 
 - **Header bell** — dropdown with up to 5 recent items, unread badge, link to full list.
-- **`/notifications` page** — full feed (same row format). Unauthenticated visitors are redirected to `/`.
+- **`/notifications` page** — intro copy (Telegram bot + link to settings), then full feed (same row format). Unauthenticated visitors are redirected to `/`.
+- **`/notifications/settings`** — placeholder settings page (auth required).
+
+## Page intro
+
+[`NotificationsPageIntro`](../../../apps/web/src/modules/notifications/presentation/components/notifications-page-intro.tsx) renders above the feed:
+
+- Title: `notifications` + linked `settings_notify` → `/notifications/settings`
+- Body: `notify_list_message`, then `notify_list_message_telegram_before` / bot link / `notify_list_message_telegram_after`
+- Bot username from runtime env `NOTIFICATIONS_TELEGRAM_BOT_USERNAME` (default `WaivioNotificationsBot`); link `https://t.me/<username>` (server getters in [`get-notifications-telegram-bot.ts`](../../../apps/web/src/config/get-notifications-telegram-bot.ts), passed as props from [`page.tsx`](../../../apps/web/src/app/(app)/notifications/page.tsx)).
 
 ## Data flow
 
@@ -57,7 +66,9 @@ Env (pick one):
 - **Staging/production (runtime):** `NOTIFICATIONS_WS_PUBLIC_URL=wss://<DOMAIN>/notifications` in repo `.env` (compose passes to `web`; nginx proxies `/notifications` → `notifications:7200`). See root [`.env.example`](../../../../.env.example).
 - **Local dev (build-time):** `NEXT_PUBLIC_NOTIFICATIONS_WS_URL=ws://localhost:7200/notifications` in `apps/web/.env` (see [`apps/web/.env.example`](../../../apps/web/.env.example)).
 
-If both are empty, the client does not open a WebSocket (bell shows empty list, no WS in DevTools Network).
+Telegram bot (runtime): `NOTIFICATIONS_TELEGRAM_BOT_USERNAME` — see [`apps/web/.env.example`](../../../apps/web/.env.example).
+
+If both WS env vars are empty, the client does not open a WebSocket (bell shows empty list, no WS in DevTools Network).
 
 ## Unread tracking
 
@@ -77,7 +88,7 @@ Message text comes from locale JSON via [`format-notification.ts`](../../../apps
 | `update_vote_cast` | `notification_upvoted_username_post` |
 | other | `notification_generic_default_message` |
 
-UI chrome: `notifications`, `notifications_empty_message`, `see_all`.
+UI chrome: `notifications`, `notifications_empty_message`, `see_all`, `notify_list_message`, `notify_list_message_telegram_before`, `notify_list_message_telegram_after`, `settings_notify`.
 
 ## Auth
 

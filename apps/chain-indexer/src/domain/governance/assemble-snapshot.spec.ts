@@ -33,6 +33,7 @@ describe('assembleSnapshot', () => {
       weight: null,
       meta_group_id: null,
       canonical: null,
+      status: 'active',
       fields: {
         admins: { update_type: 'admins', cardinality: 'multi', values: [ru({ value_text: 'a1' })] },
         trusted: { update_type: 'trusted', cardinality: 'multi', values: [] },
@@ -90,6 +91,7 @@ describe('assembleSnapshot', () => {
       weight: null,
       meta_group_id: null,
       canonical: null,
+      status: 'active',
       fields: {
         objectControl: {
           update_type: 'objectControl',

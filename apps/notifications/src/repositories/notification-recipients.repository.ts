@@ -52,4 +52,19 @@ export class NotificationRecipientsRepository {
       return [];
     }
   }
+
+  async findAccountBellSubscribers(following: string): Promise<string[]> {
+    try {
+      const rows = await this.db
+        .selectFrom('user_subscriptions')
+        .select('follower')
+        .where('following', '=', following)
+        .where('bell', '=', true)
+        .execute();
+      return rows.map((r) => r.follower);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
 }
