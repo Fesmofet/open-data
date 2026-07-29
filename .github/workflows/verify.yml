@@ -128,6 +128,7 @@ jobs:
               - 'apps/scheduler/**'
               - 'apps/stack-watchdog/**'
               - 'libs/clients/**'
+              - 'libs/system-alerts/**'
               - 'tsconfig.base.json'
               - 'package.json'
               - 'pnpm-lock.yaml'

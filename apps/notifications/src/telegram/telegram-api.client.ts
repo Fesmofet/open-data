@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 export interface TelegramUpdateMessage {
   readonly message_id: number;
@@ -26,14 +25,12 @@ export class TelegramApiClient {
   private readonly logger = new Logger(TelegramApiClient.name);
   private readonly baseUrl: string;
 
-  constructor(private readonly config: ConfigService) {
-    const token = this.config.get<string>('telegram.botToken') ?? '';
+  constructor(private readonly token: string) {
     this.baseUrl = `https://api.telegram.org/bot${token}`;
   }
 
   isConfigured(): boolean {
-    const token = this.config.get<string>('telegram.botToken');
-    return typeof token === 'string' && token.length > 0;
+    return this.token.length > 0;
   }
 
   async getUpdates(

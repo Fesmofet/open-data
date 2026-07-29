@@ -31,10 +31,24 @@ export default () => {
     },
     telegram: {
       botToken: env.TELEGRAM_BOT_TOKEN?.trim() || null,
-      botUsername: env.TELEGRAM_BOT_USERNAME,
       webPublicOrigin: env.WEB_PUBLIC_ORIGIN,
       pollTimeoutSec: env.TELEGRAM_POLL_TIMEOUT_SEC,
       sendRatePerSec: env.TELEGRAM_SEND_RATE_PER_SEC,
+    },
+    telegramOps: {
+      botToken: env.TELEGRAM_OPS_BOT_TOKEN?.trim() || null,
+    },
+    hiveEngine: {
+      client: {
+        nodes: env.HIVE_ENGINE_NODES,
+        cachePrefix: 'notifications:hive-engine',
+        cacheTtlSeconds: 120,
+        maxResponseTimeMs: 8000,
+        urlRotationDb: 0,
+      },
+    },
+    systemHealth: {
+      blockLagBuffer: env.SYSTEM_HEALTH_BLOCK_LAG_BUFFER,
     },
   };
 };

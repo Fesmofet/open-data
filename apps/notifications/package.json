@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "encoding": "^0.1.13",
     "pg": "^8.20.0"
   }
 }

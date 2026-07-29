@@ -27,3 +27,6 @@ export const TELEGRAM_SENT_DEDUP_TTL_SEC = 3600;
 export const TELEGRAM_PER_CHAT_MIN_INTERVAL_MS = 1100;
 
 export const TELEGRAM_POLLER_LOCK_VALUE_PREFIX = 'poller:';
+
+/** Max Hive accounts a single Telegram chat can follow */
+export const TELEGRAM_MAX_ACCOUNTS_PER_CHAT = 10;

@@ -461,6 +461,9 @@ importers:
 
   apps/notifications:
     dependencies:
+      encoding:
+        specifier: ^0.1.13
+        version: 0.1.13
       pg:
         specifier: ^8.20.0
         version: 8.20.0

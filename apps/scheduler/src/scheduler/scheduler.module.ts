@@ -25,9 +25,16 @@ import { PostRewardsFinalizeRunner } from '../jobs/post-rewards-finalize.runner'
 import { WaivPowerAvgRunner } from '../jobs/waiv-power-avg.runner';
 import { PostExpertiseService } from '../domain/post-expertise/post-expertise.service';
 import { PostExpertiseBackfillRunner } from '../jobs/post-expertise-backfill.runner';
+import { SystemHealthCheckRunner } from '../jobs/system-health-check.runner';
 import { PostRewardsFinalizeQueue } from '../queues/post-rewards-finalize.queue';
 import { PostWaivReconcileQueue } from '../queues/post-waiv-reconcile.queue';
 import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
+import {
+  DEFAULT_BLOCK_CURSOR_CHECKS,
+  DEFAULT_BLOCK_LAG_BUFFER,
+  SystemAlertsPublisherModule,
+  SystemHealthModule,
+} from '@opden-data-layer/system-alerts';
 
 @Module({
   imports: [
@@ -110,6 +117,16 @@ import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
       },
       inject: [ConfigService],
     }),
+    SystemHealthModule.forRootAsync({
+      useFactory: (config: ConfigService) => ({
+        checks: DEFAULT_BLOCK_CURSOR_CHECKS,
+        lagBuffer:
+          config.get<number>('systemHealth.blockLagBuffer') ??
+          DEFAULT_BLOCK_LAG_BUFFER,
+      }),
+      inject: [ConfigService],
+    }),
+    SystemAlertsPublisherModule,
   ],
   providers: [
     SiteRegistryDailyRunner,
@@ -123,6 +140,7 @@ import { WaivRewardPoolCache } from '../services/waiv-reward-pool.cache';
     PostRewardsFinalizeQueue,
     WaivRewardPoolCache,
     CurrencyCollectRunner,
+    SystemHealthCheckRunner,
     SchedulerLockService,
     SchedulerDispatchService,
     SchedulerWorkerService,

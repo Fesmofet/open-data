@@ -257,6 +257,14 @@ CREATE TABLE telegram_subscriptions (
 CREATE INDEX telegram_subscriptions_account_idx ON telegram_subscriptions (account);
 
 -- ---------------------------------------------------------------------------
+-- ops_telegram_subscribers (Telegram ops / system alerts)
+-- ---------------------------------------------------------------------------
+CREATE TABLE ops_telegram_subscribers (
+  chat_id    BIGINT NOT NULL PRIMARY KEY,
+  created_at BIGINT NOT NULL
+);
+
+-- ---------------------------------------------------------------------------
 -- user_referrals (ReferralsSchema)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_referrals (

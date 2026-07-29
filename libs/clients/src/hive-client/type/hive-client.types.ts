@@ -257,4 +257,5 @@ export type HiveDynamicGlobalProperties = {
   total_vesting_fund_hive?: string;
   /** Basis points per year (e.g. 2000 = 20% APR). */
   hbd_interest_rate?: number;
+  head_block_number?: number;
 };

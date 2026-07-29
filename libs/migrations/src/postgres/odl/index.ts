@@ -46,6 +46,7 @@ import * as m00045 from './00045_obl_service_orders_reports';
 import * as m00046 from './00046_obl_contract_service_order_schema';
 import * as m00047 from './00047_hive_engine_deposit_records';
 import * as m00048 from './00048_telegram_subscriptions';
+import * as m00049 from './00049_ops_telegram_subscribers';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -107,4 +108,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00046_obl_contract_service_order_schema': { up: m00046.up, down: m00046.down },
   '00047_hive_engine_deposit_records': { up: m00047.up, down: m00047.down },
   '00048_telegram_subscriptions': { up: m00048.up, down: m00048.down },
+  '00049_ops_telegram_subscribers': { up: m00049.up, down: m00049.down },
 };

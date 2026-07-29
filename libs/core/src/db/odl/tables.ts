@@ -39,6 +39,7 @@ export interface OdlDatabase {
   user_metadata: UserMetadataTable;
   user_notification_settings: UserNotificationSettingsTable;
   telegram_subscriptions: TelegramSubscriptionsTable;
+  ops_telegram_subscribers: OpsTelegramSubscribersTable;
   user_referrals: UserReferralsTable;
   user_post_bookmarks: UserPostBookmarksTable;
   user_subscriptions: UserSubscriptionsTable;
@@ -364,6 +365,18 @@ export interface TelegramSubscriptionsTable {
 
 export type TelegramSubscription = Selectable<TelegramSubscriptionsTable>;
 export type NewTelegramSubscription = Insertable<TelegramSubscriptionsTable>;
+
+// ---------------------------------------------------------------------------
+// ops_telegram_subscribers (Telegram ops / system alerts channel)
+// ---------------------------------------------------------------------------
+
+export interface OpsTelegramSubscribersTable {
+  chat_id: string;
+  created_at: number;
+}
+
+export type OpsTelegramSubscriber = Selectable<OpsTelegramSubscribersTable>;
+export type NewOpsTelegramSubscriber = Insertable<OpsTelegramSubscribersTable>;
 
 // ---------------------------------------------------------------------------
 // user_referrals (ReferralsSchema)

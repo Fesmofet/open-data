@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
+
+const DEFAULT_HIVE_ENGINE_NODES = [...HIVE_ENGINE_NODES];
 
 export const notificationsEnvSchema = z.object({
   PORT: z.coerce.number().optional().default(7200),
@@ -15,10 +18,24 @@ export const notificationsEnvSchema = z.object({
   WS_PING_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
   WS_MAX_CONNECTIONS_PER_USER: z.coerce.number().int().min(1).optional().default(5),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
-  TELEGRAM_BOT_USERNAME: z.string().optional().default('WaivioNotificationsBot'),
   WEB_PUBLIC_ORIGIN: z.string().url().optional().default('http://localhost:3000'),
   TELEGRAM_POLL_TIMEOUT_SEC: z.coerce.number().optional().default(30),
   TELEGRAM_SEND_RATE_PER_SEC: z.coerce.number().optional().default(25),
+  TELEGRAM_OPS_BOT_TOKEN: z.string().optional(),
+  HIVE_ENGINE_NODES: z
+    .string()
+    .optional()
+    .transform((s) => {
+      if (!s || s.trim().length === 0) {
+        return [...DEFAULT_HIVE_ENGINE_NODES];
+      }
+      const parsed = s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+      return parsed.length > 0 ? parsed : [...DEFAULT_HIVE_ENGINE_NODES];
+    }),
+  SYSTEM_HEALTH_BLOCK_LAG_BUFFER: z.coerce.number().optional().default(100),
 });
 
 export type NotificationsEnv = z.infer<typeof notificationsEnvSchema>;

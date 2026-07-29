@@ -8,12 +8,14 @@ import { ConfigService } from '@nestjs/config';
 import { RedisClientFactory } from '@opden-data-layer/clients';
 import { randomUUID } from 'crypto';
 import {
+  TELEGRAM_MAX_ACCOUNTS_PER_CHAT,
   TELEGRAM_POLLER_LOCK_TTL_SEC,
   TELEGRAM_POLLER_LOCK_VALUE_PREFIX,
   telegramPollerLockKey,
 } from '../constants/telegram.constants';
 import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
 import { TelegramApiClient } from './telegram-api.client';
+import { planChatSubscriptions } from './telegram-subscribe-limit';
 
 @Injectable()
 export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
@@ -164,7 +166,13 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     }
     const ok: string[] = [];
     const missing: string[] = [];
-    for (const name of names) {
+    const current = await this.subscriptions.findAccountsByChatId(chatId);
+    const { namesToSubscribe, limitRejected } = planChatSubscriptions(
+      current,
+      names,
+      TELEGRAM_MAX_ACCOUNTS_PER_CHAT,
+    );
+    for (const name of namesToSubscribe) {
       const exists = await this.subscriptions.accountExists(name);
       if (!exists) {
         missing.push(name);
@@ -181,6 +189,11 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     }
     if (missing.length > 0) {
       lines.push(`Unknown Hive account(s): ${missing.join(', ')}`);
+    }
+    if (limitRejected.length > 0) {
+      lines.push(
+        `Limit reached (${TELEGRAM_MAX_ACCOUNTS_PER_CHAT} accounts). Not added: ${limitRejected.join(', ')}. Use /stop <username> to free a slot.`,
+      );
     }
     if (lines.length === 0) {
       lines.push('Nothing changed.');

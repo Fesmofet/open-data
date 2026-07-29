@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { RedisClientModule } from '@opden-data-layer/clients';
+import {
+  HiveClientModule,
+  HiveEngineClientModule,
+  type HiveEngineClientModuleOptions,
+  HIVE_RPC_NODES,
+  RedisClientModule,
+} from '@opden-data-layer/clients';
 import { ConsumersModule } from './consumers/consumers.module';
 import notificationsConfig from './config/notifications.config';
 import { DatabaseModule } from './database';
 import { DomainModule } from './domain/domain.module';
+import { TelegramOpsModule } from './telegram-ops/telegram-ops.module';
 import { WsModule } from './ws/ws.module';
 
 @Module({
@@ -21,10 +28,33 @@ import { WsModule } from './ws/ws.module';
       }),
       inject: [ConfigService],
     }),
+    HiveClientModule.forRoot({
+      nodes: [...HIVE_RPC_NODES],
+      cachePrefix: 'notifications:hive-rpc',
+      cacheTtlSeconds: 120,
+      maxResponseTimeMs: 8000,
+      urlRotationDb: 0,
+    }),
+    HiveEngineClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService): HiveEngineClientModuleOptions => {
+        const hive = config.get<HiveEngineClientModuleOptions | undefined>(
+          'hiveEngine.client',
+        );
+        if (!hive?.nodes?.length) {
+          throw new Error(
+            'notifications: hiveEngine.client.nodes is missing or empty',
+          );
+        }
+        return hive;
+      },
+      inject: [ConfigService],
+    }),
     DatabaseModule,
     WsModule,
     DomainModule,
     ConsumersModule,
+    TelegramOpsModule,
   ],
 })
 export class MainModule {}

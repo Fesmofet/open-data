@@ -1,6 +1,7 @@
 import type { CronJobDefinition } from './cron-job.types';
 import { currencyCronJobDefinitions } from './currency.scheduler-jobs';
 import { hiveGlobalPropertiesWarmJob } from './hive-global-properties-warm.job';
+import { systemHealthCheckJob } from './system-health-check.job';
 import { noopTickJob } from './noop-tick.job';
 import { siteRegistryDailyJob } from './site-registry-daily.job';
 import { postRewardReconcileJob } from './post-reward-reconcile.job';
@@ -19,6 +20,7 @@ export const cronJobRegistry: CronJobDefinition[] = [
   postRewardsFinalizeJob,
   postExpertiseBackfillJob,
   hiveGlobalPropertiesWarmJob,
+  systemHealthCheckJob,
   ...currencyCronJobDefinitions,
 ];
 

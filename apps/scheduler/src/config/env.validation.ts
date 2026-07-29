@@ -105,6 +105,7 @@ export const schedulerConfigSchema = z.object({
   POST_REWARDS_FINALIZE_BATCH_SIZE: z.coerce.number().optional().default(50),
   POST_EXPERTISE_BACKFILL_BATCH_SIZE: z.coerce.number().optional().default(100),
   POST_REWARD_RECONCILE_BATCH_SIZE: z.coerce.number().optional().default(50),
+  SYSTEM_HEALTH_BLOCK_LAG_BUFFER: z.coerce.number().optional().default(100),
 });
 
 export type SchedulerEnv = z.infer<typeof schedulerConfigSchema>;

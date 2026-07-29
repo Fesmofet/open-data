@@ -68,5 +68,8 @@ export default () => {
     postRewardReconcile: {
       batchSize: env.POST_REWARD_RECONCILE_BATCH_SIZE,
     },
+    systemHealth: {
+      blockLagBuffer: env.SYSTEM_HEALTH_BLOCK_LAG_BUFFER,
+    },
   };
 };

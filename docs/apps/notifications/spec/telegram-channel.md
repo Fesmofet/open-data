@@ -39,11 +39,12 @@ Table `telegram_subscriptions` (`chat_id`, `account`, `created_at`), composite P
 
 | Variable | Required | Notes |
 |----------|----------|-------|
-| `TELEGRAM_BOT_TOKEN` | No | Omit to disable Telegram entirely |
-| `TELEGRAM_BOT_USERNAME` | No | Default `WaivioNotificationsBot` |
-| `WEB_PUBLIC_ORIGIN` | No | Default `http://localhost:3000`; used for absolute links in messages |
+| `TELEGRAM_BOT_TOKEN` | No | Omit to disable user Telegram bot |
+| `WEB_PUBLIC_ORIGIN` | No | Default `http://localhost:3000`; absolute links in outbound messages |
 | `TELEGRAM_POLL_TIMEOUT_SEC` | No | Default `30` |
 | `TELEGRAM_SEND_RATE_PER_SEC` | No | Default `25` |
+
+Bot **username** for `https://t.me/...` links on the web UI is **`NOTIFICATIONS_TELEGRAM_BOT_USERNAME`** on `apps/web` only (not this service).
 
 ## Bot commands
 
@@ -51,6 +52,8 @@ Table `telegram_subscriptions` (`chat_id`, `account`, `created_at`), composite P
 - `/stop [username...]` — unsubscribe; no args removes all accounts for the chat
 - `/list` — list subscribed accounts
 - Plain text — treated as space/comma-separated Hive usernames (same as legacy UX)
+
+Each chat may follow at most **10** Hive accounts (`TELEGRAM_MAX_ACCOUNTS_PER_CHAT`). Re-subscribing to an account already on the list does not use an extra slot; additional usernames beyond the cap are rejected with a short message.
 
 Unknown Hive accounts are rejected with a short reply (no FK error).
 

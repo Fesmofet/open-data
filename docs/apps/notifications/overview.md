@@ -25,6 +25,8 @@ Events are consumed from a **Redis Stream** published by **chain-indexer** (`@op
 - Native `ws` ping/pong heartbeat
 - Redis Stream consumer + per-user feed lists
 - `user_notification_settings` gating with Redis settings cache
+- Optional Telegram bots (user + ops): **tokens only** in this app (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_OPS_BOT_TOKEN`). Bot usernames for the web UI live on `apps/web` (`NOTIFICATIONS_TELEGRAM_BOT_USERNAME`).
+- Hive + Hive Engine RPC clients (defaults from `@opden-data-layer/clients`) for ops `/status` and health checks; `HIVE_ENGINE_NODES` optional override.
 
 ## Verification
 
@@ -46,3 +48,4 @@ WebSocket URL: `ws://<host>:<PORT>/notifications` (default port `7200`).
 | Routing | [routing.md](spec/routing.md) |
 | Message builder | [message-builder.md](spec/message-builder.md) |
 | Telegram channel | [telegram-channel.md](spec/telegram-channel.md) |
+| Telegram ops bot | [telegram-ops-bot.md](spec/telegram-ops-bot.md) |
