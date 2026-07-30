@@ -12,7 +12,7 @@ export function buildSocialMessage(
   switch (event.type) {
     case 'reply': {
       const p = event.payload;
-      const key = p.replyToPermlink
+      const key = p.isReplyToComment
         ? 'notification_reply_username_comment'
         : 'notification_reply_username_post';
       const postHref = postPath(p.author, p.permlink);
@@ -46,18 +46,16 @@ export function buildSocialMessage(
     case 'my_post': {
       const p = event.payload;
       const postHref = postPath(p.author, p.permlink);
+      const postLabel = p.title ?? p.permlink;
       return withParamHrefs(
         {
           key: 'my_post_notify',
-          params: { username: p.author, title: p.title },
+          params: { post: postLabel },
           href: postHref,
           icon: 'reply',
           actor: p.author,
         },
-        {
-          username: userProfilePath(p.author),
-          title: postHref,
-        },
+        { post: postHref },
       );
     }
     case 'my_comment': {
@@ -66,12 +64,12 @@ export function buildSocialMessage(
       return withParamHrefs(
         {
           key: 'my_comment_notify',
-          params: { username: p.author },
+          params: { parentAuthor: p.parentAuthor },
           href: postHref,
           icon: 'reply',
           actor: p.author,
         },
-        { username: userProfilePath(p.author) },
+        { parentAuthor: userProfilePath(p.parentAuthor) },
       );
     }
     case 'vote_like': {
@@ -105,18 +103,16 @@ export function buildSocialMessage(
     case 'my_vote': {
       const p = event.payload;
       const postHref = postPath(p.author, p.permlink);
+      const postLabel = p.title ?? p.permlink;
       return withParamHrefs(
         {
           key: 'my_like_notify',
-          params: { username: p.voter, title: p.title ?? '' },
+          params: { post: postLabel },
           href: postHref,
           icon: 'vote',
           actor: p.voter,
         },
-        {
-          username: userProfilePath(p.voter),
-          title: postHref,
-        },
+        { post: postHref },
       );
     }
     case 'reblog': {

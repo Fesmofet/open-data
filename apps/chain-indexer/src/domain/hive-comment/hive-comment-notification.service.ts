@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { extractMentions } from '@opden-data-layer/core';
+import { PostsRepository } from '../../repositories/posts.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 import type { CommentOperationPayload } from './hive-comment.schema';
@@ -8,14 +9,16 @@ import type { CommentOperationPayload } from './hive-comment.schema';
 export class HiveCommentNotificationService {
   constructor(
     private readonly notificationEmitter: NotificationEmitterService,
+    private readonly postsRepository: PostsRepository,
   ) {}
 
-  emitForComment(
+  async emitForComment(
     op: CommentOperationPayload,
     ctx: HiveOperationHandlerContext,
-  ): void {
+  ): Promise<void> {
     const emitCtx = this.notificationEmitter.hiveContext(ctx);
     const isRoot = op.parent_author === '';
+    const isReplyToComment = await this.resolveIsReplyToComment(op);
 
     if (isRoot && op.author) {
       this.notificationEmitter.emitWithContext(emitCtx, {
@@ -62,6 +65,7 @@ export class HiveCommentNotificationService {
             parentPermlink: op.parent_permlink,
             isRootPost: false,
             replyToPermlink: op.parent_permlink,
+            isReplyToComment,
           },
         });
       }
@@ -85,5 +89,21 @@ export class HiveCommentNotificationService {
         },
       });
     }
+  }
+
+  private async resolveIsReplyToComment(
+    op: CommentOperationPayload,
+  ): Promise<boolean> {
+    if (!op.parent_author || !op.parent_permlink) {
+      return false;
+    }
+    const parent = await this.postsRepository.findByKey(
+      op.parent_author,
+      op.parent_permlink,
+    );
+    if (parent === undefined) {
+      return true;
+    }
+    return (parent.parent_author ?? '') !== '';
   }
 }

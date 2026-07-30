@@ -56,6 +56,7 @@ export interface NotificationPayloadMap {
     parentPermlink: string;
     isRootPost: boolean;
     replyToPermlink?: string | null;
+    isReplyToComment?: boolean;
   };
   mention: {
     author: string;

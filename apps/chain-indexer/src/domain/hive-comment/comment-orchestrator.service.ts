@@ -61,7 +61,7 @@ export class CommentOperationOrchestrator {
       await this.commentPostObjectBind.tryBindObjectsFromComment(op, blockTimestamp);
     }
 
-    this.commentNotifications.emitForComment(op, context);
+    await this.commentNotifications.emitForComment(op, context);
   }
 
   /**

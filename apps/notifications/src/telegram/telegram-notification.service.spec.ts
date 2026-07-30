@@ -76,7 +76,7 @@ describe('TelegramNotificationService', () => {
     const payload = JSON.parse(
       xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
     );
-    expect(payload.text).toBe('wiv01 transferred 0.001 HIVE to you');
+    expect(payload.text).toBe('wiv01 transferred 0.001 HIVE to flowmaster');
     expect(payload.text).not.toContain('https://');
     expect(payload.websiteUrl).toBe(
       'https://waiviodev.com/@flowmaster/transfers?type=transfer',

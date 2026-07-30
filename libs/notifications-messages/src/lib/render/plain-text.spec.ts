@@ -6,12 +6,13 @@ import {
 } from './plain-text';
 
 const dictionary = {
-  notification_transfer_username_amount: '{username} transferred {amount} to you',
+  notification_transfer_username_amount:
+    '{username} transferred {amount} to {to}',
 };
 
 const message: NotificationMessage = {
   key: 'notification_transfer_username_amount',
-  params: { username: 'wiv01', amount: '0.001 HIVE' },
+  params: { username: 'wiv01', amount: '0.001 HIVE', to: 'flowmaster' },
   href: '/@flowmaster/transfers?type=transfer',
   icon: 'wallet',
   actor: 'wiv01',
@@ -20,7 +21,7 @@ const message: NotificationMessage = {
 describe('plain-text render', () => {
   it('renderTelegramBody returns template without URL', () => {
     expect(renderTelegramBody(message, dictionary)).toBe(
-      'wiv01 transferred 0.001 HIVE to you',
+      'wiv01 transferred 0.001 HIVE to flowmaster',
     );
   });
 
@@ -36,7 +37,7 @@ describe('plain-text render', () => {
         baseUrl: 'https://waiviodev.com',
       }),
     ).toBe(
-      'wiv01 transferred 0.001 HIVE to you\nhttps://waiviodev.com/@flowmaster/transfers?type=transfer',
+      'wiv01 transferred 0.001 HIVE to flowmaster\nhttps://waiviodev.com/@flowmaster/transfers?type=transfer',
     );
   });
 });

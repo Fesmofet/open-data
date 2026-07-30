@@ -17,6 +17,7 @@ const replyPayload = z.object({
   parentPermlink: z.string(),
   isRootPost: z.boolean(),
   replyToPermlink: z.string().nullable().optional(),
+  isReplyToComment: z.boolean().optional(),
 });
 
 const mentionPayload = z.object({

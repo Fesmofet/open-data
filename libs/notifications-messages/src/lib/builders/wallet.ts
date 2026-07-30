@@ -38,12 +38,16 @@ export function buildWalletMessage(
           params: {
             username: p.from,
             amount: `${p.amount} ${p.symbol}`,
+            to: p.to,
           },
           href: walletTransfersPath(p.to, 'transfer'),
           icon: 'wallet',
           actor: p.from,
         },
-        { username: profileHref(p.from) },
+        {
+          username: profileHref(p.from),
+          to: profileHref(p.to),
+        },
       );
     }
     case 'transfer_out': {
@@ -169,7 +173,7 @@ export function buildWalletMessage(
         {
           key: 'change_recovery_account',
           params: {
-            account: p.account,
+            account_to_recover: p.account,
             new_recovery_account: p.newRecoveryAccount,
           },
           href: userProfilePath(p.account),
@@ -177,7 +181,7 @@ export function buildWalletMessage(
           actor: p.account,
         },
         {
-          account: profileHref(p.account),
+          account_to_recover: profileHref(p.account),
           new_recovery_account: profileHref(p.newRecoveryAccount),
         },
       );
@@ -223,12 +227,16 @@ export function buildWalletMessage(
           params: {
             username: p.from,
             amount: `${p.amount} ${p.symbol}`,
+            to: p.to,
           },
           href: walletTransfersPath(p.to, 'transfer'),
           icon: 'wallet',
           actor: p.from,
         },
-        { username: profileHref(p.from) },
+        {
+          username: profileHref(p.from),
+          to: profileHref(p.to),
+        },
       );
     }
     case 'engine_stake':

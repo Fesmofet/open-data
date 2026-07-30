@@ -39,6 +39,8 @@ Pure functions only — no Nest, React, or i18n runtime.
 - **Web**: `format-notification.ts` calls `buildNotificationMessage`, then `NotificationMessageText` renders i18n templates with `paramHrefs` as accent `Link` segments.
 - **Telegram**: `renderTelegramBody(message, dict)` for the message body; `resolveNotificationAbsoluteUrl(message, baseUrl)` for the website button URL. `renderPlainText` remains for plain-text consumers that append the URL as a second line.
 
+**Dictionary sync:** every i18n key emitted by `buildNotificationMessage` must exist in [`apps/notifications/src/telegram/en-dictionary.ts`](../../../../apps/notifications/src/telegram/en-dictionary.ts) with the same placeholder names as [`apps/web/src/i18n/locales/en-US.json`](../../../../apps/web/src/i18n/locales/en-US.json). `en-dictionary.spec.ts` asserts full coverage and no unfilled `{placeholder}` tokens in rendered Telegram bodies.
+
 ## Adding a type
 
 1. Extend `NotificationPayloadMap` + `notificationEventSchema` in `notifications-contract`.
