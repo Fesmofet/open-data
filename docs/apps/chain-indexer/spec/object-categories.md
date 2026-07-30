@@ -48,7 +48,7 @@ Related scope sync queue (`object_categories_related_sync_queue`):
 
 - **`CategoryMutatedEvent`**: enqueue global (`'global','_'`); enqueue both shop buckets per **ownership/administrative** account on **`object_authority`** for this `object_id`; enqueue both buckets per **distinct post `author`** in **`post_objects`** for this `object_id`; enqueue the object row itself.
 - **`AdministrativeAuthorityChangedEvent`**, **`OwnershipAuthorityChangedEvent`**: enqueue both **`user`** shop bucket scopes for that account.
-- **`UserMetadataChangedEvent`** (full **`user_metadata`** row replaced via **`update_user_metadata`** ODL action).
+- **`UserMetadataChangedEvent`** (full **`user_metadata`** row replaced via OSL **`update_user_metadata`** action).
 - **`UserShopDeselectChangedEvent`** (`user_shop_deselect` ODL action).
 - **`PostObjectChangedEvent`** (root post / comment pipeline changed **`post_objects`** for an author).
 
@@ -57,7 +57,7 @@ Emitters:
 - [`update-create.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/update-create.handler.ts)
 - [`update-vote.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/update-vote.handler.ts)
 - [`authority.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/authority.handler.ts)
-- [`user-metadata.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/user-metadata.handler.ts) (`update_user_metadata`)
+- [`user-metadata.handler.ts`](../../../../apps/chain-indexer/src/domain/osl-parser/handlers/user-metadata.handler.ts) (OSL `update_user_metadata`)
 - [`shop-deselect.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/shop-deselect.handler.ts) (`user_shop_deselect`)
 - [`post-upsert.service.ts`](../../../../apps/chain-indexer/src/domain/hive-comment/post-upsert.service.ts), [`comment-post-object-bind.service.ts`](../../../../apps/chain-indexer/src/domain/hive-comment/comment-post-object-bind.service.ts)
 

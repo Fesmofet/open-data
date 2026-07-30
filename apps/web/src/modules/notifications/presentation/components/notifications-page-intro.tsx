@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { OptimisticNavLink } from '@/shared/presentation/navigation';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -19,12 +19,12 @@ export function NotificationsPageIntro({
     <header className="mb-6">
       <h1 className="font-display text-section font-weight-display text-heading leading-display">
         {t('notifications')}(
-        <Link
+        <OptimisticNavLink
           href="/notifications/settings"
           className="text-accent hover:underline [font:inherit]"
         >
           {t('settings_notify')}
-        </Link>
+        </OptimisticNavLink>
         )
       </h1>
       <p className="mt-4 text-body text-fg-muted">{t('notify_list_message')}</p>

@@ -224,7 +224,6 @@ CREATE INDEX idx_user_shop_deselect_account ON user_shop_deselect (account);
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_notification_settings (
   account                TEXT NOT NULL PRIMARY KEY REFERENCES accounts_current (name) ON DELETE CASCADE,
-  activation_campaign    BOOLEAN NOT NULL DEFAULT TRUE,
   deactivation_campaign  BOOLEAN NOT NULL DEFAULT TRUE,
   follow                 BOOLEAN NOT NULL DEFAULT TRUE,
   fill_order             BOOLEAN NOT NULL DEFAULT TRUE,
@@ -232,7 +231,6 @@ CREATE TABLE user_notification_settings (
   minimal_transfer       DOUBLE PRECISION NOT NULL DEFAULT 0,
   reblog                 BOOLEAN NOT NULL DEFAULT TRUE,
   reply                  BOOLEAN NOT NULL DEFAULT TRUE,
-  status_change          BOOLEAN NOT NULL DEFAULT TRUE,
   transfer               BOOLEAN NOT NULL DEFAULT TRUE,
   power_up               BOOLEAN NOT NULL DEFAULT TRUE,
   witness_vote           BOOLEAN NOT NULL DEFAULT TRUE,
@@ -241,7 +239,10 @@ CREATE TABLE user_notification_settings (
   my_like                BOOLEAN NOT NULL DEFAULT FALSE,
   vote                   BOOLEAN NOT NULL DEFAULT TRUE,
   downvote               BOOLEAN NOT NULL DEFAULT FALSE,
-  claim_reward           BOOLEAN NOT NULL DEFAULT FALSE
+  claim_reward           BOOLEAN NOT NULL DEFAULT FALSE,
+  claimed_object_updates BOOLEAN NOT NULL DEFAULT TRUE,
+  group_id_control       BOOLEAN NOT NULL DEFAULT TRUE,
+  followed_user_threads  BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- ---------------------------------------------------------------------------

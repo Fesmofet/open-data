@@ -10,7 +10,6 @@ import type { BatchImportHandler } from './handlers/batch-import.handler';
 import type { FollowObjectHandler } from './handlers/follow-object.handler';
 import type { FollowUserBellHandler } from './handlers/follow-user-bell.handler';
 import type { ShopDeselectHandler } from './handlers/shop-deselect.handler';
-import type { UserMetadataHandler } from './handlers/user-metadata.handler';
 import type { GovernanceCacheService } from '../governance/governance-cache.service';
 
 function hiveCtx(): HiveOperationHandlerContext {
@@ -63,11 +62,6 @@ describe('OdlCustomJsonParser', () => {
     handle: jest.fn(),
   } as unknown as AuthorityHandler;
 
-  const userMetadataHandler = {
-    action: 'update_user_metadata',
-    handle: jest.fn(),
-  } as unknown as UserMetadataHandler;
-
   const shopDeselectHandler = {
     action: 'user_shop_deselect',
     handle: jest.fn(),
@@ -106,7 +100,6 @@ describe('OdlCustomJsonParser', () => {
       updateVoteHandler,
       rankVoteHandler,
       authorityHandler,
-      userMetadataHandler,
       shopDeselectHandler,
       batchImportHandler,
       followObjectHandler,
@@ -130,7 +123,6 @@ describe('OdlCustomJsonParser', () => {
       updateVoteHandler,
       rankVoteHandler,
       authorityHandler,
-      userMetadataHandler,
       shopDeselectHandler,
       batchImportHandler,
       followObjectHandler,

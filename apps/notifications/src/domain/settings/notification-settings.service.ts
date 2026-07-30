@@ -4,6 +4,7 @@ import type {
   NotificationEventType,
 } from '@opden-data-layer/notifications-contract';
 import type { UserNotificationSettings } from '@opden-data-layer/core';
+import { UPDATE_TYPES } from '@opden-data-layer/core';
 import { RedisClientFactory } from '@opden-data-layer/clients';
 import { CurrencyQueryService } from '@opden-data-layer/currency';
 import {
@@ -28,7 +29,9 @@ type SettingsColumn = keyof Pick<
   | 'claim_reward'
   | 'witness_vote'
   | 'fill_order'
-  | 'status_change'
+  | 'claimed_object_updates'
+  | 'group_id_control'
+  | 'followed_user_threads'
 >;
 
 const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = {
@@ -49,12 +52,21 @@ const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = 
   claim_reward: 'claim_reward',
   witness_vote: 'witness_vote',
   fill_order: 'fill_order',
-  object_status_change: 'status_change',
+  bell_thread: 'followed_user_threads',
+  thread_author_follower: 'followed_user_threads',
+  object_update: 'claimed_object_updates',
+  object_update_reject: 'claimed_object_updates',
+  update_vote_cast: 'claimed_object_updates',
 };
 
 const MINIMAL_TRANSFER_TYPES = new Set<NotificationEventType>([
   'transfer_in',
   'engine_transfer',
+]);
+
+const GROUP_ID_UPDATE_TYPES = new Set<NotificationEventType>([
+  'object_update',
+  'object_update_reject',
 ]);
 
 @Injectable()
@@ -103,6 +115,16 @@ export class NotificationSettingsService {
     const column = TYPE_TO_SETTING[event.type];
     if (column && settings[column] === false) {
       return false;
+    }
+
+    if (GROUP_ID_UPDATE_TYPES.has(event.type)) {
+      if (
+        settings.group_id_control === false &&
+        (event.type === 'object_update' || event.type === 'object_update_reject') &&
+        event.payload.updateType === UPDATE_TYPES.PRODUCT_GROUP_ID
+      ) {
+        return false;
+      }
     }
 
     if (MINIMAL_TRANSFER_TYPES.has(event.type)) {

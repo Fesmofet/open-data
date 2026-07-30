@@ -25,9 +25,9 @@ import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
-import { UserMetadataHandler } from './handlers/user-metadata.handler';
+import { UserMetadataHandler } from '../osl-parser/handlers/user-metadata.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
-import { odlEnvelopeEventSchema } from './odl-envelope.schema';
+import { batchImportChildEventSchema } from './odl-envelope.schema';
 
 @Injectable()
 export class BatchImportWorker {
@@ -133,7 +133,7 @@ export class BatchImportWorker {
       pipeline.on('data', (item: { key: number; value: unknown }) => {
         chainPromise = chainPromise.then(async () => {
           const raw = item.value;
-          const parsed = odlEnvelopeEventSchema.safeParse(raw);
+          const parsed = batchImportChildEventSchema.safeParse(raw);
           if (!parsed.success) {
             this.logger.warn(
               `batch_import: invalid event at index ${childIndex}: ${parsed.error.message}`,

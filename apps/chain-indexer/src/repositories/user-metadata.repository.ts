@@ -4,7 +4,7 @@ import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { JsonValue, UserMetadata } from '@opden-data-layer/core';
 
-/** Payload for full `update_user_metadata` ODL overwrite (aligned with {@link UserMetadata} excluding PK). */
+/** Payload for full `update_user_metadata` OSL overwrite (aligned with {@link UserMetadata} excluding PK). */
 export type UserMetadataUpsertPayload = Omit<UserMetadata, 'account'>;
 
 @Injectable()

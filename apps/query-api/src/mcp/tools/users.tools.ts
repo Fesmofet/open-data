@@ -96,6 +96,28 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_notification_settings',
+    {
+      description: catalogDescription('get_user_notification_settings'),
+      inputSchema: z.object({
+        ...accountField,
+        viewer: z.string().describe('Hive account name of the viewer; must match account'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.getUserNotificationSettings.execute(
+          args.account,
+          args.viewer,
+        );
+        return jsonToolResult(result);
+      } catch {
+        return toolError('Forbidden or unavailable');
+      }
+    },
+  );
+
+  server.registerTool(
     'get_user_account_sidebar',
     {
       description: catalogDescription('get_user_account_sidebar'),

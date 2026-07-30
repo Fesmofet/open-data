@@ -30,3 +30,5 @@ New actions are added as handler classes implementing `OdlActionHandler`; regist
 | Action | Spec |
 |--------|------|
 | `hive_engine_deposit` | [osl-hive-engine-deposit.md](osl-hive-engine-deposit.md) |
+| `update_user_notification_settings` | [osl-user-notification-settings.md](osl-user-notification-settings.md) |
+| `update_user_metadata` | [osl-user-metadata.md](osl-user-metadata.md) |

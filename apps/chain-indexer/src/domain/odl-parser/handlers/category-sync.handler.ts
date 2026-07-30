@@ -23,7 +23,7 @@ import {
 import {
   UserMetadataChangedEvent,
   USER_METADATA_CHANGED_EVENT,
-} from '../user-metadata-changed.event';
+} from '../../osl-parser/user-metadata-changed.event';
 import {
   UserShopDeselectChangedEvent,
   USER_SHOP_DESELECT_CHANGED_EVENT,

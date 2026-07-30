@@ -4,6 +4,7 @@ import { queryApiOpenApiTagDefinitions } from './tags';
 import './objects.openapi';
 import './object-updates.openapi';
 import './users.openapi';
+import './user-notification-settings.openapi';
 import './users-social.openapi';
 import './users-favorites.openapi';
 import './users-expertise.openapi';

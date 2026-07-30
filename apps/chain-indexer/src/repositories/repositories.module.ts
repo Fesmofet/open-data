@@ -20,6 +20,7 @@ import { ObjectCategoriesRelatedSyncQueueRepository } from './object-categories-
 import { ObjectTagCategoryItemsRepository } from './object-tag-category-items.repository';
 import { ObjectTagCategoriesSyncQueueRepository } from './object-tag-categories-sync-queue.repository';
 import { UserMetadataRepository } from './user-metadata.repository';
+import { UserNotificationSettingsRepository } from './user-notification-settings.repository';
 import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 import { UserObjectPowersRepository } from './user-object-powers.repository';
 import { UserObjectFollowsRepository } from './user-object-follows.repository';
@@ -53,6 +54,7 @@ import { OblRepository } from './obl.repository';
     ObjectTagCategoryItemsRepository,
     ObjectTagCategoriesSyncQueueRepository,
     UserMetadataRepository,
+    UserNotificationSettingsRepository,
     UserShopDeselectRepository,
     UserObjectPowersRepository,
     UserObjectFollowsRepository,
@@ -85,6 +87,7 @@ import { OblRepository } from './obl.repository';
     ObjectTagCategoryItemsRepository,
     ObjectTagCategoriesSyncQueueRepository,
     UserMetadataRepository,
+    UserNotificationSettingsRepository,
     UserShopDeselectRepository,
     UserObjectPowersRepository,
     UserObjectFollowsRepository,

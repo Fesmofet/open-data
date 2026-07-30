@@ -58,7 +58,7 @@ After toggling administrative heart (`AdministrativeHeartButton`), server revali
 
 ## `hide_favorite_objects`
 
-When the profile owner has `user_metadata.hide_favorite_objects = true`, post-linked favorites are excluded from API scope (administrative authority favorites still appear). Chain indexer accepts `hide_favorite_objects` on `update_user_metadata` (defaults to `false` when omitted).
+When the profile owner has `user_metadata.hide_favorite_objects = true`, post-linked favorites are excluded from API scope (administrative authority favorites still appear). Chain indexer accepts `hide_favorite_objects` on OSL `update_user_metadata` (defaults to `false` when omitted).
 
 ## Verification
 

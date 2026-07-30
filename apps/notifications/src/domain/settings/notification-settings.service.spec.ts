@@ -1,5 +1,6 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import type { UserNotificationSettings } from '@opden-data-layer/core';
+import { UPDATE_TYPES } from '@opden-data-layer/core';
 import { NotificationSettingsService } from './notification-settings.service';
 import type { UserNotificationSettingsRepository } from '../../repositories/user-notification-settings.repository';
 import type { RedisClientFactory } from '@opden-data-layer/clients';
@@ -10,7 +11,6 @@ function baseSettings(
 ): UserNotificationSettings {
   return {
     account: 'alice',
-    activation_campaign: true,
     deactivation_campaign: true,
     follow: true,
     fill_order: true,
@@ -18,7 +18,6 @@ function baseSettings(
     minimal_transfer: 0,
     reblog: true,
     reply: true,
-    status_change: true,
     transfer: true,
     power_up: true,
     witness_vote: true,
@@ -28,6 +27,9 @@ function baseSettings(
     vote: true,
     downvote: true,
     claim_reward: true,
+    claimed_object_updates: true,
+    group_id_control: true,
+    followed_user_threads: true,
     ...overrides,
   };
 }
@@ -98,5 +100,80 @@ describe('NotificationSettingsService', () => {
 
     const allowed = await service.isAllowedWithSettings(settings, event);
     expect(allowed).toBe(false);
+  });
+
+  it('blocks bell_thread when followed_user_threads is false', async () => {
+    const settings = baseSettings({ followed_user_threads: false });
+    const event = {
+      type: 'bell_thread',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'bob',
+      payload: { author: 'bob', permlink: 'p' },
+    } as AnyNotificationEvent;
+
+    expect(await service.isAllowedWithSettings(settings, event)).toBe(false);
+  });
+
+  it('blocks object_update when claimed_object_updates is false', async () => {
+    const settings = baseSettings({ claimed_object_updates: false });
+    const event = {
+      type: 'object_update',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: 'obj-1',
+      actor: 'bob',
+      payload: {
+        updateId: 'u1',
+        updateType: 'name',
+        objectName: null,
+        authorPermlink: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(await service.isAllowedWithSettings(settings, event)).toBe(false);
+  });
+
+  it('blocks product group id updates when group_id_control is false', async () => {
+    const settings = baseSettings({ group_id_control: false });
+    const event = {
+      type: 'object_update',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: 'obj-1',
+      actor: 'bob',
+      payload: {
+        updateId: 'u1',
+        updateType: UPDATE_TYPES.PRODUCT_GROUP_ID,
+        objectName: null,
+        authorPermlink: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(await service.isAllowedWithSettings(settings, event)).toBe(false);
+  });
+
+  it('allows non-group object_update when group_id_control is false', async () => {
+    const settings = baseSettings({ group_id_control: false });
+    const event = {
+      type: 'object_update',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: 'obj-1',
+      actor: 'bob',
+      payload: {
+        updateId: 'u1',
+        updateType: 'name',
+        objectName: null,
+        authorPermlink: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(await service.isAllowedWithSettings(settings, event)).toBe(true);
   });
 });

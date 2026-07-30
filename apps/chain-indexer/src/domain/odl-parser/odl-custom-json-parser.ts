@@ -9,7 +9,6 @@ import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
-import { UserMetadataHandler } from './handlers/user-metadata.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
 import { FollowObjectHandler } from './handlers/follow-object.handler';
@@ -27,7 +26,6 @@ export class OdlCustomJsonParser {
     private readonly updateVoteHandler: UpdateVoteHandler,
     private readonly rankVoteHandler: RankVoteHandler,
     private readonly authorityHandler: AuthorityHandler,
-    private readonly userMetadataHandler: UserMetadataHandler,
     private readonly shopDeselectHandler: ShopDeselectHandler,
     private readonly batchImportHandler: BatchImportHandler,
     private readonly followObjectHandler: FollowObjectHandler,
@@ -42,7 +40,6 @@ export class OdlCustomJsonParser {
       [this.authorityHandler.action]: this.authorityHandler,
       [this.followObjectHandler.action]: this.followObjectHandler,
       [this.followUserBellHandler.action]: this.followUserBellHandler,
-      [this.userMetadataHandler.action]: this.userMetadataHandler,
       [this.shopDeselectHandler.action]: this.shopDeselectHandler,
       [this.batchImportHandler.action]: this.batchImportHandler,
     };

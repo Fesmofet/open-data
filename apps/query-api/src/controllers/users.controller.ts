@@ -24,6 +24,8 @@ import {
   GetUserAccountSidebarEndpoint,
   type UserProfileView,
   type UserAccountSidebarView,
+  GetUserNotificationSettingsEndpoint,
+  type UserNotificationSettingsView,
 } from '../domain/users';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -98,6 +100,7 @@ export class UsersController {
     private readonly getUserExpertiseCounters: GetUserExpertiseCountersEndpoint,
     private readonly getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint,
     private readonly getUserAccountSidebar: GetUserAccountSidebarEndpoint,
+    private readonly getUserNotificationSettings: GetUserNotificationSettingsEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -267,6 +270,14 @@ export class UsersController {
       throw new NotFoundException(`User not found: ${name}`);
     }
     return result;
+  }
+
+  @Get(':name/notification-settings')
+  async getNotificationSettings(
+    @Param('name') name: string,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserNotificationSettingsView> {
+    return this.getUserNotificationSettings.execute(name, viewer);
   }
 
   @Get(':name/profile')

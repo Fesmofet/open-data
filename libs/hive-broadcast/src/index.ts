@@ -100,6 +100,12 @@ export {
 export {
   buildOslEnvelopeOp,
   buildOslHiveEngineDepositOp,
+  buildOslUpdateUserNotificationSettingsOp,
+  buildOslUpdateUserMetadataOp,
   type BuildOslEnvelopeOpInput,
   type BuildOslHiveEngineDepositOpInput,
+  type BuildOslUpdateUserNotificationSettingsOpInput,
+  type BuildOslUpdateUserMetadataOpInput,
+  type UpdateUserNotificationSettingsPayload,
+  type UpdateUserMetadataPayload,
 } from './osl-operations';

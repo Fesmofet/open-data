@@ -13,6 +13,7 @@ import { ThreadsRepository } from './threads.repository';
 import { ObjectCategoriesRelatedRepository } from './object-categories-related.repository';
 import { ObjectCategoriesRepository } from './object-categories.repository';
 import { UserMetadataRepository } from './user-metadata.repository';
+import { UserNotificationSettingsRepository } from './user-notification-settings.repository';
 import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 import { UserSubscriptionsRepository } from './user-subscriptions.repository';
 import { UserObjectFollowsRepository } from './user-object-follows.repository';
@@ -48,6 +49,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     ObjectCategoriesRelatedRepository,
     ObjectCategoriesRepository,
     UserMetadataRepository,
+    UserNotificationSettingsRepository,
     UserShopDeselectRepository,
     UserSubscriptionsRepository,
     UserObjectFollowsRepository,
@@ -83,6 +85,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     ObjectCategoriesRelatedRepository,
     ObjectCategoriesRepository,
     UserMetadataRepository,
+    UserNotificationSettingsRepository,
     UserShopDeselectRepository,
     UserSubscriptionsRepository,
     UserObjectFollowsRepository,

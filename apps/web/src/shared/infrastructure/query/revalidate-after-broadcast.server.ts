@@ -88,3 +88,15 @@ export async function revalidateUserHiveWalletAfterBroadcast(
   updateTag(queryApiCacheTags.userActivityFeed(name, 'wallet'));
   revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
 }
+
+/** Notification settings after OSL update_user_notification_settings broadcast. */
+export async function revalidateNotificationSettingsAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  const name = accountName.trim().toLowerCase();
+  if (name.length === 0) {
+    return;
+  }
+  updateTag(queryApiCacheTags.userNotificationSettings(name));
+  revalidatePath('/notifications/settings', 'page');
+}

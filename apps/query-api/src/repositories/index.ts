@@ -8,6 +8,7 @@ export { ObjectAuthorityRepository } from './object-authority.repository';
 export { ObjectCategoriesRelatedRepository } from './object-categories-related.repository';
 export { ObjectCategoriesRepository } from './object-categories.repository';
 export { UserMetadataRepository } from './user-metadata.repository';
+export { UserNotificationSettingsRepository } from './user-notification-settings.repository';
 export { UserShopDeselectRepository } from './user-shop-deselect.repository';
 export { UserSubscriptionsRepository } from './user-subscriptions.repository';
 export type {

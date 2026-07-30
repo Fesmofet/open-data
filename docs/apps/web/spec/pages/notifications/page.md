@@ -21,13 +21,13 @@ Logged-in users see activity notifications in two places:
 
 - **Header bell** — dropdown with up to 5 recent items, unread badge, link to full list.
 - **`/notifications` page** — intro copy (Telegram bot + link to settings), then full feed (same row format). Unauthenticated visitors are redirected to `/`.
-- **`/notifications/settings`** — placeholder settings page (auth required).
+- **`/notifications/settings`** — notification preference form (auth required). See [settings.md](settings.md).
 
 ## Page intro
 
 [`NotificationsPageIntro`](../../../apps/web/src/modules/notifications/presentation/components/notifications-page-intro.tsx) renders above the feed:
 
-- Title: `notifications` + linked `settings_notify` → `/notifications/settings`
+- Title: `notifications` + linked `settings_notify` → `/notifications/settings` (`OptimisticNavLink`)
 - Body: `notify_list_message`, then `notify_list_message_telegram_before` / bot link / `notify_list_message_telegram_after`
 - Bot username from runtime env `NOTIFICATIONS_TELEGRAM_BOT_USERNAME` (default `WaivioNotificationsBot`); link `https://t.me/<username>` (server getters in [`get-notifications-telegram-bot.ts`](../../../apps/web/src/config/get-notifications-telegram-bot.ts), passed as props from [`page.tsx`](../../../apps/web/src/app/(app)/notifications/page.tsx)).
 

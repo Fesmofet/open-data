@@ -328,7 +328,6 @@ export type UserShopDeselectUpdate = Updateable<UserShopDeselectTable>;
 
 export interface UserNotificationSettingsTable {
   account: string;
-  activation_campaign: boolean;
   deactivation_campaign: boolean;
   follow: boolean;
   fill_order: boolean;
@@ -336,7 +335,6 @@ export interface UserNotificationSettingsTable {
   minimal_transfer: number;
   reblog: boolean;
   reply: boolean;
-  status_change: boolean;
   transfer: boolean;
   power_up: boolean;
   witness_vote: boolean;
@@ -347,6 +345,9 @@ export interface UserNotificationSettingsTable {
   vote: boolean;
   downvote: boolean;
   claim_reward: boolean;
+  claimed_object_updates: boolean;
+  group_id_control: boolean;
+  followed_user_threads: boolean;
 }
 
 export type UserNotificationSettings = Selectable<UserNotificationSettingsTable>;

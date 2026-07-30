@@ -4,6 +4,22 @@ import { render, screen } from '@testing-library/react';
 
 import { NotificationsPageIntro } from './notifications-page-intro';
 
+jest.mock('@/shared/presentation/navigation', () => ({
+  OptimisticNavLink: ({
+    href,
+    children,
+    className,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  ),
+}));
+
 jest.mock('@/i18n/providers/i18n-provider', () => ({
   useI18n: () => ({
     t: (key: string) => {

@@ -1,5 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { OdlEventContext } from '../odl-action-handler';
+import type { OdlEventContext } from '../../odl-shared';
 import { UserMetadataHandler } from './user-metadata.handler';
 
 const baseCtx: OdlEventContext = {

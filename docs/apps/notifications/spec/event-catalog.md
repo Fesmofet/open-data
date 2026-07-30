@@ -87,3 +87,19 @@ For `object_update`, `object_update_reject`, and `object_status_change`, **chain
 ## Settings gating
 
 `apps/notifications` maps each type to a column on `user_notification_settings` and applies `minimal_transfer` (USD) for inbound transfers via `@opden-data-layer/currency`. If USD rates are unavailable, transfer notifications are **not** dropped.
+
+| Column | Event types | Rule |
+|--------|-------------|------|
+| `vote` | `vote_like` | `false` → block |
+| `downvote` | `vote_downvote` | `false` → block |
+| `follow`, `reply`, `mention`, `reblog` | matching social types | `false` → block |
+| `my_post`, `my_comment`, `my_like` | `my_post`, `my_comment`, `my_vote` | `false` → block |
+| `transfer` | inbound/outbound transfer family | `false` → block; inbound also checks `minimal_transfer` |
+| `fill_order`, `power_up`, `claim_reward`, `witness_vote` | matching wallet types | `false` → block |
+| `claimed_object_updates` | `object_update`, `object_update_reject`, `update_vote_cast` | `false` → block |
+| `group_id_control` | `object_update`, `object_update_reject` | when `payload.updateType === productGroupId`, `false` → block |
+| `followed_user_threads` | `bell_thread`, `thread_author_follower` | `false` → block |
+
+`object_status_change` is **not** gated by user settings (column removed in migration `00050`).
+
+Cache key after write: `notifications:cache:settings:{account}` — invalidated by chain-indexer OSL `update_user_notification_settings` handler.

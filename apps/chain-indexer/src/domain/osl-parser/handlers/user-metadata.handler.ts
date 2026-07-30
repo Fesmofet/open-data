@@ -5,8 +5,8 @@ import {
   UserMetadataRepository,
   type UserMetadataUpsertPayload,
 } from '../../../repositories/user-metadata.repository';
-import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
-import { updateUserMetadataPayloadSchema } from '../odl-envelope.schema';
+import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
+import { updateUserMetadataPayloadSchema } from '../osl-envelope.schema';
 import {
   UserMetadataChangedEvent,
   USER_METADATA_CHANGED_EVENT,

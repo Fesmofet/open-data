@@ -146,6 +146,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/users-profile-endpoint.md',
   },
   {
+    name: 'get_user_notification_settings',
+    description:
+      'Notification preference toggles for the authenticated viewer (X-Viewer must match account).',
+    httpEquivalent: 'GET /query/v1/users/:name/notification-settings',
+    specPath: 'docs/apps/query-api/spec/user-notification-settings.md',
+  },
+  {
     name: 'get_user_account_sidebar',
     description:
       'Profile left-rail account panel: metadata, mana, RC, and vote value estimates.',

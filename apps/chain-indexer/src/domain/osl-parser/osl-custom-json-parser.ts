@@ -6,6 +6,8 @@ import type { OdlActionHandler } from '../odl-shared';
 import { GovernanceCacheService } from '../governance/governance-cache.service';
 import { oslEnvelopeSchema } from './osl-envelope.schema';
 import { HiveEngineDepositHandler } from './handlers/hive-engine-deposit.handler';
+import { UserNotificationSettingsHandler } from './handlers/user-notification-settings.handler';
+import { UserMetadataHandler } from './handlers/user-metadata.handler';
 
 @Injectable()
 export class OslCustomJsonParser {
@@ -14,10 +16,14 @@ export class OslCustomJsonParser {
 
   constructor(
     private readonly hiveEngineDepositHandler: HiveEngineDepositHandler,
+    private readonly userNotificationSettingsHandler: UserNotificationSettingsHandler,
+    private readonly userMetadataHandler: UserMetadataHandler,
     private readonly governanceCache: GovernanceCacheService,
   ) {
     this.handlerMap = {
       [this.hiveEngineDepositHandler.action]: this.hiveEngineDepositHandler,
+      [this.userNotificationSettingsHandler.action]: this.userNotificationSettingsHandler,
+      [this.userMetadataHandler.action]: this.userMetadataHandler,
     };
   }
 

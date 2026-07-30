@@ -387,7 +387,6 @@ class MongoUsersMigrator {
 
     this.notificationBuffer.push({
       account: name,
-      activation_campaign: un?.activationCampaign ?? true,
       deactivation_campaign: un?.deactivationCampaign ?? true,
       follow: un?.follow ?? true,
       fill_order: un?.fillOrder ?? true,
@@ -395,7 +394,6 @@ class MongoUsersMigrator {
       minimal_transfer: un?.minimalTransfer ?? 0,
       reblog: un?.reblog ?? true,
       reply: un?.reply ?? true,
-      status_change: un?.statusChange ?? true,
       transfer: un?.transfer ?? true,
       power_up: un?.powerUp ?? true,
       witness_vote: un?.witness_vote ?? true,
@@ -405,6 +403,9 @@ class MongoUsersMigrator {
       vote: un?.like ?? true,
       downvote: un?.downvote ?? false,
       claim_reward: un?.claimReward ?? false,
+      claimed_object_updates: true,
+      group_id_control: true,
+      followed_user_threads: true,
     });
     this.stats.notificationRowsBuffered += 1;
 

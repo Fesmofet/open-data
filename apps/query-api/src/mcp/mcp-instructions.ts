@@ -23,6 +23,7 @@ Decision table:
 | Full object projection | resolve_object |
 | Object rails (related/similar/add-on) | get_object_related / get_object_similar / get_object_add_on |
 | User profile | get_user_profile |
+| User notification settings | get_user_notification_settings (viewer must match account) |
 | User feeds | get_user_blog, get_user_threads, get_user_comments, get_user_mentions, get_user_activity |
 | User shop | get_user_categories, get_user_shop_filters, get_user_shop_objects, get_user_shop_sections |
 | Single post + comments | get_post, get_post_discussion |
