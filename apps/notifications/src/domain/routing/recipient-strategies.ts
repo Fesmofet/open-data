@@ -88,8 +88,6 @@ export class PostAuthorRecipientStrategy implements RecipientStrategy {
     'reblog',
   ]);
 
-  constructor() {}
-
   supports(type: AnyNotificationEvent['type']): boolean {
     return this.types.has(type);
   }

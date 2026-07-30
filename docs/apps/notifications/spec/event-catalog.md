@@ -102,4 +102,4 @@ For `object_update`, `object_update_reject`, and `object_status_change`, **chain
 
 `object_status_change` is **not** gated by user settings (column removed in migration `00050`).
 
-Cache key after write: `notifications:cache:settings:{account}` — invalidated by chain-indexer OSL `update_user_notification_settings` handler.
+Settings are read from Postgres in bulk per stream batch and are not cached. Accounts that are not registered ODL users receive nothing; registered accounts without a row use `DEFAULT_NOTIFICATION_SETTINGS` — see [transport spec](transport.md).

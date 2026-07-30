@@ -1,11 +1,13 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisClientFactory } from '@opden-data-layer/clients';
-import { notificationEventSchema } from '@opden-data-layer/notifications-contract';
+import {
+  notificationEventSchema,
+  type AnyNotificationEvent,
+} from '@opden-data-layer/notifications-contract';
 import {
   NOTIFICATION_CONSUMER_GROUP,
   NOTIFICATION_LOG_EVERY_N_EVENTS,
-  NOTIFICATION_ROUTE_CONCURRENCY,
   NOTIFICATION_ROUTE_MAX_ATTEMPTS,
   NOTIFICATION_STREAM_BATCH_SIZE,
   NOTIFICATION_STREAM_DATA_FIELD,
@@ -43,9 +45,9 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
       '$',
       true,
     );
-    await this.drainOwnPending();
     this.running = true;
-    this.loopPromise = this.pollLoop();
+    // Recovering our own pending entries can take a while; do not block application bootstrap.
+    this.loopPromise = this.drainOwnPending().then(() => this.pollLoop());
     this.logger.log(
       `Redis stream consumer started (group=${NOTIFICATION_CONSUMER_GROUP}, consumer=${this.consumerName})`,
     );
@@ -62,25 +64,21 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
   private async drainOwnPending(): Promise<void> {
     const redis = this.redisFactory.getClient();
     let drained = 0;
-    for (;;) {
-      const entries = await redis.xReadGroup(
-        NOTIFICATION_CONSUMER_GROUP,
-        this.consumerName,
-        [{ key: NOTIFICATION_STREAM_KEY, id: '0' }],
-        { count: NOTIFICATION_STREAM_BATCH_SIZE },
-      );
-      if (entries.length === 0) {
-        break;
-      }
-      const ackIds = await this.processBatch(entries);
-      if (ackIds.length > 0) {
-        await redis.xAck(
-          NOTIFICATION_STREAM_KEY,
+    try {
+      while (this.running) {
+        const entries = await redis.xReadGroup(
           NOTIFICATION_CONSUMER_GROUP,
-          ...ackIds,
+          this.consumerName,
+          [{ key: NOTIFICATION_STREAM_KEY, id: '0' }],
+          { count: NOTIFICATION_STREAM_BATCH_SIZE },
         );
+        if (entries.length === 0) {
+          break;
+        }
+        drained += await this.processBatch(entries);
       }
-      drained += ackIds.length;
+    } catch (err) {
+      this.logger.error(`Pending drain failed: ${(err as Error).message}`);
     }
     if (drained > 0) {
       this.logger.log(
@@ -104,15 +102,8 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
           continue;
         }
 
-        const ackIds = await this.processBatch(entries);
-        if (ackIds.length > 0) {
-          await redis.xAck(
-            NOTIFICATION_STREAM_KEY,
-            NOTIFICATION_CONSUMER_GROUP,
-            ...ackIds,
-          );
-          this.recordThroughput(ackIds.length);
-        }
+        const processed = await this.processBatch(entries);
+        this.recordThroughput(processed);
       } catch (err) {
         if (this.running) {
           this.logger.error(`Stream poll error: ${(err as Error).message}`);
@@ -122,22 +113,47 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
     }
   }
 
+  /**
+   * Routes the whole batch at once, then acks every entry.
+   * Entries are acked even on routing failure so a poison batch cannot stall the stream.
+   * @returns number of acked entries
+   */
   private async processBatch(
     entries: { id: string; fields: Record<string, string> }[],
-  ): Promise<string[]> {
-    const ackIds: string[] = [];
-    for (let i = 0; i < entries.length; i += NOTIFICATION_ROUTE_CONCURRENCY) {
-      const chunk = entries.slice(i, i + NOTIFICATION_ROUTE_CONCURRENCY);
-      const results = await Promise.all(
-        chunk.map((entry) => this.processEntry(entry.id, entry.fields)),
-      );
-      for (const id of results) {
-        if (id !== null) {
-          ackIds.push(id);
-        }
+  ): Promise<number> {
+    const events: AnyNotificationEvent[] = [];
+    for (const entry of entries) {
+      const event = this.parseEntry(entry.id, entry.fields);
+      if (event) {
+        events.push(event);
       }
     }
-    return ackIds;
+
+    if (events.length > 0) {
+      await this.routeWithRetry(events);
+    }
+
+    const ackIds = entries.map((entry) => entry.id);
+    await this.redisFactory
+      .getClient()
+      .xAck(NOTIFICATION_STREAM_KEY, NOTIFICATION_CONSUMER_GROUP, ...ackIds);
+    return ackIds.length;
+  }
+
+  private async routeWithRetry(events: AnyNotificationEvent[]): Promise<void> {
+    for (let attempt = 1; attempt <= NOTIFICATION_ROUTE_MAX_ATTEMPTS; attempt++) {
+      try {
+        await this.router.routeBatch(events);
+        return;
+      } catch (err) {
+        if (attempt < NOTIFICATION_ROUTE_MAX_ATTEMPTS) {
+          continue;
+        }
+        this.logger.error(
+          `Failed to route batch of ${events.length} after ${NOTIFICATION_ROUTE_MAX_ATTEMPTS} attempt(s): ${(err as Error).message}`,
+        );
+      }
+    }
   }
 
   private recordThroughput(count: number): void {
@@ -157,14 +173,14 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
     this.logWindowStartMs = Date.now();
   }
 
-  private async processEntry(
+  private parseEntry(
     entryId: string,
     fields: Record<string, string>,
-  ): Promise<string | null> {
+  ): AnyNotificationEvent | null {
     const raw = fields[NOTIFICATION_STREAM_DATA_FIELD];
     if (!raw) {
       this.logger.warn(`Stream entry ${entryId} missing data field`);
-      return entryId;
+      return null;
     }
 
     let parsed: ReturnType<typeof notificationEventSchema.safeParse>;
@@ -172,29 +188,15 @@ export class RedisStreamNotificationConsumer implements INotificationConsumer {
       parsed = notificationEventSchema.safeParse(JSON.parse(raw));
     } catch {
       this.logger.warn(`Stream entry ${entryId} has invalid JSON`);
-      return entryId;
+      return null;
     }
 
     if (!parsed.success) {
       this.logger.warn(`Stream entry ${entryId} failed schema validation`);
-      return entryId;
+      return null;
     }
 
-    for (let attempt = 1; attempt <= NOTIFICATION_ROUTE_MAX_ATTEMPTS; attempt++) {
-      try {
-        await this.router.route(parsed.data);
-        return entryId;
-      } catch (err) {
-        if (attempt < NOTIFICATION_ROUTE_MAX_ATTEMPTS) {
-          continue;
-        }
-        this.logger.error(
-          `Failed to route entry ${entryId} after ${NOTIFICATION_ROUTE_MAX_ATTEMPTS} attempt(s): ${(err as Error).message}`,
-        );
-        return entryId;
-      }
-    }
-    return entryId;
+    return parsed.data;
   }
 
   private sleep(ms: number): Promise<void> {

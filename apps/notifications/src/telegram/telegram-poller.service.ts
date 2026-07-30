@@ -15,7 +15,6 @@ import {
 } from '../constants/telegram.constants';
 import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
 import { TelegramApiClient } from './telegram-api.client';
-import { TelegramSubscriptionsCacheService } from './telegram-subscriptions-cache.service';
 import { planChatSubscriptions } from './telegram-subscribe-limit';
 
 @Injectable()
@@ -31,7 +30,6 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     private readonly redisFactory: RedisClientFactory,
     private readonly api: TelegramApiClient,
     private readonly subscriptions: TelegramSubscriptionsRepository,
-    private readonly subscriptionsCache: TelegramSubscriptionsCacheService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -118,12 +116,7 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     if (lower.startsWith('/stop')) {
       const names = this.parseUsernames(text.slice('/stop'.length));
       if (names.length === 0) {
-        const accounts =
-          await this.subscriptions.findAccountsByChatId(chatId);
         await this.subscriptions.unsubscribe(chatId);
-        for (const account of accounts) {
-          await this.subscriptionsCache.invalidate(account);
-        }
         await this.api.sendMessage(
           chatId,
           'Unsubscribed from all Hive accounts on this chat.',
@@ -132,7 +125,6 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       }
       for (const name of names) {
         await this.subscriptions.unsubscribe(chatId, name);
-        await this.subscriptionsCache.invalidate(name);
       }
       await this.api.sendMessage(chatId, `Unsubscribed: ${names.join(', ')}`);
       return;
@@ -188,7 +180,6 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       }
       const saved = await this.subscriptions.subscribe(chatId, name);
       if (saved) {
-        await this.subscriptionsCache.invalidate(name);
         ok.push(name);
       }
     }

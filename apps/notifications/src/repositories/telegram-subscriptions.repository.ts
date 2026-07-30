@@ -15,21 +15,35 @@ export class TelegramSubscriptionsRepository {
     return trx ?? this.db;
   }
 
-  async findChatIdsByAccount(account: string): Promise<string[]> {
-    const trimmed = account.trim();
+  /** Chat ids grouped by account; accounts without subscriptions are absent from the map. */
+  async findChatIdsByAccounts(
+    accounts: string[],
+  ): Promise<Map<string, string[]>> {
+    const trimmed = [
+      ...new Set(accounts.map((a) => a.trim()).filter((a) => a.length > 0)),
+    ];
+    const grouped = new Map<string, string[]>();
     if (trimmed.length === 0) {
-      return [];
+      return grouped;
     }
     try {
       const rows = await this.db
         .selectFrom('telegram_subscriptions')
-        .select('chat_id')
-        .where('account', '=', trimmed)
+        .select(['account', 'chat_id'])
+        .where('account', 'in', trimmed)
         .execute();
-      return rows.map((r) => String(r.chat_id));
+      for (const row of rows) {
+        const existing = grouped.get(row.account);
+        if (existing) {
+          existing.push(String(row.chat_id));
+          continue;
+        }
+        grouped.set(row.account, [String(row.chat_id)]);
+      }
+      return grouped;
     } catch (e) {
       this.logger.error((e as Error).message);
-      return [];
+      return grouped;
     }
   }
 

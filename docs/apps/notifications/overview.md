@@ -24,8 +24,8 @@ Events are consumed from a **Redis Stream** published by **chain-indexer** (`@op
 - NestJS 11, JWT (`JWT_SECRET`, shared with auth tokens)
 - Native `ws` ping/pong heartbeat
 - Redis Stream consumer + per-user feed lists (`NOTIFICATIONS_CONSUMER_NAME`, default `notifications-1`)
-- `user_notification_settings` gating with Redis settings cache (negative cache for accounts without a row)
-- Telegram subscription lookup cache (`notifications:cache:telegram:subs:{account}`)
+- Batch routing: settings, known accounts and Telegram subscriptions are read from Postgres in bulk once per stream batch (no caches) — see [transport spec](spec/transport.md)
+- Gating applies to registered ODL accounts only; accounts without a `user_notification_settings` row fall back to `DEFAULT_NOTIFICATION_SETTINGS`
 - Optional Telegram bots (user + ops): **tokens only** in this app (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_OPS_BOT_TOKEN`). Bot usernames for the web UI live on `apps/web` (`NOTIFICATIONS_TELEGRAM_BOT_USERNAME`).
 - Hive + Hive Engine RPC clients (defaults from `@opden-data-layer/clients`) for ops `/status` and health checks; `HIVE_ENGINE_NODES` optional override.
 

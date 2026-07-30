@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, routing]
-updated_at: 2026-07-28
+updated_at: 2026-07-30
 related:
   - docs/apps/notifications/spec/event-catalog.md
   - docs/apps/notifications/spec/transport.md
@@ -14,7 +14,7 @@ related:
 
 # Notification routing
 
-`NotificationRouterService` is thin: validate event → pick strategy → resolve recipients → filter by `NotificationSettingsService` → `NotificationFeedService.addToFeed` (except `trx_processed`).
+`NotificationRouterService.routeBatch` handles a whole stream batch: parse events → pick strategy per event → resolve recipients → load the audience in bulk (`NotificationAudienceService`) → filter in memory with `NotificationSettingsService.isAllowed` → `NotificationFeedService.addManyToFeed` + `TelegramNotificationService.enqueueMany` (except `trx_processed`, which only pushes to WS). `route(event)` is a single-event wrapper over `routeBatch`. Gating semantics and batch mechanics live in [transport.md](transport.md).
 
 ## Strategies
 

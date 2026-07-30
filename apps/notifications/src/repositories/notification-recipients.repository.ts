@@ -9,6 +9,30 @@ export class NotificationRecipientsRepository {
 
   constructor(@Inject(KYSELY) private readonly db: Kysely<OdlDatabase>) {}
 
+  /**
+   * Accounts that are registered ODL users (have a `user_metadata` row).
+   * Mirrors the legacy Waivio `users` collection lookup used for notification gating.
+   */
+  async findKnownAccounts(accounts: string[]): Promise<Set<string>> {
+    const trimmed = [
+      ...new Set(accounts.map((a) => a.trim()).filter((a) => a.length > 0)),
+    ];
+    if (trimmed.length === 0) {
+      return new Set();
+    }
+    try {
+      const rows = await this.db
+        .selectFrom('user_metadata')
+        .select('account')
+        .where('account', 'in', trimmed)
+        .execute();
+      return new Set(rows.map((r) => r.account));
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return new Set();
+    }
+  }
+
   async findObjectCreator(objectId: string): Promise<string | null> {
     try {
       const row = await this.db

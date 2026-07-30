@@ -35,22 +35,48 @@ export class NotificationFeedService {
   }
 
   async addToFeed(username: string, item: UserNotificationItem): Promise<void> {
-    const key = notificationListKey(username);
-    const serialized = JSON.stringify(item);
-    try {
-      const redis = this.redisFactory.getClient();
-      const pipe = redis.pipeline();
-      pipe.lPush(key, serialized);
-      pipe.expire(key, NOTIFICATION_EXPIRY_SEC);
-      pipe.lTrim(key, 0, NOTIFICATION_LIST_MAX - 1);
-      await pipe.exec();
-    } catch (err) {
-      this.logger.error(
-        `addToFeed failed for ${username}: ${(err as Error).message}`,
-      );
+    await this.addManyToFeed([{ username, item }]);
+  }
+
+  /**
+   * Writes a whole batch with a single Redis pipeline. Items are pushed in the given order,
+   * so the last item of the batch ends up at the head of the list (newest first).
+   */
+  async addManyToFeed(
+    entries: { username: string; item: UserNotificationItem }[],
+  ): Promise<void> {
+    if (entries.length === 0) {
       return;
     }
-    this.pushLive(username, item);
+
+    const byUsername = new Map<string, string[]>();
+    for (const { username, item } of entries) {
+      const serialized = JSON.stringify(item);
+      const existing = byUsername.get(username);
+      if (existing) {
+        existing.push(serialized);
+        continue;
+      }
+      byUsername.set(username, [serialized]);
+    }
+
+    try {
+      const pipe = this.redisFactory.getClient().pipeline();
+      for (const [username, serialized] of byUsername) {
+        const key = notificationListKey(username);
+        pipe.lPush(key, ...serialized);
+        pipe.expire(key, NOTIFICATION_EXPIRY_SEC);
+        pipe.lTrim(key, 0, NOTIFICATION_LIST_MAX - 1);
+      }
+      await pipe.exec();
+    } catch (err) {
+      this.logger.error(`addManyToFeed failed: ${(err as Error).message}`);
+      return;
+    }
+
+    for (const { username, item } of entries) {
+      this.pushLive(username, item);
+    }
   }
 
   async getFeed(username: string): Promise<UserNotificationItem[]> {

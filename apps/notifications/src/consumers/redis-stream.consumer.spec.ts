@@ -7,23 +7,54 @@ import {
 import type { NotificationRouterService } from '../domain/notification-router.service';
 import { RedisStreamNotificationConsumer } from './redis-stream.consumer';
 
-function processEntry(
+type StreamEntry = { id: string; fields: Record<string, string> };
+
+function processBatch(
   consumer: RedisStreamNotificationConsumer,
-  entryId: string,
-  fields: Record<string, string>,
-): Promise<string | null> {
+  entries: StreamEntry[],
+): Promise<number> {
   return (
     consumer as unknown as {
-      processEntry(id: string, f: Record<string, string>): Promise<string | null>;
+      processBatch(e: StreamEntry[]): Promise<number>;
     }
-  ).processEntry(entryId, fields);
+  ).processBatch(entries);
 }
 
-function drainOwnPending(consumer: RedisStreamNotificationConsumer): Promise<void> {
+function drainOwnPending(
+  consumer: RedisStreamNotificationConsumer,
+): Promise<void> {
+  (consumer as unknown as { running: boolean }).running = true;
   return (
     consumer as unknown as { drainOwnPending(): Promise<void> }
   ).drainOwnPending();
 }
+
+function entry(id: string, event: unknown): StreamEntry {
+  return {
+    id,
+    fields: { [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event) },
+  };
+}
+
+const trxProcessed = {
+  type: 'trx_processed',
+  occurredAt: '2026-01-01T00:00:00.000Z',
+  blockNum: 1,
+  trxId: 'trx-abc',
+  objectId: null,
+  actor: null,
+  payload: {},
+};
+
+const follow = {
+  type: 'follow',
+  occurredAt: '2026-01-01T00:00:00.000Z',
+  blockNum: 2,
+  trxId: 't',
+  objectId: null,
+  actor: 'a',
+  payload: { following: 'b', action: 'follow' },
+};
 
 describe('RedisStreamNotificationConsumer', () => {
   const redis: RedisClientInterface = {
@@ -43,14 +74,15 @@ describe('RedisStreamNotificationConsumer', () => {
   } as unknown as import('@nestjs/config').ConfigService;
 
   const router = {
-    route: jest.fn().mockResolvedValue(undefined),
+    routeBatch: jest.fn().mockResolvedValue(undefined),
   } as unknown as NotificationRouterService;
 
   let consumer: RedisStreamNotificationConsumer;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (router.route as jest.Mock).mockResolvedValue(undefined);
+    (router.routeBatch as jest.Mock).mockResolvedValue(undefined);
+    (redis.xReadGroup as jest.Mock).mockResolvedValue([]);
     consumer = new RedisStreamNotificationConsumer(
       config,
       redisFactory,
@@ -58,7 +90,7 @@ describe('RedisStreamNotificationConsumer', () => {
     );
   });
 
-  it('start creates consumer group and drains pending', async () => {
+  it('start creates the consumer group and drains pending without blocking', async () => {
     await consumer.start();
     await consumer.stop();
 
@@ -76,82 +108,66 @@ describe('RedisStreamNotificationConsumer', () => {
     );
   });
 
-  it('processEntry routes valid events and returns id for ack', async () => {
-    const event = {
-      type: 'trx_processed',
-      occurredAt: '2026-01-01T00:00:00.000Z',
-      blockNum: 1,
-      trxId: 'trx-abc',
-      objectId: null,
-      actor: null,
-      payload: {},
-    };
+  it('routes the whole batch in one call and acks every entry', async () => {
+    const acked = await processBatch(consumer, [
+      entry('1-0', trxProcessed),
+      entry('2-0', follow),
+    ]);
 
-    const ackId = await processEntry(consumer, '1-0', {
-      [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
-    });
-
-    expect(ackId).toBe('1-0');
-    expect(router.route).toHaveBeenCalledWith(expect.objectContaining(event));
+    expect(acked).toBe(2);
+    expect(router.routeBatch).toHaveBeenCalledTimes(1);
+    expect(router.routeBatch).toHaveBeenCalledWith([
+      expect.objectContaining({ type: 'trx_processed' }),
+      expect.objectContaining({ type: 'follow' }),
+    ]);
+    expect(redis.xAck).toHaveBeenCalledWith(
+      NOTIFICATION_STREAM_KEY,
+      NOTIFICATION_CONSUMER_GROUP,
+      '1-0',
+      '2-0',
+    );
   });
 
-  it('processEntry returns id for missing or invalid data without routing', async () => {
-    expect(await processEntry(consumer, '2-0', {})).toBe('2-0');
-    expect(router.route).not.toHaveBeenCalled();
+  it('skips unparsable entries but still acks them', async () => {
+    const acked = await processBatch(consumer, [
+      { id: '3-0', fields: {} },
+      { id: '4-0', fields: { [NOTIFICATION_STREAM_DATA_FIELD]: '{bad' } },
+      { id: '5-0', fields: { [NOTIFICATION_STREAM_DATA_FIELD]: '{"type":"nope"}' } },
+    ]);
 
-    jest.clearAllMocks();
-
-    expect(
-      await processEntry(consumer, '3-0', {
-        [NOTIFICATION_STREAM_DATA_FIELD]: '{bad',
-      }),
-    ).toBe('3-0');
-    expect(router.route).not.toHaveBeenCalled();
+    expect(acked).toBe(3);
+    expect(router.routeBatch).not.toHaveBeenCalled();
+    expect(redis.xAck).toHaveBeenCalledWith(
+      NOTIFICATION_STREAM_KEY,
+      NOTIFICATION_CONSUMER_GROUP,
+      '3-0',
+      '4-0',
+      '5-0',
+    );
   });
 
-  it('processEntry acks after routing exhausts retries', async () => {
-    (router.route as jest.Mock).mockRejectedValue(new Error('route failed'));
+  it('acks the batch after routing exhausts retries', async () => {
+    (router.routeBatch as jest.Mock).mockRejectedValue(new Error('route failed'));
 
-    const ackId = await processEntry(consumer, '4-0', {
-      [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify({
-        type: 'follow',
-        occurredAt: '2026-01-01T00:00:00.000Z',
-        blockNum: 1,
-        trxId: 't',
-        objectId: null,
-        actor: 'a',
-        payload: { following: 'b', action: 'follow' },
-      }),
-    });
+    const acked = await processBatch(consumer, [entry('6-0', follow)]);
 
-    expect(ackId).toBe('4-0');
-    expect(router.route).toHaveBeenCalledTimes(2);
+    expect(acked).toBe(1);
+    expect(router.routeBatch).toHaveBeenCalledTimes(2);
+    expect(redis.xAck).toHaveBeenCalledWith(
+      NOTIFICATION_STREAM_KEY,
+      NOTIFICATION_CONSUMER_GROUP,
+      '6-0',
+    );
   });
 
   it('drainOwnPending acks recovered pending entries', async () => {
-    const event = {
-      type: 'trx_processed',
-      occurredAt: '2026-01-01T00:00:00.000Z',
-      blockNum: 1,
-      trxId: 'trx-pending',
-      objectId: null,
-      actor: null,
-      payload: {},
-    };
     (redis.xReadGroup as jest.Mock)
-      .mockResolvedValueOnce([
-        {
-          id: '9-0',
-          fields: {
-            [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
-          },
-        },
-      ])
+      .mockResolvedValueOnce([entry('9-0', trxProcessed)])
       .mockResolvedValueOnce([]);
 
     await drainOwnPending(consumer);
 
-    expect(router.route).toHaveBeenCalled();
+    expect(router.routeBatch).toHaveBeenCalled();
     expect(redis.xAck).toHaveBeenCalledWith(
       NOTIFICATION_STREAM_KEY,
       NOTIFICATION_CONSUMER_GROUP,

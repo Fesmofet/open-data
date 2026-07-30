@@ -5,14 +5,7 @@ import type {
 } from '@opden-data-layer/notifications-contract';
 import type { UserNotificationSettings } from '@opden-data-layer/core';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
-import { RedisClientFactory } from '@opden-data-layer/clients';
-import { CurrencyQueryService } from '@opden-data-layer/currency';
-import {
-  NOTIFICATION_SETTINGS_CACHE_TTL_SEC,
-  NOTIFICATION_SETTINGS_NULL_SENTINEL,
-  notificationSettingsCacheKey,
-} from '../../constants/notification-settings.constants';
-import { UserNotificationSettingsRepository } from '../../repositories/user-notification-settings.repository';
+import type { NotificationSettingsView } from '../../constants/notification-settings.constants';
 
 type SettingsColumn = keyof Pick<
   UserNotificationSettings,
@@ -70,45 +63,23 @@ const GROUP_ID_UPDATE_TYPES = new Set<NotificationEventType>([
   'object_update_reject',
 ]);
 
+/** USD price per unit, keyed by Hive symbol. */
+export interface UsdRates {
+  hive: number;
+  hbd: number;
+}
+
+/**
+ * Pure gating rules. Callers resolve settings up front (see NotificationAudienceService)
+ * so a batch of events can be filtered without any I/O.
+ */
 @Injectable()
 export class NotificationSettingsService {
-  constructor(
-    private readonly settingsRepository: UserNotificationSettingsRepository,
-    private readonly redisFactory: RedisClientFactory,
-    private readonly currencyQuery: CurrencyQueryService,
-  ) {}
-
-  async prefetchSettings(
-    accounts: string[],
-  ): Promise<Map<string, UserNotificationSettings | null>> {
-    const unique = [...new Set(accounts.map((a) => a.trim()).filter(Boolean))];
-    const map = new Map<string, UserNotificationSettings | null>();
-    await Promise.all(
-      unique.map(async (account) => {
-        map.set(account, await this.getSettings(account));
-      }),
-    );
-    return map;
-  }
-
-  async isAllowed(
-    account: string,
+  isAllowed(
+    settings: NotificationSettingsView,
     event: AnyNotificationEvent,
-    prefetched?: Map<string, UserNotificationSettings | null>,
-  ): Promise<boolean> {
-    const settings =
-      prefetched?.get(account.trim()) ?? (await this.getSettings(account));
-    return this.isAllowedWithSettings(settings, event);
-  }
-
-  async isAllowedWithSettings(
-    settings: UserNotificationSettings | null,
-    event: AnyNotificationEvent,
-  ): Promise<boolean> {
-    if (!settings) {
-      return true;
-    }
-
+    usdRates: UsdRates | null,
+  ): boolean {
     if (event.type === 'vote_downvote' && settings.downvote === false) {
       return false;
     }
@@ -121,7 +92,8 @@ export class NotificationSettingsService {
     if (GROUP_ID_UPDATE_TYPES.has(event.type)) {
       if (
         settings.group_id_control === false &&
-        (event.type === 'object_update' || event.type === 'object_update_reject') &&
+        (event.type === 'object_update' ||
+          event.type === 'object_update_reject') &&
         event.payload.updateType === UPDATE_TYPES.PRODUCT_GROUP_ID
       ) {
         return false;
@@ -134,6 +106,7 @@ export class NotificationSettingsService {
           event.payload.amount,
           event.payload.symbol,
           settings.minimal_transfer,
+          usdRates,
         );
       }
     }
@@ -141,41 +114,17 @@ export class NotificationSettingsService {
     return true;
   }
 
-  private async getSettings(
-    account: string,
-  ): Promise<UserNotificationSettings | null> {
-    const cacheKey = notificationSettingsCacheKey(account);
-    const redis = this.redisFactory.getClient();
-    try {
-      const cached = await redis.get(cacheKey);
-      if (cached === NOTIFICATION_SETTINGS_NULL_SENTINEL) {
-        return null;
-      }
-      if (cached) {
-        return JSON.parse(cached) as UserNotificationSettings;
-      }
-    } catch {
-      // fall through to DB
-    }
-
-    const row = await this.settingsRepository.findByAccount(account);
-    try {
-      await redis.set(
-        cacheKey,
-        row ? JSON.stringify(row) : NOTIFICATION_SETTINGS_NULL_SENTINEL,
-        NOTIFICATION_SETTINGS_CACHE_TTL_SEC,
-      );
-    } catch {
-      // ignore cache write errors
-    }
-    return row;
+  /** True when the batch contains an event whose gating depends on USD rates. */
+  needsUsdRates(events: AnyNotificationEvent[]): boolean {
+    return events.some((event) => MINIMAL_TRANSFER_TYPES.has(event.type));
   }
 
-  private async passesMinimalTransfer(
+  private passesMinimalTransfer(
     amount: string,
     symbol: string,
     minimalUsd: number,
-  ): Promise<boolean> {
+    usdRates: UsdRates | null,
+  ): boolean {
     if (minimalUsd <= 0) {
       return true;
     }
@@ -183,23 +132,17 @@ export class NotificationSettingsService {
     if (!Number.isFinite(numeric) || numeric <= 0) {
       return true;
     }
-
-    try {
-      const rates = await this.currencyQuery.legacyRateLatest('USD', 'HIVE,HBD');
-      const upper = symbol.toUpperCase();
-      const hiveUsd = Number(rates?.HIVE ?? 0);
-      const hbdUsd = Number(rates?.HBD ?? 0);
-      let usd = 0;
-      if (upper === 'HIVE' && hiveUsd > 0) {
-        usd = numeric * hiveUsd;
-      } else if (upper === 'HBD' && hbdUsd > 0) {
-        usd = numeric * hbdUsd;
-      } else {
-        return true;
-      }
-      return usd >= minimalUsd;
-    } catch {
+    if (!usdRates) {
       return true;
     }
+
+    const upper = symbol.toUpperCase();
+    if (upper === 'HIVE' && usdRates.hive > 0) {
+      return numeric * usdRates.hive >= minimalUsd;
+    }
+    if (upper === 'HBD' && usdRates.hbd > 0) {
+      return numeric * usdRates.hbd >= minimalUsd;
+    }
+    return true;
   }
 }

@@ -40,6 +40,23 @@ class RedisPipelineWrapper implements RedisPipelineInterface {
     return this;
   }
 
+  xAdd(
+    stream: string,
+    fields: Record<string, string>,
+    options?: { maxLen?: number },
+  ): this {
+    const flat: string[] = [];
+    for (const [k, v] of Object.entries(fields)) {
+      flat.push(k, v);
+    }
+    if (options?.maxLen !== undefined) {
+      this.pipeline.xadd(stream, 'MAXLEN', '~', options.maxLen, '*', ...flat);
+      return this;
+    }
+    this.pipeline.xadd(stream, '*', ...flat);
+    return this;
+  }
+
   async exec(): Promise<void> {
     await this.pipeline.exec();
   }

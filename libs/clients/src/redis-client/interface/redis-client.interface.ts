@@ -4,6 +4,11 @@ export interface RedisPipelineInterface {
   expire(key: string, ttlSeconds: number): this;
   lPush(key: string, ...values: string[]): this;
   lTrim(key: string, start: number, stop: number): this;
+  xAdd(
+    stream: string,
+    fields: Record<string, string>,
+    options?: { maxLen?: number },
+  ): this;
   exec(): Promise<void>;
 }
 

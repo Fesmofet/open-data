@@ -36,32 +36,23 @@ const validPayload = {
 };
 
 describe('UserNotificationSettingsHandler', () => {
-  function createHandler(mocks: { upsert?: jest.Mock; del?: jest.Mock }) {
+  function createHandler(mocks: { upsert?: jest.Mock }) {
     const settingsRepository = {
       upsert: mocks.upsert ?? jest.fn().mockResolvedValue(undefined),
     };
-    const redis = {
-      del: mocks.del ?? jest.fn().mockResolvedValue(1),
-    };
-    const redisFactory = {
-      getClient: () => redis,
-    };
     const handler = new UserNotificationSettingsHandler(
       settingsRepository as never,
-      redisFactory as never,
     );
-    return { handler, settingsRepository, redis };
+    return { handler, settingsRepository };
   }
 
-  it('upserts settings and invalidates cache on valid payload', async () => {
+  it('upserts settings on valid payload', async () => {
     const upsert = jest.fn().mockResolvedValue(undefined);
-    const del = jest.fn().mockResolvedValue(1);
-    const { handler } = createHandler({ upsert, del });
+    const { handler } = createHandler({ upsert });
 
     await handler.handle(validPayload, baseCtx);
 
     expect(upsert).toHaveBeenCalledWith('alice', validPayload);
-    expect(del).toHaveBeenCalledWith('notifications:cache:settings:alice');
   });
 
   it('ignores invalid payload', async () => {

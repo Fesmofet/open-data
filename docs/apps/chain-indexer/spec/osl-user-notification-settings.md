@@ -30,9 +30,9 @@ Handler: `UserNotificationSettingsHandler` in `apps/chain-indexer/src/domain/osl
 - `UserNotificationSettingsRepository.upsert(account, payload)` — `ON CONFLICT (account) DO UPDATE` on payload columns only; `deactivation_campaign` is unchanged on update and defaults to `true` on insert.
 - Requires existing `accounts_current` row (FK); failures are logged and swallowed.
 
-## Cache invalidation
+## Caching
 
-After successful upsert: `DEL notifications:cache:settings:{account}` (see `apps/notifications` settings cache).
+None. `apps/notifications` reads settings straight from Postgres in bulk per stream batch, so there is no cache to invalidate — see [notifications transport spec](../../notifications/spec/transport.md).
 
 ## Client broadcast
 

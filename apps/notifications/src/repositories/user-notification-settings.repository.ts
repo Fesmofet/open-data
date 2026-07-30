@@ -25,4 +25,22 @@ export class UserNotificationSettingsRepository {
       return null;
     }
   }
+
+  async findByAccounts(
+    accounts: string[],
+  ): Promise<UserNotificationSettings[]> {
+    if (accounts.length === 0) {
+      return [];
+    }
+    try {
+      return await this.db
+        .selectFrom('user_notification_settings')
+        .selectAll()
+        .where('account', 'in', accounts)
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
 }

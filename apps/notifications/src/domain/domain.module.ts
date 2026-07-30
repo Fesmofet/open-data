@@ -15,6 +15,7 @@ import {
   ThreadAuthorFollowerRecipientStrategy,
   UserBellRecipientStrategy,
 } from './routing/recipient-strategies';
+import { NotificationAudienceService } from './settings/notification-audience.service';
 import { NotificationSettingsService } from './settings/notification-settings.service';
 import { TelegramModule } from '../telegram/telegram.module';
 
@@ -37,6 +38,7 @@ import { TelegramModule } from '../telegram/telegram.module';
     ThreadAuthorFollowerRecipientStrategy,
     RecipientStrategyRegistry,
     NotificationSettingsService,
+    NotificationAudienceService,
   ],
   exports: [NotificationRouterService, NotificationFeedService],
 })

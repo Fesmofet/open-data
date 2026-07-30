@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, transport]
-updated_at: 2026-07-28
+updated_at: 2026-07-30
 related:
   - docs/apps/notifications/overview.md
   - docs/apps/notifications/spec/event-catalog.md
@@ -22,25 +22,44 @@ Cross-service events flow from **chain-indexer** to **notifications** via a Redi
 |-----|------|----------|----------|
 | `chain-indexer:notifications:stream` | Stream | chain-indexer (`XADD`) | notifications (`XREADGROUP` / `XACK`) |
 | `notifications:cache:feed:{username}` | List | notifications (`LPUSH` + `LTRIM` + `EXPIRE`) | notifications (`LRANGE`) + WS live push |
-| `notifications:cache:settings:{account}` | String (JSON) | notifications | settings cache TTL (includes negative cache sentinel when no row) |
-| `notifications:cache:telegram:subs:{account}` | String (JSON) | notifications | Telegram chat IDs per Hive account (TTL 300s) |
+| `notifications:queue:telegram` | Stream | notifications (`XADD`) | notifications Telegram sender |
+
+Settings and Telegram subscriptions are **not cached** — they are read from Postgres in bulk once per stream batch, so there is no cache to invalidate.
 
 Legacy feed key `notifications:list:{username}` is still read during rollout and merged with the new key.
 
 Consumer group: `notifications-consumers`. Stable consumer name: `NOTIFICATIONS_CONSUMER_NAME` (default `notifications-1`).
 
+## Audience gating
+
+A recipient receives a notification only when it is a **registered ODL account**, which mirrors the legacy lookup against the Waivio `users` collection:
+
+- has a `user_notification_settings` row — that row is used, or
+- has a `user_metadata` row, or an active `telegram_subscriptions` row — `DEFAULT_NOTIFICATION_SETTINGS` applies.
+
+Any other account (an arbitrary Hive account seen in the firehose) is dropped before any further I/O. `DEFAULT_NOTIFICATION_SETTINGS` in `apps/notifications/src/constants/notification-settings.constants.ts` mirrors the column defaults of `user_notification_settings`.
+
 ## Stream consumer throughput
 
-`RedisStreamNotificationConsumer` settings (constants in `apps/notifications/src/constants/notification-stream.constants.ts`):
+The consumer processes a whole `XREADGROUP` batch as one unit, the way the legacy service processed a whole block:
+
+1. Parse every entry in the batch; unparsable entries are logged and acked.
+2. Resolve recipients for all events.
+3. `NotificationAudienceService.load` runs **three** bulk queries for the whole batch (settings, known accounts, Telegram chat ids) plus at most one USD-rate lookup.
+4. Gating runs entirely in memory (`NotificationSettingsService.isAllowed` is synchronous).
+5. Fan-out uses **one** Redis pipeline for all feed writes and **one** for all Telegram queue writes.
 
 | Constant | Default | Purpose |
 |----------|---------|---------|
 | `NOTIFICATION_STREAM_BATCH_SIZE` | 100 | `XREADGROUP COUNT` per poll |
-| `NOTIFICATION_ROUTE_CONCURRENCY` | 20 | parallel `route()` calls per batch |
-| `NOTIFICATION_ROUTE_MAX_ATTEMPTS` | 2 | retries before ack on route failure |
+| `NOTIFICATION_ROUTE_MAX_ATTEMPTS` | 2 | batch routing attempts before acking anyway |
 | `NOTIFICATION_LOG_EVERY_N_EVENTS` | 500 | throughput log interval |
 
-On startup the consumer drains its own pending entries (`XREADGROUP` id `0`) before reading new messages (`>`).
+Constants live in `apps/notifications/src/constants/notification-stream.constants.ts`.
+
+Entries are acked even when routing fails, so a poison batch cannot stall the stream.
+
+On startup the consumer drains its own pending entries (`XREADGROUP` id `0`) before switching to new messages (`>`). The drain runs in the background so it never blocks application bootstrap.
 
 chain-indexer publisher trims the stream with `XADD MAXLEN ~ 100000` (`NOTIFICATION_STREAM_MAX_LEN`).
 

@@ -10,8 +10,14 @@ import {
   TELEGRAM_STREAM_DATA_FIELD,
   TELEGRAM_STREAM_KEY,
 } from '../constants/telegram.constants';
-import { TelegramSubscriptionsCacheService } from './telegram-subscriptions-cache.service';
 import { EN_NOTIFICATION_DICTIONARY } from './en-dictionary';
+
+export interface TelegramEnqueueRequest {
+  account: string;
+  chatIds: string[];
+  event: AnyNotificationEvent;
+  itemId: string;
+}
 
 @Injectable()
 export class TelegramNotificationService {
@@ -20,7 +26,6 @@ export class TelegramNotificationService {
   constructor(
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-    private readonly subscriptionsCache: TelegramSubscriptionsCacheService,
   ) {}
 
   isEnabled(): boolean {
@@ -28,43 +33,44 @@ export class TelegramNotificationService {
     return typeof token === 'string' && token.length > 0;
   }
 
-  async enqueue(
-    username: string,
-    event: AnyNotificationEvent,
-    itemId: string,
-  ): Promise<void> {
-    if (!this.isEnabled()) {
+  /** Queues a whole batch with a single Redis pipeline. */
+  async enqueueMany(requests: TelegramEnqueueRequest[]): Promise<void> {
+    if (!this.isEnabled() || requests.length === 0) {
       return;
     }
-    const trimmed = username.trim();
-    if (trimmed.length === 0) {
-      return;
-    }
+
+    const baseUrl =
+      this.config.get<string>('telegram.webPublicOrigin') ??
+      'http://localhost:3000';
+
     try {
-      const chatIds = await this.subscriptionsCache.getChatIds(trimmed);
-      if (chatIds.length === 0) {
+      const pipe = this.redisFactory.getClient().pipeline();
+      let queued = 0;
+      for (const request of requests) {
+        const account = request.account.trim();
+        if (account.length === 0 || request.chatIds.length === 0) {
+          continue;
+        }
+        const message = buildNotificationMessage(request.event);
+        const text = renderPlainText(message, EN_NOTIFICATION_DICTIONARY, {
+          baseUrl,
+        });
+        pipe.xAdd(TELEGRAM_STREAM_KEY, {
+          [TELEGRAM_STREAM_DATA_FIELD]: JSON.stringify({
+            chatIds: request.chatIds,
+            text,
+            itemId: request.itemId,
+            account,
+          }),
+        });
+        queued += 1;
+      }
+      if (queued === 0) {
         return;
       }
-      const message = buildNotificationMessage(event);
-      const baseUrl =
-        this.config.get<string>('telegram.webPublicOrigin') ??
-        'http://localhost:3000';
-      const text = renderPlainText(message, EN_NOTIFICATION_DICTIONARY, {
-        baseUrl,
-      });
-      const redis = this.redisFactory.getClient();
-      await redis.xAdd(TELEGRAM_STREAM_KEY, {
-        [TELEGRAM_STREAM_DATA_FIELD]: JSON.stringify({
-          chatIds,
-          text,
-          itemId,
-          account: trimmed,
-        }),
-      });
+      await pipe.exec();
     } catch (err) {
-      this.logger.error(
-        `enqueue failed for ${username}: ${(err as Error).message}`,
-      );
+      this.logger.error(`enqueueMany failed: ${(err as Error).message}`);
     }
   }
 }
