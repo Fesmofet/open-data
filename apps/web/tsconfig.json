@@ -19,6 +19,9 @@
       "@opden-data-layer/core/hive-account-history": [
         "../../libs/core/src/hive-account-history/index.ts"
       ],
+      "@opden-data-layer/core/hive-datetime": [
+        "../../libs/core/src/hive-thread/hive-datetime.util.ts"
+      ],
       "@opden-data-layer/core/hive-advanced-report": [
         "../../libs/core/src/hive-advanced-report/index.ts"
       ],

@@ -1,6 +1,6 @@
 import { NOTIFICATIONS_LAST_SEEN_KEY_PREFIX } from '../constants';
 import type { UserNotificationItem } from '../infrastructure/notifications-ws-client';
-import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core/hive-datetime';
 
 function occurredAtMs(iso: string): number {
   return new Date(normalizeHiveBlockTimestampUtc(iso)).getTime();

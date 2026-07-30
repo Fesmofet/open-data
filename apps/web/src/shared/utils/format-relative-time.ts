@@ -1,5 +1,5 @@
 import type { LocaleId } from '@/i18n/types';
-import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core/hive-datetime';
 
 function parseFeedTimestamp(iso: string): Date {
   return new Date(normalizeHiveBlockTimestampUtc(iso));
