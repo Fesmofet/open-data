@@ -22,11 +22,27 @@ Cross-service events flow from **chain-indexer** to **notifications** via a Redi
 |-----|------|----------|----------|
 | `chain-indexer:notifications:stream` | Stream | chain-indexer (`XADD`) | notifications (`XREADGROUP` / `XACK`) |
 | `notifications:cache:feed:{username}` | List | notifications (`LPUSH` + `LTRIM` + `EXPIRE`) | notifications (`LRANGE`) + WS live push |
-| `notifications:cache:settings:{account}` | String (JSON) | notifications | settings cache TTL |
+| `notifications:cache:settings:{account}` | String (JSON) | notifications | settings cache TTL (includes negative cache sentinel when no row) |
+| `notifications:cache:telegram:subs:{account}` | String (JSON) | notifications | Telegram chat IDs per Hive account (TTL 300s) |
 
 Legacy feed key `notifications:list:{username}` is still read during rollout and merged with the new key.
 
-Consumer group: `notifications-consumers`.
+Consumer group: `notifications-consumers`. Stable consumer name: `NOTIFICATIONS_CONSUMER_NAME` (default `notifications-1`).
+
+## Stream consumer throughput
+
+`RedisStreamNotificationConsumer` settings (constants in `apps/notifications/src/constants/notification-stream.constants.ts`):
+
+| Constant | Default | Purpose |
+|----------|---------|---------|
+| `NOTIFICATION_STREAM_BATCH_SIZE` | 100 | `XREADGROUP COUNT` per poll |
+| `NOTIFICATION_ROUTE_CONCURRENCY` | 20 | parallel `route()` calls per batch |
+| `NOTIFICATION_ROUTE_MAX_ATTEMPTS` | 2 | retries before ack on route failure |
+| `NOTIFICATION_LOG_EVERY_N_EVENTS` | 500 | throughput log interval |
+
+On startup the consumer drains its own pending entries (`XREADGROUP` id `0`) before reading new messages (`>`).
+
+chain-indexer publisher trims the stream with `XADD MAXLEN ~ 100000` (`NOTIFICATION_STREAM_MAX_LEN`).
 
 ## WebSocket endpoint
 

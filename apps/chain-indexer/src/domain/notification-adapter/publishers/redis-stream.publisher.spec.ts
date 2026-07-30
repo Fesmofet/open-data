@@ -25,8 +25,12 @@ describe('RedisStreamNotificationPublisher', () => {
 
     await publisher.publish(event);
 
-    expect(xAdd).toHaveBeenCalledWith(NOTIFICATION_STREAM_KEY, {
-      [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
-    });
+    expect(xAdd).toHaveBeenCalledWith(
+      NOTIFICATION_STREAM_KEY,
+      {
+        [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
+      },
+      { maxLen: 100_000 },
+    );
   });
 });

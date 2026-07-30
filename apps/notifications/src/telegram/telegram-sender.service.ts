@@ -16,6 +16,7 @@ import {
 } from '../constants/telegram.constants';
 import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
 import { TelegramApiClient } from './telegram-api.client';
+import { TelegramSubscriptionsCacheService } from './telegram-subscriptions-cache.service';
 
 interface QueuedTelegramPayload {
   chatIds: string[];
@@ -38,6 +39,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
     private readonly redisFactory: RedisClientFactory,
     private readonly api: TelegramApiClient,
     private readonly subscriptions: TelegramSubscriptionsRepository,
+    private readonly subscriptionsCache: TelegramSubscriptionsCacheService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -145,6 +147,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
 
     if (result.errorCode === 403) {
       await this.subscriptions.unsubscribe(chatId, payload.account);
+      await this.subscriptionsCache.invalidate(payload.account);
       this.logger.warn(`Telegram chat ${chatId} blocked bot; unsubscribed`);
       return true;
     }

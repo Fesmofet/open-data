@@ -50,5 +50,8 @@ export default () => {
     systemHealth: {
       blockLagBuffer: env.SYSTEM_HEALTH_BLOCK_LAG_BUFFER,
     },
+    consumer: {
+      name: env.NOTIFICATIONS_CONSUMER_NAME,
+    },
   };
 };

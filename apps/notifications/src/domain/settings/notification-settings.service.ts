@@ -9,6 +9,7 @@ import { RedisClientFactory } from '@opden-data-layer/clients';
 import { CurrencyQueryService } from '@opden-data-layer/currency';
 import {
   NOTIFICATION_SETTINGS_CACHE_TTL_SEC,
+  NOTIFICATION_SETTINGS_NULL_SENTINEL,
   notificationSettingsCacheKey,
 } from '../../constants/notification-settings.constants';
 import { UserNotificationSettingsRepository } from '../../repositories/user-notification-settings.repository';
@@ -147,6 +148,9 @@ export class NotificationSettingsService {
     const redis = this.redisFactory.getClient();
     try {
       const cached = await redis.get(cacheKey);
+      if (cached === NOTIFICATION_SETTINGS_NULL_SENTINEL) {
+        return null;
+      }
       if (cached) {
         return JSON.parse(cached) as UserNotificationSettings;
       }
@@ -155,16 +159,14 @@ export class NotificationSettingsService {
     }
 
     const row = await this.settingsRepository.findByAccount(account);
-    if (row) {
-      try {
-        await redis.set(
-          cacheKey,
-          JSON.stringify(row),
-          NOTIFICATION_SETTINGS_CACHE_TTL_SEC,
-        );
-      } catch {
-        // ignore cache write errors
-      }
+    try {
+      await redis.set(
+        cacheKey,
+        row ? JSON.stringify(row) : NOTIFICATION_SETTINGS_NULL_SENTINEL,
+        NOTIFICATION_SETTINGS_CACHE_TTL_SEC,
+      );
+    } catch {
+      // ignore cache write errors
     }
     return row;
   }

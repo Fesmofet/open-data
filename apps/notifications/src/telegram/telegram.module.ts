@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisClientModule } from '@opden-data-layer/clients';
 import { RepositoriesModule } from '../repositories/repositories.module';
 import { TelegramApiClient } from './telegram-api.client';
+import { TelegramSubscriptionsCacheService } from './telegram-subscriptions-cache.service';
 import { TelegramNotificationService } from './telegram-notification.service';
 import { TelegramPollerService } from './telegram-poller.service';
 import { TelegramSenderService } from './telegram-sender.service';
@@ -17,6 +18,7 @@ import { TelegramSenderService } from './telegram-sender.service';
       inject: [ConfigService],
     },
     TelegramNotificationService,
+    TelegramSubscriptionsCacheService,
     TelegramPollerService,
     TelegramSenderService,
   ],

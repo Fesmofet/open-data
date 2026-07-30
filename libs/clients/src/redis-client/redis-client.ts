@@ -173,12 +173,26 @@ class RedisClientWrapper implements RedisClientInterface {
     await this.client.publish(channel, message);
   }
 
-  async xAdd(stream: string, fields: Record<string, string>): Promise<string> {
+  async xAdd(
+    stream: string,
+    fields: Record<string, string>,
+    options?: { maxLen?: number },
+  ): Promise<string> {
     const flat: string[] = [];
     for (const [k, v] of Object.entries(fields)) {
       flat.push(k, v);
     }
-    const id = await this.client.xadd(stream, '*', ...flat);
+    const id =
+      options?.maxLen !== undefined
+        ? await this.client.xadd(
+            stream,
+            'MAXLEN',
+            '~',
+            options.maxLen,
+            '*',
+            ...flat,
+          )
+        : await this.client.xadd(stream, '*', ...flat);
     if (id === null) {
       throw new Error(`Redis XADD returned null for stream ${stream}`);
     }

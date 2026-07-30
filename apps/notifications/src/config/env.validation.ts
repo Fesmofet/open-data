@@ -36,6 +36,11 @@ export const notificationsEnvSchema = z.object({
       return parsed.length > 0 ? parsed : [...DEFAULT_HIVE_ENGINE_NODES];
     }),
   SYSTEM_HEALTH_BLOCK_LAG_BUFFER: z.coerce.number().optional().default(100),
+  NOTIFICATIONS_CONSUMER_NAME: z
+    .string()
+    .min(1)
+    .optional()
+    .default('notifications-1'),
 });
 
 export type NotificationsEnv = z.infer<typeof notificationsEnvSchema>;

@@ -4,6 +4,7 @@ import type { NotificationEvent } from '@opden-data-layer/notifications-contract
 import {
   NOTIFICATION_STREAM_DATA_FIELD,
   NOTIFICATION_STREAM_KEY,
+  NOTIFICATION_STREAM_MAX_LEN,
 } from '../../../constants/notification-stream.constants';
 import type { INotificationPublisher } from '../notification-publisher.interface';
 
@@ -16,9 +17,13 @@ export class RedisStreamNotificationPublisher implements INotificationPublisher 
   async publish(event: NotificationEvent): Promise<void> {
     try {
       const redis = this.redisFactory.getClient();
-      await redis.xAdd(NOTIFICATION_STREAM_KEY, {
-        [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
-      });
+      await redis.xAdd(
+        NOTIFICATION_STREAM_KEY,
+        {
+          [NOTIFICATION_STREAM_DATA_FIELD]: JSON.stringify(event),
+        },
+        { maxLen: NOTIFICATION_STREAM_MAX_LEN },
+      );
     } catch (err) {
       this.logger.error((err as Error).message);
       throw err;

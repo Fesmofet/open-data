@@ -10,7 +10,7 @@ import {
   TELEGRAM_STREAM_DATA_FIELD,
   TELEGRAM_STREAM_KEY,
 } from '../constants/telegram.constants';
-import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
+import { TelegramSubscriptionsCacheService } from './telegram-subscriptions-cache.service';
 import { EN_NOTIFICATION_DICTIONARY } from './en-dictionary';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class TelegramNotificationService {
   constructor(
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-    private readonly subscriptions: TelegramSubscriptionsRepository,
+    private readonly subscriptionsCache: TelegramSubscriptionsCacheService,
   ) {}
 
   isEnabled(): boolean {
@@ -41,7 +41,7 @@ export class TelegramNotificationService {
       return;
     }
     try {
-      const chatIds = await this.subscriptions.findChatIdsByAccount(trimmed);
+      const chatIds = await this.subscriptionsCache.getChatIds(trimmed);
       if (chatIds.length === 0) {
         return;
       }

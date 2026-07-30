@@ -30,3 +30,8 @@ export const TELEGRAM_POLLER_LOCK_VALUE_PREFIX = 'poller:';
 
 /** Max Hive accounts a single Telegram chat can follow */
 export const TELEGRAM_MAX_ACCOUNTS_PER_CHAT = 10;
+
+export const TELEGRAM_SUBSCRIPTIONS_CACHE_TTL_SEC = 300;
+
+export const telegramSubscriptionsCacheKey = (account: string): string =>
+  buildRedisKey(APP, 'cache', 'telegram', 'subs', account);

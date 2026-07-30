@@ -49,7 +49,11 @@ export interface RedisClientInterface {
   zRem(key: string, member: string): Promise<void>;
   pipeline(): RedisPipelineInterface;
   publish(channel: string, message: string): Promise<void>;
-  xAdd(stream: string, fields: Record<string, string>): Promise<string>;
+  xAdd(
+    stream: string,
+    fields: Record<string, string>,
+    options?: { maxLen?: number },
+  ): Promise<string>;
   /**
    * Creates a consumer group. Ignores BUSYGROUP (group already exists).
    */

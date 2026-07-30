@@ -176,4 +176,34 @@ describe('NotificationSettingsService', () => {
 
     expect(await service.isAllowedWithSettings(settings, event)).toBe(true);
   });
+
+  it('caches missing settings and avoids repeated repository lookups', async () => {
+    (settingsRepository.findByAccount as jest.Mock).mockResolvedValue(null);
+    redis.get
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce('__null__');
+
+    const event = {
+      type: 'vote_like',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'v',
+      payload: { voter: 'v', author: 'a', permlink: 'p', weight: 1 },
+    } as AnyNotificationEvent;
+
+    await service.isAllowed('stranger', event);
+    await service.isAllowed('stranger', {
+      ...event,
+      blockNum: 2,
+    });
+
+    expect(settingsRepository.findByAccount).toHaveBeenCalledTimes(1);
+    expect(redis.set).toHaveBeenCalledWith(
+      expect.stringContaining('stranger'),
+      '__null__',
+      expect.any(Number),
+    );
+  });
 });
