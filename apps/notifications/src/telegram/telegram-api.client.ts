@@ -6,9 +6,16 @@ export interface TelegramUpdateMessage {
   readonly text?: string;
 }
 
+export interface TelegramCallbackQuery {
+  readonly id: string;
+  readonly data?: string;
+  readonly message?: TelegramUpdateMessage;
+}
+
 export interface TelegramUpdate {
   readonly update_id: number;
   readonly message?: TelegramUpdateMessage;
+  readonly callback_query?: TelegramCallbackQuery;
 }
 
 export type TelegramSendResult =
@@ -19,6 +26,16 @@ export type TelegramSendResult =
       readonly description?: string;
       readonly retryAfterSec?: number;
     };
+
+export interface TelegramSendMessageOptions {
+  readonly replyMarkup?: {
+    readonly inline_keyboard: {
+      readonly text: string;
+      readonly url?: string;
+      readonly callback_data?: string;
+    }[][];
+  };
+}
 
 @Injectable()
 export class TelegramApiClient {
@@ -58,16 +75,24 @@ export class TelegramApiClient {
     return body.result ?? [];
   }
 
-  async sendMessage(chatId: string, text: string): Promise<TelegramSendResult> {
+  async sendMessage(
+    chatId: string,
+    text: string,
+    options: TelegramSendMessageOptions = {},
+  ): Promise<TelegramSendResult> {
     const url = `${this.baseUrl}/sendMessage`;
+    const payload: Record<string, unknown> = {
+      chat_id: chatId,
+      text,
+      disable_web_page_preview: true,
+    };
+    if (options.replyMarkup) {
+      payload.reply_markup = options.replyMarkup;
+    }
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        disable_web_page_preview: true,
-      }),
+      body: JSON.stringify(payload),
     });
     const body = (await res.json()) as {
       ok: boolean;
@@ -84,5 +109,20 @@ export class TelegramApiClient {
       description: body.description,
       retryAfterSec: body.parameters?.retry_after,
     };
+  }
+
+  async answerCallbackQuery(callbackQueryId: string): Promise<void> {
+    const url = `${this.baseUrl}/answerCallbackQuery`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId }),
+    });
+    const body = (await res.json()) as { ok: boolean; description?: string };
+    if (!body.ok) {
+      this.logger.warn(
+        `answerCallbackQuery failed: ${body.description ?? res.statusText}`,
+      );
+    }
   }
 }

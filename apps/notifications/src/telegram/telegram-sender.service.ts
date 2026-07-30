@@ -16,10 +16,12 @@ import {
 } from '../constants/telegram.constants';
 import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
 import { TelegramApiClient } from './telegram-api.client';
+import { buildNotificationInlineKeyboard } from './telegram-inline-keyboard';
 
 interface QueuedTelegramPayload {
   chatIds: string[];
   text: string;
+  websiteUrl?: string;
   itemId: string;
   account: string;
 }
@@ -138,7 +140,12 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
 
     await this.throttle(chatId);
 
-    const result = await this.api.sendMessage(chatId, payload.text);
+    const result = await this.api.sendMessage(chatId, payload.text, {
+      replyMarkup: buildNotificationInlineKeyboard(
+        payload.account,
+        payload.websiteUrl,
+      ),
+    });
     if (result.ok) {
       return true;
     }

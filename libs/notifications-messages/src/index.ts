@@ -15,5 +15,7 @@ export {
 export {
   applyMessageParams,
   renderPlainText,
+  renderTelegramBody,
+  resolveNotificationAbsoluteUrl,
   type RenderPlainTextOptions,
 } from './lib/render/plain-text';

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import type { OdlEventContext } from '../odl-shared/envelope-dispatcher';
@@ -40,7 +41,7 @@ export class NotificationEmitterService {
     return {
       blockNum: ctx.blockNum,
       trxId: ctx.transaction.transaction_id,
-      occurredAt: ctx.timestamp,
+      occurredAt: normalizeHiveBlockTimestampUtc(ctx.timestamp),
     };
   }
 
@@ -48,7 +49,7 @@ export class NotificationEmitterService {
     return {
       blockNum: ctx.blockNum,
       trxId: ctx.transactionId,
-      occurredAt: ctx.timestamp,
+      occurredAt: normalizeHiveBlockTimestampUtc(ctx.timestamp),
     };
   }
 

@@ -14,7 +14,8 @@ import {
   telegramPollerLockKey,
 } from '../constants/telegram.constants';
 import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
-import { TelegramApiClient } from './telegram-api.client';
+import { TelegramApiClient, type TelegramUpdate } from './telegram-api.client';
+import { parseUnsubscribeCallbackData } from './telegram-inline-keyboard';
 import { planChatSubscriptions } from './telegram-subscribe-limit';
 
 @Injectable()
@@ -94,9 +95,12 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     return false;
   }
 
-  private async handleUpdate(update: {
-    message?: { chat: { id: number }; text?: string };
-  }): Promise<void> {
+  private async handleUpdate(update: TelegramUpdate): Promise<void> {
+    if (update.callback_query) {
+      await this.handleCallbackQuery(update.callback_query);
+      return;
+    }
+
     const message = update.message;
     if (!message?.text) {
       return;
@@ -154,6 +158,23 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
 
     const names = this.parseUsernames(text);
     await this.subscribeMany(chatId, names);
+  }
+
+  private async handleCallbackQuery(
+    query: NonNullable<TelegramUpdate['callback_query']>,
+  ): Promise<void> {
+    await this.api.answerCallbackQuery(query.id);
+    const chatId = query.message?.chat.id;
+    const data = query.data?.trim();
+    if (chatId === undefined || !data) {
+      return;
+    }
+    const account = parseUnsubscribeCallbackData(data);
+    if (!account) {
+      return;
+    }
+    await this.subscriptions.unsubscribe(String(chatId), account);
+    await this.api.sendMessage(String(chatId), `Unsubscribed: ${account}`);
   }
 
   private async subscribeMany(chatId: string, names: string[]): Promise<void> {

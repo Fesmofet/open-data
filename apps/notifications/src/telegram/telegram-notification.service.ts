@@ -4,7 +4,8 @@ import { RedisClientFactory } from '@opden-data-layer/clients';
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import {
   buildNotificationMessage,
-  renderPlainText,
+  renderTelegramBody,
+  resolveNotificationAbsoluteUrl,
 } from '@opden-data-layer/notifications-messages';
 import {
   TELEGRAM_STREAM_DATA_FIELD,
@@ -52,13 +53,13 @@ export class TelegramNotificationService {
           continue;
         }
         const message = buildNotificationMessage(request.event);
-        const text = renderPlainText(message, EN_NOTIFICATION_DICTIONARY, {
-          baseUrl,
-        });
+        const text = renderTelegramBody(message, EN_NOTIFICATION_DICTIONARY);
+        const websiteUrl = resolveNotificationAbsoluteUrl(message, baseUrl);
         pipe.xAdd(TELEGRAM_STREAM_KEY, {
           [TELEGRAM_STREAM_DATA_FIELD]: JSON.stringify({
             chatIds: request.chatIds,
             text,
+            websiteUrl,
             itemId: request.itemId,
             account,
           }),

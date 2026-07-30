@@ -1,5 +1,10 @@
 import { NOTIFICATIONS_LAST_SEEN_KEY_PREFIX } from '../constants';
 import type { UserNotificationItem } from '../infrastructure/notifications-ws-client';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
+
+function occurredAtMs(iso: string): number {
+  return new Date(normalizeHiveBlockTimestampUtc(iso)).getTime();
+}
 
 export function lastSeenStorageKey(username: string): string {
   return `${NOTIFICATIONS_LAST_SEEN_KEY_PREFIX}${username.trim()}`;
@@ -71,7 +76,7 @@ export function countUnread(
     return items.length;
   }
   return items.filter((item) => {
-    const ms = new Date(item.occurredAt).getTime();
+    const ms = occurredAtMs(item.occurredAt);
     return !Number.isNaN(ms) && ms > seenMs;
   }).length;
 }

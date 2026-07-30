@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type {
   HiveEngineBlock,
@@ -202,7 +203,9 @@ export class WaivStakeParser implements HiveEngineSubParser {
     }
     this.notificationEmitter.emit({
       type,
-      occurredAt: block.timestamp,
+      occurredAt: normalizeHiveBlockTimestampUtc(
+        block.timestamp ?? '1970-01-01T00:00:00',
+      ),
       blockNum: block.refHiveBlockNumber || block.blockNumber,
       trxId: null,
       objectId: null,

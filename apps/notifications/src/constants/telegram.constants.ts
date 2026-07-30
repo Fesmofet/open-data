@@ -30,3 +30,10 @@ export const TELEGRAM_POLLER_LOCK_VALUE_PREFIX = 'poller:';
 
 /** Max Hive accounts a single Telegram chat can follow */
 export const TELEGRAM_MAX_ACCOUNTS_PER_CHAT = 10;
+
+export const TELEGRAM_BUTTON_GO_TO_WEBSITE = 'Go to website';
+
+export const TELEGRAM_UNSUBSCRIBE_CALLBACK_PREFIX = 'unsubscribe:';
+
+export const telegramUnsubscribeButtonLabel = (account: string): string =>
+  `Unsubscribe ${account}`;

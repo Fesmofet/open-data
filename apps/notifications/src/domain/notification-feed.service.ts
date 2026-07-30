@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { RedisClientFactory } from '@opden-data-layer/clients';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
 import type { NotificationEvent } from '@opden-data-layer/notifications-contract';
 import {
   legacyNotificationListKey,
@@ -25,7 +26,7 @@ export class NotificationFeedService {
     return {
       id: randomUUID(),
       type: event.type,
-      occurredAt: event.occurredAt,
+      occurredAt: normalizeHiveBlockTimestampUtc(event.occurredAt),
       blockNum: event.blockNum,
       trxId: event.trxId,
       objectId: event.objectId,
@@ -104,8 +105,12 @@ export class NotificationFeedService {
         }
       }
       items.sort((a, b) => {
-        const aMs = new Date(a.occurredAt).getTime();
-        const bMs = new Date(b.occurredAt).getTime();
+        const aMs = new Date(
+          normalizeHiveBlockTimestampUtc(a.occurredAt),
+        ).getTime();
+        const bMs = new Date(
+          normalizeHiveBlockTimestampUtc(b.occurredAt),
+        ).getTime();
         if (Number.isNaN(aMs) || Number.isNaN(bMs)) {
           return 0;
         }

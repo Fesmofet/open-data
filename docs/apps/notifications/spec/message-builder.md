@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, i18n]
-updated_at: 2026-07-28
+updated_at: 2026-07-30
 related:
   - docs/apps/notifications/spec/event-catalog.md
 ---
@@ -37,7 +37,7 @@ Pure functions only — no Nest, React, or i18n runtime.
 ## Channels
 
 - **Web**: `format-notification.ts` calls `buildNotificationMessage`, then `NotificationMessageText` renders i18n templates with `paramHrefs` as accent `Link` segments.
-- **Telegram**: `renderPlainText(message, dict, { baseUrl })` in the same lib; copy in `apps/notifications/src/telegram/en-dictionary.ts` (en-US).
+- **Telegram**: `renderTelegramBody(message, dict)` for the message body; `resolveNotificationAbsoluteUrl(message, baseUrl)` for the website button URL. `renderPlainText` remains for plain-text consumers that append the URL as a second line.
 
 ## Adding a type
 

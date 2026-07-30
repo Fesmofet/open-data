@@ -107,6 +107,12 @@ describe('notification-feed-utils', () => {
     expect(countUnread(items, '2026-05-19T13:00:00.000Z', serverMs)).toBe(0);
   });
 
+  it('countUnread treats timezone-less Hive occurredAt as UTC', () => {
+    const items = [item('1', '2026-07-30T12:00:00')];
+    expect(countUnread(items, '2026-07-30T11:59:00Z')).toBe(1);
+    expect(countUnread(items, '2026-07-30T12:00:01Z')).toBe(0);
+  });
+
   it('setLastSeen and getLastSeen round-trip in localStorage', () => {
     const iso = '2026-05-19T15:00:00.000Z';
     setLastSeen(username, iso);

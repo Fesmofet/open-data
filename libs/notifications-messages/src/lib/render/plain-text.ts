@@ -15,19 +15,37 @@ export function applyMessageParams(
   return out;
 }
 
-export function renderPlainText(
+export function renderTelegramBody(
   message: NotificationMessage,
   dictionary: Readonly<Record<string, string>>,
-  options: RenderPlainTextOptions = {},
 ): string {
   const template =
     dictionary[message.key] ??
     dictionary['notification_generic_default_message'] ??
     message.key;
-  const body = applyMessageParams(template, message.params);
+  return applyMessageParams(template, message.params);
+}
+
+export function resolveNotificationAbsoluteUrl(
+  message: NotificationMessage,
+  baseUrl?: string,
+): string | undefined {
   if (!message.href) {
+    return undefined;
+  }
+  const base = baseUrl?.replace(/\/$/, '') ?? '';
+  return `${base}${message.href}`;
+}
+
+export function renderPlainText(
+  message: NotificationMessage,
+  dictionary: Readonly<Record<string, string>>,
+  options: RenderPlainTextOptions = {},
+): string {
+  const body = renderTelegramBody(message, dictionary);
+  const url = resolveNotificationAbsoluteUrl(message, options.baseUrl);
+  if (!url) {
     return body;
   }
-  const base = options.baseUrl?.replace(/\/$/, '') ?? '';
-  return `${body}\n${base}${message.href}`;
+  return `${body}\n${url}`;
 }

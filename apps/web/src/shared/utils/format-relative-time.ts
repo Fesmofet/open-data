@@ -1,10 +1,15 @@
 import type { LocaleId } from '@/i18n/types';
+import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
+
+function parseFeedTimestamp(iso: string): Date {
+  return new Date(normalizeHiveBlockTimestampUtc(iso));
+}
 
 /**
  * Absolute local date+time for detail views (not list cards).
  */
 export function formatAbsoluteDateTime(iso: string, locale: LocaleId): string {
-  const d = new Date(iso);
+  const d = parseFeedTimestamp(iso);
   if (Number.isNaN(d.getTime())) {
     return iso;
   }
@@ -18,7 +23,7 @@ export function formatAbsoluteDateTime(iso: string, locale: LocaleId): string {
  * Relative time for feed cards and notifications; falls back to medium date for older items.
  */
 export function formatRelativeFeedTime(iso: string, locale: LocaleId): string {
-  const d = new Date(iso);
+  const d = parseFeedTimestamp(iso);
   if (Number.isNaN(d.getTime())) {
     return iso;
   }

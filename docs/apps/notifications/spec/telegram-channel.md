@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, telegram]
-updated_at: 2026-07-29
+updated_at: 2026-07-30
 related:
   - docs/apps/notifications/spec/message-builder.md
   - docs/apps/notifications/spec/transport.md
@@ -19,9 +19,17 @@ MVP delivery channel inside `apps/notifications`. English copy only (`en-diction
 ## Flow
 
 1. `NotificationRouterService` enqueues after settings filter and Redis feed write.
-2. `TelegramNotificationService` resolves `telegram_subscriptions` chat IDs, builds plain text with `renderPlainText`, `XADD` to `notifications:queue:telegram`.
-3. `TelegramSenderService` consumes the stream (group `telegram-sender`), throttles, calls Bot API without `parse_mode`.
-4. `TelegramPollerService` long-polls `getUpdates` (single active poller via Redis lock), handles `/start`, `/stop`, `/list`, and free-text Hive usernames.
+2. `TelegramNotificationService` resolves `telegram_subscriptions` chat IDs, builds the message body with `renderTelegramBody`, stores `websiteUrl` separately, and `XADD`s to `notifications:queue:telegram`.
+3. `TelegramSenderService` consumes the stream (group `telegram-sender`), throttles, calls Bot API with inline keyboard markup (no raw URL in message text).
+4. `TelegramPollerService` long-polls `getUpdates` (single active poller via Redis lock), handles `/start`, `/stop`, `/list`, free-text Hive usernames, and `callback_query` unsubscribe buttons.
+
+## Outbound message format
+
+- **Body:** English template from `renderTelegramBody` + `en-dictionary.ts` — **no** raw URL appended to the text.
+- **Inline keyboard:**
+  - `Go to website` — URL button when `message.href` resolves to an absolute link via `WEB_PUBLIC_ORIGIN`
+  - `Unsubscribe {account}` — `callback_data: unsubscribe:{account}`; handled by the poller (`answerCallbackQuery` + DB unsubscribe)
+- Text commands `/stop` remain supported as a fallback.
 
 ## Database
 
