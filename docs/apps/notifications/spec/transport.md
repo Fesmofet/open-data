@@ -28,6 +28,12 @@ Legacy feed key `notifications:list:{username}` is still read during rollout and
 
 Consumer group: `notifications-consumers`.
 
+## WebSocket endpoint
+
+- **Path:** `/notifications/ws` (native `ws`; staging/production via nginx → `notifications:7200`)
+- **Auth:** JWT in query `?token=` or `Authorization: Bearer` header (same secret as auth-api)
+- **HTTP pages** `/notifications` and `/notifications/settings` are served by `apps/web`, not this service
+
 ## WebSocket connection limits
 
 - `WS_MAX_CONNECTIONS_PER_USER` (default **5**): when a user opens a 6th connection, the oldest socket is closed with code `1008` / `connection_limit_exceeded`.

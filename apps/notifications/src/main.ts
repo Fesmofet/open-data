@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { ConfigService } from '@nestjs/config';
+import { NOTIFICATIONS_WS_PATH } from './constants/ws.constants';
 import { MainModule } from './main.module';
 
 async function bootstrap() {
@@ -11,7 +12,7 @@ async function bootstrap() {
   const port = config.get<number>('port') ?? 7200;
   await app.listen(port);
   Logger.log(
-    `notifications WebSocket path: ws://localhost:${port}/notifications`,
+    `notifications WebSocket path: ws://localhost:${port}${NOTIFICATIONS_WS_PATH}`,
     'Bootstrap',
   );
 }

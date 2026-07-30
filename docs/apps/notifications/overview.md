@@ -37,7 +37,7 @@ pnpm nx test notifications
 pnpm nx serve notifications
 ```
 
-WebSocket URL: `ws://<host>:<PORT>/notifications` (default port `7200`).
+WebSocket URL: `ws://<host>:<PORT>/notifications/ws` (default port `7200`). HTTP pages `/notifications` are served by `apps/web`.
 
 ## Feature specs
 

@@ -102,7 +102,7 @@ if [[ ! -f .env ]]; then
   warn "  - Set a strong JWT_SECRET   (min 16 chars)"
   warn "  - Set POSTGRES_PASSWORD"
   warn "  - Set AUTH_JWT_SECRET       (same as JWT_SECRET or separate)"
-  warn "  - Set NOTIFICATIONS_WS_PUBLIC_URL  wss://<DOMAIN>/notifications"
+  warn "  - Set NOTIFICATIONS_WS_PUBLIC_URL  wss://<DOMAIN>/notifications/ws"
   warn "  - Set REDIS_URI=redis://redis:6379  (hostname, not a Docker IP)"
   warn "  - Set INSTALL_DIR if not using default: $INSTALL_DIR"
   warn ""
@@ -137,8 +137,8 @@ if [[ -z "$CERTBOT_EMAIL_VAL" ]]; then
 fi
 
 if ! grep -qE '^NOTIFICATIONS_WS_PUBLIC_URL=' .env; then
-  echo "NOTIFICATIONS_WS_PUBLIC_URL=wss://${DOMAIN_VAL}/notifications" >> .env
-  info "Set NOTIFICATIONS_WS_PUBLIC_URL=wss://${DOMAIN_VAL}/notifications in .env"
+  echo "NOTIFICATIONS_WS_PUBLIC_URL=wss://${DOMAIN_VAL}/notifications/ws" >> .env
+  info "Set NOTIFICATIONS_WS_PUBLIC_URL=wss://${DOMAIN_VAL}/notifications/ws in .env"
 fi
 
 if grep -qE '^REDIS_URI=redis://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' .env; then

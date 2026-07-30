@@ -9,6 +9,7 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import WebSocket from 'ws';
+import { NOTIFICATIONS_WS_PATH } from '../constants/ws.constants';
 import { NotificationFeedService } from '../domain/notification-feed.service';
 import { NotificationReadCursorRepository } from '../repositories/notification-read-cursor.repository';
 import { ConnectionRegistryService } from './connection-registry.service';
@@ -48,7 +49,7 @@ function parseSubscribePayload(raw: unknown):
   return { ok: true, trxId, correlationId };
 }
 
-@WebSocketGateway({ path: '/notifications', transports: ['websocket'] })
+@WebSocketGateway({ path: NOTIFICATIONS_WS_PATH, transports: ['websocket'] })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {

@@ -94,7 +94,7 @@ describe('NotificationsWsClientImpl reconnect', () => {
 
   it('schedules reconnect after an unexpected socket close', async () => {
     const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
-    const client = createNotificationsWsClient('ws://localhost:7200/notifications');
+    const client = createNotificationsWsClient('ws://localhost:7200/notifications/ws');
     client.addNotificationListener(() => {});
 
     await flushMicrotasks();
@@ -108,7 +108,7 @@ describe('NotificationsWsClientImpl reconnect', () => {
 
   it('notifies reconnect listeners when connection is re-established', async () => {
     jest.useRealTimers();
-    const client = createNotificationsWsClient('ws://localhost:7200/notifications');
+    const client = createNotificationsWsClient('ws://localhost:7200/notifications/ws');
     const onReconnect = jest.fn();
     client.addReconnectListener(onReconnect);
     client.addNotificationListener(() => {});

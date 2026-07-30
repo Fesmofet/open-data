@@ -63,8 +63,8 @@ Timeout for `get_notifications`: `GET_NOTIFICATIONS_TIMEOUT_MS` (10s) — return
 
 Env (pick one):
 
-- **Staging/production (runtime):** `NOTIFICATIONS_WS_PUBLIC_URL=wss://<DOMAIN>/notifications` in repo `.env` (compose passes to `web`; nginx proxies `/notifications` → `notifications:7200`). See root [`.env.example`](../../../../.env.example).
-- **Local dev (build-time):** `NEXT_PUBLIC_NOTIFICATIONS_WS_URL=ws://localhost:7200/notifications` in `apps/web/.env` (see [`apps/web/.env.example`](../../../apps/web/.env.example)).
+- **Staging/production (runtime):** `NOTIFICATIONS_WS_PUBLIC_URL=wss://<DOMAIN>/notifications/ws` in repo `.env` (compose passes to `web`; nginx proxies `/notifications/ws` → `notifications:7200`). See root [`.env.example`](../../../../.env.example).
+- **Local dev (build-time):** `NEXT_PUBLIC_NOTIFICATIONS_WS_URL=ws://localhost:7200/notifications/ws` in `apps/web/.env` (see [`apps/web/.env.example`](../../../apps/web/.env.example)).
 
 Telegram bot (runtime): `NOTIFICATIONS_TELEGRAM_BOT_USERNAME` — see [`apps/web/.env.example`](../../../apps/web/.env.example).
 
@@ -103,7 +103,7 @@ UI chrome: `notifications`, `notifications_empty_message`, `see_all`, `notify_li
 
 Manual smoke (with notifications service + Redis feed populated):
 
-1. Set `NEXT_PUBLIC_NOTIFICATIONS_WS_URL` (e.g. `ws://localhost:7200/notifications` or nginx `/notifications`).
+1. Set `NEXT_PUBLIC_NOTIFICATIONS_WS_URL` (e.g. `ws://localhost:7200/notifications/ws` or nginx `wss://<DOMAIN>/notifications/ws`).
 2. Log in; confirm bell shows badge when feed has items newer than last seen.
 3. Open bell → badge clears; up to 5 rows + “See all”.
 4. Open `/notifications` → full list; unauthenticated tab redirects home.
