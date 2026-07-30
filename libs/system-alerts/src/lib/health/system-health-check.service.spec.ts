@@ -70,4 +70,74 @@ describe('SystemHealthCheckService', () => {
     expect(report.warnings).toHaveLength(1);
     expect(report.warnings[0]?.detail).toContain('Redis');
   });
+
+  it('retries hive-engine head fetch before reporting unavailable', async () => {
+    jest.useFakeTimers();
+    const getStatus = jest
+      .fn()
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce({ lastBlockNumber: 9_000_000 });
+    const hiveEngineClient = { getStatus };
+    const service = new SystemHealthCheckService(
+      {
+        checks: [
+          {
+            label: 'chain-indexer hive-engine',
+            redisKey: 'chain-indexer:cache:hive-engine:block-number',
+            chain: 'hive-engine',
+          },
+        ],
+        lagBuffer: DEFAULT_BLOCK_LAG_BUFFER,
+      },
+      {
+        getClient: () => ({
+          get: jest.fn().mockResolvedValue('8999900'),
+        }),
+      } as never,
+      {
+        getDynamicGlobalProperties: jest.fn(),
+      } as never,
+      hiveEngineClient as never,
+    );
+
+    const checkPromise = service.check();
+    await jest.runAllTimersAsync();
+    const report = await checkPromise;
+
+    expect(getStatus).toHaveBeenCalledTimes(3);
+    expect(report.ok).toHaveLength(1);
+    expect(report.warnings).toHaveLength(0);
+    jest.useRealTimers();
+  });
+
+  it('reports hive-engine head unavailable after max attempts', async () => {
+    jest.useFakeTimers();
+    const getStatus = jest.fn().mockResolvedValue(undefined);
+    const hiveEngineClient = { getStatus };
+    const service = new SystemHealthCheckService(
+      {
+        checks: [
+          {
+            label: 'chain-indexer hive-engine',
+            redisKey: 'chain-indexer:cache:hive-engine:block-number',
+            chain: 'hive-engine',
+          },
+        ],
+        lagBuffer: DEFAULT_BLOCK_LAG_BUFFER,
+      },
+      { getClient: () => ({ get: jest.fn() }) } as never,
+      { getDynamicGlobalProperties: jest.fn() } as never,
+      hiveEngineClient as never,
+    );
+
+    const checkPromise = service.check();
+    await jest.runAllTimersAsync();
+    const report = await checkPromise;
+
+    expect(getStatus).toHaveBeenCalledTimes(3);
+    expect(report.warnings).toHaveLength(1);
+    expect(report.warnings[0]?.detail).toContain('head');
+    jest.useRealTimers();
+  });
 });

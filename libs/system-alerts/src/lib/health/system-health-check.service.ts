@@ -18,6 +18,9 @@ export interface SystemHealthModuleOptions {
   readonly lagBuffer: number;
 }
 
+const HIVE_ENGINE_HEAD_MAX_ATTEMPTS = 3;
+const HIVE_ENGINE_HEAD_RETRY_DELAY_MS = 1_000;
+
 @Injectable()
 export class SystemHealthCheckService {
   private readonly logger = new Logger(SystemHealthCheckService.name);
@@ -105,8 +108,26 @@ export class SystemHealthCheckService {
   }
 
   private async resolveHiveEngineHead(): Promise<number | null> {
-    const status = await this.hiveEngineClient.getStatus();
-    const head = status?.lastBlockNumber;
-    return typeof head === 'number' && Number.isFinite(head) ? head : null;
+    for (let attempt = 1; attempt <= HIVE_ENGINE_HEAD_MAX_ATTEMPTS; attempt++) {
+      const status = await this.hiveEngineClient.getStatus();
+      const head = status?.lastBlockNumber;
+      if (typeof head === 'number' && Number.isFinite(head)) {
+        return head;
+      }
+      if (attempt < HIVE_ENGINE_HEAD_MAX_ATTEMPTS) {
+        this.logger.warn(
+          `Hive Engine head unavailable (attempt ${attempt}/${HIVE_ENGINE_HEAD_MAX_ATTEMPTS}); retrying`,
+        );
+        await this.sleep(HIVE_ENGINE_HEAD_RETRY_DELAY_MS);
+      }
+    }
+    this.logger.warn(
+      `Hive Engine head unavailable after ${HIVE_ENGINE_HEAD_MAX_ATTEMPTS} attempt(s)`,
+    );
+    return null;
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

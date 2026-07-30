@@ -160,7 +160,7 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     if (names.length === 0) {
       await this.api.sendMessage(
         chatId,
-        'Send your Hive username(s), e.g. /start flowmaster',
+        'Send your Hive username(s), e.g. /start alice',
       );
       return;
     }

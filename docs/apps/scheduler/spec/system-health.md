@@ -21,7 +21,7 @@ Job `system-health-check` runs every **30 minutes** (`*/30 * * * *`). It uses `@
 | chain-indexer hive | `chain-indexer:cache:hive:block-number` |
 | chain-indexer hive-engine | `chain-indexer:cache:hive-engine:block-number` |
 
-against live Hive `head_block_number` and Hive Engine `lastBlockNumber`. A cursor is **ok** when `actualBlock + SYSTEM_HEALTH_BLOCK_LAG_BUFFER >= headBlock`.
+against live Hive `head_block_number` and Hive Engine `lastBlockNumber` (Hive Engine head is fetched with up to **3** attempts, 1s apart, before marking unavailable). A cursor is **ok** when `actualBlock + SYSTEM_HEALTH_BLOCK_LAG_BUFFER >= headBlock`.
 
 When any check fails, the runner publishes one `SystemAlert` (`source: 'scheduler'`, severity `warn`) to `notifications:queue:system-alerts`. Successful runs log at `debug` only (no Telegram).
 
