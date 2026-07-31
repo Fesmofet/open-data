@@ -23,7 +23,8 @@ User preferences surface: locale, theme, and shell mode. Linked from the logged-
 
 | Item | Detail |
 |------|--------|
-| Path | `/settings` — `apps/web/src/app/(app)/settings/page.tsx` |
+| Path | `/settings` — `apps/web/src/app/(app)/(hub)/(tools-shell)/settings/page.tsx` |
+| Shell | Tools hub sidebar via `(tools-shell)/layout.tsx` |
 | Auth | No server redirect; page is reachable when logged out (toolbar still works) |
 | Metadata | `generateMetadata` → i18n `settings` key |
 
@@ -53,5 +54,5 @@ Listed in `app/robots.ts` `disallow` — not intended for indexing.
 
 | Path | Role |
 |------|------|
-| `apps/web/src/app/(app)/settings/page.tsx` | Settings route |
+| `apps/web/src/app/(app)/(hub)/(tools-shell)/settings/page.tsx` | Settings route |
 | `apps/web/src/app/(app)/home-i18n-toolbar.tsx` | Preference controls |

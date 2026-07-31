@@ -7,12 +7,12 @@ import {
   useId,
   useRef,
   useState,
-  type ReactNode,
 } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { businessRoutes } from '@/modules/business';
 import { NotificationBell } from '@/modules/notifications';
+import { isToolsHubPath } from '@/modules/tools';
 import { clearWalletSession } from '@/modules/auth/infrastructure';
 import { UserAvatar } from '@/shared/presentation';
 
@@ -53,26 +53,6 @@ function ChevronDownIcon({ className }: { className?: string }) {
   );
 }
 
-function MenuRowDisabled({
-  children,
-  title,
-}: {
-  children: ReactNode;
-  title: string;
-}) {
-  return (
-    <button
-      type="button"
-      disabled
-      role="menuitem"
-      title={title}
-      className="flex w-full cursor-not-allowed items-center rounded-btn px-3 py-2 text-start text-body-sm text-fg-disabled"
-    >
-      {children}
-    </button>
-  );
-}
-
 export type LoggedInHeaderActionsProps = {
   user: AppHeaderUser;
 };
@@ -101,7 +81,8 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const profileAboutHref = `/@${encodeURIComponent(user.username)}/about`;
   const profileMainPath = `/user-profile/${user.username}`;
   const profileAboutPath = `/user-profile/${user.username}/about`;
-  const comingSoon = t('app_header_coming_soon');
+  const walletHref = `/@${encodeURIComponent(user.username)}/transfers?type=WAIV`;
+  const walletPathPrefix = `/@${encodeURIComponent(user.username)}/transfers`;
 
   useEffect(() => {
     if (!menuOpen) {
@@ -209,8 +190,16 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
             >
               {t('my_feed')}
             </Link>
-            <MenuRowDisabled title={comingSoon}>{t('earn')}</MenuRowDisabled>
-            <MenuRowDisabled title={comingSoon}>{t('tools')}</MenuRowDisabled>
+            <Link
+              href="/notifications/settings"
+              role="menuitem"
+              aria-current={isToolsHubPath(pathname) ? 'page' : undefined}
+              className={menuNavLinkClassName(isToolsHubPath(pathname))}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('tools')}
+            </Link>
             <Link
               href="/object-create"
               role="menuitem"
@@ -261,7 +250,24 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
             >
               {t('my_profile')}
             </Link>
-            <MenuRowDisabled title={comingSoon}>{t('wallet')}</MenuRowDisabled>
+            <Link
+              href={walletHref}
+              role="menuitem"
+              aria-current={
+                pathname === walletPathPrefix ||
+                pathname.startsWith(`${walletPathPrefix}/`)
+                  ? 'page'
+                  : undefined
+              }
+              className={menuNavLinkClassName(
+                pathname === walletPathPrefix ||
+                  pathname.startsWith(`${walletPathPrefix}/`),
+              )}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('wallet')}
+            </Link>
             <Link
               href="/settings"
               role="menuitem"

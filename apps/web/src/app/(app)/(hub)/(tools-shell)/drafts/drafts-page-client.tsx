@@ -111,7 +111,7 @@ export function DraftsPageClient({ username }: DraftsPageClientProps) {
   };
 
   return (
-    <main className="mx-auto max-w-container-content px-gutter py-section-y sm:px-gutter-sm">
+    <div>
       <header className="mb-8">
         <h1 className="font-display text-section text-heading leading-display">
           {t('drafts_page_title')}
@@ -210,6 +210,6 @@ export function DraftsPageClient({ username }: DraftsPageClientProps) {
           </button>
         </div>
       ) : null}
-    </main>
+    </div>
   );
 }

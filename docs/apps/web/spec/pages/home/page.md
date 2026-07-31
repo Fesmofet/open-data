@@ -1,7 +1,7 @@
 ---
 id: web-pages-home
 title: Home page
-description: App root landing under the hub shell. Section nav (HOME / DATA / BUSINESS) plus a stub agent chat composer.
+description: App root landing under the hub shell. Section nav (HOME / DATA / BUSINESS / TOOLS) plus a stub agent chat composer.
 tags: [web, page, home]
 related:
   - docs/apps/web/spec/pages/index.md
@@ -26,18 +26,19 @@ App root landing under `(app)/(hub)`. Shows hub section nav and a stub agent com
 | Item | Detail |
 |------|--------|
 | Path | `/` — `apps/web/src/app/(app)/(hub)/page.tsx` |
-| Shell | `(app)/layout.tsx` (AppHeader) + `(hub)/layout.tsx` (HOME / DATA / BUSINESS nav) |
+| Shell | `(app)/layout.tsx` (AppHeader) + `(hub)/layout.tsx` (HOME / DATA / BUSINESS / TOOLS nav) |
 | Content | Centered agent chat composer stub |
 
 ## Hub section nav
 
-Shared by `/`, `/discover`, `/business*`. Not shown on profiles, objects, or other `(app)` routes.
+Shared by `/`, `/discover`, `/business*`, `/tools`, `/drafts`, `/notifications/settings`, `/settings`. Not shown on profiles, objects, or other `(app)` routes.
 
 | Tab | Route | Active |
 |-----|-------|--------|
 | HOME | `/` | exact `/` |
 | DATA | `/discover` | `/discover` prefix |
 | BUSINESS | `/business` | `/business` prefix |
+| TOOLS | `/notifications/settings` | `/tools`, `/drafts`, `/notifications/settings`, `/settings` — see [tools/page.md](../tools/page.md) |
 
 Component: `AppSectionNav` (`@/modules/app-header`) — underline tabs via `profileSectionTabClass` (same as profile primary menu), labels uppercase.
 

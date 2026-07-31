@@ -43,7 +43,7 @@ export function NotificationSettingsPageClient({
   };
 
   return (
-    <main className="mx-auto w-full max-w-container-content px-gutter pt-section-y pb-section-y sm:px-gutter-sm">
+    <div>
       <header className="mb-8 space-y-4">
         <h1 className="font-display text-section font-weight-display text-heading leading-display">
           {t('notification_settings')}
@@ -91,6 +91,6 @@ export function NotificationSettingsPageClient({
           onSave={handleSave}
         />
       ) : null}
-    </main>
+    </div>
   );
 }
