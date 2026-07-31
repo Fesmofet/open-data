@@ -74,6 +74,15 @@ export interface RedisClientInterface {
     streams: { key: string; id: string }[],
     options?: { count?: number; blockMs?: number },
   ): Promise<RedisStreamEntry[]>;
+  /** Reassigns stale PEL entries from dead consumers (Redis XAUTOCLAIM). */
+  xAutoClaim(
+    stream: string,
+    group: string,
+    consumer: string,
+    minIdleMs: number,
+    start: string,
+    count?: number,
+  ): Promise<{ nextStart: string; entries: RedisStreamEntry[] }>;
   xAck(stream: string, group: string, ...ids: string[]): Promise<number>;
   lRange(key: string, start: number, stop: number): Promise<string[]>;
 }

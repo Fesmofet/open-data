@@ -8,8 +8,10 @@ import { ConfigService } from '@nestjs/config';
 import { RedisClientFactory } from '@opden-data-layer/clients';
 import {
   TELEGRAM_PER_CHAT_MIN_INTERVAL_MS,
+  TELEGRAM_SENDER_CONSUMER_DEFAULT,
   TELEGRAM_SENDER_GROUP,
   TELEGRAM_SENT_DEDUP_TTL_SEC,
+  TELEGRAM_STREAM_BATCH_SIZE,
   TELEGRAM_STREAM_DATA_FIELD,
   TELEGRAM_STREAM_KEY,
   telegramSentDedupKey,
@@ -29,7 +31,7 @@ interface QueuedTelegramPayload {
 @Injectable()
 export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TelegramSenderService.name);
-  private readonly consumerName = `${process.env.HOSTNAME ?? 'notifications'}-${process.pid}-tg`;
+  private readonly consumerName: string;
   private running = false;
   private loopPromise: Promise<void> | null = null;
   private lastGlobalSendMs = 0;
@@ -40,7 +42,11 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
     private readonly redisFactory: RedisClientFactory,
     private readonly api: TelegramApiClient,
     private readonly subscriptions: TelegramSubscriptionsRepository,
-  ) {}
+  ) {
+    this.consumerName =
+      config.get<string>('telegram.senderConsumerName') ??
+      TELEGRAM_SENDER_CONSUMER_DEFAULT;
+  }
 
   async onModuleInit(): Promise<void> {
     if (!this.api.isConfigured()) {
@@ -54,8 +60,10 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
       true,
     );
     this.running = true;
-    this.loopPromise = this.drainOwnPending().then(() => this.consumeLoop());
-    this.logger.log('Telegram sender started');
+    this.loopPromise = this.reclaimAndDrainPending().then(() => this.consumeLoop());
+    this.logger.log(
+      `Telegram sender started (consumer=${this.consumerName})`,
+    );
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -65,8 +73,53 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /** Reclaim PEL entries orphaned by prior consumer names, then drain our own pending. */
+  private async reclaimAndDrainPending(): Promise<void> {
+    const reclaimed = await this.reclaimOrphanedPending();
+    const drained = await this.drainOwnPending();
+    if (reclaimed + drained === 0) {
+      this.logger.debug(
+        `Telegram queue startup: no pending entries for ${this.consumerName}`,
+      );
+    }
+  }
+
+  /** XAUTOCLAIM entries stuck on dead consumers (pid-based names from older builds). */
+  private async reclaimOrphanedPending(): Promise<number> {
+    const redis = this.redisFactory.getClient();
+    let reclaimed = 0;
+    let start = '0-0';
+    try {
+      while (this.running) {
+        const { nextStart, entries } = await redis.xAutoClaim(
+          TELEGRAM_STREAM_KEY,
+          TELEGRAM_SENDER_GROUP,
+          this.consumerName,
+          0,
+          start,
+          TELEGRAM_STREAM_BATCH_SIZE,
+        );
+        start = nextStart;
+        if (entries.length === 0) {
+          break;
+        }
+        reclaimed += await this.processBatch(entries);
+      }
+    } catch (err) {
+      this.logger.error(
+        `Telegram orphaned reclaim failed: ${(err as Error).message}`,
+      );
+    }
+    if (reclaimed > 0) {
+      this.logger.log(
+        `Reclaimed ${reclaimed} orphaned telegram queue entries for ${this.consumerName}`,
+      );
+    }
+    return reclaimed;
+  }
+
   /** Reclaim PEL entries from prior crashes or failed sends before reading new ones. */
-  private async drainOwnPending(): Promise<void> {
+  private async drainOwnPending(): Promise<number> {
     const redis = this.redisFactory.getClient();
     let drained = 0;
     try {
@@ -75,7 +128,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
           TELEGRAM_SENDER_GROUP,
           this.consumerName,
           [{ key: TELEGRAM_STREAM_KEY, id: '0' }],
-          { count: 5 },
+          { count: TELEGRAM_STREAM_BATCH_SIZE },
         );
         if (entries.length === 0) {
           break;
@@ -92,6 +145,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
         `Drained ${drained} pending telegram queue entries for ${this.consumerName}`,
       );
     }
+    return drained;
   }
 
   private minGlobalIntervalMs(): number {
@@ -107,13 +161,16 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
           TELEGRAM_SENDER_GROUP,
           this.consumerName,
           [{ key: TELEGRAM_STREAM_KEY, id: '>' }],
-          { count: 5, blockMs: 2000 },
+          { count: TELEGRAM_STREAM_BATCH_SIZE, blockMs: 2000 },
         );
         if (entries.length === 0) {
           continue;
         }
 
-        await this.processBatch(entries);
+        const acked = await this.processBatch(entries);
+        if (acked > 0) {
+          this.logger.log(`Delivered ${acked} telegram queue entries`);
+        }
       } catch (err) {
         if (this.running) {
           this.logger.error(

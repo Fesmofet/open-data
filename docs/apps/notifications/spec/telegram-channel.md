@@ -20,7 +20,7 @@ MVP delivery channel inside `apps/notifications`. English copy only (`en-diction
 
 1. `NotificationRouterService` enqueues after settings filter and Redis feed write.
 2. `TelegramNotificationService` resolves `telegram_subscriptions` chat IDs, builds the message body with `renderTelegramBody`, stores `websiteUrl` separately, and `XADD`s to `notifications:queue:telegram`.
-3. `TelegramSenderService` consumes the stream (group `telegram-sender`), drains its own pending entries on startup (`XREADGROUP` id `0`), throttles, calls Bot API with inline keyboard markup (no raw URL in message text).
+3. `TelegramSenderService` consumes the stream (group `telegram-sender`, stable consumer `telegram-sender-1`), **XAUTOCLAIM**s entries orphaned by dead consumers, drains its own pending entries on startup (`XREADGROUP` id `0`), throttles, calls Bot API with inline keyboard markup (no raw URL in message text).
 4. `TelegramPollerService` long-polls `getUpdates` (single active poller via Redis lock), dispatches command handling without blocking the next poll, and handles `/start`, `/stop`, `/list`, free-text Hive usernames, and `callback_query` unsubscribe buttons. `TELEGRAM_POLL_INTERVAL_MS` applies only after an empty poll cycle (no updates received).
 
 ## Outbound message format
@@ -52,6 +52,7 @@ Table `telegram_subscriptions` (`chat_id`, `account`, `created_at`), composite P
 | `TELEGRAM_POLL_TIMEOUT_SEC` | No | Default `10` (legacy long-poll timeout) |
 | `TELEGRAM_POLL_INTERVAL_MS` | No | Default `300` — pause between empty `getUpdates` cycles only |
 | `TELEGRAM_SEND_RATE_PER_SEC` | No | Default `25` |
+| `TELEGRAM_SENDER_CONSUMER_NAME` | No | Default `telegram-sender-1` — must stay stable across restarts (do not use pid-based names) |
 
 Bot **username** for `https://t.me/...` links on the web UI is **`NOTIFICATIONS_TELEGRAM_BOT_USERNAME`** on `apps/web` only (not this service).
 

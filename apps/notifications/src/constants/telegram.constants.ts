@@ -6,6 +6,11 @@ export const TELEGRAM_STREAM_KEY = buildRedisKey(APP, 'queue', 'telegram');
 
 export const TELEGRAM_SENDER_GROUP = 'telegram-sender';
 
+/** Default Redis stream consumer name — must stay stable across restarts. */
+export const TELEGRAM_SENDER_CONSUMER_DEFAULT = 'telegram-sender-1';
+
+export const TELEGRAM_STREAM_BATCH_SIZE = 5;
+
 export const TELEGRAM_STREAM_DATA_FIELD = 'payload';
 
 export const telegramPollerLockKey = (): string =>

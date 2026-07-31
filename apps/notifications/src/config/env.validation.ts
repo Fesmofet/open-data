@@ -53,6 +53,11 @@ export const notificationsEnvSchema = z.object({
     .min(1)
     .optional()
     .default('notifications-1'),
+  TELEGRAM_SENDER_CONSUMER_NAME: z
+    .string()
+    .min(1)
+    .optional()
+    .default('telegram-sender-1'),
 });
 
 export type NotificationsEnv = z.infer<typeof notificationsEnvSchema>;

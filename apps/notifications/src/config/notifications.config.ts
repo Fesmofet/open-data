@@ -35,6 +35,7 @@ export default () => {
       pollTimeoutSec: env.TELEGRAM_POLL_TIMEOUT_SEC,
       pollIntervalMs: env.TELEGRAM_POLL_INTERVAL_MS,
       sendRatePerSec: env.TELEGRAM_SEND_RATE_PER_SEC,
+      senderConsumerName: env.TELEGRAM_SENDER_CONSUMER_NAME,
     },
     telegramOps: {
       botToken: env.TELEGRAM_OPS_BOT_TOKEN?.trim() || null,

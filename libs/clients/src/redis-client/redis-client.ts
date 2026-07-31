@@ -274,6 +274,46 @@ class RedisClientWrapper implements RedisClientInterface {
     return out;
   }
 
+  async xAutoClaim(
+    stream: string,
+    group: string,
+    consumer: string,
+    minIdleMs: number,
+    start: string,
+    count?: number,
+  ): Promise<{ nextStart: string; entries: RedisStreamEntry[] }> {
+    const args: (string | number)[] = [
+      stream,
+      group,
+      consumer,
+      minIdleMs,
+      start,
+    ];
+    if (count !== undefined) {
+      args.push('COUNT', count);
+    }
+
+    const raw = (await this.client.call('XAUTOCLAIM', ...args)) as
+      | null
+      | [string, [string, string[]][]];
+
+    if (!raw) {
+      return { nextStart: start, entries: [] };
+    }
+
+    const nextStart = raw[0];
+    const entryList = raw[1] ?? [];
+    const out: RedisStreamEntry[] = [];
+    for (const [id, fieldList] of entryList) {
+      const fields: Record<string, string> = {};
+      for (let i = 0; i < fieldList.length; i += 2) {
+        fields[fieldList[i]] = fieldList[i + 1];
+      }
+      out.push({ id, fields });
+    }
+    return { nextStart, entries: out };
+  }
+
   async xAck(stream: string, group: string, ...ids: string[]): Promise<number> {
     if (ids.length === 0) {
       return 0;
