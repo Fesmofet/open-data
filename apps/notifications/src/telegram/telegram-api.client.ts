@@ -62,7 +62,15 @@ export class TelegramApiClient {
     }
     params.set('timeout', String(timeoutSec));
     const url = `${this.baseUrl}/getUpdates?${params.toString()}`;
-    const res = await fetch(url, TELEGRAM_FETCH_INIT);
+    let res: Response;
+    try {
+      res = await fetch(url, TELEGRAM_FETCH_INIT);
+    } catch (err) {
+      this.logger.warn(
+        `getUpdates network error: ${(err as Error).message}`,
+      );
+      return [];
+    }
     const body = (await res.json()) as {
       ok: boolean;
       result?: TelegramUpdate[];
@@ -91,12 +99,21 @@ export class TelegramApiClient {
     if (options.replyMarkup) {
       payload.reply_markup = options.replyMarkup;
     }
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      ...TELEGRAM_FETCH_INIT,
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        ...TELEGRAM_FETCH_INIT,
+      });
+    } catch (err) {
+      return {
+        ok: false,
+        errorCode: 0,
+        description: (err as Error).message,
+      };
+    }
     const body = (await res.json()) as {
       ok: boolean;
       error_code?: number;
@@ -116,12 +133,20 @@ export class TelegramApiClient {
 
   async answerCallbackQuery(callbackQueryId: string): Promise<void> {
     const url = `${this.baseUrl}/answerCallbackQuery`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ callback_query_id: callbackQueryId }),
-      ...TELEGRAM_FETCH_INIT,
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: callbackQueryId }),
+        ...TELEGRAM_FETCH_INIT,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `answerCallbackQuery network error: ${(err as Error).message}`,
+      );
+      return;
+    }
     const body = (await res.json()) as { ok: boolean; description?: string };
     if (!body.ok) {
       this.logger.warn(

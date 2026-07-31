@@ -133,7 +133,6 @@ export function buildObjectMessage(
           : event.objectId
             ? objectPath(event.objectId)
             : null;
-      const objectPageHref = event.objectId ? objectPath(event.objectId) : href;
       return withParamHrefs(
         {
           key: 'notification_update_vote_cast',
@@ -146,10 +145,7 @@ export function buildObjectMessage(
           icon: 'object',
           actor: event.actor,
         },
-        {
-          user: userProfilePath(user),
-          ...(objectPageHref ? { objectName: objectPageHref } : {}),
-        },
+        objectParamHrefs(user, href),
       );
     }
     default:

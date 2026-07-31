@@ -140,4 +140,39 @@ describe('TelegramNotificationService', () => {
     expect(myCommentPayload.text).toBe('flowmaster replied to w95hj');
     expect(myCommentPayload.text).not.toMatch(/\b(you|your)\b/i);
   });
+
+  it('queues update_vote_cast with update detail websiteUrl', async () => {
+    await service.enqueueMany([
+      {
+        account: 'owner',
+        chatIds: ['42'],
+        itemId: 'item-vote',
+        event: {
+          type: 'update_vote_cast',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't',
+          objectId: 'obj-1',
+          actor: 'flowmaster',
+          payload: {
+            updateId: 'upd-1',
+            vote: 'for',
+            updateType: 'pin',
+            objectName: 'test business all',
+            authorPermlink: 'obj-1',
+          },
+        },
+      },
+    ]);
+
+    const payload = JSON.parse(
+      xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(payload.text).toBe(
+      'flowmaster approved the pin for test business all',
+    );
+    expect(payload.websiteUrl).toBe(
+      'https://waiviodev.com/object/obj-1/updates/upd-1',
+    );
+  });
 });

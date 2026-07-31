@@ -20,7 +20,7 @@ MVP delivery channel inside `apps/notifications`. English copy only (`en-diction
 
 1. `NotificationRouterService` enqueues after settings filter and Redis feed write.
 2. `TelegramNotificationService` resolves `telegram_subscriptions` chat IDs, builds the message body with `renderTelegramBody`, stores `websiteUrl` separately, and `XADD`s to `notifications:queue:telegram`.
-3. `TelegramSenderService` consumes the stream (group `telegram-sender`), throttles, calls Bot API with inline keyboard markup (no raw URL in message text).
+3. `TelegramSenderService` consumes the stream (group `telegram-sender`), drains its own pending entries on startup (`XREADGROUP` id `0`), throttles, calls Bot API with inline keyboard markup (no raw URL in message text).
 4. `TelegramPollerService` long-polls `getUpdates` (single active poller via Redis lock), dispatches command handling without blocking the next poll, and handles `/start`, `/stop`, `/list`, free-text Hive usernames, and `callback_query` unsubscribe buttons. `TELEGRAM_POLL_INTERVAL_MS` applies only after an empty poll cycle (no updates received).
 
 ## Outbound message format
@@ -72,3 +72,5 @@ Unknown Hive accounts are rejected with a short reply (no FK error).
 
 - HTTP 403 from Telegram — subscription row removed for that chat/account
 - HTTP 429 — wait `retry_after`, do not ACK stream entry until sends succeed
+- Network / HTTP 5xx — do not ACK; entry stays in the consumer PEL and is retried (including on service restart via pending drain)
+- `XLEN notifications:queue:telegram` does **not** shrink on ACK — use `XPENDING notifications:queue:telegram telegram-sender` to see stuck deliveries

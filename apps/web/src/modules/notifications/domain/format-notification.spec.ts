@@ -50,6 +50,7 @@ describe('formatNotification', () => {
       objectName: 'My Shop',
     });
     expect(result.href).toBe('/object/obj-1/updates/u1');
+    expect(result.paramHrefs?.['objectName']).toBe('/object/obj-1/updates/u1');
   });
 
   it('maps object_created via message builder', () => {

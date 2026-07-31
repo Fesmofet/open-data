@@ -54,6 +54,7 @@ describe('buildNotificationMessage', () => {
     });
     expect(msg.key).toBe('notification_update_vote_cast');
     expect(msg.href).toBe('/object/obj-1/updates/upd-1');
+    expect(msg.paramHrefs?.['objectName']).toBe('/object/obj-1/updates/upd-1');
     expect(msg.icon).toBe('object');
   });
 

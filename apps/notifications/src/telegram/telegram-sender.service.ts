@@ -54,7 +54,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
       true,
     );
     this.running = true;
-    this.loopPromise = this.consumeLoop();
+    this.loopPromise = this.drainOwnPending().then(() => this.consumeLoop());
     this.logger.log('Telegram sender started');
   }
 
@@ -62,6 +62,35 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
     this.running = false;
     if (this.loopPromise) {
       await this.loopPromise;
+    }
+  }
+
+  /** Reclaim PEL entries from prior crashes or failed sends before reading new ones. */
+  private async drainOwnPending(): Promise<void> {
+    const redis = this.redisFactory.getClient();
+    let drained = 0;
+    try {
+      while (this.running) {
+        const entries = await redis.xReadGroup(
+          TELEGRAM_SENDER_GROUP,
+          this.consumerName,
+          [{ key: TELEGRAM_STREAM_KEY, id: '0' }],
+          { count: 5 },
+        );
+        if (entries.length === 0) {
+          break;
+        }
+        drained += await this.processBatch(entries);
+      }
+    } catch (err) {
+      this.logger.error(
+        `Telegram pending drain failed: ${(err as Error).message}`,
+      );
+    }
+    if (drained > 0) {
+      this.logger.log(
+        `Drained ${drained} pending telegram queue entries for ${this.consumerName}`,
+      );
     }
   }
 
@@ -80,23 +109,45 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
           [{ key: TELEGRAM_STREAM_KEY, id: '>' }],
           { count: 5, blockMs: 2000 },
         );
-        for (const entry of entries) {
-          const ack = await this.processEntry(entry.fields);
-          if (ack) {
-            await redis.xAck(
-              TELEGRAM_STREAM_KEY,
-              TELEGRAM_SENDER_GROUP,
-              entry.id,
-            );
-          }
+        if (entries.length === 0) {
+          continue;
         }
+
+        await this.processBatch(entries);
       } catch (err) {
         if (this.running) {
-          this.logger.error(`Telegram sender poll: ${(err as Error).message}`);
+          this.logger.error(
+            `Telegram sender stream read failed: ${(err as Error).message}`,
+          );
           await this.sleep(1000);
         }
       }
     }
+  }
+
+  private async processBatch(
+    entries: { id: string; fields: Record<string, string> }[],
+  ): Promise<number> {
+    const redis = this.redisFactory.getClient();
+    let acked = 0;
+    for (const entry of entries) {
+      try {
+        const shouldAck = await this.processEntry(entry.fields);
+        if (shouldAck) {
+          await redis.xAck(
+            TELEGRAM_STREAM_KEY,
+            TELEGRAM_SENDER_GROUP,
+            entry.id,
+          );
+          acked += 1;
+        }
+      } catch (err) {
+        this.logger.error(
+          `Telegram delivery failed for ${entry.id}: ${(err as Error).message}`,
+        );
+      }
+    }
+    return acked;
   }
 
   private async processEntry(
@@ -160,6 +211,14 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
       const waitSec = result.retryAfterSec ?? 1;
       await redis.del(dedupKey);
       await this.sleep(waitSec * 1000);
+      return false;
+    }
+
+    if (result.errorCode === 0 || result.errorCode >= 500) {
+      await redis.del(dedupKey);
+      this.logger.warn(
+        `Telegram send retryable failure (${result.errorCode}): ${result.description ?? 'unknown'}`,
+      );
       return false;
     }
 

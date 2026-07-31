@@ -167,6 +167,14 @@ export class TelegramOpsSenderService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
 
+    if (result.errorCode === 0 || result.errorCode >= 500) {
+      await redis.del(dedupKey);
+      this.logger.warn(
+        `Telegram ops send retryable failure (${result.errorCode}): ${result.description ?? 'unknown'}`,
+      );
+      return false;
+    }
+
     this.logger.warn(
       `Telegram ops send failed (${result.errorCode}): ${result.description ?? 'unknown'}`,
     );
