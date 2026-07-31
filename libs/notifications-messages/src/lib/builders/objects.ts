@@ -1,6 +1,6 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import { type NotificationMessage, withParamHrefs } from '../message';
-import { objectPath, userProfilePath } from '../links';
+import { objectPath, objectUpdatePath, userProfilePath } from '../links';
 
 function objectHref(
   event: AnyNotificationEvent,
@@ -123,22 +123,33 @@ export function buildObjectMessage(
       );
     }
     case 'update_vote_cast': {
-      const vote = event.payload.vote?.toLowerCase() ?? '';
-      const key =
-        vote === 'downvote' || vote === 'reject'
-          ? 'notification_object_update_reject'
-          : 'notification_upvoted_username_post';
-      const actor = event.actor ?? '?';
-      const href = event.objectId ? objectPath(event.objectId) : null;
+      const p = event.payload;
+      const updateType = p.updateType?.trim() || 'update';
+      const objectName = p.objectName ?? p.authorPermlink ?? event.objectId ?? '';
+      const user = event.actor ?? '?';
+      const href =
+        event.objectId && p.updateId
+          ? objectUpdatePath(event.objectId, p.updateId)
+          : event.objectId
+            ? objectPath(event.objectId)
+            : null;
+      const objectPageHref = event.objectId ? objectPath(event.objectId) : href;
       return withParamHrefs(
         {
-          key,
-          params: { username: actor },
+          key: 'notification_update_vote_cast',
+          params: {
+            user,
+            update: updateType,
+            objectName,
+          },
           href,
-          icon: 'vote',
+          icon: 'object',
           actor: event.actor,
         },
-        { username: userProfilePath(actor) },
+        {
+          user: userProfilePath(user),
+          ...(objectPageHref ? { objectName: objectPageHref } : {}),
+        },
       );
     }
     default:

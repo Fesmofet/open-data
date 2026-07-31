@@ -256,6 +256,9 @@ export interface NotificationPayloadMap {
   update_vote_cast: {
     updateId: string;
     vote: string;
+    updateType: string;
+    objectName: string | null;
+    authorPermlink: string;
   };
   object_created: {
     updateId: string;

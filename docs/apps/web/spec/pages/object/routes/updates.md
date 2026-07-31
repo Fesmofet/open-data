@@ -33,6 +33,7 @@ updated_at: 2026-06-10
 - **Load more:** client accumulates items; server action passes opaque `cursor`.
 - **Cards:** avatar, creator, Waivio weight, relative time, update type label, locale badge when the type is localizable (from `UPDATE_REGISTRY`), value (text / map / JSON), approval % and for/against counts. Logged-in viewers can **Approve** (`update_vote` / `for`) or **Reject** (`against`) via Hive `custom_json` (`buildOdlUpdateVoteOp`); unauthenticated clicks open the login modal. After broadcast, `awaitTrxConfirmation` then `router.refresh()`.
 - **Vote counts:** numeric counts beside Approve/Reject are clickable. Desktop hover shows preview usernames (`for_preview_voters` / `against_preview_voters` from the feed). Click opens a combined modal with approve and reject voter lists (`GET .../updates/:updateId/voters`). No vote-percent column in the report.
+- **Update detail deep link:** `/object/:id/updates/:updateId` — single `UpdateCard` with Back to `/object/:id/updates`. See [object update detail](../../object-update-detail.md).
 - **Maps:** `AppMap` + OSM credit line (see [maps.md](./maps.md)).
 - **Object page:** the **Updates** primary tab embeds this feed in the center column (see `ObjectPrimaryContent` + `ObjectPageClient`).
 

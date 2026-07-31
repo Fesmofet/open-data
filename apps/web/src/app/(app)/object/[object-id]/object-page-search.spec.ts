@@ -13,6 +13,7 @@ import {
   resolveDefaultPrimarySegmentFromLanding,
   resolvePrimarySegmentForObjectPage,
   resolvePrimarySegmentFromObjectUrl,
+  resolveUpdateIdFromObjectUrl,
   sanitizeNestedStack,
 } from './object-page-search';
 
@@ -148,6 +149,28 @@ describe('resolvePrimarySegmentFromObjectUrl', () => {
         new URLSearchParams(),
       ),
     ).toBe(OBJECT_PAGE_CATEGORY_PATH_SEGMENT);
+  });
+
+  it('returns updates for update detail path', () => {
+    expect(
+      resolvePrimarySegmentFromObjectUrl(
+        'abc',
+        '/object/abc/updates/upd-1',
+        new URLSearchParams(),
+      ),
+    ).toBe('updates');
+  });
+});
+
+describe('resolveUpdateIdFromObjectUrl', () => {
+  it('decodes update id from path', () => {
+    expect(
+      resolveUpdateIdFromObjectUrl('abc', '/object/abc/updates/upd-1'),
+    ).toBe('upd-1');
+  });
+
+  it('returns null for updates list path', () => {
+    expect(resolveUpdateIdFromObjectUrl('abc', '/object/abc/updates')).toBe(null);
   });
 });
 

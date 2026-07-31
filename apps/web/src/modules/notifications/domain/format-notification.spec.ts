@@ -28,16 +28,28 @@ describe('formatNotification', () => {
     expect(result.params).toEqual({ username: 'alice' });
   });
 
-  it('maps update_vote_cast → notification_upvoted_username_post', () => {
+  it('maps update_vote_cast → notification_update_vote_cast with update detail href', () => {
     const result = formatNotification(
       item({
         type: 'update_vote_cast',
+        objectId: 'obj-1',
         actor: 'bob',
-        payload: { vote: 'for', updateId: 'u1' },
+        payload: {
+          vote: 'for',
+          updateId: 'u1',
+          updateType: 'name',
+          objectName: 'My Shop',
+          authorPermlink: 'obj-1',
+        },
       }),
     );
-    expect(result.key).toBe('notification_upvoted_username_post');
-    expect(result.params).toEqual({ username: 'bob' });
+    expect(result.key).toBe('notification_update_vote_cast');
+    expect(result.params).toEqual({
+      user: 'bob',
+      update: 'name',
+      objectName: 'My Shop',
+    });
+    expect(result.href).toBe('/object/obj-1/updates/u1');
   });
 
   it('maps object_created via message builder', () => {
@@ -67,7 +79,7 @@ describe('formatNotification', () => {
 describe('notificationIconType', () => {
   it.each([
     ['follow', 'follow'],
-    ['update_vote_cast', 'vote'],
+    ['update_vote_cast', 'object'],
     ['object_created', 'object'],
   ] as const)('type %s → icon %s', (type, expected) => {
     const base = item({ type });
@@ -75,7 +87,17 @@ describe('notificationIconType', () => {
       type === 'object_created'
         ? { ...base, objectId: 'o1', payload: { updateType: 'name' } }
         : type === 'update_vote_cast'
-          ? { ...base, payload: { vote: 'for', updateId: 'u1' } }
+          ? {
+              ...base,
+              objectId: 'o1',
+              payload: {
+                vote: 'for',
+                updateId: 'u1',
+                updateType: 'name',
+                objectName: 'Shop',
+                authorPermlink: 'o1',
+              },
+            }
           : base;
     expect(notificationIconType(withPayload)).toBe(expected);
   });

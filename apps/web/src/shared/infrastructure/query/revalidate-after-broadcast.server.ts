@@ -13,7 +13,10 @@ function userProfilePath(accountName: string): string {
 }
 
 /** After on-chain mutations on an object page (authority, follow, updates, rating, …). */
-export async function revalidateObjectAfterBroadcast(objectId: string): Promise<void> {
+export async function revalidateObjectAfterBroadcast(
+  objectId: string,
+  options?: { updateId?: string },
+): Promise<void> {
   const id = objectId.trim();
   if (id.length === 0) {
     return;
@@ -22,6 +25,10 @@ export async function revalidateObjectAfterBroadcast(objectId: string): Promise<
   updateTag(queryApiCacheTags.objectFollowers(id));
   updateTag(queryApiCacheTags.objectExperts(id));
   updateTag(queryApiCacheTags.objectUpdates(id));
+  const updateId = options?.updateId?.trim();
+  if (updateId && updateId.length > 0) {
+    updateTag(queryApiCacheTags.objectUpdate(id, updateId));
+  }
   updateTag(queryApiCacheTags.objectPostsFeed(id));
   updateTag(queryApiCacheTags.objectThreadsFeed(id));
   revalidatePath(objectPath(id), 'layout');

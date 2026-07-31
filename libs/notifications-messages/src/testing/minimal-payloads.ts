@@ -121,7 +121,13 @@ export function minimalNotificationEventPayload(
         account: 'u',
       };
     case 'update_vote_cast':
-      return { updateId: 'u', vote: 'upvote' };
+      return {
+        updateId: 'u',
+        vote: 'for',
+        updateType: 'name',
+        objectName: 'o',
+        authorPermlink: 'ap',
+      };
     case 'object_created':
       return { updateId: 'u', updateType: 'title' };
     case 'batch_import_completed':

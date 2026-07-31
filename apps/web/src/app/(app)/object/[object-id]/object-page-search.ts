@@ -8,6 +8,7 @@ import {
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
   OBJECT_PAGE_VIEW_PATH_PARAM,
   resolveCategoryNameFromObjectUrl,
@@ -27,6 +28,7 @@ export {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
+  OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 };
 
@@ -109,6 +111,10 @@ export function resolvePrimarySegmentFromObjectUrl(
   if (path.startsWith(categoryPrefix)) {
     return OBJECT_PAGE_CATEGORY_PATH_SEGMENT;
   }
+  const updatesDetailPrefix = `${base}/updates/`;
+  if (path === `${base}/updates` || path.startsWith(updatesDetailPrefix)) {
+    return 'updates';
+  }
   for (const segment of PATH_TAB_SEGMENTS) {
     if (path === `${base}/${segment}`) {
       return segment;
@@ -122,6 +128,31 @@ export function resolvePrimarySegmentFromObjectUrl(
  * Parses the active department category name from a visible object URL pathname.
  */
 export { resolveCategoryNameFromObjectUrl, resolveCategoryNameForObjectPage };
+
+/**
+ * Parses the update id from `/object/:id/updates/:updateId`.
+ * Returns `null` on the updates list (`/object/:id/updates`) or when absent.
+ */
+export function resolveUpdateIdFromObjectUrl(
+  objectId: string,
+  pathname: string,
+): string | null {
+  const base = `/object/${encodeURIComponent(objectId)}`;
+  const path = normalizePathname(pathname);
+  const prefix = `${base}/updates/`;
+  if (!path.startsWith(prefix)) {
+    return null;
+  }
+  const encoded = path.slice(prefix.length);
+  if (!encoded) {
+    return null;
+  }
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return encoded;
+  }
+}
 
 /**
  * Parses the active gallery album name from a visible object URL pathname.

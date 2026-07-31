@@ -85,7 +85,7 @@ Message text comes from locale JSON via [`format-notification.ts`](../../../apps
 | `type` | Message key |
 |--------|-------------|
 | `follow` | `notification_following_username` (`{username}` = actor) |
-| `update_vote_cast` | `notification_upvoted_username_post` |
+| `update_vote_cast` | `notification_update_vote_cast` |
 | other | `notification_generic_default_message` |
 
 UI chrome: `notifications`, `notifications_empty_message`, `see_all`, `notify_list_message`, `notify_list_message_telegram_before`, `notify_list_message_telegram_after`, `settings_notify`.

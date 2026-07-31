@@ -41,6 +41,7 @@ import {
 
 import { loadObjectPageModel } from './object-page-model.server';
 import { ObjectPageUpdatesFeedSection } from './object-page-updates-feed-section.server';
+import { ObjectPageUpdateDetailSection } from './object-page-update-detail-section.server';
 import { ObjectPagePostsFeedSection } from './object-page-posts-feed-section.server';
 import { ObjectThreadsFeedList } from './object-threads-feed-list';
 import { FeedPostsLoadingSkeleton } from '@/modules/feed';
@@ -50,6 +51,7 @@ import {
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
+  OBJECT_PAGE_UPDATE_ID_PARAM,
   parseAuthoritySubTypeParam,
   parseViewPathParam,
   resolveDefaultPrimarySegmentFromLanding,
@@ -60,6 +62,20 @@ import { ObjectPageInvalidPathFix } from './object-page-invalid-path-fix';
 
 const REF_LIST_PRIMARY_SEGMENTS = ['related', 'similar', 'add-on'] as const;
 const CATEGORY_PRIMARY_SEGMENT = 'category';
+
+function parseUpdateIdParam(
+  sp: Record<string, string | string[] | undefined>,
+): string | null {
+  const raw = firstSearchParam(sp, OBJECT_PAGE_UPDATE_ID_PARAM)?.trim();
+  if (!raw) {
+    return null;
+  }
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
 
 function parseCategoryNameParam(
   sp: Record<string, string | string[] | undefined>,
@@ -350,17 +366,30 @@ export default async function ObjectDetailPage({
 
   const invalidPathRequested = pathIds.length > 0 && initialNestedStack.length === 0;
 
+  const updateIdParam = parseUpdateIdParam(sp);
+
   const updatesFeedSlot =
     initialPrimarySegment === 'updates' ? (
-      <Suspense key="object-updates-feed" fallback={<ObjectPageUpdatesFeedSkeleton />}>
-        <ObjectPageUpdatesFeedSection
-          objectId={objectId}
-          model={model}
-          searchParams={sp}
-          locale={locale}
-          viewerUsername={viewerUsername}
-        />
-      </Suspense>
+      updateIdParam ? (
+        <Suspense key="object-update-detail" fallback={<ObjectPageUpdatesFeedSkeleton />}>
+          <ObjectPageUpdateDetailSection
+            objectId={objectId}
+            updateId={updateIdParam}
+            locale={locale}
+            viewerUsername={viewerUsername}
+          />
+        </Suspense>
+      ) : (
+        <Suspense key="object-updates-feed" fallback={<ObjectPageUpdatesFeedSkeleton />}>
+          <ObjectPageUpdatesFeedSection
+            objectId={objectId}
+            model={model}
+            searchParams={sp}
+            locale={locale}
+            viewerUsername={viewerUsername}
+          />
+        </Suspense>
+      )
     ) : null;
 
   const postsFeedSlot =

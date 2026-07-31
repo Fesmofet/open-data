@@ -66,6 +66,39 @@ export class GetObjectUpdatesFeedEndpoint {
     return this.approvalPage(input, governance, authorities, filter);
   }
 
+  async executeByUpdateId(input: {
+    objectId: string;
+    updateId: string;
+    governanceObjectIdFromHeader?: string;
+    viewerAccount?: string;
+  }): Promise<ObjectUpdateFeedItemDto | null> {
+    const core = await this.objectsCore.findByObjectIdForPage(input.objectId);
+    if (!core) {
+      return null;
+    }
+
+    const joinRow = await this.updatesFeedRepo.findJoinRowByObjectAndUpdateId(
+      input.objectId,
+      input.updateId,
+    );
+    if (!joinRow) {
+      return null;
+    }
+
+    const governance = await this.governanceResolver.resolveMergedForObjectView(
+      input.governanceObjectIdFromHeader,
+    );
+    const authorities = await this.objectAuthorityRepo.findByObjectId(input.objectId);
+    const items = await this.buildItemsForPage(
+      input.objectId,
+      [joinRow],
+      governance,
+      authorities,
+      input.viewerAccount,
+    );
+    return items[0] ?? null;
+  }
+
   private async recencyPage(
     input: GetObjectUpdatesFeedInput,
     governance: Parameters<typeof computeApprovePercent>[2],

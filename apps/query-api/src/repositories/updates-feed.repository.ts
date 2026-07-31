@@ -124,6 +124,41 @@ export class UpdatesFeedRepository {
     }
   }
 
+  async findJoinRowByObjectAndUpdateId(
+    objectId: string,
+    updateId: string,
+  ): Promise<UpdatesFeedJoinRow | null> {
+    try {
+      const row = await this.db
+        .selectFrom('object_updates as ou')
+        .leftJoin('accounts_current as ac', (join) =>
+          join.onRef('ou.creator', '=', 'ac.name'),
+        )
+        .where('ou.object_id', '=', objectId)
+        .where('ou.update_id', '=', updateId)
+        .selectAll('ou')
+        .select([
+          sql<number>`coalesce(ac.wobjects_weight, 0)::double precision`.as(
+            'creator_wobjects_weight',
+          ),
+          sql<number | null>`case when ou.value_geo is null then null else ST_Y(ou.value_geo::geometry) end`.as(
+            'geo_lat',
+          ),
+          sql<number | null>`case when ou.value_geo is null then null else ST_X(ou.value_geo::geometry) end`.as(
+            'geo_lon',
+          ),
+        ])
+        .executeTakeFirst();
+      if (!row) {
+        return null;
+      }
+      return this.toJoinRow(row);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
+
   async findValidityVotesForObjectAndUpdates(
     objectId: string,
     updateIds: string[],

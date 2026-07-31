@@ -35,6 +35,17 @@ export const OBJECT_PAGE_CATEGORY_PATH_SEGMENT = 'category';
 /** Path segment between `/gallery/` and album name. */
 export const OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT = 'album';
 
+/** Internal query param when proxy rewrites `/object/:id/updates/:updateId`. */
+export const OBJECT_PAGE_UPDATE_ID_PARAM = 'object_update_id';
+
+export function buildObjectUpdatesPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/updates`;
+}
+
+export function buildObjectUpdatePath(objectId: string, updateId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/updates/${encodeURIComponent(updateId)}`;
+}
+
 export function buildObjectGalleryAlbumPath(
   objectId: string,
   albumName: string,

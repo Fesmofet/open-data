@@ -36,6 +36,8 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_object_update: '{user} added a new {update} for {objectName}',
   notification_object_update_reject:
     '{user} rejected the {update} for {objectName}',
+  notification_update_vote_cast:
+    '{user} approved the {update} for {objectName}',
   notification_reblogged_username_post: "{username} reblogged {recipient}'s post",
   notification_reply_username_comment:
     "{username} has replied to {recipient}'s comment",

@@ -52,6 +52,7 @@ import {
   objectUpdatesFeedQuerySchema,
   type ObjectUpdatesFeedQuery,
   type ObjectUpdatesFeedResponseDto,
+  type ObjectUpdateFeedItemDto,
   type UpdateVotersResponseDto,
 } from '../domain/object-updates';
 import {
@@ -273,6 +274,29 @@ export class ObjectsController {
     });
     if (!result) {
       throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/updates/:updateId')
+  async getUpdateById(
+    @Param('objectId') objectId: string,
+    @Param('updateId') updateId: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectUpdateFeedItemDto> {
+    const decodedObjectId = decodeURIComponent(objectId);
+    const decodedUpdateId = decodeURIComponent(updateId);
+    const result = await this.getObjectUpdatesFeed.executeByUpdateId({
+      objectId: decodedObjectId,
+      updateId: decodedUpdateId,
+      governanceObjectIdFromHeader,
+      viewerAccount: viewer,
+    });
+    if (!result) {
+      throw new NotFoundException(
+        `Update not found: ${decodedUpdateId} on object ${decodedObjectId}`,
+      );
     }
     return result;
   }

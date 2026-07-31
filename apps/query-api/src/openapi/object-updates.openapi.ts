@@ -142,6 +142,45 @@ const updateVotersResponseSchema = registry.register(
 
 registry.registerPath({
   method: 'get',
+  path: '/query/v1/objects/{objectId}/updates/{updateId}',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Single object update feed item',
+  description:
+    'Returns one update card payload (same shape as feed items) for deep links from notifications.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+      updateId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'updateId', in: 'path', required: true } }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Object update feed item.',
+      content: {
+        'application/json': {
+          schema: objectUpdateFeedItemSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object or update not found.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
   path: '/query/v1/objects/{objectId}/updates/{updateId}/voters',
   tags: [queryApiOpenApiTags.objects],
   summary: 'Validity voters for a single object update',

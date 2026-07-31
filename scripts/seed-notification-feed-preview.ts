@@ -278,7 +278,10 @@ function buildPayload(
     },
     update_vote_cast: {
       updateId: 'preview-update-003',
-      vote: 'approve',
+      vote: 'for',
+      updateType: 'description',
+      objectName: object,
+      authorPermlink: object,
     },
     object_created: {
       updateId: 'preview-update-legacy',

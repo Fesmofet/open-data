@@ -182,6 +182,9 @@ const objectStatusChangePayload = z.object({
 const updateVoteCastPayload = z.object({
   updateId: z.string(),
   vote: z.string(),
+  updateType: z.string().optional().default('update'),
+  objectName: z.string().nullable().optional(),
+  authorPermlink: z.string().optional(),
 });
 
 const objectCreatedPayload = z.object({

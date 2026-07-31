@@ -16,7 +16,9 @@ describe('NotificationAdapterService', () => {
     );
   });
 
-  it('publishes contract events unchanged', async () => {
+  it('enriches update_vote_cast when objectName is null', async () => {
+    objectNameResolver.resolve.mockResolvedValue('Test Business');
+
     await service.onNotification({
       type: 'update_vote_cast',
       occurredAt: '2026-01-01T00:00:00.000Z',
@@ -24,20 +26,24 @@ describe('NotificationAdapterService', () => {
       trxId: 'trx-1',
       objectId: 'obj-1',
       actor: 'voter',
-      payload: { updateId: 'upd-1', vote: 'for' },
+      payload: {
+        updateId: 'upd-1',
+        vote: 'for',
+        updateType: 'name',
+        objectName: null,
+        authorPermlink: 'obj-1',
+      },
     });
 
+    expect(objectNameResolver.resolve).toHaveBeenCalledWith('obj-1');
     expect(publisher.published).toHaveLength(1);
-    expect(publisher.published[0]).toEqual({
+    expect(publisher.published[0]).toMatchObject({
       type: 'update_vote_cast',
-      occurredAt: '2026-01-01T00:00:00.000Z',
-      blockNum: 100,
-      trxId: 'trx-1',
-      objectId: 'obj-1',
-      actor: 'voter',
-      payload: { updateId: 'upd-1', vote: 'for' },
+      payload: {
+        objectName: 'Test Business',
+        updateType: 'name',
+      },
     });
-    expect(objectNameResolver.resolve).not.toHaveBeenCalled();
   });
 
   it('enriches object_update when objectName is null', async () => {

@@ -65,6 +65,19 @@ export class NotificationAdapterService {
           payload: { ...event.payload, objectName },
         };
       }
+      case 'update_vote_cast': {
+        if (!event.objectId || event.payload.objectName) {
+          return event;
+        }
+        const objectName = await this.objectNameResolver.resolve(event.objectId);
+        if (!objectName) {
+          return event;
+        }
+        return {
+          ...event,
+          payload: { ...event.payload, objectName },
+        };
+      }
       default:
         return event;
     }

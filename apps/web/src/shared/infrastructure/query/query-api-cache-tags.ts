@@ -8,6 +8,8 @@ export const queryApiCacheTags = {
   objectExperts: (objectId: string) =>
     `query-api:object:${objectId.trim()}:experts`,
   objectUpdates: (objectId: string) => `query-api:object:${objectId.trim()}:updates`,
+  objectUpdate: (objectId: string, updateId: string) =>
+    `query-api:object:${objectId.trim()}:updates:${updateId.trim()}`,
   objectPostsFeed: (objectId: string) => `query-api:object:${objectId.trim()}:posts-feed`,
   objectThreadsFeed: (objectId: string) => `query-api:object:${objectId.trim()}:threads-feed`,
   userProfile: (accountName: string) =>

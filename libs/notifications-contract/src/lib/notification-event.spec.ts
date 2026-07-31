@@ -24,6 +24,29 @@ describe('NotificationEvent contract', () => {
     expect(NOTIFICATION_EVENT_TYPES).toContain('transfer_in');
   });
 
+  it('accepts legacy update_vote_cast payload without updateType or authorPermlink', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'update_vote_cast',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: 'obj-1',
+      actor: 'voter',
+      payload: {
+        updateId: 'upd-1',
+        vote: 'for',
+      },
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.payload).toEqual({
+        updateId: 'upd-1',
+        vote: 'for',
+        updateType: 'update',
+      });
+    }
+  });
+
   it('rejects unknown notification type', () => {
     const parsed = notificationEventSchema.safeParse({
       type: 'activationCampaign',

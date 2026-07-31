@@ -3,7 +3,10 @@ import 'server-only';
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
 import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
-import type { ObjectUpdatesFeedPageView } from '../../application/dto/object-updates-feed.dto';
+import type {
+  ObjectUpdateFeedItemView,
+  ObjectUpdatesFeedPageView,
+} from '../../application/dto/object-updates-feed.dto';
 
 export type FetchObjectUpdatesFeedParams = {
   objectId: string;
@@ -55,5 +58,37 @@ export async function fetchObjectUpdatesFeed(
   return queryApiFetch<ObjectUpdatesFeedPageView>(path, {
     headers,
     cacheTags: [queryApiCacheTags.objectUpdates(params.objectId)],
+  });
+}
+
+export type FetchObjectUpdateByIdParams = {
+  objectId: string;
+  updateId: string;
+  locale: string;
+  viewer?: string | null;
+};
+
+export async function fetchObjectUpdateById(
+  params: FetchObjectUpdateByIdParams,
+): Promise<ObjectUpdateFeedItemView | null> {
+  const objectId = encodeURIComponent(params.objectId);
+  const updateId = encodeURIComponent(params.updateId);
+  const path = `/query/v1/objects/${objectId}/updates/${updateId}`;
+
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-Locale': params.locale,
+    'Accept-Language': params.locale,
+  };
+  if (params.viewer != null && params.viewer.trim() !== '') {
+    headers['X-Viewer'] = params.viewer.trim();
+  }
+
+  return queryApiFetch<ObjectUpdateFeedItemView>(path, {
+    headers,
+    cacheTags: [
+      queryApiCacheTags.objectUpdates(params.objectId),
+      queryApiCacheTags.objectUpdate(params.objectId, params.updateId),
+    ],
   });
 }

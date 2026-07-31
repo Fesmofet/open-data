@@ -8,6 +8,7 @@ export {
 } from './lib/message';
 export {
   objectPath,
+  objectUpdatePath,
   postPath,
   userProfilePath,
   walletTransfersPath,

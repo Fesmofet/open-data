@@ -41,6 +41,7 @@ Every App Router `page.tsx` under `apps/web/src/app/` maps to a **route area** f
 | Data loading, SEO model | [data-loading.md](object/data-loading.md) | `object-page-model.server.ts` |
 | Tabs, breadcrumbs, history | [navigation.md](object/navigation.md) | `object-page-client.tsx` |
 | `/object/:id/updates` | [routes/updates.md](object/routes/updates.md) | object updates feed |
+| `/object/:id/updates/:updateId` | [object-update-detail.md](../object-update-detail.md) | single update card (notification deep link) |
 | `/object/:id/gallery` | [routes/gallery.md](object/routes/gallery.md) | gallery tab |
 | Right rail previews | [routes/right-rail.md](object/routes/right-rail.md) | ref list previews |
 | Center ref-list tabs (related, similar, add-on) | [routes/ref-feeds.md](object/routes/ref-feeds.md) | `ObjectRefListFeed` |

@@ -41,6 +41,8 @@ Pure functions only — no Nest, React, or i18n runtime.
 
 **Dictionary sync:** every i18n key emitted by `buildNotificationMessage` must exist in [`apps/notifications/src/telegram/en-dictionary.ts`](../../../../apps/notifications/src/telegram/en-dictionary.ts) with the same placeholder names as [`apps/web/src/i18n/locales/en-US.json`](../../../../apps/web/src/i18n/locales/en-US.json). `en-dictionary.spec.ts` asserts full coverage and no unfilled `{placeholder}` tokens in rendered Telegram bodies.
 
+`update_vote_cast` uses `notification_update_vote_cast` and `objectUpdatePath(objectId, updateId)` → `/object/:objectId/updates/:updateId` (see [object update detail](../../../web/spec/object-update-detail.md)).
+
 ## Adding a type
 
 1. Extend `NotificationPayloadMap` + `notificationEventSchema` in `notifications-contract`.

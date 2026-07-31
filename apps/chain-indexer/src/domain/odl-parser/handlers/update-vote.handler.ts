@@ -222,7 +222,13 @@ export class UpdateVoteHandler implements OdlActionHandler {
           type: 'update_vote_cast',
           objectId: object_id,
           actor: voter,
-          payload: { updateId: update_id, vote },
+          payload: {
+            updateId: update_id,
+            vote,
+            updateType: votedUpdate.update_type,
+            objectName: null,
+            authorPermlink: object_id,
+          },
         },
       );
     }

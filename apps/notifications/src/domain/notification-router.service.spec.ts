@@ -125,7 +125,13 @@ describe('NotificationRouterService', () => {
       trxId: 't',
       objectId: 'obj-1',
       actor: 'voter',
-      payload: { updateId: 'u1', vote: 'valid' },
+      payload: {
+      updateId: 'u1',
+      vote: 'valid',
+      updateType: 'name',
+      objectName: null,
+      authorPermlink: 'obj-1',
+    },
     });
 
     const entries = (feedService.addManyToFeed as jest.Mock).mock.calls[0][0];

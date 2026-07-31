@@ -119,7 +119,9 @@ export function UpdateCard({
         setConfirming(true);
         void awaitTrxConfirmation(transactionId).finally(() => {
           void refreshAfterBroadcast(router, () =>
-            revalidateObjectAfterBroadcast(item.object_id),
+            revalidateObjectAfterBroadcast(item.object_id, {
+              updateId: item.update_id,
+            }),
           ).finally(() => {
             setConfirming(false);
           });

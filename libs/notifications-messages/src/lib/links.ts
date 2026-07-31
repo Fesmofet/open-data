@@ -10,6 +10,10 @@ export function objectPath(objectIdOrPermlink: string): string {
   return `/object/${encodeURIComponent(objectIdOrPermlink)}`;
 }
 
+export function objectUpdatePath(objectId: string, updateId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/updates/${encodeURIComponent(updateId)}`;
+}
+
 export function walletTransfersPath(
   username: string,
   type?: string,

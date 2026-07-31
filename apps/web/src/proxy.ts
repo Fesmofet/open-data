@@ -7,6 +7,7 @@ import {
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
 } from '@/modules/object/domain/object-page-url.constants';
 import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presentation/components/profile-path';
@@ -87,6 +88,17 @@ export async function proxy(request: NextRequest) {
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', OBJECT_PAGE_CATEGORY_PATH_SEGMENT);
     url.searchParams.set(OBJECT_PAGE_CATEGORY_NAME_PARAM, categoryEncoded);
+    return finish(NextResponse.rewrite(url));
+  }
+
+  const updateDetailMatch = pathname.match(/^\/object\/([^/]+)\/updates\/([^/]+)\/?$/);
+  if (updateDetailMatch) {
+    const id = updateDetailMatch[1];
+    const updateEncoded = updateDetailMatch[2];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'updates');
+    url.searchParams.set(OBJECT_PAGE_UPDATE_ID_PARAM, updateEncoded);
     return finish(NextResponse.rewrite(url));
   }
 

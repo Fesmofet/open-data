@@ -68,6 +68,7 @@ Do **not** duplicate page-route detail in this file — link the site map or the
 | [object-card.md](object-card.md) | Shared `ObjectCard` (discover, feed links, shop): rating grid, admin heart |
 | [object-create-broadcast.md](object-create-broadcast.md) | Object create: `custom_json` chunking, IPFS path, publish dock size |
 | [object-follow.md](object-follow.md) | Object detail: Follow/Unfollow + Bell → ODL `object_follow` broadcast |
+| [object-update-detail.md](object-update-detail.md) | Deep link `/object/:id/updates/:updateId` from notifications |
 | [user-follow.md](user-follow.md) | Hive follow/unfollow + ODL bell; social list actions |
 
 ### Components

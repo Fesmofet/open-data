@@ -82,6 +82,12 @@ describe('UpdateVoteHandler notifications', () => {
         type: 'update_vote_cast',
         objectId: 'obj-1',
         actor: 'voter',
+        payload: expect.objectContaining({
+          updateId: 'upd-1',
+          vote: 'for',
+          updateType: UPDATE_TYPES.NAME,
+          authorPermlink: 'obj-1',
+        }),
       }),
     );
     expect(emitTrxProcessedOdl).toHaveBeenCalledWith(ctx);

@@ -72,10 +72,12 @@ Emitted from **hive-engine-parser** (e.g. WAIV stake parser): `engine_transfer`,
 | `object_update` | Replaces legacy `objectUpdates` / group id via `updateType` |
 | `object_status_change` | Status field updates |
 | `object_update_reject` | Negative validity vote (`against`) |
-| `update_vote_cast` | Positive or neutral object vote notifications |
+| `update_vote_cast` | Positive validity vote (`for`); payload includes `updateId`, `updateType`, `authorPermlink`, `objectName`; links to `/object/:objectId/updates/:updateId` |
 | `object_created` | Deprecated; router no-op |
 
-For `object_update`, `object_update_reject`, and `object_status_change`, **chain-indexer** fills `payload.objectName` in the notification adapter by resolving the winning `update_type = name` (locale `en-US`, same object-resolution pipeline as query-api). Handlers emit `objectName: null`; if resolution fails, the field stays `null` and the web message builder falls back to `authorPermlink`. The resolved name is **snapshotted** at publish time (renames do not rewrite items already in the Redis feed).
+**Deploy order (`update_vote_cast` payload extension):** deploy **chain-indexer** first, then **notifications** (schema accepts legacy `{ updateId, vote }` during rollout), then **web** / **query-api**.
+
+For `object_update`, `object_update_reject`, `object_status_change`, and `update_vote_cast`, **chain-indexer** fills `payload.objectName` in the notification adapter by resolving the winning `update_type = name` (locale `en-US`, same object-resolution pipeline as query-api). Handlers emit `objectName: null`; if resolution fails, the field stays `null` and the web message builder falls back to `authorPermlink`. The resolved name is **snapshotted** at publish time (renames do not rewrite items already in the Redis feed).
 
 ## Service
 
