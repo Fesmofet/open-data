@@ -69,24 +69,32 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       const timeoutSec =
         this.config.get<number>('telegram.pollTimeoutSec') ??
         TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC;
+      let hadUpdates = false;
       try {
         const updates = await this.api.getUpdates(
           this.updateOffset,
           timeoutSec,
         );
+        hadUpdates = updates.length > 0;
         for (const update of updates) {
           this.updateOffset = update.update_id + 1;
-          await this.handleUpdate(update);
+          void this.handleUpdate(update).catch((err) =>
+            this.logger.error(
+              `Telegram update failed: ${(err as Error).message}`,
+            ),
+          );
         }
       } catch (err) {
         this.logger.error(`Telegram poll error: ${(err as Error).message}`);
         await this.sleep(2000);
       }
-      const intervalMs =
-        this.config.get<number>('telegram.pollIntervalMs') ??
-        TELEGRAM_POLL_DEFAULT_INTERVAL_MS;
-      if (intervalMs > 0) {
-        await this.sleep(intervalMs);
+      if (!hadUpdates) {
+        const intervalMs =
+          this.config.get<number>('telegram.pollIntervalMs') ??
+          TELEGRAM_POLL_DEFAULT_INTERVAL_MS;
+        if (intervalMs > 0) {
+          await this.sleep(intervalMs);
+        }
       }
     }
   }
@@ -167,7 +175,11 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
   private async handleCallbackQuery(
     query: NonNullable<TelegramUpdate['callback_query']>,
   ): Promise<void> {
-    await this.api.answerCallbackQuery(query.id);
+    void this.api.answerCallbackQuery(query.id).catch((err) =>
+      this.logger.warn(
+        `answerCallbackQuery failed: ${(err as Error).message}`,
+      ),
+    );
     const chatId = query.message?.chat.id;
     const data = query.data?.trim();
     if (chatId === undefined || !data) {
@@ -177,8 +189,12 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     if (!account) {
       return;
     }
-    await this.subscriptions.unsubscribe(String(chatId), account);
-    await this.sendSubscriptionList(String(chatId));
+    const chatIdStr = String(chatId);
+    const current =
+      await this.subscriptions.findAccountsByChatId(chatIdStr);
+    await this.subscriptions.unsubscribe(chatIdStr, account);
+    const remaining = current.filter((name) => name !== account);
+    await this.sendSubscriptionList(chatIdStr, remaining);
   }
 
   private webPublicOrigin(): string {
@@ -188,14 +204,18 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  private async sendSubscriptionList(chatId: string): Promise<void> {
-    const accounts = await this.subscriptions.findAccountsByChatId(chatId);
-    if (accounts.length === 0) {
+  private async sendSubscriptionList(
+    chatId: string,
+    accounts?: readonly string[],
+  ): Promise<void> {
+    const list =
+      accounts ?? (await this.subscriptions.findAccountsByChatId(chatId));
+    if (list.length === 0) {
       await this.api.sendMessage(chatId, TELEGRAM_SUBSCRIPTION_LIST_EMPTY);
       return;
     }
     const replyMarkup = buildSubscriptionListInlineKeyboard(
-      accounts,
+      list,
       this.webPublicOrigin(),
     );
     await this.api.sendMessage(chatId, TELEGRAM_SUBSCRIPTION_LIST_HEADER, {
@@ -219,9 +239,10 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       names,
       TELEGRAM_MAX_ACCOUNTS_PER_CHAT,
     );
+    const existingAccounts =
+      await this.subscriptions.findExistingAccountNames(namesToSubscribe);
     for (const name of namesToSubscribe) {
-      const exists = await this.subscriptions.accountExists(name);
-      if (!exists) {
+      if (!existingAccounts.has(name)) {
         missing.push(name);
         continue;
       }
@@ -241,7 +262,8 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       );
     }
     if (ok.length > 0) {
-      await this.sendSubscriptionList(chatId);
+      const updatedAccounts = [...new Set([...current, ...ok])];
+      await this.sendSubscriptionList(chatId, updatedAccounts);
       return;
     }
     if (missing.length === 0 && limitRejected.length === 0) {

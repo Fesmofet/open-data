@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+const TELEGRAM_FETCH_INIT = { keepalive: true } as const;
+
 export interface TelegramUpdateMessage {
   readonly message_id: number;
   readonly chat: { readonly id: number };
@@ -60,7 +62,7 @@ export class TelegramApiClient {
     }
     params.set('timeout', String(timeoutSec));
     const url = `${this.baseUrl}/getUpdates?${params.toString()}`;
-    const res = await fetch(url);
+    const res = await fetch(url, TELEGRAM_FETCH_INIT);
     const body = (await res.json()) as {
       ok: boolean;
       result?: TelegramUpdate[];
@@ -93,6 +95,7 @@ export class TelegramApiClient {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      ...TELEGRAM_FETCH_INIT,
     });
     const body = (await res.json()) as {
       ok: boolean;
@@ -117,6 +120,7 @@ export class TelegramApiClient {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callback_query_id: callbackQueryId }),
+      ...TELEGRAM_FETCH_INIT,
     });
     const body = (await res.json()) as { ok: boolean; description?: string };
     if (!body.ok) {

@@ -76,24 +76,32 @@ export class TelegramOpsPollerService implements OnModuleInit, OnModuleDestroy {
       const timeoutSec =
         this.config.get<number>('telegram.pollTimeoutSec') ??
         TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC;
+      let hadUpdates = false;
       try {
         const updates = await this.api.getUpdates(
           this.updateOffset,
           timeoutSec,
         );
+        hadUpdates = updates.length > 0;
         for (const update of updates) {
           this.updateOffset = update.update_id + 1;
-          await this.handleUpdate(update);
+          void this.handleUpdate(update).catch((err) =>
+            this.logger.error(
+              `Telegram ops update failed: ${(err as Error).message}`,
+            ),
+          );
         }
       } catch (err) {
         this.logger.error(`Telegram ops poll error: ${(err as Error).message}`);
         await this.sleep(2000);
       }
-      const intervalMs =
-        this.config.get<number>('telegram.pollIntervalMs') ??
-        TELEGRAM_POLL_DEFAULT_INTERVAL_MS;
-      if (intervalMs > 0) {
-        await this.sleep(intervalMs);
+      if (!hadUpdates) {
+        const intervalMs =
+          this.config.get<number>('telegram.pollIntervalMs') ??
+          TELEGRAM_POLL_DEFAULT_INTERVAL_MS;
+        if (intervalMs > 0) {
+          await this.sleep(intervalMs);
+        }
       }
     }
   }

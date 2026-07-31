@@ -16,7 +16,9 @@ describe('TelegramPollerService', () => {
   const subscriptions = {
     unsubscribe: jest.fn().mockResolvedValue(undefined),
     findAccountsByChatId: jest.fn().mockResolvedValue(['flowmaster', 'wiv01']),
-    accountExists: jest.fn().mockResolvedValue(true),
+    findExistingAccountNames: jest
+      .fn()
+      .mockResolvedValue(new Set(['grampo', 'flowmaster', 'wiv01'])),
     subscribe: jest.fn().mockResolvedValue(true),
   } as unknown as TelegramSubscriptionsRepository;
 
@@ -69,9 +71,10 @@ describe('TelegramPollerService', () => {
   });
 
   it('shows subscription list after username subscribe', async () => {
-    (subscriptions.findAccountsByChatId as jest.Mock)
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce(['grampo', 'flowmaster', 'wiv01']);
+    (subscriptions.findAccountsByChatId as jest.Mock).mockResolvedValueOnce([]);
+    (subscriptions.findExistingAccountNames as jest.Mock).mockResolvedValueOnce(
+      new Set(['grampo']),
+    );
 
     await (
       poller as unknown as {

@@ -66,20 +66,29 @@ export class TelegramSubscriptionsRepository {
   }
 
   async accountExists(name: string): Promise<boolean> {
-    const trimmed = name.trim();
+    const existing = await this.findExistingAccountNames([name]);
+    return existing.has(name.trim());
+  }
+
+  async findExistingAccountNames(
+    names: readonly string[],
+  ): Promise<Set<string>> {
+    const trimmed = [
+      ...new Set(names.map((n) => n.trim()).filter((n) => n.length > 0)),
+    ];
     if (trimmed.length === 0) {
-      return false;
+      return new Set();
     }
     try {
-      const row = await this.db
+      const rows = await this.db
         .selectFrom('accounts_current')
         .select('name')
-        .where('name', '=', trimmed)
-        .executeTakeFirst();
-      return row !== undefined;
+        .where('name', 'in', trimmed)
+        .execute();
+      return new Set(rows.map((r) => r.name));
     } catch (e) {
       this.logger.error((e as Error).message);
-      return false;
+      return new Set();
     }
   }
 
