@@ -153,17 +153,19 @@ export class PostUpsertService {
       body: hive.body ?? '',
       json_metadata: hive.json_metadata ?? '{}',
     };
-    await this.upsertRootPost(op, metadata, blockTimestamp);
+    await this.upsertRootPost(op, metadata, blockTimestamp, hive);
     return this.postsRepository.findByKey(author, permlink);
   }
 
   /**
    * Root post path only (`parent_author === ''`); caller ensures metadata is truthy.
+   * When `hiveSnapshot` is set (recovery/backfill), chain timestamps and metrics come from Hive.
    */
   async upsertRootPost(
     op: CommentOperationPayload,
     metadata: Record<string, unknown> | null,
     blockTimestamp: string,
+    hiveSnapshot?: HiveContentType,
   ): Promise<void> {
     const gov = await this.governanceCache.resolvePlatform();
     if (gov.muted.includes(op.author)) {
@@ -195,10 +197,28 @@ export class PostUpsertService {
     const mentions = extractMentions(body);
 
     if (!existing) {
-      const createdUnix = blockTimestampToUnixSeconds(blockTimestamp);
-      const createdStr = formatHiveDateTime(blockTimestamp);
-      const row = this.buildCreateRow(op, body, jsonMetadata, blockTimestamp, createdUnix, createdStr);
-      const votes: NewPostActiveVote[] = [];
+      const parentPermlink = op.parent_permlink ?? '';
+      const fallbackUrl = `/${parentPermlink}/@${author}/${permlink}`;
+      const row = hiveSnapshot
+        ? this.buildUpdateRow(op, hiveSnapshot, body, jsonMetadata, {
+            created_unix: blockTimestampToUnixSeconds(
+              hiveSnapshot.created ?? blockTimestamp,
+            ),
+            url: hiveSnapshot.url?.trim() ? hiveSnapshot.url : fallbackUrl,
+            net_rshares_waiv: 0,
+            total_payout_waiv: 0,
+            total_rewards_waiv: 0,
+            rewards_finalized_at: null,
+          }, blockTimestamp)
+        : this.buildCreateRow(
+            op,
+            body,
+            jsonMetadata,
+            blockTimestamp,
+            blockTimestampToUnixSeconds(blockTimestamp),
+            formatHiveDateTime(blockTimestamp),
+          );
+      const votes = hiveSnapshot ? this.mergeVotes(hiveSnapshot, []) : [];
       await this.db.transaction().execute(async (trx) => {
         await this.postsRepository.upsertPostWithSatellitesTrx(trx, row, {
           objects,

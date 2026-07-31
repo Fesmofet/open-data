@@ -63,7 +63,7 @@ After merge and dedup, the indexer keeps at most **100** linked objects per post
 For **non-root** Hive `comment` operations (`parent_author` and `parent_permlink` set), chain-indexer may **append** additional `post_objects` rows for the **parent root post** when the **comment body** mentions Waivio objects:
 
 - **Guards:** skipped when `parent_author` is a thread host account (`leothreads`, `ecency.waves`), or when `(parent_author, parent_permlink)` matches a row in **`threads`** (thread-style parent, including cases beyond thread host accounts).
-- **Parent post:** bindings use the parent’s **`author` / `permlink`** (the blog post being commented on). If the parent is **not** in `posts`, the indexer may **restore** it from Hive via `getContent` **only** when **`depth === 0`** (a root post). If the parent is a comment (`depth > 0`), no binding runs.
+- **Parent post:** bindings use the parent’s **`author` / `permlink`** (the blog post being commented on). If the parent is **not** in `posts`, the indexer may **restore** it from Hive via `getContent` **only** when **`depth === 0`** (a root post). If the parent is a comment (`depth > 0`), no binding runs. On restore, **`created`**, **`created_unix`**, **`cashout_time`**, and other chain metrics come from the Hive snapshot (`getContent`), not from the comment block timestamp.
 - **Candidates:** same extraction as root-post body handling — **`#hashtags`** plus **`/object/…`** segments (including in URLs), deduped (`extractObjectIdsFromCommentBody`).
 - **Resolution:** only `object_id` values present in **`objects_core`** are inserted; `object_type` is denormalized from core.
 - **Existing links:** new ids are those not already in `post_objects` for that post. **`percent: 0`** for appended rows.

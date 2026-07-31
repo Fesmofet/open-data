@@ -98,6 +98,48 @@ describe('CommentPostObjectBindService', () => {
     expect(objectsCore.findObjectTypesByIds).not.toHaveBeenCalled();
   });
 
+  it('calls ensureRootPostInDb when parent post is missing and body has candidates', async () => {
+    const restoredPost = { author: 'alice', permlink: 'p', json_metadata: '{}' };
+    const posts = {
+      findByKey: jest
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(restoredPost),
+      findPostObjectIdsForPost: jest.fn().mockResolvedValue(new Set<string>()),
+      appendPostObjects: jest.fn(),
+    };
+    const objectsCore = {
+      findObjectTypesByIds: jest
+        .fn()
+        .mockResolvedValue(new Map([['obj1', 'hashtag']])),
+    };
+    const threads = { findByKey: jest.fn().mockResolvedValue(undefined) };
+    const postUpsert = {
+      ensureRootPostInDb: jest.fn().mockResolvedValue(restoredPost),
+    };
+
+    const eventEmitter = { emit: jest.fn() };
+    const relatedImagesSync = { appendForNewBindings: jest.fn() };
+    const db = makeDb();
+    const svc = new CommentPostObjectBindService(
+      posts as never,
+      objectsCore as never,
+      threads as never,
+      postUpsert as never,
+      eventEmitter as never,
+      relatedImagesSync as never,
+      db as never,
+    );
+
+    await svc.tryBindObjectsFromComment(op({ body: '#obj1' }), '2026-07-31T12:00:00');
+
+    expect(postUpsert.ensureRootPostInDb).toHaveBeenCalledWith(
+      'alice',
+      'p',
+      '2026-07-31T12:00:00',
+    );
+  });
+
   it('appends new post_objects when parent post exists and core has id', async () => {
     const posts = {
       findByKey: jest.fn().mockResolvedValue({ author: 'alice', permlink: 'p', json_metadata: '{}' }),
