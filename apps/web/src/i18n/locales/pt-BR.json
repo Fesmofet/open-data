@@ -2625,5 +2625,10 @@
   "your_reward": "Your Reward",
   "your_vote": "Seu voto",
   "your_vote_placeholder": "Seu voto (opcional)",
-  "СЃommunity_actions": "Ações comunitárias"
+  "СЃommunity_actions": "Ações comunitárias",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }

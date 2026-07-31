@@ -128,14 +128,15 @@ export class HiveWalletOperationHandlers {
     ctx: HiveOperationHandlerContext,
   ): void {
     const account = String(payload.account ?? '');
-    const { amount } = assetAmount(payload.vesting_shares);
+    const { amount, symbol } = assetAmount(payload.vesting_shares);
+    const amountLabel = symbol ? `${amount} ${symbol}` : amount;
     this.notificationEmitter.emitWithContext(
       this.notificationEmitter.hiveContext(ctx),
       {
         type: 'power_down',
         objectId: null,
         actor: account,
-        payload: { account, amount },
+        payload: { account, amount: amountLabel },
       },
     );
   }

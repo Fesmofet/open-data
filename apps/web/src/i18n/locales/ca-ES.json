@@ -2626,5 +2626,10 @@
   "your_reward": "La vostra recompensa",
   "your_vote": "El vostre vot",
   "your_vote_placeholder": "El vostre vot (opcional)",
-  "СЃommunity_actions": "Accions comunitàries"
+  "СЃommunity_actions": "Accions comunitàries",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }

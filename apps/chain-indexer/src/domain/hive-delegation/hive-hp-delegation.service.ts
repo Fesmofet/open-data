@@ -14,6 +14,17 @@ export type DelegateVestingSharesPayload = {
   vesting_shares?: string | number;
 };
 
+function formatVestingSharesAmount(
+  vestingShares: number,
+  raw: string | number | undefined,
+): string {
+  if (typeof raw === 'string' && raw.trim().endsWith('VESTS')) {
+    const parts = raw.trim().split(/\s+/);
+    return `${parts[0] ?? String(vestingShares)} VESTS`;
+  }
+  return `${vestingShares} VESTS`;
+}
+
 @Injectable()
 export class HiveHpDelegationService {
   private readonly logger = new Logger(HiveHpDelegationService.name);
@@ -37,6 +48,19 @@ export class HiveHpDelegationService {
     const vestingShares = parseVestingSharesFromOperation(payload.vesting_shares);
     if (vestingShares <= 0) {
       await this.userDelegations.deleteHpDelegation(delegator, delegatee);
+      this.notificationEmitter.emitWithContext(
+        this.notificationEmitter.hiveContext(context),
+        {
+          type: 'hp_delegation',
+          objectId: null,
+          actor: delegator,
+          payload: {
+            delegator,
+            delegatee,
+            amount: '0',
+          },
+        },
+      );
       return;
     }
 
@@ -56,7 +80,7 @@ export class HiveHpDelegationService {
         payload: {
           delegator,
           delegatee,
-          amount: String(vestingShares),
+          amount: formatVestingSharesAmount(vestingShares, payload.vesting_shares),
         },
       },
     );

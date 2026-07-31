@@ -2626,5 +2626,10 @@
   "your_reward": "Vaša nagrada",
   "your_vote": "Vaš glas",
   "your_vote_placeholder": "Vaš glas (neobavezno)",
-  "СЃommunity_actions": "Akcije zajednice"
+  "СЃommunity_actions": "Akcije zajednice",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }

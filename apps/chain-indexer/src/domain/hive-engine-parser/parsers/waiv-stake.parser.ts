@@ -20,6 +20,7 @@ const TRACKED_ACTIONS = new Set([
   'stake',
   'delegate',
   'undelegate',
+  'unstake',
   'checkPendingUnstakes',
   'checkPendingUndelegations',
 ]);
@@ -28,9 +29,12 @@ const ACTION_LOG_EVENTS: Record<string, readonly string[]> = {
   stake: ['stake'],
   delegate: ['delegate'],
   undelegate: ['undelegateStart'],
+  unstake: ['unstakeStart'],
   checkPendingUnstakes: ['unstake'],
   checkPendingUndelegations: ['undelegateDone'],
 };
+
+const PAYLOAD_FALLBACK_ACTIONS = new Set(['stake', 'delegate', 'undelegate', 'unstake']);
 
 /**
  * Tracks WAIV stake/delegate operations from Hive Engine `tokens` contract logs
@@ -71,39 +75,55 @@ export class WaivStakeParser implements HiveEngineSubParser {
     }
 
     const events = this.parseLogs(tx);
+    const logErrors = this.hasLogErrors(tx);
+    let notificationEmitted = false;
+
     for (const ev of events) {
       if (!allowedEvents.includes(ev.event)) {
         continue;
       }
-      this.processLogEvent(tx, ev);
+      if (this.processLogEvent(tx, ev)) {
+        notificationEmitted = true;
+      }
+    }
+
+    if (!notificationEmitted && !logErrors && PAYLOAD_FALLBACK_ACTIONS.has(tx.action)) {
+      this.tryPayloadFallbackNotification(tx);
     }
   }
 
-  private processLogEvent(tx: HiveEngineTransaction, ev: HiveEngineTokensLogEvent): void {
+  private processLogEvent(
+    tx: HiveEngineTransaction,
+    ev: HiveEngineTokensLogEvent,
+  ): boolean {
     if (ev.data.symbol !== WAIV_SYMBOL) {
-      return;
+      return false;
     }
 
     const quantity = parseFloat(String(ev.data.quantity ?? '0'));
     if (!Number.isFinite(quantity) || quantity === 0) {
-      return;
+      return false;
     }
 
     switch (ev.event) {
       case 'unstake': {
         const account = String(ev.data.account ?? '').trim();
         this.emitDelta(account, -quantity);
+        return false;
+      }
+      case 'unstakeStart': {
+        const account = tx.sender.trim();
         this.emitEngineNotification('engine_unstake', account, {
           account,
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
         });
-        break;
+        return true;
       }
       case 'undelegateDone': {
         const account = String(ev.data.account ?? '').trim();
         this.emitDelta(account, quantity);
-        break;
+        return false;
       }
       case 'delegate': {
         const to = String(ev.data.to ?? '').trim();
@@ -116,18 +136,19 @@ export class WaivStakeParser implements HiveEngineSubParser {
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
         });
-        break;
+        return true;
       }
       case 'undelegateStart': {
-        const from = String(ev.data.from ?? '').trim();
-        this.emitDelta(from, -quantity);
-        this.emitEngineNotification('engine_undelegate', from, {
-          from,
-          to: String(ev.data.to ?? '').trim(),
+        const delegatee = String(ev.data.from ?? '').trim();
+        const delegator = tx.sender.trim();
+        this.emitDelta(delegatee, -quantity);
+        this.emitEngineNotification('engine_undelegate', delegator, {
+          from: delegator,
+          to: delegatee,
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
         });
-        break;
+        return true;
       }
       case 'stake': {
         const account = String(ev.data.account ?? '').trim();
@@ -138,10 +159,91 @@ export class WaivStakeParser implements HiveEngineSubParser {
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
         });
-        break;
+        return true;
       }
       default:
+        return false;
+    }
+  }
+
+  private tryPayloadFallbackNotification(tx: HiveEngineTransaction): void {
+    const payload = this.parsePayload(tx);
+    if (!payload) {
+      return;
+    }
+
+    const symbol = String(payload.symbol ?? '');
+    if (symbol !== WAIV_SYMBOL) {
+      return;
+    }
+
+    const quantity = parseFloat(String(payload.quantity ?? '0'));
+    if (!Number.isFinite(quantity) || quantity === 0) {
+      return;
+    }
+
+    const sender = tx.sender.trim();
+    const amount = String(quantity);
+
+    switch (tx.action) {
+      case 'stake': {
+        const to = String(payload.to ?? sender).trim();
+        this.emitEngineNotification('engine_stake', sender, {
+          from: sender,
+          to,
+          amount,
+          symbol: WAIV_SYMBOL,
+        });
         break;
+      }
+      case 'delegate': {
+        const to = String(payload.to ?? '').trim();
+        if (to === '') {
+          return;
+        }
+        this.emitEngineNotification('engine_delegate', sender, {
+          from: sender,
+          to,
+          amount,
+          symbol: WAIV_SYMBOL,
+        });
+        break;
+      }
+      case 'undelegate': {
+        const to = String(payload.from ?? '').trim();
+        if (to === '') {
+          return;
+        }
+        this.emitEngineNotification('engine_undelegate', sender, {
+          from: sender,
+          to,
+          amount,
+          symbol: WAIV_SYMBOL,
+        });
+        break;
+      }
+      case 'unstake':
+        this.emitEngineNotification('engine_unstake', sender, {
+          account: sender,
+          amount,
+          symbol: WAIV_SYMBOL,
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  private parsePayload(tx: HiveEngineTransaction): Record<string, unknown> | null {
+    try {
+      if (typeof tx.payload === 'string') {
+        const parsed = JSON.parse(tx.payload) as Record<string, unknown>;
+        return Object.keys(parsed).length > 0 ? parsed : null;
+      }
+      const payload = tx.payload as Record<string, unknown>;
+      return payload && Object.keys(payload).length > 0 ? payload : null;
+    } catch {
+      return null;
     }
   }
 
@@ -151,6 +253,15 @@ export class WaivStakeParser implements HiveEngineSubParser {
       return logs.events ?? [];
     } catch {
       return [];
+    }
+  }
+
+  private hasLogErrors(tx: HiveEngineTransaction): boolean {
+    try {
+      const logs = JSON.parse(tx.logs) as HiveEngineTokensLogs & { errors?: unknown };
+      return Boolean(logs.errors);
+    } catch {
+      return false;
     }
   }
 
@@ -166,10 +277,10 @@ export class WaivStakeParser implements HiveEngineSubParser {
   }
 
   private processTransfer(tx: HiveEngineTransaction): void {
-    const payload =
-      typeof tx.payload === 'string'
-        ? (JSON.parse(tx.payload) as Record<string, unknown>)
-        : (tx.payload as Record<string, unknown>);
+    const payload = this.parsePayload(tx);
+    if (!payload) {
+      return;
+    }
     const symbol = String(payload.symbol ?? '');
     if (symbol !== WAIV_SYMBOL) {
       return;

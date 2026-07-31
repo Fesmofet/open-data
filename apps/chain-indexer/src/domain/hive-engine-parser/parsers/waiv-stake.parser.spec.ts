@@ -23,21 +23,30 @@ function tx(
   };
 }
 
+const blockBase = {
+  blockNumber: 1,
+  refHiveBlockNumber: 1,
+  timestamp: '2024-01-01T00:00:00',
+  virtualTransactions: [],
+} as unknown as HiveEngineBlock;
+
 describe('WaivStakeParser', () => {
   let parser: WaivStakeParser;
-  let emit: jest.Mock;
+  let powerEmit: jest.Mock;
+  let notifyEmit: jest.Mock;
 
   beforeEach(() => {
-    emit = jest.fn();
+    powerEmit = jest.fn();
+    notifyEmit = jest.fn();
     parser = new WaivStakeParser(
-      { emit } as unknown as EventEmitter2,
-      { emit: jest.fn() } as unknown as import('../../notification-adapter/notification-emitter.service').NotificationEmitterService,
+      { emit: powerEmit } as unknown as EventEmitter2,
+      { emit: notifyEmit } as unknown as import('../../notification-adapter/notification-emitter.service').NotificationEmitterService,
     );
   });
 
   it('emits +quantity for stake from stake log event', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [
         tx({
           action: 'stake',
@@ -57,38 +66,49 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('flowmaster', 2),
+    );
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_stake',
+        actor: 'flowmaster',
+        payload: expect.objectContaining({
+          from: 'flowmaster',
+          to: 'flowmaster',
+          amount: '2',
+          symbol: 'WAIV',
+        }),
+      }),
     );
   });
 
   it('does not emit when stake tx has no WAIV log events', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [tx({ action: 'stake', logs: JSON.stringify({ events: [] }) })],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).not.toHaveBeenCalled();
+    expect(powerEmit).not.toHaveBeenCalled();
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
   it('does not emit when stake tx has invalid logs', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [tx({ action: 'stake', logs: 'not-json' })],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).not.toHaveBeenCalled();
+    expect(powerEmit).not.toHaveBeenCalled();
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
-  it('emits delegate deltas from delegate log event', async () => {
+  it('emits delegate deltas and notification from delegate log event', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [
         tx({
           action: 'delegate',
@@ -108,22 +128,33 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('flowmaster', -0.1),
     );
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('wiv01', 0.1),
     );
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_delegate',
+        actor: 'flowmaster',
+        payload: {
+          from: 'flowmaster',
+          to: 'wiv01',
+          amount: '0.1',
+          symbol: 'WAIV',
+        },
+      }),
+    );
   });
 
-  it('emits -quantity for undelegateStart on delegatee (data.from)', async () => {
+  it('emits undelegate notification with delegator as actor', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [
         tx({
           action: 'undelegate',
@@ -143,19 +174,67 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('wiv01', -0.5),
     );
-    expect(emit).toHaveBeenCalledTimes(1);
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_undelegate',
+        actor: 'flowmaster',
+        payload: {
+          from: 'flowmaster',
+          to: 'wiv01',
+          amount: '0.5',
+          symbol: 'WAIV',
+        },
+      }),
+    );
   });
 
-  it('emits -quantity for unstake from virtual checkPendingUnstakes tx', async () => {
+  it('emits engine_unstake on unstakeStart without power delta', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
+      transactions: [
+        tx({
+          action: 'unstake',
+          sender: 'flowmaster',
+          logs: JSON.stringify({
+            events: [
+              {
+                contract: 'tokens',
+                event: 'unstakeStart',
+                data: {
+                  account: 'flowmaster',
+                  quantity: '1.00000000',
+                  symbol: 'WAIV',
+                },
+              },
+            ],
+          }),
+        }),
+      ],
+    } as unknown as HiveEngineBlock);
+
+    expect(powerEmit).not.toHaveBeenCalled();
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_unstake',
+        actor: 'flowmaster',
+        payload: {
+          account: 'flowmaster',
+          amount: '1',
+          symbol: 'WAIV',
+        },
+      }),
+    );
+  });
+
+  it('emits power delta only for virtual checkPendingUnstakes unstake', async () => {
+    await parser.parseBlock({
+      ...blockBase,
       transactions: [],
       virtualTransactions: [
         tx({
@@ -178,15 +257,16 @@ describe('WaivStakeParser', () => {
       ],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('flowmaster', -1),
     );
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
   it('emits multiple unstake deltas from one virtual tx', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [],
       virtualTransactions: [
         tx({
@@ -218,19 +298,20 @@ describe('WaivStakeParser', () => {
       ],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('alice', -2),
     );
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('bob', -3),
     );
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
   it('emits +quantity for undelegateDone from virtual checkPendingUndelegations tx', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [],
       virtualTransactions: [
         tx({
@@ -253,15 +334,16 @@ describe('WaivStakeParser', () => {
       ],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).toHaveBeenCalledWith(
+    expect(powerEmit).toHaveBeenCalledWith(
       USER_OBJECT_POWERS_UPDATE_EVENT,
       new UserObjectPowersUpdateEvent('flowmaster', 0.5),
     );
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
   it('ignores non-WAIV log events', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [
         tx({
           action: 'stake',
@@ -280,36 +362,33 @@ describe('WaivStakeParser', () => {
           }),
         }),
       ],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).not.toHaveBeenCalled();
+    expect(powerEmit).not.toHaveBeenCalled();
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
-  it('ignores user unstake action without unstake log event', async () => {
+  it('falls back to payload for unstake when logs are empty', async () => {
     await parser.parseBlock({
-      blockNumber: 1,
+      ...blockBase,
       transactions: [
         tx({
           action: 'unstake',
-          logs: JSON.stringify({
-            events: [
-              {
-                contract: 'tokens',
-                event: 'unstakeStart',
-                data: {
-                  account: 'flowmaster',
-                  quantity: '1.00000000',
-                  symbol: 'WAIV',
-                },
-              },
-            ],
+          sender: 'flowmaster',
+          payload: JSON.stringify({
+            quantity: '0.00100000',
+            symbol: 'WAIV',
           }),
+          logs: JSON.stringify({ events: [] }),
         }),
       ],
-      virtualTransactions: [],
     } as unknown as HiveEngineBlock);
 
-    expect(emit).not.toHaveBeenCalled();
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_unstake',
+        actor: 'flowmaster',
+      }),
+    );
   });
 });

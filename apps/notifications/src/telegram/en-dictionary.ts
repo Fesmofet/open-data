@@ -21,7 +21,10 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_bell_reblog: "{account} re-blogged {author}'s post: {title}",
   notification_downvoted_username_post:
     "{username} downvoted {recipient}'s post",
+  notification_engine_delegate: '{from} delegated {amount} to {to}',
+  notification_engine_power_down: "{from} initiated 'Power Down' on {amount}",
   notification_engine_stake: '{from} staked {amount} to {to}',
+  notification_engine_undelegate: '{from} undelegated {amount} from {to}',
   notification_engine_unstake: '{account} unstaked {amount}',
   notification_following_username: '{username} started following {recipient}',
   notification_generic_default_message: 'New notification for {recipient}',
@@ -29,6 +32,7 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_group_id_update_reject:
     '{user} removed the group ID from {objectName}',
   notification_hp_delegation: '{delegator} delegated {amount} to {delegatee}',
+  notification_hp_undelegation: '{delegator} undelegated HIVE from {delegatee}',
   notification_mention_username_comment:
     '{username} mentioned {recipient} in a comment',
   notification_mention_username_post: '{username} mentioned {recipient} in a post',
@@ -47,8 +51,10 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_transfer_username_amount: '{username} transferred {amount} to {to}',
   notification_unapproved_witness: '{username} unapproved witness for {recipient}',
   notification_upvoted_username_post: "{username} upvoted {recipient}'s post",
-  power_down_notification: "{username} initiated 'Power Down' on {amount}",
+  power_down_notification: '{username} initiated PowerDown on {amount}',
+  power_up_initiated_actor: "{from} initiated 'Power up' on {amount} to {to}",
   power_up_initiated_to: "{recipient} initiated 'Power up' on {amount} to {to}",
   transfer_from: '{recipient} transferred {amount} to {to}',
+  transfer_to_vesting: "{from} initiated 'Power Up' on {amount} to {to}",
   withdraw_route_to: '{recipient} set withdraw route to {to_account}',
 } as const;

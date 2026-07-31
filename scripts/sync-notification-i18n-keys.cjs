@@ -10,13 +10,17 @@ const enPath = path.join(localesDir, 'en-US.json');
 
 const NEW_KEYS = {
   import_update: 'Batch import completed for {cid}',
-  notification_transfer_from_savings:
-    'You withdrew {amount} from savings',
-  notification_hp_delegation:
-    '{delegator} delegated {amount} to {delegatee}',
-  notification_engine_stake:
-    '{from} staked {amount} to {to}',
+  notification_transfer_from_savings: 'You withdrew {amount} from savings',
+  notification_hp_delegation: '{delegator} delegated {amount} to {delegatee}',
+  notification_hp_undelegation: '{delegator} undelegated HIVE from {delegatee}',
+  notification_engine_stake: '{from} staked {amount} to {to}',
+  notification_engine_delegate: '{from} delegated {amount} to {to}',
+  notification_engine_undelegate: '{from} undelegated {amount} from {to}',
+  notification_engine_power_down: "{from} initiated 'Power Down' on {amount}",
   notification_engine_unstake: '{account} unstaked {amount}',
+  power_up_initiated_actor: "{from} initiated 'Power up' on {amount} to {to}",
+  power_down_notification: '{username} initiated PowerDown on {amount}',
+  transfer_to_vesting: "{from} initiated 'Power Up' on {amount} to {to}",
 };
 
 function readJson(filePath) {

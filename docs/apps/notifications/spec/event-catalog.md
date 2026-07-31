@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, events]
-updated_at: 2026-07-28
+updated_at: 2026-07-31
 related:
   - docs/apps/notifications/spec/transport.md
   - docs/apps/notifications/spec/routing.md
@@ -59,11 +59,18 @@ Notify-only handlers in **chain-indexer** `domain/hive-wallet/` (no Postgres wal
 | `withdraw_route` | Withdraw route change |
 | `change_recovery_account` | Recovery account change |
 | `change_password` | `account_update` with `owner` key present |
-| `hp_delegation` | `delegate_vesting_shares` |
+| `hp_delegation` | `delegate_vesting_shares`; `amount: '0'` = undelegation | `delegatee` when delegating; `delegator` when `amount === '0'` |
 
 ## Wallet (Hive Engine)
 
 Emitted from **hive-engine-parser** (e.g. WAIV stake parser): `engine_transfer`, `engine_stake`, `engine_unstake`, `engine_cancel_unstake`, `engine_delegate`, `engine_undelegate`.
+
+| Type | Payload highlights | Typical recipients |
+|------|-------------------|-------------------|
+| `engine_stake` | WAIV power up (stake) | `payload.to` |
+| `engine_unstake` | WAIV power down initiation (`unstakeStart` or payload fallback) | `payload.account` (initiator) |
+| `engine_delegate` / `engine_undelegate` | WAIV delegation flows | `actor` (transaction sender) |
+| `engine_transfer` | WAIV transfer | `payload.to` |
 
 ## Objects (ODL)
 

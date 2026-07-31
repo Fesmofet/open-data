@@ -2626,5 +2626,10 @@
   "your_reward": "Sinu preemia",
   "your_vote": "Teie hääl",
   "your_vote_placeholder": "Teie hääl (valikuline)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }

@@ -3349,5 +3349,10 @@
   "your_vote": "Votre vote",
   "your_vote_placeholder": "Votre vote (facultatif)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Actions communautaires"
+  "СЃommunity_actions": "Actions communautaires",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }

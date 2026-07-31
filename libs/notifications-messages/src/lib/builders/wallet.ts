@@ -75,12 +75,15 @@ export function buildWalletMessage(
     case 'power_up': {
       const p = event.payload;
       return walletMessage(
-        'power_up_initiated_to',
-        { amount: p.amount, to: p.to },
+        'power_up_initiated_actor',
+        { from: p.from, amount: p.amount, to: p.to },
         p.from,
         p.from,
         'power_up',
-        { to: profileHref(p.to) },
+        {
+          from: profileHref(p.from),
+          to: profileHref(p.to),
+        },
       );
     }
     case 'power_down': {
@@ -201,9 +204,12 @@ export function buildWalletMessage(
     }
     case 'hp_delegation': {
       const p = event.payload;
+      const isUndelegation = p.amount === '0';
       return withParamHrefs(
         {
-          key: 'notification_hp_delegation',
+          key: isUndelegation
+            ? 'notification_hp_undelegation'
+            : 'notification_hp_delegation',
           params: {
             delegator: p.delegator,
             delegatee: p.delegatee,
@@ -239,12 +245,46 @@ export function buildWalletMessage(
         },
       );
     }
-    case 'engine_stake':
-    case 'engine_delegate':
+    case 'engine_stake': {
+      const p = event.payload;
+      return walletMessage(
+        'transfer_to_vesting',
+        {
+          from: p.from,
+          to: p.to,
+          amount: `${p.amount} ${p.symbol}`,
+        },
+        p.from,
+        p.from,
+        'tokens',
+        {
+          from: profileHref(p.from),
+          to: profileHref(p.to),
+        },
+      );
+    }
+    case 'engine_delegate': {
+      const p = event.payload;
+      return walletMessage(
+        'notification_engine_delegate',
+        {
+          from: p.from,
+          to: p.to,
+          amount: `${p.amount} ${p.symbol}`,
+        },
+        p.from,
+        p.from,
+        'tokens',
+        {
+          from: profileHref(p.from),
+          to: profileHref(p.to),
+        },
+      );
+    }
     case 'engine_undelegate': {
       const p = event.payload;
       return walletMessage(
-        'notification_engine_stake',
+        'notification_engine_undelegate',
         {
           from: p.from,
           to: p.to,
@@ -263,12 +303,15 @@ export function buildWalletMessage(
     case 'engine_cancel_unstake': {
       const p = event.payload;
       return walletMessage(
-        'notification_engine_unstake',
-        { account: p.account, amount: `${p.amount} ${p.symbol}` },
+        'notification_engine_power_down',
+        {
+          from: p.account,
+          amount: `${p.amount} ${p.symbol}`,
+        },
         p.account,
         p.account,
         'tokens',
-        { account: profileHref(p.account) },
+        { from: profileHref(p.account) },
       );
     }
     default:

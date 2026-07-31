@@ -2625,5 +2625,10 @@
   "your_reward": "مكافأتك",
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
-  "СЃommunity_actions": "إجراءات المجتمع"
+  "СЃommunity_actions": "إجراءات المجتمع",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }

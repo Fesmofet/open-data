@@ -60,6 +60,9 @@ export class DirectRecipientStrategy implements RecipientStrategy {
       case 'change_password':
         return [event.payload.account];
       case 'hp_delegation':
+        if (event.payload.amount === '0') {
+          return [event.payload.delegator];
+        }
         return [event.payload.delegatee];
       case 'engine_transfer':
         return [event.payload.to];
@@ -69,9 +72,8 @@ export class DirectRecipientStrategy implements RecipientStrategy {
       case 'engine_cancel_unstake':
         return [event.payload.account];
       case 'engine_delegate':
-        return [event.payload.to];
       case 'engine_undelegate':
-        return [event.payload.from];
+        return event.actor ? [event.actor] : [event.payload.from];
       default:
         return [];
     }

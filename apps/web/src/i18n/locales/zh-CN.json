@@ -3330,5 +3330,10 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "notification_hp_undelegation": "{delegator} undelegated HIVE from {delegatee}",
+  "notification_engine_delegate": "{from} delegated {amount} to {to}",
+  "notification_engine_undelegate": "{from} undelegated {amount} from {to}",
+  "notification_engine_power_down": "{from} initiated 'Power Down' on {amount}",
+  "power_up_initiated_actor": "{from} initiated 'Power up' on {amount} to {to}"
 }
