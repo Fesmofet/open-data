@@ -43,6 +43,8 @@ describe('NotificationEvent contract', () => {
         updateId: 'upd-1',
         vote: 'for',
         updateType: 'update',
+        objectName: null,
+        authorPermlink: '',
       });
     }
   });
