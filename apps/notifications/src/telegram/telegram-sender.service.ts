@@ -75,47 +75,96 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
 
   /** Reclaim PEL entries orphaned by prior consumer names, then drain our own pending. */
   private async reclaimAndDrainPending(): Promise<void> {
-    const reclaimed = await this.reclaimOrphanedPending();
+    await this.logPendingSummary('startup');
+    const reclaimed = await this.claimAllPending('orphaned');
     const drained = await this.drainOwnPending();
-    if (reclaimed + drained === 0) {
-      this.logger.debug(
-        `Telegram queue startup: no pending entries for ${this.consumerName}`,
+    const total = reclaimed + drained;
+    if (total === 0) {
+      this.logger.log(
+        `Telegram queue startup: 0 pending entries for ${this.consumerName} (XLEN does not shrink on ACK)`,
       );
     }
   }
 
-  /** XAUTOCLAIM entries stuck on dead consumers (pid-based names from older builds). */
-  private async reclaimOrphanedPending(): Promise<number> {
+  private async logPendingSummary(phase: string): Promise<void> {
     const redis = this.redisFactory.getClient();
-    let reclaimed = 0;
-    let start = '0-0';
+    try {
+      const pending = await redis.xPending(
+        TELEGRAM_STREAM_KEY,
+        TELEGRAM_SENDER_GROUP,
+        '-',
+        '+',
+        100,
+      );
+      if (pending.length === 0) {
+        this.logger.log(
+          `Telegram queue ${phase}: no XPENDING entries in ${TELEGRAM_SENDER_GROUP}`,
+        );
+        return;
+      }
+      const byConsumer = new Map<string, number>();
+      for (const row of pending) {
+        byConsumer.set(row.consumer, (byConsumer.get(row.consumer) ?? 0) + 1);
+      }
+      const summary = [...byConsumer.entries()]
+        .map(([consumer, count]) => `${consumer}=${count}`)
+        .join(', ');
+      this.logger.log(
+        `Telegram queue ${phase}: ${pending.length} XPENDING (${summary})`,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Telegram queue ${phase}: XPENDING failed: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  /** XCLAIM every pending entry in the group, regardless of prior consumer name. */
+  private async claimAllPending(label: string): Promise<number> {
+    const redis = this.redisFactory.getClient();
+    let processed = 0;
     try {
       while (this.running) {
-        const { nextStart, entries } = await redis.xAutoClaim(
+        const pending = await redis.xPending(
+          TELEGRAM_STREAM_KEY,
+          TELEGRAM_SENDER_GROUP,
+          '-',
+          '+',
+          TELEGRAM_STREAM_BATCH_SIZE,
+        );
+        if (pending.length === 0) {
+          break;
+        }
+        const entries = await redis.xClaim(
           TELEGRAM_STREAM_KEY,
           TELEGRAM_SENDER_GROUP,
           this.consumerName,
           0,
-          start,
-          TELEGRAM_STREAM_BATCH_SIZE,
+          ...pending.map((row) => row.id),
         );
-        start = nextStart;
         if (entries.length === 0) {
           break;
         }
-        reclaimed += await this.processBatch(entries);
+        const { acked, failed } = await this.processBatch(entries);
+        processed += acked;
+        if (failed > 0) {
+          this.logger.warn(
+            `Telegram ${label}: ${failed} entries still pending after delivery attempt`,
+          );
+          break;
+        }
       }
     } catch (err) {
       this.logger.error(
-        `Telegram orphaned reclaim failed: ${(err as Error).message}`,
+        `Telegram ${label} reclaim failed: ${(err as Error).message}`,
       );
     }
-    if (reclaimed > 0) {
+    if (processed > 0) {
       this.logger.log(
-        `Reclaimed ${reclaimed} orphaned telegram queue entries for ${this.consumerName}`,
+        `Telegram ${label}: delivered and acked ${processed} queue entries`,
       );
     }
-    return reclaimed;
+    return processed;
   }
 
   /** Reclaim PEL entries from prior crashes or failed sends before reading new ones. */
@@ -133,16 +182,15 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
         if (entries.length === 0) {
           break;
         }
-        drained += await this.processBatch(entries);
+        const { acked, failed } = await this.processBatch(entries);
+        drained += acked;
+        if (failed > 0) {
+          break;
+        }
       }
     } catch (err) {
       this.logger.error(
         `Telegram pending drain failed: ${(err as Error).message}`,
-      );
-    }
-    if (drained > 0) {
-      this.logger.log(
-        `Drained ${drained} pending telegram queue entries for ${this.consumerName}`,
       );
     }
     return drained;
@@ -167,7 +215,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
           continue;
         }
 
-        const acked = await this.processBatch(entries);
+        const { acked } = await this.processBatch(entries);
         if (acked > 0) {
           this.logger.log(`Delivered ${acked} telegram queue entries`);
         }
@@ -184,9 +232,10 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
 
   private async processBatch(
     entries: { id: string; fields: Record<string, string> }[],
-  ): Promise<number> {
+  ): Promise<{ acked: number; failed: number }> {
     const redis = this.redisFactory.getClient();
     let acked = 0;
+    let failed = 0;
     for (const entry of entries) {
       try {
         const shouldAck = await this.processEntry(entry.fields);
@@ -197,14 +246,17 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
             entry.id,
           );
           acked += 1;
+        } else {
+          failed += 1;
         }
       } catch (err) {
+        failed += 1;
         this.logger.error(
           `Telegram delivery failed for ${entry.id}: ${(err as Error).message}`,
         );
       }
     }
-    return acked;
+    return { acked, failed };
   }
 
   private async processEntry(
@@ -237,12 +289,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
   ): Promise<boolean> {
     const redis = this.redisFactory.getClient();
     const dedupKey = telegramSentDedupKey(payload.itemId, chatId);
-    const first = await redis.trySetNx(
-      dedupKey,
-      '1',
-      TELEGRAM_SENT_DEDUP_TTL_SEC,
-    );
-    if (!first) {
+    if (await redis.exists(dedupKey)) {
       return true;
     }
 
@@ -255,6 +302,7 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
       ),
     });
     if (result.ok) {
+      await redis.set(dedupKey, '1', TELEGRAM_SENT_DEDUP_TTL_SEC);
       return true;
     }
 
@@ -266,13 +314,11 @@ export class TelegramSenderService implements OnModuleInit, OnModuleDestroy {
 
     if (result.errorCode === 429) {
       const waitSec = result.retryAfterSec ?? 1;
-      await redis.del(dedupKey);
       await this.sleep(waitSec * 1000);
       return false;
     }
 
     if (result.errorCode === 0 || result.errorCode >= 500) {
-      await redis.del(dedupKey);
       this.logger.warn(
         `Telegram send retryable failure (${result.errorCode}): ${result.description ?? 'unknown'}`,
       );

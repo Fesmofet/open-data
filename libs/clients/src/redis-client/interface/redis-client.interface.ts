@@ -83,6 +83,27 @@ export interface RedisClientInterface {
     start: string,
     count?: number,
   ): Promise<{ nextStart: string; entries: RedisStreamEntry[] }>;
+  xPending(
+    stream: string,
+    group: string,
+    start?: string,
+    end?: string,
+    count?: number,
+  ): Promise<
+    Array<{
+      id: string;
+      consumer: string;
+      idleMs: number;
+      deliveries: number;
+    }>
+  >;
+  xClaim(
+    stream: string,
+    group: string,
+    consumer: string,
+    minIdleMs: number,
+    ...ids: string[]
+  ): Promise<RedisStreamEntry[]>;
   xAck(stream: string, group: string, ...ids: string[]): Promise<number>;
   lRange(key: string, start: number, stop: number): Promise<string[]>;
 }

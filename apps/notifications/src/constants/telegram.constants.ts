@@ -20,7 +20,7 @@ export const telegramSentDedupKey = (
   itemId: string,
   chatId: string,
 ): string =>
-  buildRedisKey(APP, 'cache', 'telegram', 'sent', itemId, chatId);
+  buildRedisKey(APP, 'cache', 'telegram', 'sent', 'v2', itemId, chatId);
 
 /** Refreshed while the poller holds the lock */
 export const TELEGRAM_POLLER_LOCK_TTL_SEC = 60;

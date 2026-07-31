@@ -314,6 +314,76 @@ class RedisClientWrapper implements RedisClientInterface {
     return { nextStart, entries: out };
   }
 
+  async xPending(
+    stream: string,
+    group: string,
+    start = '-',
+    end = '+',
+    count = 100,
+  ): Promise<
+    Array<{
+      id: string;
+      consumer: string;
+      idleMs: number;
+      deliveries: number;
+    }>
+  > {
+    const raw = (await this.client.call(
+      'XPENDING',
+      stream,
+      group,
+      start,
+      end,
+      count,
+    )) as null | [string, string, number, number][];
+
+    if (!raw || raw.length === 0) {
+      return [];
+    }
+
+    return raw.map(([id, consumer, idleMs, deliveries]) => ({
+      id,
+      consumer,
+      idleMs: Number(idleMs),
+      deliveries: Number(deliveries),
+    }));
+  }
+
+  async xClaim(
+    stream: string,
+    group: string,
+    consumer: string,
+    minIdleMs: number,
+    ...ids: string[]
+  ): Promise<RedisStreamEntry[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const raw = (await this.client.call(
+      'XCLAIM',
+      stream,
+      group,
+      consumer,
+      minIdleMs,
+      ...ids,
+    )) as null | [string, string[]][];
+
+    if (!raw || raw.length === 0) {
+      return [];
+    }
+
+    const out: RedisStreamEntry[] = [];
+    for (const [id, fieldList] of raw) {
+      const fields: Record<string, string> = {};
+      for (let i = 0; i < fieldList.length; i += 2) {
+        fields[fieldList[i]] = fieldList[i + 1];
+      }
+      out.push({ id, fields });
+    }
+    return out;
+  }
+
   async xAck(stream: string, group: string, ...ids: string[]): Promise<number> {
     if (ids.length === 0) {
       return 0;
