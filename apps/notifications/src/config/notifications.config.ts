@@ -33,6 +33,7 @@ export default () => {
       botToken: env.TELEGRAM_BOT_TOKEN?.trim() || null,
       webPublicOrigin: env.WEB_PUBLIC_ORIGIN,
       pollTimeoutSec: env.TELEGRAM_POLL_TIMEOUT_SEC,
+      pollIntervalMs: env.TELEGRAM_POLL_INTERVAL_MS,
       sendRatePerSec: env.TELEGRAM_SEND_RATE_PER_SEC,
     },
     telegramOps: {

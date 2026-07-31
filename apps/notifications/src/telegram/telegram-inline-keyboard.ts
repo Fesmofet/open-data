@@ -3,6 +3,7 @@ import {
   TELEGRAM_UNSUBSCRIBE_CALLBACK_PREFIX,
   telegramUnsubscribeButtonLabel,
 } from '../constants/telegram.constants';
+import { userProfilePath } from '@opden-data-layer/notifications-messages';
 
 export interface TelegramInlineKeyboardButton {
   readonly text: string;
@@ -33,6 +34,31 @@ export function buildNotificationInlineKeyboard(
       callback_data: `${TELEGRAM_UNSUBSCRIBE_CALLBACK_PREFIX}${trimmed}`,
     },
   ]);
+  return { inline_keyboard: rows };
+}
+
+export function buildSubscriptionListInlineKeyboard(
+  accounts: readonly string[],
+  webPublicOrigin: string,
+): TelegramReplyMarkup | undefined {
+  const base = webPublicOrigin.replace(/\/$/, '');
+  const rows: TelegramInlineKeyboardButton[][] = [];
+  for (const account of accounts) {
+    const trimmed = account.trim();
+    if (trimmed.length === 0) {
+      continue;
+    }
+    rows.push([
+      { text: trimmed, url: `${base}${userProfilePath(trimmed)}` },
+      {
+        text: telegramUnsubscribeButtonLabel(trimmed),
+        callback_data: `${TELEGRAM_UNSUBSCRIBE_CALLBACK_PREFIX}${trimmed}`,
+      },
+    ]);
+  }
+  if (rows.length === 0) {
+    return undefined;
+  }
   return { inline_keyboard: rows };
 }
 

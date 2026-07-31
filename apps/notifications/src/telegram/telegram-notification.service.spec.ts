@@ -82,4 +82,62 @@ describe('TelegramNotificationService', () => {
       'https://waiviodev.com/@flowmaster/transfers?type=transfer',
     );
   });
+
+  it('uses explicit recipient account instead of you/your', async () => {
+    await service.enqueueMany([
+      {
+        account: 'flowmaster',
+        chatIds: ['42'],
+        itemId: 'item-2',
+        event: {
+          type: 'reply',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't',
+          objectId: null,
+          actor: 'w7ngc',
+          payload: {
+            author: 'w7ngc',
+            permlink: 'c1',
+            parentAuthor: 'flowmaster',
+            parentPermlink: 'p1',
+            isRootPost: false,
+            isReplyToComment: true,
+          },
+        },
+      },
+      {
+        account: 'flowmaster',
+        chatIds: ['42'],
+        itemId: 'item-3',
+        event: {
+          type: 'my_comment',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't2',
+          objectId: null,
+          actor: 'flowmaster',
+          payload: {
+            author: 'flowmaster',
+            permlink: 'c2',
+            parentAuthor: 'w95hj',
+          },
+        },
+      },
+    ]);
+
+    const replyPayload = JSON.parse(
+      xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(replyPayload.text).toBe(
+      "w7ngc has replied to flowmaster's comment",
+    );
+    expect(replyPayload.text).not.toMatch(/\b(you|your)\b/i);
+
+    const myCommentPayload = JSON.parse(
+      xAdd.mock.calls[1][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(myCommentPayload.text).toBe('flowmaster replied to w95hj');
+    expect(myCommentPayload.text).not.toMatch(/\b(you|your)\b/i);
+  });
 });

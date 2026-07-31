@@ -15,15 +15,24 @@ export function applyMessageParams(
   return out;
 }
 
+export interface RenderTelegramBodyOptions {
+  /** Merged after message.params; used for multi-account Telegram subscriptions. */
+  readonly extraParams?: Readonly<Record<string, string>>;
+}
+
 export function renderTelegramBody(
   message: NotificationMessage,
   dictionary: Readonly<Record<string, string>>,
+  options: RenderTelegramBodyOptions = {},
 ): string {
   const template =
     dictionary[message.key] ??
     dictionary['notification_generic_default_message'] ??
     message.key;
-  return applyMessageParams(template, message.params);
+  return applyMessageParams(template, {
+    ...message.params,
+    ...options.extraParams,
+  });
 }
 
 export function resolveNotificationAbsoluteUrl(

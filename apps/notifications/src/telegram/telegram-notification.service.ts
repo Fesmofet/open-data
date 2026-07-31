@@ -8,6 +8,7 @@ import {
   resolveNotificationAbsoluteUrl,
 } from '@opden-data-layer/notifications-messages';
 import {
+  TELEGRAM_RECIPIENT_PARAM,
   TELEGRAM_STREAM_DATA_FIELD,
   TELEGRAM_STREAM_KEY,
 } from '../constants/telegram.constants';
@@ -53,7 +54,9 @@ export class TelegramNotificationService {
           continue;
         }
         const message = buildNotificationMessage(request.event);
-        const text = renderTelegramBody(message, EN_NOTIFICATION_DICTIONARY);
+        const text = renderTelegramBody(message, EN_NOTIFICATION_DICTIONARY, {
+          extraParams: { [TELEGRAM_RECIPIENT_PARAM]: account },
+        });
         const websiteUrl = resolveNotificationAbsoluteUrl(message, baseUrl);
         pipe.xAdd(TELEGRAM_STREAM_KEY, {
           [TELEGRAM_STREAM_DATA_FIELD]: JSON.stringify({

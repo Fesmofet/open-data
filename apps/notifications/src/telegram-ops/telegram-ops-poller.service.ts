@@ -19,6 +19,11 @@ import {
 import { OpsTelegramSubscribersRepository } from '../repositories/ops-telegram-subscribers.repository';
 import { TelegramApiClient } from '../telegram/telegram-api.client';
 import {
+  TELEGRAM_POLL_DEFAULT_INTERVAL_MS,
+  TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC,
+  TELEGRAM_POLLER_LOCK_RETRY_MS,
+} from '../constants/telegram.constants';
+import {
   opsHelpMessage,
   opsStartMessage,
   opsUnknownCommandMessage,
@@ -65,11 +70,12 @@ export class TelegramOpsPollerService implements OnModuleInit, OnModuleDestroy {
     while (this.running) {
       const holdsLock = await this.ensurePollerLock();
       if (!holdsLock) {
-        await this.sleep(5000);
+        await this.sleep(TELEGRAM_POLLER_LOCK_RETRY_MS);
         continue;
       }
       const timeoutSec =
-        this.config.get<number>('telegram.pollTimeoutSec') ?? 30;
+        this.config.get<number>('telegram.pollTimeoutSec') ??
+        TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC;
       try {
         const updates = await this.api.getUpdates(
           this.updateOffset,
@@ -82,6 +88,12 @@ export class TelegramOpsPollerService implements OnModuleInit, OnModuleDestroy {
       } catch (err) {
         this.logger.error(`Telegram ops poll error: ${(err as Error).message}`);
         await this.sleep(2000);
+      }
+      const intervalMs =
+        this.config.get<number>('telegram.pollIntervalMs') ??
+        TELEGRAM_POLL_DEFAULT_INTERVAL_MS;
+      if (intervalMs > 0) {
+        await this.sleep(intervalMs);
       }
     }
   }

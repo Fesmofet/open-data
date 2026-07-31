@@ -20,6 +20,15 @@ export const telegramSentDedupKey = (
 /** Refreshed while the poller holds the lock */
 export const TELEGRAM_POLLER_LOCK_TTL_SEC = 60;
 
+/** When another instance holds the poller lock, retry after this delay. */
+export const TELEGRAM_POLLER_LOCK_RETRY_MS = 1_000;
+
+/** Long-polling timeout for getUpdates (legacy notifications-api used 10). */
+export const TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC = 10;
+
+/** Pause between getUpdates calls after a poll cycle (legacy interval: 300ms). */
+export const TELEGRAM_POLL_DEFAULT_INTERVAL_MS = 300;
+
 /** Skip duplicate delivery of the same feed item to the same chat */
 export const TELEGRAM_SENT_DEDUP_TTL_SEC = 3600;
 
@@ -33,7 +42,15 @@ export const TELEGRAM_MAX_ACCOUNTS_PER_CHAT = 10;
 
 export const TELEGRAM_BUTTON_GO_TO_WEBSITE = 'Go to website';
 
+export const TELEGRAM_SUBSCRIPTION_LIST_HEADER = 'You are subscribed to:';
+
+export const TELEGRAM_SUBSCRIPTION_LIST_EMPTY =
+  'No Hive accounts subscribed. Send your Hive username to subscribe.';
+
 export const TELEGRAM_UNSUBSCRIBE_CALLBACK_PREFIX = 'unsubscribe:';
 
 export const telegramUnsubscribeButtonLabel = (account: string): string =>
   `Unsubscribe ${account}`;
+
+/** Placeholder for the subscribed Hive account (injected at Telegram render time). */
+export const TELEGRAM_RECIPIENT_PARAM = 'recipient';

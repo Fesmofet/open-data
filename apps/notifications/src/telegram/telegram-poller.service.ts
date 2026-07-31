@@ -9,13 +9,21 @@ import { RedisClientFactory } from '@opden-data-layer/clients';
 import { randomUUID } from 'crypto';
 import {
   TELEGRAM_MAX_ACCOUNTS_PER_CHAT,
+  TELEGRAM_POLL_DEFAULT_INTERVAL_MS,
+  TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC,
+  TELEGRAM_POLLER_LOCK_RETRY_MS,
   TELEGRAM_POLLER_LOCK_TTL_SEC,
   TELEGRAM_POLLER_LOCK_VALUE_PREFIX,
+  TELEGRAM_SUBSCRIPTION_LIST_EMPTY,
+  TELEGRAM_SUBSCRIPTION_LIST_HEADER,
   telegramPollerLockKey,
 } from '../constants/telegram.constants';
 import { TelegramSubscriptionsRepository } from '../repositories/telegram-subscriptions.repository';
 import { TelegramApiClient, type TelegramUpdate } from './telegram-api.client';
-import { parseUnsubscribeCallbackData } from './telegram-inline-keyboard';
+import {
+  buildSubscriptionListInlineKeyboard,
+  parseUnsubscribeCallbackData,
+} from './telegram-inline-keyboard';
 import { planChatSubscriptions } from './telegram-subscribe-limit';
 
 @Injectable()
@@ -55,11 +63,12 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
     while (this.running) {
       const holdsLock = await this.ensurePollerLock();
       if (!holdsLock) {
-        await this.sleep(5000);
+        await this.sleep(TELEGRAM_POLLER_LOCK_RETRY_MS);
         continue;
       }
       const timeoutSec =
-        this.config.get<number>('telegram.pollTimeoutSec') ?? 30;
+        this.config.get<number>('telegram.pollTimeoutSec') ??
+        TELEGRAM_POLL_DEFAULT_TIMEOUT_SEC;
       try {
         const updates = await this.api.getUpdates(
           this.updateOffset,
@@ -72,6 +81,12 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       } catch (err) {
         this.logger.error(`Telegram poll error: ${(err as Error).message}`);
         await this.sleep(2000);
+      }
+      const intervalMs =
+        this.config.get<number>('telegram.pollIntervalMs') ??
+        TELEGRAM_POLL_DEFAULT_INTERVAL_MS;
+      if (intervalMs > 0) {
+        await this.sleep(intervalMs);
       }
     }
   }
@@ -134,18 +149,7 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     if (lower === '/list') {
-      const accounts = await this.subscriptions.findAccountsByChatId(chatId);
-      if (accounts.length === 0) {
-        await this.api.sendMessage(
-          chatId,
-          'No Hive accounts subscribed. Send /start yourname or type your Hive username.',
-        );
-        return;
-      }
-      await this.api.sendMessage(
-        chatId,
-        `Subscribed accounts:\n${accounts.map((a) => `• ${a}`).join('\n')}`,
-      );
+      await this.sendSubscriptionList(chatId);
       return;
     }
     if (lower.startsWith('/')) {
@@ -174,7 +178,29 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     await this.subscriptions.unsubscribe(String(chatId), account);
-    await this.api.sendMessage(String(chatId), `Unsubscribed: ${account}`);
+    await this.sendSubscriptionList(String(chatId));
+  }
+
+  private webPublicOrigin(): string {
+    return (
+      this.config.get<string>('telegram.webPublicOrigin') ??
+      'http://localhost:3000'
+    );
+  }
+
+  private async sendSubscriptionList(chatId: string): Promise<void> {
+    const accounts = await this.subscriptions.findAccountsByChatId(chatId);
+    if (accounts.length === 0) {
+      await this.api.sendMessage(chatId, TELEGRAM_SUBSCRIPTION_LIST_EMPTY);
+      return;
+    }
+    const replyMarkup = buildSubscriptionListInlineKeyboard(
+      accounts,
+      this.webPublicOrigin(),
+    );
+    await this.api.sendMessage(chatId, TELEGRAM_SUBSCRIPTION_LIST_HEADER, {
+      replyMarkup,
+    });
   }
 
   private async subscribeMany(chatId: string, names: string[]): Promise<void> {
@@ -199,27 +225,28 @@ export class TelegramPollerService implements OnModuleInit, OnModuleDestroy {
         missing.push(name);
         continue;
       }
-      const saved = await this.subscriptions.subscribe(chatId, name);
-      if (saved) {
-        ok.push(name);
-      }
-    }
-    const lines: string[] = [];
-    if (ok.length > 0) {
-      lines.push(`Subscribed: ${ok.join(', ')}`);
+      await this.subscriptions.subscribe(chatId, name);
+      ok.push(name);
     }
     if (missing.length > 0) {
-      lines.push(`Unknown Hive account(s): ${missing.join(', ')}`);
+      await this.api.sendMessage(
+        chatId,
+        `Unknown Hive account(s): ${missing.join(', ')}`,
+      );
     }
     if (limitRejected.length > 0) {
-      lines.push(
+      await this.api.sendMessage(
+        chatId,
         `Limit reached (${TELEGRAM_MAX_ACCOUNTS_PER_CHAT} accounts). Not added: ${limitRejected.join(', ')}. Use /stop <username> to free a slot.`,
       );
     }
-    if (lines.length === 0) {
-      lines.push('Nothing changed.');
+    if (ok.length > 0) {
+      await this.sendSubscriptionList(chatId);
+      return;
     }
-    await this.api.sendMessage(chatId, lines.join('\n'));
+    if (missing.length === 0 && limitRejected.length === 0) {
+      await this.api.sendMessage(chatId, 'Nothing changed.');
+    }
   }
 
   private parseUsernames(raw: string): string[] {

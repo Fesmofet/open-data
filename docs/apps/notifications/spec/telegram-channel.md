@@ -14,7 +14,7 @@ related:
 
 # Telegram notifications channel
 
-MVP delivery channel inside `apps/notifications`. English copy only (`en-dictionary.ts`); same message keys as web via `@opden-data-layer/notifications-messages`.
+MVP delivery channel inside `apps/notifications`. English copy only (`en-dictionary.ts`); same message **keys** as web via `@opden-data-layer/notifications-messages`, but Telegram templates use explicit Hive account names (`{recipient}`) instead of “you/your” because one chat may subscribe to multiple accounts.
 
 ## Flow
 
@@ -25,7 +25,7 @@ MVP delivery channel inside `apps/notifications`. English copy only (`en-diction
 
 ## Outbound message format
 
-- **Body:** English template from `renderTelegramBody` + `en-dictionary.ts` — **no** raw URL appended to the text.
+- **Body:** English template from `renderTelegramBody` + `en-dictionary.ts` — **no** raw URL appended to the text. `TelegramNotificationService` injects `{recipient}` (the subscribed Hive account) at render time.
 - **Inline keyboard:**
   - `Go to website` — URL button when `message.href` resolves to an absolute link via `WEB_PUBLIC_ORIGIN`
   - `Unsubscribe {account}` — `callback_data: unsubscribe:{account}`; handled by the poller (`answerCallbackQuery` + DB unsubscribe)
@@ -49,7 +49,8 @@ Table `telegram_subscriptions` (`chat_id`, `account`, `created_at`), composite P
 |----------|----------|-------|
 | `TELEGRAM_BOT_TOKEN` | No | Omit to disable user Telegram bot |
 | `WEB_PUBLIC_ORIGIN` | No | Default `http://localhost:3000`; absolute links in outbound messages |
-| `TELEGRAM_POLL_TIMEOUT_SEC` | No | Default `30` |
+| `TELEGRAM_POLL_TIMEOUT_SEC` | No | Default `10` (legacy long-poll timeout) |
+| `TELEGRAM_POLL_INTERVAL_MS` | No | Default `300` — pause between `getUpdates` cycles |
 | `TELEGRAM_SEND_RATE_PER_SEC` | No | Default `25` |
 
 Bot **username** for `https://t.me/...` links on the web UI is **`NOTIFICATIONS_TELEGRAM_BOT_USERNAME`** on `apps/web` only (not this service).
@@ -58,8 +59,10 @@ Bot **username** for `https://t.me/...` links on the web UI is **`NOTIFICATIONS_
 
 - `/start [username...]` — subscribe chat to Hive account(s)
 - `/stop [username...]` — unsubscribe; no args removes all accounts for the chat
-- `/list` — list subscribed accounts
+- `/list` — show subscribed accounts with inline keyboard (profile link + Unsubscribe per row)
 - Plain text — treated as space/comma-separated Hive usernames (same as legacy UX)
+
+After a successful subscribe (or `/list`), the bot replies with **You are subscribed to:** and an inline keyboard: each row is `{account}` (URL to `WEB_PUBLIC_ORIGIN/@account`) and `Unsubscribe {account}`. Unsubscribe callback refreshes the same list message.
 
 Each chat may follow at most **10** Hive accounts (`TELEGRAM_MAX_ACCOUNTS_PER_CHAT`). Re-subscribing to an account already on the list does not use an extra slot; additional usernames beyond the cap are rejected with a short message.
 

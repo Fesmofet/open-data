@@ -19,7 +19,19 @@ export const notificationsEnvSchema = z.object({
   WS_MAX_CONNECTIONS_PER_USER: z.coerce.number().int().min(1).optional().default(5),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   WEB_PUBLIC_ORIGIN: z.string().url().optional().default('http://localhost:3000'),
-  TELEGRAM_POLL_TIMEOUT_SEC: z.coerce.number().optional().default(30),
+  TELEGRAM_POLL_TIMEOUT_SEC: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(50)
+    .optional()
+    .default(10),
+  TELEGRAM_POLL_INTERVAL_MS: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .default(300),
   TELEGRAM_SEND_RATE_PER_SEC: z.coerce.number().optional().default(25),
   TELEGRAM_OPS_BOT_TOKEN: z.string().optional(),
   HIVE_ENGINE_NODES: z
