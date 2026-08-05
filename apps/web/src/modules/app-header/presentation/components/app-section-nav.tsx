@@ -7,7 +7,12 @@ import {
   useEffectiveNav,
 } from '@/shared/presentation';
 import { isToolsHubPath } from '@/modules/tools';
-import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
+import {
+  ShellFullBleedBand,
+  ShellInset,
+  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
+  horizontalTabNavScrollShellClass,
+} from '@/shared/presentation/layout';
 
 type SectionTab = {
   key: 'home' | 'data' | 'business' | 'tools';
@@ -59,24 +64,26 @@ export function AppSectionNav() {
   return (
     <ShellFullBleedBand className="border-b border-border bg-surface">
       <ShellInset>
-        <nav
-          aria-label={t('app_section_nav_aria')}
-          className="flex flex-wrap items-end justify-center gap-x-2 gap-y-1"
-        >
-          {TABS.map((tab) => {
-            const active = tab.isActive(pathname);
-            return (
-              <OptimisticNavLink
-                key={tab.key}
-                href={tab.href}
-                className={`${profileSectionTabClass(active, 'primary')} uppercase`}
-                aria-current={active ? 'page' : undefined}
-              >
-                {t(tab.labelKey)}
-              </OptimisticNavLink>
-            );
-          })}
-        </nav>
+        <div className={horizontalTabNavScrollShellClass('gutter')}>
+          <nav
+            aria-label={t('app_section_nav_aria')}
+            className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} justify-start`}
+          >
+            {TABS.map((tab) => {
+              const active = tab.isActive(pathname);
+              return (
+                <OptimisticNavLink
+                  key={tab.key}
+                  href={tab.href}
+                  className={`${profileSectionTabClass(active, 'primary')} uppercase`}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  {t(tab.labelKey)}
+                </OptimisticNavLink>
+              );
+            })}
+          </nav>
+        </div>
       </ShellInset>
     </ShellFullBleedBand>
   );

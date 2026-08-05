@@ -4,6 +4,10 @@ import type { ReactNode } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { profileSectionTabClass, StatHoverTooltip } from '@/shared/presentation';
+import {
+  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
+  horizontalTabNavScrollShellClass,
+} from '@/shared/presentation/layout';
 
 import type { ObjectPrimaryTabView } from '../../domain/object-page.types';
 
@@ -50,28 +54,30 @@ export function ObjectPrimaryNav({
   const { t } = useI18n();
 
   return (
-    <nav
-      aria-label={t('object_detail_primary_nav_aria')}
-      className="flex flex-wrap gap-x-1 gap-y-1 border-b border-border"
-    >
-      {tabs.map((tab) => {
-        const active = activeSegment === tab.segment;
-        const count = renderTabCount(tab, t);
+    <div className={horizontalTabNavScrollShellClass('gutter')}>
+      <nav
+        aria-label={t('object_detail_primary_nav_aria')}
+        className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} gap-x-1 border-b border-border`}
+      >
+        {tabs.map((tab) => {
+          const active = activeSegment === tab.segment;
+          const count = renderTabCount(tab, t);
 
-        return (
-          <button
-            key={tab.segment}
-            type="button"
-            className={profileSectionTabClass(active, 'primary')}
-            onClick={() => onSelect(tab.segment)}
-          >
-            <span className="inline-flex items-center gap-1">
-              <span>{tab.label}</span>
-              {count}
-            </span>
-          </button>
-        );
-      })}
-    </nav>
+          return (
+            <button
+              key={tab.segment}
+              type="button"
+              className={profileSectionTabClass(active, 'primary')}
+              onClick={() => onSelect(tab.segment)}
+            >
+              <span className="inline-flex items-center gap-1">
+                <span>{tab.label}</span>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

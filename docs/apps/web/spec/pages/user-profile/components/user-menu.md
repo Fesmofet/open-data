@@ -30,7 +30,11 @@ related:
 ## structure
 
 - **Primary:** horizontal list of `Link` items; active class from pathname segments after `/@:name` (see [`profile-path.ts`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/profile-path.ts)).
-- **Secondary (submenu):** when the active primary section is Posts, Wallet, Followers, or Expertise, a second row of `Link` items appears below the primary row (same header card). Labels and `aria-label` use i18n; styling uses design tokens (semantic Tailwind classes). Helpers: [`user-profile-subnav.ts`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/user-profile-subnav.ts).
+- **Secondary (submenu):** when the active primary section is Posts, Wallet, Followers, or Expertise, a second row of `Link` items appears below the primary row (center column card on `(main)` routes). Labels and `aria-label` use i18n; styling uses design tokens (semantic Tailwind classes). Helpers: [`user-profile-subnav.ts`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/user-profile-subnav.ts).
+
+## Mobile layout
+
+Below `lg`, primary and submenu rows stay on **one horizontal line** and scroll when overflowed (shared `horizontal-tab-nav-classes.ts`). Submenu sits in a bordered card with horizontal bleed into card padding.
 
 ## navigation layers
 

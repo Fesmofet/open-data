@@ -322,10 +322,10 @@ export function TopNav({ user: _user }: TopNavProps) {
   const hideActionsWhileMobileSearch = searchBarActive;
 
   return (
-    <div className="flex min-h-shell-header flex-wrap items-center gap-2 py-2 lg:flex-nowrap">
+    <div className="flex min-h-shell-header flex-nowrap items-center gap-1 py-2 sm:gap-2">
       <div
         className={[
-          'flex min-w-0 shrink-0 items-center me-4 sm:me-6',
+          'flex min-w-0 shrink items-center me-2 sm:me-4 lg:me-6',
           hideActionsWhileMobileSearch ? 'hidden lg:flex' : 'flex',
         ].join(' ')}
       >
@@ -342,7 +342,7 @@ export function TopNav({ user: _user }: TopNavProps) {
             height={APP_HEADER_BRAND_LOGO.height}
             alt=""
             aria-hidden
-            className="h-8 w-auto max-w-[10rem] shrink-0"
+            className="h-7 w-auto max-w-[7.5rem] shrink sm:h-8 sm:max-w-[9rem] lg:max-w-[10rem]"
           />
         </Link>
       </div>
@@ -424,7 +424,7 @@ export function TopNav({ user: _user }: TopNavProps) {
         ) : null}
       </div>
 
-      <div className="ms-auto flex shrink-0 items-center gap-2 lg:ms-0">
+      <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2 lg:ms-0">
         <button
           type="button"
           className="rounded-btn p-2 text-nav-fg hover:bg-white/10 lg:hidden"

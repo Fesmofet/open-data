@@ -113,6 +113,7 @@ Throws if used outside `LayoutProvider`.
 - Prefer **CSS** (Tailwind responsive variants on the element itself: `hidden lg:block`, `lg:hidden`) for responsive visibility — no wrapper component.
 - **Profile** default shell uses three columns at `lg+`; **about** uses two (main + right); **map** and **waiv-table** use a single column.
 - **Layout tokens** (`--shell-header-height`, `--shell-left-width`, `--shell-right-width`, `--shell-bottom-height`) are defined per theme in `theme.css` and mapped in `tailwind.config.js` — see [theme.md](theme.md).
+- **Horizontal tab menus** (profile primary/sub nav, object section tabs, hub `AppSectionNav`) use shared classes from `horizontal-tab-nav-classes.ts`: single row (`flex-nowrap`), `overflow-x-auto`, optional gutter/card bleed. Tab links use `shrink-0 whitespace-nowrap` via `profileSectionTabClass`. Scrollbar hidden on touch (`scrollbar-hide`).
 
 ## Adding a new shell or arrangement
 

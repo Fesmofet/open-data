@@ -12,6 +12,7 @@ import {
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
+import type { UserAccountSidebarView } from '../../domain/types/user-account-sidebar-view';
 import type { UserProfileShellUser } from './types';
 import { UserHero } from './user-hero';
 
@@ -20,6 +21,7 @@ const HERO_FETCH_MS = 450;
 export type UserProfileHeroClientProps = {
   accountName: string;
   initialUser: UserProfileShellUser;
+  sidebar: UserAccountSidebarView | null;
   viewerUsername: string | null;
 };
 
@@ -29,6 +31,7 @@ export type UserProfileHeroClientProps = {
 export function UserProfileHeroClient({
   accountName,
   initialUser,
+  sidebar,
   viewerUsername,
 }: UserProfileHeroClientProps) {
   const pathname = usePathname();
@@ -139,6 +142,7 @@ export function UserProfileHeroClient({
     <UserHero
       user={initialUser}
       username={accountName}
+      sidebar={sidebar}
       isSameUser={isSameUser}
       isGuest={isGuest}
       isFollowing={isFollowing}

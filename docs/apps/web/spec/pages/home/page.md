@@ -40,7 +40,7 @@ Shared by `/`, `/discover`, `/business*`, `/tools`, `/drafts`, `/notifications/s
 | BUSINESS | `/business` | `/business` prefix |
 | TOOLS | `/notifications/settings` | `/tools`, `/drafts`, `/notifications/settings`, `/settings` — see [tools/page.md](../tools/page.md) |
 
-Component: `AppSectionNav` (`@/modules/app-header`) — underline tabs via `profileSectionTabClass` (same as profile primary menu), labels uppercase.
+Component: `AppSectionNav` (`@/modules/app-header`) — underline tabs via `profileSectionTabClass` (same as profile primary menu), labels uppercase. On narrow viewports the row scrolls horizontally (`overflow-x-auto`, `flex-nowrap`).
 
 ## Agent composer stub
 

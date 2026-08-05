@@ -1,10 +1,17 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
   profileSectionTabClass,
   profileSectionVerticalLinkClass,
 } from '@/shared/presentation';
+import {
+  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
+  HORIZONTAL_TAB_NAV_SUB_ROW_CLASS,
+  horizontalTabNavScrollShellClass,
+} from '@/shared/presentation/layout';
 import { getDesktopMenuKeys, HIDDEN_ON_DESKTOP_CLASS, useShellMode } from '@/shell-mode';
 
 import { getSegmentsAfterAccount } from './profile-path';
@@ -30,11 +37,32 @@ type UserMenuProps = {
 
 const WALLET_TYPES = ['WAIV', 'HIVE', 'ENGINE'] as const;
 
-const HORIZONTAL_PRIMARY_NAV_ROW_CLASS =
-  'flex flex-wrap items-end gap-x-2 gap-y-1';
+type HorizontalNavBleed = 'gutter' | 'card' | 'none';
 
-const HORIZONTAL_SUB_NAV_ROW_CLASS =
-  'flex flex-wrap items-end gap-x-2 gap-y-1 border-b border-border';
+function HorizontalTabNavShell({
+  children,
+  ariaLabel,
+  rowClass,
+  bleed = 'gutter',
+  className,
+}: {
+  children: ReactNode;
+  ariaLabel: string;
+  rowClass: string;
+  bleed?: HorizontalNavBleed;
+  className?: string;
+}) {
+  return (
+    <div className={horizontalTabNavScrollShellClass(bleed)}>
+      <nav
+        className={[rowClass, className].filter(Boolean).join(' ')}
+        aria-label={ariaLabel}
+      >
+        {children}
+      </nav>
+    </div>
+  );
+}
 
 function isActive(
   rest: string[],
@@ -136,29 +164,46 @@ function FeedSubmenuNav({
   rest,
   vertical,
   className,
+  bleed = 'gutter',
 }: {
   base: string;
   rest: string[];
   vertical: boolean;
   className?: string;
+  bleed?: HorizontalNavBleed;
 }) {
   const { t } = useI18n();
   const linkClass = (segment: 'posts' | string) =>
     subNavLinkClass(getFeedSubActive(rest, segment), vertical);
 
+  if (vertical) {
+    return (
+      <nav
+        className={['flex flex-col gap-0.5', className].filter(Boolean).join(' ')}
+        aria-label={t('user_profile_submenu_feed_aria')}
+      >
+        <UserProfileNavLink href={base} className={linkClass('posts')}>{t('posts')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>{t('threads')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/activity`} className={linkClass('activity')}>{t('activity')}</UserProfileNavLink>
+      </nav>
+    );
+  }
+
   return (
-    <nav
-      className={[vertical ? 'flex flex-col gap-0.5' : HORIZONTAL_SUB_NAV_ROW_CLASS, className]
-        .filter(Boolean)
-        .join(' ')}
-      aria-label={t('user_profile_submenu_feed_aria')}
+    <HorizontalTabNavShell
+      ariaLabel={t('user_profile_submenu_feed_aria')}
+      rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+      bleed={bleed}
+      className={className}
     >
       <UserProfileNavLink href={base} className={linkClass('posts')}>{t('posts')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>{t('threads')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/activity`} className={linkClass('activity')}>{t('activity')}</UserProfileNavLink>
-    </nav>
+    </HorizontalTabNavShell>
   );
 }
 
@@ -254,18 +299,22 @@ function UserMenuInner({
   const showPrimary = isVertical || rows === 'primary' || rows === 'all';
   const showSubmenu = isVertical || rows === 'submenu' || rows === 'all';
 
+  const submenuBleed: HorizontalNavBleed = rows === 'submenu' ? 'card' : 'gutter';
+
   const horizontalSubmenu =
     submenuVariant === 'feed' ? (
       <FeedSubmenuNav
         base={base}
         rest={rest}
         vertical={false}
+        bleed={submenuBleed}
         className={desktopMenuKeys ? HIDDEN_ON_DESKTOP_CLASS : undefined}
       />
     ) : submenuVariant === 'wallet' ? (
-      <nav
-        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
-        aria-label={t('user_profile_submenu_wallet_aria')}
+      <HorizontalTabNavShell
+        ariaLabel={t('user_profile_submenu_wallet_aria')}
+        rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+        bleed={submenuBleed}
       >
         {WALLET_TYPES.map((type) => {
           const href = `${base}/transfers?type=${type}`;
@@ -280,11 +329,12 @@ function UserMenuInner({
             </UserProfileNavLink>
           );
         })}
-      </nav>
+      </HorizontalTabNavShell>
     ) : submenuVariant === 'followers' ? (
-      <nav
-        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
-        aria-label={t('user_profile_submenu_followers_aria')}
+      <HorizontalTabNavShell
+        ariaLabel={t('user_profile_submenu_followers_aria')}
+        rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+        bleed={submenuBleed}
       >
         <UserProfileNavLink href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)}>
           <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
@@ -295,11 +345,12 @@ function UserMenuInner({
         <UserProfileNavLink href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)}>
           <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
         </UserProfileNavLink>
-      </nav>
+      </HorizontalTabNavShell>
     ) : submenuVariant === 'expertise' ? (
-      <nav
-        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
-        aria-label={t('user_profile_submenu_expertise_aria')}
+      <HorizontalTabNavShell
+        ariaLabel={t('user_profile_submenu_expertise_aria')}
+        rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+        bleed={submenuBleed}
       >
         <UserProfileNavLink href={`${base}/expertise-hashtags`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-hashtags', false)}>
           <SocialSubmenuLinkLabel label={t('hashtags')} count={socialCounts?.hashtagsExpCount} />
@@ -307,7 +358,7 @@ function UserMenuInner({
         <UserProfileNavLink href={`${base}/expertise-objects`} className={subNavLinkClass((rest[0] ?? '') === 'expertise-objects', false)}>
           <SocialSubmenuLinkLabel label={t('objects')} count={socialCounts?.objectsExpCount} />
         </UserProfileNavLink>
-      </nav>
+      </HorizontalTabNavShell>
     ) : null;
 
   if (isVertical) {
@@ -386,9 +437,10 @@ function UserMenuInner({
 
   if (rows === 'primary') {
     return (
-      <nav
-        className={HORIZONTAL_PRIMARY_NAV_ROW_CLASS}
-        aria-label={t('user_profile_nav_aria')}
+      <HorizontalTabNavShell
+        ariaLabel={t('user_profile_nav_aria')}
+        rowClass={HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS}
+        bleed="gutter"
       >
         {primaryItems.map((item) => (
           <UserProfileNavLink
@@ -399,7 +451,7 @@ function UserMenuInner({
             {item.label}
           </UserProfileNavLink>
         ))}
-      </nav>
+      </HorizontalTabNavShell>
     );
   }
 
@@ -407,9 +459,10 @@ function UserMenuInner({
   return (
     <div className="flex min-w-0 flex-col">
       {showPrimary ? (
-        <nav
-          className={HORIZONTAL_PRIMARY_NAV_ROW_CLASS}
-          aria-label={t('user_profile_nav_aria')}
+        <HorizontalTabNavShell
+          ariaLabel={t('user_profile_nav_aria')}
+          rowClass={HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS}
+          bleed="gutter"
         >
           {primaryItems.map((item) => (
             <UserProfileNavLink
@@ -420,7 +473,7 @@ function UserMenuInner({
               {item.label}
             </UserProfileNavLink>
           ))}
-        </nav>
+        </HorizontalTabNavShell>
       ) : null}
       {showSubmenu ? horizontalSubmenu : null}
     </div>

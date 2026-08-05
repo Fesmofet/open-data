@@ -4,22 +4,21 @@
 export function FeedStoryCardSkeleton() {
   return (
     <article
-      className="rounded-card border border-border bg-surface/80 p-card-padding shadow-whisper"
+      className="rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:p-card-padding"
       aria-hidden
     >
-      <header className="flex gap-3">
-        <div className="size-10 shrink-0 animate-pulse rounded-circle bg-surface-control" />
-        <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+      <header className="flex items-start gap-2 sm:gap-3">
+        <div className="size-9 shrink-0 animate-pulse rounded-circle bg-surface-control sm:size-10" />
+        <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">
           <div className="h-4 max-w-[9rem] animate-pulse rounded-btn bg-surface-control" />
           <div className="h-3 max-w-[6rem] animate-pulse rounded-btn bg-surface-control" />
         </div>
       </header>
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-2">
         <div className="h-4 w-full animate-pulse rounded-btn bg-surface-control" />
         <div className="h-4 max-w-[95%] animate-pulse rounded-btn bg-surface-control" />
-        <div className="h-4 max-w-[80%] animate-pulse rounded-btn bg-surface-control" />
       </div>
-      <div className="mt-4 h-44 animate-pulse rounded-btn bg-surface-control sm:h-52" />
+      <div className="mt-3 aspect-video animate-pulse rounded-btn bg-surface-control" />
       <footer className="mt-4 flex flex-wrap gap-3 border-t border-border pt-3">
         <div className="h-8 w-14 animate-pulse rounded-btn bg-surface-control" />
         <div className="h-8 w-14 animate-pulse rounded-btn bg-surface-control" />

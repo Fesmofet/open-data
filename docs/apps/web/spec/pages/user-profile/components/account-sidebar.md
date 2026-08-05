@@ -19,7 +19,9 @@ related:
 
 ## When shown
 
-`@leftSidebar` default routes (`page.tsx`, `[...slug]/page.tsx`, `default.tsx`) — feed, followers, transfers, activity, expertise, etc.
+**Desktop (`lg+`):** `@leftSidebar` default routes (`page.tsx`, `[...slug]/page.tsx`, `default.tsx`) — feed, followers, transfers, activity, expertise, etc.
+
+**Mobile (below `lg`):** left rail hidden. A compact subset of sidebar fields is rendered in the profile hero via `UserProfileMobileHeroMeta` and `UserProfileMobileHeroDetails` (rank, vote value, bio, location, website, active). Full sidebar data still comes from `getUserAccountSidebarQuery` (React `cache()` dedupes hero + `@leftSidebar` fetches).
 
 **Not** shown on shop/recipe/favorites left-rail pages (those keep `CategoryNav` / `FavoritesTypeNav`).
 

@@ -33,13 +33,13 @@ export function ProfileSocialListSkeleton() {
 
 function ProfileObjectCardRowSkeleton() {
   return (
-    <div className="flex gap-3 rounded-card border border-border bg-surface/80 p-card-padding shadow-whisper">
-      <div className="size-20 shrink-0 animate-pulse rounded-btn bg-surface-control sm:size-24" />
-      <div className="min-w-0 flex-1 space-y-2 pt-0.5">
-        <div className="h-4 max-w-[70%] animate-pulse rounded-btn bg-surface-control" />
-        <div className="h-3 max-w-[45%] animate-pulse rounded-btn bg-surface-control" />
+    <div className="flex flex-col gap-3 rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:flex-row sm:p-card-padding">
+      <div className="aspect-[4/3] w-full animate-pulse rounded-btn bg-surface-control sm:aspect-auto sm:size-24 sm:shrink-0" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="h-4 max-w-[85%] animate-pulse rounded-btn bg-surface-control sm:max-w-[70%]" />
+        <div className="h-3 max-w-[60%] animate-pulse rounded-btn bg-surface-control sm:max-w-[45%]" />
         <div className="h-3 w-full animate-pulse rounded-btn bg-surface-control" />
-        <div className="h-3 max-w-[85%] animate-pulse rounded-btn bg-surface-control" />
+        <div className="h-3 max-w-[90%] animate-pulse rounded-btn bg-surface-control sm:max-w-[85%]" />
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ export function profileSectionTabClass(
 ): string {
   const sizeClass = 'px-3 py-2.5 text-body font-weight-strong';
 
-  const base = `-mb-px inline-flex items-center border-b-2 transition-colors ${sizeClass}`;
+  const base = `-mb-px inline-flex shrink-0 items-center whitespace-nowrap border-b-2 transition-colors ${sizeClass}`;
 
   if (active) {
     return `${base} border-accent text-accent`;

@@ -24,7 +24,7 @@ Global chrome for the `(app)` route group: brand link, predictive search, notifi
 
 | Zone | Behavior |
 |------|----------|
-| Brand | Link to `/`; on small screens hidden while mobile search is expanded. |
+| Brand | Link to `/`; on small screens hidden while mobile search is expanded. Logo on narrow viewports: `h-7` / max ~7.5rem; from `sm`: `h-8`; header row is `flex-nowrap`. |
 | Search | Debounced query → `/api/search` — see [search.md](search.md). `lg+`: always visible. Below `lg`: expand/collapse toggle. |
 | Actions (logged out) | `LoginDialog` + `LocaleSwitcher`. |
 | Actions (logged in) | [`LoggedInHeaderActions`](../../../../apps/web/src/modules/app-header/presentation/components/logged-in-header-actions.tsx): **write** → `/editor`; **`NotificationBell`**; avatar → `/@:username`; chevron → account menu. |

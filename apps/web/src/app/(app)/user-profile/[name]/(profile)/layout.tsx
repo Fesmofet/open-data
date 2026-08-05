@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import {
+  getUserAccountSidebarQuery,
   getUserProfileQuery,
   UserProfileHeroClient,
   UserProfilePendingNavRoot,
@@ -28,8 +29,9 @@ export default async function ProfileGroupLayout({
   const viewer = viewerUser?.username ?? null;
   const locale = await getRequestLocale();
 
-  const [profile, objectsHead, expertiseCounts] = await Promise.all([
+  const [profile, sidebar, objectsHead, expertiseCounts] = await Promise.all([
     getUserProfileQuery(decoded, viewer, locale),
+    getUserAccountSidebarQuery(decoded),
     getUserFollowingObjectsPageQuery(
       decoded,
       { sort: 'weight', skip: 0, limit: 0 },
@@ -58,6 +60,7 @@ export default async function ProfileGroupLayout({
           <UserProfileHeroClient
             accountName={decoded}
             initialUser={profile}
+            sidebar={sidebar}
             viewerUsername={viewer}
           />
           <ShellFullBleedBand className="shell-profile-content-band">

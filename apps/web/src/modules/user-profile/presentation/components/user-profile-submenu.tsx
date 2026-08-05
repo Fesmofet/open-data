@@ -28,7 +28,7 @@ export function UserProfileSubmenu({ accountName }: UserProfileSubmenuProps) {
   }
 
   return (
-    <div className="px-card-padding pt-2">
+    <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
       <UserMenuClient accountName={accountName} rows="submenu" />
     </div>
   );

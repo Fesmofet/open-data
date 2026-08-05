@@ -3,7 +3,10 @@
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
+import type { UserAccountSidebarView } from '../../domain/types/user-account-sidebar-view';
 import type { UserProfileShellUser } from './types';
+import { UserProfileMobileHeroDetails } from './user-profile-mobile-hero-details';
+import { UserProfileMobileHeroMeta } from './user-profile-mobile-hero-meta';
 
 function IconBell({ filled }: { filled: boolean }) {
   return (
@@ -26,6 +29,7 @@ function IconBell({ filled }: { filled: boolean }) {
 export type UserHeaderProps = {
   user: UserProfileShellUser;
   username: string;
+  sidebar: UserAccountSidebarView | null;
   isSameUser: boolean;
   isGuest: boolean;
   isFollowing: boolean;
@@ -41,6 +45,7 @@ export type UserHeaderProps = {
 export function UserHeader({
   user,
   username,
+  sidebar,
   isSameUser,
   isGuest,
   isFollowing,
@@ -54,32 +59,35 @@ export function UserHeader({
 }: UserHeaderProps) {
   const { t } = useI18n();
   const hasCoverPhoto = Boolean(hasCover && coverImage);
+  const hiveReputation = sidebar?.hive.reputation;
 
   return (
-    <div className="relative -mt-12 flex flex-col gap-4 pb-4 sm:flex-row sm:items-end">
+    <div className="relative -mt-12 flex flex-col items-center gap-4 pb-4 text-center lg:flex-row lg:items-end lg:text-left">
       {isHeroLoading ? (
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-circle border-4 border-bg bg-bg shadow-card">
+        <div className="flex h-24 w-24 shrink-0 self-center items-center justify-center rounded-circle border-4 border-bg bg-bg shadow-card lg:self-start">
           <span className="h-8 w-8 animate-pulse rounded-circle bg-surface" />
         </div>
       ) : (
-        <UserAvatar
-          username={username}
-          avatarUrl={user.avatarUrl}
-          displayName={user.displayName}
-          size={96}
-          className="text-body-lg font-weight-strong font-display"
-        />
+        <div className="shrink-0 self-center lg:self-start">
+          <UserAvatar
+            username={username}
+            avatarUrl={user.avatarUrl}
+            displayName={user.displayName}
+            size={96}
+            className="text-body-lg font-weight-strong font-display"
+          />
+        </div>
       )}
 
       <div className="min-w-0 flex-1 pb-1">
         {isHeroLoading ? (
           <div className="space-y-2">
-            <div className="h-6 w-48 animate-pulse rounded-btn bg-surface" />
-            <div className="h-4 w-72 max-w-full animate-pulse rounded-btn bg-surface" />
+            <div className="mx-auto h-6 w-48 animate-pulse rounded-btn bg-surface lg:mx-0" />
+            <div className="mx-auto h-4 w-72 max-w-full animate-pulse rounded-btn bg-surface lg:mx-0" />
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
               <h1
                 className={[
                   'truncate text-section font-weight-strong font-display',
@@ -88,6 +96,13 @@ export function UserHeader({
               >
                 {user.displayName}
               </h1>
+              {hiveReputation != null ? (
+                <StatHoverTooltip content={t('steem_reputation')}>
+                  <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
+                    {hiveReputation.toFixed(2)}
+                  </span>
+                </StatHoverTooltip>
+              ) : null}
               <span
                 className={[
                   'text-body-sm',
@@ -101,14 +116,16 @@ export function UserHeader({
                   {t('guest')}
                 </span>
               ) : null}
-              <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
-                <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
-                  {user.wobjectsWeight.toFixed(2)}
-                </span>
-              </StatHoverTooltip>
             </div>
-            <p className="mt-1 line-clamp-2 text-body-sm text-muted">{user.bio}</p>
-            <p className="mt-2 text-caption text-muted">
+            {sidebar ? (
+              <UserProfileMobileHeroMeta sidebar={sidebar} />
+            ) : isHeroLoading ? (
+              <UserProfileMobileHeroMeta sidebar={LOADING_SIDEBAR_PLACEHOLDER} isLoading />
+            ) : null}
+            <p className="mt-1 hidden line-clamp-2 text-body-sm text-muted lg:block">
+              {user.bio}
+            </p>
+            <p className="mt-2 hidden text-caption text-muted lg:block">
               <StatHoverTooltip content={t('stat_user_followers_tooltip')}>
                 <span>
                   {user.followerCount} {t('followers')}
@@ -121,7 +138,7 @@ export function UserHeader({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 sm:pb-1">
+      <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end lg:pb-1">
         {!isHeroLoading && !isSameUser && !isGuest ? (
           <>
             <button
@@ -165,6 +182,41 @@ export function UserHeader({
           </button>
         ) : null}
       </div>
+
+      {sidebar ? (
+        <UserProfileMobileHeroDetails bio={user.bio} sidebar={sidebar} />
+      ) : isHeroLoading ? (
+        <UserProfileMobileHeroDetails
+          bio={user.bio}
+          sidebar={LOADING_SIDEBAR_PLACEHOLDER}
+          isLoading
+        />
+      ) : null}
     </div>
   );
 }
+
+const LOADING_SIDEBAR_PLACEHOLDER: UserAccountSidebarView = {
+  about: '',
+  location: null,
+  website: null,
+  email: null,
+  joinedAt: null,
+  expertiseWeight: 0,
+  lastActivityAt: null,
+  totalVoteValueUsd: 0,
+  socialLinks: [],
+  cryptoWallets: [],
+  waiv: {
+    upvotingManaPercent: 0,
+    downvotingManaPercent: 0,
+    voteValueUsd: 0,
+  },
+  hive: {
+    reputation: 25,
+    upvotingManaPercent: 0,
+    downvotingManaPercent: 0,
+    resourceCreditsPercent: 0,
+    voteValueUsd: 0,
+  },
+};

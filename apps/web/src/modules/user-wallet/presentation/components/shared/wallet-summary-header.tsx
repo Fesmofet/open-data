@@ -34,16 +34,18 @@ export function WalletSummaryHeader({
 }: WalletSummaryHeaderProps) {
   return (
     <div
-      className={`flex items-center gap-4 border-b border-border px-card-padding py-4 ${TONE_BG_CLASS[tone]}`}
+      className={`flex items-start gap-2 border-b border-border px-3 py-3 sm:gap-4 sm:px-card-padding sm:py-4 ${TONE_BG_CLASS[tone]}`}
     >
-      <div className="h-10 w-10 shrink-0" aria-hidden />
+      <div className="hidden h-10 w-10 shrink-0 sm:block" aria-hidden />
       <div className="min-w-0 flex-1">
-        <p className="text-body font-weight-strong text-fg">{title}</p>
-        <p className="text-body-sm text-muted">{subtitle}</p>
+        <p className="text-body font-weight-strong leading-snug text-fg">{title}</p>
+        <p className="mt-0.5 text-body-sm leading-snug text-muted">{subtitle}</p>
       </div>
-      <div className="flex shrink-0 flex-col items-end">
-        <p className="text-body-sm text-muted">{estAccountValueLabel}</p>
-        <p className="text-body font-weight-strong text-fg tabular-nums">
+      <div className="flex max-w-[42%] shrink-0 flex-col items-end text-right sm:max-w-none">
+        <p className="text-caption leading-snug text-muted sm:text-body-sm">
+          {estAccountValueLabel}
+        </p>
+        <p className="mt-0.5 text-body-sm font-weight-strong leading-snug text-fg tabular-nums sm:text-body">
           {estAccountValue}
         </p>
       </div>

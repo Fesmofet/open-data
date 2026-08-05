@@ -166,7 +166,7 @@ export function Story({
 
   return (
     <article
-      className="rounded-card border border-border bg-surface/80 p-card-padding shadow-whisper"
+      className="rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:p-card-padding"
       aria-labelledby={`story-title-${story.id}`}
       data-feed-tab={feedTab}
     >
@@ -177,7 +177,7 @@ export function Story({
         </p>
       ) : null}
 
-      <header className="flex gap-3">
+      <header className="flex items-start gap-2 sm:gap-3">
         <Link
           href={authorProfileHref}
           suppressHydrationWarning
@@ -189,39 +189,41 @@ export function Story({
             avatarUrl={story.authorAvatarUrl}
             displayName={displayAuthor}
             size={40}
+            className="max-sm:!h-9 max-sm:!w-9 max-sm:!min-h-9 max-sm:!min-w-9"
           />
         </Link>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <div className="flex min-w-0 items-center gap-1.5">
             <Link
               href={authorProfileHref}
               suppressHydrationWarning
-              className="font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className="truncate font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               {displayAuthor}
             </Link>
             {repLabel != null ? (
               <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
-                <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
+                <span className="shrink-0 rounded border border-border bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
                   {repLabel}
                 </span>
               </StatHoverTooltip>
             ) : null}
-            <span className="text-caption text-muted">·</span>
-            <time className="text-caption text-fg-tertiary" dateTime={displayTimeIso}>
-              {relativeLabel}
-            </time>
+          </div>
+          <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 text-caption text-fg-tertiary">
+            <time dateTime={displayTimeIso}>{relativeLabel}</time>
             {story.category ? (
               <>
-                <span className="text-caption text-muted">·</span>
-                <span className="text-caption text-fg-tertiary">{story.category}</span>
+                <span className="hidden text-muted sm:inline" aria-hidden>
+                  ·
+                </span>
+                <span className="hidden truncate sm:inline">{story.category}</span>
               </>
             ) : null}
           </div>
         </div>
         {taggedObjects.length > 0 ? (
           <ul
-            className="flex max-w-[10rem] shrink-0 flex-wrap content-start justify-end gap-1.5 sm:max-w-none"
+            className="flex max-w-[9.5rem] shrink-0 flex-nowrap items-start justify-end gap-1 overflow-x-auto scrollbar-hide sm:max-w-none sm:flex-wrap sm:gap-1.5"
             aria-label="Tagged objects"
           >
             {taggedObjects.map((o) => {
@@ -230,14 +232,14 @@ export function Story({
               const chipName = objectFields.name(o);
               const chipLabel = chipName ?? o.object_id;
               return (
-                <li key={o.object_id} className="list-none">
+                <li key={o.object_id} className="list-none shrink-0">
                   <ObjectPageLink
                     href={objectPagePath(o.object_id)}
                     title={chipLabel}
                     ariaLabel={`View object: ${chipLabel}`}
                     className="inline-flex rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
-                    <span className="flex size-10 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface-control">
+                    <span className="flex size-8 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface-control sm:size-10">
                       {chipImageSrc ? (
                         <Image
                           src={chipImageSrc}
@@ -313,7 +315,7 @@ export function Story({
               <h2
                 id={`story-title-${story.id}`}
                 className={[
-                  'text-body-lg font-weight-strong',
+                  'line-clamp-2 text-body-lg font-weight-strong leading-snug',
                   story.permalinkPath ? 'feed-story-title-link' : 'text-heading',
                 ]
                   .filter(Boolean)
@@ -336,7 +338,7 @@ export function Story({
                   : [
                       'rounded-btn border border-border bg-surface-control',
                       previewMediaLandscape
-                        ? 'relative w-full'
+                        ? 'relative aspect-video w-full overflow-hidden'
                         : 'relative flex w-full items-center justify-center',
                     ].join(' ')
               }
@@ -368,7 +370,13 @@ export function Story({
                   Preview unavailable
                 </div>
               ) : previewMediaDisplayUrl ? (
-                <div className={previewMediaLandscape ? 'relative w-full' : 'relative'}>
+                <div
+                  className={
+                    previewMediaLandscape
+                      ? 'relative size-full'
+                      : 'relative'
+                  }
+                >
                   <Image
                     src={previewMediaDisplayUrl}
                     alt=""
@@ -377,7 +385,7 @@ export function Story({
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className={
                       previewMediaLandscape
-                        ? 'block h-auto w-full object-contain'
+                        ? 'block size-full object-cover'
                         : 'block h-auto w-auto max-w-full object-contain'
                     }
                     style={

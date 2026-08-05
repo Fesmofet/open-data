@@ -1,19 +1,68 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import {
+  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
+  HORIZONTAL_TAB_NAV_SUB_ROW_CLASS,
+  horizontalTabNavScrollShellClass,
+} from '@/shared/presentation/layout';
 
 import type { UserMenuRows } from './user-menu';
 import { getSubmenuVariant } from './user-profile-subnav';
 import { useEffectiveProfileNav } from './user-profile-pending-nav-context';
 
-const PRIMARY_NAV_SKELETON_CLASS =
-  'flex flex-wrap items-end gap-x-2 gap-y-1';
-
-const SUB_NAV_SKELETON_CLASS =
-  'flex flex-wrap items-end gap-x-2 gap-y-1 border-b border-border';
-
 const TAB_SKELETON_CLASS =
-  'inline-flex h-10 min-w-[3.5rem] animate-pulse border-b-2 border-transparent px-3 py-2.5';
+  'inline-flex h-10 min-w-[3.5rem] shrink-0 animate-pulse border-b-2 border-transparent px-3 py-2.5';
+
+function NavSkeletonRow({
+  rowClass,
+  count,
+  ariaLabel,
+  ariaHidden,
+}: {
+  rowClass: string;
+  count: number;
+  ariaLabel?: string;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <nav
+      className={rowClass}
+      aria-label={ariaLabel}
+      aria-hidden={ariaHidden}
+      aria-busy="true"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={TAB_SKELETON_CLASS} />
+      ))}
+    </nav>
+  );
+}
+
+function NavSkeletonShell({
+  rowClass,
+  bleed,
+  count,
+  ariaLabel,
+  ariaHidden,
+}: {
+  rowClass: string;
+  bleed: 'gutter' | 'card';
+  count: number;
+  ariaLabel?: string;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <div className={horizontalTabNavScrollShellClass(bleed)}>
+      <NavSkeletonRow
+        rowClass={rowClass}
+        count={count}
+        ariaLabel={ariaLabel}
+        ariaHidden={ariaHidden}
+      />
+    </div>
+  );
+}
 
 /**
  * Placeholder shown while UserMenu loads (client-only to avoid pathname SSR mismatch).
@@ -31,47 +80,43 @@ export function UserMenuSkeleton({ rows = 'all' }: { rows?: UserMenuRows }) {
       return null;
     }
     return (
-      <nav className={SUB_NAV_SKELETON_CLASS} aria-hidden="true" aria-busy="true">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className={TAB_SKELETON_CLASS} />
-        ))}
-      </nav>
+      <NavSkeletonShell
+        rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+        bleed="card"
+        count={5}
+        ariaHidden
+      />
     );
   }
 
   if (rows === 'primary') {
     return (
-      <nav
-        className={PRIMARY_NAV_SKELETON_CLASS}
-        aria-label={t('user_profile_nav_aria')}
-        aria-busy="true"
-      >
-        {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className={TAB_SKELETON_CLASS} />
-        ))}
-      </nav>
+      <NavSkeletonShell
+        rowClass={HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS}
+        bleed="gutter"
+        count={9}
+        ariaLabel={t('user_profile_nav_aria')}
+      />
     );
   }
 
   return (
     <div className="flex min-w-0 flex-col">
       {showPrimaryRow ? (
-        <nav
-          className={PRIMARY_NAV_SKELETON_CLASS}
-          aria-label={t('user_profile_nav_aria')}
-          aria-busy="true"
-        >
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className={TAB_SKELETON_CLASS} />
-          ))}
-        </nav>
+        <NavSkeletonShell
+          rowClass={HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS}
+          bleed="gutter"
+          count={9}
+          ariaLabel={t('user_profile_nav_aria')}
+        />
       ) : null}
       {showSubRow ? (
-        <nav className={SUB_NAV_SKELETON_CLASS} aria-hidden="true">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className={TAB_SKELETON_CLASS} />
-          ))}
-        </nav>
+        <NavSkeletonShell
+          rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+          bleed="card"
+          count={5}
+          ariaHidden
+        />
       ) : null}
     </div>
   );

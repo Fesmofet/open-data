@@ -33,6 +33,16 @@ export type { CenteredArticleProps } from './arrangements/centered-article';
 
 export { PROFILE_RAIL_STICKY_CLASS, PROFILE_FILTER_RAIL_STICKY_CLASS } from './profile-filter-rail-classes';
 
+export {
+  HORIZONTAL_TAB_NAV_SCROLL_CLASS,
+  HORIZONTAL_TAB_NAV_ROW_CLASS,
+  HORIZONTAL_TAB_NAV_GUTTER_BLEED_CLASS,
+  HORIZONTAL_TAB_NAV_CARD_BLEED_CLASS,
+  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
+  HORIZONTAL_TAB_NAV_SUB_ROW_CLASS,
+  horizontalTabNavScrollShellClass,
+} from './horizontal-tab-nav-classes';
+
 export { LayoutProvider, useLayoutContext } from './context/layout-context';
 export type { LayoutContextValue, ContentArrangement } from './context/layout-context';
 

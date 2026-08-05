@@ -94,7 +94,7 @@ function RatingsGrid({
       className={
         compact
           ? 'mt-1.5 flex min-w-0 items-center gap-1.5'
-          : 'mt-2 grid grid-cols-2 gap-x-4 gap-y-1'
+          : 'mt-2 grid grid-cols-1 gap-y-1.5 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-1'
       }
     >
       {dims.map(
@@ -104,7 +104,7 @@ function RatingsGrid({
             className={
               compact
                 ? 'flex min-w-0 flex-col items-start gap-0.5'
-                : 'flex min-w-0 items-center gap-1.5'
+                : 'flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-1.5'
             }
           >
             <StarRating
@@ -120,7 +120,7 @@ function RatingsGrid({
               size="sm"
               showNumeric={false}
             />
-            <span className="truncate text-caption text-fg-secondary">{dimension}</span>
+            <span className="max-w-full text-caption text-fg-secondary sm:truncate">{dimension}</span>
           </div>
         ),
       )}
@@ -171,6 +171,7 @@ export function ObjectCard({
 }: ObjectCardProps) {
   const editorRow = layout === 'editorRow';
   const mapSidebar = layout === 'mapSidebar';
+  const stackedMobile = layout === 'default';
   const thumbSize = editorRow ? 72 : mapSidebar ? MAP_SIDEBAR_THUMB_SIZE : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
@@ -208,7 +209,9 @@ export function ObjectCard({
     'relative list-none border-[0.5px] border-border bg-surface-control/40 shadow-whisper',
     mapSidebar
       ? 'rounded-card py-card-padding pe-card-padding ps-gutter sm:ps-gutter-sm'
-      : 'rounded-card p-card-padding',
+      : stackedMobile
+        ? 'rounded-card p-3 sm:p-card-padding'
+        : 'rounded-card p-card-padding',
     navPending ? 'opacity-90' : '',
   ]
     .filter(Boolean)
@@ -247,8 +250,13 @@ export function ObjectCard({
       <div
         className={[
           'flex gap-3',
-          showHeart || userWeight != null ? 'pe-8' : '',
-          trailing ? 'items-start' : '',
+          stackedMobile ? 'flex-col sm:flex-row sm:items-start' : '',
+          showHeart || userWeight != null
+            ? stackedMobile
+              ? 'sm:pe-8'
+              : 'pe-8'
+            : '',
+          trailing && !stackedMobile ? 'items-start' : '',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -259,11 +267,19 @@ export function ObjectCard({
           onNavigate={onNavigate}
           onPendingChange={onNavPendingChange}
           ariaLabel={`View object: ${titleLabel}`}
-          className="shrink-0 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className={[
+            'rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+            stackedMobile ? 'w-full shrink-0 sm:w-auto' : 'shrink-0',
+          ].join(' ')}
         >
           <span
-            className="flex items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt"
-            style={{ width: thumbSize, height: thumbSize }}
+            className={[
+              'flex items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt',
+              stackedMobile ? 'aspect-[4/3] w-full sm:aspect-auto sm:size-[120px]' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            style={stackedMobile ? undefined : { width: thumbSize, height: thumbSize }}
           >
             {thumbUrl ? (
               <Image
@@ -295,11 +311,27 @@ export function ObjectCard({
             linkReplace={linkReplace}
             onNavigate={onNavigate}
             onPendingChange={onNavPendingChange}
-            className="max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className={[
+              'max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+              stackedMobile ? 'line-clamp-2 sm:line-clamp-none' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             {titleLabel}
           </CardNavTarget>
-          {subtitle ? <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p> : null}
+          {subtitle ? (
+            <p
+              className={[
+                'mt-0.5 text-caption text-fg-secondary',
+                stackedMobile ? 'line-clamp-2 sm:line-clamp-none' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {subtitle}
+            </p>
+          ) : null}
           {!editorRow ? (
             <RatingsGrid
               dims={visibleRatingDims}
@@ -313,7 +345,11 @@ export function ObjectCard({
             <p
               className={[
                 'text-body-sm leading-body text-fg',
-                mapSidebar ? 'mt-1.5 line-clamp-2' : 'mt-2',
+                mapSidebar
+                  ? 'mt-1.5 line-clamp-2'
+                  : stackedMobile
+                    ? 'mt-2 line-clamp-3 sm:line-clamp-none'
+                    : 'mt-2',
               ].join(' ')}
             >
               {description}
