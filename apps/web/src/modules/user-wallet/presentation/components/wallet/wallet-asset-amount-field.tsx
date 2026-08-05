@@ -5,6 +5,7 @@ import { useId } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
+import { WalletSelectChevron } from '../shared/wallet-select-chevron';
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
 import { WalletSearchableAssetSelect } from './wallet-searchable-asset-select';
 
@@ -109,25 +110,28 @@ export function WalletAssetAmountField<T extends string>({
               showLabelOnTrigger={showLabelOnTrigger}
             />
           ) : (
-          <select
-            aria-label={t('object_edit_wallet_symbol')}
-            className="max-w-[9rem] shrink-0 border-0 border-l border-border bg-surface px-2 py-2 text-body-sm text-fg outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
-            value={asset}
-            disabled={assetDisabled || options.length <= 1}
-            onChange={(e) => onAssetChange(e.target.value as T)}
-          >
-            {options.length === 0 ? (
-              <option value={asset}>{asset || '…'}</option>
-            ) : (
-              options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {showBalanceInAssetSelect
-                    ? `${option.label} (${formatWalletModalBalanceDisplay(option.balance)})`
-                    : option.label}
-                </option>
-              ))
-            )}
-          </select>
+          <div className="relative max-w-[9rem] shrink-0 border-l border-border">
+            <select
+              aria-label={t('object_edit_wallet_symbol')}
+              className="w-full appearance-none border-0 bg-surface py-2 pl-2 pr-7 text-body-sm text-fg outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
+              value={asset}
+              disabled={assetDisabled || options.length <= 1}
+              onChange={(e) => onAssetChange(e.target.value as T)}
+            >
+              {options.length === 0 ? (
+                <option value={asset}>{asset || '…'}</option>
+              ) : (
+                options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {showBalanceInAssetSelect
+                      ? `${option.label} (${formatWalletModalBalanceDisplay(option.balance)})`
+                      : option.label}
+                  </option>
+                ))
+              )}
+            </select>
+            <WalletSelectChevron className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" />
+          </div>
           )}
         </div>
       </div>

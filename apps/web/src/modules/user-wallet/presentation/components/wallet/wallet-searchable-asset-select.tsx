@@ -14,6 +14,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { APP_MODAL_Z_INDEX } from '@/shared/presentation';
 
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
+import { WalletSelectChevron } from '../shared/wallet-select-chevron';
 import type { WalletAssetAmountOption } from './wallet-asset-amount-field';
 
 const DROPDOWN_GAP_PX = 4;
@@ -207,7 +208,7 @@ export function WalletSearchableAssetSelect<T extends string>({
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="max-w-[9rem] shrink-0 border-0 border-l border-border bg-surface px-2 py-2 text-body-sm text-fg outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex max-w-[9rem] shrink-0 items-center gap-1 border-0 border-l border-border bg-surface py-2 pl-2 pr-1.5 text-body-sm text-fg outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={disabled || options.length === 0}
         onClick={() => {
           if (disabled || options.length === 0) {
@@ -216,9 +217,12 @@ export function WalletSearchableAssetSelect<T extends string>({
           setOpen((current) => !current);
         }}
       >
-        {showLabelOnTrigger
-          ? (selected?.label ?? value) || '…'
-          : (selected?.value ?? value) || '…'}
+        <span className="min-w-0 truncate">
+          {showLabelOnTrigger
+            ? (selected?.label ?? value) || '…'
+            : (selected?.value ?? value) || '…'}
+        </span>
+        <WalletSelectChevron className="shrink-0 text-muted" />
       </button>
       {menu}
     </>

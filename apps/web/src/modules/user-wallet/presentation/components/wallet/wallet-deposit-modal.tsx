@@ -14,6 +14,7 @@ import {
 import type { WalletDepositModalState } from '../../../domain/wallet-modal-types';
 import { isHiveL1TransferAsset } from '../../../domain/wallet-modal-types';
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
+import { WalletSelectChevron } from '../shared/wallet-select-chevron';
 import { useWalletModal } from './wallet-modal-context';
 import { useDepositInstructionBroadcast } from '../../hooks/use-deposit-instruction-broadcast';
 
@@ -273,18 +274,21 @@ export function WalletDepositModal({
             <p className="text-body-sm font-weight-strong text-fg">
               1. {t('wallet_deposit_step_asset')}
             </p>
-            <select
-              className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body"
-              value={symbol}
-              disabled={listLoading || !depositList?.tokens.length}
-              onChange={(e) => setSymbol(e.target.value)}
-            >
-              {(depositList?.tokens ?? []).map((item) => (
-                <option key={item.symbol} value={item.symbol}>
-                  {item.displayName} ({item.symbol})
-                </option>
-              ))}
-            </select>
+            <div className="relative mt-2">
+              <select
+                className="w-full appearance-none rounded-btn border border-border bg-bg py-2 pl-3 pr-9 text-body"
+                value={symbol}
+                disabled={listLoading || !depositList?.tokens.length}
+                onChange={(e) => setSymbol(e.target.value)}
+              >
+                {(depositList?.tokens ?? []).map((item) => (
+                  <option key={item.symbol} value={item.symbol}>
+                    {item.displayName} ({item.symbol})
+                  </option>
+                ))}
+              </select>
+              <WalletSelectChevron className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+            </div>
           </div>
 
           <div>
