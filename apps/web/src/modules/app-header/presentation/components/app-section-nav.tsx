@@ -67,7 +67,7 @@ export function AppSectionNav() {
         <div className={horizontalTabNavScrollShellClass('gutter')}>
           <nav
             aria-label={t('app_section_nav_aria')}
-            className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} justify-start`}
+            className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} w-max justify-start md:w-full md:justify-center`}
           >
             {TABS.map((tab) => {
               const active = tab.isActive(pathname);
