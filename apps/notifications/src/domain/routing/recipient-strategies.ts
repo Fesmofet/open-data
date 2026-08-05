@@ -72,6 +72,7 @@ export class DirectRecipientStrategy implements RecipientStrategy {
       case 'engine_cancel_unstake':
         return [event.payload.account];
       case 'engine_delegate':
+        return [event.payload.to];
       case 'engine_undelegate':
         return event.actor ? [event.actor] : [event.payload.from];
       default:

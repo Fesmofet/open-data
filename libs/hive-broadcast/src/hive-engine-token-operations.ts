@@ -31,6 +31,13 @@ export type HiveEngineTokensDelegatePayload = {
   readonly to: string;
 };
 
+export type HiveEngineTokensUndelegatePayload = {
+  readonly symbol: string;
+  readonly quantity: string;
+  /** Account that previously received the delegation. */
+  readonly from: string;
+};
+
 export type HiveEngineTokensTransferPayload = {
   readonly symbol: string;
   readonly quantity: string;
@@ -49,6 +56,7 @@ export type BuildHiveEngineTokensOpInput = {
     | HiveEngineTokensStakePayload
     | HiveEngineTokensQuantityPayload
     | HiveEngineTokensDelegatePayload
+    | HiveEngineTokensUndelegatePayload
     | HiveEngineTokensTransferPayload
     | HiveEngineTokensSymbolPayload;
 };
@@ -75,10 +83,13 @@ function buildContractPayload(
       const p = payload as HiveEngineTokensSymbolPayload;
       return { symbol: p.symbol };
     }
-    case 'delegate':
-    case 'undelegate': {
+    case 'delegate': {
       const p = payload as HiveEngineTokensDelegatePayload;
       return { to: p.to, symbol: p.symbol, quantity: p.quantity };
+    }
+    case 'undelegate': {
+      const p = payload as HiveEngineTokensUndelegatePayload;
+      return { from: p.from, symbol: p.symbol, quantity: p.quantity };
     }
     case 'transfer': {
       const p = payload as HiveEngineTokensTransferPayload;

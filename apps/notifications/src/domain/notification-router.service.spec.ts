@@ -47,6 +47,13 @@ describe('NotificationRouterService', () => {
     enqueueMany: jest.fn(),
   } as unknown as TelegramNotificationService;
 
+  const hiveGlobalProperties = {
+    getChainContextFields: jest.fn().mockResolvedValue({
+      totalVestingShares: '1000000000 VESTS',
+      totalVestingFundSteem: '500000 HIVE',
+    }),
+  };
+
   let router: NotificationRouterService;
 
   function audienceOf(
@@ -73,6 +80,7 @@ describe('NotificationRouterService', () => {
       new NotificationSettingsService(),
       audienceService,
       telegramNotification,
+      hiveGlobalProperties as never,
     );
   });
 
@@ -220,6 +228,29 @@ describe('NotificationRouterService', () => {
 
     expect(feedService.addManyToFeed).not.toHaveBeenCalled();
     expect(audienceService.load).toHaveBeenCalledTimes(1);
+  });
+
+  it('enriches hive power_up before writing feed', async () => {
+    (recipientRegistry.resolveRecipients as jest.Mock).mockResolvedValue(['wiv01']);
+    (audienceService.load as jest.Mock).mockResolvedValue(audienceOf(['wiv01']));
+
+    await router.route({
+      type: 'power_up',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: 't',
+      objectId: null,
+      actor: 'wiv01',
+      payload: { from: 'wiv01', to: 'wiv01', amount: '0.001' },
+    });
+
+    expect(hiveGlobalProperties.getChainContextFields).toHaveBeenCalled();
+    const item = (feedService.addManyToFeed as jest.Mock).mock.calls[0][0][0].item;
+    expect(item.payload).toEqual({
+      from: 'wiv01',
+      to: 'wiv01',
+      amount: '0.001 HIVE',
+    });
   });
 
   it('notifies trx subscribers', async () => {

@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import { NotificationFeedService } from './notification-feed.service';
+import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
+import {
+  enrichHiveWalletNotificationEvent,
+  needsHiveWalletEnrichment,
+} from './hive-wallet-notification-enricher.service';
 import { RecipientStrategyRegistry } from './routing/recipient-strategies';
 import { NotificationAudienceService } from './settings/notification-audience.service';
 import { NotificationSettingsService } from './settings/notification-settings.service';
@@ -30,6 +35,7 @@ export class NotificationRouterService {
     private readonly settingsService: NotificationSettingsService,
     private readonly audienceService: NotificationAudienceService,
     private readonly telegramNotification: TelegramNotificationService,
+    private readonly hiveGlobalProperties: HiveGlobalPropertiesCache,
   ) {}
 
   async route(event: AnyNotificationEvent): Promise<void> {
@@ -69,7 +75,15 @@ export class NotificationRouterService {
     const feedEntries: { username: string; item: UserNotificationItem }[] = [];
     const telegramRequests: TelegramEnqueueRequest[] = [];
 
+    const chainContext = needsHiveWalletEnrichment(routable)
+      ? await this.hiveGlobalProperties.getChainContextFields()
+      : null;
+
     for (const { event, recipients } of resolved) {
+      const displayEvent =
+        chainContext != null
+          ? enrichHiveWalletNotificationEvent(event, chainContext)
+          : event;
       let item: UserNotificationItem | null = null;
       for (const username of recipients) {
         const settings = audience.settingsByAccount.get(username);
@@ -81,14 +95,14 @@ export class NotificationRouterService {
         ) {
           continue;
         }
-        item ??= this.feedService.buildItemFromEvent(event);
+        item ??= this.feedService.buildItemFromEvent(displayEvent);
         feedEntries.push({ username, item });
         const chatIds = audience.chatIdsByAccount.get(username);
         if (chatIds && chatIds.length > 0) {
           telegramRequests.push({
             account: username,
             chatIds,
-            event,
+            event: displayEvent,
             itemId: item.id,
           });
         }

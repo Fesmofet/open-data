@@ -47,7 +47,32 @@ describe('buildHiveEngineTokensOp', () => {
       contractAction: 'delegate',
       payload: { symbol: 'WAIV', quantity: '2.000', to: 'bob' },
     });
-    expect(JSON.parse(op.json).contractAction).toBe('delegate');
+    expect(JSON.parse(op.json)).toEqual({
+      contractName: 'tokens',
+      contractAction: 'delegate',
+      contractPayload: { to: 'bob', symbol: 'WAIV', quantity: '2.000' },
+    });
+  });
+
+  it('builds undelegate op with from field', () => {
+    const op = buildHiveEngineTokensOp({
+      account: 'alice',
+      contractAction: 'undelegate',
+      payload: {
+        symbol: 'WAIV',
+        from: 'flowmaster',
+        quantity: '0.00200000',
+      },
+    });
+    expect(JSON.parse(op.json)).toEqual({
+      contractName: 'tokens',
+      contractAction: 'undelegate',
+      contractPayload: {
+        from: 'flowmaster',
+        symbol: 'WAIV',
+        quantity: '0.00200000',
+      },
+    });
   });
 
   it('builds unstake and cancelUnstake ops', () => {

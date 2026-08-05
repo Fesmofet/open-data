@@ -112,14 +112,14 @@ export function WalletManageDelegationsModal({
   const pending = engineBroadcast.pending || hiveBroadcast.pending;
   const error = engineBroadcast.error ?? hiveBroadcast.error;
 
-  const onUndelegateWaiv = async (to: string, quantity: string) => {
+  const onUndelegateWaiv = async (delegateeAccount: string, quantity: string) => {
     const parsed = Number.parseFloat(quantity);
     const quantityPayload = Number.isFinite(parsed)
       ? formatEngineTokenQuantity(parsed)
       : quantity;
     const ok = await engineBroadcast.broadcast('undelegate', {
       symbol: 'WAIV',
-      to,
+      from: delegateeAccount,
       quantity: quantityPayload,
     });
     if (ok) {

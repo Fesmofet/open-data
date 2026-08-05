@@ -17,6 +17,7 @@ import {
 } from './routing/recipient-strategies';
 import { NotificationAudienceService } from './settings/notification-audience.service';
 import { NotificationSettingsService } from './settings/notification-settings.service';
+import { HiveGlobalPropertiesCache } from './hive-global-properties.cache';
 import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
@@ -39,6 +40,7 @@ import { TelegramModule } from '../telegram/telegram.module';
     RecipientStrategyRegistry,
     NotificationSettingsService,
     NotificationAudienceService,
+    HiveGlobalPropertiesCache,
   ],
   exports: [NotificationRouterService, NotificationFeedService],
 })

@@ -9,6 +9,7 @@ export {
   type BuildHiveEngineTokensOpInput,
   type HiveEngineTokensContractAction,
   type HiveEngineTokensDelegatePayload,
+  type HiveEngineTokensUndelegatePayload,
   type HiveEngineTokensQuantityPayload,
   type HiveEngineTokensStakePayload,
   type HiveEngineTokensSymbolPayload,

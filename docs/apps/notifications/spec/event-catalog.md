@@ -69,7 +69,8 @@ Emitted from **hive-engine-parser** (e.g. WAIV stake parser): `engine_transfer`,
 |------|-------------------|-------------------|
 | `engine_stake` | WAIV power up (stake) | `payload.to` |
 | `engine_unstake` | WAIV power down initiation (`unstakeStart` or payload fallback) | `payload.account` (initiator) |
-| `engine_delegate` / `engine_undelegate` | WAIV delegation flows | `actor` (transaction sender) |
+| `engine_delegate` | WAIV delegation to account | `payload.to` (delegatee) |
+| `engine_undelegate` | WAIV undelegation flow | `actor` (transaction sender) |
 | `engine_transfer` | WAIV transfer | `payload.to` |
 
 ## Objects (ODL)
