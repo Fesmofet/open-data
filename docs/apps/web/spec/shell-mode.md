@@ -29,7 +29,7 @@ On routes **outside** the user profile feature, shell mode still applies **CSS t
 | `apps/web/src/shell-mode/server.ts` | `getServerShellModeResolution()` — import from server/layout only (cookie + headers) |
 | `apps/web/src/shell-mode/types.ts` | `ShellModeId`, `ShellModePreference`, `ShellModeResolution` |
 | `apps/web/src/shell-mode/shell-mode-registry.ts` | Human `label` and `description` per mode |
-| `apps/web/src/shell-mode/shell-mode-features.ts` | `shouldHideHero`, `shouldUsePostGrid`, `getVisibleMenuKeys`, `shouldCenterMenu` |
+| `apps/web/src/shell-mode/shell-mode-features.ts` | `shouldHideHeroOnDesktop`, `shouldUsePostGrid`, `getDesktopMenuKeys`, `HIDDEN_ON_DESKTOP_CLASS` |
 | `apps/web/src/shell-mode/resolve-shell-mode.ts` | Pure `resolveShellMode()` |
 | `apps/web/src/shell-mode/shell-mode-cookie.constants.ts` | Cookie name `app_shell_mode`, Zod schema, max-age |
 | `apps/web/src/shell-mode/shell-mode-cookie.ts` | Server read/write for the cookie |
@@ -45,8 +45,8 @@ On routes **outside** the user profile feature, shell mode still applies **CSS t
 | Mode | Effect (defaults; see `theme.css`) |
 | ---- | ----------------------------------- |
 | `default` | Base theme shell tokens (no extra block). |
-| `twitter` | Wider right rail; `--spacing-card` slightly tighter than default. On **user profile** routes, **no profile hero card** (`UserHeader` + horizontal menu are not rendered); the same `UserMenu` appears **vertically** in the left rail (see below). |
-| `instagram` | No left/right profile rails (full-width main). Small card gap. On the profile **posts** tab, posts use a **square image preview grid** with **6 columns from 1024px** viewport up; column rules live in `theme.css` (`.instagram-post-grid`, `.shell-profile-grid`). **`UserMenu`** shows only **Posts** and **Wallet** (feed sub-tabs hidden; wallet sub-tabs unchanged). |
+| `twitter` | Wider right rail; `--spacing-card` slightly tighter than default (**desktop only**). On **user profile** routes (desktop), **no profile hero band** — hero hidden with `lg:hidden`; the same `UserMenu` appears **vertically** in the left rail (see below). On mobile, twitter mode renders like **default** (full hero + horizontal nav). |
+| `instagram` | No left/right profile rails on desktop (full-width main). Small card gap on desktop. Post preview **grid** at all viewports when posts tab is active. On desktop, **`UserMenu`** shows only **Posts** and **Wallet** (feed sub-tabs hidden via `lg:hidden`; wallet sub-tabs unchanged). Mobile shows full primary nav including **About**. |
 | `compact` | **CSS-only** token changes (denser rails and card rhythm). **No** profile component-level behavioral overrides — same components as `default`. |
 
 ## CSS class inventory (profile / shell)
@@ -59,7 +59,20 @@ On routes **outside** the user profile feature, shell mode still applies **CSS t
 | `.shell-hide-instagram` | Elements hidden in Instagram mode (side rails). |
 | `.instagram-post-grid` | Post preview grid: column counts and 1px gap (see `theme.css` breakpoints). |
 
-Instagram layout overrides use **`html[data-shell-mode='instagram'] …`** selectors so they **outrank** conflicting Tailwind utilities without `!important`.
+Instagram layout overrides use **`html[data-shell-mode='instagram'] …`** selectors so they **outrank** conflicting Tailwind utilities without `!important`. Chrome overrides (rails, grid collapse, token changes) are gated at **`@media (min-width: 1024px)`** in `theme.css`; content rules (`.instagram-post-grid`) apply at all viewports.
+
+## Viewport scope
+
+Shell mode is a **desktop chrome** concept. Below **`lg` (1024px)** every mode renders with **default** chrome (hero, horizontal nav, no rail swaps, default spacing tokens). The cookie still sets `data-shell-mode` on `<html>` at all widths — only the **effects** are gated.
+
+| Layer | Gated at lg+? | Examples |
+| ----- | ------------- | -------- |
+| **Chrome** (rails, hero hide, nav filter, spacing tokens) | Yes — CSS in `@media (min-width: 1024px)` and JS via `HIDDEN_ON_DESKTOP_CLASS` (`lg:hidden`) | twitter hero hide, instagram rail hide, `getDesktopMenuKeys` |
+| **Content** (different component tree or presentation) | No — intentional | `shouldUsePostGrid` → `FeedPostGrid`, `.instagram-post-grid` column rules |
+
+**Rationale:** Shell mode is a user preference stored in a cookie; viewport width is automatic. Gating chrome at `lg` prevents mobile users who chose twitter/instagram on desktop from losing hero and nav on their phone.
+
+**Adding a new mode:** Chrome overrides belong inside the `@media (min-width: 1024px)` block in `theme.css`. Content-level behavior may stay ungated — document which category each rule falls into.
 
 ## Persistence and resolution
 
@@ -69,14 +82,14 @@ Instagram layout overrides use **`html[data-shell-mode='instagram'] …`** selec
 
 ## JS vs CSS visibility (rationale)
 
-- **Twitter / Instagram side rails** — Toggled with **CSS** (`.shell-hide-twitter` / `.shell-show-twitter`, `.shell-hide-instagram`) so switching mode updates the shell **without** a navigation and without branching which subtree mounts on the server.
-- **Twitter profile hero** — **`UserHero` returns `null`** when `shouldHideHero(mode)` is true, so the heavy subtree (cover, avatar, stats) is **not** rendered. That is a deliberate **performance** trade-off vs wrapping the hero in a CSS-hidden container.
-- **Instagram post grid vs Story list** — **`BlogFeedPostsList`** branches in **JS** (`shouldUsePostGrid`) because the component trees differ (`FeedPostGrid` vs `FeedList`).
-- **Instagram primary nav filter** — **`UserMenu`** uses **`getVisibleMenuKeys`** in JS because it filters link data, not just visibility.
+- **Twitter / Instagram side rails** — Toggled with **CSS** (`.shell-hide-twitter` / `.shell-show-twitter`, `.shell-hide-instagram`) so switching mode updates the shell **without** a navigation. Rail swap rules apply **from lg up** only.
+- **Twitter profile hero** — **`UserHero` / `ObjectHero`** apply **`HIDDEN_ON_DESKTOP_CLASS`** (`lg:hidden`) when `shouldHideHeroOnDesktop(mode)` is true. The subtree stays mounted (cover uses `priority={false}` on desktop twitter). Modals portaled via `ModalShell` remain usable.
+- **Instagram post grid vs Story list** — **`BlogFeedPostsList`** branches in **JS** (`shouldUsePostGrid`) because the component trees differ (`FeedPostGrid` vs `FeedList`). Content-level — not viewport-gated.
+- **Instagram primary nav filter** — **`UserMenu`** uses **`getDesktopMenuKeys`** + `HIDDEN_ON_DESKTOP_CLASS` on links outside the desktop set. Mobile always shows the full nav (including `mobileOnly` items such as About).
 
-## Twitter profile: no hero + CSS visibility (single menu)
+## Twitter profile: no hero on desktop + CSS visibility (single menu)
 
-`UserHero` returns **`null`** when **`shouldHideHero(resolvedMode)`** — no profile header (avatar, stats, bio) and no horizontal hero menu.
+`UserHero` applies **`lg:hidden`** when **`shouldHideHeroOnDesktop(resolvedMode)`** — on desktop twitter, no profile header band; on mobile, hero and horizontal menu render normally.
 
 Profile shells still render **both** the default left sidebar and the vertical `UserMenu` rail; visibility is toggled with classes defined in `theme.css`:
 
@@ -91,7 +104,7 @@ Profile `(main)` layout uses **`shell-profile-grid`**: when mode is `instagram`,
 
 `BlogFeedPostsList` (posts tab) renders `FeedPostGrid` when **`shouldUsePostGrid(resolvedMode)`** and the posts tab are active. The grid uses **`theme.css`** for `grid-template-columns` (2 → 3 → 4 → **6** from the `1024px` breakpoint) and **1px** gap so column counts track the wide main area.
 
-`UserMenu` uses **`getVisibleMenuKeys(resolvedMode)`**: in Instagram mode, primary links are limited to **`feed`** (Posts) and **`transfers`** (Wallet); the feed secondary row (threads, comments, …) is omitted. Horizontal nav rows use **`justify-center`** when **`shouldCenterMenu(resolvedMode)`** (not applied to the vertical Twitter rail).
+`UserMenu` uses **`getDesktopMenuKeys(resolvedMode)`**: in Instagram mode on desktop, primary links outside **`feed`** and **`transfers`** get **`lg:hidden`**; feed secondary row gets the same. Mobile shows all primary links.
 
 ## Writing shell-aware components
 
@@ -101,8 +114,8 @@ Build profile and feed UI so new shell presets and refactors stay localized: **o
 
 | Approach | When to use |
 | -------- | ----------- |
-| **CSS** (`.shell-hide-<mode>` / `.shell-show-<mode>`) | Same component subtree in every mode; you only need show/hide. Toggle is instant and does not change what React mounts. |
-| **JS** (`return null`, conditional render, filtered data) | Different component trees (`FeedPostGrid` vs `FeedList`), heavy hidden subtree that should not mount (`UserHero`), or filtering links/data (`UserMenu`). |
+| **CSS** (`.shell-hide-<mode>` / `.shell-show-<mode>`, `HIDDEN_ON_DESKTOP_CLASS`) | Same component subtree; show/hide only. Prefer for shell-mode chrome (desktop-gated in CSS or via `lg:hidden`). |
+| **JS** (conditional render, different trees) | Different component trees (`FeedPostGrid` vs `FeedList`). Do **not** use `return null` for shell-mode chrome that must stay visible on mobile. |
 
 For Instagram-specific layout overrides that must beat Tailwind utilities on the same element, use **`html[data-shell-mode='instagram'] …`** in `theme.css` (see existing `.shell-profile-grid` / `.instagram-post-grid` rules).
 
@@ -112,7 +125,7 @@ For Instagram-specific layout overrides that must beat Tailwind utilities on the
 2. **`useShellMode()`** — client components only (`'use client'`). Server Components do not read shell cookie; they rely on CSS tokens and markup that client children adjust.
 3. **No raw mode strings** — use existing helpers in `shell-mode-features.ts` or add a new exported function there; do not compare `resolvedMode === 'twitter'` in feature files.
 4. **Structural tokens** — profile grids should use `var(--shell-left-width)`, `var(--shell-right-width)`, `gap-card-padding` / `--spacing-card` patterns so `[data-shell-mode='…']` blocks in `theme.css` apply without per-component hacks.
-5. **New CSS visibility classes** — name them `shell-hide-<mode>` / `shell-show-<mode>` (or existing profile classes like `shell-profile-grid`), define behavior under `[data-shell-mode='<mode>']` in `theme.css`, and document them in the [CSS class inventory](#css-class-inventory-profile--shell) above.
+5. **New CSS visibility classes** — name them `shell-hide-<mode>` / `shell-show-<mode>` (or existing profile classes like `shell-profile-grid`). **Chrome** overrides go inside `@media (min-width: 1024px) { [data-shell-mode='<mode>'] … }` in `theme.css`; **content-level** rules (e.g. `.instagram-post-grid`) may stay ungated. Document new classes in the [CSS class inventory](#css-class-inventory-profile--shell) above.
 
 ### Examples
 
@@ -142,7 +155,7 @@ return <FeedList items={items} feedTab={feedTab} />;
 1. **Types** — Add the id to `ShellModeId` / Zod enum in `shell-mode-cookie.constants.ts`.
 2. **Registry** — Add `label` / `description` in `shell-mode-registry.ts`.
 3. **Features** — If profile behavior differs, extend `shell-mode-features.ts` and consume from components.
-4. **CSS** — Add `[data-shell-mode='<id>'] { … }` in `theme.css` with the structural variables to override (`--shell-left-width`, `--shell-right-width`, `--spacing-card`, etc.).
+4. **CSS** — Add chrome overrides inside `@media (min-width: 1024px) { [data-shell-mode='<id>'] { … } }` in `theme.css`. Content-level rules may stay ungated.
 
 No component changes are required if layouts already use those tokens and no new profile behavior is needed.
 

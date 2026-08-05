@@ -45,11 +45,12 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
 
-    // Uncomment for mobile browsers support
-    /* {
+    {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
+
+    /* Optional — Mobile Safari
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },

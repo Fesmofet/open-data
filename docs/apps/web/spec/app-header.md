@@ -55,7 +55,7 @@ The profile control uses the public path `/@:name`. Rewrites: [routing-proxy.md]
 
 ## Shell mode
 
-Global header does **not** use profile-only helpers (`shouldHideHero`, etc.). It relies on shared structural tokens such as `--shell-header-height` / `min-h-shell-header`.
+Global header does **not** use profile-only helpers (`shouldHideHeroOnDesktop`, etc.). It relies on shared structural tokens such as `--shell-header-height` / `min-h-shell-header`.
 
 ## i18n
 

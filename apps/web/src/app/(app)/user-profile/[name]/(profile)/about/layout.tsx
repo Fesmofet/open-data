@@ -1,7 +1,6 @@
 import {
-  HiddenBelow,
-} from '@/shared/presentation/layout';
-import { RightSidebar } from '@/modules/user-profile';
+  RightSidebar,
+} from '@/modules/user-profile';
 
 export default async function UserProfileAboutShellLayout({
   children,
@@ -21,9 +20,9 @@ export default async function UserProfileAboutShellLayout({
       ].join(' ')}
     >
       <main className="min-h-[12rem] min-w-0">{children}</main>
-      <HiddenBelow breakpoint="lg" className="min-w-0">
+      <div className="hidden min-w-0 lg:block">
         <RightSidebar accountName={accountName} />
-      </HiddenBelow>
+      </div>
     </div>
   );
 }

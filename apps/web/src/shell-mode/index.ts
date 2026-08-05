@@ -9,8 +9,8 @@ export { ShellModeProvider, useShellModeContext } from './shell-mode-provider';
 export { useShellMode } from './use-shell-mode';
 export { setShellModePreference } from './actions';
 export {
-  getVisibleMenuKeys,
-  shouldCenterMenu,
-  shouldHideHero,
+  getDesktopMenuKeys,
+  HIDDEN_ON_DESKTOP_CLASS,
+  shouldHideHeroOnDesktop,
   shouldUsePostGrid,
 } from './shell-mode-features';

@@ -10,7 +10,6 @@ import {
   CenteredArticle,
   CollapsibleRegion,
   FeedColumn,
-  HiddenBelow,
   ImmersiveShell,
   MasonryGrid,
   PublicShell,
@@ -116,11 +115,11 @@ export default function DevShowcasePage() {
         </div>
         <div className="rounded-card border border-border p-card-padding">
           <p className="mb-2 text-caption text-fg-secondary">
-            HiddenBelow (hidden below `lg`)
+            Desktop-only slot (<code className="text-fg">hidden lg:block</code>)
           </p>
-          <HiddenBelow breakpoint="lg">
+          <div className="hidden lg:block">
             <PlaceholderSlot label="Visible from lg up" height="4rem" />
-          </HiddenBelow>
+          </div>
         </div>
       </section>
 

@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 
 import {
   FixedRegion,
-  HiddenBelow,
   StickyRegion,
 } from '@/shared/presentation/layout';
 
@@ -34,7 +33,7 @@ export function ObjectViewShell({
           'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
         ].join(' ')}
       >
-        <HiddenBelow breakpoint="lg">
+        <div className="hidden lg:block">
           <div className="shell-profile-left-rail shell-hide-instagram">
             <div className="shell-hide-twitter">
               <StickyRegion offset="0">{leftRail}</StickyRegion>
@@ -43,13 +42,13 @@ export function ObjectViewShell({
               <FixedRegion>{leftRail}</FixedRegion>
             </div>
           </div>
-        </HiddenBelow>
+        </div>
 
         <main className="min-h-[12rem] min-w-0">{center}</main>
 
-        <HiddenBelow breakpoint="lg" className="min-w-0">
+        <div className="hidden min-w-0 lg:block">
           <div className="shell-hide-instagram lg:contents">{rightRail}</div>
-        </HiddenBelow>
+        </div>
       </div>
     </div>
   );

@@ -123,9 +123,15 @@ In plain CSS (e.g. Leaflet overrides), prefer **`var(--font-size-body)`**, **`va
 ## Shell mode
 
 - **`data-shell-mode`** on `<html>` is set server-side.
-- Use helpers from **`shell-mode-features.ts`** (`shouldHideHero`, `shouldUsePostGrid`, `getVisibleMenuKeys`, etc.) — **avoid** raw `resolvedMode === '…'` checks in feature components.
+- **Shell mode chrome applies from `lg` (1024px) up** — below that width every mode uses default chrome. See [`docs/apps/web/spec/shell-mode.md`](../../docs/apps/web/spec/shell-mode.md#viewport-scope).
+- Use helpers from **`shell-mode-features.ts`** (`shouldHideHeroOnDesktop`, `shouldUsePostGrid`, `getDesktopMenuKeys`, `HIDDEN_ON_DESKTOP_CLASS`, etc.) — **avoid** raw `resolvedMode === '…'` checks in feature components.
 - Imports: **`@/shell-mode`** barrel only (see root AGENTS.md).
-- New shell behavior: add a helper in **`shell-mode-features.ts`** and, if needed, CSS hooks in **`theme.css`** — not scattered string comparisons.
+- New shell behavior: add a helper in **`shell-mode-features.ts`** and, if needed, CSS hooks in **`theme.css`** (chrome rules inside `@media (min-width: 1024px)`) — not scattered string comparisons.
+
+## Responsive visibility
+
+- Use Tailwind responsive variants on the **element itself** (`hidden lg:block`, `lg:hidden`, `hidden lg:flex`) — not wrapper components.
+- **`useMediaQuery`** only when CSS cannot express the behavior; expect SSR initial `false` (no flash-free chrome toggles).
 
 ## Modals and overlays
 

@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import {
   FixedRegion,
   FeedColumn,
-  HiddenBelow,
 } from '@/shared/presentation/layout';
 import {
   ProfileMainWalletModalShell,
@@ -40,7 +39,7 @@ export default async function UserProfileMainShellLayout({
         'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
       ].join(' ')}
     >
-      <HiddenBelow breakpoint="lg" className="min-w-0">
+      <div className="hidden min-w-0 lg:block">
         <div className="shell-profile-left-rail shell-hide-instagram lg:contents">
           <div className="shell-hide-twitter lg:contents">{leftSidebar}</div>
           <div className="shell-show-twitter">
@@ -49,7 +48,7 @@ export default async function UserProfileMainShellLayout({
             </FixedRegion>
           </div>
         </div>
-      </HiddenBelow>
+      </div>
 
       <main className="min-h-[12rem] min-w-0">
         <FeedColumn>
@@ -60,14 +59,14 @@ export default async function UserProfileMainShellLayout({
         </FeedColumn>
       </main>
 
-      <HiddenBelow breakpoint="lg" className="min-w-0">
+      <div className="hidden min-w-0 lg:block">
         <div className="shell-hide-instagram lg:contents">
           <RightSidebar
             accountName={accountName}
             viewerUsername={user?.username ?? null}
           />
         </div>
-      </HiddenBelow>
+      </div>
     </div>
     </ProfileMainWalletModalShell>
   );

@@ -9,7 +9,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
-import { shouldHideHero, useShellMode } from '@/shell-mode';
+import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
 
 export type ObjectHeroEditContext = {
   objectId: string;
@@ -100,10 +100,7 @@ export function ObjectHero({
   const { resolvedMode } = useShellMode();
   const [modalTarget, setModalTarget] = useState<HeroModalTarget | null>(null);
 
-  if (shouldHideHero(resolvedMode)) {
-    return null;
-  }
-
+  const hiddenOnDesktop = shouldHideHeroOnDesktop(resolvedMode);
   const hasCoverPhoto = Boolean(coverImageUrl?.trim());
 
   const canEditAvatar =
@@ -127,7 +124,7 @@ export function ObjectHero({
   }
 
   return (
-    <header>
+    <header className={hiddenOnDesktop ? HIDDEN_ON_DESKTOP_CLASS : undefined}>
       <ShellFullBleedBand className="relative overflow-hidden">
         {hasCoverPhoto && coverImageUrl ? (
           <div className="absolute inset-0">
@@ -135,7 +132,7 @@ export function ObjectHero({
               src={coverImageUrl}
               alt=""
               fill
-              priority
+              priority={!hiddenOnDesktop}
               sizes="100vw"
               className="object-cover"
               unoptimized={shouldUnoptimizeRemoteImage(coverImageUrl)}

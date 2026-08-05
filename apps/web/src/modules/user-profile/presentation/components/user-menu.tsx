@@ -5,7 +5,7 @@ import {
   profileSectionTabClass,
   profileSectionVerticalLinkClass,
 } from '@/shared/presentation';
-import { getVisibleMenuKeys, useShellMode } from '@/shell-mode';
+import { getDesktopMenuKeys, HIDDEN_ON_DESKTOP_CLASS, useShellMode } from '@/shell-mode';
 
 import { getSegmentsAfterAccount } from './profile-path';
 import {
@@ -116,6 +116,52 @@ function getFeedSubActive(rest: string[], segment: 'posts' | string): boolean {
   return (rest[0] ?? '') === segment;
 }
 
+function primaryNavLinkClass(
+  active: boolean,
+  vertical: boolean,
+  item: { key: string; mobileOnly?: boolean },
+  desktopKeys: Set<string> | null,
+): string {
+  return [
+    navLinkClass(active, vertical),
+    item.mobileOnly ? 'lg:hidden' : '',
+    desktopKeys && !desktopKeys.has(item.key) ? HIDDEN_ON_DESKTOP_CLASS : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+function FeedSubmenuNav({
+  base,
+  rest,
+  vertical,
+  className,
+}: {
+  base: string;
+  rest: string[];
+  vertical: boolean;
+  className?: string;
+}) {
+  const { t } = useI18n();
+  const linkClass = (segment: 'posts' | string) =>
+    subNavLinkClass(getFeedSubActive(rest, segment), vertical);
+
+  return (
+    <nav
+      className={[vertical ? 'flex flex-col gap-0.5' : HORIZONTAL_SUB_NAV_ROW_CLASS, className]
+        .filter(Boolean)
+        .join(' ')}
+      aria-label={t('user_profile_submenu_feed_aria')}
+    >
+      <UserProfileNavLink href={base} className={linkClass('posts')}>{t('posts')}</UserProfileNavLink>
+      <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>{t('threads')}</UserProfileNavLink>
+      <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
+      <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>
+      <UserProfileNavLink href={`${base}/activity`} className={linkClass('activity')}>{t('activity')}</UserProfileNavLink>
+    </nav>
+  );
+}
+
 export function UserMenu(props: UserMenuProps) {
   return <UserMenuInner {...props} />;
 }
@@ -127,7 +173,7 @@ function UserMenuInner({
 }: UserMenuProps) {
   const { t } = useI18n();
   const { resolvedMode } = useShellMode();
-  const visibleMenuKeys = getVisibleMenuKeys(resolvedMode);
+  const desktopMenuKeys = getDesktopMenuKeys(resolvedMode);
   const { pathname, search } = useEffectiveProfileNav();
   const rest = getSegmentsAfterAccount(pathname);
   const base = `/@${accountName}`;
@@ -202,26 +248,20 @@ function UserMenuInner({
       },
     ];
 
-  const primaryItems = visibleMenuKeys
-    ? items.filter((item) => visibleMenuKeys.has(item.key))
-    : items;
+  const primaryItems = items;
 
   const isVertical = direction === 'vertical';
   const showPrimary = isVertical || rows === 'primary' || rows === 'all';
   const showSubmenu = isVertical || rows === 'submenu' || rows === 'all';
 
   const horizontalSubmenu =
-    submenuVariant === 'feed' && visibleMenuKeys == null ? (
-      <nav
-        className={HORIZONTAL_SUB_NAV_ROW_CLASS}
-        aria-label={t('user_profile_submenu_feed_aria')}
-      >
-        <UserProfileNavLink href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), false)}>{t('posts')}</UserProfileNavLink>
-        <UserProfileNavLink href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), false)}>{t('threads')}</UserProfileNavLink>
-        <UserProfileNavLink href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), false)}>{t('comments')}</UserProfileNavLink>
-        <UserProfileNavLink href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), false)}>{t('mentions')}</UserProfileNavLink>
-        <UserProfileNavLink href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), false)}>{t('activity')}</UserProfileNavLink>
-      </nav>
+    submenuVariant === 'feed' ? (
+      <FeedSubmenuNav
+        base={base}
+        rest={rest}
+        vertical={false}
+        className={desktopMenuKeys ? HIDDEN_ON_DESKTOP_CLASS : undefined}
+      />
     ) : submenuVariant === 'wallet' ? (
       <nav
         className={HORIZONTAL_SUB_NAV_ROW_CLASS}
@@ -278,21 +318,20 @@ function UserMenuInner({
             <UserProfileNavLink
               key={item.key}
               href={item.href}
-              className={navLinkClass(item.active, true)}
+              className={primaryNavLinkClass(item.active, true, item, desktopMenuKeys)}
             >
               {item.label}
             </UserProfileNavLink>
           ))}
         </nav>
 
-        {submenuVariant === 'feed' && visibleMenuKeys == null ? (
-          <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_feed_aria')}>
-            <UserProfileNavLink href={base} className={subNavLinkClass(getFeedSubActive(rest, 'posts'), true)}>{t('posts')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/threads`} className={subNavLinkClass(getFeedSubActive(rest, 'threads'), true)}>{t('threads')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/comments`} className={subNavLinkClass(getFeedSubActive(rest, 'comments'), true)}>{t('comments')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/mentions`} className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), true)}>{t('mentions')}</UserProfileNavLink>
-            <UserProfileNavLink href={`${base}/activity`} className={subNavLinkClass(getFeedSubActive(rest, 'activity'), true)}>{t('activity')}</UserProfileNavLink>
-          </nav>
+        {submenuVariant === 'feed' ? (
+          <FeedSubmenuNav
+            base={base}
+            rest={rest}
+            vertical
+            className={desktopMenuKeys ? HIDDEN_ON_DESKTOP_CLASS : undefined}
+          />
         ) : null}
 
         {submenuVariant === 'wallet' ? (
@@ -355,12 +394,7 @@ function UserMenuInner({
           <UserProfileNavLink
             key={item.key}
             href={item.href}
-            className={[
-              navLinkClass(item.active, false),
-              item.mobileOnly ? 'lg:hidden' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+            className={primaryNavLinkClass(item.active, false, item, desktopMenuKeys)}
           >
             {item.label}
           </UserProfileNavLink>
@@ -381,12 +415,7 @@ function UserMenuInner({
             <UserProfileNavLink
               key={item.key}
               href={item.href}
-              className={[
-                navLinkClass(item.active, false),
-                item.mobileOnly ? 'lg:hidden' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
+              className={primaryNavLinkClass(item.active, false, item, desktopMenuKeys)}
             >
               {item.label}
             </UserProfileNavLink>

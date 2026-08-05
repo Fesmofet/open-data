@@ -832,34 +832,40 @@
   --shell-bottom-height: 3.5rem;
 }
 
-/* Shell mode presets — override structural tokens without component changes */
-[data-shell-mode='twitter'] {
-  --shell-right-width: 20rem;
-  --spacing-card: 0.5rem;
-}
+/*
+ * Shell mode — desktop chrome only from lg (1024px). Below lg every mode
+ * renders as default chrome. Content-level rules (e.g. instagram-post-grid)
+ * stay ungated so mobile can use the same presentation.
+ */
 
-/* Shell mode visibility: swap components without JS */
+/* Shell mode visibility: swap components without JS — base states (all viewports) */
 .shell-hide-twitter { display: block; }
 .shell-show-twitter { display: none; }
-[data-shell-mode='twitter'] .shell-hide-twitter { display: none; }
-[data-shell-mode='twitter'] .shell-show-twitter { display: block; }
 
-[data-shell-mode='instagram'] {
-  --shell-left-width: 0rem;
-  --shell-right-width: 0rem;
-  --spacing-card: 0.25rem;
-}
-
-/*
- * Profile + grid overrides use `html[data-shell-mode='instagram']` so specificity
- * wins over Tailwind utilities on the same elements without `!important`.
- */
-html[data-shell-mode='instagram'] .shell-profile-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-/* Object page: wider right rail for related/similar/add-on mini cards */
 @media (min-width: 1024px) {
+  [data-shell-mode='twitter'] {
+    --shell-right-width: 20rem;
+    --spacing-card: 0.5rem;
+  }
+
+  [data-shell-mode='twitter'] .shell-hide-twitter { display: none; }
+  [data-shell-mode='twitter'] .shell-show-twitter { display: block; }
+
+  [data-shell-mode='instagram'] {
+    --shell-left-width: 0rem;
+    --shell-right-width: 0rem;
+    --spacing-card: 0.25rem;
+  }
+
+  /*
+   * Profile + grid overrides use `html[data-shell-mode='instagram']` so specificity
+   * wins over Tailwind utilities on the same elements without `!important`.
+   */
+  html[data-shell-mode='instagram'] .shell-profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Object page: wider right rail for related/similar/add-on mini cards */
   html .shell-object-page-grid {
     grid-template-columns:
       minmax(0, var(--shell-left-width))
@@ -873,13 +879,19 @@ html[data-shell-mode='instagram'] .shell-profile-grid {
       minmax(0, 1fr)
       minmax(0, 22rem);
   }
+
+  html[data-shell-mode='instagram'] .shell-hide-instagram {
+    display: none;
+  }
+
+  [data-shell-mode='compact'] {
+    --shell-left-width: 3.5rem;
+    --shell-right-width: 12rem;
+    --spacing-card: 0.75rem;
+  }
 }
 
-html[data-shell-mode='instagram'] .shell-hide-instagram {
-  display: none;
-}
-
-/* Post preview grid: column count follows main width (not viewport-only Tailwind utilities) */
+/* Post preview grid: content-level — active at all viewports in instagram mode */
 html[data-shell-mode='instagram'] .instagram-post-grid {
   display: grid;
   gap: 1px;
@@ -902,12 +914,6 @@ html[data-shell-mode='instagram'] .instagram-post-grid {
   html[data-shell-mode='instagram'] .instagram-post-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
-}
-
-[data-shell-mode='compact'] {
-  --shell-left-width: 3.5rem;
-  --shell-right-width: 12rem;
-  --spacing-card: 0.75rem;
 }
 
 /* Profile: light gray content band below primary nav (light theme only). */

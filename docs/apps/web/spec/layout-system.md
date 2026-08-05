@@ -21,7 +21,7 @@ This spec describes **structural** layout only (zones, breakpoints, scroll/stick
 ## Goals
 
 - **Shells** — which outer chrome applies (app, public, immersive) via Next.js **route groups**.
-- **Regions** — reusable wrappers (`StickyRegion`, `HiddenBelow`, drawers) for rails and sidebars.
+- **Regions** — reusable wrappers (`StickyRegion`, drawers) for rails and sidebars.
 - **Content arrangements** — inner layout of the primary column (`FeedColumn`, `CardGrid`, `MasonryGrid`, `CenteredArticle`).
 - **Layout state** — `LayoutProvider` for client-only UI (sidebar toggles, feed vs grid mode) without a global store.
 - **Shell mode** — optional `data-shell-mode` presets that override structural tokens (rail widths, card rhythm); see [shell-mode.md](shell-mode.md).
@@ -60,7 +60,6 @@ Override grid with `gridTemplateClassName` on `AppShell` when a route needs a no
 | Component | Behavior |
 | --------- | -------- |
 | `StickyRegion` | `position: sticky` with configurable `offset` (CSS length). |
-| `HiddenBelow` | `hidden` below breakpoint; visible from breakpoint up (`sm`–`xl`). No JS. |
 | `CollapsibleRegion` | Client: toggle on small screens; always visible on `lg+`. Optional `localStorage` via `storageKey`. |
 | `DrawerRegion` | Client: fixed overlay + panel; backdrop and `Escape` close. |
 | `ShellInset` | Constrained app column (`max-w-container-page` + `px-gutter`). Use for chrome and hero content that must align with the main grid. |
@@ -111,7 +110,7 @@ Throws if used outside `LayoutProvider`.
 
 ## Responsive rules
 
-- Prefer **CSS** (`HiddenBelow`, Tailwind breakpoints) for responsive visibility.
+- Prefer **CSS** (Tailwind responsive variants on the element itself: `hidden lg:block`, `lg:hidden`) for responsive visibility — no wrapper component.
 - **Profile** default shell uses three columns at `lg+`; **about** uses two (main + right); **map** and **waiv-table** use a single column.
 - **Layout tokens** (`--shell-header-height`, `--shell-left-width`, `--shell-right-width`, `--shell-bottom-height`) are defined per theme in `theme.css` and mapped in `tailwind.config.js` — see [theme.md](theme.md).
 
@@ -123,7 +122,7 @@ Throws if used outside `LayoutProvider`.
 
 ## Tests
 
-Co-located `*.spec.ts` files cover `gridClassForSlots` (`app-shell`), `ShellInset`, `ShellFullBleedBand`, `HiddenBelow` classes, `buildCardGridClassName` (see `card-grid-classname.ts`), and `resolveShellMode`. `apps/web/jest.config.cts` extends the Nx preset with a `ts-jest` transform that includes `.tsx` so layout components can be imported in tests.
+Co-located `*.spec.ts` files cover `gridClassForSlots` (`app-shell`), `ShellInset`, `ShellFullBleedBand`, `buildCardGridClassName` (see `card-grid-classname.ts`), `resolveShellMode`, and `shell-mode-features`. `apps/web/jest.config.cts` extends the Nx preset with a `ts-jest` transform that includes `.tsx` so layout components can be imported in tests.
 
 ## Imports
 

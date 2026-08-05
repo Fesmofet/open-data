@@ -72,7 +72,7 @@ WAIV table page (`/@:name/transfers/waiv-table`) may use a separate `tab` query 
 ## rendering
 
 - **Primary links:** `/@name`, `/@name/map`, `/@name/user-shop`, `/@name/recipe`, `/@name/favorites`, `/@name/transfers?type=WAIV`, `/@name/followers`, `/@name/expertise-hashtags`, `/@name/about`.
-- **Secondary row:** URLs in [Secondary subnav](#secondary-subnav). Feed secondary hidden when `getVisibleMenuKeys(shellMode)` restricts primary keys.
+- **Secondary row:** URLs in [Secondary subnav](#secondary-subnav). Feed secondary hidden on desktop when `getDesktopMenuKeys(shellMode)` restricts primary keys.
 
 ## emitted events
 

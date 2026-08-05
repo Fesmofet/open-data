@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
-import { shouldHideHero, useShellMode } from '@/shell-mode';
+import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
 
 import type { UserHeaderProps } from './user-header';
 import { UserHeader } from './user-header';
@@ -31,14 +31,11 @@ export function UserHero(props: UserHeroProps) {
     [pathname, search],
   );
 
-  if (shouldHideHero(resolvedMode)) {
-    return null;
-  }
-
+  const hiddenOnDesktop = shouldHideHeroOnDesktop(resolvedMode);
   const hasCoverPhoto = Boolean(headerProps.hasCover && headerProps.coverImage);
 
   return (
-    <header>
+    <header className={hiddenOnDesktop ? HIDDEN_ON_DESKTOP_CLASS : undefined}>
       <ShellFullBleedBand className="relative overflow-x-clip">
         <div
           className={[
@@ -52,7 +49,7 @@ export function UserHero(props: UserHeroProps) {
               src={headerProps.coverImage}
               alt=""
               fill
-              priority
+              priority={!hiddenOnDesktop}
               sizes="100vw"
               className="object-cover"
               unoptimized={shouldUnoptimizeRemoteImage(headerProps.coverImage)}
