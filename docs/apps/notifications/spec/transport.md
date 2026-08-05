@@ -44,10 +44,11 @@ Any other account (an arbitrary Hive account seen in the firehose) is dropped be
 The consumer processes a whole `XREADGROUP` batch as one unit, the way the legacy service processed a whole block:
 
 1. Parse every entry in the batch; unparsable entries are logged and acked.
-2. Resolve recipients for all events.
-3. `NotificationAudienceService.load` runs **three** bulk queries for the whole batch (settings, known accounts, Telegram chat ids) plus at most one USD-rate lookup.
-4. Gating runs entirely in memory (`NotificationSettingsService.isAllowed` is synchronous).
-5. Fan-out uses **one** Redis pipeline for all feed writes and **one** for all Telegram queue writes.
+2. **Coalesce** `vote_like` events that share the same `(author, permlink)` — keep the last event in batch order (legacy in-block dedup parity).
+3. Resolve recipients for all events.
+4. `NotificationAudienceService.load` runs **three** bulk queries for the whole batch (settings, known accounts, Telegram chat ids) plus at most one USD-rate lookup.
+5. Gating runs entirely in memory (`NotificationSettingsService.isAllowed` is synchronous).
+6. Fan-out uses **one** Redis pipeline for all feed writes and **one** for all Telegram queue writes.
 
 | Constant | Default | Purpose |
 |----------|---------|---------|

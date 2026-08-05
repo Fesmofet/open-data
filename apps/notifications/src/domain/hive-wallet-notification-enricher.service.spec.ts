@@ -21,7 +21,14 @@ describe('hive-wallet-notification-enricher', () => {
           trxId: null,
           objectId: null,
           actor: 'a',
-          payload: { voter: 'a', author: 'b', permlink: 'p', weight: 1 },
+          payload: {
+            voter: 'a',
+            author: 'b',
+            permlink: 'p',
+            weight: 1,
+            title: null,
+            likesCount: 0,
+          },
         } as AnyNotificationEvent,
       ]),
     ).toBe(false);

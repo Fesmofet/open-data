@@ -97,6 +97,60 @@ describe('buildSocialMessage', () => {
     expect(msg?.key).toBe('notification_reply_username_comment');
   });
 
+  it('maps vote_like to single-voter legacy template', () => {
+    const msg = buildSocialMessage({
+      ...baseEnvelope,
+      type: 'vote_like',
+      payload: {
+        voter: 'alice',
+        author: 'bob',
+        permlink: 'p1',
+        weight: 10_000,
+        title: 'Hello',
+        likesCount: 0,
+      },
+    });
+    expect(msg?.key).toBe('like_post_notify_priority');
+    expect(msg?.params).toEqual({ voter: 'alice', postTitle: 'Hello' });
+  });
+
+  it('maps vote_like to aggregated legacy template when others liked the post', () => {
+    const msg = buildSocialMessage({
+      ...baseEnvelope,
+      type: 'vote_like',
+      payload: {
+        voter: 'alice',
+        author: 'bob',
+        permlink: 'p1',
+        weight: 10_000,
+        title: 'Hello',
+        likesCount: 3,
+      },
+    });
+    expect(msg?.key).toBe('like_post_notify_other');
+    expect(msg?.params).toEqual({
+      voter: 'alice',
+      likesCount: '3',
+      postTitle: 'Hello',
+    });
+  });
+
+  it('defaults likesCount for legacy vote_like payloads', () => {
+    const msg = buildSocialMessage({
+      ...baseEnvelope,
+      type: 'vote_like',
+      payload: {
+        voter: 'alice',
+        author: 'bob',
+        permlink: 'p1',
+        weight: 10_000,
+        title: 'Hello',
+        likesCount: undefined as unknown as number,
+      },
+    });
+    expect(msg?.key).toBe('like_post_notify_priority');
+  });
+
   it('defaults reply to post template when isReplyToComment is absent', () => {
     const msg = buildSocialMessage({
       ...baseEnvelope,

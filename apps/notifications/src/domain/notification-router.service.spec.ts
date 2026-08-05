@@ -9,14 +9,31 @@ import type { SubscriptionService } from '../ws/subscription.service';
 import type { TelegramNotificationService } from '../telegram/telegram-notification.service';
 
 function voteLike(author: string, blockNum = 1): AnyNotificationEvent {
+  return voteLikeForPost(author, 'v', 'p', 0, blockNum);
+}
+
+function voteLikeForPost(
+  author: string,
+  voter: string,
+  permlink: string,
+  likesCount: number,
+  blockNum = 1,
+): AnyNotificationEvent {
   return {
     type: 'vote_like',
     occurredAt: '2026-01-01T00:00:00.000Z',
     blockNum,
     trxId: null,
     objectId: null,
-    actor: 'v',
-    payload: { voter: 'v', author, permlink: 'p', weight: 1 },
+    actor: voter,
+    payload: {
+      voter,
+      author,
+      permlink,
+      weight: 10_000,
+      title: 'Post title',
+      likesCount,
+    },
   } as AnyNotificationEvent;
 }
 
@@ -251,6 +268,34 @@ describe('NotificationRouterService', () => {
       to: 'wiv01',
       amount: '0.001 HIVE',
     });
+  });
+
+  it('coalesces duplicate vote_like events for the same post in one batch', async () => {
+    (recipientRegistry.resolveRecipients as jest.Mock).mockResolvedValue([
+      'author1',
+    ]);
+    (audienceService.load as jest.Mock).mockResolvedValue(
+      audienceOf(['author1']),
+    );
+
+    await router.routeBatch([
+      voteLikeForPost('author1', 'alice', 'p', 0, 1),
+      voteLikeForPost('author1', 'bob', 'p', 1, 2),
+    ]);
+
+    expect(feedService.addManyToFeed).toHaveBeenCalledTimes(1);
+    expect(feedService.addManyToFeed).toHaveBeenCalledWith([
+      {
+        username: 'author1',
+        item: expect.objectContaining({
+          actor: 'bob',
+          payload: expect.objectContaining({
+            voter: 'bob',
+            likesCount: 1,
+          }),
+        }),
+      },
+    ]);
   });
 
   it('notifies trx subscribers', async () => {

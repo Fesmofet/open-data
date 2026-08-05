@@ -46,6 +46,11 @@ const votePayload = z.object({
   weight: z.number(),
 });
 
+const voteLikePayload = votePayload.extend({
+  title: z.string().nullable().optional().default(null),
+  likesCount: z.number().int().nonnegative().optional().default(0),
+});
+
 const myVotePayload = z.object({
   voter: z.string(),
   author: z.string(),
@@ -207,7 +212,7 @@ const notificationEventVariants = [
     ...envelopeSchema,
     payload: myCommentPayload,
   }),
-  z.object({ type: z.literal('vote_like'), ...envelopeSchema, payload: votePayload }),
+  z.object({ type: z.literal('vote_like'), ...envelopeSchema, payload: voteLikePayload }),
   z.object({
     type: z.literal('vote_downvote'),
     ...envelopeSchema,

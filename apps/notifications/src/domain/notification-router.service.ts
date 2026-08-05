@@ -6,6 +6,7 @@ import {
   enrichHiveWalletNotificationEvent,
   needsHiveWalletEnrichment,
 } from './hive-wallet-notification-enricher.service';
+import { coalesceVoteLikeEvents } from './routing/coalesce-vote-like-events';
 import { RecipientStrategyRegistry } from './routing/recipient-strategies';
 import { NotificationAudienceService } from './settings/notification-audience.service';
 import { NotificationSettingsService } from './settings/notification-settings.service';
@@ -43,8 +44,9 @@ export class NotificationRouterService {
   }
 
   async routeBatch(events: AnyNotificationEvent[]): Promise<void> {
+    const coalescedEvents = coalesceVoteLikeEvents(events);
     const routable: AnyNotificationEvent[] = [];
-    for (const event of events) {
+    for (const event of coalescedEvents) {
       if (event.type === 'trx_processed') {
         this.routeTrxProcessed(event);
         continue;

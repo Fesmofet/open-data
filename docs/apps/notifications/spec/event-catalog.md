@@ -37,7 +37,8 @@ Campaign types (`campaignReservation`, `activationCampaign`, etc.) are **out of 
 | `reply` | `author`, `permlink`, `parentAuthor`, `parentPermlink`, `isRootPost` | Parent post/comment author |
 | `mention` | `author`, `permlink`, `isRootPost`, `mentioned` | Mentioned account |
 | `my_post` / `my_comment` | author, permlink, title (post) | Author (self) |
-| `vote_like` / `vote_downvote` | voter, author, permlink, weight | Content author |
+| `vote_like` | voter, author, permlink, weight, title, likesCount (other active upvotes, excluding current voter) | Content author |
+| `vote_downvote` | voter, author, permlink, weight | Content author |
 | `my_vote` | voter, author, permlink, title | Voter (self) |
 | `reblog` | account, author, permlink | Post author |
 | `follow` | following, action | `following` when action is follow |

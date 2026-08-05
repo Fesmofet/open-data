@@ -61,4 +61,52 @@ describe('NotificationEvent contract', () => {
     });
     expect(parsed.success).toBe(false);
   });
+
+  it('accepts enriched vote_like payload', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'vote_like',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: null,
+      actor: 'voter',
+      payload: {
+        voter: 'voter',
+        author: 'author',
+        permlink: 'p',
+        weight: 10_000,
+        title: 'Hello',
+        likesCount: 3,
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('accepts legacy vote_like payload without title or likesCount', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'vote_like',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: null,
+      actor: 'voter',
+      payload: {
+        voter: 'voter',
+        author: 'author',
+        permlink: 'p',
+        weight: 10_000,
+      },
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success && parsed.data.type === 'vote_like') {
+      expect(parsed.data.payload).toEqual({
+        voter: 'voter',
+        author: 'author',
+        permlink: 'p',
+        weight: 10_000,
+        title: null,
+        likesCount: 0,
+      });
+    }
+  });
 });

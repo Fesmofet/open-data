@@ -49,6 +49,25 @@ On conflict, `needs_post_create` is merged with **OR** (once `true`, it stays `t
 3. **Post exists** — Non-zero `weight`: upsert `(weight, percent)` with `rshares` left `null` until the worker fills them from Hive. `weight === 0`: delete the voter row (unvote) and still enqueue so `net_votes` / rshares can be refreshed from the API.
 4. **Worker** — Claims batches (`FOR UPDATE SKIP LOCKED`), optionally materializes the post when `needs_post_create`, then calls `get_active_votes`, syncs `post_active_votes`, and deletes the queue row. Transient Hive errors reset `last_attempt_at` for retry; repeated “post unknown on Hive” beyond `POST_SYNC_MAX_ATTEMPTS` drops the queue row.
 
+## Notifications
+
+After a non-self upvote on an indexed **root post** (`depth` 0 or null), `VoteHiveService` may emit `vote_like` via the notification adapter. Emission uses [`VoteLikeNotificationPolicy`](../../../../apps/chain-indexer/src/domain/hive-vote/vote-like-notification.policy.ts):
+
+| Gate | Behavior |
+|------|----------|
+| Root post only | `findRootPostByAuthorPermlink`; comments / missing root rows do not notify |
+| Unvote / non-positive weight | No `vote_like` (downvotes emit `vote_downvote`) |
+| Weight filter | When the post already has **>5** other upvotes, suppress unless the author follows the voter or the vote weight is in the top 3 among existing upvotes |
+| Payload | `title`, `likesCount` (other active upvotes, excluding current voter), plus `voter`, `author`, `permlink`, `weight` |
+
+**Post-query reads (per qualifying upvote):**
+
+1. `findRootPostByAuthorPermlink` — title + root-post gate
+2. `countOtherActiveUpvotes` — `likesCount`
+3. When `likesCount > 5`: `subscriptionExists(author → voter)` and `topExistingUpvoteWeights(..., 3)` for the weight filter
+
+Self-votes emit `my_vote` (unchanged). See [notification event catalog](../../notifications/spec/event-catalog.md).
+
 ## Configuration
 
 | Env | Default | Purpose |

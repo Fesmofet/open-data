@@ -358,6 +358,46 @@ export class PostsRepository {
       .execute();
   }
 
+  async countOtherActiveUpvotes(
+    author: string,
+    permlink: string,
+    excludeVoter: string,
+    trx?: DbExecutor,
+  ): Promise<number> {
+    const row = await this.executor(trx)
+      .selectFrom('post_active_votes')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .where('voter', '!=', excludeVoter)
+      .where('percent', '>', 0)
+      .executeTakeFirst();
+    return Number(row?.count ?? 0);
+  }
+
+  async topExistingUpvoteWeights(
+    author: string,
+    permlink: string,
+    excludeVoter: string,
+    limit: number,
+    trx?: DbExecutor,
+  ): Promise<number[]> {
+    if (limit <= 0) {
+      return [];
+    }
+    const rows = await this.executor(trx)
+      .selectFrom('post_active_votes')
+      .select('weight')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .where('voter', '!=', excludeVoter)
+      .where('percent', '>', 0)
+      .orderBy('weight', 'desc')
+      .limit(limit)
+      .execute();
+    return rows.map((row) => row.weight ?? 0);
+  }
+
   /** Distinct `object_id` values already linked to the post. */
   async findPostObjectIdsForPost(
     author: string,

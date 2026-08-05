@@ -14,7 +14,7 @@ related:
 
 # Notification routing
 
-`NotificationRouterService.routeBatch` handles a whole stream batch: parse events → pick strategy per event → resolve recipients → load the audience in bulk (`NotificationAudienceService`) → filter in memory with `NotificationSettingsService.isAllowed` → `NotificationFeedService.addManyToFeed` + `TelegramNotificationService.enqueueMany` (except `trx_processed`, which only pushes to WS). `route(event)` is a single-event wrapper over `routeBatch`. Gating semantics and batch mechanics live in [transport.md](transport.md).
+`NotificationRouterService.routeBatch` handles a whole stream batch: parse events → **coalesce duplicate `vote_like` per `(author, permlink)`** (keep last in batch order) → pick strategy per event → resolve recipients → load the audience in bulk (`NotificationAudienceService`) → filter in memory with `NotificationSettingsService.isAllowed` → `NotificationFeedService.addManyToFeed` + `TelegramNotificationService.enqueueMany` (except `trx_processed`, which only pushes to WS). `route(event)` is a single-event wrapper over `routeBatch`. Gating semantics and batch mechanics live in [transport.md](transport.md).
 
 ## Strategies
 

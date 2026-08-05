@@ -50,7 +50,9 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_transfer_from_savings: '{recipient} withdrew {amount} from savings',
   notification_transfer_username_amount: '{username} transferred {amount} to {to}',
   notification_unapproved_witness: '{username} unapproved witness for {recipient}',
-  notification_upvoted_username_post: "{username} upvoted {recipient}'s post",
+  like_post_notify_other:
+    '{voter} and {likesCount} others liked {recipient}\'s post {postTitle}',
+  like_post_notify_priority: '{voter} liked {recipient}\'s post {postTitle}',
   power_down_notification: '{username} initiated PowerDown on {amount}',
   power_up_initiated_actor: "{from} initiated 'Power up' on {amount} to {to}",
   power_up_initiated_to: "{recipient} initiated 'Power up' on {amount} to {to}",

@@ -27,7 +27,14 @@ const voteLike = {
   trxId: null,
   objectId: null,
   actor: 'v',
-  payload: { voter: 'v', author: 'a', permlink: 'p', weight: 1 },
+  payload: {
+    voter: 'v',
+    author: 'a',
+    permlink: 'p',
+    weight: 1,
+    title: null,
+    likesCount: 0,
+  },
 } as AnyNotificationEvent;
 
 describe('NotificationSettingsService', () => {

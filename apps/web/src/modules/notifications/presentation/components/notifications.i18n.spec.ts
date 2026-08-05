@@ -17,7 +17,8 @@ describe('Notifications UI i18n keys (en-US)', () => {
       'notifications',
       'notifications_empty_message',
       'notification_following_username',
-      'notification_upvoted_username_post',
+      'like_post_notify_priority',
+      'like_post_notify_other',
       'notification_generic_default_message',
       'see_all',
     ] as const;

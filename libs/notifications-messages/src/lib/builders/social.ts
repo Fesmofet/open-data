@@ -75,15 +75,42 @@ export function buildSocialMessage(
     case 'vote_like': {
       const p = event.payload;
       const postHref = postPath(p.author, p.permlink);
+      const postTitle = p.title ?? p.permlink;
+      const likesCount = p.likesCount ?? 0;
+      if (likesCount > 0) {
+        return withParamHrefs(
+          {
+            key: 'like_post_notify_other',
+            params: {
+              voter: p.voter,
+              likesCount: String(likesCount),
+              postTitle,
+            },
+            href: postHref,
+            icon: 'vote',
+            actor: p.voter,
+          },
+          {
+            voter: userProfilePath(p.voter),
+            postTitle: postHref,
+          },
+        );
+      }
       return withParamHrefs(
         {
-          key: 'notification_upvoted_username_post',
-          params: { username: p.voter },
+          key: 'like_post_notify_priority',
+          params: {
+            voter: p.voter,
+            postTitle,
+          },
           href: postHref,
           icon: 'vote',
           actor: p.voter,
         },
-        { username: userProfilePath(p.voter) },
+        {
+          voter: userProfilePath(p.voter),
+          postTitle: postHref,
+        },
       );
     }
     case 'vote_downvote': {

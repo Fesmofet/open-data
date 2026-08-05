@@ -19,6 +19,14 @@ export function minimalNotificationEventPayload(
     case 'my_comment':
       return { author: 'a', permlink: 'p', parentAuthor: 'b' };
     case 'vote_like':
+      return {
+        voter: 'v',
+        author: 'a',
+        permlink: 'p',
+        weight: 1,
+        title: 't',
+        likesCount: 0,
+      };
     case 'vote_downvote':
       return { voter: 'v', author: 'a', permlink: 'p', weight: 1 };
     case 'my_vote':

@@ -1183,7 +1183,7 @@
   "lifestyle": "način života",
   "like_good_posts": "Kao neki dobri postovi",
   "like_post": "Sviđa mi se ovaj post",
-  "like_post_notify_other": "{voter} voter} i još {likesCount} drugima se svidio vaš post '{postTitle}'",
+  "like_post_notify_other": "{voter} i još {likesCount} drugima se svidio vaš post '{postTitle}'",
   "like_post_notify_priority": "{voter} poput svoj posta '{postTitle}'",
   "like_slider_info": "Vaš će glas vrijediti",
   "like_slider_message_cashout": "Stariji postovi se ne mogu glasati. Molimo razmotrite {link} autora.",

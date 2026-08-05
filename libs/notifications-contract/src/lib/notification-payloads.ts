@@ -79,6 +79,9 @@ export interface NotificationPayloadMap {
     author: string;
     permlink: string;
     weight: number;
+    title: string | null;
+    /** Active upvotes on the post excluding the current voter. */
+    likesCount: number;
   };
   vote_downvote: {
     voter: string;

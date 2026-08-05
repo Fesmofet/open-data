@@ -87,4 +87,23 @@ describe('EN_NOTIFICATION_DICTIONARY', () => {
     });
     expect(myCommentBody).toBe('flowmaster replied to w95hj');
   });
+
+  it('renders aggregated vote_like copy without leftover placeholders', () => {
+    const body = renderForTelegram({
+      ...baseEnvelope,
+      type: 'vote_like',
+      actor: 'alice',
+      payload: {
+        voter: 'alice',
+        author: 'bob',
+        permlink: 'funny-ai-skating',
+        weight: 10_000,
+        title: 'Funny AI-Generated Figure Skating',
+        likesCount: 5,
+      },
+    });
+    expect(body).toBe(
+      "alice and 5 others liked flowmaster's post Funny AI-Generated Figure Skating",
+    );
+  });
 });

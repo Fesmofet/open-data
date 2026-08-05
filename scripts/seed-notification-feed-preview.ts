@@ -102,6 +102,8 @@ function buildPayload(
       author: POST_AUTHOR,
       permlink: POST_PERMLINK,
       weight: 10000,
+      title: 'Rustic beef and potato casserole',
+      likesCount: 2,
     },
     vote_downvote: {
       voter: other,
