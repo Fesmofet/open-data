@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { postEngineWithdrawQuoteQuery } from '@/modules/user-wallet/application/queries/engine-swap.queries';
+import { isDisabledEngineWithdrawPair } from '@/modules/user-wallet/domain/filter-engine-withdraw-list';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,15 +19,15 @@ export async function POST(
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
 
-  const outputSymbol = String(body.outputSymbol ?? '') as
-    | 'BTC'
-    | 'LTC'
-    | 'ETH'
-    | 'HIVE'
-    | 'HBD';
+  const inputSymbol = String(body.inputSymbol ?? 'WAIV');
+  const outputSymbol = String(body.outputSymbol ?? '');
+
+  if (!outputSymbol || isDisabledEngineWithdrawPair(inputSymbol, outputSymbol)) {
+    return NextResponse.json({ error: 'bad_request' }, { status: 400 });
+  }
 
   const result = await postEngineWithdrawQuoteQuery(accountName, {
-    inputSymbol: String(body.inputSymbol ?? 'WAIV'),
+    inputSymbol,
     outputSymbol,
     quantity: String(body.quantity ?? ''),
     address: body.address ? String(body.address) : undefined,

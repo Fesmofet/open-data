@@ -26,4 +26,16 @@ describe('buildDepositTokenList', () => {
       swapSymbol: 'SWAP.HIVE',
     });
   });
+
+  it('excludes ETH deposit (disabled pegged SWAP.ETH)', () => {
+    const result = buildDepositTokenList(
+      [
+        { from_coin_symbol: 'ETH', to_coin_symbol: 'SWAP.ETH' },
+        { from_coin_symbol: 'LTC', to_coin_symbol: 'SWAP.LTC' },
+      ],
+      [{ symbol: 'LTC', display_name: 'Litecoin' }],
+    );
+
+    expect(result.map((item) => item.symbol).sort()).toEqual(['HIVE', 'LTC']);
+  });
 });

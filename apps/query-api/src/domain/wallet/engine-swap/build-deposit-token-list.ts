@@ -1,3 +1,8 @@
+import {
+  isEngineDisabledDepositL1Symbol,
+  isEngineDisabledPeggedSwapSymbol,
+} from '@opden-data-layer/core/hive-engine-history';
+
 export type HiveEngineConverterPair = {
   from_coin_symbol: string;
   to_coin_symbol: string;
@@ -32,6 +37,12 @@ export function buildDepositTokenList(
       continue;
     }
     if (symbol.startsWith('SWAP') || !swapSymbol.startsWith('SWAP')) {
+      continue;
+    }
+    if (
+      isEngineDisabledDepositL1Symbol(symbol) ||
+      isEngineDisabledPeggedSwapSymbol(swapSymbol)
+    ) {
       continue;
     }
     bySymbol.set(symbol, {

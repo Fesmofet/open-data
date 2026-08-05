@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 
 import type { HiveEngineCustomJsonPayload } from '@opden-data-layer/hive-broadcast';
+import { ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS } from '@opden-data-layer/core/hive-engine-history';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
@@ -26,7 +27,7 @@ import { WalletAssetAmountField } from './wallet-asset-amount-field';
 
 type EngineSwapListToken = EngineSwapListApiResponse['tokens'][number];
 
-const DOUBLE_SWAP_TO_WAIV = ['SWAP.LTC', 'SWAP.BTC', 'SWAP.ETH'];
+const DOUBLE_SWAP_TO_WAIV = ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS as readonly string[];
 
 function resolveInitialSwapSymbols(
   tokens: EngineSwapListToken[],

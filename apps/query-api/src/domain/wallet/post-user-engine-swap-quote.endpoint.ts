@@ -7,6 +7,7 @@ import {
   HiveEngineClient,
   HiveEngineUnavailableError,
 } from '@opden-data-layer/clients';
+import { isEngineDisabledPeggedSwapSymbol } from '@opden-data-layer/core/hive-engine-history';
 
 import { AccountsCurrentRepository } from '../../repositories';
 import {
@@ -45,6 +46,15 @@ export class PostUserEngineSwapQuoteEndpoint {
     }
 
     const slippage = body.slippage ?? DEFAULT_SWAP_SLIPPAGE;
+    const fromSymbol = body.fromSymbol.trim().toUpperCase();
+    const toSymbol = body.toSymbol.trim().toUpperCase();
+
+    if (
+      isEngineDisabledPeggedSwapSymbol(fromSymbol) ||
+      isEngineDisabledPeggedSwapSymbol(toSymbol)
+    ) {
+      throw new BadRequestException('swap pair unavailable');
+    }
 
     try {
       const [pools, params, balances] = await Promise.all([
@@ -79,8 +89,8 @@ export class PostUserEngineSwapQuoteEndpoint {
 
       const swapList = buildSwapListTokens({ pools, balances, tokenMetadata });
 
-      if (isDoubleSwapToWaiv(body.fromSymbol, body.toSymbol)) {
-        const hops = buildDoubleSwapToWaivHops(body.fromSymbol, body.toSymbol);
+      if (isDoubleSwapToWaiv(fromSymbol, toSymbol)) {
+        const hops = buildDoubleSwapToWaivHops(fromSymbol, toSymbol);
         if (!hops) {
           throw new BadRequestException('invalid double swap route');
         }
@@ -107,7 +117,7 @@ export class PostUserEngineSwapQuoteEndpoint {
         };
       }
 
-      const pair = findSwapPair(swapList, body.fromSymbol, body.toSymbol);
+      const pair = findSwapPair(swapList, fromSymbol, toSymbol);
       if (!pair) {
         throw new BadRequestException('swap pair unavailable');
       }
@@ -117,14 +127,14 @@ export class PostUserEngineSwapQuoteEndpoint {
         throw new BadRequestException('market pool unavailable');
       }
 
-      const fromToken = swapList.find((token) => token.symbol === body.fromSymbol);
-      const toToken = swapList.find((token) => token.symbol === body.toSymbol);
+      const fromToken = swapList.find((token) => token.symbol === fromSymbol);
+      const toToken = swapList.find((token) => token.symbol === toSymbol);
       const fromPrecision = fromToken?.precision ?? pool.precision;
       const toPrecision = toToken?.precision ?? pool.precision;
 
       if (body.direction === 'exactInput') {
         const result = getSwapOutput({
-          symbol: body.fromSymbol,
+          symbol: fromSymbol,
           amountIn: body.amountIn,
           pool,
           slippage,
@@ -145,7 +155,7 @@ export class PostUserEngineSwapQuoteEndpoint {
       }
 
       const reverseResult = getSwapOutput({
-        symbol: body.toSymbol,
+        symbol: toSymbol,
         amountIn: body.amountIn,
         pool,
         slippage,

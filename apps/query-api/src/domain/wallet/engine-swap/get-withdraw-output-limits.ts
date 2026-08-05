@@ -4,20 +4,15 @@ export type WithdrawOutputLimits = {
 };
 
 export async function getWithdrawOutputLimits(input: {
-  fetchEthFee: () => Promise<number | null>;
   fetchBtcMinimum: () => Promise<number | null>;
 }): Promise<Record<string, WithdrawOutputLimits>> {
-  const [ethFee, btcMinimum] = await Promise.all([
-    input.fetchEthFee(),
-    input.fetchBtcMinimum(),
-  ]);
+  const btcMinimum = await input.fetchBtcMinimum();
 
   return {
     HIVE: { minimumSwapAmount: 0.002, minimumReceiveAmount: null },
     HBD: { minimumSwapAmount: null, minimumReceiveAmount: null },
     LTC: { minimumSwapAmount: null, minimumReceiveAmount: null },
     BTC: { minimumSwapAmount: btcMinimum, minimumReceiveAmount: 0.01 },
-    ETH: { minimumSwapAmount: ethFee, minimumReceiveAmount: null },
   };
 }
 

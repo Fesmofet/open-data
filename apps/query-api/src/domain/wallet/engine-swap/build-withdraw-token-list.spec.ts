@@ -24,7 +24,7 @@ describe('buildWithdrawTokenList', () => {
 
     expect(result[0]?.label).toBe('WAIV - HIVE');
     expect(result.map((item) => item.label)).toContain('SWAP.LTC');
-    expect(result).toHaveLength(6);
+    expect(result).toHaveLength(5);
     expect(result.find((item) => item.label === 'SWAP.LTC')).toMatchObject({
       inputSymbol: 'SWAP.LTC',
       outputSymbol: 'LTC',

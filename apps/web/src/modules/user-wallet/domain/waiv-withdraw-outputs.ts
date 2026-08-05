@@ -2,7 +2,6 @@
 export const WAIV_WITHDRAW_OUTPUT_SYMBOLS = [
   'LTC',
   'BTC',
-  'ETH',
   'HIVE',
   'HBD',
 ] as const;

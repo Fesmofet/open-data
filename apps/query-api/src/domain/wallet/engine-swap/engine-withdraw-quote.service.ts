@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import {
-  EthGatewayClient,
   HiveEngineClient,
   HiveEngineConvertClient,
   TribaldexClient,
   type HiveEngineMarketPool,
 } from '@opden-data-layer/clients';
+import {
+  isEngineDisabledPeggedSwapSymbol,
+  isEngineDisabledWithdrawL1Symbol,
+} from '@opden-data-layer/core/hive-engine-history';
 
 import {
   AVAILABLE_TOKEN_WITHDRAW,
@@ -75,6 +78,14 @@ function quoteFromValidation(
   };
 }
 
+function unsupportedWithdrawPair(): EngineWithdrawQuoteResult {
+  return {
+    predictiveAmount: null,
+    customJsonPayload: [],
+    error: 'unsupported withdraw pair',
+  };
+}
+
 function indirectWithdrawSwap(input: {
   quantity: string;
   poolsByPair: ReadonlyMap<string, HiveEngineMarketPool>;
@@ -118,7 +129,6 @@ export class EngineWithdrawQuoteService {
     private readonly hiveEngine: HiveEngineClient,
     private readonly convertClient: HiveEngineConvertClient,
     private readonly tribaldexClient: TribaldexClient,
-    private readonly ethGatewayClient: EthGatewayClient,
   ) {}
 
   private async resolveTradeFeeMul(): Promise<string> {
@@ -172,10 +182,6 @@ export class EngineWithdrawQuoteService {
         tokenPairs: ['SWAP.HIVE:WAIV', 'SWAP.HIVE:SWAP.LTC'],
         exchangeSequence: ['WAIV', 'SWAP.HIVE'],
       },
-      ETH: {
-        tokenPairs: ['SWAP.HIVE:WAIV', 'SWAP.HIVE:SWAP.ETH'],
-        exchangeSequence: ['WAIV', 'SWAP.HIVE'],
-      },
     };
 
     const route = routes[input.outputSymbol];
@@ -219,21 +225,6 @@ export class EngineWithdrawQuoteService {
       return { error: `unsupported output symbol ${input.outputSymbol}` };
     }
 
-    if (input.outputSymbol === 'ETH') {
-      return {
-        withdraw: {
-          contractName: 'tokens',
-          contractAction: 'transfer',
-          contractPayload: {
-            symbol: swapSymbol,
-            to: 'swap-eth',
-            quantity: input.amount,
-            memo: input.address,
-          },
-        },
-      };
-    }
-
     const convert = await this.convertClient.convert({
       destination: input.address,
       from_coin: swapSymbol,
@@ -274,6 +265,13 @@ export class EngineWithdrawQuoteService {
     const outputSymbol = input.outputSymbol.trim().toUpperCase();
     const address = input.address?.trim() ?? '';
     const previewOnly = input.previewOnly ?? !address;
+
+    if (
+      isEngineDisabledPeggedSwapSymbol(inputSymbol) ||
+      isEngineDisabledWithdrawL1Symbol(outputSymbol)
+    ) {
+      return unsupportedWithdrawPair();
+    }
 
     if (inputSymbol === 'WAIV') {
       return this.quoteWaivWithdraw({
@@ -328,17 +326,12 @@ export class EngineWithdrawQuoteService {
 
     const swapSymbol = AVAILABLE_TOKEN_WITHDRAW[input.outputSymbol];
     if (!swapSymbol || input.inputSymbol !== swapSymbol) {
-      return {
-        predictiveAmount: null,
-        customJsonPayload: [],
-        error: 'unsupported withdraw pair',
-      };
+      return unsupportedWithdrawPair();
     }
 
     const validation = await validateWithdrawOutputAmount({
       amount: input.quantity,
       outputSymbol: input.outputSymbol,
-      fetchEthFee: () => this.ethGatewayClient.getSwapEthWithdrawalFee(),
       fetchBtcMinimum: () => this.tribaldexClient.getBtcMinimumWithdrawal(),
     });
     if (!validation) {
@@ -355,24 +348,6 @@ export class EngineWithdrawQuoteService {
       return {
         predictiveAmount: validation.predictiveAmount,
         customJsonPayload: [],
-      };
-    }
-
-    if (input.outputSymbol === 'ETH') {
-      return {
-        predictiveAmount: validation.predictiveAmount,
-        customJsonPayload: [
-          {
-            contractName: 'tokens',
-            contractAction: 'transfer',
-            contractPayload: {
-              symbol: swapSymbol,
-              to: 'swap-eth',
-              quantity: input.quantity,
-              memo: input.address,
-            },
-          },
-        ],
       };
     }
 
@@ -423,7 +398,6 @@ export class EngineWithdrawQuoteService {
     const validation = await validateWithdrawOutputAmount({
       amount: swapData.amount,
       outputSymbol: input.outputSymbol,
-      fetchEthFee: () => this.ethGatewayClient.getSwapEthWithdrawalFee(),
       fetchBtcMinimum: () => this.tribaldexClient.getBtcMinimumWithdrawal(),
     });
     if (!validation) {

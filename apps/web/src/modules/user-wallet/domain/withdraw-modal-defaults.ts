@@ -38,10 +38,11 @@ export function resolveInitialWithdrawSymbols(
       };
     }
   }
-  const first = tokens[0];
+  const waivFirst =
+    tokens.find((item) => item.inputSymbol === 'WAIV') ?? tokens[0];
   return {
-    inputSymbol: first.inputSymbol,
-    outputSymbol: first.outputSymbol,
+    inputSymbol: waivFirst.inputSymbol,
+    outputSymbol: waivFirst.outputSymbol,
   };
 }
 

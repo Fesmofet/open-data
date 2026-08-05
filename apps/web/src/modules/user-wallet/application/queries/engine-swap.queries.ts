@@ -19,6 +19,10 @@ import {
   type EngineWithdrawListApiResponse,
   type EngineWithdrawQuoteApiResponse,
 } from '../dto/engine-swap-api.schema';
+import {
+  filterEngineWithdrawList,
+  isDisabledEngineWithdrawPair,
+} from '../../domain/filter-engine-withdraw-list';
 
 export async function getEngineSwapListQuery(
   accountName: string,
@@ -106,7 +110,7 @@ export async function getEngineWithdrawListQuery(
   if (!parsed.success) {
     return { data: null, error: 'invalid_response' };
   }
-  return { data: parsed.data, error: null };
+  return { data: filterEngineWithdrawList(parsed.data), error: null };
 }
 
 export async function postEngineWithdrawQuoteQuery(
@@ -119,6 +123,9 @@ export async function postEngineWithdrawQuoteQuery(
     previewOnly?: boolean;
   },
 ): Promise<{ data: EngineWithdrawQuoteApiResponse | null; error: string | null }> {
+  if (isDisabledEngineWithdrawPair(body.inputSymbol, body.outputSymbol)) {
+    return { data: null, error: 'bad_request' };
+  }
   const path = `/query/v1/users/${encodeURIComponent(accountName)}/wallet/engine/withdraw/quote`;
   const outcome = await queryApiFetchOutcome<unknown>(path, {
     ...QUERY_API_LIVE_INIT,

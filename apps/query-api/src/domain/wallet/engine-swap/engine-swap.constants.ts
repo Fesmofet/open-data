@@ -15,18 +15,10 @@ export const DEFAULT_WITHDRAW_SLIPPAGE_MAX = 0.005;
 
 export const SWAP_IMPACT_PERCENT_OPTIONS = [0.5, 1, 5, 10, 25, 49] as const;
 
-/** Tokens that require a two-hop route through SWAP.HIVE to reach WAIV. */
-export const DOUBLE_SWAP_TO_WAIV_SYMBOLS = [
-  'SWAP.LTC',
-  'SWAP.BTC',
-  'SWAP.ETH',
-] as const;
-
 export const AVAILABLE_TOKEN_WITHDRAW: Readonly<Record<string, string>> = {
   BTC: 'SWAP.BTC',
   HIVE: 'SWAP.HIVE',
   LTC: 'SWAP.LTC',
-  ETH: 'SWAP.ETH',
   HBD: 'SWAP.HBD',
 };
 

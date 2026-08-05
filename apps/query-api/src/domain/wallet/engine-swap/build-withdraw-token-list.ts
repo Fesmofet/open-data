@@ -2,8 +2,12 @@ import type {
   HiveEngineConverterCoin,
   HiveEngineConverterPair,
 } from '@opden-data-layer/clients';
+import {
+  isEngineDisabledPeggedSwapSymbol,
+  isEngineDisabledWithdrawL1Symbol,
+} from '@opden-data-layer/core/hive-engine-history';
 
-const WAIV_WITHDRAW_OUTPUTS = ['LTC', 'BTC', 'ETH', 'HBD', 'HIVE'] as const;
+const WAIV_WITHDRAW_OUTPUTS = ['LTC', 'BTC', 'HBD', 'HIVE'] as const;
 
 export type WithdrawTokenListItem = {
   inputSymbol: string;
@@ -43,6 +47,12 @@ export function buildWithdrawPairDefinitions(
     if (!inputSymbol.startsWith('SWAP') || outputSymbol.startsWith('SWAP')) {
       continue;
     }
+    if (
+      isEngineDisabledPeggedSwapSymbol(inputSymbol) ||
+      isEngineDisabledWithdrawL1Symbol(outputSymbol)
+    ) {
+      continue;
+    }
     add({
       inputSymbol,
       outputSymbol,
@@ -62,16 +72,10 @@ export function buildWithdrawPairDefinitions(
     requiresExternalAddress: false,
   });
 
-  add({
-    inputSymbol: 'SWAP.ETH',
-    outputSymbol: 'ETH',
-    balanceSymbol: 'SWAP.ETH',
-    displayName: coinBySymbol.get('SWAP.ETH') ?? 'SWAP.ETH',
-    label: 'SWAP.ETH',
-    requiresExternalAddress: true,
-  });
-
   for (const outputSymbol of WAIV_WITHDRAW_OUTPUTS) {
+    if (isEngineDisabledWithdrawL1Symbol(outputSymbol)) {
+      continue;
+    }
     add({
       inputSymbol: 'WAIV',
       outputSymbol,

@@ -24,35 +24,6 @@ function finalizePredictiveAmount(
   return Number.isFinite(amount) && amount > 0 ? amount : null;
 }
 
-export async function validateEthWithdrawAmount(
-  amount: string,
-  fetchFee: () => Promise<number | null>,
-): Promise<WithdrawAmountValidation | null> {
-  const fee = await fetchFee();
-  if (fee === null) {
-    return null;
-  }
-
-  let error: string | null = null;
-  let errorCode: WithdrawValidationErrorCode | undefined;
-  let errorParams: Record<string, string | number> | undefined;
-  const predictive = new BigNumber(amount)
-    .minus(fee)
-    .times(DEFAULT_WITHDRAW_FEE_MUL);
-  if (!predictive.gt(0)) {
-    error = `gas fee ${fee}`;
-    errorCode = 'eth_gas_fee';
-    errorParams = { fee };
-  }
-
-  return {
-    error,
-    errorCode,
-    errorParams,
-    predictiveAmount: error ? null : finalizePredictiveAmount(predictive),
-  };
-}
-
 export function validateBtcWithdrawAmount(
   amount: string,
   minimumFee: number | null,
@@ -125,7 +96,6 @@ export function validateHiveWithdrawAmount(amount: string): WithdrawAmountValida
 export async function validateWithdrawOutputAmount(input: {
   amount: string;
   outputSymbol: string;
-  fetchEthFee: () => Promise<number | null>;
   fetchBtcMinimum: () => Promise<number | null>;
 }): Promise<WithdrawAmountValidation | null> {
   const { amount, outputSymbol } = input;
@@ -133,9 +103,6 @@ export async function validateWithdrawOutputAmount(input: {
   switch (outputSymbol) {
     case 'HIVE':
       return validateHiveWithdrawAmount(amount);
-    case 'ETH':
-    case 'SWAP.ETH':
-      return validateEthWithdrawAmount(amount, input.fetchEthFee);
     case 'BTC':
     case 'SWAP.BTC':
       return validateBtcWithdrawAmount(amount, await input.fetchBtcMinimum());

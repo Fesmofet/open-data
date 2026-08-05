@@ -1,6 +1,5 @@
 import { Test } from '@nestjs/testing';
 import {
-  EthGatewayClient,
   HiveEngineClient,
   HiveEngineConvertClient,
   TribaldexClient,
@@ -17,15 +16,6 @@ const WAIV_POOL = {
   precision: 8,
 };
 
-const ETH_POOL = {
-  tokenPair: 'SWAP.HIVE:SWAP.ETH',
-  baseQuantity: '500000',
-  quoteQuantity: '800000',
-  basePrice: '1.6',
-  quotePrice: '0.625',
-  precision: 8,
-};
-
 describe('EngineWithdrawQuoteService', () => {
   let service: EngineWithdrawQuoteService;
   let hiveEngine: jest.Mocked<
@@ -33,9 +23,6 @@ describe('EngineWithdrawQuoteService', () => {
   >;
   let convertClient: jest.Mocked<Pick<HiveEngineConvertClient, 'convert'>>;
   let tribaldexClient: jest.Mocked<Pick<TribaldexClient, 'getBtcMinimumWithdrawal'>>;
-  let ethGatewayClient: jest.Mocked<
-    Pick<EthGatewayClient, 'getSwapEthWithdrawalFee'>
-  >;
 
   beforeEach(async () => {
     hiveEngine = {
@@ -44,7 +31,6 @@ describe('EngineWithdrawQuoteService', () => {
     };
     convertClient = { convert: jest.fn() };
     tribaldexClient = { getBtcMinimumWithdrawal: jest.fn() };
-    ethGatewayClient = { getSwapEthWithdrawalFee: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -52,19 +38,16 @@ describe('EngineWithdrawQuoteService', () => {
         { provide: HiveEngineClient, useValue: hiveEngine },
         { provide: HiveEngineConvertClient, useValue: convertClient },
         { provide: TribaldexClient, useValue: tribaldexClient },
-        { provide: EthGatewayClient, useValue: ethGatewayClient },
       ],
     }).compile();
 
     service = moduleRef.get(EngineWithdrawQuoteService);
     hiveEngine.findOneMarketPoolParam.mockResolvedValue({ tradeFeeMul: '0.9975' } as never);
-    hiveEngine.findMarketPools.mockResolvedValue([WAIV_POOL, ETH_POOL] as never);
+    hiveEngine.findMarketPools.mockResolvedValue([WAIV_POOL] as never);
     tribaldexClient.getBtcMinimumWithdrawal.mockResolvedValue(null);
   });
 
   it('returns previewOnly WAIV multi-hop quote without custom json', async () => {
-    ethGatewayClient.getSwapEthWithdrawalFee.mockResolvedValue(0.001);
-
     const result = await service.quote({
       account: 'alice',
       quantity: '100',
@@ -78,9 +61,7 @@ describe('EngineWithdrawQuoteService', () => {
     expect(result.customJsonPayload).toEqual([]);
   });
 
-  it('rejects WAIV to ETH when gas fee exceeds swapped amount', async () => {
-    ethGatewayClient.getSwapEthWithdrawalFee.mockResolvedValue(100);
-
+  it('rejects WAIV to ETH (disabled pegged route)', async () => {
     const result = await service.quote({
       account: 'alice',
       quantity: '1',
@@ -89,14 +70,12 @@ describe('EngineWithdrawQuoteService', () => {
       previewOnly: true,
     });
 
-    expect(result.errorCode).toBe('eth_gas_fee');
+    expect(result.error).toBe('unsupported withdraw pair');
     expect(result.predictiveAmount).toBeNull();
     expect(result.customJsonPayload).toEqual([]);
   });
 
-  it('returns direct SWAP.ETH withdraw preview without address', async () => {
-    ethGatewayClient.getSwapEthWithdrawalFee.mockResolvedValue(0.001);
-
+  it('rejects direct SWAP.ETH withdraw', async () => {
     const result = await service.quote({
       account: 'alice',
       quantity: '1',
@@ -105,8 +84,8 @@ describe('EngineWithdrawQuoteService', () => {
       previewOnly: true,
     });
 
-    expect(result.error).toBeUndefined();
-    expect(result.predictiveAmount).toBeGreaterThan(0);
+    expect(result.error).toBe('unsupported withdraw pair');
+    expect(result.predictiveAmount).toBeNull();
     expect(result.customJsonPayload).toEqual([]);
   });
 

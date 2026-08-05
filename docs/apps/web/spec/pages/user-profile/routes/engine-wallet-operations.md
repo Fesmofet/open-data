@@ -44,7 +44,7 @@ See [currency-market-widget.md](currency-market-widget.md).
 
 ## WAIV row actions
 
-On the WAIV tab, each token row still exposes **Transfer** and a withdraw submenu (LTC/BTC/ETH/HIVE/HBD) that opens the withdraw modal with the matching pair preset. When the owner sidebar is visible (desktop), inline row actions are hidden to avoid duplicates.
+On the WAIV tab, each token row still exposes **Transfer** and a withdraw submenu (LTC/BTC/HIVE/HBD) that opens the withdraw modal with the matching pair preset. When the owner sidebar is visible (desktop), inline row actions are hidden to avoid duplicates.
 
 ## Modals
 

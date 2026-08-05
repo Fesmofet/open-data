@@ -103,4 +103,68 @@ describe('buildSwapListTokens', () => {
     expect(tokens.map((token) => token.symbol)).toEqual(['BUDS']);
     expect(tokens[0]?.balance).toBe('0.00005444');
   });
+
+  it('excludes disabled pegged SWAP.ETH even when balance is positive', () => {
+    const tokens = buildSwapListTokens({
+      pools: [
+        {
+          _id: 1,
+          tokenPair: 'SWAP.ETH:SWAP.HIVE',
+          baseQuantity: '1',
+          baseVolume: '0',
+          basePrice: '1',
+          quoteQuantity: '1',
+          quoteVolume: '0',
+          quotePrice: '1',
+          totalShares: '1',
+          precision: 8,
+          creator: 'test',
+        },
+        {
+          _id: 2,
+          tokenPair: 'WAIV:SWAP.HIVE',
+          baseQuantity: '1',
+          baseVolume: '0',
+          basePrice: '1',
+          quoteQuantity: '1',
+          quoteVolume: '0',
+          quotePrice: '1',
+          totalShares: '1',
+          precision: 8,
+          creator: 'test',
+        },
+      ],
+      balances: [
+        {
+          _id: 1,
+          account: 'alice',
+          symbol: 'SWAP.ETH',
+          balance: '1.5',
+          stake: '0',
+          pendingUnstake: '0',
+          delegationsIn: '0',
+          delegationsOut: '0',
+          pendingUndelegations: '0',
+        },
+        {
+          _id: 2,
+          account: 'alice',
+          symbol: 'WAIV',
+          balance: '10',
+          stake: '0',
+          pendingUnstake: '0',
+          delegationsIn: '0',
+          delegationsOut: '0',
+          pendingUndelegations: '0',
+        },
+      ],
+      tokenMetadata: new Map([
+        ['SWAP.ETH', { name: 'SWAP.ETH', precision: 8, metadata: '{}' }],
+        ['WAIV', { name: 'WAIV', precision: 8, metadata: '{}' }],
+      ]),
+    });
+
+    expect(tokens.map((token) => token.symbol)).toEqual(['WAIV']);
+    expect(tokens[0]?.pairs.map((pair) => pair.symbol)).not.toContain('SWAP.ETH');
+  });
 });

@@ -3,7 +3,6 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import {
-  EthGatewayClient,
   HiveEngineClient,
   HiveEngineConvertClient,
   HiveEngineUnavailableError,
@@ -25,7 +24,6 @@ export class GetUserEngineWithdrawListEndpoint {
     private readonly accounts: AccountsCurrentRepository,
     private readonly convertClient: HiveEngineConvertClient,
     private readonly hiveEngine: HiveEngineClient,
-    private readonly ethGatewayClient: EthGatewayClient,
     private readonly tribaldexClient: TribaldexClient,
   ) {}
 
@@ -72,7 +70,6 @@ export class GetUserEngineWithdrawListEndpoint {
         precisionBySymbol,
       });
       const limits = await getWithdrawOutputLimits({
-        fetchEthFee: () => this.ethGatewayClient.getSwapEthWithdrawalFee(),
         fetchBtcMinimum: () => this.tribaldexClient.getBtcMinimumWithdrawal(),
       });
 

@@ -16,5 +16,12 @@ export {
   ENGINE_WALLET_EXCLUDED_SYMBOLS,
   ENGINE_HISTORY_EXCLUDED_SYMBOLS,
   ENGINE_WALLET_MIN_DISPLAY_BALANCE,
+  ENGINE_DISABLED_PEGGED_SWAP_SYMBOLS,
+  ENGINE_DISABLED_DEPOSIT_L1_SYMBOLS,
+  ENGINE_DISABLED_WITHDRAW_L1_SYMBOLS,
+  ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS,
+  isEngineDisabledPeggedSwapSymbol,
+  isEngineDisabledDepositL1Symbol,
+  isEngineDisabledWithdrawL1Symbol,
   type EnginePinnedSwapSymbol,
 } from './engine-wallet.constants';

@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import type { HiveEngineMarketPool } from '@opden-data-layer/clients';
+import { ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS } from '@opden-data-layer/core/hive-engine-history';
 
 import {
   DEFAULT_TRADE_FEE_MUL,
@@ -87,26 +88,26 @@ export function buildPoolsByPair(
 }
 
 export function isDoubleSwapToWaiv(fromSymbol: string, toSymbol: string): boolean {
+  const doubleSwapSymbols = ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS as readonly string[];
   return (
-    (fromSymbol === 'WAIV' &&
-      ['SWAP.LTC', 'SWAP.BTC', 'SWAP.ETH'].includes(toSymbol)) ||
-    (toSymbol === 'WAIV' &&
-      ['SWAP.LTC', 'SWAP.BTC', 'SWAP.ETH'].includes(fromSymbol))
+    (fromSymbol === 'WAIV' && doubleSwapSymbols.includes(toSymbol)) ||
+    (toSymbol === 'WAIV' && doubleSwapSymbols.includes(fromSymbol))
   );
 }
 
-/** Two-hop route: SWAP.{LTC|BTC|ETH} <-> WAIV via SWAP.HIVE. */
+/** Two-hop route: SWAP.{LTC|BTC} <-> WAIV via SWAP.HIVE. */
 export function buildDoubleSwapToWaivHops(
   fromSymbol: string,
   toSymbol: string,
 ): SwapHopInput[] | null {
-  if (fromSymbol === 'WAIV' && ['SWAP.LTC', 'SWAP.BTC', 'SWAP.ETH'].includes(toSymbol)) {
+  const doubleSwapSymbols = ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS as readonly string[];
+  if (fromSymbol === 'WAIV' && doubleSwapSymbols.includes(toSymbol)) {
     return [
       { tokenPair: 'SWAP.HIVE:WAIV', inputSymbol: 'WAIV' },
       { tokenPair: `SWAP.HIVE:${toSymbol}`, inputSymbol: 'SWAP.HIVE' },
     ];
   }
-  if (toSymbol === 'WAIV' && ['SWAP.LTC', 'SWAP.BTC', 'SWAP.ETH'].includes(fromSymbol)) {
+  if (toSymbol === 'WAIV' && doubleSwapSymbols.includes(fromSymbol)) {
     return [
       { tokenPair: `SWAP.HIVE:${fromSymbol}`, inputSymbol: fromSymbol },
       { tokenPair: 'SWAP.HIVE:WAIV', inputSymbol: 'SWAP.HIVE' },

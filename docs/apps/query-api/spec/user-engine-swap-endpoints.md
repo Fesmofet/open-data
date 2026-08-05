@@ -30,7 +30,10 @@ List endpoints use `findStrict` where noted below so RPC failures return **503**
 |----------|---------|
 | `HIVE_SWAP_ACCOUNT` | HIVE deposit hivepegged routing (default `honey-swap`) |
 | Converter API | `HiveEngineConvertClient` base URL (see clients lib) |
-| Eth gateway | `EthGatewayClient` for SWAP.ETH withdrawal fee |
+
+## Disabled pegged token (`SWAP.ETH`)
+
+`SWAP.ETH` remains visible on the ENGINE wallet balance tab (`pinnedTokens`) but is **excluded** from deposit, withdraw, and swap list/quote endpoints. Blocklist: `ENGINE_DISABLED_PEGGED_SWAP_SYMBOLS` in `@opden-data-layer/core/hive-engine-history`. L1 **ETH** deposit and **WAIV→ETH** / **SWAP.ETH→ETH** withdraw are rejected.
 
 ## Swap list
 
@@ -59,13 +62,13 @@ Returns depositable external/Hive tokens from `converter-api.hive-engine.com/api
 Returns deposit routing instructions:
 
 - **HIVE** — fixed Hive L1 route via `hivepegged` buy to `HIVE_SWAP_ACCOUNT` (default `honey-swap`); memo is the hivepegged JSON payload.
-- **BTC, LTC, HBD** — proxied from `converter-api.hive-engine.com/api/convert/` (`address` and/or `account` + `memo`). ETH is withdraw-only (no converter deposit pair).
+- **BTC, LTC, HBD** — proxied from `converter-api.hive-engine.com/api/convert/` (`address` and/or `account` + `memo`). **ETH** is not supported (disabled pegged token).
 
 ## Withdraw list
 
 `GET /query/v1/users/:name/wallet/engine/withdraw/list`
 
-Returns withdraw routes from converter-api pairs + manual routes (`SWAP.HIVE`→`HIVE`, `SWAP.ETH`→`ETH`, `WAIV`→`BTC|LTC|ETH|HBD|HIVE`), filtered to tokens with balance > 0. Uses strict balance read.
+Returns withdraw routes from converter-api pairs + manual routes (`SWAP.HIVE`→`HIVE`, `WAIV`→`BTC|LTC|HBD|HIVE`), filtered to tokens with balance > 0. Uses strict balance read. Routes involving `SWAP.ETH` or L1 **ETH** are omitted.
 
 ## Withdraw quote
 
@@ -74,7 +77,7 @@ Returns withdraw routes from converter-api pairs + manual routes (`SWAP.HIVE`→
 Body: `{ inputSymbol, outputSymbol, quantity, address?, previewOnly? }`
 
 - **`previewOnly`** — when `true` (or when `address` is omitted), returns predictive amount and validation errors without building final withdraw `customJson`.
-- **`errorCode` / `errorParams`** — structured validation (`eth_gas_fee`, `minimum_withdraw_amount`, `minimum_receive_amount`) for web i18n.
+- **`errorCode` / `errorParams`** — structured validation (`minimum_withdraw_amount`, `minimum_receive_amount`) for web i18n.
 
 Routes:
 

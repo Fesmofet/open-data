@@ -7,6 +7,7 @@ import {
   HiveEngineConvertClient,
   HiveEngineUnavailableError,
 } from '@opden-data-layer/clients';
+import { isEngineDisabledDepositL1Symbol } from '@opden-data-layer/core/hive-engine-history';
 
 import { DEFAULT_HIVE_SWAP_ACCOUNT } from '../../constants/wallet.constants';
 import { AccountsCurrentRepository } from '../../repositories';
@@ -35,6 +36,10 @@ export class GetUserEngineDepositAddressEndpoint {
 
     const symbol = query.symbol.trim().toUpperCase();
     if (!symbol) {
+      throw new BadRequestException('unsupported deposit symbol');
+    }
+
+    if (isEngineDisabledDepositL1Symbol(symbol)) {
       throw new BadRequestException('unsupported deposit symbol');
     }
 

@@ -1,4 +1,5 @@
 import type { HiveEngineMarketPool, HiveEngineTokenBalance } from '@opden-data-layer/clients';
+import { isEngineDisabledPeggedSwapSymbol } from '@opden-data-layer/core/hive-engine-history';
 
 export type SwapListPair = {
   symbol: string;
@@ -79,8 +80,17 @@ export function buildSwapListTokens(input: {
 
   const tokens: SwapListToken[] = [];
   for (const symbol of symbols) {
-    const pairs = adjacency.get(symbol);
-    if (!pairs || pairs.length === 0) {
+    if (isEngineDisabledPeggedSwapSymbol(symbol)) {
+      continue;
+    }
+    const rawPairs = adjacency.get(symbol);
+    if (!rawPairs || rawPairs.length === 0) {
+      continue;
+    }
+    const pairs = rawPairs.filter(
+      (pair) => !isEngineDisabledPeggedSwapSymbol(pair.symbol),
+    );
+    if (pairs.length === 0) {
       continue;
     }
     const meta = input.tokenMetadata.get(symbol);

@@ -24,6 +24,7 @@ import {
   uniqueWithdrawInputOptions,
   withdrawOutputOptions,
 } from '../../../domain/withdraw-modal-defaults';
+import { filterEngineWithdrawList } from '../../../domain/filter-engine-withdraw-list';
 import {
   fetchEngineWithdrawList,
   fetchEngineWithdrawQuote,
@@ -99,9 +100,10 @@ export function WalletWithdrawModal({
         if (cancelled) {
           return;
         }
-        setWithdrawList(result.tokens);
+        const filtered = filterEngineWithdrawList(result);
+        setWithdrawList(filtered.tokens);
         const initial = resolveInitialWithdrawSymbols(
-          result.tokens,
+          filtered.tokens,
           state.inputSymbol,
           state.outputSymbol,
         );
