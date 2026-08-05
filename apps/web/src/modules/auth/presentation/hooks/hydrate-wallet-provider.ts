@@ -3,6 +3,10 @@ import {
   hydrateHivesignerTokenFromCookie,
 } from '../../infrastructure/hivesigner-token';
 import {
+  getHasAuthSession,
+  isHasAuthSessionValid,
+} from '../../infrastructure/providers/has';
+import {
   getWalletFacade,
   ODL_KEYCHAIN_PERSISTENT_KEY,
   ODL_WALLET_PROVIDER_SESSION_KEY,
@@ -15,6 +19,11 @@ import {
 export function hydrateWalletProviderFromStorage(): void {
   if (hydrateHivesignerTokenFromCookie()) {
     getWalletFacade().setActiveProvider('hivesigner');
+    return;
+  }
+
+  if (isHasAuthSessionValid(getHasAuthSession())) {
+    getWalletFacade().setActiveProvider('hiveauth');
     return;
   }
 

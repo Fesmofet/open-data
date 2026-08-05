@@ -1,9 +1,9 @@
 'use client';
 
+import { hasExpireToVerifyUnix } from './has/has-expire';
+
 /**
  * HiveAuth login completes by sending `authData` JSON to the auth BFF verify endpoint.
- * Integrate the HAS client (WebSocket + PKSA) in your app; then call this with the
- * decrypted payload fields (`username`, `expire`, optional `challenge`).
  */
 export function buildHiveAuthPayload(input: {
   username: string;
@@ -16,5 +16,18 @@ export function buildHiveAuthPayload(input: {
     ...(input.challengeMessage !== undefined
       ? { challenge: input.challengeMessage }
       : {}),
+  });
+}
+
+/** Build verify payload from a HAS session (expire in milliseconds). */
+export function buildHiveAuthVerifyPayload(input: {
+  username: string;
+  expireMs: number;
+  challengeMessage: string;
+}): string {
+  return buildHiveAuthPayload({
+    username: input.username,
+    expireUnix: hasExpireToVerifyUnix(input.expireMs),
+    challengeMessage: input.challengeMessage,
   });
 }

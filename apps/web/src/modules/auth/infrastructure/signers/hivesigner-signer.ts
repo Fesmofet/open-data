@@ -11,6 +11,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 import type { BroadcastTransactionResult } from '../../domain/types';
 import { getHivesignerToken } from '../hivesigner-token';
+import { extractTransactionIdFromBroadcastResult } from './extract-transaction-id';
 import { buildHiveSignerCustomJsonSignUrl } from './hivesigner-custom-json-sign-url';
 import { hivePayloadRequiresActiveKey } from './hive-operation-signing';
 
@@ -125,28 +126,6 @@ function toWireOperation(op: HiveOperation): WireOperation {
       ];
   }
   return assertNeverForHiveOp(op);
-}
-
-function extractTransactionIdFromBroadcastResult(result: unknown): string | null {
-  if (typeof result === 'string' && result.trim().length > 0) {
-    return result.trim();
-  }
-  if (result && typeof result === 'object') {
-    const o = result as Record<string, unknown>;
-    const nested = o.result;
-    if (nested && typeof nested === 'object') {
-      const nestedObj = nested as Record<string, unknown>;
-      const nestedId = nestedObj.id ?? nestedObj.transaction_id ?? nestedObj.tx_id;
-      if (typeof nestedId === 'string' && nestedId.trim().length > 0) {
-        return nestedId.trim();
-      }
-    }
-    const id = o.id ?? o.transaction_id ?? o.tx_id;
-    if (typeof id === 'string' && id.trim().length > 0) {
-      return id.trim();
-    }
-  }
-  return null;
 }
 
 function redirectForActiveKeyOperations(wireOps: WireOperation[]): never {

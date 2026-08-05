@@ -10,6 +10,8 @@ import { env } from '@/config/env';
 import { getIpfsContentBaseUrl } from '@/config/get-ipfs-content-base-url';
 import { getNotificationsWsPublicUrl } from '@/config/get-notifications-ws-public-url';
 import { IpfsContentBaseProvider } from '@/config/ipfs-content-base-provider';
+import { HasConfigProvider } from '@/config/has-config-provider';
+import { HasSignWaitProvider } from '@/modules/auth/presentation/components/has-sign-wait-provider';
 import { OdlNetworkProvider } from '@/config/odl-network-provider';
 import { NotificationsWsConfigProvider } from '@/modules/notifications/presentation/notifications-ws-config-provider';
 import { ShellModeProvider } from '@/shell-mode';
@@ -66,19 +68,22 @@ export default async function RootLayout({
       <body className="min-h-screen bg-bg text-fg antialiased">
         <ThemeProvider initialResolution={themeResolution}>
           <ShellModeProvider initialResolution={shellModeResolution}>
-            <OdlNetworkProvider
-              customJsonId={env.odlCustomJsonId}
-              oblCustomJsonId={env.oblCustomJsonId}
-              oslCustomJsonId={env.oslCustomJsonId}
-            >
-              <IpfsContentBaseProvider contentBaseUrl={ipfsContentBaseUrl}>
-                <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
-                  <I18nProvider locale={locale} messages={messages}>
-                    {children}
-                  </I18nProvider>
-                </NotificationsWsConfigProvider>
-              </IpfsContentBaseProvider>
-            </OdlNetworkProvider>
+            <HasConfigProvider wsUrl={env.hasWsUrl} appName={env.hasAppName}>
+              <OdlNetworkProvider
+                customJsonId={env.odlCustomJsonId}
+                oblCustomJsonId={env.oblCustomJsonId}
+                oslCustomJsonId={env.oslCustomJsonId}
+              >
+                <IpfsContentBaseProvider contentBaseUrl={ipfsContentBaseUrl}>
+                  <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
+                    <I18nProvider locale={locale} messages={messages}>
+                      <HasSignWaitProvider />
+                      {children}
+                    </I18nProvider>
+                  </NotificationsWsConfigProvider>
+                </IpfsContentBaseProvider>
+              </OdlNetworkProvider>
+            </HasConfigProvider>
           </ShellModeProvider>
         </ThemeProvider>
       </body>

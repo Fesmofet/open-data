@@ -8,6 +8,11 @@ import type {
 } from '../domain/types';
 import type { IAuthBffClient } from '../application/ports/auth-api.port';
 import type { IHiveSigner } from '../application/ports/hive-signer.port';
+import {
+  resolveBroadcastProvider,
+  shouldFallbackKeychainBroadcastToHas,
+  shouldTryKeychainBeforeHas,
+} from './resolve-broadcast-provider';
 import { signBufferWithKeychain } from './providers/keychain-provider';
 import { redirectToHiveSigner } from './providers/hivesigner-provider';
 import { createHiveAuthSigner } from './signers/hiveauth-signer';
@@ -57,12 +62,23 @@ export class DefaultWalletFacade implements WalletFacade {
   async broadcast(
     input: BroadcastTransactionInput,
   ): Promise<BroadcastTransactionResult> {
-    if (!this.activeProvider) {
-      throw new Error('Not logged in');
+    if (shouldTryKeychainBeforeHas()) {
+      const keychainSigner = this.signers.get('keychain');
+      if (keychainSigner) {
+        try {
+          return await keychainSigner.sign(input);
+        } catch (error) {
+          if (!shouldFallbackKeychainBroadcastToHas(error)) {
+            throw error;
+          }
+        }
+      }
     }
-    const signer = this.signers.get(this.activeProvider);
+
+    const provider = resolveBroadcastProvider(this.activeProvider);
+    const signer = this.signers.get(provider);
     if (!signer) {
-      throw new Error('No signer for provider: ' + this.activeProvider);
+      throw new Error('No signer for provider: ' + provider);
     }
     return signer.sign(input);
   }

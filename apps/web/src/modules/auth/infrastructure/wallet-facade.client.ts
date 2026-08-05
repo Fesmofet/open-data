@@ -5,6 +5,7 @@ import type { WalletFacade } from '../domain/types';
 import { createAuthBffClient } from './clients/auth-bff.client';
 import { createWalletFacade } from './wallet-facade';
 import { ODL_HS_TOKEN_STORAGE_KEY } from './hivesigner-token.constants';
+import { clearHasAuthSession } from './providers/has';
 
 /** sessionStorage key for HiveSigner provider (session-scoped; token is sensitive). */
 export const ODL_WALLET_PROVIDER_SESSION_KEY = 'odl_wallet_provider';
@@ -31,12 +32,11 @@ export function getWalletFacade(): WalletFacade {
  */
 export function clearWalletSession(): void {
   getWalletFacade().setActiveProvider(null);
+  clearHasAuthSession();
   try {
     localStorage.removeItem(ODL_KEYCHAIN_PERSISTENT_KEY);
-    // HiveSigner token + provider marker (both in localStorage)
     localStorage.removeItem(ODL_WALLET_PROVIDER_SESSION_KEY);
     localStorage.removeItem(ODL_HS_TOKEN_STORAGE_KEY);
-    // Legacy sessionStorage cleanup
     sessionStorage.removeItem(ODL_WALLET_PROVIDER_SESSION_KEY);
   } catch {
     // ignore storage errors (private mode, quota, etc.)

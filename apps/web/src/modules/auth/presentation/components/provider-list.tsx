@@ -11,6 +11,7 @@ import {
 } from '../../domain/account-history';
 import type { WalletProviderId, WalletProviderMeta } from '../../domain/types';
 import { useHivesignerLogin } from './hivesigner-login';
+import { KeychainHasLoginPanel } from './keychain-has-login-panel';
 import { useKeychainLogin } from './keychain-login';
 
 const PROVIDER_ICON_SIZE = 28;
@@ -142,6 +143,30 @@ function KeychainProviderRow({
     clearAccountHistory();
     refreshHistory();
     setHistoryOpen(false);
+  }
+
+  if (keychain.mode === 'has-waiting') {
+    return (
+      <div ref={rowRef} className="relative">
+        <div className="flex items-center gap-3 rounded-btn border border-border-strong bg-surface px-3 py-2">
+          <ProviderIcon src={provider.iconSrc} alt="" />
+          <span className="font-label text-fg">{provider.displayName}</span>
+        </div>
+        {keychain.hasDeepLink ? (
+          <KeychainHasLoginPanel
+            deepLink={keychain.hasDeepLink}
+            expiresAtMs={keychain.hasExpiresAtMs}
+            pending={keychain.pending}
+            error={keychain.error}
+            onCancel={keychain.cancelHas}
+          />
+        ) : (
+          <p className="mt-3 text-body-sm text-fg-secondary" role="status">
+            …
+          </p>
+        )}
+      </div>
+    );
   }
 
   if (!expanded) {

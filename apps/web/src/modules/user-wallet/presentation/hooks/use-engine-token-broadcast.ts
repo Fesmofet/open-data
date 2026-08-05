@@ -10,7 +10,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 import type { HiveEngineTokensContractAction } from '@opden-data-layer/hive-broadcast';
 
-import { getWalletFacade } from '@/modules/auth';
+import { getWalletFacade, hydrateWalletProviderFromStorage } from '@/modules/auth';
 
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
@@ -41,6 +41,7 @@ export function useEngineTokenBroadcast(account: string) {
       setError(null);
       setPending(true);
       try {
+        hydrateWalletProviderFromStorage();
         const op = buildHiveEngineTokensOp({
           account,
           contractAction,
@@ -72,6 +73,7 @@ export function useEngineTokenBroadcast(account: string) {
       setError(null);
       setPending(true);
       try {
+        hydrateWalletProviderFromStorage();
         const op = buildHiveEngineCustomJsonOp(account, payloads);
         const { transactionId } = await getWalletFacade().broadcast({
           operations: [op],

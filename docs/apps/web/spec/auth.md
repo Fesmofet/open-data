@@ -29,17 +29,56 @@ Clean architecture: `domain` (wallet facade, provider metadata), `application` (
 
 ## Env
 
-See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`, `ODL_NETWORK` (repo root `.env` on compose).
+See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`, `ODL_NETWORK` (repo root `.env` on compose), `HAS_WS_URL`, `HAS_APP_NAME`.
+
+## Credential layers
+
+Three independent credentials — **do not conflate JWT access token with HAS session token**:
+
+| Layer | Storage | Used for | Must not |
+|-------|---------|----------|----------|
+| **App JWT** | httpOnly `odl_access`, `odl_refresh` | Server auth, BFF, query-api | Never in `localStorage` / JS |
+| **HAS signing session** | `odl_hiveauth_session` | `HAS.authenticate` / `HAS.broadcast` only | Never sent to auth-api verify |
+| **HiveSigner OAuth** | `odl_hs_token` (+ short-lived callback cookie) | HiveSigner SDK | Separate from HAS |
+
+HAS session shape (`HasAuthSession`): `username`, `key` (auth_key), `expire` (ms), `hasSessionToken` (PKSA token from auth_ack), `host`. Verify payload is only `{ username, expire, challenge }` — no `key` or `hasSessionToken`.
+
+**Security:** `auth_key` and `hasSessionToken` live in client storage (legacy Waivio Cookie parity). XSS could exfiltrate signing session; JWT remains httpOnly-protected.
+
+**Dual storage:** `odl_hiveauth_session` is written to both `localStorage` (reload persistence) and `sessionStorage` (private/incognito mode where localStorage may fail).
+
+**Session expiry:** Expired HAS sessions are auto-cleared on read. Broadcast and hydration require `expire > Date.now()`. Re-login via Keychain when expired.
+
+## Hive Keychain routing (extension vs mobile)
+
+The login UI exposes a single **Hive Keychain** provider. At sign-in time:
+
+| Environment | Flow |
+|-------------|------|
+| Browser with Keychain extension (`window.hive_keychain.requestSignBuffer`) | Server challenge (`provider: keychain`) → extension `requestSignBuffer` → `verify/keychain` |
+| Mobile browser or desktop **without** extension | Server challenge (`provider: hiveauth`) → **HiveAuth (HAS)** WebSocket → QR code + `has://auth_req/…` deep link → Keychain Mobile approval → `verify/hiveauth` |
+
+Implementation: `shouldUseKeychainHas()` (`domain/device/`) forces HAS on mobile even when Keychain injects a stub extension API; `authenticateWithHas()` (`infrastructure/providers/has/`), `KeychainHasLoginPanel` (client-side QR via `qrcode` — never third-party QR APIs for auth payloads). Broadcasts prefer a valid `odl_hiveauth_session` via `resolveBroadcastProvider()`.
+
+After HAS login, JWT session uses provider **`hiveauth`**; the HAS session is stored in `odl_hiveauth_session` for **`HAS.broadcast`** signing. **`useHydrateWalletProvider()`** restores `hiveauth` only when the session is still valid (not expired).
+
+Extension login clears any stale HAS session. Logout clears `odl_hiveauth_session` via `clearWalletSession()`.
+
+Default **`HAS_WS_URL`**: `wss://hive-auth.arcange.eu` (with fallback to `wss://has.hiveauth.com`). The deep link `host` field always matches the server the app actually connected to.
+
+**iOS note:** Keychain Mobile may not sign in the background on iOS; keep the app open when approving broadcasts.
+
+**HAS broadcast approval UI:** When `HAS.broadcast` receives `sign_wait`, [`HasSignWaitProvider`](apps/web/src/modules/auth/presentation/components/has-sign-wait-provider.tsx) opens a global modal (vote, comment, transfer, etc.). The modal closes automatically on success; on failure it shows the error and a Close button.
 
 ## Wallet facade
 
 `WalletFacade` (`createWalletFacade`) exposes `login(provider, username)`, `broadcast`, and **`setActiveProvider(provider | null)`** (restore active signer without re-login).
 
-- **Browser singleton:** `getWalletFacade()` (`infrastructure/wallet-facade.client.ts`) shares one facade + BFF client across the app. After a **full page reload**, the cookie session is still valid but the in-memory `activeProvider` is lost; **`useHydrateWalletProvider()`** restores Keychain or HiveSigner from `localStorage`. **HiveAuth** broadcast is not implemented.
+- **Browser singleton:** `getWalletFacade()` (`infrastructure/wallet-facade.client.ts`) shares one facade + BFF client across the app. After a **full page reload**, the cookie session is still valid but the in-memory `activeProvider` is lost; **`useHydrateWalletProvider()`** restores Keychain, HiveSigner, or HiveAuth (HAS session) from `localStorage`.
 - **Operations:** Domain builders (`buildVoteOp`, `buildCommentOp`, `buildCommentOptionsOp`, `buildCustomJsonOp`, `buildReblogOp`) produce a normalized `BroadcastTransactionInput` (`HiveOperationPayload`).
 - **ODL `custom_json`:** Client broadcasts use **`useOdlCustomJsonId()`** (runtime **`ODL_NETWORK`** via root layout). `mainnet` → `odl-mainnet`, `testnet` → `odl-testnet` — same **`ODL_NETWORK`** as **chain-indexer**. Docker: one repo-root **`.env`** at container start only (no build-time ODL env on the image).
-- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. Keychain uses `hive_keychain.requestBroadcast` with **Active** key for Hive Engine `custom_json`. HiveSigner: posting-key ops via SDK; active-key Engine ops redirect to HiveSigner sign URL. HiveAuth signer throws until implemented.
-- **Providers:** Keychain, HiveAuth (manual `authData` step in UI), HiveSigner (redirect).
+- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. Keychain uses `hive_keychain.requestBroadcast` with **Active** key for Hive Engine `custom_json`. HiveSigner: posting-key ops via SDK; active-key Engine ops redirect to HiveSigner sign URL. **HiveAuth** uses `HAS.broadcast` via `createHiveAuthSigner()` (requires valid `odl_hiveauth_session`).
+- **Providers:** Keychain (extension or HAS fallback), HiveSigner (redirect). HiveAuth is used internally for mobile Keychain login and broadcast — not shown as a separate login row.
 
 ### `json_metadata` and comment + `comment_options`
 

@@ -8,6 +8,8 @@ export function engineTokenBroadcastErrorMessageKey(
       return 'wallet_broadcast_not_logged_in';
     case 'keychain_missing':
       return 'wallet_broadcast_keychain_missing';
+    case 'hiveauth_session_expired':
+      return 'auth_keychain_has_broadcast_expired';
     case 'hivesigner_token_missing':
       return 'wallet_broadcast_hivesigner_token_missing';
     case 'hivesigner_sign_failed':

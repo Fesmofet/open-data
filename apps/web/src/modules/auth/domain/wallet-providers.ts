@@ -9,6 +9,7 @@ export const WALLET_PROVIDERS: WalletProviderMeta[] = [
     isCustodial: false,
   },
   {
+    // Internal-only: mobile HAS login + broadcast; not shown as a separate login row.
     id: 'hiveauth',
     displayName: 'HiveAuth',
     iconSrc: '/images/icons/hive-auth-logo.png',

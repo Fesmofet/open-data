@@ -9,7 +9,6 @@ export { ProviderList } from './components/provider-list';
 export type { ProviderListProps } from './components/provider-list';
 export { useKeychainLogin } from './components/keychain-login';
 export type { UseKeychainLoginOptions } from './components/keychain-login';
-export { HiveAuthLogin } from './components/hiveauth-login';
 export { useHivesignerLogin } from './components/hivesigner-login';
 export { useHydrateWalletProvider } from './hooks/use-hydrate-wallet-provider';
 export { hydrateWalletProviderFromStorage } from './hooks/hydrate-wallet-provider';

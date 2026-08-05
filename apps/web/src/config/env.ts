@@ -8,6 +8,7 @@ import {
   resolveOdlCustomJsonId,
   resolveOslCustomJsonId,
 } from './odl-network';
+import { DEFAULT_HAS_WS_URL } from './has.constants';
 
 /**
  * Single source of truth for server-side env vars used by `apps/web`.
@@ -74,6 +75,22 @@ const envSchema = z.object({
       const t = v?.trim();
       return t ? t.replace(/\/$/, '') : undefined;
     }),
+  /** HiveAuth (HAS) WebSocket server for Keychain mobile login and broadcast. */
+  HAS_WS_URL: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const t = v?.trim();
+      return t || DEFAULT_HAS_WS_URL;
+    }),
+  /** Application name sent to HiveAuth PKSA during authentication. */
+  HAS_APP_NAME: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const t = v?.trim();
+      return t || 'Waivio';
+    }),
 });
 
 const parsed = envSchema.parse(process.env);
@@ -89,6 +106,8 @@ export const env = {
   odlNetwork,
   requireAuth: parsed.REQUIRE_AUTH,
   publicOrigin,
+  hasWsUrl: parsed.HAS_WS_URL,
+  hasAppName: parsed.HAS_APP_NAME,
   /** Hive `custom_json.id` for server-side ODL envelope builders. */
   odlCustomJsonId: resolveOdlCustomJsonId(odlNetwork),
   /** Hive `custom_json.id` for server-side OBL envelope builders. */
