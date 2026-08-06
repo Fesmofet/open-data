@@ -31,10 +31,9 @@ export function filterUpdateTypeOptionsByQuery(
   if (q.length === 0) {
     return [...options];
   }
-  return options.filter((o) => {
-    const label = optionLabelForUpdateType(o).toLowerCase();
-    return label.includes(q) || o.value.toLowerCase().includes(q);
-  });
+  return options.filter((o) =>
+    optionLabelForUpdateType(o).toLowerCase().includes(q),
+  );
 }
 
 function FilterSelectChevron({ open }: { open: boolean }) {

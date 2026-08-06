@@ -49,4 +49,12 @@ describe('filterUpdateTypeOptionsByQuery', () => {
       'Gallery_album',
     );
   });
+
+  it('does not match internal update_type id when label does not contain query', () => {
+    const options = [
+      { value: 'address', label: 'Address' },
+      { value: 'walletAddress', label: 'Wallet' },
+    ];
+    expect(filterUpdateTypeOptionsByQuery(options, 'ad')).toEqual([options[0]]);
+  });
 });
