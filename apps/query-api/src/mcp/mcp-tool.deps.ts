@@ -21,6 +21,7 @@ import type {
   GetUserMentionsFeedEndpoint,
   GetUserThreadsFeedEndpoint,
   GetUserActivityEndpoint,
+  GetHomeFeedEndpoint,
 } from '../domain/feed';
 import type { GetObjectUpdatesFeedEndpoint } from '../domain/object-updates/get-object-updates-feed.endpoint';
 import type { GetUpdateVotersEndpoint } from '../domain/object-updates/get-update-voters.endpoint';
@@ -105,6 +106,7 @@ export interface McpToolDeps {
   getUserThreadsFeed: GetUserThreadsFeedEndpoint;
   getUserCommentsFeed: GetUserCommentsFeedEndpoint;
   getUserActivity: GetUserActivityEndpoint;
+  getHomeFeed: GetHomeFeedEndpoint;
   getUserWaivWallet: GetUserWaivWalletEndpoint;
   getUserWaivWalletHistory: GetUserWaivWalletHistoryEndpoint;
   getUserEngineWallet: GetUserEngineWalletEndpoint;

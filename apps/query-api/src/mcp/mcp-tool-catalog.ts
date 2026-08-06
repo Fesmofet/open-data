@@ -360,6 +360,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/shop-feed-endpoints.md',
   },
   {
+    name: 'get_home_feed',
+    description:
+      'Hub home post feed: global for guests; personalized for viewer (followed authors, followed objects, authority objects).',
+    httpEquivalent: 'POST /query/v1/posts/feed',
+    specPath: 'docs/apps/query-api/spec/home-feed.md',
+  },
+  {
     name: 'get_post',
     description:
       'Single post by author/permlink with rewards (currency affects reward label). See single-post-endpoint.md.',

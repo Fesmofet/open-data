@@ -238,9 +238,9 @@
   "and_more_reblogged": "und {amount} weitere Neuveröffentlichungen",
   "any_campaigns_yet": "Sie haben noch keine Kampagnen",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (nicht sicher für die Arbeit)",
   "append_form_flagged": "Markiert",
@@ -1380,10 +1380,6 @@
   "hive_wallet": "HIVE-Wallet",
   "holdings": "Bestände",
   "home": "Startseite",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "die Startseite",
   "homepage_link_text": "Hier ist ein Link zu {link}.",
   "iAgreePostMyData": "Ich stimme zu, meine öffentlichen Daten in die Blockchain zu posten",
@@ -3370,5 +3366,7 @@
   "your_reward_new": "deine Belohnung",
   "your_vote": "Ihr Vote",
   "your_vote_placeholder": "Ihr Vote (optional)",
-  "zoom": "Zoom"
+  "zoom": "Zoom",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

@@ -1,1 +1,1 @@
-export { HomeAgentComposerStub } from './components/home-agent-composer-stub';
+export { HomeFeedPostsList } from './components/home-feed-posts-list';

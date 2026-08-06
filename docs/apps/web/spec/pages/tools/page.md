@@ -1,7 +1,7 @@
 ---
 id: web-pages-tools
 title: Tools hub
-description: Hub TOOLS tab with Personal sidebar (Notifications settings, Drafts, Settings).
+description: Personal tools area (Notifications settings, Drafts, Settings). Not in hub section nav; reachable via direct URL or avatar menu.
 type: spec
 status: active
 scope: web
@@ -26,13 +26,13 @@ related:
 | `/notifications/settings` | Notification toggles + Telegram link |
 | `/settings` | Locale, theme, and shell mode preferences |
 
-All four show hub section nav (HOME / DATA / BUSINESS / **TOOLS**) and the **Personal:** left sidebar.
+All four use the hub layout (FEED / DISCOVER / MARKET section nav above) and the **Personal:** left sidebar. TOOLS is not a section-nav tab; open via `/tools`, `/drafts`, `/notifications/settings`, `/settings`, or the avatar menu **Tools** link.
 
 Implementation: [`apps/web/src/modules/tools/`](../../../../apps/web/src/modules/tools/), layout at [`(hub)/(tools-shell)/layout.tsx`](../../../../apps/web/src/app/(app)/(hub)/(tools-shell)/layout.tsx).
 
 ## Avatar menu
 
-- **Tools** → `/tools`
+- **Settings** → `/notifications/settings` (entry into tools-shell; locale/theme/shell prefs at `/settings` via `ToolsLayoutNav` sidebar only)
 - **Wallet** → `/@:username/transfers?type=WAIV`
 - **Earn** removed from menu
 

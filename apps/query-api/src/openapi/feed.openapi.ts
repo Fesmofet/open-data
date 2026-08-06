@@ -538,3 +538,51 @@ registry.registerPath({
     },
   },
 });
+
+const homeFeedBodySchema = registry.register(
+  'HomeFeedBody',
+  z.object({
+    limit: z.number().int().min(1).max(50).optional(),
+    cursor: z.string().optional(),
+    currency: feedCurrencyBodyField,
+  }),
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/posts/feed',
+  tags: [queryApiOpenApiTags.posts],
+  summary: 'Hub home feed (global or personalized)',
+  description:
+    'Guest (no X-Viewer): all root posts newest-first. Logged-in viewer: posts by followed authors, posts linked to followed objects, or posts linked to objects where the viewer has administrative or ownership authority.',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: homeFeedBodySchema,
+        },
+      },
+      required: false,
+    },
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'When set, returns a personalized feed for this account instead of the global guest feed.',
+        example: 'alice',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Feed page with items and optional next cursor.',
+      content: {
+        'application/json': {
+          schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+  },
+});

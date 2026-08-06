@@ -177,9 +177,9 @@
   "and_more_amount": "و {amount} أكثر",
   "and_more_reblogged": "و {amount} أكثر",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (غير آمن للعمل)",
   "append_form_flagged": "وضع علامة",
@@ -1104,10 +1104,6 @@
   "hive_vote": "تصويت HIVE",
   "hive_wallet": "محفظة HIVE",
   "home": "منزل، بيت",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "الصفحة الرئيسية",
   "homepage_link_text": "هذا رابط لـ {link} .",
   "iAgreePostMyData": "أوافق على نشر بياناتي العامة في blockchain",
@@ -2646,5 +2642,7 @@
   "your_reward": "مكافأتك",
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
-  "СЃommunity_actions": "إجراءات المجتمع"
+  "СЃommunity_actions": "إجراءات المجتمع",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

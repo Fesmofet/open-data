@@ -51,6 +51,18 @@ export async function revalidateUserSocialAfterBroadcast(accountName: string): P
   revalidatePath(userProfilePath(name), 'layout');
 }
 
+/** Hub FEED tab after vote/comment/reblog broadcast. */
+export async function revalidateHomeFeedAfterBroadcast(
+  viewerUsername?: string | null,
+): Promise<void> {
+  updateTag(queryApiCacheTags.homeFeed('guest'));
+  const name = viewerUsername?.trim().toLowerCase();
+  if (name && name.length > 0) {
+    updateTag(queryApiCacheTags.homeFeed(name));
+  }
+  revalidatePath('/', 'page');
+}
+
 /** Profile feed tabs (posts, threads, comments, mentions) after vote/comment broadcast. */
 export async function revalidateUserFeedAfterBroadcast(accountName: string): Promise<void> {
   const name = accountName.trim().toLowerCase();

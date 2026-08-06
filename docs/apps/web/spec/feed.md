@@ -13,7 +13,11 @@ related:
 
 # Feed (story list)
 
-**Related:** [Story container](components/story-container.md), [auth](auth.md), [architecture](architecture.md), [Profile activity tab](pages/user-profile/routes/activity.md) (Hive account history — not `Story` rows).
+**Related:** [Story container](components/story-container.md), [auth](auth.md), [architecture](architecture.md), [Profile activity tab](pages/user-profile/routes/activity.md) (Hive account history — not `Story` rows), [Home page](pages/home/page.md) (hub FEED tab).
+
+## Hub home feed
+
+Route `/` under `(app)/(hub)` renders a paginated post timeline for guests (global root posts) and logged-in users (personalized). Uses the same `Story` / `FeedList` / `FeedPostGrid` components as profile feeds. Data: `POST /query/v1/posts/feed` — see [home page spec](pages/home/page.md) and [query-api home feed](../../../query-api/spec/home-feed.md).
 
 ## Profile activity tab
 

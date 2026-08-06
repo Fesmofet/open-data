@@ -238,9 +238,9 @@
   "and_more_reblogged": "और {amount} और",
   "any_campaigns_yet": "आपके पास अब तक कोई प्रचार नहीं हैं",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (काम के लिए असुरक्षित नहीं)",
   "append_form_flagged": "ध्वजित",
@@ -1379,10 +1379,6 @@
   "hive_wallet": "HIVE वॉलेट",
   "holdings": "होल्डिंग्स",
   "home": "होम",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "होम पेज",
   "homepage_link_text": "यहां एक लिंक है {link}।",
   "iAgreePostMyData": "मेरा सारा सार्वजनिक डेटा ब्लॉकचेन में पोस्ट करने के लिए मैं सहमत हूँ",
@@ -3370,5 +3366,7 @@
   "your_vote": "आपका वोट",
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
-  "СЃommunity_actions": "समुदाय क्रियाएँ"
+  "СЃommunity_actions": "समुदाय क्रियाएँ",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

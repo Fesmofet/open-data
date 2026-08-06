@@ -88,6 +88,7 @@ erDiagram
 | Table | Index | Purpose |
 | ----- | ----- | ------- |
 | posts | `(author, created_unix DESC)` | Author timeline by time |
+| posts | `(created_unix DESC, author DESC, permlink DESC)` partial root | Hub guest home feed (global newest root posts) |
 | post_active_votes | `(voter)` | Look up votes by voter |
 | post_objects | `(object_id)` | Posts for an object |
 | post_objects | `(object_type)` partial | Filter by type |

@@ -24,7 +24,7 @@ related:
 
 Implementation module: `apps/web/src/modules/business/`.
 
-Hub chrome: `/business*` lives under `(app)/(hub)` with HOME / DATA / BUSINESS section nav (`AppSectionNav`). BUSINESS is active on these routes. See [home](../home/page.md). Public `/offers` and `/requests` discovery routes stay outside the hub group (no section nav).
+Hub chrome: `/business*` lives under `(app)/(hub)` with FEED / DISCOVER / MARKET section nav (`AppSectionNav`). MARKET is active on these routes. See [home](../home/page.md). Public `/offers` and `/requests` discovery routes stay outside the hub group (no section nav).
 
 ## Theme tokens (mandatory)
 

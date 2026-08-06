@@ -1,1 +1,1 @@
-export { HomeAgentComposerStub } from './presentation';
+export { HomeFeedPostsList } from './presentation';

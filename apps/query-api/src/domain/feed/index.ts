@@ -10,6 +10,7 @@ export { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 export { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 export { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 export { GetUserActivityEndpoint } from './get-user-activity.endpoint';
+export { GetHomeFeedEndpoint } from './get-home-feed.endpoint';
 export type {
   FeedStoryItemDto,
   FeedVoteSummaryDto,
@@ -21,6 +22,7 @@ export type {
   PostDiscussionResponseDto,
 } from './feed-story-dtos';
 export { userBlogFeedBodySchema, type UserBlogFeedBody } from './schemas/user-blog-feed.schema';
+export { homeFeedBodySchema, type HomeFeedBody } from './schemas/home-feed.schema';
 export {
   objectPostsFeedBodySchema,
   type ObjectPostsFeedBody,

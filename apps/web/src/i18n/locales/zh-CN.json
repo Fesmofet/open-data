@@ -238,9 +238,9 @@
   "and_more_reblogged": "和另外 {amount} 人",
   "any_campaigns_yet": "您还没有任何活动",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW（不适合工作）",
   "append_form_flagged": "标记",
@@ -1370,10 +1370,6 @@
   "hive_wallet": "HIVE钱包",
   "holdings": "持有量",
   "home": "主页",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "首页",
   "homepage_link_text": "这是 {link} 的链接。",
   "iAgreePostMyData": "我同意将我的公共数据发布到区块链",
@@ -3351,5 +3347,7 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

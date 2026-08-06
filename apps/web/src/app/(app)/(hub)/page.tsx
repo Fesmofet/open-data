@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
-import { HomeAgentComposerStub } from '@/modules/home';
+import { HomeFeedPostsList } from '@/modules/home';
+import { getHomeFeedPageQuery } from '@/modules/home/application/queries/get-home-feed-page.query';
+import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
 import { buildHomeMetadata } from '@/seo';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
@@ -11,10 +15,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildHomeMetadata({ locale, messages });
 }
 
-export default function Index() {
+export default async function Index() {
+  const user = await getRequestUser();
+  const viewer = user?.username ?? null;
+  const initialPage = await getHomeFeedPageQuery({ limit: 20 }, viewer);
+
   return (
-    <main className="flex min-h-[min(70dvh,36rem)] flex-col items-center justify-center px-gutter py-section-y sm:px-gutter-sm">
-      <HomeAgentComposerStub />
+    <main className="px-gutter py-section-y sm:px-gutter-sm">
+      <HomeFeedPostsList initialPage={initialPage} currentUsername={viewer} />
     </main>
   );
 }

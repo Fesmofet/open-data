@@ -257,9 +257,9 @@
   "app_header_search_loading": "Searching…",
   "app_header_search_mvp_hint": "Search is not connected to the catalog yet.",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (not safe for work)",
   "append_form_flagged": "Flagged",
@@ -1496,10 +1496,6 @@
   "hive_wallet": "HIVE",
   "holdings": "Holdings",
   "home": "Home",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "the home page",
   "homepage_link_text": "Here's a link to {link}.",
   "iAgreePostMyData": "I agree to post my public data into the blockchain",
@@ -3780,5 +3776,7 @@
   "your_vote": "Your vote",
   "your_vote_placeholder": "Your vote(optional)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Community actions"
+  "СЃommunity_actions": "Community actions",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

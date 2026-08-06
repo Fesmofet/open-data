@@ -8,7 +8,7 @@ import { LexicalPostEditor } from '@/modules/editor';
 import { buildCommentOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import { revalidateHomeFeedAfterBroadcast, revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { buildHiveJsonMetadataString, createCommentPermlink } from '@/shared';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
@@ -92,6 +92,7 @@ export function StoryCommentEditor({
       void awaitTrxConfirmation(transactionId).finally(() => {
         void refreshAfterBroadcast(router, async () => {
           await revalidateUserFeedAfterBroadcast(story.authorName);
+          await revalidateHomeFeedAfterBroadcast(currentUsername);
           await onBroadcastRevalidate?.();
         }).finally(() => {
           setConfirming(false);

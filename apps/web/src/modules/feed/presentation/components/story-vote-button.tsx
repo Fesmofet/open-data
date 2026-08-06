@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { buildVoteOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import { revalidateHomeFeedAfterBroadcast, revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import {
@@ -116,6 +116,7 @@ export function StoryVoteButton({
       void awaitTrxConfirmation(transactionId).finally(() => {
         void refreshAfterBroadcast(router, async () => {
           await revalidateUserFeedAfterBroadcast(authorName);
+          await revalidateHomeFeedAfterBroadcast(currentUsername);
           await onBroadcastRevalidate?.();
         }).finally(() => {
           setConfirming(false);

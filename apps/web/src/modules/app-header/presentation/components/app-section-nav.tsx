@@ -6,7 +6,6 @@ import {
   profileSectionTabClass,
   useEffectiveNav,
 } from '@/shared/presentation';
-import { isToolsHubPath } from '@/modules/tools';
 import {
   ShellFullBleedBand,
   ShellInset,
@@ -15,13 +14,12 @@ import {
 } from '@/shared/presentation/layout';
 
 type SectionTab = {
-  key: 'home' | 'data' | 'business' | 'tools';
+  key: 'home' | 'data' | 'business';
   href: string;
   labelKey:
     | 'app_section_nav_home'
     | 'app_section_nav_data'
-    | 'app_section_nav_business'
-    | 'app_section_nav_tools';
+    | 'app_section_nav_business';
   isActive: (pathname: string) => boolean;
 };
 
@@ -46,16 +44,10 @@ const TABS: SectionTab[] = [
     isActive: (pathname) =>
       pathname === '/business' || pathname.startsWith('/business/'),
   },
-  {
-    key: 'tools',
-    href: '/notifications/settings',
-    labelKey: 'app_section_nav_tools',
-    isActive: (pathname) => isToolsHubPath(pathname),
-  },
 ];
 
 /**
- * Hub section tabs (HOME / DATA / BUSINESS / TOOLS). Same underline tab styles as profile primary nav.
+ * Hub section tabs (FEED / DISCOVER / MARKET). Same underline tab styles as profile primary nav.
  */
 export function AppSectionNav() {
   const { t } = useI18n();

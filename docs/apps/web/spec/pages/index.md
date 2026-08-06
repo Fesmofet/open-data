@@ -21,8 +21,8 @@ Every App Router `page.tsx` under `apps/web/src/app/` maps to a **route area** f
 
 | Public route | Area folder | Hub spec | Module(s) |
 |--------------|-------------|----------|-----------|
-| `/` | `home/` | [page.md](home/page.md) | `@/modules/home` (agent composer stub) + hub nav |
-| `/discover` | `discover/` | [page.md](discover/page.md) | `@/modules/discover` (hub DATA) |
+| `/` | `home/` | [page.md](home/page.md) | `@/modules/home` (home feed) + hub nav |
+| `/discover` | `discover/` | [page.md](discover/page.md) | `@/modules/discover` (hub DISCOVER) |
 | `/editor` | `editor/` | [page.md](editor/page.md) | `@/modules/editor` |
 | `/drafts` | `drafts/` | [page.md](drafts/page.md) | `@/modules/editor` — tools hub sidebar |
 | `/tools` | `tools/` | [page.md](tools/page.md) | redirect → `/notifications/settings` |

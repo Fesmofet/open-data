@@ -48,6 +48,7 @@ import * as m00047 from './00047_hive_engine_deposit_records';
 import * as m00048 from './00048_telegram_subscriptions';
 import * as m00049 from './00049_ops_telegram_subscribers';
 import * as m00050 from './00050_user_notification_settings_columns';
+import * as m00051 from './00051_posts_root_created_unix_index';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -111,4 +112,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00048_telegram_subscriptions': { up: m00048.up, down: m00048.down },
   '00049_ops_telegram_subscribers': { up: m00049.up, down: m00049.down },
   '00050_user_notification_settings_columns': { up: m00050.up, down: m00050.down },
+  '00051_posts_root_created_unix_index': { up: m00051.up, down: m00051.down },
 };

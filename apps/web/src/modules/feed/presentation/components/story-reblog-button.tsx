@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { buildReblogOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import { revalidateHomeFeedAfterBroadcast, revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { StoryStatButton } from './story-stat-button';
 
@@ -76,6 +76,7 @@ export function StoryReblogButton({
       void awaitTrxConfirmation(transactionId).finally(() => {
         void refreshAfterBroadcast(router, async () => {
           await revalidateUserFeedAfterBroadcast(authorName);
+          await revalidateHomeFeedAfterBroadcast(currentUsername);
           await onBroadcastRevalidate?.();
         });
       });

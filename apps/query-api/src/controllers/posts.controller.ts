@@ -1,18 +1,22 @@
-import { Controller, Get, Header, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, Get, Header, NotFoundException, Param, Post, Query, Body } from '@nestjs/common';
 import { ReqLocale, type SupportedCurrency } from '@opden-data-layer/core';
 import {
   GetPostByKeyEndpoint,
   GetPostDiscussionEndpoint,
   GetPostVotersEndpoint,
+  GetHomeFeedEndpoint,
   type PostDiscussionResponseDto,
   type PostVotersPageDto,
   type SinglePostViewDto,
+  type UserBlogFeedResponse,
+  homeFeedBodySchema,
+  type HomeFeedBody,
 } from '../domain/feed';
 import { postVotersQuerySchema } from '../domain/feed/schemas/post-voters.schema';
 import { ReqCurrency } from '../http/currency-query.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
-import { ZodQueryPipe } from '../pipes';
+import { ZodQueryPipe, ZodBodyPipe } from '../pipes';
 import type { PostVotersQuery } from '../domain/feed/schemas/post-voters.schema';
 
 @Controller({ path: 'posts', version: '1' })
@@ -21,7 +25,23 @@ export class PostsController {
     private readonly getPostByKey: GetPostByKeyEndpoint,
     private readonly getPostDiscussion: GetPostDiscussionEndpoint,
     private readonly getPostVoters: GetPostVotersEndpoint,
+    private readonly getHomeFeed: GetHomeFeedEndpoint,
   ) {}
+
+  @Post('feed')
+  async getHomeFeedRoute(
+    @Body(new ZodBodyPipe(homeFeedBodySchema)) body: HomeFeedBody,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserBlogFeedResponse> {
+    return this.getHomeFeed.execute(
+      body,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+  }
 
   @Get(':author/:permlink')
   async getPost(

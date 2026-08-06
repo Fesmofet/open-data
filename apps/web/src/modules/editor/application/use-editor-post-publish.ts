@@ -10,7 +10,7 @@ import { buildCommentOp, getWalletFacade, useHydrateWalletProvider } from '@/mod
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildHiveJsonMetadata, createUniqueRootPostPermlink } from '@/shared';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
+import { revalidateHomeFeedAfterBroadcast, revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import type { PostEditorLinkedObject } from '../domain/post-editor-linked-object';
 import {
@@ -158,9 +158,10 @@ export function useEditorPostPublish({
         await deleteUserDraftAction(username, { draftId });
       }
 
-      await refreshAfterBroadcast(router, () =>
-        revalidateUserFeedAfterBroadcast(username),
-      );
+      await refreshAfterBroadcast(router, async () => {
+        await revalidateUserFeedAfterBroadcast(username);
+        await revalidateHomeFeedAfterBroadcast(username);
+      });
 
       router.push(`/@${encodeURIComponent(username)}`);
     } catch (err) {

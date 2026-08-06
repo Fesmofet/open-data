@@ -17,6 +17,7 @@ import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
+import { GetHomeFeedEndpoint } from './get-home-feed.endpoint';
 import { HiveAccountHistoryPagerService } from './hive-account-history-pager.service';
 
 @Module({
@@ -30,6 +31,7 @@ import { HiveAccountHistoryPagerService } from './hive-account-history-pager.ser
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,
     GetUserActivityEndpoint,
+    GetHomeFeedEndpoint,
     HiveAccountHistoryPagerService,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
@@ -47,6 +49,7 @@ import { HiveAccountHistoryPagerService } from './hive-account-history-pager.ser
     GetUserCommentsFeedEndpoint,
     GetUserMentionsFeedEndpoint,
     GetUserActivityEndpoint,
+    GetHomeFeedEndpoint,
     GetPostByKeyEndpoint,
     GetPostDiscussionEndpoint,
     GetPostVotersEndpoint,

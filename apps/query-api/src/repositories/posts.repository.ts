@@ -190,6 +190,99 @@ export class PostsRepository {
     }));
   }
 
+  /**
+   * Hub home feed: all root posts (guest) or personalized for `viewerAccount`
+   * (followed authors, posts on followed objects, posts on authority objects).
+   *
+   * TODO: personalized mode uses OR + correlated EXISTS — consider pushdown UNION ALL
+   * branches + mergeFeedBranches for scale (see docs/spec/data-model/posts.md).
+   */
+  async findHomeFeed(
+    viewerAccount: string | undefined,
+    mutedAuthors: string[],
+    cursor: { feedAt: number; author: string; permlink: string } | null,
+    limitPlusOne: number,
+  ): Promise<FeedBranchRow[]> {
+    const viewer = viewerAccount?.trim() ?? '';
+    const personalized = viewer.length > 0;
+
+    try {
+      let qb = this.db
+        .selectFrom('posts as p')
+        .where(ROOT_POST_PREDICATE_P)
+        .select([
+          sql<string>`p.author`.as('author'),
+          sql<string>`p.permlink`.as('permlink'),
+          sql<number>`p.created_unix`.as('feed_at'),
+          sql<string | null>`NULL::text`.as('reblogged_by'),
+        ]);
+
+      if (personalized) {
+        if (mutedAuthors.length > 0) {
+          qb = qb.where('p.author', 'not in', mutedAuthors);
+        }
+        qb = qb.where((eb) =>
+          eb.or([
+            eb(
+              'p.author',
+              'in',
+              eb
+                .selectFrom('user_subscriptions')
+                .select('following')
+                .where('follower', '=', viewer),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('post_objects as po')
+                .innerJoin('user_object_follows as uof', (join) =>
+                  join
+                    .onRef('po.object_id', '=', 'uof.object_id')
+                    .on('uof.account', '=', viewer),
+                )
+                .whereRef('po.author', '=', 'p.author')
+                .whereRef('po.permlink', '=', 'p.permlink'),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('post_objects as po')
+                .innerJoin('object_authority as oa', (join) =>
+                  join
+                    .onRef('po.object_id', '=', 'oa.object_id')
+                    .on('oa.account', '=', viewer)
+                    .on('oa.authority_type', 'in', ['administrative', 'ownership']),
+                )
+                .whereRef('po.author', '=', 'p.author')
+                .whereRef('po.permlink', '=', 'p.permlink'),
+            ),
+          ]),
+        );
+      }
+
+      if (cursor) {
+        qb = qb.where(
+          sql`(p.created_unix, p.author, p.permlink) < (${cursor.feedAt}, ${cursor.author}, ${cursor.permlink})` as never,
+        );
+      }
+
+      const rows = await qb
+        .orderBy(sql`p.created_unix`, 'desc')
+        .orderBy(sql`p.author`, 'desc')
+        .orderBy(sql`p.permlink`, 'desc')
+        .limit(limitPlusOne)
+        .execute();
+
+      return rows.map((r) => ({
+        author: r.author,
+        permlink: r.permlink,
+        feed_at: r.feed_at,
+        reblogged_by: r.reblogged_by,
+      }));
+    } catch (error) {
+      this.logger.error((error as Error).message);
+      return [];
+    }
+  }
+
   private async loadOwnPostsBranch(
     account: string,
     cursor: { feedAt: number; author: string; permlink: string } | null,

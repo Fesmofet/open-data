@@ -177,9 +177,9 @@
   "and_more_amount": "i još {amount}",
   "and_more_reblogged": "i još {amount}",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (nije sigurno za rad)",
   "append_form_flagged": "Označeno",
@@ -1105,10 +1105,6 @@
   "hive_vote": "HIVE glas",
   "hive_wallet": "HIVE novčanik",
   "home": "Dom",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "početnu stranicu",
   "homepage_link_text": "Evo veze na {link} .",
   "iAgreePostMyData": "Pristajem objaviti svoje javne podatke u blockchainu",
@@ -2647,5 +2643,7 @@
   "your_reward": "Vaša nagrada",
   "your_vote": "Vaš glas",
   "your_vote_placeholder": "Vaš glas (neobavezno)",
-  "СЃommunity_actions": "Akcije zajednice"
+  "СЃommunity_actions": "Akcije zajednice",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

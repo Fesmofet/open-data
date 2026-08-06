@@ -20,6 +20,7 @@ import {
   GetUserMentionsFeedEndpoint,
   GetUserThreadsFeedEndpoint,
   GetUserActivityEndpoint,
+  GetHomeFeedEndpoint,
   GetObjectPostsFeedEndpoint,
   GetObjectThreadsFeedEndpoint,
 } from '../domain/feed';
@@ -148,6 +149,7 @@ export class McpService {
     private readonly getPostByKey: GetPostByKeyEndpoint,
     private readonly getPostDiscussion: GetPostDiscussionEndpoint,
     private readonly getPostVoters: GetPostVotersEndpoint,
+    private readonly getHomeFeed: GetHomeFeedEndpoint,
     private readonly currencyQueries: CurrencyQueryService,
     private readonly oblOffers: OblOffersService,
     private readonly oblLedger: OblLedgerService,
@@ -215,6 +217,7 @@ export class McpService {
       getPostByKey: this.getPostByKey,
       getPostDiscussion: this.getPostDiscussion,
       getPostVoters: this.getPostVoters,
+      getHomeFeed: this.getHomeFeed,
       currencyQueries: this.currencyQueries,
       oblOffers: this.oblOffers,
       oblLedger: this.oblLedger,

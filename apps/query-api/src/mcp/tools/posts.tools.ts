@@ -93,6 +93,37 @@ export function registerPostTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_home_feed',
+    {
+      description: catalogDescription('get_home_feed'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          limit: z.number().int().min(1).max(50).optional().describe('Page size (max 50)'),
+          cursor: z.string().optional().describe('Opaque pagination cursor from prior response'),
+          currency: z
+            .enum(SUPPORTED_CURRENCIES)
+            .default('USD')
+            .describe('Reward display currency (see post-reward.md)'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const result = await deps.getHomeFeed.execute(
+        {
+          limit: args.limit ?? 20,
+          cursor: args.cursor,
+          currency: args.currency,
+        },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_post_voters',
     {
       description: catalogDescription('get_post_voters'),

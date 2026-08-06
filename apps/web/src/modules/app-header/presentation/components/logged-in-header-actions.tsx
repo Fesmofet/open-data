@@ -198,7 +198,7 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
               onClick={() => setMenuOpen(false)}
               suppressHydrationWarning
             >
-              {t('tools')}
+              {t('settings')}
             </Link>
             <Link
               href="/object-create"
@@ -267,16 +267,6 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
               suppressHydrationWarning
             >
               {t('wallet')}
-            </Link>
-            <Link
-              href="/settings"
-              role="menuitem"
-              aria-current={pathname === '/settings' ? 'page' : undefined}
-              className={menuNavLinkClassName(pathname === '/settings')}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
-            >
-              {t('settings')}
             </Link>
             <button
               type="button"

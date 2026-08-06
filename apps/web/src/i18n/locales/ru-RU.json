@@ -248,9 +248,9 @@
   "app_header_search_loading": "Поиск…",
   "app_header_search_mvp_hint": "Поиск пока не подключён к каталогу.",
   "app_section_nav_aria": "Основные разделы",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (небезопасно для работы)",
   "append_form_flagged": "С пометкой",
@@ -1471,10 +1471,6 @@
   "hive_wallet": "Кошелек HIVE",
   "holdings": "Вклады",
   "home": "Домой",
-  "home_agent_composer_aria": "Спросить агента",
-  "home_agent_composer_attach_aria": "Прикрепить (скоро)",
-  "home_agent_composer_placeholder": "Задайте свой вопрос",
-  "home_agent_composer_send_aria": "Отправить (скоро)",
   "homepage": "главную страницу",
   "homepage_link_text": "Вот ссылка на {link}.",
   "iAgreePostMyData": "Я даю согласие на запись мои публичных данных в блокчейн",
@@ -3531,5 +3527,7 @@
   "your_vote": "Ваш голос ",
   "your_vote_placeholder": "Ваш голос (необязательно)",
   "zoom": "Увеличить",
-  "СЃommunity_actions": "Действия сообщества"
+  "СЃommunity_actions": "Действия сообщества",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

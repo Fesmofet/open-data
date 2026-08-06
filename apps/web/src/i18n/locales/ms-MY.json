@@ -177,9 +177,9 @@
   "and_more_amount": "dan {amount} lagi",
   "and_more_reblogged": "dan {amount} lagi",
   "app_section_nav_aria": "Main sections",
-  "app_section_nav_business": "Business",
-  "app_section_nav_data": "Data",
-  "app_section_nav_home": "Home",
+  "app_section_nav_business": "Market",
+  "app_section_nav_data": "Discover",
+  "app_section_nav_home": "Feed",
   "app_section_nav_tools": "Tools",
   "append_form_NSFW": "NSFW (tidak selamat untuk bekerja)",
   "append_form_flagged": "Dibendera",
@@ -1101,10 +1101,6 @@
   "hive_vote": "Undi HIVE",
   "hive_wallet": "Dompet HIVE",
   "home": "Rumah",
-  "home_agent_composer_aria": "Ask the agent",
-  "home_agent_composer_attach_aria": "Attach (coming soon)",
-  "home_agent_composer_placeholder": "Ask your question",
-  "home_agent_composer_send_aria": "Send (coming soon)",
   "homepage": "laman utama",
   "homepage_link_text": "Inilah pautan ke {link} .",
   "iAgreePostMyData": "Saya bersetuju untuk menyiarkan data awam saya ke dalam blockchain",
@@ -2645,5 +2641,7 @@
   "your_reward": "Ganjaran Anda",
   "your_vote": "Undian anda",
   "your_vote_placeholder": "Undian anda (pilihan)",
-  "СЃommunity_actions": "Tindakan masyarakat"
+  "СЃommunity_actions": "Tindakan masyarakat",
+  "home_feed_empty_global": "No posts to show yet.",
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
 }

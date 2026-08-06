@@ -431,6 +431,9 @@ CREATE TABLE posts (
 );
 
 CREATE INDEX idx_posts_author_created_unix ON posts (author, created_unix DESC);
+CREATE INDEX idx_posts_root_created_unix
+  ON posts (created_unix DESC, author DESC, permlink DESC)
+  WHERE depth = 0 OR depth IS NULL;
 CREATE INDEX idx_posts_expertise_backfill_pending
   ON posts (rewards_finalized_at)
   WHERE (depth = 0 OR depth IS NULL)

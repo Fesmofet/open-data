@@ -34,6 +34,8 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:expertise:${scope}`,
   userBlogFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:blog-feed`,
+  homeFeed: (viewerKey: string) =>
+    `query-api:home-feed:${viewerKey.trim().toLowerCase()}`,
   userThreadsFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:threads-feed`,
   userCommentsFeed: (accountName: string) =>
