@@ -9,7 +9,7 @@ export type ShellFullBleedBandProps = {
 };
 
 const BREAKOUT_CLASSES =
-  'relative ms-[calc(50%-50vw)] me-[calc(50%-50vw)]';
+  'relative ms-[calc(50%-50dvw)] me-[calc(50%-50dvw)]';
 
 /**
  * Full-viewport-width band (cover, hero background, chrome backdrop).

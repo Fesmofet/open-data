@@ -487,6 +487,7 @@ body {
   margin: 0;
   background-color: var(--color-bg);
   color: var(--color-fg);
+  overflow-x: clip;
 }
 h1,
 h2,

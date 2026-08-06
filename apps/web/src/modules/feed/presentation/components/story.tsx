@@ -166,7 +166,7 @@ export function Story({
 
   return (
     <article
-      className="rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:p-card-padding"
+      className="min-w-0 overflow-x-clip rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:p-card-padding"
       aria-labelledby={`story-title-${story.id}`}
       data-feed-tab={feedTab}
     >
@@ -177,7 +177,7 @@ export function Story({
         </p>
       ) : null}
 
-      <header className="flex items-start gap-2 sm:gap-3">
+      <header className="flex min-w-0 items-start gap-2 sm:gap-3">
         <Link
           href={authorProfileHref}
           suppressHydrationWarning

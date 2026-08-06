@@ -2,7 +2,7 @@ import { FeedPostsLoadingSkeleton } from '@/modules/feed/presentation';
 
 export default function HubLoading() {
   return (
-    <main className="px-gutter py-section-y sm:px-gutter-sm">
+    <main className="min-w-0 py-section-y">
       <FeedPostsLoadingSkeleton />
     </main>
   );

@@ -10,7 +10,9 @@ export type FeedColumnProps = {
  */
 export function FeedColumn({ children, className = '' }: FeedColumnProps) {
   return (
-    <div className={['flex flex-col gap-card-padding', className].join(' ')}>
+    <div
+      className={['flex min-w-0 flex-col gap-card-padding overflow-x-clip', className].join(' ')}
+    >
       {children}
     </div>
   );

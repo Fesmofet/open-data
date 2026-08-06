@@ -21,7 +21,7 @@ export default async function Index() {
   const initialPage = await getHomeFeedPageQuery({ limit: 20 }, viewer);
 
   return (
-    <main className="px-gutter py-section-y sm:px-gutter-sm">
+    <main className="min-w-0 py-section-y">
       <HomeFeedPostsList initialPage={initialPage} currentUsername={viewer} />
     </main>
   );

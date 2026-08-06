@@ -24,6 +24,6 @@ describe('ShellFullBleedBand', () => {
       ),
     );
     expect(html).toContain('w-full');
-    expect(html).not.toContain('ms-[calc(50%-50vw)]');
+    expect(html).not.toContain('ms-[calc(50%-50dvw)]');
   });
 });

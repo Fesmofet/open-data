@@ -47,7 +47,7 @@ const TABS: SectionTab[] = [
 ];
 
 /**
- * Hub section tabs (FEED / DISCOVER / MARKET). Same underline tab styles as profile primary nav.
+ * Hub section tabs (FEED / DISCOVER / MARKET). Same shell pattern as profile primary nav.
  */
 export function AppSectionNav() {
   const { t } = useI18n();
@@ -59,7 +59,7 @@ export function AppSectionNav() {
         <div className={horizontalTabNavScrollShellClass('gutter')}>
           <nav
             aria-label={t('app_section_nav_aria')}
-            className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} w-max justify-start md:w-full md:justify-center`}
+            className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} mx-auto w-max justify-center`}
           >
             {TABS.map((tab) => {
               const active = tab.isActive(pathname);
