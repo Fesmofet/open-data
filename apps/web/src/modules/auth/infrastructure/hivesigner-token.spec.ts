@@ -1,5 +1,7 @@
 const storage = new Map<string, string>();
 
+jest.mock('./providers/has/has-client', () => ({}));
+
 beforeAll(() => {
   Object.defineProperty(globalThis, 'localStorage', {
     value: {
@@ -25,7 +27,10 @@ import {
   ODL_HS_TOKEN_COOKIE,
   ODL_HS_TOKEN_STORAGE_KEY,
 } from './hivesigner-token';
-import { ODL_WALLET_PROVIDER_SESSION_KEY } from './wallet-facade.client';
+import {
+  ODL_KEYCHAIN_PERSISTENT_KEY,
+  ODL_WALLET_PROVIDER_SESSION_KEY,
+} from './wallet-facade.client';
 
 describe('hivesigner-token', () => {
   beforeEach(() => {
@@ -45,6 +50,18 @@ describe('hivesigner-token', () => {
     expect(hydrateHivesignerTokenFromCookie()).toBe(true);
     expect(getHivesignerToken()).toBe('abc123');
     expect(localStorage.getItem(ODL_WALLET_PROVIDER_SESSION_KEY)).toBe('hivesigner');
+  });
+
+  it('clears keychain marker when hydrating from cookie', () => {
+    localStorage.setItem(ODL_KEYCHAIN_PERSISTENT_KEY, '1');
+    Object.defineProperty(globalThis, 'document', {
+      value: { cookie: `${ODL_HS_TOKEN_COOKIE}=abc123` },
+      configurable: true,
+    });
+
+    hydrateHivesignerTokenFromCookie();
+
+    expect(localStorage.getItem(ODL_KEYCHAIN_PERSISTENT_KEY)).toBeNull();
   });
 
   it('clears stored token', () => {

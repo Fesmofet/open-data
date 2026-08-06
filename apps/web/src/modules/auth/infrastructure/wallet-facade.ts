@@ -62,6 +62,14 @@ export class DefaultWalletFacade implements WalletFacade {
   async broadcast(
     input: BroadcastTransactionInput,
   ): Promise<BroadcastTransactionResult> {
+    if (this.activeProvider === 'hivesigner') {
+      const hivesignerSigner = this.signers.get('hivesigner');
+      if (!hivesignerSigner) {
+        throw new Error('No signer for provider: hivesigner');
+      }
+      return hivesignerSigner.sign(input);
+    }
+
     if (shouldTryKeychainBeforeHas()) {
       const keychainSigner = this.signers.get('keychain');
       if (keychainSigner) {

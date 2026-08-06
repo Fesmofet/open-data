@@ -1,4 +1,5 @@
 import {
+  clearConflictingWalletProvidersForHivesigner,
   getHivesignerToken,
   hydrateHivesignerTokenFromCookie,
 } from '../../infrastructure/hivesigner-token';
@@ -22,6 +23,17 @@ export function hydrateWalletProviderFromStorage(): void {
     return;
   }
 
+  try {
+    const raw = localStorage.getItem(ODL_WALLET_PROVIDER_SESSION_KEY);
+    if (raw === 'hivesigner' && getHivesignerToken()) {
+      clearConflictingWalletProvidersForHivesigner();
+      getWalletFacade().setActiveProvider('hivesigner');
+      return;
+    }
+  } catch {
+    // ignore private mode / storage errors
+  }
+
   if (isHasAuthSessionValid(getHasAuthSession())) {
     getWalletFacade().setActiveProvider('hiveauth');
     return;
@@ -30,16 +42,6 @@ export function hydrateWalletProviderFromStorage(): void {
   try {
     if (localStorage.getItem(ODL_KEYCHAIN_PERSISTENT_KEY)) {
       getWalletFacade().setActiveProvider('keychain');
-      return;
-    }
-  } catch {
-    // ignore private mode / storage errors
-  }
-
-  try {
-    const raw = localStorage.getItem(ODL_WALLET_PROVIDER_SESSION_KEY);
-    if (raw === 'hivesigner' && getHivesignerToken()) {
-      getWalletFacade().setActiveProvider('hivesigner');
       return;
     }
   } catch {

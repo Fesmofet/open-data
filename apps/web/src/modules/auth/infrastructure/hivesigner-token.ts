@@ -4,7 +4,11 @@ import {
   ODL_HS_TOKEN_COOKIE,
   ODL_HS_TOKEN_STORAGE_KEY,
 } from './hivesigner-token.constants';
-import { ODL_WALLET_PROVIDER_SESSION_KEY } from './wallet-facade.client';
+import { clearHasAuthSession } from './providers/has';
+import {
+  ODL_KEYCHAIN_PERSISTENT_KEY,
+  ODL_WALLET_PROVIDER_SESSION_KEY,
+} from './wallet-facade.client';
 
 export { ODL_HS_TOKEN_COOKIE, ODL_HS_TOKEN_STORAGE_KEY };
 
@@ -53,6 +57,19 @@ export function clearHivesignerToken(): void {
   }
 }
 
+/** Remove Keychain/HAS markers so HiveSigner is the sole active signing session. */
+export function clearConflictingWalletProvidersForHivesigner(): void {
+  clearHasAuthSession();
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+  try {
+    localStorage.removeItem(ODL_KEYCHAIN_PERSISTENT_KEY);
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
 /** Move short-lived OAuth token from cookie (set by BFF callback) into localStorage. */
 export function hydrateHivesignerTokenFromCookie(): boolean {
   const token = readCookie(ODL_HS_TOKEN_COOKIE);
@@ -63,6 +80,7 @@ export function hydrateHivesignerTokenFromCookie(): boolean {
     return false;
   }
   try {
+    clearConflictingWalletProvidersForHivesigner();
     localStorage.setItem(ODL_HS_TOKEN_STORAGE_KEY, token);
     localStorage.setItem(ODL_WALLET_PROVIDER_SESSION_KEY, 'hivesigner');
   } catch {
