@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { StatHoverTooltip } from '@/shared/presentation';
+import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import type { SearchFlatEntry } from '../../domain/search-nav-list';
@@ -269,20 +269,11 @@ export function SearchDropdown({
                         }
                       }}
                     >
-                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-circle bg-surface-control">
-                        {u.profile_image ? (
-                          <img
-                            src={u.profile_image}
-                            alt=""
-                            className="h-10 w-10 object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span className="flex h-full w-full items-center justify-center text-caption text-fg-tertiary">
-                            —
-                          </span>
-                        )}
-                      </span>
+                      <UserAvatar
+                        username={u.name}
+                        avatarUrl={u.profile_image}
+                        size={40}
+                      />
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-1.5">
                           <span className="font-weight-label text-fg">{u.name}</span>

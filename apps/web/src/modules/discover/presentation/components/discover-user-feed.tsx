@@ -1,11 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage, StatHoverTooltip, useInfiniteScroll } from '@/shared/presentation';
+import { StatHoverTooltip, UserAvatar, useInfiniteScroll } from '@/shared/presentation';
 
 import { fetchDiscoverUsers } from '../../infrastructure/discover.client';
 import type { DiscoverUsersPage } from '../../domain/discover-response.schema';
@@ -103,26 +102,11 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
                   href={`/@${encodeURIComponent(u.name)}`}
                   className="flex items-center gap-3 px-3 py-2 hover:bg-ghost-surface"
                 >
-                  <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-circle bg-surface-control">
-                    {u.profile_image ? (
-                      <Image
-                        src={u.profile_image}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 object-cover"
-                        unoptimized={shouldUnoptimizeRemoteImage(u.profile_image)}
-                      />
-                    ) : (
-                      <Image
-                        src={AVATAR_PLACEHOLDER_SRC}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 object-cover"
-                      />
-                    )}
-                  </span>
+                  <UserAvatar
+                    username={u.name}
+                    avatarUrl={u.profile_image}
+                    size={40}
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-1.5">
                       <span className="font-weight-label text-fg">{u.name}</span>

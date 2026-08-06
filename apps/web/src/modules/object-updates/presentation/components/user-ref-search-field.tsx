@@ -12,6 +12,7 @@ import {
 import type { SearchUserResult } from '@/modules/app-header/domain/search-response.schema';
 import { Z_INDEX_DROPDOWN_ABOVE_MODAL } from '@/modules/map';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { UserAvatar } from '@/shared/presentation';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const DROPDOWN_MAX_HEIGHT_PX = 192;
@@ -111,20 +112,11 @@ function UserRefSearchResultsList({
                 isDuplicate ? onSelectDuplicate(user) : onSelect(user)
               }
             >
-              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-circle bg-surface-control">
-                {user.profile_image ? (
-                  <img
-                    src={user.profile_image}
-                    alt=""
-                    className="h-10 w-10 object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center text-caption text-muted">
-                    —
-                  </span>
-                )}
-              </span>
+              <UserAvatar
+                username={user.name}
+                avatarUrl={user.profile_image}
+                size={40}
+              />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-weight-label text-fg">
                   {user.name}
@@ -367,20 +359,12 @@ export function UserRefSearchField({
       {label ? <span className="font-weight-label text-fg">{label}</span> : null}
       {selectedUser && accountName ? (
         <div className="relative mt-2 flex items-start gap-2 rounded-btn border border-border bg-bg p-2">
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-pill border border-border bg-surface">
-            {selectedUser.profile_image ? (
-              <img
-                src={selectedUser.profile_image}
-                alt=""
-                className="h-10 w-10 object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-caption text-muted">
-                —
-              </span>
-            )}
-          </span>
+          <UserAvatar
+            username={selectedUser.name}
+            avatarUrl={selectedUser.profile_image}
+            size={40}
+            className="rounded-pill border border-border bg-surface"
+          />
           <span className="min-w-0 flex-1 pr-8">
             <span className="block truncate font-weight-label text-fg">
               {selectedUser.name}
