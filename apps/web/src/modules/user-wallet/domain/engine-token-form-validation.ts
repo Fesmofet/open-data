@@ -29,6 +29,17 @@ export function validateEngineTokenAmount(
   return null;
 }
 
+export function isEngineTokenAmountOverMax(
+  amount: string,
+  maxAmount: string,
+): boolean {
+  const parsed = parseEngineTokenAmount(amount);
+  if (parsed === null) {
+    return false;
+  }
+  return !isEngineTokenAmountWithinMax(amount, maxAmount);
+}
+
 export function engineTokenFormValidationMessageKey(
   code: EngineTokenFormValidationCode,
 ): string {

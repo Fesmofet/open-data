@@ -10,7 +10,11 @@ import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation'
 
 import type { EngineWithdrawListApiResponse } from '../../../application/dto/engine-swap-api.schema';
 import { formatHiveAmount } from '../../../domain/hive-wallet-amount';
-import { validateEngineTokenAmount } from '../../../domain/engine-token-form-validation';
+import {
+  engineTokenFormValidationMessageKey,
+  isEngineTokenAmountOverMax,
+  validateEngineTokenAmount,
+} from '../../../domain/engine-token-form-validation';
 import {
   matchQrSchemeToWithdrawPair,
   parsePaymentQrUri,
@@ -87,6 +91,7 @@ export function WalletWithdrawModal({
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrSolving, setQrSolving] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -152,6 +157,7 @@ export function WalletWithdrawModal({
     setPredictiveAmount(null);
     setCustomJson([]);
     setQuoteError(null);
+    setValidationError(null);
     broadcast.setError(null);
   }, [open, inputSymbol, outputSymbol, account]);
 
@@ -230,7 +236,7 @@ export function WalletWithdrawModal({
   ]);
 
   const insufficientFunds = selectedPair
-    ? validateEngineTokenAmount(quantity, selectedPair.balance) !== null
+    ? isEngineTokenAmountOverMax(quantity, selectedPair.balance)
     : false;
   const isSwapHiveToHive =
     selectedPair?.inputSymbol === 'SWAP.HIVE' &&
@@ -297,9 +303,18 @@ export function WalletWithdrawModal({
     !qrSolving;
 
   const handleSubmit = async () => {
-    if (!selectedPair || !canSubmit) {
+    if (!selectedPair) {
       return;
     }
+    const amountError = validateEngineTokenAmount(quantity, selectedPair.balance);
+    if (amountError) {
+      setValidationError(t(engineTokenFormValidationMessageKey(amountError)));
+      return;
+    }
+    if (!canSubmit) {
+      return;
+    }
+    setValidationError(null);
     const ok = await broadcast.broadcastCustomJson(customJson);
     if (ok) {
       onClose();
@@ -419,7 +434,10 @@ export function WalletWithdrawModal({
                   </WalletModalFieldLabel>
                   <WalletAssetAmountField
                     value={quantity}
-                    onChange={setQuantity}
+                    onChange={(value) => {
+                      setQuantity(value);
+                      setValidationError(null);
+                    }}
                     asset={inputSymbol}
                     onAssetChange={(nextInput) => {
                       setInputSymbol(nextInput);
@@ -433,7 +451,7 @@ export function WalletWithdrawModal({
                     assetDisabled={listLoading || payOptions.length === 0}
                     searchableAsset
                     maxAmount={selectedPair.balance}
-                    placeholder={t('amount_placeholder')}
+                    placeholder={t('wallet_transfer_amount_placeholder')}
                   />
                   <WalletModalBalanceLine
                     amount={selectedPair.balance}
@@ -441,7 +459,7 @@ export function WalletWithdrawModal({
                     onSelect={() => setQuantity(selectedPair.balance)}
                   />
                   {insufficientFunds ? (
-                    <p className="text-body-sm text-error">
+                    <p className="text-body-sm text-error" role="alert">
                       {t('amount_error_funds')}
                     </p>
                   ) : null}
@@ -521,6 +539,11 @@ export function WalletWithdrawModal({
               </>
             ) : null}
 
+            {validationError ? (
+              <p className="text-body-sm text-error" role="alert">
+                {validationError}
+              </p>
+            ) : null}
             {quoteError ? (
               <p className="text-body-sm text-error">{quoteError}</p>
             ) : null}
