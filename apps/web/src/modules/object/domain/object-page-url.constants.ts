@@ -26,11 +26,17 @@ export type ObjectPagePathTabSegment = (typeof OBJECT_PAGE_PATH_TAB_SEGMENTS)[nu
 /** Internal query param when proxy rewrites `/object/:id/gallery/album/:name`. */
 export const OBJECT_PAGE_GALLERY_ALBUM_PARAM = 'gallery_album';
 
-/** Internal query param when proxy rewrites `/object/:id/category/:name`. */
-export const OBJECT_PAGE_CATEGORY_NAME_PARAM = 'category_name';
+/** Internal query param when proxy rewrites `/object/:id/field-references/:type`. */
+export const OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM = 'field_reference_type';
+
+/** Path segment before encoded reference target object type. */
+export const OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT = 'field-references';
 
 /** Path segment before encoded department category name. */
 export const OBJECT_PAGE_CATEGORY_PATH_SEGMENT = 'category';
+
+/** Internal query param when proxy rewrites `/object/:id/category/:name`. */
+export const OBJECT_PAGE_CATEGORY_NAME_PARAM = 'category_name';
 
 /** Path segment between `/gallery/` and album name. */
 export const OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT = 'album';
@@ -128,6 +134,63 @@ export function resolveCategoryNameForObjectPage(
   } catch {
     return fromQuery;
   }
+}
+
+/** Parses field-reference target type from `/object/:id/field-references/:type`. */
+export function resolveFieldReferenceTypeFromObjectUrl(
+  objectId: string,
+  pathname: string,
+): string | null {
+  const path = normalizeObjectPagePathname(pathname);
+  const match = path.match(
+    new RegExp(`^/object/([^/]+)/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/(.+)$`),
+  );
+  if (!match?.[1] || !match[2]) {
+    return null;
+  }
+  const pathObjectId = match[1];
+  let decodedObjectId = pathObjectId;
+  try {
+    decodedObjectId = decodeURIComponent(pathObjectId);
+  } catch {
+    // keep raw segment
+  }
+  if (decodedObjectId !== objectId && pathObjectId !== objectId) {
+    return null;
+  }
+  try {
+    return decodeURIComponent(match[2]);
+  } catch {
+    return match[2];
+  }
+}
+
+/** Resolves field-reference target type from pathname or proxy query param. */
+export function resolveFieldReferenceTypeForObjectPage(
+  objectId: string,
+  pathname: string,
+  searchParams: URLSearchParams,
+): string | null {
+  const fromPath = resolveFieldReferenceTypeFromObjectUrl(objectId, pathname);
+  if (fromPath !== null) {
+    return fromPath;
+  }
+  const fromQuery = searchParams.get(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM)?.trim();
+  if (!fromQuery) {
+    return null;
+  }
+  try {
+    return decodeURIComponent(fromQuery);
+  } catch {
+    return fromQuery;
+  }
+}
+
+export function buildObjectFieldReferencesPath(
+  objectId: string,
+  referenceObjectType: string,
+): string {
+  return `/object/${encodeURIComponent(objectId)}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/${encodeURIComponent(referenceObjectType)}`;
 }
 
 export function buildObjectFollowersPath(objectId: string): string {

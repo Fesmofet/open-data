@@ -16,12 +16,15 @@ import {
   GetObjectExpertsEndpoint,
   GetObjectAuthorityEndpoint,
   GetObjectRefListEndpoint,
+  GetObjectFieldReferencesSummaryEndpoint,
+  GetObjectFieldReferencesByTypeEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
   GetObjectOptionsEndpoint,
   relatedAlbumListQuerySchema,
   relatedAlbumPreviewQuerySchema,
   objectRefListQuerySchema,
+  objectFieldReferencesSummaryQuerySchema,
   resolveObjectBodySchema,
   resolveNestedObjectsBodySchema,
   type RelatedAlbumListQuery,
@@ -34,6 +37,10 @@ import {
   type ResolveNestedObjectsResponse,
   type ObjectRefListQuery,
   type ObjectRefListResponseDto,
+  type ObjectFieldReferencesSummaryQuery,
+  type ObjectFieldReferencesSummaryResponseDto,
+  type ObjectFieldReferencesByTypeQuery,
+  type ObjectFieldReferencesByTypeResponseDto,
   type ObjectOptionsResponseDto,
   objectExpertListQuerySchema,
   type PaginatedObjectExpertList,
@@ -79,6 +86,8 @@ export class ObjectsController {
     private readonly getObjectExpertsEndpoint: GetObjectExpertsEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
     private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
+    private readonly getObjectFieldReferencesSummaryEndpoint: GetObjectFieldReferencesSummaryEndpoint,
+    private readonly getObjectFieldReferencesByTypeEndpoint: GetObjectFieldReferencesByTypeEndpoint,
     private readonly getObjectRelatedAlbumPreviewEndpoint: GetObjectRelatedAlbumPreviewEndpoint,
     private readonly getObjectRelatedAlbumEndpoint: GetObjectRelatedAlbumEndpoint,
     private readonly checkObjectExists: CheckObjectExistsEndpoint,
@@ -147,6 +156,54 @@ export class ObjectsController {
     const decodedId = decodeURIComponent(objectId);
     const result = await this.getObjectOptions.execute(
       decodedId,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/field-references')
+  async getObjectFieldReferencesSummary(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectFieldReferencesSummaryQuerySchema))
+    query: ObjectFieldReferencesSummaryQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectFieldReferencesSummaryResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectFieldReferencesSummaryEndpoint.execute(
+      decodedId,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/field-references/:referenceObjectType')
+  async getObjectFieldReferencesByType(
+    @Param('objectId') objectId: string,
+    @Param('referenceObjectType') referenceObjectType: string,
+    @Query(new ZodQueryPipe(objectRefListQuerySchema)) query: ObjectFieldReferencesByTypeQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectFieldReferencesByTypeResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const decodedType = decodeURIComponent(referenceObjectType);
+    const result = await this.getObjectFieldReferencesByTypeEndpoint.executeByType(
+      decodedId,
+      decodedType,
+      query,
       locale,
       governanceObjectIdFromHeader,
       viewer,

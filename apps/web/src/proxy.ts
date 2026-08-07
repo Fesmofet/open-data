@@ -7,6 +7,8 @@ import {
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
+  OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
 } from '@/modules/object/domain/object-page-url.constants';
@@ -88,6 +90,19 @@ export async function proxy(request: NextRequest) {
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', OBJECT_PAGE_CATEGORY_PATH_SEGMENT);
     url.searchParams.set(OBJECT_PAGE_CATEGORY_NAME_PARAM, categoryEncoded);
+    return finish(NextResponse.rewrite(url));
+  }
+
+  const fieldReferencesMatch = pathname.match(
+    new RegExp(`^/object/([^/]+)/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/(.+)$`),
+  );
+  if (fieldReferencesMatch) {
+    const id = fieldReferencesMatch[1];
+    const typeEncoded = fieldReferencesMatch[2];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT);
+    url.searchParams.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, typeEncoded);
     return finish(NextResponse.rewrite(url));
   }
 

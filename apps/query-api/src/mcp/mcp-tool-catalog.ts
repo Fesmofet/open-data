@@ -97,6 +97,19 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/object-ref-list-endpoints.md',
   },
   {
+    name: 'get_object_field_references',
+    description:
+      'Preview groups of objects referencing a person/business via schema fields (author, merchant, etc.).',
+    httpEquivalent: 'GET /query/v1/objects/:id/field-references',
+    specPath: 'docs/apps/query-api/spec/object-field-references.md',
+  },
+  {
+    name: 'get_object_field_references_by_type',
+    description: 'Paginated field-reference list for one target object type.',
+    httpEquivalent: 'GET /query/v1/objects/:id/field-references/:referenceObjectType',
+    specPath: 'docs/apps/query-api/spec/object-field-references.md',
+  },
+  {
     name: 'get_object_followers',
     description: 'Users following an object.',
     httpEquivalent: 'GET /query/v1/objects/:id/followers',

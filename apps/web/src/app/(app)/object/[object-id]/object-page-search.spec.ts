@@ -1,6 +1,10 @@
 import {
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
+  OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT,
+  resolveFieldReferenceTypeForObjectPage,
+  resolveFieldReferenceTypeFromObjectUrl,
 } from '@/modules/object/domain/object-page-url.constants';
 import {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
@@ -159,6 +163,59 @@ describe('resolvePrimarySegmentFromObjectUrl', () => {
         new URLSearchParams(),
       ),
     ).toBe('updates');
+  });
+
+  it('returns field-references for field references feed path', () => {
+    expect(
+      resolvePrimarySegmentFromObjectUrl(
+        'abc',
+        `/object/abc/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/book`,
+        new URLSearchParams(),
+      ),
+    ).toBe(OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT);
+  });
+});
+
+describe('resolveFieldReferenceTypeFromObjectUrl', () => {
+  const objectId = 'test-obj';
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  it('decodes reference object type from path', () => {
+    expect(
+      resolveFieldReferenceTypeFromObjectUrl(
+        objectId,
+        `${base}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/book`,
+      ),
+    ).toBe('book');
+  });
+
+  it('returns null for unrelated paths', () => {
+    expect(
+      resolveFieldReferenceTypeFromObjectUrl(objectId, `${base}/reviews`),
+    ).toBeNull();
+  });
+});
+
+describe('resolveFieldReferenceTypeForObjectPage', () => {
+  const objectId = 'test-obj';
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  it('prefers pathname over query param', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, encodeURIComponent('product'));
+    expect(
+      resolveFieldReferenceTypeForObjectPage(
+        objectId,
+        `${base}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/book`,
+        sp,
+      ),
+    ).toBe('book');
+  });
+
+  it('falls back to query param when pathname has no field reference type', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, encodeURIComponent('product'));
+    expect(resolveFieldReferenceTypeForObjectPage(objectId, base, sp)).toBe('product');
   });
 });
 

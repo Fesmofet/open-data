@@ -8,11 +8,15 @@ import {
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
+  OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
   OBJECT_PAGE_VIEW_PATH_PARAM,
   resolveCategoryNameFromObjectUrl,
   resolveCategoryNameForObjectPage,
+  resolveFieldReferenceTypeFromObjectUrl,
+  resolveFieldReferenceTypeForObjectPage,
 } from '@/modules/object/domain/object-page-url.constants';
 import { parseViewPathFromSearchParam } from '@/modules/object/domain/object-page-path';
 import type { ObjectNestedViewResolved } from '@/modules/object/domain/object-page.types';
@@ -28,6 +32,7 @@ export {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
+  OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 };
@@ -111,6 +116,10 @@ export function resolvePrimarySegmentFromObjectUrl(
   if (path.startsWith(categoryPrefix)) {
     return OBJECT_PAGE_CATEGORY_PATH_SEGMENT;
   }
+  const fieldReferencesPrefix = `${base}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/`;
+  if (path.startsWith(fieldReferencesPrefix)) {
+    return OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT;
+  }
   const updatesDetailPrefix = `${base}/updates/`;
   if (path === `${base}/updates` || path.startsWith(updatesDetailPrefix)) {
     return 'updates';
@@ -128,6 +137,10 @@ export function resolvePrimarySegmentFromObjectUrl(
  * Parses the active department category name from a visible object URL pathname.
  */
 export { resolveCategoryNameFromObjectUrl, resolveCategoryNameForObjectPage };
+export {
+  resolveFieldReferenceTypeFromObjectUrl,
+  resolveFieldReferenceTypeForObjectPage,
+};
 
 /**
  * Parses the update id from `/object/:id/updates/:updateId`.

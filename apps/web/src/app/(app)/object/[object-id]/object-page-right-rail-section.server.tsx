@@ -12,6 +12,11 @@ import {
   projectedObjectToRefCard,
   RIGHT_RAIL_REF_FETCH_LIMIT,
 } from '@/modules/object/infrastructure/object-ref-list.client';
+import {
+  fetchObjectFieldReferencesSummary,
+  FIELD_REFERENCES_RAIL_FETCH_LIMIT,
+} from '@/modules/object/infrastructure/object-field-references.client';
+import { isFieldReferenceSourceType } from '@/modules/object/domain/field-reference-rules';
 import { ObjectRightSidebar } from '@/modules/object/presentation/components/object-right-sidebar';
 
 function objectTypeSupportsRefList(objectTypeKey: string, updateType: string): boolean {
@@ -42,7 +47,9 @@ export async function ObjectPageRightRailSection({
   const supportsSimilar = objectTypeSupportsRefList(objectTypeKey, UPDATE_TYPES.IS_SIMILAR_TO);
   const supportsAddOn = objectTypeSupportsRefList(objectTypeKey, UPDATE_TYPES.ADD_ON);
 
-  const [relatedRailPage, similarRailPage, addOnRailPage, rightRailFollowersPage, rightRailExpertsPage] =
+  const supportsFieldReferences = isFieldReferenceSourceType(objectTypeKey);
+
+  const [relatedRailPage, similarRailPage, addOnRailPage, fieldReferenceGroups, rightRailFollowersPage, rightRailExpertsPage] =
     await Promise.all([
       supportsRelated
         ? fetchObjectRefList(
@@ -65,6 +72,13 @@ export async function ObjectPageRightRailSection({
             objectId,
             'add-on',
             { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
+            refFetchInit,
+          )
+        : Promise.resolve(null),
+      supportsFieldReferences
+        ? fetchObjectFieldReferencesSummary(
+            objectId,
+            { limit: FIELD_REFERENCES_RAIL_FETCH_LIMIT },
             refFetchInit,
           )
         : Promise.resolve(null),
@@ -102,6 +116,7 @@ export async function ObjectPageRightRailSection({
       relatedHasMore={relatedRailPage?.hasMore ?? false}
       similarHasMore={similarRailPage?.hasMore ?? false}
       addOnHasMore={addOnRailPage?.hasMore ?? false}
+      fieldReferenceGroups={fieldReferenceGroups ?? []}
       rightRailFollowersPage={rightRailFollowersPreview}
       rightRailExpertsPage={rightRailExpertsPreview}
     />

@@ -538,6 +538,113 @@ registerObjectRefListPath(
   'Returns VALID `addOn` refs on the source object first, then backfills with objects that have an `addOn` update pointing at the source object id (reverse add-on). Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor`.',
 );
 
+const objectFieldReferenceGroupSchema = registry.register(
+  'ObjectFieldReferenceGroup',
+  z.object({
+    objectType: z.string(),
+    items: z.array(refSummaryOpenApiSchema),
+    hasMore: z.boolean(),
+  }),
+);
+
+const objectFieldReferencesSummaryResponseSchema = registry.register(
+  'ObjectFieldReferencesSummaryResponse',
+  z.object({
+    groups: z.array(objectFieldReferenceGroupSchema),
+  }),
+);
+
+const objectFieldReferencesSummaryQueryOpenApi = z.object({
+  limit: z.coerce.number().int().min(1).max(50).optional().openapi({
+    description: 'Preview page size per group (default 6).',
+  }),
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/field-references',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'List field-reference previews',
+  description:
+    'For `person` or `business` source objects, returns preview groups of active objects that reference the source via schema fields (`author`, `merchant`, `manufacturer`, `brand`, `publisher`). Each group is keyed by target object type (`book`, `product`). Response rows are compact `RefSummary` projections.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: objectFieldReferencesSummaryQueryOpenApi,
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Grouped field-reference previews.',
+      content: {
+        'application/json': {
+          schema: objectFieldReferencesSummaryResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found or not active.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+    422: {
+      description: 'Source object type does not support field references.',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/field-references/{referenceObjectType}',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'List field references by target type',
+  description:
+    'Paginated objects of `referenceObjectType` that reference the source object via configured schema fields. Source must be `person` or `business`. Pagination: numeric offset `cursor`.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+      referenceObjectType: z.string().min(1).openapi({
+        param: { name: 'referenceObjectType', in: 'path', required: true },
+      }),
+    }),
+    query: objectRefListQueryOpenApi,
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Paginated referencing objects.',
+      content: {
+        'application/json': {
+          schema: objectRefListResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found or not active.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+    422: {
+      description: 'Unsupported source or reference object type.',
+    },
+  },
+});
+
 const relatedAlbumImageSchema = z.object({
   url: z.string(),
   postAuthor: z.string(),

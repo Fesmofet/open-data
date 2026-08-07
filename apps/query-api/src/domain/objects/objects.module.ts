@@ -10,6 +10,10 @@ import { GetObjectExpertsEndpoint } from './get-object-experts.endpoint';
 import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
 import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
 import {
+  GetObjectFieldReferencesByTypeEndpoint,
+  GetObjectFieldReferencesSummaryEndpoint,
+} from './get-object-field-references.endpoint';
+import {
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
   ObjectRelatedAlbumQuerySupport,
@@ -31,6 +35,8 @@ import { GetObjectOptionsEndpoint } from './get-object-options.endpoint';
     GetObjectExpertsEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
+    GetObjectFieldReferencesSummaryEndpoint,
+    GetObjectFieldReferencesByTypeEndpoint,
     ObjectRelatedAlbumQuerySupport,
     GetObjectRelatedAlbumPreviewEndpoint,
     GetObjectRelatedAlbumEndpoint,
@@ -44,6 +50,8 @@ import { GetObjectOptionsEndpoint } from './get-object-options.endpoint';
     GetObjectExpertsEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
+    GetObjectFieldReferencesSummaryEndpoint,
+    GetObjectFieldReferencesByTypeEndpoint,
     ObjectRelatedAlbumQuerySupport,
     GetObjectRelatedAlbumPreviewEndpoint,
     GetObjectRelatedAlbumEndpoint,

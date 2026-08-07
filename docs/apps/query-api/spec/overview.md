@@ -61,6 +61,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [Objects resolve-nested](objects-resolve-nested.md) | `POST /query/v1/objects/resolve-nested` (optional `update_types`) |
 | [Object avatar fallback](object-avatar-fallback.md) | `fields.image` from parent when child has no `image` |
 | [Object ref lists](object-ref-list-endpoints.md) | `GET .../related`, `/similar`, `/add-on` |
+| [Object field references](object-field-references.md) | `GET .../field-references`, `/field-references/:type` |
 | [Object update by id](object-update-by-id-endpoint.md) | `GET .../objects/:id/updates/:updateId` |
 | [Update voters](update-voters-endpoint.md) | `GET .../objects/:id/updates/:updateId/voters` |
 | [Object variant options](object-options.md) | `GET .../options` — aggregated Color/Size selectors |

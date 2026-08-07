@@ -21,6 +21,7 @@ import { UpdatesFeedRepository } from './updates-feed.repository';
 import { SearchRepository } from './search.repository';
 import { DiscoverRepository } from './discover.repository';
 import { ObjectRefListRepository } from './object-ref-list.repository';
+import { ObjectFieldReferencesRepository } from './object-field-references.repository';
 import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 import { UserFavoritesRepository } from './user-favorites.repository';
 import { UserObjectExpertiseRepository } from './user-object-expertise.repository';
@@ -57,6 +58,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     SearchRepository,
     DiscoverRepository,
     ObjectRefListRepository,
+    ObjectFieldReferencesRepository,
     PostObjectRelatedImagesRepository,
     UserFavoritesRepository,
     UserObjectExpertiseRepository,
@@ -93,6 +95,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     SearchRepository,
     DiscoverRepository,
     ObjectRefListRepository,
+    ObjectFieldReferencesRepository,
     PostObjectRelatedImagesRepository,
     UserFavoritesRepository,
     UserObjectExpertiseRepository,

@@ -32,6 +32,8 @@ import type {
   GetObjectFollowersEndpoint,
   GetObjectExpertsEndpoint,
   GetObjectRefListEndpoint,
+  GetObjectFieldReferencesSummaryEndpoint,
+  GetObjectFieldReferencesByTypeEndpoint,
   GetObjectRelatedAlbumEndpoint,
   GetObjectRelatedAlbumPreviewEndpoint,
   GetObjectOptionsEndpoint,
@@ -87,6 +89,8 @@ export interface McpToolDeps {
   getNestedObjects: GetNestedObjectsEndpoint;
   checkObjectExists: CheckObjectExistsEndpoint;
   getObjectRefList: GetObjectRefListEndpoint;
+  getObjectFieldReferencesSummary: GetObjectFieldReferencesSummaryEndpoint;
+  getObjectFieldReferencesByType: GetObjectFieldReferencesByTypeEndpoint;
   getObjectOptions: GetObjectOptionsEndpoint;
   getObjectRelatedAlbumPreview: GetObjectRelatedAlbumPreviewEndpoint;
   getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint;

@@ -18,7 +18,9 @@ import {
   ObjectRefListFeed,
 } from '@/modules/object';
 import { ObjectCategoryObjectsFeed } from '@/modules/object/presentation/components/object-category-objects-feed';
+import { ObjectFieldReferencesListFeed } from '@/modules/object/presentation/components/object-field-references-list-feed';
 import type { ObjectRefListPageView } from '@/modules/object/infrastructure/object-ref-list.client';
+import type { ObjectFieldReferencesPageView } from '@/modules/object/infrastructure/object-field-references.client';
 import type { CategoryObjectsPageView } from '@/modules/object/infrastructure/category-objects.client';
 import { AuthorityActionButton } from '@/modules/object/presentation/components/authority-action-button';
 import type {
@@ -34,10 +36,15 @@ import { loadMoreObjectAuthorityAction } from './authority/object-authority.acti
 import { loadMoreObjectExpertsAction } from './experts/object-experts.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
 import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
+import { loadMoreObjectFieldReferencesAction } from './field-references/load-more-field-references.actions';
 import { loadMoreCategoryObjectsAction } from './category/load-more-category-objects.actions';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { useObjectPageShell } from './object-page-shell-context';
-import { resolveCategoryNameForObjectPage } from './object-page-search';
+import { resolveCategoryNameForObjectPage, resolveFieldReferenceTypeForObjectPage } from './object-page-search';
+import {
+  isAllowedFieldReferenceObjectType,
+  isFieldReferenceSourceType,
+} from '@/modules/object/domain/field-reference-rules';
 import { resolveHostPageContent } from '@/modules/object/domain/resolve-host-page-content';
 import { resolveGalleryPhotosAlbum } from '@/modules/object/domain/resolve-gallery-photos-album';
 
@@ -53,7 +60,9 @@ export type ObjectPageTabPaneProps = {
   embeddedSimilarPage: ObjectRefListPageView | null;
   embeddedAddOnPage: ObjectRefListPageView | null;
   embeddedCategoryPage: CategoryObjectsPageView | null;
+  embeddedFieldReferencesPage: ObjectFieldReferencesPageView | null;
   activeCategoryName: string | null;
+  activeFieldReferenceType: string | null;
   viewerUsername: string | null;
   relatedAlbumPreview?: RelatedAlbumPreviewView | null;
   relatedAlbumInitialPage?: RelatedAlbumListView | null;
@@ -76,7 +85,9 @@ export function ObjectPageTabPane({
   embeddedSimilarPage,
   embeddedAddOnPage,
   embeddedCategoryPage,
+  embeddedFieldReferencesPage,
   activeCategoryName,
+  activeFieldReferenceType,
   viewerUsername,
   relatedAlbumPreview = null,
   relatedAlbumInitialPage = null,
@@ -101,6 +112,12 @@ export function ObjectPageTabPane({
     [model.objectId, pathname, searchParams],
   );
   const effectiveCategoryName = activeCategoryName ?? categoryNameFromUrl;
+  const fieldReferenceTypeFromUrl = useMemo(
+    () => resolveFieldReferenceTypeForObjectPage(model.objectId, pathname, searchParams),
+    [model.objectId, pathname, searchParams],
+  );
+  const effectiveFieldReferenceType =
+    activeFieldReferenceType ?? fieldReferenceTypeFromUrl;
   const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
   const [activeFeedSubSegment, setActiveFeedSubSegment] = useState(defaultFeedSub);
   const { openLogin } = useLoginModal();
@@ -232,6 +249,41 @@ export function ObjectPageTabPane({
     viewerUsername,
   ]);
 
+  const objectFieldReferencesFeed = useMemo(() => {
+    if (effectiveFieldReferenceType == null) {
+      return null;
+    }
+    if (
+      !isFieldReferenceSourceType(model.objectTypeKey) ||
+      !isAllowedFieldReferenceObjectType(model.objectTypeKey, effectiveFieldReferenceType)
+    ) {
+      return null;
+    }
+    if (embeddedFieldReferencesPage == null) {
+      return null;
+    }
+    return (
+      <ObjectFieldReferencesListFeed
+        key={`${model.objectId}-field-references-${effectiveFieldReferenceType}`}
+        objectId={model.objectId}
+        referenceObjectType={effectiveFieldReferenceType}
+        initialItems={embeddedFieldReferencesPage.items}
+        initialCursor={embeddedFieldReferencesPage.cursor}
+        initialHasMore={embeddedFieldReferencesPage.hasMore}
+        viewerUsername={viewerUsername}
+        onRequireLogin={openLogin}
+        loadMoreAction={loadMoreObjectFieldReferencesAction}
+      />
+    );
+  }, [
+    effectiveFieldReferenceType,
+    embeddedFieldReferencesPage,
+    model.objectId,
+    model.objectTypeKey,
+    openLogin,
+    viewerUsername,
+  ]);
+
   const loadMoreObjectAuthority = useMemo(
     () => (profileAccountName: string, sort: UserSubscriptionSort, skip: number) =>
       loadMoreObjectAuthorityAction(profileAccountName, authoritySubType, sort, skip),
@@ -330,6 +382,7 @@ export function ObjectPageTabPane({
       objectSimilarFeed={objectSimilarFeed}
       objectAddOnFeed={objectAddOnFeed}
       objectCategoryFeed={objectCategoryFeed}
+      objectFieldReferencesFeed={objectFieldReferencesFeed}
       hostPageContent={hostPageContent}
       descriptionContent={model.descriptionContent}
       previewGallery={model.previewGallery}

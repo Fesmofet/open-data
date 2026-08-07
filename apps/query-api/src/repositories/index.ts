@@ -27,6 +27,7 @@ export { SearchRepository } from './search.repository';
 export type { SearchObjectCandidateRow, SearchUserRow } from './search.repository';
 export { DiscoverRepository } from './discover.repository';
 export { ObjectRefListRepository } from './object-ref-list.repository';
+export { ObjectFieldReferencesRepository } from './object-field-references.repository';
 export { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 export { UserFavoritesRepository } from './user-favorites.repository';
 export { UserObjectExpertiseRepository } from './user-object-expertise.repository';

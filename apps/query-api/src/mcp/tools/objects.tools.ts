@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { objectUpdatesFeedQuerySchema } from '../../domain/object-updates/schemas/object-updates-feed.schema';
 import {
   objectRefListQuerySchema,
+  objectFieldReferencesSummaryQuerySchema,
   relatedAlbumListQuerySchema,
   relatedAlbumPreviewQuerySchema,
   resolveNestedObjectsBodySchema,
@@ -155,6 +156,64 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
     'get_object_add_on',
     catalogDescription('get_object_add_on'),
     UPDATE_TYPES.ADD_ON,
+  );
+
+  server.registerTool(
+    'get_object_field_references',
+    {
+      description: catalogDescription('get_object_field_references'),
+      inputSchema: withMcpLocaleContext(
+        objectFieldReferencesSummaryQuerySchema.extend({
+          object_id: z.string().min(1).describe('Source person or business object id'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const result = await deps.getObjectFieldReferencesSummary.execute(
+        args.object_id,
+        { limit: args.limit },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${args.object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_object_field_references_by_type',
+    {
+      description: catalogDescription('get_object_field_references_by_type'),
+      inputSchema: withMcpLocaleContext(
+        objectRefListQuerySchema.extend({
+          object_id: z.string().min(1).describe('Source person or business object id'),
+          reference_object_type: z
+            .string()
+            .min(1)
+            .describe('Target object type (e.g. book, product)'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { object_id, reference_object_type, limit, cursor } = args;
+      const result = await deps.getObjectFieldReferencesByType.executeByType(
+        object_id,
+        reference_object_type,
+        { limit, cursor },
+        ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${object_id}`);
+      }
+      return jsonToolResult(result);
+    },
   );
 
   server.registerTool(

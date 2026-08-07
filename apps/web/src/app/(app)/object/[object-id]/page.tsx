@@ -28,6 +28,9 @@ import {
   fetchObjectRefList,
   REF_LIST_PAGE_SIZE,
 } from '@/modules/object/infrastructure/object-ref-list.client';
+import {
+  fetchObjectFieldReferencesByType,
+} from '@/modules/object/infrastructure/object-field-references.client';
 import { fetchCategoryObjects } from '@/modules/object/infrastructure/category-objects.client';
 import {
   fetchObjectRelatedAlbumPage,
@@ -46,10 +49,18 @@ import { ObjectPagePostsFeedSection } from './object-page-posts-feed-section.ser
 import { ObjectThreadsFeedList } from './object-threads-feed-list';
 import { FeedPostsLoadingSkeleton } from '@/modules/feed';
 import {
+  isAllowedFieldReferenceObjectType,
+  isFieldReferenceSourceType,
+} from '@/modules/object/domain/field-reference-rules';
+import {
+  OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT,
+} from '@/modules/object/domain/object-page-url.constants';
+import {
   firstSearchParam,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
+  OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   parseAuthoritySubTypeParam,
@@ -62,6 +73,7 @@ import { ObjectPageInvalidPathFix } from './object-page-invalid-path-fix';
 
 const REF_LIST_PRIMARY_SEGMENTS = ['related', 'similar', 'add-on'] as const;
 const CATEGORY_PRIMARY_SEGMENT = 'category';
+const FIELD_REFERENCES_PRIMARY_SEGMENT = OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT;
 
 function parseUpdateIdParam(
   sp: Record<string, string | string[] | undefined>,
@@ -81,6 +93,20 @@ function parseCategoryNameParam(
   sp: Record<string, string | string[] | undefined>,
 ): string | null {
   const raw = firstSearchParam(sp, OBJECT_PAGE_CATEGORY_NAME_PARAM)?.trim();
+  if (!raw) {
+    return null;
+  }
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function parseFieldReferenceTypeParam(
+  sp: Record<string, string | string[] | undefined>,
+): string | null {
+  const raw = firstSearchParam(sp, OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM)?.trim();
   if (!raw) {
     return null;
   }
@@ -114,6 +140,15 @@ function resolveInitialPrimarySegment(
   }
   if (tabRaw === CATEGORY_PRIMARY_SEGMENT && parseCategoryNameParam(sp)) {
     return CATEGORY_PRIMARY_SEGMENT;
+  }
+  const fieldReferenceType = parseFieldReferenceTypeParam(sp);
+  if (
+    tabRaw === FIELD_REFERENCES_PRIMARY_SEGMENT &&
+    fieldReferenceType &&
+    isFieldReferenceSourceType(model.objectTypeKey) &&
+    isAllowedFieldReferenceObjectType(model.objectTypeKey, fieldReferenceType)
+  ) {
+    return FIELD_REFERENCES_PRIMARY_SEGMENT;
   }
   if (tabRaw && (allowed.has(tabRaw) || refListSegments.has(tabRaw))) {
     return tabRaw;
@@ -197,6 +232,29 @@ export async function generateMetadata({
         ? messages.object_right_add_on
         : 'Add-On';
     title = `${baseTitle} · ${addOnLabel}`;
+  } else if (tab === FIELD_REFERENCES_PRIMARY_SEGMENT) {
+    const referenceType = firstSearchParam(sp, OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM)?.trim();
+    let decodedType = referenceType;
+    if (referenceType) {
+      try {
+        decodedType = decodeURIComponent(referenceType);
+      } catch {
+        decodedType = referenceType;
+      }
+    }
+    if (decodedType === 'book') {
+      const booksLabel =
+        typeof messages.books === 'string' ? messages.books : 'Books';
+      title = `${baseTitle} · ${booksLabel}`;
+    } else if (decodedType === 'product') {
+      const productsLabel =
+        typeof messages.products === 'string' ? messages.products : 'Products';
+      title = `${baseTitle} · ${productsLabel}`;
+    } else {
+      const referencesLabel =
+        typeof messages.references === 'string' ? messages.references : 'References';
+      title = `${baseTitle} · ${referencesLabel}`;
+    }
   } else if (tab === CATEGORY_PRIMARY_SEGMENT) {
     const categoryName = parseCategoryNameParam(sp);
     if (categoryName) {
@@ -242,6 +300,11 @@ export default async function ObjectDetailPage({
   const initialPrimarySegment = resolveInitialPrimarySegment(model, sp, pathIds);
   const activeCategoryName =
     initialPrimarySegment === CATEGORY_PRIMARY_SEGMENT ? parseCategoryNameParam(sp) : null;
+  const activeFieldReferenceType =
+    initialPrimarySegment === FIELD_REFERENCES_PRIMARY_SEGMENT
+      ? parseFieldReferenceTypeParam(sp)
+      : null;
+  const supportsFieldReferences = isFieldReferenceSourceType(model.objectTypeKey);
 
   const supportsRelated = objectTypeSupportsRefList(
     model.objectTypeKey,
@@ -270,6 +333,7 @@ export default async function ObjectDetailPage({
     embeddedSimilarPage,
     embeddedAddOnPage,
     embeddedCategoryPage,
+    embeddedFieldReferencesPage,
     initialNestedStackRaw,
     defaultNestedContent,
   ] = await Promise.all([
@@ -330,6 +394,17 @@ export default async function ObjectDetailPage({
             limit: REF_LIST_PAGE_SIZE,
             excludeObjectId: objectId,
           },
+          refFetchInit,
+        )
+      : Promise.resolve(null),
+    initialPrimarySegment === FIELD_REFERENCES_PRIMARY_SEGMENT &&
+    supportsFieldReferences &&
+    activeFieldReferenceType &&
+    isAllowedFieldReferenceObjectType(model.objectTypeKey, activeFieldReferenceType)
+      ? fetchObjectFieldReferencesByType(
+          objectId,
+          activeFieldReferenceType,
+          { limit: REF_LIST_PAGE_SIZE },
           refFetchInit,
         )
       : Promise.resolve(null),
@@ -427,7 +502,9 @@ export default async function ObjectDetailPage({
         embeddedSimilarPage={embeddedSimilarPage}
         embeddedAddOnPage={embeddedAddOnPage}
         embeddedCategoryPage={embeddedCategoryPage}
+        embeddedFieldReferencesPage={embeddedFieldReferencesPage}
         activeCategoryName={activeCategoryName}
+        activeFieldReferenceType={activeFieldReferenceType}
         viewerUsername={viewerUsername}
         relatedAlbumPreview={relatedAlbumPreview}
         relatedAlbumInitialPage={relatedAlbumInitialPage}

@@ -31,6 +31,8 @@ Center-column full feeds for Related, Similar, and Add-On tabs. Right-rail previ
 
 **Category feed** (left-rail driven, not a primary tab): [`category-feed.md`](category-feed.md).
 
+**Field references feed** (person/business sources, right-rail driven): [`field-references-feed.md`](field-references-feed.md).
+
 Proxy rewrites path to `?tab=` — [routing-proxy](../../../routing-proxy.md).
 
 ## UI

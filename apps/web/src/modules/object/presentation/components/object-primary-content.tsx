@@ -66,6 +66,8 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Add-On';
     case 'category':
       return 'Category';
+    case 'field-references':
+      return 'References';
     default:
       return 'This section';
   }
@@ -162,6 +164,7 @@ export type ObjectPrimaryContentProps = {
   objectSimilarFeed?: ReactNode | null;
   objectAddOnFeed?: ReactNode | null;
   objectCategoryFeed?: ReactNode | null;
+  objectFieldReferencesFeed?: ReactNode | null;
   /** Raw page body for standalone page-type / legal_document host objects. */
   hostPageContent?: string | null;
   descriptionContent?: string | null;
@@ -205,6 +208,7 @@ export function ObjectPrimaryContent({
   objectSimilarFeed,
   objectAddOnFeed,
   objectCategoryFeed,
+  objectFieldReferencesFeed,
   hostPageContent = null,
   descriptionContent = null,
   previewGallery = [],
@@ -693,6 +697,14 @@ export function ObjectPrimaryContent({
       return (
         <FeedColumn>
           {objectCategoryFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'field-references' && objectFieldReferencesFeed != null) {
+      return (
+        <FeedColumn>
+          {objectFieldReferencesFeed}
         </FeedColumn>
       );
     }
