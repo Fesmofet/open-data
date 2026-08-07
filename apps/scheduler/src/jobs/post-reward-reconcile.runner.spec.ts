@@ -22,7 +22,7 @@ describe('PostRewardReconcileRunner', () => {
     const runner = Object.create(
       PostRewardReconcileRunner.prototype,
     ) as PostRewardReconcileRunner;
-    const claimOldest = jest
+    const claimNewest = jest
       .fn()
       .mockResolvedValue(overrides.dirty ?? []);
     const touchDirty = jest.fn().mockResolvedValue(undefined);
@@ -36,7 +36,7 @@ describe('PostRewardReconcileRunner', () => {
           return def;
         }),
       },
-      reconcileQueue: { claimOldest, touchDirty, remove: jest.fn() },
+      reconcileQueue: { claimNewest, touchDirty, remove: jest.fn() },
       reconcilePost: jest.fn().mockResolvedValue(undefined),
     });
     return runner;
@@ -50,8 +50,8 @@ describe('PostRewardReconcileRunner', () => {
     await runner.run(makeCtx(controller.signal));
 
     expect(
-      (runner as unknown as { reconcileQueue: { claimOldest: jest.Mock } })
-        .reconcileQueue.claimOldest,
+      (runner as unknown as { reconcileQueue: { claimNewest: jest.Mock } })
+        .reconcileQueue.claimNewest,
     ).not.toHaveBeenCalled();
   });
 
@@ -61,8 +61,8 @@ describe('PostRewardReconcileRunner', () => {
     await runner.run(makeCtx(new AbortController().signal));
 
     expect(
-      (runner as unknown as { reconcileQueue: { claimOldest: jest.Mock } })
-        .reconcileQueue.claimOldest,
+      (runner as unknown as { reconcileQueue: { claimNewest: jest.Mock } })
+        .reconcileQueue.claimNewest,
     ).toHaveBeenCalledWith(25);
   });
 

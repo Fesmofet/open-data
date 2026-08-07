@@ -51,6 +51,8 @@ export interface RedisClientInterface {
     limitOffset?: number,
     limitCount?: number,
   ): Promise<string[]>;
+  /** Highest-score members first (Redis ZREVRANGE). */
+  zRevRange(key: string, start: number, stop: number): Promise<string[]>;
   zRem(key: string, member: string): Promise<void>;
   pipeline(): RedisPipelineInterface;
   publish(channel: string, message: string): Promise<void>;

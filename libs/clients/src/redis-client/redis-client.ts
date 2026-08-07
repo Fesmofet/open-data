@@ -178,6 +178,10 @@ class RedisClientWrapper implements RedisClientInterface {
     return this.client.zrangebyscore(key, min, max);
   }
 
+  async zRevRange(key: string, start: number, stop: number): Promise<string[]> {
+    return this.client.zrevrange(key, start, stop);
+  }
+
   async zRem(key: string, member: string): Promise<void> {
     await this.client.zrem(key, member);
   }

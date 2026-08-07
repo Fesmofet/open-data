@@ -6,6 +6,7 @@ import { HiveClient } from '@opden-data-layer/clients';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { PostUpsertService } from '../hive-comment/post-upsert.service';
+import { hivePayoutFieldsFromContent } from './hive-payout-from-content';
 
 const DEFAULT_POST_SYNC_INTERVAL_MS = 30_000;
 const DEFAULT_POST_SYNC_BATCH_SIZE = 50;
@@ -120,8 +121,18 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      const votes = await this.hiveClient.getActiveVotes(author, permlink);
+      const [votes, hiveContent] = await Promise.all([
+        this.hiveClient.getActiveVotes(author, permlink),
+        this.hiveClient.getContent(author, permlink),
+      ]);
       await this.postsRepository.syncActiveVotesFromHive(author, permlink, votes);
+      if (hiveContent?.author?.trim()) {
+        await this.postsRepository.updateHivePayoutFields(
+          author,
+          permlink,
+          hivePayoutFieldsFromContent(hiveContent),
+        );
+      }
       await this.postSyncQueueRepository.deleteOne(author, permlink);
     } catch (error: unknown) {
       this.logger.error(

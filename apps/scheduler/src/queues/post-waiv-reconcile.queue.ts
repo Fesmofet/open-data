@@ -12,11 +12,13 @@ export class PostWaivReconcileQueue {
     return `${author}:${permlink}`;
   }
 
-  async claimOldest(limit: number): Promise<Array<{ author: string; permlink: string }>> {
+  /** Claims most recently dirtied posts (highest score first). */
+  async claimNewest(limit: number): Promise<Array<{ author: string; permlink: string }>> {
     const key = chainIndexerRedisKey.postWaivReconcile();
     try {
       const redis = this.redisFactory.getClient(0);
-      const members = await redis.zRangeByScore(key, '-inf', '+inf', 0, limit);
+      const members =
+        limit > 0 ? await redis.zRevRange(key, 0, limit - 1) : [];
       return members
         .map((m) => {
           const colon = m.indexOf(':');

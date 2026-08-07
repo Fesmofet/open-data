@@ -58,16 +58,16 @@ export class PostRewardReconcileRunner implements OnModuleInit {
   private batchSize(): number {
     const raw = this.configService.get<number>(
       'postRewardReconcile.batchSize',
-      50,
+      1000,
     );
-    return Number.isFinite(raw) && raw > 0 ? raw : 50;
+    return Number.isFinite(raw) && raw > 0 ? raw : 1000;
   }
 
   async run(ctx: JobHandlerContext): Promise<void> {
     if (ctx.signal.aborted) {
       return;
     }
-    const dirty = await this.reconcileQueue.claimOldest(this.batchSize());
+    const dirty = await this.reconcileQueue.claimNewest(this.batchSize());
     const seen = new Set<string>();
     for (const { author, permlink } of dirty) {
       if (ctx.signal.aborted) {

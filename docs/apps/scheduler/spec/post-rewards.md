@@ -24,7 +24,7 @@ chain-indexer writes realtime WAIV votes/rewards and enqueues work; **scheduler*
 
 ## `waiv-post-reconcile`
 
-- Claims oldest dirty root posts (persistent ZSET; failed entries re-touched).
+- Claims most recently dirtied root posts first (persistent ZSET; failed entries re-touched).
 - Skips posts with `rewards_finalized_at` set.
 - Refreshes Hive payout columns via `getContent`.
 - For WAIV-eligible tags: syncs HE `comments/posts` + `comments/votes` into `net_rshares_waiv`, `total_payout_waiv`, `post_active_votes.rshares_waiv`.
@@ -50,7 +50,7 @@ Scheduler env (`apps/scheduler/.env.example`; Docker stack uses root `.env`):
 | `HIVE_ENGINE_HISTORY_NODES` | `accounts.hive-engine.com`, `history.hive-engine.com`, `v6-he.atexoras.com:8443` | Comma-separated History API origins for finalize |
 | `POST_REWARDS_FINALIZE_DELAY_SEC` | `900` | Must match **chain-indexer** (ZSET score + PG safety net) |
 | `POST_REWARDS_FINALIZE_BATCH_SIZE` | `50` | Max posts per finalize tick |
-| `POST_REWARD_RECONCILE_BATCH_SIZE` | `50` | Max dirty reconcile entries per tick |
+| `POST_REWARD_RECONCILE_BATCH_SIZE` | `1000` | Max dirty reconcile entries per hourly tick (~posts/hour) |
 | `HIVE_ENGINE_NODES` | lib defaults | JSON-RPC for reconcile HE sync |
 
 Deploy: run migration `00021_posts_rewards_finalized_at` before enabling jobs; both **chain-indexer** and **scheduler** must run against the same Postgres + Redis.

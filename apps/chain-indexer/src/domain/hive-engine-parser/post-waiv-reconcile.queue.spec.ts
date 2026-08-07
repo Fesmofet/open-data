@@ -2,29 +2,23 @@ import { PostWaivReconcileQueue } from './post-waiv-reconcile.queue';
 import type { RedisClientFactory } from '@opden-data-layer/clients';
 
 describe('PostWaivReconcileQueue', () => {
-  it('claimOldest reads full ZSET from -inf', async () => {
-    const zRangeByScore = jest.fn().mockResolvedValue(['alice:post-1']);
+  it('claimNewest reads highest-score members first', async () => {
+    const zRevRange = jest.fn().mockResolvedValue(['alice:post-1']);
     const factory = {
-      getClient: () => ({ zRangeByScore, zAdd: jest.fn(), zRem: jest.fn() }),
+      getClient: () => ({ zRevRange, zAdd: jest.fn(), zRem: jest.fn() }),
     } as unknown as RedisClientFactory;
 
     const queue = new PostWaivReconcileQueue(factory);
-    const rows = await queue.claimOldest(10);
+    const rows = await queue.claimNewest(10);
 
-    expect(zRangeByScore).toHaveBeenCalledWith(
-      expect.any(String),
-      '-inf',
-      '+inf',
-      0,
-      10,
-    );
+    expect(zRevRange).toHaveBeenCalledWith(expect.any(String), 0, 9);
     expect(rows).toEqual([{ author: 'alice', permlink: 'post-1' }]);
   });
 
   it('touchDirty bumps score via zadd with current unix time', async () => {
     const zAdd = jest.fn().mockResolvedValue(undefined);
     const factory = {
-      getClient: () => ({ zAdd, zRangeByScore: jest.fn(), zRem: jest.fn() }),
+      getClient: () => ({ zAdd, zRevRange: jest.fn(), zRem: jest.fn() }),
     } as unknown as RedisClientFactory;
 
     const queue = new PostWaivReconcileQueue(factory);
