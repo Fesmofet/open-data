@@ -1,8 +1,15 @@
 import {
   getImagePathPost,
+  getPreviewProxyImageUrl,
   getProxyImageUrl,
+  normalizeLegacyObjectImageUrl,
+  resolveObjectImageUrl,
   stripHiveImageProxyPrefix,
 } from './get-proxy-image-url';
+
+const NEOXIAN_STEEMIT =
+  'https://steemitimages.com/u/neoxian/avatar/large';
+const NEOXIAN_HIVE = 'https://images.hive.blog/u/neoxian/avatar/large';
 
 const BUSY_IPFS =
   'https://ipfs.busy.org/ipfs/QmQ2G2GCrBVmwAQ8J6RCKZRrsXWByWAB6NGNaS6hCGa7go';
@@ -88,6 +95,11 @@ describe('getProxyImageUrl', () => {
     expect(getProxyImageUrl(yt)).toBe(yt);
   });
 
+  it('skips steemitimages.com (Hive 0x0 returns 403)', () => {
+    expect(getProxyImageUrl(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);
+    expect(getImagePathPost(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);
+  });
+
   it('leaves empty, data:, and relative paths unchanged', () => {
     expect(getProxyImageUrl('')).toBe('');
     expect(getProxyImageUrl(null)).toBe('');
@@ -117,5 +129,49 @@ describe('getImagePathPost', () => {
     expect(getImagePathPost(SEAFOOD_HIVE_RESIZE)).toBe(
       `https://images.hive.blog/0x0/${SEAFOOD_HIVE_RESIZE}`,
     );
+  });
+});
+
+describe('normalizeLegacyObjectImageUrl', () => {
+  it('rewrites steemitimages avatar URLs to Hive CDN', () => {
+    expect(normalizeLegacyObjectImageUrl(NEOXIAN_STEEMIT)).toBe(NEOXIAN_HIVE);
+  });
+
+  it('rewrites cdn.steemitimages.com avatars', () => {
+    expect(
+      normalizeLegacyObjectImageUrl(
+        'https://cdn.steemitimages.com/u/alice/avatar/small',
+      ),
+    ).toBe('https://images.hive.blog/u/alice/avatar/small');
+  });
+
+  it('leaves unrelated URLs unchanged', () => {
+    expect(normalizeLegacyObjectImageUrl(BUSY_IPFS)).toBe(BUSY_IPFS);
+  });
+});
+
+describe('resolveObjectImageUrl', () => {
+  it('normalizes steemitimages then skips 0x0 proxy', () => {
+    expect(resolveObjectImageUrl(NEOXIAN_STEEMIT)).toBe(NEOXIAN_HIVE);
+  });
+
+  it('returns null for empty input', () => {
+    expect(resolveObjectImageUrl(null)).toBeNull();
+    expect(resolveObjectImageUrl('  ')).toBeNull();
+  });
+});
+
+describe('getPreviewProxyImageUrl', () => {
+  it('returns legacy 800x600/p/ preview prefix', () => {
+    const preview = getPreviewProxyImageUrl(NEOXIAN_HIVE);
+    expect(preview.startsWith('https://images.hive.blog/800x600/https://images.hive.blog/p/')).toBe(
+      true,
+    );
+    expect(preview.length).toBeGreaterThan(60);
+  });
+
+  it('is idempotent for already-preview URLs', () => {
+    const once = getPreviewProxyImageUrl(NEOXIAN_HIVE);
+    expect(getPreviewProxyImageUrl(once)).toBe(once);
   });
 });

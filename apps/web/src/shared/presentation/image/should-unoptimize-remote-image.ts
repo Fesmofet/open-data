@@ -5,6 +5,8 @@
  */
 const HOSTS_SKIP_IMAGE_OPTIMIZATION = new Set([
   'img.3speakcontent.co',
+  'steemitimages.com',
+  'cdn.steemitimages.com',
   // Next optimizer intermittently 500s on Amazon product CDN; load directly.
   'm.media-amazon.com',
   'images-na.ssl-images-amazon.com',

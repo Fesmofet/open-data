@@ -19,7 +19,7 @@ export function FeedList({
   return (
     <ul className="flex list-none flex-col gap-card-padding p-0">
       {items.map((story) => (
-        <li key={story.id}>
+        <li key={story.id} className="relative">
           <StoryContainer
             story={story}
             feedTab={feedTab}

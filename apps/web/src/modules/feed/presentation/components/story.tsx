@@ -8,8 +8,8 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html';
 import { isThreeSpeakEmbedUrl } from '@/shared/infrastructure/three-speak-preview';
 import {
-  AVATAR_PLACEHOLDER_SRC,
   getImagePathPost,
+  ObjectThumbnail,
   shouldUnoptimizeRemoteImage,
   StatHoverTooltip,
   UserAvatar,
@@ -166,7 +166,7 @@ export function Story({
 
   return (
     <article
-      className="min-w-0 overflow-x-clip rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:p-card-padding"
+      className="min-w-0 rounded-card border border-border bg-surface/80 p-3 shadow-whisper sm:p-card-padding"
       aria-labelledby={`story-title-${story.id}`}
       data-feed-tab={feedTab}
     >
@@ -228,7 +228,6 @@ export function Story({
           >
             {taggedObjects.map((o) => {
               const chipImage = objectFields.image(o);
-              const chipImageSrc = chipImage ? getImagePathPost(chipImage) : null;
               const chipName = objectFields.name(o);
               const chipLabel = chipName ?? o.object_id;
               return (
@@ -240,26 +239,13 @@ export function Story({
                     className="inline-flex rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
                     <span className="flex size-8 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface-control sm:size-10">
-                      {chipImageSrc ? (
-                        <Image
-                          src={chipImageSrc}
-                          alt=""
-                          className="size-full object-cover"
-                          width={40}
-                          height={40}
-                          sizes="40px"
-                          unoptimized={shouldUnoptimizeRemoteImage(chipImageSrc)}
-                        />
-                      ) : (
-                        <Image
-                          src={AVATAR_PLACEHOLDER_SRC}
-                          alt=""
-                          className="size-full object-cover"
-                          width={40}
-                          height={40}
-                          sizes="40px"
-                        />
-                      )}
+                      <ObjectThumbnail
+                        src={chipImage}
+                        size={40}
+                        avatarSize="small"
+                        className="size-full object-cover"
+                        sizes="40px"
+                      />
                     </span>
                   </ObjectPageLink>
                 </li>
@@ -269,7 +255,7 @@ export function Story({
         ) : null}
       </header>
 
-      <div className="relative mt-3 min-w-0">
+      <div className="relative mt-3 min-w-0 overflow-x-clip">
         {story.permalinkPath != null && !isPostVideoActive ? (
           <Link
             href={story.permalinkPath}
@@ -452,7 +438,7 @@ export function Story({
         </div>
       </div>
 
-      <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+      <footer className="relative z-20 mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center gap-1">
           <StoryVoteButton
             authorName={story.authorName}

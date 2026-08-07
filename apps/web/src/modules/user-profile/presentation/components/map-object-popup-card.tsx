@@ -1,14 +1,12 @@
 'use client';
 
-import Image from 'next/image';
-
 import { mergeRatingDimensions } from '@/modules/feed/application/dto/object-card-rating';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import { objectFields } from '@/modules/feed/application/dto/object-fields';
 import { ObjectPageLink } from '@/modules/feed/presentation/components/object-page-link';
 import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/discover-registry';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { ObjectThumbnail } from '@/shared/presentation';
 import { objectPagePath } from '@/shared/routes/object-page-path';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -51,26 +49,13 @@ export function MapObjectPopupCard({ object: o }: MapObjectPopupCardProps) {
         className="flex shrink-0 items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt"
         style={{ width: POPUP_THUMB_SIZE, height: POPUP_THUMB_SIZE }}
       >
-        {thumbUrl ? (
-          <Image
-            src={thumbUrl}
-            alt=""
-            className="size-full object-cover"
-            width={POPUP_THUMB_SIZE}
-            height={POPUP_THUMB_SIZE}
-            sizes={`${POPUP_THUMB_SIZE}px`}
-            unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
-          />
-        ) : (
-          <Image
-            src={AVATAR_PLACEHOLDER_SRC}
-            alt=""
-            className="size-full object-cover"
-            width={POPUP_THUMB_SIZE}
-            height={POPUP_THUMB_SIZE}
-            sizes={`${POPUP_THUMB_SIZE}px`}
-          />
-        )}
+        <ObjectThumbnail
+          src={thumbUrl}
+          size={POPUP_THUMB_SIZE}
+          avatarSize="small"
+          className="size-full object-cover"
+          sizes={`${POPUP_THUMB_SIZE}px`}
+        />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-weight-label text-body text-accent hover:underline">

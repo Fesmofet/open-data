@@ -7,7 +7,16 @@
  * wrapped again as `0x0/{thatUrl}`.
  */
 
+import bs58 from 'bs58';
+
 const HIVE_IMAGE_PROXY_PREFIX = 'https://images.hive.blog/0x0/';
+const HIVE_PREVIEW_PROXY_PREFIX = 'https://images.hive.blog/800x600/';
+const HIVE_PREVIEW_PATH_PREFIX = 'https://images.hive.blog/p/';
+const HIVE_AVATAR_BASE = 'https://images.hive.blog/u';
+
+/** Legacy steemitimages avatar URLs — Hive `0x0` returns 403; map to Hive avatar CDN. */
+const STEEMIT_IMAGES_AVATAR_PATH =
+  /^https?:\/\/(?:cdn\.)?steemitimages\.com\/u\/([^/?#]+)\/avatar\/([^/?#]+)/i;
 
 /**
  * Hosts / path fragments that must not be wrapped.
@@ -16,6 +25,7 @@ const HIVE_IMAGE_PROXY_PREFIX = 'https://images.hive.blog/0x0/';
 const SKIP_PROXY_SUBSTRINGS = [
   'sephora.com',
   'waivio.nyc3.digitaloceanspaces',
+  'steemitimages.com',
   'i.imgur.com',
   '.avif',
   'vumbnail.com',
@@ -138,4 +148,73 @@ export function getImagePathPost(url: string | null | undefined): string {
     return normalizeProtocolRelative(trimmed);
   }
   return getProxyImageUrl(trimmed);
+}
+
+function legacyUnescapeForPreview(url: string): string {
+  try {
+    return decodeURIComponent(url);
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Rewrite legacy `steemitimages.com/u/…/avatar/…` to Hive avatar CDN.
+ * Hive `0x0` proxy returns 403 for steemitimages hosts.
+ */
+export function normalizeLegacyObjectImageUrl(
+  url: string,
+  size: 'small' | 'large' = 'large',
+): string {
+  const trimmed = normalizeProtocolRelative(url.trim());
+  const match = STEEMIT_IMAGES_AVATAR_PATH.exec(trimmed);
+  if (!match) {
+    return trimmed;
+  }
+  const username = match[1]!;
+  const variant = match[2]!.toLowerCase();
+  const hiveVariant =
+    size === 'small' || variant.includes('small') ? 'small' : 'large';
+  return `${HIVE_AVATAR_BASE}/${username}/avatar/${hiveVariant}`;
+}
+
+/**
+ * Legacy object-card preview proxy (`getProxyImageURL(url, 'preview')`).
+ * Used as an onError fallback for object thumbnails.
+ */
+export function getPreviewProxyImageUrl(url: string | null | undefined): string {
+  if (url == null) {
+    return '';
+  }
+  const trimmed = url.trim();
+  if (trimmed === '') {
+    return '';
+  }
+  const normalized = normalizeProtocolRelative(trimmed);
+  if (
+    normalized.startsWith(HIVE_PREVIEW_PROXY_PREFIX) ||
+    normalized.includes(`${HIVE_PREVIEW_PATH_PREFIX}`)
+  ) {
+    return normalized;
+  }
+  try {
+    const encoded = bs58.encode(Buffer.from(legacyUnescapeForPreview(normalized), 'utf8'));
+    return `${HIVE_PREVIEW_PROXY_PREFIX}${HIVE_PREVIEW_PATH_PREFIX}${encoded}`;
+  } catch {
+    return getProxyImageUrl(normalized);
+  }
+}
+
+/** Primary display URL for object thumbnails (avatar/logo). */
+export function resolveObjectImageUrl(
+  raw: string | null | undefined,
+  size: 'small' | 'large' = 'large',
+): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const normalized = normalizeLegacyObjectImageUrl(trimmed, size);
+  const resolved = getImagePathPost(normalized);
+  return resolved.length > 0 ? resolved : null;
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useMemo, useTransition } from 'react';
 
@@ -8,8 +7,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import { ObjectCard } from '@/modules/feed/presentation/components/object-card';
 import {
-  AVATAR_PLACEHOLDER_SRC,
-  shouldUnoptimizeRemoteImage,
+  ObjectThumbnail,
   useInfiniteScroll,
   useSyncedPaginatedList,
 } from '@/shared/presentation';
@@ -23,19 +21,16 @@ export type ObjectRefCardProps = {
 };
 
 export function ObjectRefCard({ item, href }: ObjectRefCardProps) {
-  const src = item.imageSrc?.trim() ? item.imageSrc : AVATAR_PLACEHOLDER_SRC;
   const card = (
     <div className="flex w-full min-w-0 gap-2 rounded-btn border border-border bg-bg p-2 transition-colors hover:bg-surface">
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-btn border border-border">
-        <Image
-          src={src}
-          alt=""
+        <ObjectThumbnail
+          src={item.imageSrc}
           fill
+          size={48}
+          avatarSize="small"
           className="object-cover"
           sizes="48px"
-          unoptimized={
-            src === AVATAR_PLACEHOLDER_SRC ? true : shouldUnoptimizeRemoteImage(src)
-          }
         />
       </div>
       <p className="min-w-0 flex-1 self-center truncate text-body-sm font-weight-label leading-body text-fg">

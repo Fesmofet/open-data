@@ -12,7 +12,10 @@ export { useModalScrollLock } from './hooks/use-modal-scroll-lock';
 export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
 export {
   getImagePathPost,
+  getPreviewProxyImageUrl,
   getProxyImageUrl,
+  normalizeLegacyObjectImageUrl,
+  resolveObjectImageUrl,
   stripHiveImageProxyPrefix,
 } from '../infrastructure/image/get-proxy-image-url';
 export {
@@ -51,6 +54,8 @@ export {
   APP_MODAL_Z_INDEX as MODAL_Z_INDEX_APP,
 } from './components/modal-shell.constants';
 export { HydrationSafeAnchor } from './components/hydration-safe-anchor';
+export { ObjectThumbnail } from './components/object-thumbnail';
+export type { ObjectThumbnailProps } from './components/object-thumbnail';
 export { StatHoverTooltip } from './components/stat-hover-tooltip';
 export type { StatHoverTooltipProps } from './components/stat-hover-tooltip';
 export { NavMenu } from './components/nav-menu';

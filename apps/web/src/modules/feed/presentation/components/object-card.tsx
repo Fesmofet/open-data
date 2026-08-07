@@ -16,7 +16,7 @@ import {
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/discover-registry';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { AVATAR_PLACEHOLDER_SRC, ObjectThumbnail } from '@/shared/presentation';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { AdministrativeHeartButton } from '@/modules/object/presentation/components/administrative-heart-button';
 import { objectPagePath } from '@/shared/routes/object-page-path';
@@ -282,15 +282,12 @@ export function ObjectCard({
             style={stackedMobile ? undefined : { width: thumbSize, height: thumbSize }}
           >
             {thumbUrl ? (
-              <Image
+              <ObjectThumbnail
                 src={thumbUrl}
-                alt=""
+                size={thumbSize}
+                avatarSize={thumbSize <= 64 ? 'small' : 'large'}
                 className="size-full object-cover"
-                width={thumbSize}
-                height={thumbSize}
                 sizes={`${thumbSize}px`}
-                loading="lazy"
-                unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
               />
             ) : (
               <Image

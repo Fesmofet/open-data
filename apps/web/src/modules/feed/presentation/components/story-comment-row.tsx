@@ -77,7 +77,7 @@ export function StoryCommentRow({
             />
           </div>
         </header>
-        <footer className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <footer className="relative z-20 mt-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <StoryVoteButton
               authorName={comment.authorName}

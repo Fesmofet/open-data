@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -20,7 +19,7 @@ import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
-import { shouldUnoptimizeRemoteImage, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
+import { ObjectThumbnail, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '../../constants';
@@ -206,13 +205,12 @@ export function UpdateCard({
               key={`${item.update_id}:${src}`}
               className="relative aspect-[4/3] w-full max-w-container-narrow overflow-hidden rounded-btn border border-border bg-surface-alt"
             >
-              <Image
+              <ObjectThumbnail
                 src={src}
-                alt=""
                 fill
+                avatarSize="large"
                 className="object-contain"
                 sizes="(max-width: 640px) 100vw, 28rem"
-                unoptimized={shouldUnoptimizeRemoteImage(src)}
               />
             </div>
           ))}

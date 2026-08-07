@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
@@ -13,7 +12,7 @@ import { useLoginModal } from '@/modules/auth/presentation';
 import { broadcastObjectUnfollow } from '@/modules/user-social/infrastructure/broadcast-object-unfollow';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
-import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage, StatHoverTooltip } from '@/shared/presentation';
+import { ObjectThumbnail, StatHoverTooltip } from '@/shared/presentation';
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB = 44;
@@ -77,24 +76,13 @@ export function UserSocialObjectRow({
           aria-label={`View object: ${name}`}
         >
           <span className="flex size-11 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface ring-1 ring-border/60">
-            {img ? (
-              <Image
-                src={img}
-                alt=""
-                width={THUMB}
-                height={THUMB}
-                className="size-full object-cover"
-                unoptimized={shouldUnoptimizeRemoteImage(img)}
-              />
-            ) : (
-              <Image
-                src={AVATAR_PLACEHOLDER_SRC}
-                alt=""
-                width={THUMB}
-                height={THUMB}
-                className="size-full object-cover"
-              />
-            )}
+            <ObjectThumbnail
+              src={img}
+              size={THUMB}
+              avatarSize="small"
+              className="size-full object-cover"
+              sizes={`${THUMB}px`}
+            />
           </span>
         </Link>
       </div>

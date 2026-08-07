@@ -218,7 +218,7 @@ export function BlogPostScreen({
         ) : null}
       </div>
 
-      <footer className={`flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 ${isModal ? 'mt-6' : 'mt-4'}`}>
+      <footer className={`relative z-20 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 ${isModal ? 'mt-6' : 'mt-4'}`}>
         <div className="flex flex-wrap items-center gap-1">
           <StoryVoteButton
             authorName={story.authorName}

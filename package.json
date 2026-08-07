@@ -75,6 +75,7 @@
     "@yudiel/react-qr-scanner": "^2.6.0",
     "axios": "^1.18.1",
     "bignumber.js": "^11.1.5",
+    "bs58": "^6.0.0",
     "class-transformer": "^0.5.1",
     "cron": "^4.4.0",
     "diff": "^9.0.0",

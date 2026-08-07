@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
-import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
+import { ObjectThumbnail, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
 
@@ -152,13 +152,18 @@ export function ObjectHero({
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="relative shrink-0 self-start sm:self-end">
-              <UserAvatar
-                username=""
-                avatarUrl={avatarUrl}
-                displayName={title}
+              <ObjectThumbnail
+                src={avatarUrl}
+                alt={title}
                 size={96}
-                isSquare
-                className={hasCoverPhoto ? 'hero-on-photo-avatar' : undefined}
+                avatarSize="large"
+                priority
+                className={[
+                  'rounded-btn bg-surface-alt object-cover shadow-card',
+                  hasCoverPhoto ? 'hero-on-photo-avatar' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               />
               {(canEditAvatar || canEditBackground) ? (
                 <button

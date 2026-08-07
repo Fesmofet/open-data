@@ -35,7 +35,7 @@ export function StoryRewardTooltip({
         {reward.label}
       </button>
       <div
-        className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 w-max max-w-[min(18rem,calc(100vw-2rem))] -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+        className="pointer-events-none absolute bottom-full end-0 z-50 mb-2 w-max max-w-[min(18rem,calc(100vw-2rem))] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
         role="tooltip"
       >
         <div className="rounded-card border border-border bg-surface-raised px-3 py-2 shadow-card-float">
@@ -46,7 +46,7 @@ export function StoryRewardTooltip({
           />
         </div>
         <div
-          className="mx-auto h-2 w-2 rotate-45 border-b border-r border-border bg-surface-raised"
+          className="ms-auto me-3 h-2 w-2 rotate-45 border-b border-r border-border bg-surface-raised"
           aria-hidden
         />
       </div>
