@@ -7,6 +7,7 @@ module.exports = {
   moduleNameMapper: {
     ...(nxPreset.moduleNameMapper ?? {}),
     '^marked$': '<rootDir>/src/test-mocks/marked.ts',
+    '^hive-auth-wrapper$': '<rootDir>/src/test-mocks/hive-auth-wrapper.ts',
     '^@opden-data-layer/notifications-messages/testing$':
       '<rootDir>/../../libs/notifications-messages/src/testing/index.ts',
   },

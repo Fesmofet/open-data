@@ -10,6 +10,11 @@ jest.mock('@/shared/presentation', () => ({
   StatHoverTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+jest.mock('@/shared/presentation/layout', () => ({
+  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS: 'primary-row',
+  horizontalTabNavScrollShellClass: () => 'scroll-shell',
+}));
+
 import { ObjectPrimaryNav } from './object-primary-nav';
 
 const messages = {

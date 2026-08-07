@@ -16,6 +16,7 @@ jest.mock('@/modules/auth', () => ({
   getWalletFacade: () => ({
     broadcast: mockBroadcast,
   }),
+  hydrateWalletProviderFromStorage: jest.fn(),
 }));
 
 jest.mock('@/modules/notifications', () => ({
