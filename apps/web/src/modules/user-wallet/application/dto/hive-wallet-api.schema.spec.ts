@@ -40,6 +40,13 @@ describe('hiveWalletApiResponseSchema', () => {
         totalVestingFundSteem: '210885200.636 HIVE',
       },
       rates: { hiveUsd: 0.049, hbdUsd: 1 },
+      pendingRewards: {
+        hive: '0.000 HIVE',
+        hbd: '0.000 HBD',
+        vesting: '0.000000 VESTS',
+        display: { hive: '0', hbd: '0', hp: '0' },
+        hasRewards: false,
+      },
     };
 
     const parsed = hiveWalletApiResponseSchema.safeParse(legacy);

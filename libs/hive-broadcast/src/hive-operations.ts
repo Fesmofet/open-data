@@ -93,6 +93,14 @@ export type CancelTransferFromSavingsOp = {
   readonly request_id: number;
 };
 
+export type ClaimRewardBalanceOp = {
+  readonly type: 'claim_reward_balance';
+  readonly account: string;
+  readonly reward_hive: string;
+  readonly reward_hbd: string;
+  readonly reward_vests: string;
+};
+
 export type HiveOperation =
   | VoteOp
   | CommentOp
@@ -104,7 +112,8 @@ export type HiveOperation =
   | DelegateVestingSharesOp
   | TransferToSavingsOp
   | TransferFromSavingsOp
-  | CancelTransferFromSavingsOp;
+  | CancelTransferFromSavingsOp
+  | ClaimRewardBalanceOp;
 
 export type HiveOperationPayload = {
   readonly operations: readonly HiveOperation[];

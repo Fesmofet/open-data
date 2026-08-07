@@ -1,4 +1,5 @@
 import {
+  buildClaimRewardBalanceOp,
   buildTransferOp,
   formatHiveAssetAmount,
 } from './hive-l1-wallet-operations';
@@ -23,6 +24,23 @@ describe('hive-l1-wallet-operations', () => {
       to: 'bob',
       amount: '1.000 HIVE',
       memo: 'hi',
+    });
+  });
+
+  it('builds claim reward balance op', () => {
+    expect(
+      buildClaimRewardBalanceOp({
+        account: 'alice',
+        rewardHive: '0.734 HIVE',
+        rewardHbd: '0.012 HBD',
+        rewardVests: '123.456789 VESTS',
+      }),
+    ).toEqual({
+      type: 'claim_reward_balance',
+      account: 'alice',
+      reward_hive: '0.734 HIVE',
+      reward_hbd: '0.012 HBD',
+      reward_vests: '123.456789 VESTS',
     });
   });
 });

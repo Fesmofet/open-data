@@ -12,6 +12,7 @@ import {
   canClaimHbdInterest,
   daysUntilHbdInterestClaim,
   mapHiveAccountToBalanceFields,
+  mapPendingRewards,
   mapRcAccountToSnapshot,
   parseSavingsWithdrawAsset,
 } from './build-hive-wallet-summary';
@@ -99,6 +100,7 @@ export class GetUserHiveWalletEndpoint {
           ),
           nextVestingWithdrawal: hiveAccount.next_vesting_withdrawal ?? null,
           pendingSavingsWithdrawals,
+          pendingRewards: mapPendingRewards(hiveAccount),
           rc: rcSnapshot,
         },
       );

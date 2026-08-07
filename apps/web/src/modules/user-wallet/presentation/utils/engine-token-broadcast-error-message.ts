@@ -16,7 +16,9 @@ export function engineTokenBroadcastErrorMessageKey(
       return 'wallet_broadcast_hivesigner_sign_failed';
     case 'transaction_id_missing':
       return 'wallet_broadcast_transaction_id_missing';
+    case 'broadcast_failed':
+      return 'wallet_broadcast_failed';
     default:
-      return 'activity_error';
+      return 'wallet_broadcast_failed';
   }
 }

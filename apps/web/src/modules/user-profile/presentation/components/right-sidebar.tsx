@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { CryptoMarketPanel } from '@/modules/currency/presentation/components/crypto-market-panel';
+import { ClaimRewardsSidebarCard } from '@/modules/user-wallet/presentation/components/wallet/claim-rewards-sidebar-card';
 import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
 import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
 import { isUserProfileTransfersTab } from '../../domain/profile-transfers-url';
@@ -80,6 +81,10 @@ function RightSidebarContent({ accountName, viewerUsername }: RightSidebarProps)
           viewerUsername={viewerUsername ?? null}
         />
         <CryptoMarketPanel />
+        <ClaimRewardsSidebarCard
+          accountName={accountName}
+          viewerUsername={viewerUsername ?? null}
+        />
         <WalletActionsSidebarBottom
           accountName={accountName}
           viewerUsername={viewerUsername ?? null}

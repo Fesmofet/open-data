@@ -30,4 +30,16 @@ describe('hive-operation-signing', () => {
     expect(hiveOperationRequiresActiveKey(op)).toBe(false);
     expect(resolveKeychainBroadcastKey([op])).toBe('Posting');
   });
+
+  it('keeps posting key for claim_reward_balance', () => {
+    const op: HiveOperation = {
+      type: 'claim_reward_balance',
+      account: 'alice',
+      reward_hive: '0.734 HIVE',
+      reward_hbd: '0.012 HBD',
+      reward_vests: '123.456789 VESTS',
+    };
+    expect(hiveOperationRequiresActiveKey(op)).toBe(false);
+    expect(resolveKeychainBroadcastKey([op])).toBe('Posting');
+  });
 });

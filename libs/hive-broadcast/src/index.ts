@@ -27,6 +27,7 @@ export {
   buildTransferFromSavingsOp,
   buildCancelTransferFromSavingsOp,
   buildClaimHbdInterestOps,
+  buildClaimRewardBalanceOp,
   buildDelegateRcOp,
   buildUndelegateRcOp,
   formatHiveAssetAmount,

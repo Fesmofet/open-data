@@ -8,7 +8,7 @@ import type { EngineWalletSummaryView } from '../../../domain/types/engine-walle
 import type { HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
 import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
 import { WalletModalsGate } from './unified-wallet-modal-host';
-import { WalletBalancesProvider } from './wallet-balances-context';
+import { WalletBalancesSync } from './wallet-balances-context';
 
 export type TransfersWalletPageClientProps = {
   accountName: string;
@@ -32,13 +32,14 @@ export function TransfersWalletPageClient({
     viewerUsername?.trim().toLowerCase() === accountName.trim().toLowerCase();
 
   return (
-    <WalletBalancesProvider
-      waivSummary={waivSummary}
-      hiveSummary={hiveSummary}
-      engineSummary={engineSummary}
-    >
+    <>
+      <WalletBalancesSync
+        waivSummary={waivSummary}
+        hiveSummary={hiveSummary}
+        engineSummary={engineSummary}
+      />
       {children}
       {canManage ? <WalletModalsGate account={accountName} /> : null}
-    </WalletBalancesProvider>
+    </>
   );
 }

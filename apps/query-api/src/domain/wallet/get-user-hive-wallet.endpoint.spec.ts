@@ -76,6 +76,7 @@ describe('GetUserHiveWalletEndpoint', () => {
     const result = await endpoint.execute('alice');
     expect(result?.account).toBe('alice');
     expect(result?.display.liquidHive).toBe('10');
+    expect(result?.pendingRewards.hasRewards).toBe(false);
     expect(result?.chain.totalVestingShares).toContain('VESTS');
   });
 });

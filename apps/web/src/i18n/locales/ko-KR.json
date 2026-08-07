@@ -2645,5 +2645,6 @@
   "your_vote_placeholder": "투표 (선택 사항)",
   "СЃommunity_actions": "커뮤니티 활동",
   "home_feed_empty_global": "No posts to show yet.",
-  "home_feed_empty_personalized": "Follow accounts or objects to see posts here."
+  "home_feed_empty_personalized": "Follow accounts or objects to see posts here.",
+  "wallet_broadcast_failed": "Transaction failed. Please try again."
 }

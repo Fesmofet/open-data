@@ -123,6 +123,10 @@ export type HiveAccountWalletFields = {
   to_withdraw: string;
   vesting_withdraw_rate: string;
   next_vesting_withdrawal: string;
+  reward_hive_balance?: string;
+  reward_hbd_balance?: string;
+  reward_vesting_balance?: string;
+  reward_vesting_hive?: string;
   voting_power?: number;
   last_vote_time?: string;
   reputation?: number;

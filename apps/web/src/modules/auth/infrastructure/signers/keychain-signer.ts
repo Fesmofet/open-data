@@ -31,8 +31,9 @@ function resolveSigningAccount(operations: HiveOperationPayload['operations']): 
       case 'withdraw_vesting':
       case 'delegate_vesting_shares':
       case 'cancel_transfer_from_savings':
+      case 'claim_reward_balance':
         accounts.add(
-          op.type === 'withdraw_vesting'
+          op.type === 'withdraw_vesting' || op.type === 'claim_reward_balance'
             ? op.account
             : op.type === 'delegate_vesting_shares'
               ? op.delegator

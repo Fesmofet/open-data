@@ -45,7 +45,50 @@ export type HiveWalletAccountInput = {
   to_withdraw?: string;
   vesting_withdraw_rate?: string;
   next_vesting_withdrawal?: string;
+  reward_hive_balance?: string;
+  reward_hbd_balance?: string;
+  reward_vesting_balance?: string;
+  reward_vesting_hive?: string;
 };
+
+export type HivePendingRewards = {
+  hive: string;
+  hbd: string;
+  vesting: string;
+  display: {
+    hive: string;
+    hbd: string;
+    hp: string;
+  };
+  hasRewards: boolean;
+};
+
+const ZERO_REWARD_HIVE = '0.000 HIVE';
+const ZERO_REWARD_HBD = '0.000 HBD';
+const ZERO_REWARD_VESTS = '0.000000 VESTS';
+
+export function mapPendingRewards(account: HiveWalletAccountInput): HivePendingRewards {
+  const hiveRaw = account.reward_hive_balance?.trim() || ZERO_REWARD_HIVE;
+  const hbdRaw = account.reward_hbd_balance?.trim() || ZERO_REWARD_HBD;
+  const vestingRaw = account.reward_vesting_balance?.trim() || ZERO_REWARD_VESTS;
+  const hiveAmount = parseAssetNumber(hiveRaw);
+  const hbdAmount = parseAssetNumber(hbdRaw);
+  const hpAmount = parseAssetNumber(account.reward_vesting_hive);
+  const vestingAmount = parseAssetNumber(vestingRaw);
+  const hasRewards = hiveAmount > 0 || hbdAmount > 0 || hpAmount > 0 || vestingAmount > 0;
+
+  return {
+    hive: hiveRaw,
+    hbd: hbdRaw,
+    vesting: vestingRaw,
+    display: {
+      hive: formatAmount(hiveAmount, 3),
+      hbd: formatAmount(hbdAmount, 3),
+      hp: formatAmount(hpAmount, 3),
+    },
+    hasRewards,
+  };
+}
 
 export type HiveRcSnapshot = {
   maxRc: number;
@@ -293,6 +336,7 @@ export function buildHiveWalletSummary(
     daysUntilInterestClaim: number;
     nextVestingWithdrawal: string | null;
     pendingSavingsWithdrawals: HivePendingSavingsWithdrawal[];
+    pendingRewards: HivePendingRewards;
     rc?: HiveRcSnapshot;
   },
 ) {
@@ -379,6 +423,7 @@ export function buildHiveWalletSummary(
       ...row,
       daysRemaining: calculateSavingsWithdrawDaysRemaining(row.complete),
     })),
+    pendingRewards: options.pendingRewards,
   };
 }
 

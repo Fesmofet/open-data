@@ -44,6 +44,18 @@ export const hiveRcSnapshotSchema = z.object({
   receivedDelegatedRc: z.string(),
 });
 
+export const hivePendingRewardsSchema = z.object({
+  hive: z.string(),
+  hbd: z.string(),
+  vesting: z.string(),
+  display: z.object({
+    hive: z.string(),
+    hbd: z.string(),
+    hp: z.string(),
+  }),
+  hasRewards: z.boolean(),
+});
+
 export const hiveWalletResponseSchema = z.object({
   account: z.string(),
   balance: hiveWalletBalanceSchema,
@@ -73,6 +85,7 @@ export const hiveWalletResponseSchema = z.object({
     })
     .optional(),
   pendingSavingsWithdrawals: z.array(hivePendingSavingsWithdrawalSchema),
+  pendingRewards: hivePendingRewardsSchema,
   chain: z.object({
     totalVestingShares: z.string(),
     totalVestingFundSteem: z.string(),

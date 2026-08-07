@@ -3,8 +3,11 @@ import {
   canClaimHbdInterest,
   estimateHbdInterestBalance,
   mapHiveAccountToBalanceFields,
+  mapPendingRewards,
   mapRcAccountToSnapshot,
 } from './build-hive-wallet-summary';
+
+const EMPTY_PENDING_REWARDS = mapPendingRewards({});
 
 const CHAIN = {
   totalVestingShares: '1000000000 VESTS',
@@ -77,6 +80,7 @@ describe('buildHiveWalletSummary', () => {
         daysUntilInterestClaim: 0,
         nextVestingWithdrawal: null,
         pendingSavingsWithdrawals: [],
+        pendingRewards: EMPTY_PENDING_REWARDS,
       },
     );
 
@@ -110,6 +114,7 @@ describe('buildHiveWalletSummary', () => {
         daysUntilInterestClaim: 12,
         nextVestingWithdrawal: '2026-06-26T15:10:00',
         pendingSavingsWithdrawals: [],
+        pendingRewards: EMPTY_PENDING_REWARDS,
       },
     );
 
@@ -133,6 +138,7 @@ describe('buildHiveWalletSummary', () => {
         daysUntilInterestClaim: 0,
         nextVestingWithdrawal: null,
         pendingSavingsWithdrawals: [],
+        pendingRewards: EMPTY_PENDING_REWARDS,
         rc: mapRcAccountToSnapshot({
           max_rc: '432210000000',
           delegated_rc: '1000000000',
@@ -144,5 +150,32 @@ describe('buildHiveWalletSummary', () => {
 
     expect(summary.display.rcMax).toBe('433.21');
     expect(summary.flags.showRcDelegationsRow).toBe(true);
+  });
+});
+
+describe('mapPendingRewards', () => {
+  it('returns hasRewards false when all balances are zero', () => {
+    const rewards = mapPendingRewards({});
+    expect(rewards.hasRewards).toBe(false);
+    expect(rewards.hive).toBe('0.000 HIVE');
+    expect(rewards.hbd).toBe('0.000 HBD');
+    expect(rewards.vesting).toBe('0.000000 VESTS');
+  });
+
+  it('maps non-zero reward balances for display and broadcast', () => {
+    const rewards = mapPendingRewards({
+      reward_hive_balance: '0.734 HIVE',
+      reward_hbd_balance: '0.012 HBD',
+      reward_vesting_balance: '123.456789 VESTS',
+      reward_vesting_hive: '1.800 HP',
+    });
+
+    expect(rewards.hasRewards).toBe(true);
+    expect(rewards.hive).toBe('0.734 HIVE');
+    expect(rewards.hbd).toBe('0.012 HBD');
+    expect(rewards.vesting).toBe('123.456789 VESTS');
+    expect(rewards.display.hive).toBe('0.734');
+    expect(rewards.display.hbd).toBe('0.012');
+    expect(rewards.display.hp).toBe('1.8');
   });
 });

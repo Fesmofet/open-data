@@ -1,3 +1,5 @@
+import type { HivePendingRewardsView } from './types/hive-wallet-view';
+
 export const HIVE_L1_TRANSFER_ASSETS = ['HIVE', 'HBD'] as const;
 
 export type HiveL1TransferAsset = (typeof HIVE_L1_TRANSFER_ASSETS)[number];
@@ -82,6 +84,11 @@ export type WalletWithdrawModalState = {
   outputSymbol?: string;
 };
 
+export type WalletClaimRewardsModalState = {
+  kind: 'claimRewards';
+  pendingRewards: HivePendingRewardsView;
+};
+
 export type WalletModalState =
   | WalletTransferModalState
   | WalletPowerModalState
@@ -94,4 +101,5 @@ export type WalletModalState =
   | WalletSwapModalState
   | WalletDepositModalState
   | WalletWithdrawModalState
+  | WalletClaimRewardsModalState
   | null;

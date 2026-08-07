@@ -100,6 +100,14 @@ const waivSummary = {
   },
 } satisfies WaivWalletSummaryView;
 
+const EMPTY_PENDING_REWARDS = {
+  hive: '0.000 HIVE',
+  hbd: '0.000 HBD',
+  vesting: '0.000000 VESTS',
+  display: { hive: '0', hbd: '0', hp: '0' },
+  hasRewards: false,
+};
+
 const hiveSummary = {
   account: 'alice',
   balance: {
@@ -139,6 +147,7 @@ const hiveSummary = {
     totalVestingFundSteem: '500000000 HIVE',
   },
   rates: { hiveUsd: 0.25, hbdUsd: 1 },
+  pendingRewards: EMPTY_PENDING_REWARDS,
 } satisfies HiveWalletSummaryView;
 
 function renderWithI18n(ui: ReactElement) {

@@ -1,3 +1,15 @@
+export type HivePendingRewardsView = {
+  hive: string;
+  hbd: string;
+  vesting: string;
+  display: {
+    hive: string;
+    hbd: string;
+    hp: string;
+  };
+  hasRewards: boolean;
+};
+
 export type HiveWalletSummaryView = {
   account: string;
   balance: {
@@ -67,6 +79,7 @@ export type HiveWalletSummaryView = {
     hiveUsd: number;
     hbdUsd: number;
   };
+  pendingRewards: HivePendingRewardsView;
 };
 
 export type HiveWalletLoadError = 'unavailable' | 'invalid_response';

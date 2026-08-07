@@ -124,6 +124,16 @@ function toWireOperation(op: HiveOperation): WireOperation {
           request_id: op.request_id,
         },
       ];
+    case 'claim_reward_balance':
+      return [
+        'claim_reward_balance',
+        {
+          account: op.account,
+          reward_hive: op.reward_hive,
+          reward_hbd: op.reward_hbd,
+          reward_vests: op.reward_vests,
+        },
+      ];
   }
   return assertNeverForHiveOp(op);
 }

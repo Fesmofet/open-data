@@ -1,5 +1,6 @@
 import type {
   CancelTransferFromSavingsOp,
+  ClaimRewardBalanceOp,
   CustomJsonOp,
   DelegateVestingSharesOp,
   TransferFromSavingsOp,
@@ -137,6 +138,21 @@ export function buildClaimHbdInterestOps(account: string): [
       requestId,
     }),
   ];
+}
+
+export function buildClaimRewardBalanceOp(input: {
+  account: string;
+  rewardHive: string;
+  rewardHbd: string;
+  rewardVests: string;
+}): ClaimRewardBalanceOp {
+  return {
+    type: 'claim_reward_balance',
+    account: input.account,
+    reward_hive: input.rewardHive,
+    reward_hbd: input.rewardHbd,
+    reward_vests: input.rewardVests,
+  };
 }
 
 export function buildDelegateRcOp(input: {

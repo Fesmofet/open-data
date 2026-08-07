@@ -22,6 +22,18 @@ const hiveWalletInterestSchema = z.object({
   daysUntilClaim: z.number().optional().default(0),
 });
 
+const hivePendingRewardsSchema = z.object({
+  hive: z.string(),
+  hbd: z.string(),
+  vesting: z.string(),
+  display: z.object({
+    hive: z.string(),
+    hbd: z.string(),
+    hp: z.string(),
+  }),
+  hasRewards: z.boolean(),
+});
+
 export const hiveWalletApiResponseSchema = z.object({
   account: z.string(),
   balance: z.object({
@@ -79,6 +91,7 @@ export const hiveWalletApiResponseSchema = z.object({
     hiveUsd: z.number(),
     hbdUsd: z.number(),
   }),
+  pendingRewards: hivePendingRewardsSchema,
 });
 
 export type HiveWalletApiResponse = z.infer<typeof hiveWalletApiResponseSchema>;
