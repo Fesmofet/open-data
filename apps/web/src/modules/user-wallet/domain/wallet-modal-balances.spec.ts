@@ -1,9 +1,12 @@
 import {
+  getWalletDelegateBalanceConfig,
   getWalletTransferBalanceConfig,
   listWalletPowerAssetOptions,
   listWalletTransferAssetOptions,
 } from './wallet-modal-balances';
 import type { EngineWalletSummaryView } from './types/engine-wallet-view';
+import type { HiveWalletSummaryView } from './types/hive-wallet-view';
+import type { WaivWalletSummaryView } from './types/waiv-wallet-view';
 
 const rowDefaults = {
   unstakingCooldown: 0,
@@ -114,5 +117,42 @@ describe('wallet-modal-balances engine tokens', () => {
     const options = listWalletPowerAssetOptions('up', waiv, hive, engineSummary);
     expect(options.slice(0, 2)).toEqual(['WAIV', 'HIVE']);
     expect(options).toContain('BEE');
+  });
+});
+
+describe('getWalletDelegateBalanceConfig', () => {
+  const waiv = {
+    balance: { liquid: '100', stake: '18600' },
+    rates: { waivUsd: 0.05 },
+  } as WaivWalletSummaryView;
+
+  const hive = {
+    balance: { hivePower: '500' },
+    rates: { hiveUsd: 0.25 },
+  } as HiveWalletSummaryView;
+
+  it('returns WP symbol, USD rate, and 7-day return for WAIV', () => {
+    const config = getWalletDelegateBalanceConfig('WAIV', waiv, null);
+    expect(config).toMatchObject({
+      maxAmount: '18600',
+      balanceSymbol: 'WP',
+      validation: 'engine',
+      tokenUsdRate: 0.05,
+      returnDays: 7,
+    });
+  });
+
+  it('returns HP symbol, USD rate, and 5-day return for HIVE', () => {
+    const config = getWalletDelegateBalanceConfig('HIVE', null, {
+      ...hive,
+      balance: { ...hive.balance, hivePower: '23.23907190900226' },
+    });
+    expect(config).toMatchObject({
+      maxAmount: '23.239',
+      balanceSymbol: 'HP',
+      validation: 'hive',
+      tokenUsdRate: 0.25,
+      returnDays: 5,
+    });
   });
 });

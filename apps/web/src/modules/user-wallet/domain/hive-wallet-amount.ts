@@ -29,6 +29,24 @@ export function formatHiveAmount(value: number, fractionDigits = 3): string {
   });
 }
 
+/** Truncate to chain precision for form inputs (no grouping separators). */
+export function truncateHiveAmountForInput(value: string | number): string {
+  const parsed =
+    typeof value === 'number'
+      ? value
+      : Number.parseFloat(
+          String(value).trim().replace(/,/g, '').split(/\s+/)[0] ?? '',
+        );
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return '0';
+  }
+  const factor = 10 ** HIVE_AMOUNT_MAX_DECIMAL_PLACES;
+  const truncated = Math.floor(parsed * factor) / factor;
+  return truncated
+    .toFixed(HIVE_AMOUNT_MAX_DECIMAL_PLACES)
+    .replace(/\.?0+$/, '');
+}
+
 /** Hive requires delegating at least 1 HIVE worth of vesting shares. */
 export const HIVE_MIN_DELEGATION_HIVE = 1;
 
@@ -137,8 +155,9 @@ export function estimateHiveUsdValue(
   amount: string,
   usdRate: number,
 ): string {
-  const parsed = parseHiveAmount(amount);
-  const quantity = parsed ?? 0;
+  const numeric = amount.trim().replace(/,/g, '').split(/\s+/)[0] ?? '';
+  const parsed = Number.parseFloat(numeric);
+  const quantity = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   if (!Number.isFinite(usdRate) || usdRate <= 0) {
     return '0.00';
   }

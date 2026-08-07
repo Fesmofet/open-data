@@ -9,7 +9,6 @@ import { UserRefSearchField } from '@/modules/object-updates/presentation/compon
 import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import { AppModal, AppModalCloseButton } from '@/shared/presentation';
 
-import { WAIV_DELEGATION_RETURN_DAYS } from '../../../domain/waiv-delegation-return-days';
 import {
   engineTokenFormValidationMessageKey,
   validateEngineTokenAmount,
@@ -17,6 +16,7 @@ import {
 } from '../../../domain/engine-token-form-validation';
 import {
   formatEngineTokenQuantity,
+  formatEngineTokenUsdEstimate,
   parseEngineTokenAmount,
 } from '../../../domain/engine-token-amount';
 import {
@@ -27,6 +27,7 @@ import {
 } from '../../../domain/hive-wallet-form-validation';
 import {
   formatHiveAmount,
+  estimateHiveUsdValue,
   hpToVestingShares,
   parseHiveAmount,
 } from '../../../domain/hive-wallet-amount';
@@ -34,6 +35,7 @@ import {
   getWalletDelegateBalanceConfig,
   listWalletMainAssetOptions,
 } from '../../../domain/wallet-modal-balances';
+import { getWalletDelegateAmountAssetLabel } from '../../../domain/wallet-power-labels';
 import type {
   WalletDelegateModalState,
   WalletMainAsset,
@@ -105,7 +107,7 @@ export function WalletDelegateModal({
         );
         return {
           value,
-          label: value,
+          label: getWalletDelegateAmountAssetLabel(value),
           balance: config?.maxAmount ?? '0',
           config,
         };
@@ -117,6 +119,20 @@ export function WalletDelegateModal({
       )
       .map(({ value, label, balance }) => ({ value, label, balance }));
   }, [engineSummary, hiveSummary, waivSummary]);
+
+  const estimatedUsdAmount = useMemo(() => {
+    if (!balanceConfig) {
+      return '0.00';
+    }
+    if (balanceConfig.validation === 'hive') {
+      const rate =
+        balanceConfig.tokenUsdRate > 0
+          ? balanceConfig.tokenUsdRate
+          : (hiveSummary?.rates.hiveUsd ?? engineSummary?.rates.hiveUsd ?? 0);
+      return estimateHiveUsdValue(amount, rate);
+    }
+    return formatEngineTokenUsdEstimate(amount, balanceConfig.tokenUsdRate);
+  }, [amount, balanceConfig, engineSummary?.rates.hiveUsd, hiveSummary?.rates.hiveUsd]);
 
   const hiveDelegationMinHp = useMemo(() => {
     if (asset !== 'HIVE' || !hiveSummary) {
@@ -251,9 +267,6 @@ export function WalletDelegateModal({
           </h2>
           <AppModalCloseButton onClose={onClose} />
         </div>
-        <p className="mb-4 text-body-sm text-muted">
-          {t('delegate_modal_info_part1')}
-        </p>
         <div className="space-y-4">
           <div>
             <WalletModalFieldLabel>{t('target_account')}</WalletModalFieldLabel>
@@ -266,6 +279,7 @@ export function WalletDelegateModal({
                 }}
                 excludeAccountNames={[account]}
                 fieldLabel={t('target_account')}
+                searchPlaceholder={t('wallet_delegate_search_accounts')}
               />
             </div>
           </div>
@@ -286,16 +300,22 @@ export function WalletDelegateModal({
             maxAmount={balanceConfig?.maxAmount ?? '0'}
             searchableAsset
             showBalanceInAssetMenu
-            showTokenOnlyOnAssetTrigger
+            showTokenOnlyOnAssetTrigger={false}
           />
+          <p className="text-body-sm text-muted">
+            {interpolateMessage(t('wallet_transfer_value_usd'), {
+              amount: estimatedUsdAmount,
+            })}
+          </p>
+          {balanceConfig ? (
+            <WalletModalBalanceLine
+              amount={balanceConfig.maxAmount}
+              symbol={balanceConfig.balanceSymbol}
+              onSelect={() => setAmount(balanceConfig.maxAmount)}
+              labelKey="available"
+            />
+          ) : null}
         </div>
-        {balanceConfig ? (
-          <WalletModalBalanceLine
-            amount={balanceConfig.maxAmount}
-            symbol={balanceConfig.balanceSymbol}
-            onSelect={() => setAmount(balanceConfig.maxAmount)}
-          />
-        ) : null}
         {hiveDelegationMinHp != null ? (
           <p className="mt-2 text-body-sm text-muted">
             {interpolateMessage(t('wallet_hive_delegation_min_hp'), {
@@ -304,11 +324,15 @@ export function WalletDelegateModal({
           </p>
         ) : null}
         <div className="mt-4 space-y-2 text-body-sm text-muted">
-          <p>
-            {t('delegate_modal_info_part2')} {WAIV_DELEGATION_RETURN_DAYS}{' '}
-            {t('delegate_modal_info_part3')}
-          </p>
-          <p>{t('delegate_modal_info_part4')}</p>
+          {balanceConfig ? (
+            <p>
+              {interpolateMessage(t('wallet_delegate_timing'), {
+                symbol: balanceConfig.balanceSymbol,
+                days: String(balanceConfig.returnDays),
+              })}
+            </p>
+          ) : null}
+          <p>{t('wallet_delegate_hivesigner_note')}</p>
         </div>
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">

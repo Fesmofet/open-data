@@ -5,6 +5,8 @@ import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { formatEngineTokenAmountDisplay } from '../../../domain/engine-token-amount';
+import { getWalletDelegateAmountAssetLabel } from '../../../domain/wallet-power-labels';
+import type { WalletMainAsset } from '../../../domain/wallet-modal-types';
 import { UserAvatar } from '@/shared/presentation';
 
 export type EngineTokenDelegationUserCardProps = {
@@ -21,13 +23,7 @@ function delegationAmountSuffix(symbol: string, symbolOnly: boolean): string {
   if (symbolOnly) {
     return symbol;
   }
-  if (symbol === 'WAIV') {
-    return 'WP';
-  }
-  if (symbol === 'HIVE') {
-    return 'HP';
-  }
-  return symbol;
+  return getWalletDelegateAmountAssetLabel(symbol as WalletMainAsset);
 }
 
 function formatDelegationQuantity(

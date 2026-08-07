@@ -7,7 +7,14 @@ import {
   type WalletTransferAsset,
 } from './wallet-modal-types';
 import { HIVE_RC_DELEGATOR_RESERVE } from '../constants/hive-rc';
-import { getWalletPowerDownBalanceSymbol } from './wallet-power-labels';
+import { findEngineTokenUsdRate } from './wallet-engine-usd-rate';
+import { HIVE_DELEGATION_RETURN_DAYS } from './hive-delegation-return-days';
+import {
+  getWalletDelegateAmountAssetLabel,
+  getWalletPowerDownBalanceSymbol,
+} from './wallet-power-labels';
+import { truncateHiveAmountForInput } from './hive-wallet-amount';
+import { WAIV_DELEGATION_RETURN_DAYS } from './waiv-delegation-return-days';
 
 export type WalletAmountValidation = 'engine' | 'hive';
 
@@ -22,6 +29,11 @@ export type WalletPowerBalanceConfig = {
   maxAmount: string;
   balanceSymbol: string;
   validation: WalletAmountValidation;
+};
+
+export type WalletDelegateBalanceConfig = WalletPowerBalanceConfig & {
+  tokenUsdRate: number;
+  returnDays: number;
 };
 
 function findEngineTokenRow(
@@ -183,18 +195,36 @@ export function getWalletPowerBalanceConfig(
   };
 }
 
+function resolveHiveUsdRate(
+  hive: HiveWalletSummaryView,
+  engineSummary?: EngineWalletSummaryView | null,
+): number {
+  if (Number.isFinite(hive.rates.hiveUsd) && hive.rates.hiveUsd > 0) {
+    return hive.rates.hiveUsd;
+  }
+  const engineHiveUsd = engineSummary?.rates.hiveUsd ?? 0;
+  if (engineHiveUsd > 0) {
+    return engineHiveUsd;
+  }
+  return 0;
+}
+
 export function getWalletDelegateBalanceConfig(
   asset: WalletMainAsset,
   waiv: WaivWalletSummaryView | null,
   hive: HiveWalletSummaryView | null,
   engineSummary?: EngineWalletSummaryView | null,
-): WalletPowerBalanceConfig | null {
+): WalletDelegateBalanceConfig | null {
+  const balanceSymbol = getWalletDelegateAmountAssetLabel(asset);
+
   if (isEngineTokenAsset(asset)) {
     if (asset === 'WAIV' && waiv) {
       return {
         maxAmount: waiv.balance.stake,
-        balanceSymbol: 'WAIV',
+        balanceSymbol,
         validation: 'engine',
+        tokenUsdRate: waiv.rates.waivUsd,
+        returnDays: WAIV_DELEGATION_RETURN_DAYS,
       };
     }
     const row = findEngineTokenRow(engineSummary, asset);
@@ -203,8 +233,14 @@ export function getWalletDelegateBalanceConfig(
     }
     return {
       maxAmount: row.stake,
-      balanceSymbol: asset,
+      balanceSymbol,
       validation: 'engine',
+      tokenUsdRate: findEngineTokenUsdRate(
+        asset,
+        waiv?.rates.waivUsd ?? 0,
+        engineSummary ?? null,
+      ),
+      returnDays: WAIV_DELEGATION_RETURN_DAYS,
     };
   }
 
@@ -213,9 +249,11 @@ export function getWalletDelegateBalanceConfig(
   }
 
   return {
-    maxAmount: hive.balance.hivePower,
-    balanceSymbol: 'HP',
+    maxAmount: truncateHiveAmountForInput(hive.balance.hivePower),
+    balanceSymbol,
     validation: 'hive',
+    tokenUsdRate: resolveHiveUsdRate(hive, engineSummary),
+    returnDays: HIVE_DELEGATION_RETURN_DAYS,
   };
 }
 

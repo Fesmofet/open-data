@@ -1,4 +1,4 @@
-import { parseHiveAmount, hpToVestingShares } from './hive-wallet-amount';
+import { parseHiveAmount, hpToVestingShares, estimateHiveUsdValue, truncateHiveAmountForInput } from './hive-wallet-amount';
 
 describe('hive-wallet-amount', () => {
   it('parses positive amounts', () => {
@@ -19,5 +19,17 @@ describe('hive-wallet-amount', () => {
       '500000000 HIVE',
     );
     expect(vests).toBe('1000.000000 VESTS');
+  });
+
+  it('estimates USD for hp amounts with chain precision', () => {
+    expect(estimateHiveUsdValue('1234.567890123', 0.25)).toBe('308.64');
+    expect(estimateHiveUsdValue('100', 0.25)).toBe('25.00');
+    expect(estimateHiveUsdValue('100', 0)).toBe('0.00');
+  });
+
+  it('truncates hp amounts to 3 decimals for form input', () => {
+    expect(truncateHiveAmountForInput('23.23907190900226')).toBe('23.239');
+    expect(truncateHiveAmountForInput('100.5')).toBe('100.5');
+    expect(truncateHiveAmountForInput('100')).toBe('100');
   });
 });

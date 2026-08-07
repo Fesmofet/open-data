@@ -2646,5 +2646,8 @@
   "СЃommunity_actions": "Mga aksyon sa pamayanan",
   "home_feed_empty_global": "No posts to show yet.",
   "home_feed_empty_personalized": "Follow accounts or objects to see posts here.",
-  "wallet_broadcast_failed": "Transaction failed. Please try again."
+  "wallet_broadcast_failed": "Transaction failed. Please try again.",
+  "wallet_delegate_search_accounts": "Search accounts…",
+  "wallet_delegate_timing": "Delegations take effect immediately. After undelegating, your {symbol} will become available again in {days} days.",
+  "wallet_delegate_hivesigner_note": "You'll be redirected to HiveSigner to authorise the delegation."
 }

@@ -33,3 +33,14 @@ export function getWalletPowerDownLiquidSymbol(asset: WalletMainAsset): string {
   }
   return asset;
 }
+
+/** Delegate modal asset selector and balance symbol (WP / HP). */
+export function getWalletDelegateAmountAssetLabel(asset: WalletMainAsset): string {
+  if (asset === 'WAIV') {
+    return 'WP';
+  }
+  if (asset === 'HIVE') {
+    return 'HP';
+  }
+  return asset;
+}
