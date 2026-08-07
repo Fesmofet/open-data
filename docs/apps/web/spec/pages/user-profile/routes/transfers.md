@@ -11,6 +11,7 @@ related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/user-profile/routes/waiv-wallet-history.md
   - docs/apps/web/spec/pages/user-profile/routes/engine-wallet-operations.md
+  - docs/apps/web/spec/pages/user-profile/routes/wallet-delegations-modals.md
   - docs/apps/web/spec/pages/user-profile/routes/currency-market-widget.md
 ---
 
@@ -55,7 +56,7 @@ Wallet transaction history is rendered only on this transfers page (not on `Hive
 
 **Broadcast (HIVE):** L1 ops via Keychain/HiveSigner; after broadcast → `revalidateUserHiveWalletAfterBroadcast` → `router.refresh()`. HP delegations: `GET /api/users/{name}/wallet/hive/delegations`; RC: `.../rc-delegations`.
 
-**Manage delegations (WAIV):** client fetch to `GET /api/users/{name}/wallet/engine/{symbol}/delegations` (BFF → query-api). Delegation lists use cache tags invalidated on wallet broadcast.
+**Manage delegations:** status / manage / edit dialogs for WP and HP — see [wallet-delegations-modals.md](wallet-delegations-modals.md). Lists load from `GET /api/users/{name}/wallet/engine/{symbol}/delegations` (WAIV) and `GET /api/users/{name}/wallet/hive/delegations` (HP); cache tags invalidated on wallet broadcast.
 
 **Owner-only:** wallet action buttons and modals render only when `viewerUsername` matches profile `name` (case-insensitive).
 

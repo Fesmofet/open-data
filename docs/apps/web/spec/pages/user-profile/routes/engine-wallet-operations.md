@@ -9,6 +9,7 @@ tags: [web, page, user-profile, wallet, engine]
 updated_at: 2026-07-08
 related:
   - docs/apps/web/spec/pages/user-profile/routes/transfers.md
+  - docs/apps/web/spec/pages/user-profile/routes/wallet-delegations-modals.md
   - docs/apps/web/spec/pages/user-profile/routes/currency-market-widget.md
   - docs/apps/query-api/spec/user-engine-swap-endpoints.md
 ---
@@ -31,7 +32,7 @@ The sidebar is split into three vertical blocks (legacy parity):
 
 - Transfer (primary)
 - Power up / Power down
-- Manage delegations
+- Manage delegations — see [wallet-delegations-modals.md](wallet-delegations-modals.md)
 
 ### Market (all viewers)
 

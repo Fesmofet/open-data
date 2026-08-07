@@ -336,6 +336,21 @@ export function listWalletMainAssetOptions(
   return options;
 }
 
+/** Manage-delegations modal only supports WAIV (WP) and HIVE (HP) lists. */
+export function listWalletManageDelegationsAssetOptions(
+  waiv: WaivWalletSummaryView | null,
+  hive: HiveWalletSummaryView | null,
+): WalletMainAsset[] {
+  const options: WalletMainAsset[] = [];
+  if (waiv) {
+    options.push('WAIV');
+  }
+  if (hive) {
+    options.push('HIVE');
+  }
+  return options;
+}
+
 export function listWalletPowerAssetOptions(
   mode: 'up' | 'down',
   waiv: WaivWalletSummaryView | null,

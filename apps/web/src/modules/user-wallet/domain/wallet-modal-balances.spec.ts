@@ -1,6 +1,7 @@
 import {
   getWalletDelegateBalanceConfig,
   getWalletTransferBalanceConfig,
+  listWalletManageDelegationsAssetOptions,
   listWalletPowerAssetOptions,
   listWalletTransferAssetOptions,
 } from './wallet-modal-balances';
@@ -154,5 +155,39 @@ describe('getWalletDelegateBalanceConfig', () => {
       tokenUsdRate: 0.25,
       returnDays: 5,
     });
+  });
+});
+
+describe('listWalletManageDelegationsAssetOptions', () => {
+  it('lists only WAIV and HIVE when both summaries exist', () => {
+    const waiv = {
+      balance: { liquid: '1', stake: '2' },
+      rates: { waivUsd: 1 },
+    } as WaivWalletSummaryView;
+    const hive = {
+      balance: { hivePower: '3' },
+      rates: { hiveUsd: 1 },
+    } as HiveWalletSummaryView;
+    expect(listWalletManageDelegationsAssetOptions(waiv, hive)).toEqual([
+      'WAIV',
+      'HIVE',
+    ]);
+  });
+
+  it('omits engine tokens from manage delegations selector', () => {
+    const engineSummary = {
+      pinnedTokens: [],
+      tokens: [{ symbol: 'BEE', stake: '1', balance: '1', stakingEnabled: true }],
+    } as EngineWalletSummaryView;
+    const waiv = {
+      balance: { liquid: '1', stake: '2' },
+      rates: { waivUsd: 1 },
+    } as WaivWalletSummaryView;
+    expect(
+      listWalletManageDelegationsAssetOptions(waiv, null).length,
+    ).toBe(1);
+    expect(
+      listWalletPowerAssetOptions('down', waiv, null, engineSummary),
+    ).toContain('BEE');
   });
 });

@@ -7,6 +7,10 @@ import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation'
 
 import type { EngineTokenDelegationsView } from '../../../domain/types/waiv-wallet-view';
 import type { HiveHpDelegationsView, HiveRcDelegationsView } from '../../../domain/types/hive-wallet-view';
+import {
+  formatDelegationTabTotal,
+  sortDelegationsByQuantityDesc,
+} from '../../../domain/wallet-delegations-format';
 import { formatRcDelegationBillions } from '../../../domain/wallet-modal-format';
 import { EngineTokenDelegationUserCard } from '../engine-token/engine-token-delegation-user-card';
 
@@ -20,28 +24,6 @@ export type WalletDelegationsListModalProps = {
 };
 
 type DelegationTab = 'received' | 'delegated';
-
-function parseDelegationAmount(value: string): number {
-  const parsed = Number.parseFloat(value.replace(/,/g, ''));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function formatDelegationTabTotal(
-  values: string[],
-  { isRc }: { isRc: boolean },
-): string {
-  const sum = values.reduce((acc, value) => acc + parseDelegationAmount(value), 0);
-  return sum.toLocaleString('en-US', {
-    minimumFractionDigits: isRc ? 0 : 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function sortByQuantityDesc<T extends { quantity: string }>(items: T[]): T[] {
-  return [...items].sort(
-    (a, b) => parseDelegationAmount(b.quantity) - parseDelegationAmount(a.quantity),
-  );
-}
 
 function WalletDelegationTabs({
   receivedLabel,
@@ -75,8 +57,8 @@ function WalletDelegationTabs({
     ].join(' ');
 
   return (
-    <>
-      <div className="mb-4 flex gap-6 border-b border-border" role="tablist">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex shrink-0 gap-6 border-b border-border" role="tablist">
         {showReceived ? (
           <button
             type="button"
@@ -100,11 +82,26 @@ function WalletDelegationTabs({
           </button>
         ) : null}
       </div>
-      <div role="tabpanel">
+      <div
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        role="tabpanel"
+      >
         {activeTab === 'received' ? receivedContent : delegatedContent}
       </div>
-    </>
+    </div>
   );
+}
+
+function getVariantTitleKey(
+  variant: WalletDelegationsListVariant,
+): 'wallet_waiv_power_delegations' | 'wallet_rc_delegations' | 'wallet_hive_delegations' {
+  if (variant === 'waiv') {
+    return 'wallet_waiv_power_delegations';
+  }
+  if (variant === 'hiveRc') {
+    return 'wallet_rc_delegations';
+  }
+  return 'wallet_hive_delegations';
 }
 
 export function WalletDelegationsListModal({
@@ -174,7 +171,7 @@ export function WalletDelegationsListModal({
 
   const hiveHpReceived = useMemo(
     () =>
-      sortByQuantityDesc(
+      sortDelegationsByQuantityDesc(
         (hiveHp?.incoming ?? []).map((row) => ({
           key: row.delegator,
           username: row.delegator,
@@ -185,7 +182,7 @@ export function WalletDelegationsListModal({
   );
 
   const hiveHpDelegated = useMemo(() => {
-    const outgoing = sortByQuantityDesc(
+    const outgoing = sortDelegationsByQuantityDesc(
       (hiveHp?.outgoing ?? []).map((row) => ({
         key: row.delegatee,
         username: row.delegatee,
@@ -193,7 +190,7 @@ export function WalletDelegationsListModal({
         pending: false,
       })),
     );
-    const expiring = sortByQuantityDesc(
+    const expiring = sortDelegationsByQuantityDesc(
       (hiveHp?.expirations ?? []).map((row, index) => ({
         key: `expiring-${row.delegator}-${index}`,
         username: undefined,
@@ -206,7 +203,7 @@ export function WalletDelegationsListModal({
 
   const hiveRcReceived = useMemo(
     () =>
-      sortByQuantityDesc(
+      sortDelegationsByQuantityDesc(
         (hiveRc?.incoming ?? []).map((row) => ({
           key: row.from,
           username: row.from,
@@ -218,7 +215,7 @@ export function WalletDelegationsListModal({
 
   const hiveRcDelegated = useMemo(
     () =>
-      sortByQuantityDesc(
+      sortDelegationsByQuantityDesc(
         (hiveRc?.outgoing ?? []).map((row) => ({
           key: row.to,
           username: row.to,
@@ -230,7 +227,7 @@ export function WalletDelegationsListModal({
 
   const waivReceived = useMemo(
     () =>
-      sortByQuantityDesc(
+      sortDelegationsByQuantityDesc(
         (waiv?.incoming ?? []).map((row) => ({
           key: row.from,
           username: row.from,
@@ -242,7 +239,7 @@ export function WalletDelegationsListModal({
 
   const waivDelegated = useMemo(
     () =>
-      sortByQuantityDesc(
+      sortDelegationsByQuantityDesc(
         (waiv?.outgoing ?? []).map((row) => ({
           key: row.to,
           username: row.to,
@@ -328,23 +325,21 @@ export function WalletDelegationsListModal({
       open={open}
       onClose={onClose}
       labelledBy={titleId}
-      panelClassName="max-w-lg"
+      panelClassName="max-w-lg flex max-h-[calc(100dvh-2rem)] flex-col"
     >
-      <div className="p-card-padding">
-        <div className="mb-2 flex items-start justify-end">
-          <span id={titleId} className="sr-only">
-            {variant === 'waiv'
-              ? `${t('waiv_wallet')} ${t('activity_delegation')}`
-              : variant === 'hiveRc'
-                ? t('wallet_rc_delegations')
-                : t('wallet_hive_delegations')}
-          </span>
+      <div className="flex min-h-0 flex-1 flex-col p-card-padding">
+        <div className="mb-4 flex shrink-0 items-start justify-between gap-3">
+          <h2 id={titleId} className="text-section font-weight-strong text-fg">
+            {t(getVariantTitleKey(variant))}
+          </h2>
           <AppModalCloseButton onClose={onClose} />
         </div>
         {loading ? (
           <AppLoader layout="center" label={t('wallet_delegations_loading')} />
         ) : loadError ? (
           <p className="text-body-sm text-error">{t('wallet_delegations_load_error')}</p>
+        ) : !showReceived && !showDelegated ? (
+          <p className="text-body-sm text-muted">{t('your_list_is_empty')}</p>
         ) : (
           <WalletDelegationTabs
             receivedLabel={receivedLabel}

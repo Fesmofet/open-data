@@ -14,6 +14,7 @@ export type AppModalProps = {
   labelledBy?: string;
   describedBy?: string;
   panelClassName?: string;
+  zIndex?: number;
 };
 
 /**
@@ -27,6 +28,7 @@ export function AppModal({
   labelledBy,
   describedBy,
   panelClassName = '',
+  zIndex = APP_MODAL_Z_INDEX,
 }: AppModalProps) {
   return (
     <ModalShell
@@ -34,7 +36,7 @@ export function AppModal({
       onClose={onClose}
       labelledBy={labelledBy}
       describedBy={describedBy}
-      zIndex={APP_MODAL_Z_INDEX}
+      zIndex={zIndex}
       panelClassName={panelClassName}
       maxWidthClass="max-w-md"
       scrollBody={false}

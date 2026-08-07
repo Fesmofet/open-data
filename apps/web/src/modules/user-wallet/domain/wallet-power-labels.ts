@@ -44,3 +44,17 @@ export function getWalletDelegateAmountAssetLabel(asset: WalletMainAsset): strin
   }
   return asset;
 }
+
+/** Manage-delegations asset selector label (WAIV Power (WP) / HIVE Power (HP)). */
+export function getWalletManageDelegationsAssetLabel(
+  asset: WalletMainAsset,
+  translate: (key: string) => string,
+): string {
+  if (asset === 'WAIV') {
+    return `${translate('wallet_waiv_power')} (WP)`;
+  }
+  if (asset === 'HIVE') {
+    return `${translate('wallet_hive_power')} (HP)`;
+  }
+  return asset;
+}
