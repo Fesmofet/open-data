@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, object, options]
-updated_at: 2026-07-09
+updated_at: 2026-08-07
 related:
   - docs/apps/web/spec/pages/object/data-loading.md
   - docs/apps/web/spec/pages/object/page-shell.md
@@ -35,6 +35,7 @@ Loaded in parallel with resolve — see [data-loading](../data-loading.md). Mapp
 | Borders | Selected: accent; own/compatible: solid `border-black`; other variants: dashed `border-black` |
 | Selection | Current object’s values from API; no fake selection from `values[0]` when the object has no value in that category |
 | Navigation | `router.push` to compatible sibling `object_id`; section **remounts** via `key={currentObjectId}` after navigation so selection/borders reset |
+| Hover preview | Mouse-over or keyboard focus on an option temporarily updates **gallery avatar** (`imageUrl`, fallback `image`), **price** (`entry.price`), and **category label** (hovered value); clears on leave/blur; click still navigates |
 | CDN images | `unoptimized` on swatch `Image` (Amazon CDN often fails Next optimizer) |
 
 ## Left rail placement

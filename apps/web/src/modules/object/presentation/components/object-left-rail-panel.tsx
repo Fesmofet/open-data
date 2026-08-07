@@ -18,6 +18,7 @@ import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type {
   ObjectLeftRailBlock,
+  ObjectOptionValueView,
   ObjectRefItem,
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
@@ -41,6 +42,7 @@ import { ObjectTagsLeftRailSection } from './object-tags-left-rail-section';
 import { LeftRailTelephonesContent } from './left-rail-telephone-row';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
 import { ObjectOptionsSection } from './object-options-section';
+import { optionPreviewImageSrc } from './object-options-section.utils';
 import { StarRating } from './star-rating';
 
 export type ObjectLeftRailEditContext = {
@@ -352,6 +354,7 @@ export function ObjectLeftRailPanel({
 }: ObjectLeftRailPanelProps) {
   const { t, locale } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
+  const [hoveredOption, setHoveredOption] = useState<ObjectOptionValueView | null>(null);
 
   const displayBlocks = useMemo(() => {
     if (!editContext) {
@@ -598,6 +601,9 @@ export function ObjectLeftRailPanel({
                 <LeftRailEditToolbar {...editToolbarProps('gallery', block.headingLabel)} />
                 <ObjectGalleryCarousel
                   photos={block.photos}
+                  previewImageUrl={
+                    hoveredOption ? optionPreviewImageSrc(hoveredOption) : null
+                  }
                   onPhotoClick={
                     galleryPhotosAlbum && onOpenGalleryPhoto
                       ? (index) => {
@@ -624,7 +630,9 @@ export function ObjectLeftRailPanel({
                   <span className="text-muted" aria-hidden>
                     $
                   </span>
-                  <span className="font-weight-strong tabular-nums text-fg">{block.text}</span>
+                  <span className="font-weight-strong tabular-nums text-fg">
+                    {hoveredOption?.price?.trim() || block.text}
+                  </span>
                 </div>
               </div>
             );
@@ -639,6 +647,8 @@ export function ObjectLeftRailPanel({
                     key={block.currentObjectId || objectId}
                     currentObjectId={block.currentObjectId || objectId}
                     categories={block.categories}
+                    hoveredOption={hoveredOption}
+                    onOptionHover={setHoveredOption}
                   />
                 ) : null}
               </div>

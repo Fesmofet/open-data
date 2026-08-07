@@ -5,6 +5,7 @@ import {
   buildOwnOptions,
   optionButtonClassName,
   optionImageSrc,
+  optionPreviewImageSrc,
   resolveNavigationTarget,
   sortOptionCategories,
 } from './object-options-section.utils';
@@ -35,6 +36,50 @@ describe('object-options-section.utils', () => {
             objectId: 'a',
             image: null,
             imageUrl: 'https://avatar.png',
+          }),
+        ),
+      ).toBeNull();
+    });
+  });
+
+  describe('optionPreviewImageSrc', () => {
+    it('prefers sibling avatar (imageUrl) over option swatch', () => {
+      expect(
+        optionPreviewImageSrc(
+          entry({
+            category: 'Style',
+            value: 'Serum',
+            objectId: 'a',
+            image: 'https://swatch.png',
+            imageUrl: 'https://avatar.png',
+          }),
+        ),
+      ).toBe('https://avatar.png');
+    });
+
+    it('falls back to option swatch when avatar is missing', () => {
+      expect(
+        optionPreviewImageSrc(
+          entry({
+            category: 'Color',
+            value: 'Red',
+            objectId: 'a',
+            image: 'https://swatch.png',
+            imageUrl: null,
+          }),
+        ),
+      ).toBe('https://swatch.png');
+    });
+
+    it('returns null when neither avatar nor swatch is set', () => {
+      expect(
+        optionPreviewImageSrc(
+          entry({
+            category: 'Size',
+            value: 'L',
+            objectId: 'a',
+            image: null,
+            imageUrl: null,
           }),
         ),
       ).toBeNull();

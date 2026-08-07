@@ -14,23 +14,30 @@ import { GalleryImage } from './gallery-image';
 export type ObjectGalleryCarouselProps = {
   photos: ProjectedGalleryPhotoView[];
   onPhotoClick?: (index: number) => void;
+  /** Temporary image override (e.g. option hover preview). Does not change carousel index. */
+  previewImageUrl?: string | null;
 };
 
 const CAROUSEL_CONTROL_CLASS =
   'inline-flex w-4 shrink-0 items-center justify-center self-center text-display leading-none text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
-export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCarouselProps) {
+export function ObjectGalleryCarousel({
+  photos,
+  onPhotoClick,
+  previewImageUrl = null,
+}: ObjectGalleryCarouselProps) {
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
   const [frameAspect, setFrameAspect] = useState(GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT);
   const aspectByUrlRef = useRef<Map<string, number>>(new Map());
-  const activeUrlRef = useRef<string | undefined>(undefined);
+  const displayUrlRef = useRef<string | undefined>(undefined);
 
   const count = photos.length;
   const active = photos[activeIndex];
   const activeUrl = active?.url;
+  const displayUrl = previewImageUrl ?? activeUrl;
 
-  activeUrlRef.current = activeUrl;
+  displayUrlRef.current = displayUrl;
 
   useEffect(() => {
     if (activeIndex >= count) {
@@ -39,18 +46,18 @@ export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCar
   }, [activeIndex, count]);
 
   useEffect(() => {
-    if (!activeUrl) {
+    if (!displayUrl) {
       return;
     }
-    const cached = aspectByUrlRef.current.get(activeUrl);
+    const cached = aspectByUrlRef.current.get(displayUrl);
     if (cached != null) {
       setFrameAspect(cached);
     }
-  }, [activeUrl]);
+  }, [displayUrl]);
 
   const handleImageLoad = useCallback(
     (loadedUrl: string) => (event: SyntheticEvent<HTMLImageElement>) => {
-      if (activeUrlRef.current !== loadedUrl) {
+      if (displayUrlRef.current !== loadedUrl) {
         return;
       }
       const img = event.currentTarget;
@@ -83,11 +90,11 @@ export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCar
     [count],
   );
 
-  if (!active || !activeUrl) {
+  if (!active || !displayUrl) {
     return null;
   }
 
-  const showControls = count > 1;
+  const showControls = count > 1 && !previewImageUrl;
   const frameClassName = [
     'relative min-w-0 flex-1 overflow-hidden rounded-btn border border-border',
     onPhotoClick ? 'cursor-pointer transition-colors hover:border-accent/40' : '',
@@ -98,10 +105,10 @@ export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCar
   const photoFrame = (
     <div className="relative w-full" style={{ aspectRatio: frameAspect }}>
       <GalleryImage
-        key={activeUrl}
-        src={activeUrl}
+        key={displayUrl}
+        src={displayUrl}
         sizes="(max-width: 768px) 100vw, 320px"
-        onLoad={handleImageLoad(activeUrl)}
+        onLoad={handleImageLoad(displayUrl)}
       />
     </div>
   );

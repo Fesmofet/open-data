@@ -16,6 +16,15 @@ export function optionImageSrc(entry: ObjectOptionValueView): string | null {
   return optionImage && optionImage.length > 0 ? optionImage : null;
 }
 
+/** Gallery hover preview: sibling avatar first, then option swatch. */
+export function optionPreviewImageSrc(entry: ObjectOptionValueView): string | null {
+  const avatar = entry.imageUrl?.trim();
+  if (avatar) {
+    return avatar;
+  }
+  return optionImageSrc(entry);
+}
+
 export function sortOptionCategories(categories: OptionCategoryGroup[]): OptionCategoryGroup[] {
   return [...categories].sort((a, b) => {
     const aIsColor = /^color$/i.test(a.category.trim());

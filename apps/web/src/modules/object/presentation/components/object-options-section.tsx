@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FocusEvent } from 'react';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -21,6 +21,8 @@ import {
 type ObjectOptionsSectionProps = {
   currentObjectId: string;
   categories: { category: string; values: ObjectOptionValueView[] }[];
+  hoveredOption?: ObjectOptionValueView | null;
+  onOptionHover?: (entry: ObjectOptionValueView | null) => void;
 };
 
 function OptionSwatchImage({ entry }: { entry: ObjectOptionValueView }) {
@@ -58,7 +60,9 @@ function OptionCategoryBlock({
   ownOptions,
   activeSelection,
   optionsBack,
+  hoveredOption,
   onSelect,
+  onOptionHover,
 }: {
   category: string;
   values: ObjectOptionValueView[];
@@ -66,10 +70,20 @@ function OptionCategoryBlock({
   ownOptions: SelectionMap;
   activeSelection: SelectionMap;
   optionsBack: Record<string, string[]>;
+  hoveredOption?: ObjectOptionValueView | null;
   onSelect: (entry: ObjectOptionValueView) => void;
+  onOptionHover?: (entry: ObjectOptionValueView | null) => void;
 }) {
   const selectedEntry = activeSelection[category] ?? ownOptions[category];
-  const displayValue = selectedEntry?.value ?? '';
+  const displayValue =
+    hoveredOption?.category === category
+      ? hoveredOption.value
+      : (selectedEntry?.value ?? '');
+
+  const previewHandlers = (entry: ObjectOptionValueView) => ({
+    onMouseEnter: () => onOptionHover?.(entry),
+    onFocus: () => onOptionHover?.(entry),
+  });
 
   return (
     <div className="space-y-2">
@@ -110,6 +124,7 @@ function OptionCategoryBlock({
                 onClick={() => onSelect(entry)}
                 aria-pressed={isSelected}
                 aria-label={`${entry.category} ${entry.value}`}
+                {...previewHandlers(entry)}
               >
                 <OptionSwatchImage
                   key={`${entry.objectId}-${entry.image ?? ''}`}
@@ -126,6 +141,7 @@ function OptionCategoryBlock({
               className={className}
               onClick={() => onSelect(entry)}
               aria-pressed={isSelected}
+              {...previewHandlers(entry)}
             >
               {entry.value}
             </button>
@@ -139,6 +155,8 @@ function OptionCategoryBlock({
 export function ObjectOptionsSection({
   currentObjectId,
   categories,
+  hoveredOption = null,
+  onOptionHover,
 }: ObjectOptionsSectionProps) {
   const router = useRouter();
   const optionsBack = useMemo(() => buildOptionsBack(categories), [categories]);
@@ -157,12 +175,18 @@ export function ObjectOptionsSection({
     }
   };
 
+  const handleSectionBlur = (event: FocusEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      onOptionHover?.(null);
+    }
+  };
+
   if (categories.length === 0) {
     return null;
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onMouseLeave={() => onOptionHover?.(null)} onBlur={handleSectionBlur}>
       {sortedCategories.map(({ category, values }) => (
         <OptionCategoryBlock
           key={category}
@@ -172,7 +196,9 @@ export function ObjectOptionsSection({
           ownOptions={ownOptions}
           activeSelection={activeSelection}
           optionsBack={optionsBack}
+          hoveredOption={hoveredOption}
           onSelect={handleSelect}
+          onOptionHover={onOptionHover}
         />
       ))}
     </div>
