@@ -20,10 +20,10 @@ related:
 
 | Public URL | query-api |
 |------------|-----------|
-| `/object/:id/field-references/book` | `GET /query/v1/objects/:id/field-references/book` |
-| `/object/:id/field-references/product` | `GET .../field-references/product` |
+| `/object/:id/books` | `GET /query/v1/objects/:id/field-references/book` |
+| `/object/:id/products` | `GET .../field-references/product` |
 
-Proxy rewrites to `?tab=field-references&field_reference_type=…`.
+Proxy rewrites to `?tab=field-references&field_reference_type=…` (singular API type).
 
 ## UI
 

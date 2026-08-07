@@ -13,6 +13,7 @@ import {
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
   OBJECT_PAGE_VIEW_PATH_PARAM,
+  isFieldReferenceFeedPathSegment,
   resolveCategoryNameFromObjectUrl,
   resolveCategoryNameForObjectPage,
   resolveFieldReferenceTypeFromObjectUrl,
@@ -116,9 +117,12 @@ export function resolvePrimarySegmentFromObjectUrl(
   if (path.startsWith(categoryPrefix)) {
     return OBJECT_PAGE_CATEGORY_PATH_SEGMENT;
   }
-  const fieldReferencesPrefix = `${base}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/`;
-  if (path.startsWith(fieldReferencesPrefix)) {
-    return OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT;
+  const legacyFieldRefPrefix = `${base}/`;
+  if (path.startsWith(legacyFieldRefPrefix)) {
+    const segment = path.slice(legacyFieldRefPrefix.length);
+    if (isFieldReferenceFeedPathSegment(segment)) {
+      return OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT;
+    }
   }
   const updatesDetailPrefix = `${base}/updates/`;
   if (path === `${base}/updates` || path.startsWith(updatesDetailPrefix)) {

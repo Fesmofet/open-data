@@ -48,7 +48,7 @@ Hidden in **Instagram** shell mode (`shell-hide-instagram`), same as profile rig
 | **Similar** | `isSimilarTo` supported **and** ≥1 item | `GET .../similar` | 5 | `/object/:id/similar` |
 | **Add-On** | `addOn` supported **and** ≥1 item | `GET .../add-on` | 5 | `/object/:id/add-on` |
 | **Followers** | `followers_count > 0` on resolve **and** API returns ≥1 row | `GET .../followers` (`sort=rank`) | 5 accounts | `/object/:id/followers` |
-| **Field references** | Source type is `person` or `business` **and** summary returns ≥1 item in a group | `GET .../field-references` | 5 per group | `/object/:id/field-references/:type` |
+| **Field references** | Source type is `person` or `business` **and** summary returns ≥1 item in a group | `GET .../field-references` | 5 per group | `/object/:id/books` or `/object/:id/products` |
 
 Empty sections are **not rendered** (no placeholder card).
 
@@ -79,7 +79,7 @@ All right-rail data is loaded in [`object-page-right-rail-section.server.tsx`](.
 ### Show more
 
 - Label: i18n `object_right_show_more`.
-- Shown when API `hasMore` is true (ref lists) or `hasMore || total > 5` (followers preview).
+- Shown when API `hasMore` is true (ref lists) or `hasMore || total > 5` (followers preview). Field references: when the section has ≥1 item (legacy — opens full center feed).
 
 Path helpers: [`object-page-url.constants.ts`](../../../../apps/web/src/modules/object/domain/object-page-url.constants.ts) — `buildObjectRelatedPath`, `buildObjectSimilarPath`, `buildObjectAddOnPath`, `buildObjectFieldReferencesPath`, `buildObjectFollowersPath`.
 
@@ -92,12 +92,13 @@ When the user opens a ref tab or followers tab, the center column shows the full
 | `/object/:id/related` | [`ObjectRefListFeed`](../../../../apps/web/src/modules/object/presentation/components/object-ref-list-feed.tsx) + [`ObjectCard`](../../../object-card.md) | 20 (`REF_LIST_PAGE_SIZE`) |
 | `/object/:id/similar` | same | 20 |
 | `/object/:id/add-on` | same | 20 |
-| `/object/:id/field-references/:type` | [`ObjectFieldReferencesListFeed`](../../../../apps/web/src/modules/object/presentation/components/object-field-references-list-feed.tsx) + [`ObjectCard`](../../../object-card.md) | 20 (`REF_LIST_PAGE_SIZE`) |
+| `/object/:id/books` | [`ObjectFieldReferencesListFeed`](../../../../apps/web/src/modules/object/presentation/components/object-field-references-list-feed.tsx) + [`ObjectCard`](../../../object-card.md) | 20 (`REF_LIST_PAGE_SIZE`) |
+| `/object/:id/products` | same | 20 |
 | `/object/:id/followers` | [`UserSocialAccountList`](../../../../apps/web/src/modules/user-social/presentation/components/user-social-account-list.tsx) | 20 (`USER_SOCIAL_PAGE_SIZE`) |
 
 Ref center feeds support load-more via server action [`load-more-ref-list.actions.ts`](../../../../apps/web/src/app/(app)/object/[object-id]/related/load-more-ref-list.actions.ts). Field references load-more: [`load-more-field-references.actions.ts`](../../../../apps/web/src/app/(app)/object/[object-id]/field-references/load-more-field-references.actions.ts).
 
-Proxy: [`proxy.ts`](../../../../apps/web/src/proxy.ts) rewrites `/object/:id/<tab>` → `?tab=<tab>` for segments in `OBJECT_PAGE_PATH_TAB_SEGMENTS` (includes `related`, `similar`, `add-on`, `followers`). Field references use `/object/:id/field-references/:type` → `?tab=field-references&field_reference_type=…` (see [field-references-feed.md](field-references-feed.md)).
+Proxy: [`proxy.ts`](../../../../apps/web/src/proxy.ts) rewrites `/object/:id/<tab>` → `?tab=<tab>` for segments in `OBJECT_PAGE_PATH_TAB_SEGMENTS` (includes `related`, `similar`, `add-on`, `followers`). Field references use legacy paths `/object/:id/books` and `/object/:id/products` → `?tab=field-references&field_reference_type=…` (see [field-references-feed.md](field-references-feed.md)).
 
 ## Props wiring
 

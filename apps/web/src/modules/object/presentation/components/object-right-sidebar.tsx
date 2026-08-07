@@ -156,7 +156,7 @@ export function ObjectRightSidebar({
           title={fieldReferenceSectionTitle(t, group.objectType)}
           titleIcon={group.objectType === 'book' ? <BookSectionIcon /> : undefined}
           items={group.items}
-          hasMore={group.hasMore}
+          hasMore={group.hasMore || group.items.length > 0}
           showMoreHref={buildObjectFieldReferencesPath(objectId, group.objectType)}
         />
       ))}

@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { env } from '@/config/env';
+import { resolveFieldReferenceTypeFromPathSegment } from '@/modules/object/domain/field-reference-rules';
 import {
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
@@ -93,17 +94,18 @@ export async function proxy(request: NextRequest) {
     return finish(NextResponse.rewrite(url));
   }
 
-  const fieldReferencesMatch = pathname.match(
-    new RegExp(`^/object/([^/]+)/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/(.+)$`),
-  );
-  if (fieldReferencesMatch) {
-    const id = fieldReferencesMatch[1];
-    const typeEncoded = fieldReferencesMatch[2];
-    const url = request.nextUrl.clone();
-    url.pathname = `/object/${id}`;
-    url.searchParams.set('tab', OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT);
-    url.searchParams.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, typeEncoded);
-    return finish(NextResponse.rewrite(url));
+  const fieldReferenceFeedMatch = pathname.match(/^\/object\/([^/]+)\/(books|products)\/?$/);
+  if (fieldReferenceFeedMatch) {
+    const id = fieldReferenceFeedMatch[1];
+    const pathSegment = fieldReferenceFeedMatch[2];
+    const referenceType = resolveFieldReferenceTypeFromPathSegment(pathSegment);
+    if (referenceType != null) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/object/${id}`;
+      url.searchParams.set('tab', OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT);
+      url.searchParams.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, referenceType);
+      return finish(NextResponse.rewrite(url));
+    }
   }
 
   const updateDetailMatch = pathname.match(/^\/object\/([^/]+)\/updates\/([^/]+)\/?$/);

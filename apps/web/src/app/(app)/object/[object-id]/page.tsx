@@ -66,12 +66,13 @@ import {
   parseAuthoritySubTypeParam,
   parseViewPathParam,
   resolveDefaultPrimarySegmentFromLanding,
+  resolveFieldReferenceTypeForObjectPage,
+  resolvePrimarySegmentForObjectPage,
   sanitizeNestedStack,
 } from './object-page-search';
 import { ObjectPageTabPane } from './object-page-tab-pane';
 import { ObjectPageInvalidPathFix } from './object-page-invalid-path-fix';
 
-const REF_LIST_PRIMARY_SEGMENTS = ['related', 'similar', 'add-on'] as const;
 const CATEGORY_PRIMARY_SEGMENT = 'category';
 const FIELD_REFERENCES_PRIMARY_SEGMENT = OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT;
 
@@ -103,20 +104,6 @@ function parseCategoryNameParam(
   }
 }
 
-function parseFieldReferenceTypeParam(
-  sp: Record<string, string | string[] | undefined>,
-): string | null {
-  const raw = firstSearchParam(sp, OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM)?.trim();
-  if (!raw) {
-    return null;
-  }
-  try {
-    return decodeURIComponent(raw);
-  } catch {
-    return raw;
-  }
-}
-
 function objectTypeSupportsRefList(
   objectTypeKey: string,
   updateType: string,
@@ -126,40 +113,78 @@ function objectTypeSupportsRefList(
   return registryEntry?.supported_updates.includes(updateType) ?? false;
 }
 
+function searchParamsRecordToUrlSearchParams(
+  sp: Record<string, string | string[] | undefined>,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) {
+    if (value === undefined) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      if (value[0] !== undefined) {
+        params.set(key, value[0]);
+      }
+      continue;
+    }
+    params.set(key, value);
+  }
+  return params;
+}
+
+function objectPagePathname(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}`;
+}
+
 function resolveInitialPrimarySegment(
   model: ObjectPageViewModel,
+  objectId: string,
   sp: Record<string, string | string[] | undefined>,
   pathIds: string[],
 ): string {
-  const allowed = new Set(model.primaryTabs.map((t) => t.segment));
-  const refListSegments = new Set<string>(REF_LIST_PRIMARY_SEGMENTS);
-  const tabRaw = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
+  const urlSearchParams = searchParamsRecordToUrlSearchParams(sp);
+  const defaultSegmentWhenClean =
+    pathIds.length === 0
+      ? resolveDefaultPrimarySegmentFromLanding(
+          model.defaultLanding,
+          model.primaryTabs.map((tab) => tab.segment),
+        )
+      : '';
 
-  if (tabRaw === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
-    return OBJECT_PAGE_DESCRIPTION_SEGMENT;
-  }
-  if (tabRaw === CATEGORY_PRIMARY_SEGMENT && parseCategoryNameParam(sp)) {
-    return CATEGORY_PRIMARY_SEGMENT;
-  }
-  const fieldReferenceType = parseFieldReferenceTypeParam(sp);
-  if (
-    tabRaw === FIELD_REFERENCES_PRIMARY_SEGMENT &&
-    fieldReferenceType &&
-    isFieldReferenceSourceType(model.objectTypeKey) &&
-    isAllowedFieldReferenceObjectType(model.objectTypeKey, fieldReferenceType)
-  ) {
-    return FIELD_REFERENCES_PRIMARY_SEGMENT;
-  }
-  if (tabRaw && (allowed.has(tabRaw) || refListSegments.has(tabRaw))) {
-    return tabRaw;
-  }
-  if (!tabRaw && pathIds.length === 0) {
-    return resolveDefaultPrimarySegmentFromLanding(
-      model.defaultLanding,
-      model.primaryTabs.map((tab) => tab.segment),
+  let segment = resolvePrimarySegmentForObjectPage(
+    objectId,
+    objectPagePathname(objectId),
+    urlSearchParams,
+    defaultSegmentWhenClean,
+  );
+
+  if (segment === FIELD_REFERENCES_PRIMARY_SEGMENT) {
+    const fieldReferenceType = resolveFieldReferenceTypeForObjectPage(
+      objectId,
+      objectPagePathname(objectId),
+      urlSearchParams,
     );
+    if (
+      !fieldReferenceType ||
+      !isFieldReferenceSourceType(model.objectTypeKey) ||
+      !isAllowedFieldReferenceObjectType(model.objectTypeKey, fieldReferenceType)
+    ) {
+      segment = '';
+    }
   }
-  return '';
+
+  return segment;
+}
+
+function resolveActiveFieldReferenceType(
+  objectId: string,
+  sp: Record<string, string | string[] | undefined>,
+): string | null {
+  return resolveFieldReferenceTypeForObjectPage(
+    objectId,
+    objectPagePathname(objectId),
+    searchParamsRecordToUrlSearchParams(sp),
+  );
 }
 
 export async function generateMetadata({
@@ -297,12 +322,12 @@ export default async function ObjectDetailPage({
   }
 
   const pathIds = parseViewPathParam(sp);
-  const initialPrimarySegment = resolveInitialPrimarySegment(model, sp, pathIds);
+  const initialPrimarySegment = resolveInitialPrimarySegment(model, objectId, sp, pathIds);
   const activeCategoryName =
     initialPrimarySegment === CATEGORY_PRIMARY_SEGMENT ? parseCategoryNameParam(sp) : null;
   const activeFieldReferenceType =
     initialPrimarySegment === FIELD_REFERENCES_PRIMARY_SEGMENT
-      ? parseFieldReferenceTypeParam(sp)
+      ? resolveActiveFieldReferenceType(objectId, sp)
       : null;
   const supportsFieldReferences = isFieldReferenceSourceType(model.objectTypeKey);
 

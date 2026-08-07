@@ -1,3 +1,10 @@
+import {
+  FIELD_REFERENCE_PATH_SEGMENTS,
+  isFieldReferencePathSegment,
+  resolveFieldReferencePathSegmentFromType,
+  resolveFieldReferenceTypeFromPathSegment,
+} from './field-reference-rules';
+
 /** Comma-separated nested object ids in the center column (list/page stack). */
 export const OBJECT_PAGE_VIEW_PATH_PARAM = 'path';
 
@@ -26,10 +33,10 @@ export type ObjectPagePathTabSegment = (typeof OBJECT_PAGE_PATH_TAB_SEGMENTS)[nu
 /** Internal query param when proxy rewrites `/object/:id/gallery/album/:name`. */
 export const OBJECT_PAGE_GALLERY_ALBUM_PARAM = 'gallery_album';
 
-/** Internal query param when proxy rewrites `/object/:id/field-references/:type`. */
+/** Internal query param when proxy rewrites `/object/:id/books` or `/products`. */
 export const OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM = 'field_reference_type';
 
-/** Path segment before encoded reference target object type. */
+/** Internal `?tab=` value for field-reference center feeds. */
 export const OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT = 'field-references';
 
 /** Path segment before encoded department category name. */
@@ -86,6 +93,23 @@ function normalizeObjectPagePathname(pathname: string): string {
   return pathname;
 }
 
+function objectIdMatchesPathSegment(objectId: string, path: string, base: string): boolean {
+  if (!path.startsWith(`${base}/`)) {
+    return false;
+  }
+  const pathObjectId = path.slice('/object/'.length).split('/')[0];
+  if (!pathObjectId) {
+    return false;
+  }
+  let decodedObjectId = pathObjectId;
+  try {
+    decodedObjectId = decodeURIComponent(pathObjectId);
+  } catch {
+    // keep raw segment
+  }
+  return decodedObjectId === objectId || pathObjectId === objectId;
+}
+
 /** Parses the active department category name from `/object/:id/category/:name`. */
 export function resolveCategoryNameFromObjectUrl(
   objectId: string,
@@ -136,33 +160,21 @@ export function resolveCategoryNameForObjectPage(
   }
 }
 
-/** Parses field-reference target type from `/object/:id/field-references/:type`. */
+/** Parses field-reference target type from `/object/:id/books` or `/products`. */
 export function resolveFieldReferenceTypeFromObjectUrl(
   objectId: string,
   pathname: string,
 ): string | null {
   const path = normalizeObjectPagePathname(pathname);
-  const match = path.match(
-    new RegExp(`^/object/([^/]+)/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/(.+)$`),
-  );
-  if (!match?.[1] || !match[2]) {
-    return null;
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  for (const segment of FIELD_REFERENCE_PATH_SEGMENTS) {
+    if (path === `${base}/${segment}` && objectIdMatchesPathSegment(objectId, path, base)) {
+      return resolveFieldReferenceTypeFromPathSegment(segment);
+    }
   }
-  const pathObjectId = match[1];
-  let decodedObjectId = pathObjectId;
-  try {
-    decodedObjectId = decodeURIComponent(pathObjectId);
-  } catch {
-    // keep raw segment
-  }
-  if (decodedObjectId !== objectId && pathObjectId !== objectId) {
-    return null;
-  }
-  try {
-    return decodeURIComponent(match[2]);
-  } catch {
-    return match[2];
-  }
+
+  return null;
 }
 
 /** Resolves field-reference target type from pathname or proxy query param. */
@@ -190,7 +202,15 @@ export function buildObjectFieldReferencesPath(
   objectId: string,
   referenceObjectType: string,
 ): string {
-  return `/object/${encodeURIComponent(objectId)}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/${encodeURIComponent(referenceObjectType)}`;
+  const segment = resolveFieldReferencePathSegmentFromType(referenceObjectType);
+  if (segment == null) {
+    return `/object/${encodeURIComponent(objectId)}/${encodeURIComponent(referenceObjectType)}`;
+  }
+  return `/object/${encodeURIComponent(objectId)}/${segment}`;
+}
+
+export function isFieldReferenceFeedPathSegment(segment: string): boolean {
+  return isFieldReferencePathSegment(segment);
 }
 
 export function buildObjectFollowersPath(objectId: string): string {

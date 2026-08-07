@@ -3,6 +3,7 @@ import {
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
   OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
   OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT,
+  buildObjectFieldReferencesPath,
   resolveFieldReferenceTypeForObjectPage,
   resolveFieldReferenceTypeFromObjectUrl,
 } from '@/modules/object/domain/object-page-url.constants';
@@ -165,11 +166,11 @@ describe('resolvePrimarySegmentFromObjectUrl', () => {
     ).toBe('updates');
   });
 
-  it('returns field-references for field references feed path', () => {
+  it('returns field-references for legacy books feed path', () => {
     expect(
       resolvePrimarySegmentFromObjectUrl(
         'abc',
-        `/object/abc/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/book`,
+        '/object/abc/books',
         new URLSearchParams(),
       ),
     ).toBe(OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT);
@@ -180,13 +181,14 @@ describe('resolveFieldReferenceTypeFromObjectUrl', () => {
   const objectId = 'test-obj';
   const base = `/object/${encodeURIComponent(objectId)}`;
 
-  it('decodes reference object type from path', () => {
-    expect(
-      resolveFieldReferenceTypeFromObjectUrl(
-        objectId,
-        `${base}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/book`,
-      ),
-    ).toBe('book');
+  it('decodes reference object type from legacy books path', () => {
+    expect(resolveFieldReferenceTypeFromObjectUrl(objectId, `${base}/books`)).toBe('book');
+  });
+
+  it('decodes reference object type from legacy products path', () => {
+    expect(resolveFieldReferenceTypeFromObjectUrl(objectId, `${base}/products`)).toBe(
+      'product',
+    );
   });
 
   it('returns null for unrelated paths', () => {
@@ -203,19 +205,22 @@ describe('resolveFieldReferenceTypeForObjectPage', () => {
   it('prefers pathname over query param', () => {
     const sp = new URLSearchParams();
     sp.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, encodeURIComponent('product'));
-    expect(
-      resolveFieldReferenceTypeForObjectPage(
-        objectId,
-        `${base}/${OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT}/book`,
-        sp,
-      ),
-    ).toBe('book');
+    expect(resolveFieldReferenceTypeForObjectPage(objectId, `${base}/books`, sp)).toBe(
+      'book',
+    );
   });
 
   it('falls back to query param when pathname has no field reference type', () => {
     const sp = new URLSearchParams();
     sp.set(OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM, encodeURIComponent('product'));
     expect(resolveFieldReferenceTypeForObjectPage(objectId, base, sp)).toBe('product');
+  });
+});
+
+describe('buildObjectFieldReferencesPath', () => {
+  it('builds legacy plural public URLs', () => {
+    expect(buildObjectFieldReferencesPath('alice', 'book')).toBe('/object/alice/books');
+    expect(buildObjectFieldReferencesPath('biz', 'product')).toBe('/object/biz/products');
   });
 });
 
