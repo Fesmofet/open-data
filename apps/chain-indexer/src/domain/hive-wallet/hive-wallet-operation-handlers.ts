@@ -3,6 +3,8 @@ import { HIVE_OPERATION } from '../../constants/hive-parser';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import type { RegisteredHiveOperationHandler } from '../hive-parser/hive-operation-handler';
 import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
+import { HiveChainContextCache } from './hive-chain-context.cache';
+import { parseClaimRewardNotificationPayload } from './parse-claim-reward-notification-payload';
 
 function assetAmount(value: unknown): { amount: string; symbol: string } {
   if (typeof value === 'string') {
@@ -16,6 +18,7 @@ function assetAmount(value: unknown): { amount: string; symbol: string } {
 export class HiveWalletOperationHandlers {
   constructor(
     private readonly notificationEmitter: NotificationEmitterService,
+    private readonly hiveChainContext: HiveChainContextCache,
   ) {}
 
   list(): RegisteredHiveOperationHandler[] {
@@ -41,7 +44,7 @@ export class HiveWalletOperationHandlers {
       {
         operation: HIVE_OPERATION.CLAIM_REWARD_BALANCE,
         handle: async (payload, ctx) => {
-          this.handleClaimReward(payload, ctx);
+          await this.handleClaimReward(payload, ctx);
         },
       },
       {
@@ -141,14 +144,16 @@ export class HiveWalletOperationHandlers {
     );
   }
 
-  private handleClaimReward(
+  private async handleClaimReward(
     payload: Record<string, unknown>,
     ctx: HiveOperationHandlerContext,
-  ): void {
+  ): Promise<void> {
     const account = String(payload.account ?? '');
-    const rewardHive = assetAmount(payload.reward_hive_balance).amount;
-    const rewardHbd = assetAmount(payload.reward_hbd_balance).amount;
-    const rewardHp = assetAmount(payload.reward_vesting_balance).amount;
+    const chainContext = await this.hiveChainContext.getFields();
+    const { rewardHive, rewardHbd, rewardHp } = parseClaimRewardNotificationPayload(
+      payload,
+      chainContext,
+    );
     this.notificationEmitter.emitWithContext(
       this.notificationEmitter.hiveContext(ctx),
       {

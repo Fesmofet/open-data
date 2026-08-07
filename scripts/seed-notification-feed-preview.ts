@@ -191,9 +191,9 @@ function buildPayload(
       amount: '5.000',
     },
     claim_reward: {
-      rewardHive: '0.012',
-      rewardHbd: '0.034',
-      rewardHp: '0.056',
+      rewardHive: '0.012 HIVE',
+      rewardHbd: '0.034 HBD',
+      rewardHp: '0.056 HP',
     },
     witness_vote: {
       witness: user,

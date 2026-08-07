@@ -25,6 +25,17 @@ These handlers implement `HiveOperationHandler` and only call `NotificationEmitt
 | `transfer_to_vesting` | `power_up` |
 | `withdraw_vesting` | `power_down` |
 | `claim_reward_balance` | `claim_reward` |
+
+`claim_reward` payload (from op fields, not account `reward_*_balance`):
+
+| Stored field | Hive op source | Notes |
+|--------------|----------------|-------|
+| `rewardHive` | `reward_hive` | e.g. `0.000 HIVE` |
+| `rewardHbd` | `reward_hbd` | e.g. `0.159 HBD` |
+| `rewardHp` | `reward_vests` | Converted to HP, e.g. `0.959 HP` |
+
+Parser: `apps/chain-indexer/src/domain/hive-wallet/parse-claim-reward-notification-payload.ts`.
+
 | `account_witness_vote` | `witness_vote` |
 | `change_recovery_account` | `change_recovery_account` |
 | `set_withdraw_vesting_route` | `withdraw_route` |

@@ -67,7 +67,7 @@ export function minimalNotificationEventPayload(
     case 'power_down':
       return { account: 'a', amount: '1' };
     case 'claim_reward':
-      return { rewardHive: '0', rewardHbd: '0', rewardHp: '0' };
+      return { rewardHive: '0 HIVE', rewardHbd: '0 HBD', rewardHp: '0 HP' };
     case 'witness_vote':
       return { witness: 'w', approve: true };
     case 'fill_order':
