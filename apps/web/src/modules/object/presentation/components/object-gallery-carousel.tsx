@@ -6,7 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 import {
-  GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT,
+  GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT,
   resolveGalleryCarouselAspectRatio,
 } from '../../domain/resolve-gallery-carousel-aspect-ratio';
 import { GalleryImage } from './gallery-image';
@@ -21,6 +21,9 @@ export type ObjectGalleryCarouselProps = {
 const CAROUSEL_CONTROL_CLASS =
   'inline-flex w-4 shrink-0 items-center justify-center self-center text-display leading-none text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
+const CAROUSEL_CONTROL_DISABLED_CLASS =
+  'pointer-events-none opacity-40';
+
 export function ObjectGalleryCarousel({
   photos,
   onPhotoClick,
@@ -28,13 +31,15 @@ export function ObjectGalleryCarousel({
 }: ObjectGalleryCarouselProps) {
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [frameAspect, setFrameAspect] = useState(GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT);
+  const [frameAspect, setFrameAspect] = useState(GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT);
+  const [isAspectReady, setIsAspectReady] = useState(false);
   const aspectByUrlRef = useRef<Map<string, number>>(new Map());
   const displayUrlRef = useRef<string | undefined>(undefined);
 
   const count = photos.length;
   const active = photos[activeIndex];
   const activeUrl = active?.url;
+  const isPreviewActive = Boolean(previewImageUrl?.trim());
   const displayUrl = previewImageUrl ?? activeUrl;
 
   displayUrlRef.current = displayUrl;
@@ -46,24 +51,29 @@ export function ObjectGalleryCarousel({
   }, [activeIndex, count]);
 
   useEffect(() => {
-    if (!displayUrl) {
+    if (isPreviewActive || !activeUrl) {
       return;
     }
-    const cached = aspectByUrlRef.current.get(displayUrl);
+    const cached = aspectByUrlRef.current.get(activeUrl);
     if (cached != null) {
       setFrameAspect(cached);
+      setIsAspectReady(true);
+      return;
     }
-  }, [displayUrl]);
+    setFrameAspect(GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT);
+    setIsAspectReady(false);
+  }, [activeUrl, isPreviewActive]);
 
   const handleImageLoad = useCallback(
-    (loadedUrl: string) => (event: SyntheticEvent<HTMLImageElement>) => {
-      if (displayUrlRef.current !== loadedUrl) {
+    (loadedUrl: string, isPreview: boolean) => (event: SyntheticEvent<HTMLImageElement>) => {
+      if (isPreview || displayUrlRef.current !== loadedUrl) {
         return;
       }
       const img = event.currentTarget;
       const aspect = resolveGalleryCarouselAspectRatio(img.naturalWidth, img.naturalHeight);
       aspectByUrlRef.current.set(loadedUrl, aspect);
       setFrameAspect(aspect);
+      setIsAspectReady(true);
     },
     [],
   );
@@ -71,30 +81,33 @@ export function ObjectGalleryCarousel({
   const goPrev = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      if (count <= 1) {
+      if (count <= 1 || isPreviewActive) {
         return;
       }
       setActiveIndex((i) => (i - 1 + count) % count);
     },
-    [count],
+    [count, isPreviewActive],
   );
 
   const goNext = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      if (count <= 1) {
+      if (count <= 1 || isPreviewActive) {
         return;
       }
       setActiveIndex((i) => (i + 1) % count);
     },
-    [count],
+    [count, isPreviewActive],
   );
 
   if (!active || !displayUrl) {
     return null;
   }
 
-  const showControls = count > 1 && !previewImageUrl;
+  const showControls = count > 1;
+  const controlClassName = isPreviewActive
+    ? `${CAROUSEL_CONTROL_CLASS} ${CAROUSEL_CONTROL_DISABLED_CLASS}`
+    : CAROUSEL_CONTROL_CLASS;
   const frameClassName = [
     'relative min-w-0 flex-1 overflow-hidden rounded-btn border border-border',
     onPhotoClick ? 'cursor-pointer transition-colors hover:border-accent/40' : '',
@@ -102,13 +115,22 @@ export function ObjectGalleryCarousel({
     .filter(Boolean)
     .join(' ');
 
+  const imageClassName =
+    isPreviewActive || !isAspectReady ? 'object-contain' : 'object-cover';
+
   const photoFrame = (
-    <div className="relative w-full" style={{ aspectRatio: frameAspect }}>
+    <div
+      className="relative w-full"
+      style={{ aspectRatio: frameAspect }}
+      data-testid="gallery-carousel-frame"
+    >
       <GalleryImage
         key={displayUrl}
         src={displayUrl}
+        className={imageClassName}
         sizes="(max-width: 768px) 100vw, 320px"
-        onLoad={handleImageLoad(displayUrl)}
+        priority={!isPreviewActive && activeIndex === 0}
+        onLoad={handleImageLoad(displayUrl, isPreviewActive)}
       />
     </div>
   );
@@ -118,8 +140,9 @@ export function ObjectGalleryCarousel({
       {showControls ? (
         <button
           type="button"
-          className={CAROUSEL_CONTROL_CLASS}
+          className={controlClassName}
           aria-label={t('object_detail_gallery_prev')}
+          disabled={isPreviewActive}
           onClick={goPrev}
         >
           ‹
@@ -140,8 +163,9 @@ export function ObjectGalleryCarousel({
       {showControls ? (
         <button
           type="button"
-          className={CAROUSEL_CONTROL_CLASS}
+          className={controlClassName}
           aria-label={t('object_detail_gallery_next')}
+          disabled={isPreviewActive}
           onClick={goNext}
         >
           ›

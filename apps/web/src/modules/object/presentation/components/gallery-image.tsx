@@ -57,8 +57,8 @@ export function GalleryImage({
         priority={priority}
         unoptimized={shouldUnoptimizeRemoteImage(src)}
         onLoad={(event) => {
-          setLoaded(true);
           onLoad?.(event);
+          setLoaded(true);
         }}
         onError={() => setFailed(true)}
       />

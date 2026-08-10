@@ -17,3 +17,6 @@ export function resolveGalleryCarouselAspectRatio(
 }
 
 export const GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT = PORTRAIT_FRAME_ASPECT;
+
+/** Initial left-rail frame before natural dimensions are known (product previews are typically square). */
+export const GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT = 1;
