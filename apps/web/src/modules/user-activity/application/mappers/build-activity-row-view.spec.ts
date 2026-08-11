@@ -357,4 +357,82 @@ describe('buildActivityRowView', () => {
       expect(row.amount).toBe('1.000 HBD');
     }
   });
+
+  it('maps routed fill_vesting_withdraw as deposit for recipient', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:13',
+        operationIndex: 13,
+        trxId: 'pd1',
+        timestamp: '2024-01-01T00:00:12Z',
+        block: 1,
+        type: 'fill_vesting_withdraw',
+        payload: {
+          from_account: 'vancouverdining',
+          to_account: 'waivio',
+          deposited: '146.237 HIVE',
+        },
+      },
+      { ...ctx, profileAccount: 'waivio' },
+    );
+    expect(row?.kind).toBe('wallet_power_down');
+    if (row?.kind === 'wallet_power_down') {
+      expect(row.subtype).toBe('withdraw');
+      expect(row.direction).toBe('in');
+      expect(row.counterparty).toBe('vancouverdining');
+      expect(row.hpAmount).toBe('146.237 HP');
+    }
+  });
+
+  it('maps routed fill_vesting_withdraw as withdrawal for source', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:14',
+        operationIndex: 14,
+        trxId: 'pd2',
+        timestamp: '2024-01-01T00:00:13Z',
+        block: 1,
+        type: 'fill_vesting_withdraw',
+        payload: {
+          from_account: 'vancouverdining',
+          to_account: 'waivio',
+          deposited: '146.237 HIVE',
+        },
+      },
+      { ...ctx, profileAccount: 'vancouverdining' },
+    );
+    expect(row?.kind).toBe('wallet_power_down');
+    if (row?.kind === 'wallet_power_down') {
+      expect(row.subtype).toBe('withdraw');
+      expect(row.direction).toBe('out');
+      expect(row.counterparty).toBe('waivio');
+      expect(row.hpAmount).toBe('146.237 HP');
+    }
+  });
+
+  it('maps self fill_vesting_withdraw without counterparty', () => {
+    const row = buildActivityRowView(
+      {
+        id: '1:15',
+        operationIndex: 15,
+        trxId: 'pd3',
+        timestamp: '2024-01-01T00:00:14Z',
+        block: 1,
+        type: 'fill_vesting_withdraw',
+        payload: {
+          from_account: 'alice',
+          to_account: 'alice',
+          deposited: '1.000 HIVE',
+        },
+      },
+      ctx,
+    );
+    expect(row?.kind).toBe('wallet_power_down');
+    if (row?.kind === 'wallet_power_down') {
+      expect(row.subtype).toBe('withdraw');
+      expect(row.direction).toBe('in');
+      expect(row.counterparty).toBe('');
+      expect(row.hpAmount).toBe('1.000 HP');
+    }
+  });
 });

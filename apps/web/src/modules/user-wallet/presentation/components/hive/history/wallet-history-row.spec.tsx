@@ -84,6 +84,22 @@ describe('WalletHistoryRow', () => {
     expect(screen.getByRole('link', { name: '@bob' })).toBeInTheDocument();
   });
 
+  it('renders self power down withdraw without from/to suffix', () => {
+    const row: ActivityRowView = {
+      kind: 'wallet_power_down',
+      id: '3b',
+      timestamp: '2024-01-01T00:00:02Z',
+      subtype: 'withdraw',
+      hpAmount: '1.000 HP',
+      counterparty: '',
+      direction: 'in',
+    };
+    renderRow(row);
+    expect(screen.getByText('Power down')).toBeInTheDocument();
+    expect(screen.queryByText(/Power down from/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Power down to/)).not.toBeInTheDocument();
+  });
+
   it('renders savings cancel with requestId', () => {
     const row: ActivityRowView = {
       kind: 'wallet_savings',

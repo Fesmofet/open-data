@@ -289,17 +289,35 @@ export function buildActivityRowView(
           direction: fromAccount.toLowerCase() === profile ? 'out' : 'in',
         };
       }
-      const withdrawTo = asString(p.to);
-      const withdrawFrom = asString(p.from);
-      const withdrawDirection =
-        withdrawTo.toLowerCase() === profile ? 'in' : 'out';
+      const fromAccount = asString(p.from_account);
+      const toAccount = asString(p.to_account);
+      const fromLower = fromAccount.toLowerCase();
+      const toLower = toAccount.toLowerCase();
+      const profileLower = profile.toLowerCase();
+
+      let withdrawDirection: 'in' | 'out';
+      let counterparty: string;
+
+      if (toLower === profileLower && fromLower !== profileLower) {
+        withdrawDirection = 'in';
+        counterparty = fromAccount;
+      } else if (fromLower === profileLower && toLower !== profileLower) {
+        withdrawDirection = 'out';
+        counterparty = toAccount;
+      } else {
+        withdrawDirection = 'in';
+        counterparty = '';
+      }
+
+      const deposited = parseAssetAmount(p.deposited ?? p.amount);
+      const hpAmount = deposited.amount ? `${deposited.amount} HP` : '';
+
       return {
         ...base,
         kind: 'wallet_power_down',
         subtype: 'withdraw',
-        hpAmount: asString(p.deposited) || asString(p.amount),
-        counterparty:
-          withdrawDirection === 'in' ? withdrawFrom : withdrawTo,
+        hpAmount,
+        counterparty,
         direction: withdrawDirection,
       };
     }

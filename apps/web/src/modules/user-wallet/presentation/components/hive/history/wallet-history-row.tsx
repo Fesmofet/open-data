@@ -245,11 +245,15 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
             ) : undefined
           }
         >
-          {t('power_down_withdraw')}{' '}
-          {row.direction === 'in' ? t('activity_from') : t('activity_to')}{' '}
           {row.counterparty ? (
-            <ProfileLink name={row.counterparty}>@{row.counterparty}</ProfileLink>
-          ) : null}
+            <>
+              {t('power_down_withdraw')}{' '}
+              {row.direction === 'in' ? t('activity_from') : t('activity_to')}{' '}
+              <ProfileLink name={row.counterparty}>@{row.counterparty}</ProfileLink>
+            </>
+          ) : (
+            t('power_down_withdraw')
+          )}
         </WalletHistoryRowShell>
       );
     }
