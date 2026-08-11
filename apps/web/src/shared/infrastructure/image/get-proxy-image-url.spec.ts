@@ -95,6 +95,13 @@ describe('getProxyImageUrl', () => {
     expect(getProxyImageUrl(yt)).toBe(yt);
   });
 
+  it('skips Google Shopping gstatic thumbnails (Hive 0x0 returns 403)', () => {
+    const gstatic =
+      'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcExample&usqp=CAY';
+    expect(getProxyImageUrl(gstatic)).toBe(gstatic);
+    expect(getImagePathPost(gstatic)).toBe(gstatic);
+  });
+
   it('skips steemitimages.com (Hive 0x0 returns 403)', () => {
     expect(getProxyImageUrl(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);
     expect(getImagePathPost(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);

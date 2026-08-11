@@ -7,6 +7,7 @@ import Image from 'next/image';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
+import { getImagePathPost } from '@/shared/infrastructure/image/get-proxy-image-url';
 import { ObjectThumbnail, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
@@ -102,6 +103,7 @@ export function ObjectHero({
 
   const hiddenOnDesktop = shouldHideHeroOnDesktop(resolvedMode);
   const hasCoverPhoto = Boolean(coverImageUrl?.trim());
+  const displayCoverUrl = coverImageUrl ? getImagePathPost(coverImageUrl) : null;
 
   const canEditAvatar =
     isEditMode && editContext?.supportedUpdateTypes.includes('image');
@@ -126,16 +128,16 @@ export function ObjectHero({
   return (
     <header className={hiddenOnDesktop ? HIDDEN_ON_DESKTOP_CLASS : undefined}>
       <ShellFullBleedBand className="relative overflow-hidden">
-        {hasCoverPhoto && coverImageUrl ? (
+        {hasCoverPhoto && displayCoverUrl ? (
           <div className="absolute inset-0">
             <Image
-              src={coverImageUrl}
+              src={displayCoverUrl}
               alt=""
               fill
               priority={!hiddenOnDesktop}
               sizes="100vw"
               className="object-cover"
-              unoptimized={shouldUnoptimizeRemoteImage(coverImageUrl)}
+              unoptimized={shouldUnoptimizeRemoteImage(displayCoverUrl)}
             />
             <div className="hero-cover-vignette absolute inset-0" aria-hidden />
             <div className="absolute inset-0 bg-nav-bg/65" aria-hidden />

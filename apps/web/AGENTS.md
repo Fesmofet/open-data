@@ -183,6 +183,19 @@ Use **`header`** / **`footer`** slots on `ModalShell` for chrome that must stay 
 - Markdown/HTML body images may use **`<img loading="lazy">`**.
 - **IPFS CID previews:** **`useIpfsContentBaseUrl()`** — see [Environment variables (runtime, not build)](#environment-variables-runtime-not-build) and [`images.md`](../../docs/apps/web/spec/images.md#ipfs-object-images-cid).
 
+### UGC image proxy (legacy hosts)
+
+Wrap remote UGC URLs at **display time** only — never in query-api payloads or mappers. Full skip-list and edge cases: [`docs/apps/web/spec/images.md`](../../docs/apps/web/spec/images.md#hive-0x0-image-proxy-ugc).
+
+| Do | Don't |
+|----|--------|
+| Feed previews → `getImagePathPost` from `@/shared/presentation` | Pass raw query-api / on-chain URLs to `next/image` for legacy hosts (`ipfs.busy.org`, broken Hive resize URLs) |
+| Object avatars → **`ObjectThumbnail`** | Ad-hoc `Image src={fields.image}` on object surfaces |
+| Object gallery → **`GalleryImage`** (proxy → raw → preview fallback; always `unoptimized`) | Duplicate proxy in carousel / tab / viewer callers |
+| Post/comment HTML → **`sanitizePostBodyHtml`** | Reimplement Hive `0x0` / base58 preview logic in feature modules |
+| URL matching (lightbox, approval stats) → compare **canonical raw URLs**; use **`stripHiveImageProxyPrefix`** when matching DOM `currentSrc` | Compare proxied DOM URLs to raw album URLs verbatim |
+| Pair **`shouldUnoptimizeRemoteImage`** with **`unoptimized`** on `next/image` where needed | Assume the Next.js optimizer fixes dead hosts without proxy |
+
 ## Object cards (`ObjectCard`)
 
 **One component for every object card in the UI** — do not add parallel card implementations per screen.

@@ -49,13 +49,13 @@ Dead or flaky UGC hosts (e.g. legacy **`ipfs.busy.org`**) break feed previews an
 | `getProxyImageUrl` / `getImagePathPost` / `stripHiveImageProxyPrefix` / `normalizeLegacyObjectImageUrl` / `resolveObjectImageUrl` / `getPreviewProxyImageUrl` | `apps/web/src/shared/infrastructure/image/get-proxy-image-url.ts` (also re-exported from `@/shared/presentation`) |
 | `ObjectThumbnail` | `apps/web/src/shared/presentation/components/object-thumbnail.tsx` — object page hero, feed chips, `ObjectCard`, ref rows |
 
-**Skip proxy** when the URL contains: `waivio.nyc3.digitaloceanspaces` / `nyc3.digitaloceanspaces`, `steemitimages.com`, `i.imgur.com`, `sephora.com`, `.avif`, or video poster CDNs (`vumbnail.com`, `i.ytimg.com`, `img.youtube.com` — Hive returns 403). Hive **avatar** paths (`images.hive.blog/u/…`) are left unchanged. Relative `/…` and `data:` URLs are left unchanged.
+**Skip proxy** when the URL contains: `waivio.nyc3.digitaloceanspaces` / `nyc3.digitaloceanspaces`, `steemitimages.com`, `i.imgur.com`, `sephora.com`, `.avif`, `gstatic.com` (Google Shopping thumbnails — Hive returns 403), or video poster CDNs (`vumbnail.com`, `i.ytimg.com`, `img.youtube.com` — Hive returns 403). Hive **avatar** paths (`images.hive.blog/u/…`) are left unchanged. Relative `/…` and `data:` URLs are left unchanged.
 
 **Legacy `steemitimages.com` object avatars:** stored URLs like `https://steemitimages.com/u/{user}/avatar/large` must not be wrapped in `0x0/` (403). `normalizeLegacyObjectImageUrl` rewrites them to `https://images.hive.blog/u/{user}/avatar/{large|small}` before display.
 
 **Already on `images.hive.blog/{W}x{H}/…` or `/p/…`:** some stored thumbs (e.g. `1280x0/https://ipfs.busy.org/…`) 400 alone but work when wrapped again as `0x0/{fullHiveUrl}`. Direct Hive assets (`/DQm…`, `/u/…` avatars) and standard `0x0/{external}` are left as-is.
 
-**Applied at display (not in query-api payloads):** feed card / grid preview `Image` src, explicit avatar URLs (`resolveAvatarUrl`), **object thumbnails** (`ObjectThumbnail` / `resolveObjectImageUrl`), post/comment body and feed excerpt HTML (`transformTags.img`, optional `data-fallback-src`), SEO OG / Article JSON-LD remote thumbs. Canonical `thumbnailUrl` from the API stays unproxied so excerpt omit-matching still works.
+**Applied at display (not in query-api payloads):** feed card / grid preview `Image` src, explicit avatar URLs (`resolveAvatarUrl`), **object thumbnails** (`ObjectThumbnail` / `resolveObjectImageUrl`), **object gallery** (`GalleryImage` — carousel, tab grid, full-screen viewer, description photo blocks; primary `getImagePathPost` → on error `getPreviewProxyImageUrl`), post/comment body and feed excerpt HTML (`transformTags.img`, optional `data-fallback-src`), SEO OG / Article JSON-LD remote thumbs. Canonical `thumbnailUrl` from the API stays unproxied so excerpt omit-matching still works.
 
 Base58 Hive `800x600/p/…` preview mode is **not** the default for feed/body (those use `0x0/`). Legacy object cards used preview as the primary proxy; **`ObjectThumbnail`** uses `resolveObjectImageUrl` first, then **`getPreviewProxyImageUrl`** on `onError`, then `AVATAR_PLACEHOLDER_SRC`.
 
@@ -78,6 +78,7 @@ Use **`fill`** when the visual box is defined by a parent (`relative` + height/a
 
 - For components that swap to a placeholder when loading fails (e.g. `UserAvatar`), keep **`onError`** + React state: on error, render the placeholder `Image` (or branch) instead of the remote URL.
 - **`ObjectThumbnail`** (object page hero, feed tagged-object chips, `ObjectCard`, ref rows): primary `resolveObjectImageUrl` → on error legacy preview `getPreviewProxyImageUrl` → on error `AVATAR_PLACEHOLDER_SRC`. Use this instead of ad-hoc `Image` + raw `fields.image`.
+- **`GalleryImage`** (object gallery carousel, tab grid, viewer, description photo blocks): primary `getImagePathPost` → on error **raw canonical URL** → on error `getPreviewProxyImageUrl` → on error styled failed state. Always **`unoptimized`** (remote UGC; legacy used plain `<img>`). Do not pass raw gallery URLs to `next/image` in callers — proxy lives in `GalleryImage` only.
 - Some hosts (e.g. **`img.3speakcontent.co`**, **`steemitimages.com`**) can fail the optimizer’s **server-side** `fetch` (DNS / network / 403 via proxy). Use **`shouldUnoptimizeRemoteImage(src)`** from `@/shared/presentation` and pass **`unoptimized`** to `Image` for those URLs so the browser loads the asset directly; pair with **`onError`** where a visible fallback is needed (e.g. feed preview media, `ObjectThumbnail`).
 
 ## Markdown content

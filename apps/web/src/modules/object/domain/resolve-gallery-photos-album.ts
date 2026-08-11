@@ -1,10 +1,14 @@
+import { stripHiveImageProxyPrefix } from '@/shared/infrastructure/image/get-proxy-image-url';
+
 import type {
   ProjectedGalleryAlbumView,
   ProjectedGalleryPhotoView,
 } from './object-page.types';
 
 function normalizeGalleryPhotoUrl(url: string): string {
-  const withoutQuery = url.split('?')[0]?.split('#')[0] ?? url;
+  const withoutQuery = stripHiveImageProxyPrefix(url)
+    .split('?')[0]
+    ?.split('#')[0] ?? url;
   try {
     const parsed = new URL(withoutQuery);
     return `${parsed.origin}${parsed.pathname}`.replace(/\/$/, '');
