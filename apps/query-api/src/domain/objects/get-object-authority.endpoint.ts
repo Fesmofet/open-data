@@ -65,7 +65,8 @@ export class GetObjectAuthorityEndpoint {
     return {
       items,
       total,
-      hasMore: socialQuery.skip + items.length < total,
+      hasMore:
+        items.length > 0 && socialQuery.skip + items.length < total,
     };
   }
 }

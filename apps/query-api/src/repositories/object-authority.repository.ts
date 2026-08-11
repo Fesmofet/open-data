@@ -97,9 +97,12 @@ export class ObjectAuthorityRepository {
   ): Promise<number> {
     try {
       const row = await this.db
-        .selectFrom('object_authority')
-        .where('object_id', '=', objectId)
-        .where('authority_type', '=', authorityType)
+        .selectFrom('object_authority as oa')
+        .innerJoin('accounts_current as ac', (join) =>
+          join.onRef('oa.account', '=', 'ac.name'),
+        )
+        .where('oa.object_id', '=', objectId)
+        .where('oa.authority_type', '=', authorityType)
         .select(sql<number>`count(*)::int`.as('c'))
         .executeTakeFirst();
       return Number(row?.c ?? 0);

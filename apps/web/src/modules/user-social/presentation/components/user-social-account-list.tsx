@@ -51,7 +51,9 @@ export function UserSocialAccountList({
     startTransition(async () => {
       const next = await loadMoreAction(profileAccountName, sort, items.length);
       setItems((prev) => [...prev, ...next.items]);
-      setHasMore(next.hasMore);
+      // Stop pagination when the server returns an empty page (avoids infinite scroll loops
+      // when total/hasMore drift from list rows, e.g. authority rows without accounts_current).
+      setHasMore(next.items.length > 0 && next.hasMore);
     });
   }, [
     hasMore,
