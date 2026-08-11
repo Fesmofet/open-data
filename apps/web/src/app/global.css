@@ -26,7 +26,8 @@
    * Post editor linked-object percent slider.
    * Native range uses a dark track under color-scheme: dark; fully reset and paint fill via --slider-fill.
    */
-  .editor-linked-object-percent-slider {
+  .editor-linked-object-percent-slider,
+  .gallery-rank-slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
@@ -36,16 +37,19 @@
     cursor: pointer;
   }
 
-  .editor-linked-object-percent-slider:focus {
+  .editor-linked-object-percent-slider:focus,
+  .gallery-rank-slider:focus {
     outline: none;
   }
 
-  .editor-linked-object-percent-slider:focus-visible {
+  .editor-linked-object-percent-slider:focus-visible,
+  .gallery-rank-slider:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
-  .editor-linked-object-percent-slider::-webkit-slider-runnable-track {
+  .editor-linked-object-percent-slider::-webkit-slider-runnable-track,
+  .gallery-rank-slider::-webkit-slider-runnable-track {
     height: 0.25rem;
     border-radius: var(--radius-pill);
     background: linear-gradient(
@@ -56,7 +60,8 @@
     );
   }
 
-  .editor-linked-object-percent-slider::-webkit-slider-thumb {
+  .editor-linked-object-percent-slider::-webkit-slider-thumb,
+  .gallery-rank-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 1rem;
     height: 1rem;
@@ -67,7 +72,8 @@
     cursor: pointer;
   }
 
-  .editor-linked-object-percent-slider::-moz-range-track {
+  .editor-linked-object-percent-slider::-moz-range-track,
+  .gallery-rank-slider::-moz-range-track {
     height: 0.25rem;
     border: none;
     border-radius: var(--radius-pill);
@@ -79,7 +85,8 @@
     );
   }
 
-  .editor-linked-object-percent-slider::-moz-range-thumb {
+  .editor-linked-object-percent-slider::-moz-range-thumb,
+  .gallery-rank-slider::-moz-range-thumb {
     width: 1rem;
     height: 1rem;
     border: none;

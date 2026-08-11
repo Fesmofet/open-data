@@ -23,6 +23,8 @@ export type ModalShellProps = {
   describedBy?: string;
   ariaLabel?: string;
   closeOnBackdrop?: boolean;
+  /** When false, Escape does not call onClose. Default true. */
+  closeOnEscape?: boolean;
   /** Extra classes on the scrim layer (`post-modal-scrim` base). */
   scrimClassName?: string;
   /** Extra classes on the dialog panel (card or fullscreen surface). */
@@ -95,6 +97,7 @@ export function ModalShell({
   describedBy,
   ariaLabel,
   closeOnBackdrop = true,
+  closeOnEscape = true,
   scrimClassName = '',
   panelClassName = '',
   align = 'center',
@@ -124,12 +127,12 @@ export function ModalShell({
   );
 
   useEffect(() => {
-    if (!open) {
+    if (!open || !closeOnEscape) {
       return;
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, handleKeyDown]);
+  }, [open, closeOnEscape, handleKeyDown]);
 
   if (!open || !mounted || typeof document === 'undefined') {
     return null;

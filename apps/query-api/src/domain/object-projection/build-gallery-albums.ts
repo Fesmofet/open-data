@@ -63,6 +63,7 @@ type RawGalleryItem = {
   url: string;
   cid?: string;
   rankScore: number | null;
+  viewerRank: number | null;
   updateId?: string;
 };
 
@@ -86,6 +87,7 @@ function readGalleryItems(imageGalleryItem: unknown): RawGalleryItem[] {
       album,
       url,
       rankScore: readRankScore(row.rank_score),
+      viewerRank: readRankScore(row.viewer_rank),
       ...(cid ? { cid } : {}),
       updateId,
     });
@@ -99,13 +101,16 @@ function toPhoto(
   isAvatar = false,
   updateId?: string,
   cid?: string,
+  viewerRank?: number | null,
 ): ProjectedGalleryPhoto {
   return {
     url,
     rankScore,
     isAvatar,
     ...(cid ? { cid } : {}),
-    ...(updateId ? { update_id: updateId } : {}),
+    ...(updateId
+      ? { update_id: updateId, viewerRank: viewerRank ?? null }
+      : {}),
   };
 }
 
@@ -164,6 +169,7 @@ export function buildGalleryAlbums(input: BuildGalleryAlbumsInput): BuildGallery
       false,
       item.updateId,
       item.cid,
+      item.viewerRank,
     );
     if (albumNameSet.has(item.album)) {
       albumsByName.get(item.album)!.push(photo);

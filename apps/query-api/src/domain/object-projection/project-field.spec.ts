@@ -151,6 +151,50 @@ describe('projectFieldValue imageGalleryItem', () => {
         album: 'Photos',
         url: 'https://example.com/a.jpg',
         rank_score: 7500,
+        viewer_rank: null,
+        update_id: 'g1',
+      },
+    ]);
+  });
+
+  it('includes viewer_rank from rankVoteProjection', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
+      cardinality: 'multi',
+      values: [
+        {
+          update_id: 'g1',
+          update_type: UPDATE_TYPES.IMAGE_GALLERY_ITEM,
+          creator: 'c',
+          locale: null,
+          created_at_unix: 1,
+          event_seq: BigInt(1),
+          value_text: null,
+          value_geo: null,
+          value_json: { album: 'Photos', url: 'https://example.com/a.jpg' },
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: 7500,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    const rankVp: RankVoteProjection = {
+      countByUpdateId: new Map([['g1', 2]]),
+      viewerRankByUpdateId: new Map([['g1', 9000]]),
+    };
+    expect(
+      projectFieldValue(field, UPDATE_TYPES.IMAGE_GALLERY_ITEM, 'https://ipfs.io', 'alice', rankVp),
+    ).toEqual([
+      {
+        album: 'Photos',
+        url: 'https://example.com/a.jpg',
+        rank_score: 7500,
+        viewer_rank: 9000,
         update_id: 'g1',
       },
     ]);

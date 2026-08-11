@@ -1574,13 +1574,17 @@ function readPreviewGalleryFromApi(o: ProjectedObjectView): ProjectedGalleryPhot
       typeof row.rankScore === 'number' && Number.isFinite(row.rankScore)
         ? row.rankScore
         : null;
+    const viewerRank =
+      typeof row.viewerRank === 'number' && Number.isFinite(row.viewerRank)
+        ? row.viewerRank
+        : null;
     const updateId = readString(row.update_id) ?? undefined;
     photos.push({
       url,
       rankScore,
       isAvatar: row.isAvatar === true,
       ...(cid ? { cid } : {}),
-      ...(updateId ? { update_id: updateId } : {}),
+      ...(updateId ? { update_id: updateId, viewerRank } : {}),
     });
   }
   return photos;
@@ -1616,13 +1620,17 @@ function readGalleryAlbumsFromApi(o: ProjectedObjectView): ProjectedGalleryAlbum
           typeof item.rankScore === 'number' && Number.isFinite(item.rankScore)
             ? item.rankScore
             : null;
+        const viewerRank =
+          typeof item.viewerRank === 'number' && Number.isFinite(item.viewerRank)
+            ? item.viewerRank
+            : null;
         const updateId = readString(item.update_id) ?? undefined;
         items.push({
           url,
           rankScore,
           isAvatar: item.isAvatar === true,
           ...(cid ? { cid } : {}),
-          ...(updateId ? { update_id: updateId } : {}),
+          ...(updateId ? { update_id: updateId, viewerRank } : {}),
         });
       }
     }

@@ -23,7 +23,7 @@ Returns one **object update feed item** (same DTO shape as a row in the paginate
 
 Single `ObjectUpdateFeedItemDto` — see OpenAPI [`object-updates.openapi.ts`](../../../../apps/query-api/src/openapi/object-updates.openapi.ts).
 
-Includes approval %, for/against counts, preview voters, viewer vote, decisive privileged vote, image preview URLs, and geo when present.
+Includes approval %, for/against counts, preview voters, viewer vote, decisive privileged vote, **`rank_score`** (decisive rank on the update), **`viewer_rank`** (viewer's latest rank vote when `X-Viewer` is set), image preview URLs, and geo when present.
 
 ## Errors
 

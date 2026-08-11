@@ -81,6 +81,8 @@ export interface ProjectedGalleryPhoto {
   /** Canonical IPFS CID when the source update stored cid (omitted for url-only items). */
   cid?: string;
   rankScore: number | null;
+  /** Viewer’s ODL rank (0–10000) when `rank_votes` has a vote for this photo’s `update_id`. */
+  viewerRank?: number | null;
   isAvatar: boolean;
   /** Source `imageGalleryItem` update id (omitted for synthetic avatar row). */
   update_id?: string;

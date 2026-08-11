@@ -35,6 +35,8 @@ const objectUpdateFeedItemSchema = registry.register(
         voter: z.string(),
       })
       .nullable(),
+    rank_score: z.number().nullable(),
+    viewer_rank: z.number().nullable(),
   }),
 );
 
@@ -64,7 +66,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Paginated object updates with approval percent and vote counts',
   description:
-    'Lists `object_updates` for an active object with `approve_percent` from governance + `computeApprovePercent`, community for/against counts, and the viewer’s latest validity vote when `X-Viewer` is set. Sort `recency` uses keyset cursor; sort `approval` loads up to 1000 matching rows then sorts in memory (offset cursor).',
+    'Lists `object_updates` for an active object with `approve_percent` from governance + `computeApprovePercent`, community for/against counts, the viewer’s latest validity vote and **`viewer_rank`** (rank channel) when `X-Viewer` is set, plus persisted **`rank_score`** per update. Sort `recency` uses keyset cursor; sort `approval` loads up to 1000 matching rows then sorts in memory (offset cursor).',
   request: {
     params: z.object({
       objectId: z
@@ -78,7 +80,8 @@ registry.registerPath({
         description: 'Optional governance object merged for approval computation.',
       }),
       'x-viewer': z.string().optional().openapi({
-        description: 'Optional viewer account; populates `viewer_vote` per item when set.',
+        description:
+          'Optional viewer account; populates `viewer_vote` and `viewer_rank` per item when set.',
       }),
     }),
   },
@@ -146,7 +149,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Single object update feed item',
   description:
-    'Returns one update card payload (same shape as feed items) for deep links from notifications.',
+    'Returns one update card payload (same shape as feed items) for deep links from notifications. Includes `rank_score` and `viewer_rank` when applicable.',
   request: {
     params: z.object({
       objectId: z
@@ -157,6 +160,12 @@ registry.registerPath({
         .string()
         .min(1)
         .openapi({ param: { name: 'updateId', in: 'path', required: true } }),
+    }),
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional viewer account; populates `viewer_vote` and `viewer_rank` when set.',
+      }),
     }),
   },
   responses: {

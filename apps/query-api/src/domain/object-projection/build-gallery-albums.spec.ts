@@ -98,7 +98,26 @@ describe('buildGalleryAlbums', () => {
       rankScore: 100,
       isAvatar: false,
       update_id: 'g-cid',
+      viewerRank: null,
     });
+  });
+
+  it('passes viewer_rank through to ProjectedGalleryPhoto', () => {
+    const result = buildGalleryAlbums({
+      imageGallery: ['Photos'],
+      imageGalleryItem: [
+        {
+          album: 'Photos',
+          url: 'https://example.com/a.jpg',
+          rank_score: 5000,
+          viewer_rank: 8000,
+          update_id: 'g1',
+        },
+      ],
+      avatarUrl: null,
+    });
+
+    expect(result.previewGallery[0]?.viewerRank).toBe(8000);
   });
 
   it('returns empty preview when no photos', () => {

@@ -69,6 +69,8 @@ export type ProjectedGalleryPhotoView = {
   /** Canonical IPFS CID when the source update stored cid (omitted for url-only items). */
   cid?: string;
   rankScore: number | null;
+  /** Viewer’s ODL rank vote (0–10000) for this photo’s `update_id`. */
+  viewerRank?: number | null;
   isAvatar: boolean;
   update_id?: string;
   /** Virtual Related album: source Hive post author. */

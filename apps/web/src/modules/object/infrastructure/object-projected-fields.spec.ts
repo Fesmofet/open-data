@@ -21,6 +21,8 @@ import {
   projectedLegalText,
   projectedHostHtmlBody,
   projectedPageContent,
+  projectedPreviewGallery,
+  projectedGalleryAlbums,
   linkKindPublicIconSrc,
   linkKindDisplayLabel,
   walletSymbolDisplayName,
@@ -648,5 +650,43 @@ describe('object-projected-fields', () => {
     };
     expect(projectedPageContent(v)).toBe('Page body');
     expect(projectedHostHtmlBody(v)).toBe('Page body');
+  });
+
+  it('maps viewerRank on previewGallery and galleryAlbums from API payload', () => {
+    const v = {
+      object_id: 'obj1',
+      object_type: 'product',
+      semantic_type: null,
+      weight: null,
+      fields: {},
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+      previewGallery: [
+        {
+          url: 'https://example.com/a.jpg',
+          rankScore: 5000,
+          viewerRank: 8000,
+          isAvatar: false,
+          update_id: 'g1',
+        },
+      ],
+      galleryAlbums: [
+        {
+          name: 'Photos',
+          items: [
+            {
+              url: 'https://example.com/b.jpg',
+              rankScore: 3000,
+              viewerRank: 6000,
+              isAvatar: false,
+              update_id: 'g2',
+            },
+          ],
+        },
+      ],
+    } as ProjectedObjectView;
+
+    expect(projectedPreviewGallery(v)[0]?.viewerRank).toBe(8000);
+    expect(projectedGalleryAlbums(v)[0]?.items[0]?.viewerRank).toBe(6000);
   });
 });

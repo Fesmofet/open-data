@@ -56,6 +56,10 @@ export type ObjectUpdateFeedItemDto = {
   viewer_vote: 'for' | 'against' | null;
   /** Decisive admin/trusted validity vote (LWAW/LWTW); null when curator filter or lower tiers apply. */
   decisive_privileged_vote: DecisivePrivilegedVoteDto | null;
+  /** Persisted decisive rank score (0–10000); null when none. */
+  rank_score: number | null;
+  /** Viewer’s latest rank vote for this update (0–10000); null when not logged in or no vote. */
+  viewer_rank: number | null;
 };
 
 export type ObjectUpdatesFeedResponseDto = {

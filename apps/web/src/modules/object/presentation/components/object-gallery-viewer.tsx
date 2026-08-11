@@ -44,6 +44,7 @@ import type {
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
 import { GalleryImage } from './gallery-image';
+import { GalleryRankTriggerButton } from './gallery-rank-trigger-button';
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
@@ -144,6 +145,7 @@ export function ObjectGalleryViewer({
   const [voteConfirming, setVoteConfirming] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
   const [addAlbumPending, setAddAlbumPending] = useState<string | null>(null);
+  const [rankModalOpen, setRankModalOpen] = useState(false);
   const [addAlbumError, setAddAlbumError] = useState<string | null>(null);
   const [optimisticAlbumAdds, setOptimisticAlbumAdds] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -693,6 +695,19 @@ export function ObjectGalleryViewer({
             variant="gallery"
             layoutClassName="flex flex-wrap gap-3"
           />
+          {currentPhoto?.update_id && !isCurrentPhotoAvatar ? (
+            <GalleryRankTriggerButton
+              variant="gallery"
+              updateId={currentPhoto.update_id}
+              objectId={objectId}
+              rankScore={currentPhoto.rankScore}
+              viewerRank={currentPhoto.viewerRank ?? null}
+              viewerUsername={viewerUsername}
+              onRequireLogin={onRequireLogin}
+              imagePreviewUrl={currentPhoto.url}
+              onOpenChange={setRankModalOpen}
+            />
+          ) : null}
         </div>
         <span>
           {t('object_updates_approval')}{' '}
@@ -721,6 +736,7 @@ export function ObjectGalleryViewer({
         onClose={onClose}
         variant="fullscreen"
         zIndex={MODAL_Z_INDEX_GALLERY}
+        closeOnEscape={!rankModalOpen}
         ariaLabel={t('gallery')}
         panelClassName="gallery-scrim text-fg"
         scrollBody={false}

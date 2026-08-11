@@ -102,6 +102,8 @@ Parallel to validity admin/trusted tiers:
 
 This is **not** “compare rank votes to the update itself”; it is the same style of tiered list as validity (admins/trusted list, then stake-weighted community).
 
+**Web UI:** gallery photo rank uses `imageGalleryItem` (winner mode). See [gallery tab spec](../../apps/web/spec/pages/object/routes/gallery.md). Star ratings use `aggregateRating` (average mode).
+
 ### Average aggregation (`rank_aggregation = average`)
 
 Weighted mean of all rank votes for that `update_id`:

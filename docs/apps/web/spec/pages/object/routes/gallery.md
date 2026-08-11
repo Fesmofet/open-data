@@ -49,6 +49,8 @@ Client navigation uses `buildObjectGalleryPath` / `buildObjectGalleryAlbumPath` 
 | Field | Source | Web mapping |
 |---|---|---|
 | `galleryAlbums` | query-api resolve (`build-gallery-albums.ts`) | `ObjectPageViewModel.galleryAlbums` via `projectedGalleryAlbums()` |
+| `rankScore` | `object_updates.rank_score` on each `imageGalleryItem` | `ProjectedGalleryPhotoView.rankScore` — decisive rank (winner semantics) |
+| `viewerRank` | `rank_votes` for `(update_id, X-Viewer)` | `ProjectedGalleryPhotoView.viewerRank` — viewer’s latest rank vote |
 | Related preview | `GET .../gallery/related/preview` | `relatedAlbumPreview` (SSR when landing on gallery tab; client fetch otherwise) |
 | Related list page | `GET .../gallery/related` | `relatedAlbumInitialPage` (SSR when `gallery_album=Related`; client fetch in `ObjectRelatedAlbumSection`) |
 
@@ -81,6 +83,8 @@ Zod: `projectedObjectViewSchema.galleryAlbums` in `feed-story.dto.ts`; Related r
 
 - Opened from photo grid on object page layer.
 - Related album: `isVirtualRelatedAlbum` — hides vote/add controls; shows post author link.
+- On-chain photos (non-avatar, with `update_id`): footer shows validity vote controls plus **Set gallery rank** button → **`GalleryRankModal`** (slider 0–10000, step **100**, default max; Confirm broadcasts `rank_vote`). Read-only **Current rank** shows decisive `rank_score` (winner semantics, not average). Guests are prompted to sign in on trigger click. While rank modal is open, gallery viewer ignores Escape. See [vote-semantics.md](../../../../../../spec/vote-semantics.md) §B.
+- **`imageGalleryItem` update cards** on the object Updates tab use the same **Set gallery rank** button + modal (including items without image preview URLs).
 
 Wired from `ObjectPrimaryContent` when `activePrimarySegment === 'gallery'`.
 

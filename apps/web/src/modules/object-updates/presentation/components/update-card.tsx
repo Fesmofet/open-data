@@ -27,6 +27,7 @@ import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '../../constants';
 import { UpdateApprovalStatusBlock } from './update-approval-status-block';
 import { UpdateCardValue } from './update-card-value';
 import { UpdateVoteControls } from './update-vote-controls';
+import { GalleryRankTriggerButton } from '@/modules/object/presentation/components/gallery-rank-trigger-button';
 
 const hiveAvatarUrl = (creator: string): string =>
   `https://images.hive.blog/u/${encodeURIComponent(creator)}/avatar`;
@@ -214,6 +215,21 @@ export function UpdateCard({
               />
             </div>
           ))}
+        </div>
+      ) : null}
+
+      {item.update_type === UPDATE_TYPES.IMAGE_GALLERY_ITEM ? (
+        <div className="mt-3">
+          <GalleryRankTriggerButton
+            variant="card"
+            updateId={item.update_id}
+            objectId={item.object_id}
+            rankScore={item.rank_score}
+            viewerRank={item.viewer_rank}
+            viewerUsername={viewerUsername}
+            onRequireLogin={onRequireLogin}
+            imagePreviewUrl={item.image_preview_urls[0]}
+          />
         </div>
       ) : null}
 

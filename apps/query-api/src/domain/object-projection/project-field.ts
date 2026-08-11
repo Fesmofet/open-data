@@ -134,12 +134,29 @@ function resolveDisplayUrlFromImageJson(
   return null;
 }
 
-/** Project gallery item JSON to `{ ...rest, url, rank_score, update_id }` when cid/url present. */
+function resolveViewerRank(
+  viewerAccount: string | null | undefined,
+  rankVoteProjection: RankVoteProjection,
+  updateId: string,
+): number | null {
+  const viewerRankRaw =
+    viewerAccount?.trim()
+      ? rankVoteProjection.viewerRankByUpdateId.get(updateId)
+      : undefined;
+  return viewerRankRaw != null &&
+    typeof viewerRankRaw === 'number' &&
+    Number.isFinite(viewerRankRaw)
+    ? viewerRankRaw
+    : null;
+}
+
+/** Project gallery item JSON to `{ ...rest, url, rank_score, viewer_rank, update_id }` when cid/url present. */
 function projectImageGalleryItemJson(
   value: JsonValue | null,
   contentBaseUrl: string | undefined,
   rankScore: number | null,
   updateId: string,
+  viewerRank: number | null,
 ): JsonValue | null {
   if (value == null || typeof value !== 'object' || Array.isArray(value)) {
     return null;
@@ -150,7 +167,7 @@ function projectImageGalleryItemJson(
   if (url == null || typeof url !== 'string' || url.trim().length === 0) {
     return null;
   }
-  return { ...o, url, rank_score: rankScore, update_id: updateId };
+  return { ...o, url, rank_score: rankScore, viewer_rank: viewerRank, update_id: updateId };
 }
 
 /** Project tag item JSON to `{ ...rest, update_id }` when category and value present. */
@@ -270,6 +287,7 @@ export function projectFieldValue(
               contentBaseUrl,
               coerceRankScore(u.rank_score),
               u.update_id,
+              resolveViewerRank(viewerAccount, rankVoteProjection, u.update_id),
             ),
           )
           .filter((x) => x != null);

@@ -4,6 +4,9 @@ import { sql } from 'kysely';
 import type { ObjectUpdate, ValidityVote } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import { buildRankVoteProjection } from '../domain/object-projection/rank-vote-projection';
+import type { RankVoteProjection } from '../domain/object-projection/projected-object.types';
+import { emptyRankVoteProjection } from '../domain/object-projection/projected-object.types';
 
 const APPROVAL_SORT_MAX_ROWS = 1000;
 
@@ -197,6 +200,41 @@ export class UpdatesFeedRepository {
       this.logger.error((e as Error).message);
     }
     return map;
+  }
+
+  async findRankVoteProjectionForUpdates(
+    objectId: string,
+    updateIds: string[],
+    viewerAccount?: string,
+  ): Promise<RankVoteProjection> {
+    if (updateIds.length === 0) {
+      return emptyRankVoteProjection();
+    }
+    try {
+      const viewer = viewerAccount?.trim();
+      const [voteCounts, viewerRows] = await Promise.all([
+        this.db
+          .selectFrom('rank_votes')
+          .where('object_id', '=', objectId)
+          .where('update_id', 'in', updateIds)
+          .select((eb) => ['update_id', eb.fn.countAll<number>().as('n')])
+          .groupBy('update_id')
+          .execute(),
+        viewer
+          ? this.db
+              .selectFrom('rank_votes')
+              .where('object_id', '=', objectId)
+              .where('update_id', 'in', updateIds)
+              .where('voter', '=', viewer)
+              .select(['update_id', 'rank', 'event_seq'])
+              .execute()
+          : Promise.resolve([]),
+      ]);
+      return buildRankVoteProjection(voteCounts, viewerRows);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return emptyRankVoteProjection();
+    }
   }
 
   private toJoinRow(r: Record<string, unknown>): UpdatesFeedJoinRow {

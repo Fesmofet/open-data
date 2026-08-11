@@ -26,6 +26,8 @@ import type {
   ObjectUpdatesFeedQuery,
   ObjectUpdatesFeedResponseDto,
 } from './schemas/object-updates-feed.schema';
+import type { RankVoteProjection } from '../object-projection/projected-object.types';
+import { emptyRankVoteProjection } from '../object-projection/projected-object.types';
 
 export interface GetObjectUpdatesFeedInput {
   objectId: string;
@@ -171,10 +173,17 @@ export class GetObjectUpdatesFeedEndpoint {
     });
 
     const updateIds = allRows.map((r) => r.row.update_id);
-    const votes = await this.updatesFeedRepo.findValidityVotesForObjectAndUpdates(
-      input.objectId,
-      updateIds,
-    );
+    const [votes, rankVoteProjection] = await Promise.all([
+      this.updatesFeedRepo.findValidityVotesForObjectAndUpdates(
+        input.objectId,
+        updateIds,
+      ),
+      this.updatesFeedRepo.findRankVoteProjectionForUpdates(
+        input.objectId,
+        updateIds,
+        input.viewerAccount,
+      ),
+    ]);
     const voterNames = [...new Set(votes.map((v) => v.voter))];
     const powersMap = await this.updatesFeedRepo.findWaivPowersByAccounts(voterNames);
     const voterWaivPowers: VoterWaivPowerMap = powersMap;
@@ -210,6 +219,7 @@ export class GetObjectUpdatesFeedEndpoint {
         curatorSet,
         voterWaivPowers,
         input.viewerAccount,
+        rankVoteProjection,
       ),
     );
 
@@ -235,7 +245,14 @@ export class GetObjectUpdatesFeedEndpoint {
     if (updateIds.length === 0) {
       return [];
     }
-    const votes = await this.updatesFeedRepo.findValidityVotesForObjectAndUpdates(objectId, updateIds);
+    const [votes, rankVoteProjection] = await Promise.all([
+      this.updatesFeedRepo.findValidityVotesForObjectAndUpdates(objectId, updateIds),
+      this.updatesFeedRepo.findRankVoteProjectionForUpdates(
+        objectId,
+        updateIds,
+        viewerAccount,
+      ),
+    ]);
     const voterNames = [...new Set(votes.map((v) => v.voter))];
     const powersMap = await this.updatesFeedRepo.findWaivPowersByAccounts(voterNames);
     const voterWaivPowers: VoterWaivPowerMap = powersMap;
@@ -251,8 +268,39 @@ export class GetObjectUpdatesFeedEndpoint {
         curatorSet,
         voterWaivPowers,
         viewerAccount,
+        rankVoteProjection,
       ),
     );
+  }
+
+  private coerceRankScore(raw: unknown): number | null {
+    if (raw == null) {
+      return null;
+    }
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+      return raw;
+    }
+    if (typeof raw === 'bigint') {
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : null;
+    }
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      const n = Number(raw.trim());
+      return Number.isFinite(n) ? n : null;
+    }
+    return null;
+  }
+
+  private resolveViewerRank(
+    updateId: string,
+    viewerAccount: string | undefined,
+    rankVoteProjection: RankVoteProjection,
+  ): number | null {
+    if (!viewerAccount?.trim()) {
+      return null;
+    }
+    const raw = rankVoteProjection.viewerRankByUpdateId.get(updateId);
+    return raw != null && typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
   }
 
   private toDto(
@@ -269,6 +317,7 @@ export class GetObjectUpdatesFeedEndpoint {
     curatorSet: Set<string>,
     voterWaivPowers: VoterWaivPowerMap,
     viewerAccount: string | undefined,
+    rankVoteProjection: RankVoteProjection = emptyRankVoteProjection(),
   ): ObjectUpdateFeedItemDto {
     const updateVotes = allVotes.filter((v) => v.update_id === jr.row.update_id);
     let forC = 0;
@@ -335,6 +384,8 @@ export class GetObjectUpdatesFeedEndpoint {
       against_preview_voters: previewValidityVoters(againstVoters.map((entry) => entry.voter)),
       viewer_vote: viewerVote,
       decisive_privileged_vote,
+      rank_score: this.coerceRankScore(jr.row.rank_score),
+      viewer_rank: this.resolveViewerRank(jr.row.update_id, viewerAccount, rankVoteProjection),
     };
   }
 

@@ -192,6 +192,7 @@ Wrap remote UGC URLs at **display time** only — never in query-api payloads or
 | Feed previews → `getImagePathPost` from `@/shared/presentation` | Pass raw query-api / on-chain URLs to `next/image` for legacy hosts (`ipfs.busy.org`, broken Hive resize URLs) |
 | Object avatars → **`ObjectThumbnail`** | Ad-hoc `Image src={fields.image}` on object surfaces |
 | Object gallery → **`GalleryImage`** (proxy → raw → preview fallback; always `unoptimized`) | Duplicate proxy in carousel / tab / viewer callers |
+| Gallery rank vote → **`GalleryRankTriggerButton`** + **`GalleryRankModal`** (`AppModal` above gallery z-index; slider + Confirm, not inline in footer/cards) | Inline rank slider in gallery footer or update cards; reuse **`StarRating`** for gallery priority rank |
 | Post/comment HTML → **`sanitizePostBodyHtml`** | Reimplement Hive `0x0` / base58 preview logic in feature modules |
 | URL matching (lightbox, approval stats) → compare **canonical raw URLs**; use **`stripHiveImageProxyPrefix`** when matching DOM `currentSrc` | Compare proxied DOM URLs to raw album URLs verbatim |
 | Pair **`shouldUnoptimizeRemoteImage`** with **`unoptimized`** on `next/image` where needed | Assume the Next.js optimizer fixes dead hosts without proxy |

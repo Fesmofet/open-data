@@ -33,6 +33,8 @@ export const objectUpdateFeedItemDtoSchema = z.object({
   against_preview_voters: z.array(z.string()).default([]),
   viewer_vote: z.enum(['for', 'against']).nullable(),
   decisive_privileged_vote: decisivePrivilegedVoteSchema.nullable().default(null),
+  rank_score: num().nullable().default(null),
+  viewer_rank: num().nullable().default(null),
 });
 
 export const objectUpdatesFeedResponseSchema = z.object({
