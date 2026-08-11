@@ -1,3 +1,4 @@
+export { SignInCard } from './components/sign-in-card';
 export { LoginDialog } from './components/login-dialog';
 export type { LoginDialogProps } from './components/login-dialog';
 export {

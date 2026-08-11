@@ -3,7 +3,10 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
-import { UserAvatar } from '@/shared/presentation';
+import { useI18n } from '@/i18n/providers/i18n-provider';
+import { AppLoader, UserAvatar } from '@/shared/presentation';
+
+import { ChevronDownIcon } from './auth-login-icons';
 
 import {
   clearAccountHistory,
@@ -65,7 +68,9 @@ function HivesignerProviderRow({ provider }: HivesignerProviderRowProps) {
         <ProviderIcon src={provider.iconSrc} alt="" />
         <span className="font-label">{provider.displayName}</span>
         {hivesigner.pending ? (
-          <span className="ml-auto text-caption text-fg-secondary">…</span>
+          <span className="ml-auto">
+            <AppLoader size="sm" layout="inline" />
+          </span>
         ) : null}
       </button>
       {hivesigner.error ? (
@@ -90,6 +95,7 @@ function KeychainProviderRow({
   onExpand,
   onLoginSuccess,
 }: KeychainProviderRowProps) {
+  const { t } = useI18n();
   const inputId = useId();
   const rowRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +157,7 @@ function KeychainProviderRow({
         <div className="flex items-center gap-3 rounded-btn border border-border-strong bg-surface px-3 py-2">
           <ProviderIcon src={provider.iconSrc} alt="" />
           <span className="font-label text-fg">{provider.displayName}</span>
+          <ChevronDownIcon className="ml-auto shrink-0 rotate-180 text-fg-secondary" />
         </div>
         {keychain.hasDeepLink ? (
           <KeychainHasLoginPanel
@@ -161,9 +168,9 @@ function KeychainProviderRow({
             onCancel={keychain.cancelHas}
           />
         ) : (
-          <p className="mt-3 text-body-sm text-fg-secondary" role="status">
-            …
-          </p>
+          <div className="mt-3 flex justify-center" role="status">
+            <AppLoader size="sm" layout="inline" />
+          </div>
         )}
       </div>
     );
@@ -178,6 +185,7 @@ function KeychainProviderRow({
       >
         <ProviderIcon src={provider.iconSrc} alt="" />
         <span className="font-label">{provider.displayName}</span>
+        <ChevronDownIcon className="ml-auto shrink-0 text-fg-secondary" />
       </button>
     );
   }
@@ -190,7 +198,7 @@ function KeychainProviderRow({
       >
         <ProviderIcon src={provider.iconSrc} alt="" />
         <label htmlFor={inputId} className="sr-only">
-          Hive username
+          {t('auth_keychain_username_label')}
         </label>
         <input
           ref={inputRef}
@@ -204,7 +212,7 @@ function KeychainProviderRow({
               setHistoryOpen(true);
             }
           }}
-          placeholder="Enter username"
+          placeholder={t('auth_keychain_username_placeholder')}
           autoComplete="username"
           disabled={keychain.pending}
         />
@@ -213,8 +221,9 @@ function KeychainProviderRow({
           disabled={keychain.pending || !username.trim()}
           className="shrink-0 rounded-btn bg-accent px-4 py-2 font-label text-accent-fg hover:bg-accent-hover disabled:opacity-50"
         >
-          {keychain.pending ? 'Signing…' : 'Sign in'}
+          {keychain.pending ? t('auth_keychain_signing') : t('auth_keychain_sign_in')}
         </button>
+        <ChevronDownIcon className="shrink-0 rotate-180 text-fg-secondary" aria-hidden />
       </form>
 
       {historyOpen && history.length > 0 ? (
@@ -243,7 +252,7 @@ function KeychainProviderRow({
               onMouseDown={(e) => e.preventDefault()}
               onClick={handleClearHistory}
             >
-              Clear history
+              {t('auth_keychain_clear_history')}
             </button>
           </li>
         </ul>

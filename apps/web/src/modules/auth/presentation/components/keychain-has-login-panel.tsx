@@ -1,10 +1,19 @@
 'use client';
 
 import QRCode from 'qrcode';
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { AppLoader } from '@/shared/presentation/components/app-loader';
+
 import { isMobileBrowser } from '../../domain/device/is-mobile-browser';
+import {
+  ExternalLinkIcon,
+  InfoCircleIcon,
+  QrScanIcon,
+  SmartphoneIcon,
+} from './auth-login-icons';
 
 export type KeychainHasLoginPanelProps = {
   deepLink: string;
@@ -13,6 +22,79 @@ export type KeychainHasLoginPanelProps = {
   error: string | null;
   onCancel: () => void;
 };
+
+function InstructionCallout() {
+  const { t } = useI18n();
+
+  return (
+    <div
+      className="flex gap-2.5 rounded-card border border-border bg-surface-control px-3 py-2.5"
+      role="note"
+    >
+      <InfoCircleIcon className="mt-0.5 shrink-0 text-fg-secondary" />
+      <p className="text-body-sm text-fg-secondary">
+        {t('auth_keychain_has_instruction_prefix')}{' '}
+        <span className="font-label font-weight-strong text-fg">
+          {t('auth_keychain_has_instruction_posting')}
+        </span>{' '}
+        and{' '}
+        <span className="font-label font-weight-strong text-fg">
+          {t('auth_keychain_has_instruction_active')}
+        </span>{' '}
+        {t('auth_keychain_has_instruction_suffix')}
+      </p>
+    </div>
+  );
+}
+
+type StepRowProps = {
+  step: number;
+  icon: ReactNode;
+  children: ReactNode;
+};
+
+function StepRow({ step, icon, children }: StepRowProps) {
+  return (
+    <li className="flex gap-3">
+      <span
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-circle bg-surface-control text-caption font-label text-accent"
+        aria-hidden
+      >
+        {step}
+      </span>
+      <span className="mt-0.5 shrink-0 text-fg-secondary">{icon}</span>
+      <p className="text-body-sm text-fg-secondary">{children}</p>
+    </li>
+  );
+}
+
+type StepTextProps = {
+  emphasisKey: string;
+  restKey: string;
+};
+
+function StepText({ emphasisKey, restKey }: StepTextProps) {
+  const { t } = useI18n();
+
+  return (
+    <>
+      <span className="font-label font-weight-strong text-fg">{t(emphasisKey)}</span>
+      {t(restKey)}
+    </>
+  );
+}
+
+function OrDivider() {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex w-full items-center gap-3">
+      <span className="h-px flex-1 bg-border" aria-hidden />
+      <span className="text-caption text-fg-secondary">{t('auth_keychain_has_or')}</span>
+      <span className="h-px flex-1 bg-border" aria-hidden />
+    </div>
+  );
+}
 
 export function KeychainHasLoginPanel({
   deepLink,
@@ -50,15 +132,28 @@ export function KeychainHasLoginPanel({
   const expired =
     expiresAtMs != null && expiresAtMs <= Date.now() && !pending;
 
-  return (
-    <div className="mt-3 flex flex-col gap-3">
-      <div className="rounded-card border border-border bg-surface-muted px-3 py-2 text-body-sm text-fg-secondary">
-        {t('auth_keychain_has_instruction')}
-      </div>
+  const stepTwoEmphasisKey = isMobile
+    ? 'auth_keychain_has_step_mobile_emphasis'
+    : 'auth_keychain_has_step_scan_emphasis';
+  const stepTwoRestKey = isMobile
+    ? 'auth_keychain_has_step_mobile_rest'
+    : 'auth_keychain_has_step_scan_rest';
 
-      <p className="text-body-sm text-fg-secondary">
-        {isMobile ? t('auth_keychain_has_mobile_hint') : t('auth_keychain_has_qr_hint')}
-      </p>
+  return (
+    <div className="mt-3 flex flex-col gap-4">
+      <InstructionCallout />
+
+      <ol className="flex list-none flex-col gap-3 p-0">
+        <StepRow step={1} icon={<SmartphoneIcon className="block" />}>
+          <StepText
+            emphasisKey="auth_keychain_has_step_open_emphasis"
+            restKey="auth_keychain_has_step_open_rest"
+          />
+        </StepRow>
+        <StepRow step={2} icon={<QrScanIcon className="block" />}>
+          <StepText emphasisKey={stepTwoEmphasisKey} restKey={stepTwoRestKey} />
+        </StepRow>
+      </ol>
 
       <div className="flex flex-col items-center gap-3">
         {qrDataUrl ? (
@@ -79,29 +174,32 @@ export function KeychainHasLoginPanel({
           </button>
         ) : (
           <div
-            className="flex h-[220px] w-[220px] items-center justify-center rounded-card border border-border bg-surface-muted text-caption text-fg-secondary"
+            className="flex h-[220px] w-[220px] items-center justify-center rounded-card border border-border bg-surface-control"
             aria-hidden
           >
-            …
+            <AppLoader size="sm" layout="inline" />
           </div>
         )}
 
-        <p className="text-body-sm text-fg-secondary">
-          {t('auth_keychain_has_or')}{' '}
-          <button
-            type="button"
-            onClick={openDeepLink}
-            className="font-label text-link hover:underline"
-          >
-            {t('auth_keychain_has_click_here')}
-          </button>
-        </p>
+        <OrDivider />
+
+        <button
+          type="button"
+          onClick={openDeepLink}
+          className="flex w-full items-center justify-center gap-2 rounded-btn border border-accent bg-surface px-4 py-2.5 font-label text-accent transition-colors hover:bg-ghost-surface"
+        >
+          <ExternalLinkIcon className="shrink-0" />
+          {t('auth_keychain_has_click_here')}
+        </button>
       </div>
 
       {pending ? (
-        <p className="text-body-sm text-fg-secondary" role="status">
-          {t('auth_keychain_has_waiting')}
-        </p>
+        <AppLoader
+          size="sm"
+          layout="inline"
+          label={t('auth_keychain_has_waiting')}
+          className="justify-center"
+        />
       ) : null}
 
       {expired ? (

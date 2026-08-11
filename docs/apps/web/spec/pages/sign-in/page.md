@@ -29,8 +29,9 @@ Public login wall at `/sign-in` for unauthenticated visitors (e.g. after proxy r
 
 ## UI
 
-- Centered card with heading and `LoginWall` from `@/modules/auth`.
-- Wallet providers (Keychain, HiveSigner, HiveAuth) — see [auth.md](../../auth.md).
+- Centered card with **`SignInCard`**: title “Sign in”, subtitle “Sign in with your Hive account to continue.”, and `LoginWall` (`ProviderList`) from `@/modules/auth`.
+- **Hive Keychain (HAS path):** after username submit, `KeychainHasLoginPanel` shows an info callout (Posting + Active keys), numbered steps with inline SVG icons, QR code, an “or” divider, **Open in Hive Keychain** outline button, `AppLoader` while waiting for approval, and Cancel.
+- Wallet providers (Keychain, HiveSigner) — see [auth.md](../../auth.md).
 - If the visitor already has a valid session, the page server-redirects to `/`.
 
 ## Post-login navigation
