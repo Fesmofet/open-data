@@ -30,6 +30,16 @@ describe('vestToHp', () => {
     ).toBeCloseTo(0.00304, 4);
   });
 
+  it('parses condenser_api integer asset amounts (precision 6)', () => {
+    expect(
+      vestToHp(
+        3071869229505,
+        '346148705781.795308 VESTS',
+        '214342273.141 HIVE',
+      ),
+    ).toBeCloseTo(1902.163, 2);
+  });
+
   it('returns 0 for invalid input', () => {
     expect(vestToHp('x', '0', '1')).toBe(0);
   });

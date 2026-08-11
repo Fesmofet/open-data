@@ -23,6 +23,8 @@ export const waivWalletApiResponseSchema = z.object({
   powerDown: z
     .object({
       nextUnstakeAt: z.number().nullable(),
+      weeksRemaining: z.number().optional().default(4),
+      weeksTotal: z.number().optional().default(4),
     })
     .optional(),
   rates: z.object({

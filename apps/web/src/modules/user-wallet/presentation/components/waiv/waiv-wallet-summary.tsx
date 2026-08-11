@@ -12,6 +12,7 @@ import {
 } from '../../../domain/engine-token-amount';
 import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
 import type { WalletMainAsset } from '../../../domain/wallet-modal-types';
+import { getWalletPowerDownWeeks, computeWeeklyPowerDownUnlock } from '../../../domain/wallet-power-schedule';
 import { WAIV_WITHDRAW_OUTPUT_SYMBOLS } from '../../../domain/waiv-withdraw-outputs';
 import { useWalletModal } from '../wallet/wallet-modal-context';
 import { WalletDelegationsListModal } from '../wallet/wallet-delegations-list-modal';
@@ -51,6 +52,23 @@ export function WaivWalletSummary({
       date: powerDownTooltipDate,
     });
   }, [powerDownTooltipDate, t]);
+
+  const powerDownWeeklyAmount = useMemo(() => {
+    const pending = Number.parseFloat(summary.balance.pendingUnstake);
+    const weeksRemaining = summary.powerDown?.weeksRemaining;
+    if (
+      !Number.isFinite(pending) ||
+      pending <= 0 ||
+      weeksRemaining === undefined ||
+      weeksRemaining <= 0
+    ) {
+      return formatEngineTokenAmountDisplay(summary.balance.pendingUnstake);
+    }
+    return (
+      computeWeeklyPowerDownUnlock(pending, weeksRemaining) ??
+      formatEngineTokenAmountDisplay(summary.balance.pendingUnstake)
+    );
+  }, [summary.balance.pendingUnstake, summary.powerDown?.weeksRemaining]);
 
   const actions = canManageWallet
     ? {
@@ -199,10 +217,11 @@ export function WaivWalletSummary({
           open={powerDownProgressOpen}
           onClose={() => setPowerDownProgressOpen(false)}
           title={t('power_down')}
-          amount={formatEngineTokenAmountDisplay(summary.balance.pendingUnstake)}
+          amount={powerDownWeeklyAmount}
           symbol="WP"
           nextDateLabel={powerDownTooltipDate}
-          weeksTotal={4}
+          weeksRemaining={summary.powerDown?.weeksRemaining}
+          weeksTotal={summary.powerDown?.weeksTotal ?? getWalletPowerDownWeeks('WAIV')}
         />
       ) : null}
       <WalletDelegationsListModal

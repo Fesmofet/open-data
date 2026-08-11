@@ -83,13 +83,15 @@ describe('GetUserWaivWalletEndpoint', () => {
     } as never);
     currencyQuery.engineLatestStored.mockResolvedValue({ HIVE: 1, USD: 1 });
     hiveEngine.findTokenPendingUnstakesStrict.mockResolvedValue([
-      { nextTransactionTimestamp: 2_000 } as never,
-      { nextTransactionTimestamp: 1_000 } as never,
+      { nextTransactionTimestamp: 2_000, numberTransactionsLeft: 2 } as never,
+      { nextTransactionTimestamp: 1_000, numberTransactionsLeft: 3 } as never,
     ]);
 
     const result = await endpoint.execute('alice');
     expect(hiveEngine.findTokenPendingUnstakesStrict).toHaveBeenCalled();
     expect(result?.powerDown?.nextUnstakeAt).toBe(1_000);
+    expect(result?.powerDown?.weeksRemaining).toBe(3);
+    expect(result?.powerDown?.weeksTotal).toBe(4);
   });
 
   it('throws ServiceUnavailableException when Hive Engine is unavailable', async () => {

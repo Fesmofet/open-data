@@ -40,6 +40,7 @@ export class GetUserWaivWalletEndpoint {
       };
 
       let nextUnstakeAt: number | null = null;
+      let numberTransactionsLeft: number | null = null;
       const pendingUnstake = Number.parseFloat(balance.pendingUnstake);
       if (Number.isFinite(pendingUnstake) && pendingUnstake > 0) {
         const pendingRows = await this.hiveEngine.findTokenPendingUnstakesStrict({
@@ -51,9 +52,19 @@ export class GetUserWaivWalletEndpoint {
           .filter((ts) => typeof ts === 'number' && ts > 0);
         nextUnstakeAt =
           timestamps.length > 0 ? Math.min(...timestamps) : null;
+        const transactionsLeft = pendingRows
+          .map((row) => row.numberTransactionsLeft)
+          .filter((count) => typeof count === 'number' && count >= 0);
+        numberTransactionsLeft =
+          transactionsLeft.length > 0 ? Math.max(...transactionsLeft) : null;
       }
 
-      const summary = buildWaivWalletSummary(balance, rates, nextUnstakeAt);
+      const summary = buildWaivWalletSummary(
+        balance,
+        rates,
+        nextUnstakeAt,
+        numberTransactionsLeft,
+      );
 
       return {
         account: profileAccountName,

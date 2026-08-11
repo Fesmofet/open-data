@@ -5,7 +5,7 @@ import { useId } from 'react';
 import { buildCancelPowerDownOp } from '@opden-data-layer/hive-broadcast';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AppModal, AppModalCloseButton } from '@/shared/presentation';
+import { AppModal, AppModalCloseButton } from '@/shared/presentation/components/app-modal';
 
 import type { WalletCancelPowerDownModalState } from '../../../domain/wallet-modal-types';
 import { useEngineTokenBroadcast } from '../../hooks/use-engine-token-broadcast';
@@ -48,16 +48,20 @@ export function WalletCancelPowerDownModal({
     }
   };
 
+  const isHive = state.asset === 'HIVE';
+
   return (
     <AppModal open={open} onClose={onClose} labelledBy={titleId}>
       <div className="p-card-padding">
         <div className="mb-4 flex items-start justify-between gap-3">
           <h2 id={titleId} className="text-section font-weight-strong text-fg">
-            {t('power_down')}
+            {isHive ? t('cancel_power_down') : t('power_down')}
           </h2>
           <AppModalCloseButton onClose={onClose} />
         </div>
-        <p className="text-body-sm text-muted">{t('cancel_power_down_confirm')}</p>
+        <p className="text-body-sm text-muted">
+          {isHive ? t('cancel_power_down_body') : t('cancel_power_down_confirm')}
+        </p>
         {error ? (
           <p className="mt-3 text-body-sm text-error" role="alert">
             {t(engineTokenBroadcastErrorMessageKey(error))}
@@ -69,7 +73,7 @@ export function WalletCancelPowerDownModal({
           disabled={pending}
           onClick={() => void onSubmit()}
         >
-          {pending ? '…' : state.asset === 'HIVE' ? t('cancel') : t('confirm')}
+          {pending ? '…' : isHive ? t('cancel_power_down') : t('confirm')}
         </button>
       </div>
     </AppModal>

@@ -1,5 +1,6 @@
 import {
   buildHiveWalletSummary,
+  calculateHivePowerDownWeeksRemainingFromVests,
   canClaimHbdInterest,
   estimateHbdInterestBalance,
   mapHiveAccountToBalanceFields,
@@ -94,17 +95,14 @@ describe('buildHiveWalletSummary', () => {
   });
 
   it('shows power down row when to_withdraw is non-zero', () => {
-    const balance = mapHiveAccountToBalanceFields(
-      {
-        balance: '1 HIVE',
-        vesting_shares: '1000000 VESTS',
-        to_withdraw: '500000 VESTS',
-        vesting_withdraw_rate: '100000 VESTS',
-        next_vesting_withdrawal: '2026-06-26T15:10:00',
-      },
-      CHAIN,
-      '1000',
-    );
+    const account = {
+      balance: '1 HIVE',
+      vesting_shares: '1000000 VESTS',
+      to_withdraw: '500000 VESTS',
+      vesting_withdraw_rate: '100000 VESTS',
+      next_vesting_withdrawal: '2026-06-26T15:10:00',
+    };
+    const balance = mapHiveAccountToBalanceFields(account, CHAIN, '1000');
 
     const summary = buildHiveWalletSummary(
       balance,
@@ -115,12 +113,89 @@ describe('buildHiveWalletSummary', () => {
         nextVestingWithdrawal: '2026-06-26T15:10:00',
         pendingSavingsWithdrawals: [],
         pendingRewards: EMPTY_PENDING_REWARDS,
+        toWithdrawVests: account.to_withdraw,
+        vestingWithdrawRateVests: account.vesting_withdraw_rate,
       },
     );
 
     expect(summary.flags.showPowerDownRow).toBe(true);
     expect(summary.powerDown?.nextVestingWithdrawal).toBe('2026-06-26T15:10:00');
-    expect(summary.powerDown?.weeksRemaining).toBeGreaterThan(0);
+    expect(summary.powerDown?.weeksRemaining).toBe(5);
+  });
+
+  it('computes power down weeks from VESTS ratio and sensible HP display values', () => {
+    const account = {
+      balance: '1 HIVE',
+      vesting_shares: '1000000 VESTS',
+      to_withdraw: '1300000 VESTS',
+      vesting_withdraw_rate: '100000 VESTS',
+      next_vesting_withdrawal: '2026-08-04T09:03:00',
+    };
+    const balance = mapHiveAccountToBalanceFields(account, CHAIN, '1000');
+
+    const summary = buildHiveWalletSummary(
+      balance,
+      { hiveUsd: 1, hbdUsd: 1 },
+      {
+        canClaimInterest: false,
+        daysUntilInterestClaim: 0,
+        nextVestingWithdrawal: account.next_vesting_withdrawal,
+        pendingSavingsWithdrawals: [],
+        pendingRewards: EMPTY_PENDING_REWARDS,
+        toWithdrawVests: account.to_withdraw,
+        vestingWithdrawRateVests: account.vesting_withdraw_rate,
+      },
+    );
+
+    expect(calculateHivePowerDownWeeksRemainingFromVests(
+      account.to_withdraw,
+      account.vesting_withdraw_rate,
+    )).toBe(13);
+    expect(summary.powerDown?.weeksRemaining).toBe(13);
+    expect(summary.powerDown?.weeksTotal).toBe(13);
+    expect(summary.powerDown?.toWithdrawHp).toBe('650,000');
+    expect(summary.powerDown?.vestingWithdrawRateHp).toBe('50,000');
+  });
+
+  it('parses numeric to_withdraw from condenser_api and matches legacy weeks remaining', () => {
+    const chain = {
+      totalVestingShares: '346148705781.795308 VESTS',
+      totalVestingFundSteem: '214342273.141 HIVE',
+      hbdInterestRatePercent: 20,
+    };
+    const account = {
+      balance: '1 HIVE',
+      vesting_shares: '1000000 VESTS',
+      to_withdraw: 3071869229505,
+      vesting_withdraw_rate: '236297.633039 VESTS',
+      next_vesting_withdrawal: '2026-08-11T12:03:33',
+    };
+    const balance = mapHiveAccountToBalanceFields(account, chain, '1000');
+
+    const summary = buildHiveWalletSummary(
+      balance,
+      { hiveUsd: 1, hbdUsd: 1 },
+      {
+        canClaimInterest: false,
+        daysUntilInterestClaim: 0,
+        nextVestingWithdrawal: account.next_vesting_withdrawal,
+        pendingSavingsWithdrawals: [],
+        pendingRewards: EMPTY_PENDING_REWARDS,
+        toWithdrawVests: account.to_withdraw,
+        vestingWithdrawRateVests: account.vesting_withdraw_rate,
+      },
+    );
+
+    expect(summary.powerDown?.weeksRemaining).toBe(12);
+    expect(summary.powerDown?.weeksTotal).toBe(13);
+    expect(Number.parseFloat(summary.powerDown?.toWithdrawHp.replace(/,/g, '') ?? '0')).toBeCloseTo(
+      1902.163,
+      2,
+    );
+    expect(Number.parseFloat(summary.powerDown?.vestingWithdrawRateHp.replace(/,/g, '') ?? '0')).toBeCloseTo(
+      146.32,
+      1,
+    );
   });
 
   it('formats RC when max_rc is numeric from rc_api', () => {

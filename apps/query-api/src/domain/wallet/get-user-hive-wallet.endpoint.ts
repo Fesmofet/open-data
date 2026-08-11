@@ -102,6 +102,8 @@ export class GetUserHiveWalletEndpoint {
           pendingSavingsWithdrawals,
           pendingRewards: mapPendingRewards(hiveAccount),
           rc: rcSnapshot,
+          toWithdrawVests: hiveAccount.to_withdraw,
+          vestingWithdrawRateVests: hiveAccount.vesting_withdraw_rate,
         },
       );
 

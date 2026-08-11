@@ -1,4 +1,4 @@
-import { vestToHp } from '@opden-data-layer/core';
+import { parseHiveVestsAmount, vestToHp } from '@opden-data-layer/core';
 
 const ZERO = '0';
 const SECONDS_PER_YEAR = 31_536_000;
@@ -42,8 +42,8 @@ export type HiveWalletAccountInput = {
   savings_hbd_seconds?: string;
   savings_hbd_seconds_last_update?: string;
   savings_hbd_last_interest_payment?: string;
-  to_withdraw?: string;
-  vesting_withdraw_rate?: string;
+  to_withdraw?: string | number;
+  vesting_withdraw_rate?: string | number;
   next_vesting_withdrawal?: string;
   reward_hive_balance?: string;
   reward_hbd_balance?: string;
@@ -154,6 +154,20 @@ export function calculateHivePowerDownWeeksRemaining(
     return 0;
   }
   return Math.ceil(toWithdrawHp / vestingWithdrawRateHp);
+}
+
+/** Weeks remaining from raw chain VESTS fields (independent of HP conversion). */
+export function calculateHivePowerDownWeeksRemainingFromVests(
+  toWithdraw: string | number | undefined,
+  vestingWithdrawRate: string | number | undefined,
+): number {
+  const toWithdrawVests = parseHiveVestsAmount(toWithdraw ?? '0 VESTS');
+  const rateVests = parseHiveVestsAmount(vestingWithdrawRate ?? '0 VESTS');
+  if (rateVests <= 0 || toWithdrawVests <= 0) {
+    return 0;
+  }
+  const weeks = Math.floor(toWithdrawVests / rateVests);
+  return Math.min(HIVE_POWER_DOWN_WEEKS_TOTAL, Math.max(0, weeks));
 }
 
 export function calculateSavingsWithdrawDaysRemaining(
@@ -338,6 +352,8 @@ export function buildHiveWalletSummary(
     pendingSavingsWithdrawals: HivePendingSavingsWithdrawal[];
     pendingRewards: HivePendingRewards;
     rc?: HiveRcSnapshot;
+    toWithdrawVests?: string | number;
+    vestingWithdrawRateVests?: string | number;
   },
 ) {
   const liquidHive = parseAssetNumber(balance.liquidHive);
@@ -370,7 +386,10 @@ export function buildHiveWalletSummary(
     ? rc.receivedDelegatedRc !== 0 || rc.delegatedRc !== 0
     : false;
   const powerDownWeeksRemaining = showPowerDownRow
-    ? calculateHivePowerDownWeeksRemaining(toWithdrawHp, vestingWithdrawRateHp)
+    ? calculateHivePowerDownWeeksRemainingFromVests(
+        options.toWithdrawVests,
+        options.vestingWithdrawRateVests,
+      )
     : 0;
 
   return {

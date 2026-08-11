@@ -1,6 +1,7 @@
 import type { HiveEngineTokenBalance } from '@opden-data-layer/clients';
 
 const ZERO = '0';
+export const WAIV_POWER_DOWN_WEEKS_TOTAL = 4;
 
 export type WaivWalletRates = {
   waivHive: number;
@@ -66,10 +67,27 @@ export function mapTokenBalanceRow(
   };
 }
 
+export function calculateWaivPowerDownWeeksRemaining(
+  numberTransactionsLeft: number | null | undefined,
+): number {
+  if (
+    numberTransactionsLeft === null ||
+    numberTransactionsLeft === undefined ||
+    !Number.isFinite(numberTransactionsLeft)
+  ) {
+    return WAIV_POWER_DOWN_WEEKS_TOTAL;
+  }
+  return Math.min(
+    WAIV_POWER_DOWN_WEEKS_TOTAL,
+    Math.max(0, Math.trunc(numberTransactionsLeft)),
+  );
+}
+
 export function buildWaivWalletSummary(
   balance: WaivWalletBalanceFields,
   rates: WaivWalletRates,
   nextUnstakeAt: number | null,
+  numberTransactionsLeft: number | null = null,
 ) {
   const liquid = parseAmount(balance.liquid);
   const stake = parseAmount(balance.stake);
@@ -104,7 +122,11 @@ export function buildWaivWalletSummary(
       showPowerDownRow,
     },
     powerDown: showPowerDownRow
-      ? { nextUnstakeAt }
+      ? {
+          nextUnstakeAt,
+          weeksRemaining: calculateWaivPowerDownWeeksRemaining(numberTransactionsLeft),
+          weeksTotal: WAIV_POWER_DOWN_WEEKS_TOTAL,
+        }
       : undefined,
   };
 }

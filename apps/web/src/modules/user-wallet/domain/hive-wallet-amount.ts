@@ -115,6 +115,15 @@ export function vestingSharesToHp(
   return vestToHp(vestingShares, totalVestingShares, totalVestingFundSteem);
 }
 
+export function resolvePowerDownProgress(
+  weeksRemaining: number,
+  weeksTotal: number,
+): { remaining: number; completed: number; total: number } {
+  const remaining = Math.min(weeksTotal, Math.max(0, weeksRemaining));
+  const completed = Math.max(0, weeksTotal - remaining);
+  return { remaining, completed, total: weeksTotal };
+}
+
 export function formatHiveNextPowerDownDate(
   nextVestingWithdrawal: string | null | undefined,
   locale: string,

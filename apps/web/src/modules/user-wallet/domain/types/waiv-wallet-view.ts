@@ -20,6 +20,8 @@ export type WaivWalletSummaryView = {
   };
   powerDown?: {
     nextUnstakeAt: number | null;
+    weeksRemaining: number;
+    weeksTotal: number;
   };
   rates: {
     waivHive: number;

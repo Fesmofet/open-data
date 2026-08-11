@@ -191,7 +191,7 @@ export function HiveWalletSummary({
             locale,
             t('next_power_down'),
           )}
-          amount={summary.powerDown?.toWithdrawHp ?? '0'}
+          amount={summary.powerDown?.vestingWithdrawRateHp ?? '0'}
           amountSuffix="HP"
           amountOnClick={() => setPowerDownProgressOpen(true)}
           amountTooltip={powerDownTooltip}
@@ -439,7 +439,7 @@ export function HiveWalletSummary({
           open={powerDownProgressOpen}
           onClose={() => setPowerDownProgressOpen(false)}
           title={t('power_down')}
-          amount={summary.powerDown.toWithdrawHp}
+          amount={summary.powerDown.vestingWithdrawRateHp}
           symbol="HP"
           nextDateLabel={powerDownNextLabel}
           weeksRemaining={summary.powerDown.weeksRemaining}

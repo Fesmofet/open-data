@@ -35,10 +35,32 @@ describe('buildWaivWalletSummary', () => {
       },
       { waivHive: 1, waivUsd: 1 },
       1_700_000_000_000,
+      3,
     );
 
     expect(result.flags.showPowerDownRow).toBe(true);
     expect(result.powerDown?.nextUnstakeAt).toBe(1_700_000_000_000);
+    expect(result.powerDown?.weeksRemaining).toBe(3);
+    expect(result.powerDown?.weeksTotal).toBe(4);
+  });
+
+  it('defaults power down weeks remaining to total when transactions left is unknown', () => {
+    const result = buildWaivWalletSummary(
+      {
+        liquid: '0',
+        stake: '5',
+        delegationsIn: '0',
+        delegationsOut: '0',
+        pendingUnstake: '2',
+        pendingUndelegations: '0',
+      },
+      { waivHive: 1, waivUsd: 1 },
+      1_700_000_000_000,
+      null,
+    );
+
+    expect(result.powerDown?.weeksRemaining).toBe(4);
+    expect(result.powerDown?.weeksTotal).toBe(4);
   });
 
   it('omits powerDown when showPowerDownRow is false', () => {

@@ -1,4 +1,10 @@
-import { parseHiveAmount, hpToVestingShares, estimateHiveUsdValue, truncateHiveAmountForInput } from './hive-wallet-amount';
+import {
+  parseHiveAmount,
+  hpToVestingShares,
+  estimateHiveUsdValue,
+  truncateHiveAmountForInput,
+  resolvePowerDownProgress,
+} from './hive-wallet-amount';
 
 describe('hive-wallet-amount', () => {
   it('parses positive amounts', () => {
@@ -31,5 +37,31 @@ describe('hive-wallet-amount', () => {
     expect(truncateHiveAmountForInput('23.23907190900226')).toBe('23.239');
     expect(truncateHiveAmountForInput('100.5')).toBe('100.5');
     expect(truncateHiveAmountForInput('100')).toBe('100');
+  });
+});
+
+describe('resolvePowerDownProgress', () => {
+  it('clamps remaining weeks to total', () => {
+    expect(resolvePowerDownProgress(13, 13)).toEqual({
+      remaining: 13,
+      completed: 0,
+      total: 13,
+    });
+  });
+
+  it('caps inflated remaining weeks at total', () => {
+    expect(resolvePowerDownProgress(13_000_000, 13)).toEqual({
+      remaining: 13,
+      completed: 0,
+      total: 13,
+    });
+  });
+
+  it('computes completed weeks when partially done', () => {
+    expect(resolvePowerDownProgress(10, 13)).toEqual({
+      remaining: 10,
+      completed: 3,
+      total: 13,
+    });
   });
 });
