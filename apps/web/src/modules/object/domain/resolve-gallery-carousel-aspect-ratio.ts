@@ -1,22 +1,31 @@
-const PORTRAIT_FRAME_ASPECT = 3 / 4;
 const MAX_LANDSCAPE_FRAME_ASPECT = 16 / 9;
 
-/** Portrait keeps legacy 3:4 crop; square/landscape use natural ratio (capped). */
-export function resolveGalleryCarouselAspectRatio(
+/** Neutral square placeholder while natural dimensions are loading (avoids letterbox flash). */
+export const CONTENT_IMAGE_SKELETON_FRAME_ASPECT = 1;
+
+/** Typical book cover ratio — used only when dimensions are invalid. */
+export const CONTENT_IMAGE_DEFAULT_FRAME_ASPECT = 2 / 3;
+
+/** @deprecated Use `CONTENT_IMAGE_DEFAULT_FRAME_ASPECT`. */
+export const GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT = CONTENT_IMAGE_DEFAULT_FRAME_ASPECT;
+
+/** @deprecated Portrait frames now use natural ratio; kept for callers that referenced 3:4. */
+export const GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT = 3 / 4;
+
+/** Natural aspect for showcase/content frames; landscape capped at 16:9. */
+export function resolveContentImageFrameAspect(
   naturalWidth: number,
   naturalHeight: number,
 ): number {
   if (naturalWidth <= 0 || naturalHeight <= 0) {
-    return PORTRAIT_FRAME_ASPECT;
+    return CONTENT_IMAGE_DEFAULT_FRAME_ASPECT;
   }
   const ratio = naturalWidth / naturalHeight;
   if (ratio >= 1) {
     return Math.min(MAX_LANDSCAPE_FRAME_ASPECT, ratio);
   }
-  return PORTRAIT_FRAME_ASPECT;
+  return ratio;
 }
 
-export const GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT = PORTRAIT_FRAME_ASPECT;
-
-/** Initial left-rail frame before natural dimensions are known (product previews are typically square). */
-export const GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT = 1;
+/** @deprecated Use `resolveContentImageFrameAspect`. */
+export const resolveGalleryCarouselAspectRatio = resolveContentImageFrameAspect;

@@ -19,6 +19,7 @@ export const OBJECT_PAGE_CONTENT_BODY_CLASS = [
   '[&_br]:block [&_br]:content-[""] [&_br]:mt-3',
   '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5',
   '[&_li]:mb-1',
+  '[&_img]:my-3 [&_img]:h-auto [&_img]:max-w-full',
   '[&_iframe]:aspect-video [&_iframe]:my-4 [&_iframe]:w-full',
   '[&_pre]:overflow-x-auto [&_pre]:rounded-btn [&_pre]:bg-code-bg [&_pre]:p-3',
 ].join(' ');

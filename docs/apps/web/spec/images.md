@@ -69,6 +69,17 @@ Use **`fill`** when the visual box is defined by a parent (`relative` + height/a
 
 - **Flex parents:** In a row flex, default `align-items: stretch` can stretch a fixed-size avatar vertically. `UserAvatar` uses **`self-start`**, **`shrink-0`**, and inline **`width` / `height` / `minWidth` / `minHeight`** so the box stays square (same idea as a plain `<img>` with explicit pixel dimensions).
 
+### Object gallery — showcase vs thumbnails
+
+| Surface | Aspect frame | `object-fit` | Notes |
+|---------|--------------|--------------|-------|
+| Description checkerboard photos (`ObjectDescriptionPhotoButton`) | Natural (portrait uncapped; landscape capped 16:9) | `contain` | Square skeleton until load; image hidden until aspect known |
+| Left-rail carousel (`ObjectGalleryCarousel`) | Same as above via `resolveContentImageFrameAspect` | `contain` | Cached aspect per URL; square skeleton on first load |
+| Gallery tab grid, `ObjectCard`, hero avatar | Square or 4:3 fixed | `cover` | Compact thumbnails — intentional crop |
+| Full-screen gallery viewer | Flexible | `contain` | No crop |
+
+Inline `<img>` in object page / description HTML uses **`h-auto max-w-full`** (see `OBJECT_PAGE_CONTENT_BODY_CLASS`).
+
 ## `priority`
 
 - Use **`priority`** only for **above-the-fold** images that matter for LCP (e.g. profile cover on the profile page).

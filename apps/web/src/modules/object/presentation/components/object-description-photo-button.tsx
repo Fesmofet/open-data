@@ -1,9 +1,15 @@
 'use client';
 
+import { useCallback, useState, type SyntheticEvent } from 'react';
+
+import {
+  CONTENT_IMAGE_SKELETON_FRAME_ASPECT,
+  resolveContentImageFrameAspect,
+} from '../../domain/resolve-gallery-carousel-aspect-ratio';
 import { GalleryImage } from './gallery-image';
 
 const PHOTO_FRAME_CLASS =
-  'relative my-4 aspect-[4/3] w-full overflow-hidden rounded-btn border border-border';
+  'relative my-4 w-full overflow-hidden rounded-btn border border-border';
 
 export type ObjectDescriptionPhotoButtonProps = {
   url: string;
@@ -18,12 +24,31 @@ export function ObjectDescriptionPhotoButton({
   ariaLabel,
   onClick,
 }: ObjectDescriptionPhotoButtonProps) {
+  const [frameAspect, setFrameAspect] = useState(CONTENT_IMAGE_SKELETON_FRAME_ASPECT);
+  const [isAspectReady, setIsAspectReady] = useState(false);
+
+  const handleImageLoad = useCallback((event: SyntheticEvent<HTMLImageElement>) => {
+    const img = event.currentTarget;
+    setFrameAspect(
+      resolveContentImageFrameAspect(img.naturalWidth, img.naturalHeight),
+    );
+    setIsAspectReady(true);
+  }, []);
+
   const photoFrame = (
-    <div className="relative size-full">
+    <div
+      className="relative w-full"
+      style={{ aspectRatio: frameAspect }}
+      data-testid="description-photo-frame"
+    >
       <GalleryImage
         src={url}
         sizes="(max-width: 768px) 100vw, 720px"
-        className="pointer-events-none object-cover"
+        className={[
+          'pointer-events-none object-contain',
+          isAspectReady ? 'opacity-100' : 'opacity-0',
+        ].join(' ')}
+        onLoad={handleImageLoad}
       />
     </div>
   );

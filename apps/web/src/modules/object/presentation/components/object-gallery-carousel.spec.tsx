@@ -24,8 +24,8 @@ jest.mock('./gallery-image', () => ({
       className={className}
       alt=""
       onLoad={(event) => {
-        Object.defineProperty(event.currentTarget, 'naturalWidth', { value: 800 });
-        Object.defineProperty(event.currentTarget, 'naturalHeight', { value: 800 });
+        Object.defineProperty(event.currentTarget, 'naturalWidth', { value: 600 });
+        Object.defineProperty(event.currentTarget, 'naturalHeight', { value: 900 });
         onLoad?.(event);
       }}
     />
@@ -78,13 +78,13 @@ describe('ObjectGalleryCarousel preview mode', () => {
     expect(screen.getByTestId('gallery-image')).toHaveClass('object-contain');
   });
 
-  it('uses object-cover after gallery photo aspect is known', () => {
+  it('uses object-contain and natural portrait aspect after gallery photo load', () => {
     renderCarousel(null);
 
     fireEvent.load(screen.getByTestId('gallery-image'));
 
-    expect(screen.getByTestId('gallery-image')).toHaveClass('object-cover');
-    expect(frameAspectRatio()).toBe('1');
+    expect(screen.getByTestId('gallery-image')).toHaveClass('object-contain');
+    expect(frameAspectRatio()).toBe(String(600 / 900));
   });
 
   it('does not change frame aspect ratio when preview image loads', () => {

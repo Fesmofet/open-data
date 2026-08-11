@@ -6,8 +6,8 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 import {
-  GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT,
-  resolveGalleryCarouselAspectRatio,
+  CONTENT_IMAGE_SKELETON_FRAME_ASPECT,
+  resolveContentImageFrameAspect,
 } from '../../domain/resolve-gallery-carousel-aspect-ratio';
 import { GalleryImage } from './gallery-image';
 
@@ -31,7 +31,7 @@ export function ObjectGalleryCarousel({
 }: ObjectGalleryCarouselProps) {
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [frameAspect, setFrameAspect] = useState(GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT);
+  const [frameAspect, setFrameAspect] = useState(CONTENT_IMAGE_SKELETON_FRAME_ASPECT);
   const [isAspectReady, setIsAspectReady] = useState(false);
   const aspectByUrlRef = useRef<Map<string, number>>(new Map());
   const displayUrlRef = useRef<string | undefined>(undefined);
@@ -60,7 +60,7 @@ export function ObjectGalleryCarousel({
       setIsAspectReady(true);
       return;
     }
-    setFrameAspect(GALLERY_CAROUSEL_DEFAULT_FRAME_ASPECT);
+    setFrameAspect(CONTENT_IMAGE_SKELETON_FRAME_ASPECT);
     setIsAspectReady(false);
   }, [activeUrl, isPreviewActive]);
 
@@ -70,7 +70,7 @@ export function ObjectGalleryCarousel({
         return;
       }
       const img = event.currentTarget;
-      const aspect = resolveGalleryCarouselAspectRatio(img.naturalWidth, img.naturalHeight);
+      const aspect = resolveContentImageFrameAspect(img.naturalWidth, img.naturalHeight);
       aspectByUrlRef.current.set(loadedUrl, aspect);
       setFrameAspect(aspect);
       setIsAspectReady(true);
@@ -115,8 +115,10 @@ export function ObjectGalleryCarousel({
     .filter(Boolean)
     .join(' ');
 
-  const imageClassName =
-    isPreviewActive || !isAspectReady ? 'object-contain' : 'object-cover';
+  const imageClassName = [
+    'object-contain',
+    isPreviewActive || isAspectReady ? 'opacity-100' : 'opacity-0',
+  ].join(' ');
 
   const photoFrame = (
     <div
