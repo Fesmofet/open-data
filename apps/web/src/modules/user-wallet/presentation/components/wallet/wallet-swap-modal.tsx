@@ -395,7 +395,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
           </div>
 
           <p className="text-body-sm text-muted">
-            {t('wallet_withdraw_hivesigner_note')}
+            {t('wallet_broadcast_approval_note')}
           </p>
 
           {validationError ? (

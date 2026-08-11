@@ -83,7 +83,7 @@ Nested modal (`zIndex = APP_MODAL_Z_INDEX + 1`). Local state in manage: `{ asset
 - Amount field (WP/HP suffix fixed; no asset selector)
 - USD estimate (`wallet_transfer_value_usd`)
 - **Available** max line
-- Footer: `wallet_delegate_timing`, `wallet_delegate_hivesigner_note`
+- Footer: `wallet_delegate_timing`, `wallet_broadcast_approval_note` (provider-agnostic approval hint)
 - Primary: `wallet_edit_delegation_update` (disabled when amount unchanged or invalid)
 
 ### Max editable amount

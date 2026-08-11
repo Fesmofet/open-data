@@ -555,7 +555,7 @@ export function WalletWithdrawModal({
           </div>
 
           <p className="mt-4 text-body-sm text-muted">
-            {t('wallet_withdraw_hivesigner_note')}
+            {t('wallet_broadcast_approval_note')}
           </p>
 
           <div className="mt-6 flex justify-end gap-2">

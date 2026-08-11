@@ -343,7 +343,7 @@ export function WalletTransferModal({
           </div>
         </div>
         <p className="mt-4 text-body-sm text-muted">
-          {t('wallet_withdraw_hivesigner_note')}
+          {t('wallet_broadcast_approval_note')}
         </p>
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">

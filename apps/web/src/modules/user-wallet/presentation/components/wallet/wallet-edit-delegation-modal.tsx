@@ -322,7 +322,7 @@ export function WalletEditDelegationModal({
           </p>
         ) : null}
         <p className="mt-2 text-body-sm text-muted">
-          {t('wallet_delegate_hivesigner_note')}
+          {t('wallet_broadcast_approval_note')}
         </p>
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">

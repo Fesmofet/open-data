@@ -129,7 +129,7 @@ export function HiveDelegateRcModal({
             onSelect={() => setAmount(maxRc)}
           />
         ) : null}
-        <p className="mt-4 text-body-sm text-muted">{t('delegate_modal_info_part4')}</p>
+        <p className="mt-4 text-body-sm text-muted">{t('wallet_broadcast_approval_note')}</p>
         {validationError ? (
           <p className="mt-3 text-body-sm text-error" role="alert">
             {validationError}
