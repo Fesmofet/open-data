@@ -63,9 +63,16 @@ Validated with `feedStoryViewSchema`. Core fields: `id`, `authorName`, optional 
 ## Layout (v1)
 
 - Header: [`UserAvatar`](avatar.md); when `rebloggedBy` is set, a **reblog line** (“Reblogged by @account”); display name, `@author`, formatted timestamp (`feedAt` when present, else `createdAt`).
-- Body: optional linked title, excerpt; **preview image** when `thumbnailUrl` / `videoThumbnailUrl` is set — landscape/wide images scale to **full card width** (`w-full`, no max-height cap); portrait images cap height (`FEED_STORY_PORTRAIT_PREVIEW_MAX_PX`) with `w-auto` pillarboxing; inline video playback uses a fixed `aspect-video` embed; **object chips** (name + optional avatar; up to four) when `objects` is non-empty; optional NSFW line.
+- Body: optional title, excerpt, and **preview media** when `thumbnailUrl` / `videoThumbnailUrl` / `videoEmbedUrl` is set:
+  - **Poster-first (all video embeds including 3Speak):** shows poster + play button; inline iframe only after click. Poster uses a plain `<img class="block h-auto w-full">` (not `next/image`) so wide 3Speak/Ecency thumbs are not cropped.
+  - **Active iframe:** `aspect-video w-full` container with Close control; full-card overlay link is removed so the iframe receives clicks.
+  - **Title navigation:** when inline video is playing, title renders as `<Link href={permalinkPath}>` (overlay link is off); otherwise a full-body overlay link opens the post modal.
+  - **3Speak excerpt:** when `videoEmbedUrl` is a 3Speak embed, excerpt HTML uses `feedExcerptToSafeHtml(…, { stripThreeSpeakLinks: true })` to drop Peakd prefix markdown (`[![](poster)](3speak) ▶ [Watch on 3Speak](…) ---`) and show `▶ Watch on 3Speak` + body text.
+  - **Object chips** (name + optional avatar; up to four) when `objects` is non-empty; optional NSFW line.
 - Footer: **`StoryVoteButton`**, comment toggle (**`StoryStatButton`** — muted until expanded), **`StoryReblogButton`** (hidden on own posts), overflow menu; payout when present.
 - Below footer when expanded: **`StoryCommentsSection`** (`layout="quick"` — no sort dropdown), then **`StoryCommentEditor`** when logged in. Sort UI is only on **`BlogPostScreen`** / post modal (`layout="full"`).
+
+**Related:** feed excerpt pipeline — `apps/web/src/shared/infrastructure/feed-excerpt-html.ts`; 3Speak poster fetch — `useStoryPreviewMediaUrl` + `fetchThreeSpeakThumbnail`.
 
 ## Out of scope (later)
 

@@ -39,13 +39,16 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 ## Post body HTML
 
-Server-side `sanitizePostHtml` (`apps/web/src/shared/infrastructure/sanitize-post-html.ts`) prepares the body for `dangerouslySetInnerHTML`:
+Server-side `sanitizePostHtml` (`apps/web/src/shared/infrastructure/sanitize-post-html.ts`) delegates to `sanitizePostBodyHtml` in `post-body-html-pipeline.ts` and prepares the body for `dangerouslySetInnerHTML`:
 
-- If the raw body already looks like HTML (block/inline tags such as `p`, `a`, `img`, …), it is **sanitized only** (no markdown).
-- Otherwise the body is treated as markdown/plain text and passed through **`marked`** (`gfm`, `breaks`), then sanitized.
+- **Markdown vs HTML:** `postBodyLooksLikeHtml()` decides the path. Trailing Peakd-style HTML footers (`<br/> <sub>…</sub>`) are stripped before detection. Bodies that start with markdown signals (`[![](…)]`, `# heading`, lists, …) stay on the **markdown** path even when a footer contains `<br>`.
+- Otherwise, if the body already looks like HTML (block/inline tags such as `p`, `a`, `img`, …), it is **sanitized only** (no `marked`).
+- Markdown bodies pass through **`marked`** (`gfm`, `breaks`), then embed transforms and sanitize.
+- **Peakd 3Speak prefix:** markdown linked-image preview `[![](poster)](https://3speak.tv/watch?v=…)` and `▶ [Watch on 3Speak](…)` are stripped before markdown parse; the matching iframe is **prepended after** `marked` so headings and links in the body still render.
+- **3Speak in HTML bodies:** linked poster `<a><img></a>`, `data-linked-url`, or bare watch URLs become `.blog-post-3speak-embed` iframes (`play.3speak.tv/…&mode=iframe&layout=desktop`). Video id capture excludes trailing `)` from markdown link syntax.
 - Standalone **YouTube** watch / `youtu.be` URLs are replaced with an embed iframe inside `.blog-post-youtube-embed` (styles in `apps/web/src/app/global.css`).
 
-Feed story cards still use `Story` for previews; full post views do **not** show a separate hero video above the body — video appears inline from the body content.
+Feed story cards still use `Story` for previews; full post views do **not** show a separate hero video above the body — video appears inline from the body content (or from the Peakd prefix preprocess).
 
 ## Related files
 

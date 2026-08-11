@@ -16,7 +16,16 @@ const YOUTUBE_ID_PATTERNS: RegExp[] = [
 const VIMEO_ID_PATTERN = /(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/;
 
 const THREE_SPEAK_BODY_PATTERN =
-  /(?:https?:\/\/)?(?:www\.)?3speak\.(?:tv|online)\/(?:watch|embed)\?[^"'\s]*\bv=([^&\s<>"']+)/i;
+  /(?:https?:\/\/)?(?:www\.)?3speak\.(?:tv|online)\/(?:watch|embed)\?[^"'\s]*\bv=([^&\s<>"')]+)/i;
+
+const CENTER_BLOCK_PATTERN = /<center>([\s\S]*?)<\/center>/i;
+
+const DTUBE_URL_PATTERN =
+  /https?:\/\/(?:emb\.)?d\.tube(?:\/#!)?(?:\/v)?\/([^/\s"'<>]+\/[^/\s"'<>]+)/i;
+
+const MARKDOWN_LINKED_IMG = /!\[[^\]]*]\(\s*([^)\s]+)\s*\)/;
+const HTML_IMG = /<img[^>]+src=["']([^"']+)["']/i;
+const MARKDOWN_LINKED_VIDEO = /\]\((https?:\/\/[^)\s]+)\)/;
 
 function tryParseJson(s: string): unknown | null {
   try {
@@ -146,6 +155,68 @@ function extractThreeSpeakVideoIdFromBody(body: string): string | null {
   return decodeThreeSpeakVideoId(m[1]);
 }
 
+function extractCenterBlockContent(body: string): string | null {
+  const m = body.match(CENTER_BLOCK_PATTERN);
+  const content = m?.[1]?.trim();
+  return content && content !== '' ? content : null;
+}
+
+function extractFirstImageFromFragment(fragment: string): string | null {
+  const md = fragment.match(MARKDOWN_LINKED_IMG);
+  if (md?.[1]) {
+    return normalizeUrl(md[1].trim());
+  }
+  const html = fragment.match(HTML_IMG);
+  if (html?.[1]) {
+    return normalizeUrl(html[1].trim());
+  }
+  return null;
+}
+
+function extractVideoUrlFromCenterBlock(body: string): string | null {
+  const center = extractCenterBlockContent(body);
+  if (!center) {
+    return null;
+  }
+
+  const threeSpeak = center.match(THREE_SPEAK_BODY_PATTERN);
+  if (threeSpeak?.[0]) {
+    return threeSpeak[0];
+  }
+
+  const dtube = center.match(DTUBE_URL_PATTERN);
+  if (dtube?.[0]) {
+    return dtube[0];
+  }
+
+  for (const re of YOUTUBE_ID_PATTERNS) {
+    const m = center.match(re);
+    if (m?.[0]) {
+      return m[0];
+    }
+  }
+
+  const vimeo = center.match(VIMEO_ID_PATTERN);
+  if (vimeo?.[0]) {
+    return vimeo[0];
+  }
+
+  const linked = center.match(MARKDOWN_LINKED_VIDEO);
+  if (linked?.[1]) {
+    return linked[1].trim();
+  }
+
+  return null;
+}
+
+function videoThumbFromCenterBlock(body: string): string | null {
+  const center = extractCenterBlockContent(body);
+  if (!center) {
+    return null;
+  }
+  return extractFirstImageFromFragment(center);
+}
+
 /** Legacy Waivio iframe player URL (`embedMedia.js` / `videoHelper.js`). */
 export function buildThreeSpeakEmbedUrl(videoId: string): string {
   return `https://play.3speak.tv/watch?v=${encodeURIComponent(videoId)}&mode=iframe&layout=desktop`;
@@ -164,6 +235,10 @@ function videoThumbFromBody(body: string): string | null {
   const vimeo = extractVimeoThumbnail(body);
   if (vimeo) {
     return vimeo;
+  }
+  const fromCenter = videoThumbFromCenterBlock(body);
+  if (fromCenter) {
+    return fromCenter;
   }
   return extractThreeSpeakThumbnail(body);
 }
@@ -260,10 +335,38 @@ function embedFromBody(body: string): string | null {
     return `https://player.vimeo.com/video/${vm}?autoplay=1`;
   }
   const videoId = extractThreeSpeakVideoIdFromBody(body);
-  if (!videoId) {
+  if (videoId) {
+    return buildThreeSpeakEmbedUrl(videoId);
+  }
+
+  const centerVideoUrl = extractVideoUrlFromCenterBlock(body);
+  if (!centerVideoUrl) {
     return null;
   }
-  return buildThreeSpeakEmbedUrl(videoId);
+
+  const centerYt = extractYouTubeIdFromBody(centerVideoUrl);
+  if (centerYt) {
+    return `https://www.youtube.com/embed/${centerYt}?autoplay=1&rel=0`;
+  }
+  const centerVm = extractVimeoIdFromBody(centerVideoUrl);
+  if (centerVm) {
+    return `https://player.vimeo.com/video/${centerVm}?autoplay=1`;
+  }
+  const centerThreeSpeak = extractThreeSpeakVideoIdFromBody(centerVideoUrl);
+  if (centerThreeSpeak) {
+    return buildThreeSpeakEmbedUrl(centerThreeSpeak);
+  }
+  const centerDtube = centerVideoUrl.match(DTUBE_URL_PATTERN);
+  if (centerDtube?.[1]) {
+    const parts = centerDtube[1].split('/');
+    const author = parts[0]?.trim();
+    const permlink = parts[1]?.trim();
+    if (author && permlink) {
+      return `https://emb.d.tube/#!/${encodeURIComponent(author)}/${encodeURIComponent(permlink)}`;
+    }
+  }
+
+  return null;
 }
 
 /**

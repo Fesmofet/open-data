@@ -6,7 +6,6 @@ module.exports = {
   testEnvironment: 'node',
   moduleNameMapper: {
     ...(nxPreset.moduleNameMapper ?? {}),
-    '^marked$': '<rootDir>/src/test-mocks/marked.ts',
     '^hive-auth-wrapper$': '<rootDir>/src/test-mocks/hive-auth-wrapper.ts',
     '^@opden-data-layer/notifications-messages/testing$':
       '<rootDir>/../../libs/notifications-messages/src/testing/index.ts',
@@ -14,6 +13,9 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/apps/web',
   moduleFileExtensions: [...nxPreset.moduleFileExtensions, 'tsx', 'jsx'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(\\.pnpm/marked@[^/]+/node_modules/marked|marked)/)',
+  ],
   transform: {
     '^.+\\.(ts|tsx|js|jsx|mts|mjs|cts|cjs|html)$': [
       'ts-jest',

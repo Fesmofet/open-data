@@ -49,7 +49,7 @@ Dead or flaky UGC hosts (e.g. legacy **`ipfs.busy.org`**) break feed previews an
 | `getProxyImageUrl` / `getImagePathPost` / `stripHiveImageProxyPrefix` / `normalizeLegacyObjectImageUrl` / `resolveObjectImageUrl` / `getPreviewProxyImageUrl` | `apps/web/src/shared/infrastructure/image/get-proxy-image-url.ts` (also re-exported from `@/shared/presentation`) |
 | `ObjectThumbnail` | `apps/web/src/shared/presentation/components/object-thumbnail.tsx` — object page hero, feed chips, `ObjectCard`, ref rows |
 
-**Skip proxy** when the URL contains: `waivio.nyc3.digitaloceanspaces` / `nyc3.digitaloceanspaces`, `steemitimages.com`, `i.imgur.com`, `sephora.com`, `.avif`, `gstatic.com` (Google Shopping thumbnails — Hive returns 403), or video poster CDNs (`vumbnail.com`, `i.ytimg.com`, `img.youtube.com` — Hive returns 403). Hive **avatar** paths (`images.hive.blog/u/…`) are left unchanged. Relative `/…` and `data:` URLs are left unchanged.
+**Skip proxy** when the URL contains: `waivio.nyc3.digitaloceanspaces` / `nyc3.digitaloceanspaces`, `steemitimages.com`, `i.imgur.com`, `sephora.com`, `.avif`, `gstatic.com` (Google Shopping thumbnails — Hive returns 403), `ecency.com` (Ecency CDN thumbs — double-proxy distorts), or video poster CDNs (`vumbnail.com`, `i.ytimg.com`, `img.youtube.com` — Hive returns 403). Hive **avatar** paths (`images.hive.blog/u/…`) are left unchanged. Relative `/…` and `data:` URLs are left unchanged.
 
 **Legacy `steemitimages.com` object avatars:** stored URLs like `https://steemitimages.com/u/{user}/avatar/large` must not be wrapped in `0x0/` (403). `normalizeLegacyObjectImageUrl` rewrites them to `https://images.hive.blog/u/{user}/avatar/{large|small}` before display.
 

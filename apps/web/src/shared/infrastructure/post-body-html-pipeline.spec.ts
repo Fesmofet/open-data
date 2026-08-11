@@ -4,7 +4,19 @@ jest.mock('marked', () => ({
   },
 }));
 
-import { embedThreeSpeakInBody, sanitizePostBodyHtml } from './post-body-html-pipeline';
+import {
+  embedThreeSpeakInBody,
+  postBodyLooksLikeHtml,
+  sanitizePostBodyHtml,
+} from './post-body-html-pipeline';
+
+describe('postBodyLooksLikeHtml', () => {
+  it('treats Peakd markdown with trailing HTML footer as markdown', () => {
+    const body =
+      '[![](https://cdn.example.com/poster.jpg)](https://3speak.tv/watch?v=author/post)\n\n# Title\n\nHello\n\n<br/> <sub>[via Apps from](https://example.com)</sub>';
+    expect(postBodyLooksLikeHtml(body)).toBe(false);
+  });
+});
 
 describe('embedThreeSpeakInBody', () => {
   it('replaces linked 3Speak poster with iframe and removes duplicate poster', () => {
@@ -16,6 +28,16 @@ describe('embedThreeSpeakInBody', () => {
     expect(html).toContain('blog-post-3speak-embed');
     expect(html).not.toContain('cdn.example.com/poster.jpg');
   });
+
+  it('does not capture trailing parenthesis from markdown link URLs', () => {
+    const html = embedThreeSpeakInBody(
+      '(https://3speak.tv/watch?v=sagarkothari88/8563feac)',
+    );
+    expect(html).toContain(
+      'https://play.3speak.tv/watch?v=sagarkothari88%2F8563feac&mode=iframe&layout=desktop',
+    );
+    expect(html).not.toContain('8563feac)');
+  });
 });
 
 describe('sanitizePostBodyHtml', () => {
@@ -25,6 +47,22 @@ describe('sanitizePostBodyHtml', () => {
     );
     expect(html).toContain('play.3speak.tv');
     expect(html).toContain('blog-post-3speak-embed');
+  });
+
+  it('parses Peakd 3Speak markdown prefix and embeds video without broken URL', () => {
+    const poster =
+      'https://i.ecency.com/DQmNSDpbjTxvzFpyQDwpNpX2gssGkdTXRFa2rfCwiSS4Eyp/thumb_1783842295927.jpg';
+    const watchUrl =
+      'https://3speak.tv/watch?v=sagarkothari88/8563feac';
+    const html = sanitizePostBodyHtml(
+      `[![](${poster})](${watchUrl}) ▶️ [Watch on 3Speak](${watchUrl})\n\n---\n\n# HiveReactKit\n\nHello **world**.\n\n<br/> <sub>[via Apps from](https://example.com)</sub>`,
+    );
+    expect(html).toContain('blog-post-3speak-embed');
+    expect(html).toContain('sagarkothari88%2F8563feac');
+    expect(html).toContain('mode=iframe');
+    expect(html).not.toContain('8563feac)');
+    expect(html).not.toContain('[Watch on 3Speak]');
+    expect(html).toContain('HiveReactKit');
   });
 
   it('proxies remote body images through Hive 0x0', () => {

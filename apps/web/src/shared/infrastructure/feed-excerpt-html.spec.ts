@@ -69,4 +69,23 @@ describe('feedExcerptToSafeHtml', () => {
     expect(html).not.toContain('<img');
     expect(html).not.toContain(poster);
   });
+
+  it('normalizes Peakd 3Speak excerpt prefix to legacy-style watch label + body', () => {
+    const poster =
+      'https://i.ecency.com/DQmNSDpbjTxvzFpyQDwpNpX2gssGkdTXRFa2rfCwiSS4Eyp/thumb_1783842295927.jpg';
+    const watchUrl =
+      'https://3speak.tv/watch?v=sagarkothari88/8563feac';
+    const html = feedExcerptToSafeHtml(
+      `[![](${poster})](${watchUrl}) ▶️ [Watch on 3Speak](${watchUrl}) --- HiveReactKit improves profile translations, mobile safe-area handling,`,
+      {
+        omitImageUrls: [poster],
+        stripThreeSpeakLinks: true,
+      },
+    );
+    expect(html).not.toContain('3speak.tv');
+    expect(html).not.toContain('<img');
+    expect(html).not.toContain('[');
+    expect(html).toContain('▶ Watch on 3Speak');
+    expect(html).toContain('HiveReactKit improves profile translations');
+  });
 });

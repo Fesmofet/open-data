@@ -105,6 +105,17 @@ describe('extractVideoThumbnailUrl', () => {
   it('rejects path traversal in 3Speak watch param', () => {
     expect(extractVideoThumbnailUrl('', 'https://3speak.tv/watch?v=..%2Fevil')).toBeNull();
   });
+
+  it('returns poster image from Peakd-style center block', () => {
+    const body =
+      '<center>[![](https://cdn.example.com/poster.jpg)](https://3speak.tv/watch?v=author%2Fpermlink)</center>';
+    expect(extractVideoThumbnailUrl('', body)).toBe('https://cdn.example.com/poster.jpg');
+  });
+
+  it('returns null for center block without image when no other video thumb', () => {
+    const body = '<center>https://3speak.tv/watch?v=author%2Fpermlink</center>';
+    expect(extractVideoThumbnailUrl('', body)).toBeNull();
+  });
 });
 
 describe('extractVideoEmbedUrl', () => {
@@ -187,5 +198,21 @@ describe('extractVideoEmbedUrl', () => {
 
   it('returns null when nothing matches', () => {
     expect(extractVideoEmbedUrl('{"image":["https://x.jpg"]}', 'text only', ctx)).toBeNull();
+  });
+
+  it('returns 3Speak embed from Peakd-style center block link', () => {
+    const body =
+      '<center>[![](https://cdn.example.com/poster.jpg)](https://3speak.tv/watch?v=author%2Fpermlink)</center>';
+    expect(extractVideoEmbedUrl('', body, ctx)).toBe(
+      'https://play.3speak.tv/watch?v=author%2Fpermlink&mode=iframe&layout=desktop',
+    );
+  });
+
+  it('returns DTube embed from center block when body has no bare URL', () => {
+    const body =
+      '<center><a href="https://d.tube/#!/alice/my-video"><img src="https://cdn.example.com/poster.jpg"></a></center>';
+    expect(extractVideoEmbedUrl('', body, ctx)).toBe(
+      'https://emb.d.tube/#!/alice/my-video',
+    );
   });
 });

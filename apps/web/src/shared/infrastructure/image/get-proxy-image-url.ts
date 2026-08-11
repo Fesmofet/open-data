@@ -32,6 +32,7 @@ const SKIP_PROXY_SUBSTRINGS = [
   'i.ytimg.com',
   'img.youtube.com',
   'gstatic.com',
+  'ecency.com',
 ] as const;
 
 const SPACES_SUBSTRING = 'nyc3.digitaloceanspaces';

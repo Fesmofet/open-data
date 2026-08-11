@@ -121,11 +121,40 @@ function collectOmitImageUrls(options?: FeedExcerptToSafeHtmlOptions): string[] 
   return [...urls];
 }
 
+const THREE_SPEAK_WATCH_URL =
+  /https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?[^)\s]+/gi;
+
+/** Peakd-style 3Speak posts prefix the body with a linked poster + "Watch on 3Speak" link. */
 function stripThreeSpeakLinksFromExcerpt(raw: string): string {
-  return raw
-    .replace(/https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?[^\s]+/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  let result = raw;
+
+  // Linked-image preview: [![](poster)](https://3speak.tv/watch?v=…)
+  result = result.replace(
+    /\[!\[[^\]]*\]\([^)]*\)\]\(\s*https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?[^)]+\)/gi,
+    ' ',
+  );
+
+  // "▶️ [Watch on 3Speak](url)" → plain label (legacy BodyShort shows this text after render)
+  result = result.replace(
+    /(?:▶️|▶\uFE0F?)\s*\[Watch on 3Speak\]\(\s*https?:\/\/3speak\.(?:tv|online)\/[^)]+\)/gi,
+    '▶ Watch on 3Speak',
+  );
+  result = result.replace(
+    /\[Watch on 3Speak\]\(\s*https?:\/\/3speak\.(?:tv|online)\/[^)]+\)/gi,
+    '▶ Watch on 3Speak',
+  );
+
+  result = result.replace(THREE_SPEAK_WATCH_URL, ' ');
+
+  // Horizontal rule between preview block and post body
+  result = result.replace(/^\s*---+\s*/g, '');
+  result = result.replace(/\s+---+\s+/g, ' ');
+
+  // Broken markdown left when only URLs were stripped previously
+  result = result.replace(/\[\s*\]\(\s*\)/g, ' ');
+  result = result.replace(/\[\s*\]\(\s+/g, ' ');
+
+  return result.replace(/\s+/g, ' ').trim();
 }
 
 /**

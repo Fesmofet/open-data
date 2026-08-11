@@ -10,21 +10,82 @@ import { linkifyBareImageUrls, linkifyHiveMentions } from './social-content-html
 export const POST_BODY_LOOKS_LIKE_HTML =
   /<\s*\/?(p|div|br|h[1-6]|ul|ol|li|blockquote|iframe|section|article|center|table|pre|hr|a|img)\b/i;
 
+/** Peakd and similar apps append HTML footers to markdown posts. */
+const TRAILING_HTML_FOOTER =
+  /(?:\s*<br\s*\/?>\s*)+(?:\s*<sub>[\s\S]*?<\/sub>\s*)+$/i;
+
+/** Opening content that should stay on the markdown path even with HTML footers. */
+const MARKDOWN_LEAD =
+  /^(?:\[!\[|#+\s|>\s|(?:-\s|\d+\.\s|\*\s|\|\s))/m;
+
+const THREE_SPEAK_VIDEO_ID = '[^&\\s<>"\')]+';
+
 const YOUTUBE_ID = '[a-zA-Z0-9_-]{11}';
+
+function stripTrailingHtmlFooter(raw: string): string {
+  return raw.replace(TRAILING_HTML_FOOTER, '').trim();
+}
+
+export function postBodyLooksLikeHtml(raw: string): boolean {
+  const main = stripTrailingHtmlFooter(raw.trim());
+  if (main === '') {
+    return false;
+  }
+  if (MARKDOWN_LEAD.test(main.slice(0, 800))) {
+    return false;
+  }
+  return POST_BODY_LOOKS_LIKE_HTML.test(main);
+}
+
+/** Peakd 3Speak posts prefix the body with a linked poster + watch link in markdown. */
+function preprocessPeakdThreeSpeakMarkdown(raw: string): {
+  text: string;
+  embedPrefix: string;
+} {
+  let result = raw;
+  let embedPrefix = '';
+
+  result = result.replace(
+    new RegExp(
+      `\\[!\\[[^\\]]*\\]\\([^)]*\\)\\]\\(\\s*https?:\\/\\/3speak\\.(?:tv|online)\\/(?:watch|embed)\\?[^)]+\\)`,
+      'gi',
+    ),
+    (match) => {
+      const videoIdMatch = match.match(
+        new RegExp(`v=(${THREE_SPEAK_VIDEO_ID})`, 'i'),
+      );
+      if (videoIdMatch) {
+        embedPrefix = threeSpeakIframeHtml(videoIdMatch[1]);
+      }
+      return '';
+    },
+  );
+
+  result = result.replace(
+    /(?:▶️|▶\uFE0F?)\s*\[Watch on 3Speak\]\(\s*https?:\/\/3speak\.(?:tv|online)\/[^)]+\)\s*/gi,
+    '',
+  );
+  if (embedPrefix !== '') {
+    result = result.replace(/^\s*---+\s*\n/, '');
+  }
+
+  return { text: result.trim(), embedPrefix };
+}
 
 export function postBodyToIntermediateHtml(raw: string): string {
   const trimmed = raw.trim();
   if (trimmed === '') {
     return '';
   }
-  if (POST_BODY_LOOKS_LIKE_HTML.test(raw)) {
-    return raw;
+  const { text: prepared, embedPrefix } = preprocessPeakdThreeSpeakMarkdown(trimmed);
+  if (postBodyLooksLikeHtml(trimmed)) {
+    return embedPrefix + prepared;
   }
-  return marked.parse(raw, {
+  return embedPrefix + (marked.parse(prepared, {
     async: false,
     gfm: true,
     breaks: true,
-  }) as string;
+  }) as string);
 }
 
 export function convertMarkdownImages(html: string): string {
@@ -77,18 +138,27 @@ export function embedThreeSpeakInBody(html: string): string {
   let out = html;
 
   out = out.replace(
-    /<a\s+[^>]*(?:href|data-href)=["']https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?[^"']*\bv=([^"&]+)[^"']*["'][^>]*>\s*<img[^>]*>\s*<\/a>/gi,
+    new RegExp(
+      `<a\\s+[^>]*(?:href|data-href)=["']https?:\\/\\/3speak\\.(?:tv|online)\\/(?:watch|embed)\\?[^"']*\\bv=(${THREE_SPEAK_VIDEO_ID})[^"']*["'][^>]*>\\s*<img[^>]*>\\s*<\\/a>`,
+      'gi',
+    ),
     (_match, videoId: string) => threeSpeakIframeHtml(videoId),
   );
 
   out = out.replace(
-    /<img[^>]*data-linked-url=["']https?:\/\/3speak\.(?:tv|online)\/[^"']*\bv=([^"&]+)[^"']*["'][^>]*>/gi,
+    new RegExp(
+      `<img[^>]*data-linked-url=["']https?:\\/\\/3speak\\.(?:tv|online)\\/[^"']*\\bv=(${THREE_SPEAK_VIDEO_ID})[^"']*["'][^>]*>`,
+      'gi',
+    ),
     (_match, videoId: string) => threeSpeakIframeHtml(videoId),
   );
 
   if (!/play\.3speak\.tv/i.test(out)) {
     out = out.replace(
-      /https?:\/\/3speak\.(?:tv|online)\/(?:watch|embed)\?(?:[^"'\s]*&)*v=([^&\s<>"']+)/gi,
+      new RegExp(
+        `https?:\\/\\/3speak\\.(?:tv|online)\\/(?:watch|embed)\\?(?:[^"'\\s]*&)*v=(${THREE_SPEAK_VIDEO_ID})`,
+        'gi',
+      ),
       (_match, videoId: string) => threeSpeakIframeHtml(videoId),
     );
   }
@@ -223,7 +293,7 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 /** Markdown or HTML post body → safe HTML for display. Client and server safe. */
 export function sanitizePostBodyHtml(raw: string): string {
   const parsed = postBodyToIntermediateHtml(raw);
-  const withImages = POST_BODY_LOOKS_LIKE_HTML.test(raw)
+  const withImages = postBodyLooksLikeHtml(raw)
     ? parsed
     : linkifyBareImageUrls(parsed);
   const intermediate = linkifyHiveMentions(

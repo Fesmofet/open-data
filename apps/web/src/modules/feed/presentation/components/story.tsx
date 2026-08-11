@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -10,7 +9,6 @@ import { isThreeSpeakEmbedUrl } from '@/shared/infrastructure/three-speak-previe
 import {
   getImagePathPost,
   ObjectThumbnail,
-  shouldUnoptimizeRemoteImage,
   StatHoverTooltip,
   UserAvatar,
 } from '@/shared/presentation';
@@ -22,7 +20,6 @@ import type { FeedTab } from '../../domain/feed-tab';
 
 import { useStoryPreviewMediaUrl } from '../hooks/use-story-preview-media-url';
 import {
-  FEED_STORY_PORTRAIT_PREVIEW_MAX_PX,
   FEED_STORY_TAGGED_OBJECT_MAX,
   formatRelativeFeedTime,
   formatReputation,
@@ -121,7 +118,6 @@ export function Story({
 }: StoryProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [previewMediaFailed, setPreviewMediaFailed] = useState(false);
-  const [previewMediaLandscape, setPreviewMediaLandscape] = useState(true);
   const [commentsExpanded, setCommentsExpanded] = useState(false);
   const { t, locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
@@ -142,18 +138,13 @@ export function Story({
   const previewMediaDisplayUrl = previewMediaUrl
     ? getImagePathPost(previewMediaUrl)
     : null;
-  const showPreviewBlock = isThreeSpeakVideo
-    ? Boolean(story.videoEmbedUrl)
-    : Boolean(previewMediaUrl);
-  const showInlineVideo = Boolean(
-    story.videoEmbedUrl && (isThreeSpeakVideo || videoPlaying),
-  );
-  const canPlayInline = Boolean(story.videoEmbedUrl) && !isThreeSpeakVideo;
-  const isPostVideoActive = isThreeSpeakVideo || videoPlaying;
+  const showPreviewBlock = Boolean(previewMediaUrl || story.videoEmbedUrl);
+  const showInlineVideo = Boolean(story.videoEmbedUrl && videoPlaying);
+  const canPlayInline = Boolean(story.videoEmbedUrl);
+  const isPostVideoActive = videoPlaying;
 
   useEffect(() => {
     setPreviewMediaFailed(false);
-    setPreviewMediaLandscape(true);
   }, [previewMediaUrl]);
 
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
@@ -297,6 +288,19 @@ export function Story({
                   {story.title}
                 </span>
               </h2>
+            ) : story.permalinkPath && isPostVideoActive ? (
+              <h2
+                id={`story-title-${story.id}`}
+                className="text-body-lg font-weight-strong leading-snug"
+              >
+                <Link
+                  href={story.permalinkPath}
+                  suppressHydrationWarning
+                  className="feed-story-title-link relative z-20 block line-clamp-2 pointer-events-auto"
+                >
+                  {story.title}
+                </Link>
+              </h2>
             ) : (
               <h2
                 id={`story-title-${story.id}`}
@@ -320,13 +324,8 @@ export function Story({
             <div
               className={
                 showInlineVideo
-                  ? 'relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-btn border border-border bg-surface-control'
-                  : [
-                      'rounded-btn border border-border bg-surface-control',
-                      previewMediaLandscape
-                        ? 'relative aspect-video w-full overflow-hidden'
-                        : 'relative flex w-full items-center justify-center',
-                    ].join(' ')
+                  ? 'relative aspect-video w-full overflow-hidden rounded-btn border border-border bg-black'
+                  : 'rounded-btn border border-border bg-surface-control'
               }
             >
               {showInlineVideo && story.videoEmbedUrl ? (
@@ -334,19 +333,17 @@ export function Story({
                   <iframe
                     title={story.title ? `${story.title} — video` : 'Embedded video'}
                     src={story.videoEmbedUrl}
-                    className="h-full w-full min-h-[180px] border-0 bg-black"
+                    className="absolute inset-0 h-full w-full border-0 bg-black"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
-                  {!isThreeSpeakVideo ? (
-                    <button
-                      type="button"
-                      className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                      onClick={() => setVideoPlaying(false)}
-                    >
-                      Close
-                    </button>
-                  ) : null}
+                  <button
+                    type="button"
+                    className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    onClick={() => setVideoPlaying(false)}
+                  >
+                    Close
+                  </button>
                 </>
               ) : previewMediaFailed ? (
                 <div
@@ -356,34 +353,15 @@ export function Story({
                   Preview unavailable
                 </div>
               ) : previewMediaDisplayUrl ? (
-                <div
-                  className={
-                    previewMediaLandscape
-                      ? 'relative size-full'
-                      : 'relative'
-                  }
-                >
-                  <Image
+                <div className="relative w-full">
+                  {/* External video posters — plain img avoids Next/Image aspect-ratio crop (legacy PostFeedEmbed). */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={previewMediaDisplayUrl}
                     alt=""
-                    width={1200}
-                    height={800}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className={
-                      previewMediaLandscape
-                        ? 'block size-full object-cover'
-                        : 'block h-auto w-auto max-w-full object-contain'
-                    }
-                    style={
-                      previewMediaLandscape
-                        ? undefined
-                        : { maxHeight: FEED_STORY_PORTRAIT_PREVIEW_MAX_PX }
-                    }
-                    unoptimized={shouldUnoptimizeRemoteImage(previewMediaDisplayUrl)}
-                    onLoad={(event) => {
-                      const img = event.currentTarget;
-                      setPreviewMediaLandscape(img.naturalWidth >= img.naturalHeight);
-                    }}
+                    className="block h-auto w-full"
+                    loading="lazy"
+                    decoding="async"
                     onError={() => setPreviewMediaFailed(true)}
                   />
                   {canPlayInline ? (
@@ -400,6 +378,21 @@ export function Story({
                       <IconPlay />
                     </button>
                   ) : null}
+                </div>
+              ) : canPlayInline ? (
+                <div className="relative flex min-h-[180px] w-full items-center justify-center">
+                  <button
+                    type="button"
+                    className="pointer-events-auto flex items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setVideoPlaying(true);
+                    }}
+                    aria-label="Play video"
+                  >
+                    <IconPlay />
+                  </button>
                 </div>
               ) : (
                 <div
