@@ -68,7 +68,7 @@ Default **`HAS_WS_URL`**: `wss://hive-auth.arcange.eu` (with fallback to `wss://
 
 **iOS note:** Keychain Mobile may not sign in the background on iOS; keep the app open when approving broadcasts.
 
-**HAS broadcast approval UI:** When `HAS.broadcast` receives `sign_wait`, [`HasSignWaitProvider`](apps/web/src/modules/auth/presentation/components/has-sign-wait-provider.tsx) opens a global modal (vote, comment, transfer, etc.). The modal closes automatically on success; on failure it shows the error and a Close button.
+**HAS broadcast approval UI:** When `HAS.broadcast` receives `sign_wait`, [`HasSignWaitProvider`](apps/web/src/modules/auth/presentation/components/has-sign-wait-provider.tsx) opens a global modal instructing the user to approve in the Hive Keychain mobile app (no QR — desktop sessions linked via Hive Auth QR at login receive a push notification). The user can dismiss the modal with Cancel or the header close control while waiting; it closes automatically on success. On failure it shows the error and a Close button.
 
 ## Wallet facade
 

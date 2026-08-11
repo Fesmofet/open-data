@@ -11,25 +11,16 @@ import {
   type HasSignWaitEventDetail,
   type HasSignWaitKind,
 } from '@/modules/auth/infrastructure/has-sign-wait-events';
-import { ModalShell } from '@/shared/presentation/components/modal-shell';
+import { AppLoader } from '@/shared/presentation/components/app-loader';
+import {
+  ModalShell,
+  ModalShellCloseButton,
+} from '@/shared/presentation/components/modal-shell';
 
 type HasSignWaitModalState =
   | { phase: 'closed' }
   | { phase: 'waiting'; kind: HasSignWaitKind }
   | { phase: 'error'; kind: HasSignWaitKind; message: string };
-
-function messageKeyForKind(kind: HasSignWaitKind): string {
-  switch (kind) {
-    case 'vote':
-      return 'auth_keychain_has_sign_wait_vote';
-    case 'comment':
-      return 'auth_keychain_has_sign_wait_comment';
-    case 'transaction':
-      return 'auth_keychain_has_sign_wait_transaction';
-    default:
-      return 'auth_keychain_has_sign_wait_generic';
-  }
-}
 
 export function HasSignWaitProvider() {
   const { t } = useI18n();
@@ -59,6 +50,7 @@ export function HasSignWaitProvider() {
     function onSignError(event: Event) {
       const detail = (event as CustomEvent<HasSignErrorEventDetail>).detail;
       const message = detail?.message?.trim() || t('auth_keychain_has_sign_wait_error_fallback');
+      openRef.current = true;
       setState((current) => ({
         phase: 'error',
         kind: current.phase === 'closed' ? 'generic' : current.kind,
@@ -77,27 +69,29 @@ export function HasSignWaitProvider() {
   }, [closeModal, t]);
 
   const open = state.phase !== 'closed';
-  const kind = state.phase === 'closed' ? 'generic' : state.kind;
   const isWaiting = state.phase === 'waiting';
   const errorMessage = state.phase === 'error' ? state.message : null;
 
   return (
     <ModalShell
       open={open}
-      onClose={isWaiting ? () => undefined : closeModal}
-      closeOnBackdrop={!isWaiting}
+      onClose={closeModal}
+      closeOnBackdrop
       labelledBy="has-sign-wait-title"
       describedBy="has-sign-wait-body"
       maxWidthClass="max-w-md"
       panelClassName="rounded-card-lg"
       header={
-        <div className="border-b border-border px-card-padding py-3">
+        <div className="flex items-center justify-between gap-4 border-b border-border px-card-padding py-3">
           <h2
             id="has-sign-wait-title"
-            className="text-section font-display text-heading"
+            className="min-w-0 flex-1 text-section font-display text-heading"
           >
             {t('auth_keychain_has_sign_wait_title')}
           </h2>
+          {!errorMessage ? (
+            <ModalShellCloseButton onClose={closeModal} ariaLabel={t('close')} />
+          ) : null}
         </div>
       }
       footer={
@@ -115,25 +109,33 @@ export function HasSignWaitProvider() {
       }
     >
       <div id="has-sign-wait-body" className="flex flex-col gap-4 p-card-padding">
-        <p className="text-body text-fg-secondary">{t(messageKeyForKind(kind))}</p>
-        <p className="text-body-sm text-fg-secondary">{t('auth_keychain_has_mobile_hint')}</p>
+        <p className="text-body text-fg-secondary">
+          {t('auth_keychain_has_sign_wait_instruction')}
+        </p>
 
         {isWaiting ? (
-          <div className="flex items-center gap-3" role="status">
-            <span
-              className="inline-block h-5 w-5 animate-spin rounded-circle border-2 border-accent border-t-transparent"
-              aria-hidden
-            />
-            <span className="text-body-sm text-fg-secondary">
-              {t('auth_keychain_has_sign_wait_status')}
-            </span>
-          </div>
+          <AppLoader
+            size="sm"
+            layout="inline"
+            label={t('auth_keychain_has_sign_wait_status')}
+            className="justify-center"
+          />
         ) : null}
 
         {errorMessage ? (
           <p className="text-body-sm text-error" role="alert">
             {errorMessage}
           </p>
+        ) : null}
+
+        {isWaiting ? (
+          <button
+            type="button"
+            onClick={closeModal}
+            className="self-start text-body-sm text-fg-secondary hover:text-fg"
+          >
+            {t('cancel')}
+          </button>
         ) : null}
       </div>
     </ModalShell>
