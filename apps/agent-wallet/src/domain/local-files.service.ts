@@ -7,6 +7,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
+  AGENT_WALLET_QR_FILE,
   AGENT_WALLET_SESSION_FILE,
   AGENT_WALLET_TOKEN_FILE,
 } from '../constants/local-files';
@@ -28,6 +29,10 @@ export class LocalFilesService {
     return join(this.getDataDir(), AGENT_WALLET_TOKEN_FILE);
   }
 
+  qrPath(): string {
+    return join(this.getDataDir(), AGENT_WALLET_QR_FILE);
+  }
+
   sessionPath(): string {
     return join(this.getDataDir(), AGENT_WALLET_SESSION_FILE);
   }
@@ -46,6 +51,11 @@ export class LocalFilesService {
         `Could not chmod ${path} to 0600: ${(error as Error).message}`,
       );
     }
+  }
+
+  async writeBinaryFile(path: string, content: Buffer): Promise<void> {
+    await this.ensureDataDir();
+    await writeFile(path, content, { mode: 0o644 });
   }
 
   async readTextFile(path: string): Promise<string | null> {

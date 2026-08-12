@@ -56,6 +56,19 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:has-agent-wallet',
   },
   {
+    path: 'docs/skills/has-login-from-chat.md',
+    keywords: [
+      'has login telegram',
+      'login from chat',
+      'keychain from phone',
+      'deep link chat',
+      'telegram keychain',
+      'slack has login',
+      'webLink agent wallet',
+    ],
+    reason: 'curated:has-login-from-chat',
+  },
+  {
     path: 'docs/skills/obl-offers-contracts.md',
     keywords: [
       'sign obl contract',

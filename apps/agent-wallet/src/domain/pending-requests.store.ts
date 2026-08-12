@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
 export type LoginRequestState =
-  | { status: 'pending'; account: string; deepLink: string; qrAscii: string; expiresAt: number }
+  | {
+      status: 'pending';
+      account: string;
+      deepLink: string;
+      qrAscii: string;
+      webLink?: string;
+      qrPngPath?: string;
+      expiresAt: number;
+    }
   | { status: 'active'; account: string; expiresAt: number }
   | { status: 'rejected' }
   | { status: 'expired' };

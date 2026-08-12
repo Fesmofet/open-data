@@ -12,7 +12,7 @@ export function registerAgentWalletTools(
     'has_login_start',
     {
       description:
-        'Start HAS login for a Hive account. Returns immediately with deep link and terminal QR; poll has_login_status until active.',
+        'Start HAS login for a Hive account. Returns webLink for chat messengers (Telegram/Slack), deepLink for manual copy, and terminal qrAscii. Poll has_login_status until active. In chat: send webLink only — never qrAscii.',
       inputSchema: z.object({
         account: z.string().min(1).describe('Hive account name (with or without @)'),
       }),

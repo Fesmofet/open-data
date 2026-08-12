@@ -32,7 +32,7 @@ Before route handling, `refreshSessionCookiesIfNeeded`:
 
 - If `odl_access` missing/expired but `odl_refresh` valid → `POST` auth-api refresh, set new httpOnly cookies.
 - Skips `/api/auth/*` to avoid refresh loops.
-- `env.requireAuth`: unauthenticated requests redirect to `/sign-in` except excluded prefixes (`/sign-in`, `/api/auth/`, `/images/`).
+- `env.requireAuth`: unauthenticated requests redirect to `/sign-in` except excluded prefixes (`/sign-in`, `/has`, `/api/auth/`, `/images/`).
 
 ## Object page rewrites
 
@@ -69,7 +69,7 @@ Reserved segments: `isUserProfileReservedFirstSegment` in `profile-path.ts`.
 |-------|-----|
 | Profile URL | Navigate to `/@name/followers` — bar shows `/@…`, content from `/user-profile/…` |
 | Object tab | `/object/:id/updates` — tab query injected, page renders updates feed |
-| Auth gate | `REQUIRE_AUTH=true` — anonymous GET `/discover` redirects to sign-in |
+| Auth gate | `REQUIRE_AUTH=true` — anonymous GET `/discover` redirects to sign-in; anonymous GET `/has` allowed (HAS Keychain redirect) |
 
 ## Related code paths
 

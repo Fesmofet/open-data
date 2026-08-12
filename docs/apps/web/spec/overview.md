@@ -52,6 +52,7 @@ Do **not** duplicate page-route detail in this file — link the site map or the
 | [architecture.md](architecture.md) | Layers, modules, ports/adapters, CQRS-lite, composition |
 | [web-conventions.md](web-conventions.md) | Development rules: boundaries, imports, Result, policies |
 | [routing-proxy.md](routing-proxy.md) | `proxy.ts` rewrites, session refresh, `/@` and object tab URLs |
+| [has-deep-link-redirect.md](has-deep-link-redirect.md) | Public `/has` page — https link → Keychain Mobile for agent-wallet chat login |
 | [seo.md](seo.md) | Metadata, JSON-LD, canonical, sitemap, robots |
 | [i18n.md](i18n.md) | Locale resolution, messages, cookies, SSR, RTL |
 | [theme.md](theme.md) | Theme preference, `data-theme`, CSS variables, SSR script, Tailwind |

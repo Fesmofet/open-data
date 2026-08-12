@@ -144,11 +144,13 @@ export class HasClient {
     account: string;
     appMeta: HasAppMeta;
     challenge?: HasChallengeData;
+    token?: string;
+    authKey?: string;
   }): Promise<HasAuthPending> {
     await this.connect();
 
     const account = normalizeAccount(input.account);
-    const authKey = crypto.randomUUID();
+    const authKey = input.authKey ?? crypto.randomUUID();
     const data = encryptHasPayload(
       {
         app: input.appMeta,
@@ -176,6 +178,7 @@ export class HasClient {
         cmd: HAS_CMD.AUTH_REQ,
         account,
         data,
+        ...(input.token ? { token: input.token } : {}),
       }),
     );
 

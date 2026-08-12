@@ -10,6 +10,7 @@ export type AgentWalletConfig = {
   odlCustomJsonId: string;
   hasWsUrl: string;
   hasAppName: string;
+  hasWebLinkBase: string;
   dataDir: string;
   persistSession: boolean;
   bearerToken?: string;
@@ -27,6 +28,7 @@ export default (): AgentWalletConfig => {
       odlNetwork === 'testnet' ? 'odl-testnet' : 'odl-mainnet',
     hasWsUrl: env.HAS_WS_URL ?? 'wss://hive-auth.arcange.eu',
     hasAppName: env.HAS_APP_NAME ?? 'ODL Agent',
+    hasWebLinkBase: env.HAS_WEB_LINK_BASE ?? 'https://waiviodev.com',
     dataDir: env.AGENT_WALLET_DATA_DIR ?? join(homedir(), '.odl'),
     persistSession: !(env.AGENT_WALLET_NO_PERSIST === true),
     bearerToken: env.AGENT_WALLET_BEARER_TOKEN,

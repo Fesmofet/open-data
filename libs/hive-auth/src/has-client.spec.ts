@@ -152,6 +152,36 @@ describe('HasClient', () => {
     expect(pending.uuid).toBe('u1');
   });
 
+  it('includes token on auth_req when provided', async () => {
+    const transport = new FakeHasTransport();
+    const client = await openClient(transport);
+
+    const startPromise = client.startAuth({
+      account: 'alice',
+      appMeta: { name: 'ODL' },
+      token: 'stored-token',
+      authKey: 'fixed-auth-key',
+    });
+    await Promise.resolve();
+
+    const authReqFrame = JSON.parse(transport.sent[0]!) as {
+      cmd: string;
+      token?: string;
+    };
+    expect(authReqFrame.token).toBe('stored-token');
+
+    transport.emit({
+      cmd: HAS_CMD.AUTH_WAIT,
+      uuid: 'u-token',
+      expire: 2_000,
+      account: 'alice',
+    });
+
+    const pending = await startPromise;
+    expect(pending.authKey).toBe('fixed-auth-key');
+    expect(pending.uuid).toBe('u-token');
+  });
+
   it('returns session from decrypted auth_ack', async () => {
     const transport = new FakeHasTransport();
     const client = await openClient(transport);

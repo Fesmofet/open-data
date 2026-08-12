@@ -44,6 +44,45 @@ async function waitFor<T>(
   throw new Error('Timed out waiting for condition');
 }
 
+async function ensureLoggedIn(account: string): Promise<void> {
+  const session = await mcpCallTool<{ active: boolean; session?: { account: string } }>(
+    'has_session',
+    {},
+  );
+  if (
+    session.data.active &&
+    session.data.session?.account === account
+  ) {
+    return;
+  }
+
+  const login = await mcpCallTool<{
+    requestId: string;
+    deepLink: string;
+    alreadyActive?: boolean;
+  }>('has_login_start', { account });
+
+  expect(login.isError).toBe(false);
+  if (login.data.alreadyActive) {
+    return;
+  }
+
+  const link = parseHasDeepLink(login.data.deepLink);
+  await fakeHas().approveAuth({
+    uuid: link.uuid,
+    authKey: link.key,
+    account: link.account,
+  });
+
+  await waitFor(
+    () =>
+      mcpCallTool<{ status: string }>('has_login_status', {
+        requestId: login.data.requestId,
+      }),
+    (result) => result.data.status === 'active',
+  );
+}
+
 describe('agent-wallet MCP (e2e)', () => {
   it('rejects MCP without bearer token', async () => {
     expect(await mcpUnauthorized()).toBe(401);
@@ -127,24 +166,7 @@ describe('agent-wallet MCP (e2e)', () => {
   });
 
   it('returns rejected broadcast status when user rejects', async () => {
-    const login = await mcpCallTool<{
-      requestId: string;
-      deepLink: string;
-    }>('has_login_start', { account: 'alice' });
-    const link = parseHasDeepLink(login.data.deepLink);
-    await fakeHas().approveAuth({
-      uuid: link.uuid,
-      authKey: link.key,
-      account: link.account,
-    });
-
-    await waitFor(
-      () =>
-        mcpCallTool<{ status: string }>('has_login_status', {
-          requestId: login.data.requestId,
-        }),
-      (result) => result.data.status === 'active',
-    );
+    await ensureLoggedIn('alice');
 
     const built = await mcpCallTool<{ ops: unknown[] }>('odl_build_object_create', {
       objectType: 'recipe',

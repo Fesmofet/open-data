@@ -47,12 +47,13 @@ CI publishes `agent-wallet.js` + `agent-wallet.js.sha256` via [release-agent-wal
 | Feature | Doc |
 |---------|-----|
 | HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
+| HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
 
 ## MCP tools
 
 | Tool | Returns |
 |------|---------|
-| `has_login_start` | `requestId`, `deepLink`, `qrAscii`, `expiresAt` |
+| `has_login_start` | `requestId`, `webLink`, `deepLink`, `qrAscii`, `expiresAt`, `expiresInSec`, `alreadyActive`, `pushSent`, optional `qrPngPath` |
 | `has_login_status` | `pending` / `active` / `rejected` / `expired` |
 | `has_session` | `account`, `expiresAt` (no secrets) |
 | `has_logout` | — |
@@ -69,6 +70,7 @@ CI publishes `agent-wallet.js` + `agent-wallet.js.sha256` via [release-agent-wal
 | `ODL_NETWORK` | `testnet` | `mainnet` \| `testnet` → `odl-mainnet` / `odl-testnet` |
 | `HAS_WS_URL` | `wss://hive-auth.arcange.eu` | HAS WebSocket server |
 | `HAS_APP_NAME` | `ODL Agent` | Shown in Keychain auth prompt |
+| `HAS_WEB_LINK_BASE` | `https://waiviodev.com` | Origin for clickable `webLink` (`/has#payload`); empty disables |
 | `AGENT_WALLET_DATA_DIR` | `~/.odl` | Token + session directory |
 | `AGENT_WALLET_NO_PERSIST` | `false` | Memory-only session when `true` |
 | `AGENT_WALLET_BEARER_TOKEN` | — | Fixed token (optional; else auto-generated) |

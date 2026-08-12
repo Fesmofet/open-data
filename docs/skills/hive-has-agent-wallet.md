@@ -10,6 +10,7 @@ updated_at: 2026-08-12
 related:
   - docs/skills/setup-workspace.md
   - docs/skills/hive-blockchain-broadcast.md
+  - docs/skills/has-login-from-chat.md
   - docs/skills/knowledge-api-routing.md
   - docs/apps/agent-wallet/spec/overview.md
   - docs/apps/web/spec/object-create-broadcast.md
@@ -97,6 +98,7 @@ Optional env (see [agent-wallet overview](../apps/agent-wallet/spec/overview.md)
 | `HOST` | `127.0.0.1` |
 | `ODL_NETWORK` | `testnet` → `odl-testnet` |
 | `HAS_WS_URL` | `wss://hive-auth.arcange.eu` |
+| `HAS_WEB_LINK_BASE` | `https://waiviodev.com` — origin for clickable `webLink` in chat; set empty to disable |
 | `AGENT_WALLET_NO_PERSIST` | `false` — set `true` for memory-only session |
 
 ## Agent workflow
@@ -109,8 +111,8 @@ sequenceDiagram
   participant PKSA as Keychain Mobile
 
   Agent->>Daemon: has_login_start({ account })
-  Daemon-->>Agent: requestId, deepLink, qrAscii
-  Agent->>User: show QR / deep link
+  Daemon-->>Agent: requestId, webLink, deepLink, expiresInSec
+  Agent->>User: send webLink (chat) — see has-login-from-chat skill
   User->>PKSA: approve login
   loop poll
     Agent->>Daemon: has_login_status({ requestId })
@@ -130,7 +132,7 @@ Send JSON-RPC to `/agent-wallet/mcp` with bearer header. Tool names:
 
 | Tool | Purpose |
 |------|---------|
-| `has_login_start` | Start HAS auth; returns `requestId`, `deepLink`, `qrAscii`, `expiresAt` |
+| `has_login_start` | Start HAS auth; returns `requestId`, `webLink`, `deepLink`, `qrAscii`, `expiresAt`, `expiresInSec`, `alreadyActive`, `pushSent`, optional `qrPngPath` |
 | `has_login_status` | Poll: `pending` / `active` / `rejected` / `expired` |
 | `has_session` | `{ active, session: { account, expiresAt } }` — no secrets |
 | `has_logout` | Clear session + session file |
@@ -140,12 +142,14 @@ Send JSON-RPC to `/agent-wallet/mcp` with bearer header. Tool names:
 
 ### 2. Login
 
+**Chat / Telegram / Slack:** follow [has-login-from-chat](has-login-from-chat.md) — send `webLink`, never `qrAscii`.
+
 ```json
 // tools/call has_login_start
 { "account": "alice" }
 ```
 
-Show `qrAscii` in terminal or send `deepLink` (`has://auth_req/...`) to the user. Poll `has_login_status` until `active`.
+Terminal / second device: show `qrAscii` or open `deepLink`. Poll `has_login_status` until `active`.
 
 ### 3. Build object create
 

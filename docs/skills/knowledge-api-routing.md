@@ -51,6 +51,7 @@ related:
 | New Hive account | skill | `docs/skills/hive-account-signup.md` |
 | Sign/broadcast Hive/ODL txs | skill | `docs/skills/hive-blockchain-broadcast.md` |
 | HAS agent session / local agent-wallet | skill | `docs/skills/hive-has-agent-wallet.md` |
+| HAS login from Telegram / chat messengers | skill | `docs/skills/has-login-from-chat.md` |
 | OBL: discover/publish/sign offers & contracts | skill | `docs/skills/obl-offers-contracts.md` |
 | OBL: invoices, payments, pair balance / ledger | skill | `docs/skills/obl-ledger.md` |
 | OBL: disputes & arbitration | skill | `docs/skills/obl-disputes.md` |
@@ -83,6 +84,8 @@ related:
 | `docs/skills/setup-workspace.md` | Sidecar agent: clone repo, path contract |
 | `docs/skills/hive-account-signup.md` | Create a new Hive account |
 | `docs/skills/hive-blockchain-broadcast.md` | Sign and broadcast ODL / Hive ops |
+| `docs/skills/hive-has-agent-wallet.md` | Local HAS agent-wallet MCP daemon |
+| `docs/skills/has-login-from-chat.md` | HAS login via webLink in Telegram/Slack |
 | `docs/skills/query-api-mcp-routing.md` | Live-data query-api MCP tool map |
 | `docs/skills/obl-offers-contracts.md` | OBL offers: discover, publish, sign contracts |
 | `docs/skills/obl-ledger.md` | OBL invoices, payments, balances, ledger |

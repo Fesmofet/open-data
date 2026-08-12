@@ -288,7 +288,7 @@ Map other `HiveOperation` types the same way as [`keychain-signer.ts`](../../../
 **Recommended for autonomous agents** when the user should not paste posting keys. Keys stay on the phone; the local daemon holds a HAS session and requests signatures via Keychain Mobile.
 
 1. Start daemon: `pnpm nx serve agent-wallet` (binds `127.0.0.1:7500`, bearer token in `~/.odl/agent-wallet.token`).
-2. MCP tools: `has_login_start` → show QR / `deepLink` → poll `has_login_status` until `active`.
+2. MCP tools: `has_login_start` → send **`webLink`** in chat ([has-login-from-chat](has-login-from-chat.md)) or QR in terminal → poll `has_login_status` until `active`.
 3. Build ops: `odl_build_object_create` or `@opden-data-layer/hive-broadcast` builders, then `has_broadcast` + poll `has_broadcast_status`.
 
 Full playbook: [hive-has-agent-wallet.md](hive-has-agent-wallet.md). Implementation: `apps/agent-wallet`, `@opden-data-layer/hive-auth`.

@@ -78,8 +78,10 @@ describe('HasSessionService', () => {
   let files: {
     readTextFile: jest.Mock;
     writeSecretFile: jest.Mock;
+    writeBinaryFile: jest.Mock;
     deleteFile: jest.Mock;
     sessionPath: jest.Mock;
+    qrPath: jest.Mock;
   };
 
   afterEach(() => {
@@ -91,8 +93,10 @@ describe('HasSessionService', () => {
     files = {
       readTextFile: jest.fn().mockResolvedValue(null),
       writeSecretFile: jest.fn().mockResolvedValue(undefined),
+      writeBinaryFile: jest.fn().mockResolvedValue(undefined),
       deleteFile: jest.fn().mockResolvedValue(undefined),
       sessionPath: jest.fn().mockReturnValue('/tmp/session.json'),
+      qrPath: jest.fn().mockReturnValue('/tmp/agent-wallet-qr.png'),
     };
 
     const moduleRef = await Test.createTestingModule({
@@ -110,6 +114,7 @@ describe('HasSessionService', () => {
                 odlCustomJsonId: 'odl-testnet',
                 hasWsUrl: 'wss://hive-auth.test/',
                 hasAppName: 'ODL Agent',
+                hasWebLinkBase: 'https://waiviodev.com',
                 dataDir: '/tmp/agent-wallet-test',
                 persistSession: false,
                 bearerToken: 'test-bearer-token-1234567890',
@@ -138,8 +143,38 @@ describe('HasSessionService', () => {
     const started = await service.loginStart('alice');
 
     expect(started.deepLink.startsWith('has://auth_req/')).toBe(true);
+    expect(started.webLink?.startsWith('https://waiviodev.com/has#')).toBe(true);
     expect(started.qrAscii.length).toBeGreaterThan(0);
+    expect(started.alreadyActive).toBe(false);
+    expect(started.expiresInSec).toBeGreaterThan(0);
+    expect(started.pushSent).toBe(false);
+    expect(files.writeBinaryFile).toHaveBeenCalled();
     expect(service.loginStatus(started.requestId).status).toBe('pending');
+  });
+
+  it('returns alreadyActive when session is valid for the account', async () => {
+    const started = await service.loginStart('alice');
+    const { uuid, key } = JSON.parse(
+      Buffer.from(started.deepLink.replace('has://auth_req/', ''), 'base64').toString(
+        'utf8',
+      ),
+    ) as { uuid: string; key: string };
+
+    transport.emit({
+      cmd: HAS_CMD.AUTH_ACK,
+      uuid,
+      data: encryptHasPayload(
+        { token: 't1', expire: Date.now() + 3_600_000 },
+        key,
+      ),
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    const again = await service.loginStart('alice');
+    expect(again.alreadyActive).toBe(true);
+    expect(again.requestId).toBe('');
+    expect(again.webLink).toBeUndefined();
   });
 
   it('activates session after auth_ack and hides secrets in has_session', async () => {

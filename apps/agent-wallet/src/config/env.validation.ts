@@ -15,6 +15,19 @@ export const agentWalletConfigSchema = z.object({
     .optional()
     .default('wss://hive-auth.arcange.eu'),
   HAS_APP_NAME: z.string().min(1).optional().default('ODL Agent'),
+  HAS_WEB_LINK_BASE: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (v === undefined) {
+        return 'https://waiviodev.com';
+      }
+      const trimmed = v.trim();
+      if (!trimmed) {
+        return '';
+      }
+      return trimmed.replace(/\/$/, '');
+    }),
   AGENT_WALLET_DATA_DIR: z.string().optional(),
   AGENT_WALLET_NO_PERSIST: boolEnv,
   AGENT_WALLET_BEARER_TOKEN: z.string().min(16).optional(),

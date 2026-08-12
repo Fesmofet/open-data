@@ -85,63 +85,46 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     deepLink: string;
     qrAscii: string;
     expiresAt: number;
+    alreadyActive: boolean;
+    expiresInSec: number;
+    webLink?: string;
+    qrPngPath?: string;
+    pushSent: boolean;
   }> {
     const normalized = account.trim().replace(/^@/, '').toLowerCase();
-    const requestId = this.auth.hashRequestId([
-      'login',
-      normalized,
-      String(Date.now()),
-      crypto.randomUUID(),
-    ]);
 
-    const challenge = this.auth.createLoginChallenge(normalized);
-    const client = this.getOrCreateClient();
+    if (
+      this.session &&
+      this.isSessionValid(this.session) &&
+      this.session.username === normalized
+    ) {
+      return {
+        requestId: '',
+        deepLink: '',
+        qrAscii: '',
+        expiresAt: this.session.expire,
+        alreadyActive: true,
+        expiresInSec: this.secondsUntil(this.session.expire),
+        pushSent: false,
+      };
+    }
 
-    const pending = await client.startAuth({
-      account: normalized,
-      appMeta: {
-        name: this.config.get('hasAppName', { infer: true }),
-        description: 'ODL agent wallet',
-      },
-      challenge: {
-        key_type: 'posting',
-        challenge,
-      },
-    });
+    const staleSession = await this.loadStaleSession(normalized);
+    if (staleSession?.token) {
+      try {
+        return await this.startLoginFlow(normalized, {
+          token: staleSession.token,
+          authKey: staleSession.key,
+          pushSent: true,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Token re-auth failed for @${normalized}: ${(error as Error).message}`,
+        );
+      }
+    }
 
-    const host = client.getHost().replace(/\/$/, '');
-    const deepLink = buildHasAuthDeepLink({
-      account: pending.account,
-      uuid: pending.uuid,
-      key: pending.authKey,
-      host,
-    });
-    const qrAscii = await qrcode.toString(deepLink, {
-      type: 'terminal',
-      small: true,
-    });
-
-    const loginState: LoginRequestState = {
-      status: 'pending',
-      account: pending.account,
-      deepLink,
-      qrAscii,
-      expiresAt: pending.expire,
-    };
-    this.pending.setLogin(requestId, loginState);
-
-    void this.awaitLogin(requestId, pending.uuid, client).catch((error) => {
-      this.logger.warn(
-        `Login flow ${requestId} failed: ${(error as Error).message}`,
-      );
-    });
-
-    return {
-      requestId,
-      deepLink,
-      qrAscii,
-      expiresAt: pending.expire,
-    };
+    return this.startLoginFlow(normalized, { pushSent: false });
   }
 
   loginStatus(requestId: string): LoginRequestState | { status: 'expired' } {
@@ -260,6 +243,135 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     }
 
     return state;
+  }
+
+  private secondsUntil(expiresAt: number): number {
+    return Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+  }
+
+  private async loadStaleSession(account: string): Promise<HasSession | null> {
+    if (this.session?.username === account && this.session.token) {
+      return this.session;
+    }
+
+    if (!this.config.get('persistSession', { infer: true })) {
+      return null;
+    }
+
+    const raw = await this.files.readTextFile(this.files.sessionPath());
+    if (!raw?.trim()) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as HasSession;
+      if (parsed.username !== account || !parsed.token) {
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  private async startLoginFlow(
+    normalized: string,
+    options: { token?: string; authKey?: string; pushSent: boolean },
+  ): Promise<{
+    requestId: string;
+    deepLink: string;
+    qrAscii: string;
+    expiresAt: number;
+    alreadyActive: boolean;
+    expiresInSec: number;
+    webLink?: string;
+    qrPngPath?: string;
+    pushSent: boolean;
+  }> {
+    const requestId = this.auth.hashRequestId([
+      'login',
+      normalized,
+      String(Date.now()),
+      crypto.randomUUID(),
+    ]);
+
+    const challenge = this.auth.createLoginChallenge(normalized);
+    const client = this.getOrCreateClient();
+
+    const pending = await client.startAuth({
+      account: normalized,
+      appMeta: {
+        name: this.config.get('hasAppName', { infer: true }),
+        description: 'ODL agent wallet',
+      },
+      challenge: {
+        key_type: 'posting',
+        challenge,
+      },
+      ...(options.token ? { token: options.token } : {}),
+      ...(options.authKey ? { authKey: options.authKey } : {}),
+    });
+
+    const host = client.getHost().replace(/\/$/, '');
+    const deepLink = buildHasAuthDeepLink({
+      account: pending.account,
+      uuid: pending.uuid,
+      key: pending.authKey,
+      host,
+    });
+    const base64 = deepLink.replace('has://auth_req/', '');
+    const webLinkBase = this.config.get('hasWebLinkBase', { infer: true });
+    const webLink = webLinkBase ? `${webLinkBase}/has#${base64}` : undefined;
+
+    const qrAscii = await qrcode.toString(deepLink, {
+      type: 'terminal',
+      small: true,
+    });
+
+    let qrPngPath: string | undefined;
+    try {
+      const png = await qrcode.toBuffer(deepLink, {
+        type: 'png',
+        width: 256,
+        margin: 1,
+      });
+      const path = this.files.qrPath();
+      await this.files.writeBinaryFile(path, png);
+      qrPngPath = path;
+    } catch (error) {
+      this.logger.warn(
+        `Could not write QR PNG: ${(error as Error).message}`,
+      );
+    }
+
+    const loginState: LoginRequestState = {
+      status: 'pending',
+      account: pending.account,
+      deepLink,
+      qrAscii,
+      ...(webLink ? { webLink } : {}),
+      ...(qrPngPath ? { qrPngPath } : {}),
+      expiresAt: pending.expire,
+    };
+    this.pending.setLogin(requestId, loginState);
+
+    void this.awaitLogin(requestId, pending.uuid, client).catch((error) => {
+      this.logger.warn(
+        `Login flow ${requestId} failed: ${(error as Error).message}`,
+      );
+    });
+
+    return {
+      requestId,
+      deepLink,
+      qrAscii,
+      expiresAt: pending.expire,
+      alreadyActive: false,
+      expiresInSec: this.secondsUntil(pending.expire),
+      ...(webLink ? { webLink } : {}),
+      ...(qrPngPath ? { qrPngPath } : {}),
+      pushSent: options.pushSent,
+    };
   }
 
   private getOrCreateClient(): HasClient {

@@ -3,6 +3,12 @@ export type { HasAuthWaitEvent, HasAuthenticateResult } from './has-client';
 export { buildHasAuthDeepLink } from './has-deep-link';
 export type { HasAuthPayloadInput } from './has-deep-link';
 export {
+  buildHasAuthDeepLinkFromPayloadBase64,
+  encodeHasAuthPayloadBase64,
+  parseHasAuthFragmentPayload,
+} from './has-fragment-payload';
+export type { HasAuthFragmentPayload } from './has-fragment-payload';
+export {
   clearHasAuthSession,
   getHasAuthSession,
   HIVEAUTH_SESSION_EXPIRED_MESSAGE,

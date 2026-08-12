@@ -23,6 +23,7 @@ import { buildPublicUrl } from '@/shared/infrastructure/http/get-public-origin';
 
 const REQUIRE_AUTH_EXCLUDED_PREFIXES = [
   '/sign-in',
+  '/has',
   '/api/auth/',
   '/images/',
 ] as const;
