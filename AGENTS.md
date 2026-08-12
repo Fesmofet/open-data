@@ -209,8 +209,11 @@ All rules for design tokens, shell mode, images, React hydration, and clean arch
 
 ### Testing
 
+Full agent testing rules: [`docs/standards/testing-rules.md`](docs/standards/testing-rules.md).
+
 - Jest with `ts-jest`. Unit tests: `*.spec.ts` co-located with source.
 - E2E tests: separate Nx project `apps/<app>-e2e/src/`.
+- **E2E database (local)**: never connect to or mutate the dev Postgres (`.env`, local Docker Compose). Spin up a dedicated test instance; use **`test`** for both database name and password. CI may use its own setup.
 - **HTTP in E2E**: use the built-in **`fetch` API** for HTTP calls. Do not add **axios** (or similar HTTP client libraries) — not used in this repo.
 - Domain/business logic must be unit-testable without NestJS container. Mock infrastructure.
 - Test behavior, not implementation.
@@ -258,7 +261,7 @@ All rules for design tokens, shell mode, images, React hydration, and clean arch
 
 ## Project documentation
 
-Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standards.md).
+Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standards.md), [`docs/standards/testing-rules.md`](docs/standards/testing-rules.md).
 
 ### Where to find docs
 

@@ -42,6 +42,7 @@ docs/
     adr/                                 architecture decision records
   standards/
     docs-standards.md                    this file
+    testing-rules.md                     agent testing rules (contracts, invariants, quality gate)
   spec/
     README.md                            spec index
     <topic>.md                           cross-cutting domain specs
@@ -263,4 +264,5 @@ Cross-link both ways in **When to use** / **When not to use**. Reindex after edi
 ## Related
 
 - [Documentation index](../README.md)
+- [Testing rules](testing-rules.md)
 - [AGENTS.md](../../AGENTS.md) — agent rules including project documentation
