@@ -9,6 +9,7 @@ tags: [hive, broadcast, odl, custom_json, dhive, signing, object-create]
 updated_at: 2026-06-10
 related:
   - docs/skills/knowledge-api-routing.md
+  - docs/skills/hive-has-agent-wallet.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
   - docs/skills/obl-offers-contracts.md
@@ -49,6 +50,7 @@ After signup, **ask explicitly** how signing should work before building or send
 | Mode | Who holds keys | Agent role | Typical use |
 |------|----------------|------------|-------------|
 | **Wallet (recommended)** | User (Keychain, HiveAuth, HiveSigner) | Build `HiveOperation[]`; user approves in wallet UI | Browser / interactive |
+| **HAS agent session (recommended for autonomous agents)** | User on phone (Keychain Mobile); agent holds HAS session (`auth_key` + `token`) | Run local `agent-wallet` daemon; MCP `has_login_*` + `has_broadcast_*`; user approves on device | Cursor / shell agents without posting keys — see [hive-has-agent-wallet.md](hive-has-agent-wallet.md) |
 | **Payload only** | User | Agent outputs JSON ops + envelope; user signs elsewhere | Maximum safety |
 | **Session posting key** | User pastes **posting** key for one session/script | Agent signs with `@hiveio/dhive` locally | Automation, CI, bots — **high risk** |
 
@@ -74,6 +76,7 @@ flowchart LR
   end
   subgraph sign [Sign and send]
     Wallet[Keychain / HiveAuth / HiveSigner]
+    AgentWallet[agent-wallet MCP + HAS session]
     Dhive["@hiveio/dhive PrivateKey"]
   end
   MCP --> Core
@@ -81,6 +84,7 @@ flowchart LR
   HB --> sign
   WebCreate --> HB
   Wallet --> Chain[Hive blockchain]
+  AgentWallet --> Chain
   Dhive --> Chain
 ```
 
@@ -278,6 +282,16 @@ console.log(result.id); // transaction_id
 ```
 
 Map other `HiveOperation` types the same way as [`keychain-signer.ts`](../../../apps/web/src/modules/auth/infrastructure/signers/keychain-signer.ts) (`vote`, `comment`, …).
+
+### C) HAS agent session (`agent-wallet` MCP daemon)
+
+**Recommended for autonomous agents** when the user should not paste posting keys. Keys stay on the phone; the local daemon holds a HAS session and requests signatures via Keychain Mobile.
+
+1. Start daemon: `pnpm nx serve agent-wallet` (binds `127.0.0.1:7500`, bearer token in `~/.odl/agent-wallet.token`).
+2. MCP tools: `has_login_start` → show QR / `deepLink` → poll `has_login_status` until `active`.
+3. Build ops: `odl_build_object_create` or `@opden-data-layer/hive-broadcast` builders, then `has_broadcast` + poll `has_broadcast_status`.
+
+Full playbook: [hive-has-agent-wallet.md](hive-has-agent-wallet.md). Implementation: `apps/agent-wallet`, `@opden-data-layer/hive-auth`.
 
 ## Step 4 — Confirm on chain
 

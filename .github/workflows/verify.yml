@@ -108,6 +108,44 @@ jobs:
         if: steps.paths.outputs.query_api == 'true'
         run: pnpm nx test query-api
 
+  agent-wallet:
+    name: agent-wallet — unit tests, typecheck, standalone bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: paths
+        with:
+          filters: |
+            agent_wallet:
+              - 'apps/agent-wallet/**'
+              - 'apps/agent-wallet-e2e/**'
+              - 'libs/hive-auth/**'
+              - 'libs/hive-broadcast/**'
+              - 'scripts/check-standalone-bundle.cjs'
+
+      - uses: pnpm/action-setup@v4
+        if: steps.paths.outputs.agent_wallet == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.paths.outputs.agent_wallet == 'true'
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.paths.outputs.agent_wallet == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Test, typecheck, build, verify standalone bundle
+        if: steps.paths.outputs.agent_wallet == 'true'
+        run: |
+          pnpm nx test agent-wallet
+          pnpm nx run agent-wallet:typecheck
+          pnpm exec nx run agent-wallet:build
+          pnpm check:standalone-bundle
+
   nest-typecheck:
     name: Nest apps + clients — TypeScript
     runs-on: ubuntu-latest

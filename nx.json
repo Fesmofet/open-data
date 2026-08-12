@@ -42,7 +42,8 @@
         "worker-e2e/**/*",
         "apps/query-api-e2e/**/*",
         "apps/web-e2e/**/*",
-        "apps/knowledge-api-e2e/**/*"
+        "apps/knowledge-api-e2e/**/*",
+        "apps/agent-wallet-e2e/**/*"
       ]
     },
     {

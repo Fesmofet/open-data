@@ -1,0 +1,54 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import type { Request, Response } from 'express';
+
+import { HasSessionService } from '../domain/has-session.service';
+import { AGENT_WALLET_MCP_INSTRUCTIONS } from './mcp-instructions';
+import { registerAgentWalletTools } from './register-agent-wallet-tools';
+
+@Injectable()
+export class McpService {
+  private readonly logger = new Logger(McpService.name);
+
+  constructor(private readonly hasSession: HasSessionService) {}
+
+  private createServer(): McpServer {
+    const server = new McpServer(
+      { name: 'agent-wallet', version: '1.0.0' },
+      {
+        capabilities: { tools: {} },
+        instructions: AGENT_WALLET_MCP_INSTRUCTIONS,
+      },
+    );
+
+    registerAgentWalletTools(server, { hasSession: this.hasSession });
+    return server;
+  }
+
+  async handle(req: Request, res: Response): Promise<void> {
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+      enableJsonResponse: true,
+    });
+    const server = this.createServer();
+
+    try {
+      await server.connect(transport);
+      await transport.handleRequest(req, res, req.body);
+    } catch (error) {
+      const message = (error as Error).message;
+      this.logger.error(`MCP error: ${message}`);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: '2.0',
+          error: { code: -32603, message: 'Internal error' },
+          id: null,
+        });
+      }
+    } finally {
+      await transport.close().catch(() => undefined);
+      await server.close().catch(() => undefined);
+    }
+  }
+}

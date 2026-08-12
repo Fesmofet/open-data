@@ -73,7 +73,8 @@
       "@opden-data-layer/notifications-messages/testing": [
         "./libs/notifications-messages/src/testing/index.ts"
       ],
-      "@opden-data-layer/system-alerts": ["./libs/system-alerts/src/index.ts"]
+      "@opden-data-layer/system-alerts": ["./libs/system-alerts/src/index.ts"],
+      "@opden-data-layer/hive-auth": ["./libs/hive-auth/src/index.ts"]
     },
     "strict": false,
     "noUncheckedSideEffectImports": false,

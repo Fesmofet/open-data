@@ -1,0 +1,17 @@
+{
+  "name": "agent-wallet-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "implicitDependencies": ["agent-wallet"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "dependsOn": ["agent-wallet:build"],
+      "options": {
+        "jestConfig": "apps/agent-wallet-e2e/jest.config.js",
+        "passWithNoTests": false
+      }
+    }
+  }
+}

@@ -42,6 +42,20 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:hive-broadcast',
   },
   {
+    path: 'docs/skills/hive-has-agent-wallet.md',
+    keywords: [
+      'has agent wallet',
+      'agent wallet',
+      'hiveauth agent',
+      'has login',
+      'sign with has',
+      'broadcast without keys',
+      'keychain mobile agent',
+      'agent-wallet mcp',
+    ],
+    reason: 'curated:has-agent-wallet',
+  },
+  {
     path: 'docs/skills/obl-offers-contracts.md',
     keywords: [
       'sign obl contract',

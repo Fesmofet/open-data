@@ -1,0 +1,139 @@
+name: Release agent-wallet bundle
+
+on:
+  push:
+    tags:
+      - 'agent-wallet-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0) — used when not triggered by tag'
+        type: string
+        required: true
+      prerelease:
+        description: Mark as pre-release
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release:
+    name: Build and publish agent-wallet.js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve release version
+        id: version
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            VERSION="${TAG#agent-wallet-v}"
+          else
+            TAG="agent-wallet-v${{ inputs.version }}"
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Unit tests
+        run: |
+          pnpm nx test hive-auth
+          pnpm nx test agent-wallet
+
+      - name: Build production bundle
+        run: pnpm exec nx run agent-wallet:build --skip-nx-cache
+
+      - name: E2E tests
+        run: pnpm nx e2e agent-wallet-e2e
+
+      - name: Verify standalone bundle (static)
+        run: pnpm check:standalone-bundle
+
+      - name: Smoke run standalone bundle in empty directory
+        run: |
+          set -euo pipefail
+          SMOKE_DIR="$(mktemp -d)"
+          cp dist/apps/agent-wallet/main.js "$SMOKE_DIR/main.js"
+          cd "$SMOKE_DIR"
+          AGENT_WALLET_BEARER_TOKEN=ci-smoke-token-min-16-chars \
+          AGENT_WALLET_NO_PERSIST=true \
+          AGENT_WALLET_DATA_DIR="$SMOKE_DIR/data" \
+          HOST=127.0.0.1 \
+          PORT=7500 \
+          node main.js &
+          PID=$!
+          OK=0
+          for _ in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:7500/agent-wallet/health >/dev/null; then
+              OK=1
+              break
+            fi
+            sleep 1
+          done
+          kill "$PID" 2>/dev/null || true
+          wait "$PID" 2>/dev/null || true
+          if [ "$OK" != "1" ]; then
+            echo 'standalone smoke run failed: health endpoint did not respond'
+            exit 1
+          fi
+          echo 'standalone smoke run: OK'
+
+      - name: Prepare release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          cp dist/apps/agent-wallet/main.js release/agent-wallet.js
+          (cd release && sha256sum agent-wallet.js > agent-wallet.js.sha256)
+          cat > release-notes.md <<EOF
+          ## agent-wallet ${{ steps.version.outputs.version }}
+
+          Single-file Node.js daemon for HAS agent session and ODL broadcast via MCP.
+
+          **Requirements:** Node.js 20+
+
+          ### Install
+
+          \`\`\`bash
+          curl -Lo agent-wallet.js https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/agent-wallet.js
+          sha256sum -c agent-wallet.js.sha256   # verify against release asset
+          node agent-wallet.js
+          \`\`\`
+
+          Bearer token is written to \`~/.odl/agent-wallet.token\` on first start.
+
+          Full playbook: [hive-has-agent-wallet skill](https://github.com/${{ github.repository }}/blob/development/docs/skills/hive-has-agent-wallet.md)
+          EOF
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ARGS=(
+            "${{ steps.version.outputs.tag }}"
+            release/agent-wallet.js
+            release/agent-wallet.js.sha256
+            --title "agent-wallet ${{ steps.version.outputs.version }}"
+            --notes-file release-notes.md
+          )
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.prerelease }}" = "true" ]; then
+            ARGS+=(--prerelease)
+          fi
+          gh release create "${ARGS[@]}"

@@ -1,0 +1,96 @@
+{
+  "name": "agent-wallet",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/agent-wallet/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "implicitDependencies": ["hive-auth", "hive-broadcast"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack-cli build",
+        "args": ["--config-node-env=production"],
+        "cwd": "apps/agent-wallet"
+      },
+      "configurations": {
+        "development": {
+          "args": ["--config-node-env=development"]
+        }
+      }
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/agent-wallet/package.json",
+        "{workspaceRoot}/dist/apps/agent-wallet/pnpm-lock.yaml"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/apps/agent-wallet/workspace_modules"],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "agent-wallet:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "agent-wallet:build:development"
+        },
+        "production": {
+          "buildTarget": "agent-wallet:build:production"
+        }
+      }
+    },
+    "serve-e2e": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node ../../dist/apps/agent-wallet/main.js",
+        "cwd": "apps/agent-wallet",
+        "env": {
+          "PORT": "7500",
+          "HOST": "127.0.0.1",
+          "ODL_NETWORK": "testnet",
+          "HAS_WS_URL": "ws://127.0.0.1:17500",
+          "AGENT_WALLET_BEARER_TOKEN": "e2e-test-bearer-token-32chars-min",
+          "AGENT_WALLET_NO_PERSIST": "true",
+          "AGENT_WALLET_DATA_DIR": ".tmp/agent-wallet-e2e"
+        }
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": false
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.app.json",
+        "cwd": "apps/agent-wallet"
+      }
+    }
+  }
+}

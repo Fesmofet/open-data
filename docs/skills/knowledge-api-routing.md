@@ -50,6 +50,7 @@ related:
 | Local dev: Docker, migrate, serve | overview | `docs/getting-started.md` |
 | New Hive account | skill | `docs/skills/hive-account-signup.md` |
 | Sign/broadcast Hive/ODL txs | skill | `docs/skills/hive-blockchain-broadcast.md` |
+| HAS agent session / local agent-wallet | skill | `docs/skills/hive-has-agent-wallet.md` |
 | OBL: discover/publish/sign offers & contracts | skill | `docs/skills/obl-offers-contracts.md` |
 | OBL: invoices, payments, pair balance / ledger | skill | `docs/skills/obl-ledger.md` |
 | OBL: disputes & arbitration | skill | `docs/skills/obl-disputes.md` |

@@ -71,6 +71,17 @@ export {
   type OdlAuthorityMethod,
 } from './odl-operations';
 export {
+  buildObjectCreateEnvelope,
+  chunkOdlEventsIntoOps,
+  OBJECT_CREATE_MAX_OPS_PER_TRX,
+  parseObjectIdFromCreateOdlJson,
+  resolveOdlValueFieldKey,
+  type AgentObjectCreateField,
+  type BuildObjectCreateEnvelopeInput,
+  type BuildObjectCreateEnvelopeResult,
+  type OdlCreateEvent,
+} from './odl-object-create';
+export {
   buildOblEnvelopeOp,
   buildOblOfferPublishOp,
   buildOblOfferUpdateOp,
