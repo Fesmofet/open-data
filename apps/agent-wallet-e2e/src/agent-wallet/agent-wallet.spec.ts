@@ -13,6 +13,7 @@ import {
 const REQUIRED_TOOLS = [
   'has_login_start',
   'has_login_status',
+  'has_login_qr',
   'has_session',
   'has_logout',
   'odl_build_object_create',
@@ -44,6 +45,14 @@ async function waitFor<T>(
   throw new Error('Timed out waiting for condition');
 }
 
+async function readPendingDeepLink(requestId: string): Promise<string> {
+  const artifacts = await mcpCallTool<{ deepLink: string }>('has_login_qr', {
+    requestId,
+  });
+  expect(artifacts.isError).toBe(false);
+  return artifacts.data.deepLink;
+}
+
 async function ensureLoggedIn(account: string): Promise<void> {
   const session = await mcpCallTool<{ active: boolean; session?: { account: string } }>(
     'has_session',
@@ -58,7 +67,6 @@ async function ensureLoggedIn(account: string): Promise<void> {
 
   const login = await mcpCallTool<{
     requestId: string;
-    deepLink: string;
     alreadyActive?: boolean;
   }>('has_login_start', { account });
 
@@ -67,7 +75,7 @@ async function ensureLoggedIn(account: string): Promise<void> {
     return;
   }
 
-  const link = parseHasDeepLink(login.data.deepLink);
+  const link = parseHasDeepLink(await readPendingDeepLink(login.data.requestId));
   await fakeHas().approveAuth({
     uuid: link.uuid,
     authKey: link.key,
@@ -104,15 +112,21 @@ describe('agent-wallet MCP (e2e)', () => {
   it('runs login → object_create → broadcast happy path', async () => {
     const login = await mcpCallTool<{
       requestId: string;
-      deepLink: string;
-      qrAscii: string;
+      webLink: string;
     }>('has_login_start', { account: 'alice' });
 
     expect(login.isError).toBe(false);
-    expect(login.data.deepLink.startsWith('has://auth_req/')).toBe(true);
-    expect(login.data.qrAscii.length).toBeGreaterThan(0);
+    expect(login.rawText).not.toContain('eyJ');
+    expect(login.rawText).not.toContain('qrAscii');
 
-    const link = parseHasDeepLink(login.data.deepLink);
+    const qr = await mcpCallTool<{ deepLink: string; qrAscii: string }>(
+      'has_login_qr',
+      { requestId: login.data.requestId },
+    );
+    expect(qr.data.deepLink.startsWith('has://auth_req/')).toBe(true);
+    expect(qr.data.qrAscii.length).toBeGreaterThan(0);
+
+    const link = parseHasDeepLink(qr.data.deepLink);
     await fakeHas().approveAuth({
       uuid: link.uuid,
       authKey: link.key,
@@ -212,5 +226,20 @@ describe('agent-wallet MCP (e2e)', () => {
 
     expect(result.isError).toBe(true);
     expect(result.rawText).toContain('No active HAS session');
+  });
+
+  it('reuses a live pending login on repeated has_login_start', async () => {
+    const first = await mcpCallTool<{ requestId: string; webLink: string }>(
+      'has_login_start',
+      { account: 'alice' },
+    );
+    const second = await mcpCallTool<{ requestId: string; webLink: string }>(
+      'has_login_start',
+      { account: 'alice' },
+    );
+
+    expect(second.data.requestId).toBe(first.data.requestId);
+    expect(second.data.webLink).toBe(first.data.webLink);
+    expect(first.data.webLink).toContain('/has#1');
   });
 });

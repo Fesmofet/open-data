@@ -111,7 +111,7 @@ sequenceDiagram
   participant PKSA as Keychain Mobile
 
   Agent->>Daemon: has_login_start({ account })
-  Daemon-->>Agent: requestId, webLink, deepLink, expiresInSec
+  Daemon-->>Agent: requestId, webLink, expiresInSec
   Agent->>User: send webLink (chat) — see has-login-from-chat skill
   User->>PKSA: approve login
   loop poll
@@ -132,8 +132,9 @@ Send JSON-RPC to `/agent-wallet/mcp` with bearer header. Tool names:
 
 | Tool | Purpose |
 |------|---------|
-| `has_login_start` | Start HAS auth; returns `requestId`, `webLink`, `deepLink`, `qrAscii`, `expiresAt`, `expiresInSec`, `alreadyActive`, `pushSent`, optional `qrPngPath` |
+| `has_login_start` | Start HAS auth; returns `requestId`, `alreadyActive`, `expiresAt`, `expiresInSec`, `pushSent`, `webLink`; `deepLink` only when no web link is configured |
 | `has_login_status` | Poll: `pending` / `active` / `rejected` / `expired` |
+| `has_login_qr` | Fallback artefacts for a pending login: `deepLink`, `qrAscii`, optional `qrPngPath` |
 | `has_session` | `{ active, session: { account, expiresAt } }` — no secrets |
 | `has_logout` | Clear session + session file |
 | `odl_build_object_create` | Build `custom_json` ops from registry-validated fields |
@@ -142,14 +143,16 @@ Send JSON-RPC to `/agent-wallet/mcp` with bearer header. Tool names:
 
 ### 2. Login
 
-**Chat / Telegram / Slack:** follow [has-login-from-chat](has-login-from-chat.md) — send `webLink`, never `qrAscii`.
+**Chat / Telegram / Slack:** follow [has-login-from-chat](has-login-from-chat.md) — send `webLink` verbatim and nothing else. `deepLink` and `qrAscii` are base64 of JSON, so they start with `eyJ` and chat clients redact them as leaked JWTs.
 
 ```json
 // tools/call has_login_start
 { "account": "alice" }
 ```
 
-Terminal / second device: show `qrAscii` or open `deepLink`. Poll `has_login_status` until `active`.
+Terminal / second device: call `has_login_qr` with the `requestId` and show `qrAscii`, or open `deepLink`. Poll `has_login_status` until `active`.
+
+Repeating `has_login_start` for the same account returns the existing pending request while it is still alive, so retries do not invalidate a link already sent.
 
 ### 3. Build object create
 

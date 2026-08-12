@@ -14,6 +14,11 @@ export type LoginRequestState =
   | { status: 'rejected' }
   | { status: 'expired' };
 
+export type PendingLoginRequestState = Extract<
+  LoginRequestState,
+  { status: 'pending' }
+>;
+
 export type BroadcastRequestState =
   | { status: 'pending'; expiresAt: number }
   | { status: 'signed'; transactionId: string }
@@ -36,6 +41,17 @@ export class PendingRequestsStore {
 
   updateLogin(requestId: string, state: LoginRequestState): void {
     this.loginRequests.set(requestId, state);
+  }
+
+  findPendingLogin(
+    account: string,
+  ): { requestId: string; state: PendingLoginRequestState } | null {
+    for (const [requestId, state] of this.loginRequests) {
+      if (state.status === 'pending' && state.account === account) {
+        return { requestId, state };
+      }
+    }
+    return null;
   }
 
   setBroadcast(requestId: string, state: BroadcastRequestState): void {

@@ -4,6 +4,12 @@ export {
   decryptHasPayload,
   encryptHasPayload,
 } from './has-crypto';
+export {
+  decodeHasAuthCompactFragment,
+  encodeHasAuthCompactFragment,
+  HAS_COMPACT_KNOWN_HOSTS,
+  HAS_COMPACT_LINK_VERSION,
+} from './has-compact-link';
 export { buildHasAuthDeepLink, type HasAuthDeepLinkInput } from './has-deep-link';
 export {
   HasClient,

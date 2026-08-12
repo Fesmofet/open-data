@@ -3,10 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import {
-  buildHasAuthDeepLinkFromPayloadBase64,
-  parseHasAuthFragmentPayload,
-} from '@/modules/auth/infrastructure/providers/has/has-fragment-payload';
+import { buildHasAuthDeepLink } from '@/modules/auth/infrastructure/providers/has/has-deep-link';
+import { parseHasAuthFragmentPayload } from '@/modules/auth/infrastructure/providers/has/has-fragment-payload';
 
 export function HasRedirectPanel() {
   const { t } = useI18n();
@@ -23,11 +21,10 @@ export function HasRedirectPanel() {
     }
     try {
       const payload = parseHasAuthFragmentPayload(hash);
-      const base64 = hash.startsWith('#') ? hash.slice(1) : hash;
       return {
         kind: 'ready' as const,
         payload,
-        deepLink: buildHasAuthDeepLinkFromPayloadBase64(base64.trim()),
+        deepLink: buildHasAuthDeepLink(payload),
       };
     } catch (error) {
       const message = (error as Error).message;

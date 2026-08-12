@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit, Optional } f
 import { ConfigService } from '@nestjs/config';
 import {
   buildHasAuthDeepLink,
+  encodeHasAuthCompactFragment,
   HasClient,
   type HasSession,
   type HasTransportFactory,
@@ -11,16 +12,52 @@ import qrcode from 'qrcode';
 
 import { AgentWalletAuthService } from '../auth/agent-wallet-auth.service';
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
+import { LOGIN_REUSE_MIN_REMAINING_MS } from '../constants/login';
 import { LocalFilesService } from './local-files.service';
 import {
   PendingRequestsStore,
   type BroadcastRequestState,
-  type LoginRequestState,
+  type PendingLoginRequestState,
 } from './pending-requests.store';
 import { toHiveWireOperations } from './wire-operations';
 import { HAS_TRANSPORT_FACTORY } from './has-transport.token';
 
 type PersistedSession = HasSession;
+
+/**
+ * Deliberately free of `qrAscii` and of any JWT-shaped string: this payload is
+ * what a chat agent relays to the user, and secret redactors cut `eyJ…` blobs.
+ *
+ * @see docs/skills/has-login-from-chat.md
+ */
+export type LoginStartResult = {
+  requestId: string;
+  alreadyActive: boolean;
+  expiresAt: number;
+  expiresInSec: number;
+  pushSent: boolean;
+  webLink?: string;
+  deepLink?: string;
+};
+
+export type LoginStatusView =
+  | {
+      status: 'pending';
+      account: string;
+      expiresAt: number;
+      expiresInSec: number;
+      webLink?: string;
+    }
+  | { status: 'active'; account: string; expiresAt: number }
+  | { status: 'rejected' }
+  | { status: 'expired' };
+
+export type LoginArtifacts = {
+  account: string;
+  deepLink: string;
+  qrAscii: string;
+  qrPngPath?: string;
+};
 
 @Injectable()
 export class HasSessionService implements OnModuleInit, OnModuleDestroy {
@@ -80,17 +117,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  async loginStart(account: string): Promise<{
-    requestId: string;
-    deepLink: string;
-    qrAscii: string;
-    expiresAt: number;
-    alreadyActive: boolean;
-    expiresInSec: number;
-    webLink?: string;
-    qrPngPath?: string;
-    pushSent: boolean;
-  }> {
+  async loginStart(account: string): Promise<LoginStartResult> {
     const normalized = account.trim().replace(/^@/, '').toLowerCase();
 
     if (
@@ -100,13 +127,16 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     ) {
       return {
         requestId: '',
-        deepLink: '',
-        qrAscii: '',
         expiresAt: this.session.expire,
         alreadyActive: true,
         expiresInSec: this.secondsUntil(this.session.expire),
         pushSent: false,
       };
+    }
+
+    const reusable = this.findReusablePendingLogin(normalized);
+    if (reusable) {
+      return this.toLoginStartResult(reusable.requestId, reusable.state, false);
     }
 
     const staleSession = await this.loadStaleSession(normalized);
@@ -127,7 +157,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     return this.startLoginFlow(normalized, { pushSent: false });
   }
 
-  loginStatus(requestId: string): LoginRequestState | { status: 'expired' } {
+  loginStatus(requestId: string): LoginStatusView {
     const state = this.pending.getLogin(requestId);
     if (!state) {
       return { status: 'expired' };
@@ -138,7 +168,35 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       return { status: 'expired' };
     }
 
-    return state;
+    if (state.status !== 'pending') {
+      return state;
+    }
+
+    return {
+      status: 'pending',
+      account: state.account,
+      expiresAt: state.expiresAt,
+      expiresInSec: this.secondsUntil(state.expiresAt),
+      ...(state.webLink ? { webLink: state.webLink } : {}),
+    };
+  }
+
+  /**
+   * Heavy artefacts kept out of the polled status: terminal QR and the
+   * `has://` deep link are useless in chat and drown the tool response.
+   */
+  loginArtifacts(requestId: string): LoginArtifacts | null {
+    const state = this.pending.getLogin(requestId);
+    if (!state || state.status !== 'pending') {
+      return null;
+    }
+
+    return {
+      account: state.account,
+      deepLink: state.deepLink,
+      qrAscii: state.qrAscii,
+      ...(state.qrPngPath ? { qrPngPath: state.qrPngPath } : {}),
+    };
   }
 
   async logout(): Promise<void> {
@@ -274,20 +332,65 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  private findReusablePendingLogin(
+    account: string,
+  ): { requestId: string; state: PendingLoginRequestState } | null {
+    const found = this.pending.findPendingLogin(account);
+    if (!found) {
+      return null;
+    }
+    if (found.state.expiresAt - Date.now() < LOGIN_REUSE_MIN_REMAINING_MS) {
+      return null;
+    }
+    return found;
+  }
+
+  private toLoginStartResult(
+    requestId: string,
+    state: PendingLoginRequestState,
+    pushSent: boolean,
+  ): LoginStartResult {
+    return {
+      requestId,
+      alreadyActive: false,
+      expiresAt: state.expiresAt,
+      expiresInSec: this.secondsUntil(state.expiresAt),
+      pushSent,
+      ...(state.webLink
+        ? { webLink: state.webLink }
+        : { deepLink: state.deepLink }),
+    };
+  }
+
+  /**
+   * The web link carries the compact fragment only. Falling back to the legacy
+   * base64-of-JSON fragment would reintroduce the `eyJ…` prefix that chat
+   * clients redact, so in that case no web link is offered at all.
+   */
+  private buildWebLink(payload: {
+    account: string;
+    uuid: string;
+    key: string;
+    host: string;
+  }): string | undefined {
+    const base = this.config.get('hasWebLinkBase', { infer: true });
+    if (!base) {
+      return undefined;
+    }
+    const fragment = encodeHasAuthCompactFragment(payload);
+    if (!fragment) {
+      this.logger.warn(
+        'Could not build a compact HAS web link; falling back to deep link',
+      );
+      return undefined;
+    }
+    return `${base}/has#${fragment}`;
+  }
+
   private async startLoginFlow(
     normalized: string,
     options: { token?: string; authKey?: string; pushSent: boolean },
-  ): Promise<{
-    requestId: string;
-    deepLink: string;
-    qrAscii: string;
-    expiresAt: number;
-    alreadyActive: boolean;
-    expiresInSec: number;
-    webLink?: string;
-    qrPngPath?: string;
-    pushSent: boolean;
-  }> {
+  ): Promise<LoginStartResult> {
     const requestId = this.auth.hashRequestId([
       'login',
       normalized,
@@ -313,15 +416,14 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     });
 
     const host = client.getHost().replace(/\/$/, '');
-    const deepLink = buildHasAuthDeepLink({
+    const payload = {
       account: pending.account,
       uuid: pending.uuid,
       key: pending.authKey,
       host,
-    });
-    const base64 = deepLink.replace('has://auth_req/', '');
-    const webLinkBase = this.config.get('hasWebLinkBase', { infer: true });
-    const webLink = webLinkBase ? `${webLinkBase}/has#${base64}` : undefined;
+    };
+    const deepLink = buildHasAuthDeepLink(payload);
+    const webLink = this.buildWebLink(payload);
 
     const qrAscii = await qrcode.toString(deepLink, {
       type: 'terminal',
@@ -344,7 +446,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-    const loginState: LoginRequestState = {
+    const loginState: PendingLoginRequestState = {
       status: 'pending',
       account: pending.account,
       deepLink,
@@ -361,17 +463,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       );
     });
 
-    return {
-      requestId,
-      deepLink,
-      qrAscii,
-      expiresAt: pending.expire,
-      alreadyActive: false,
-      expiresInSec: this.secondsUntil(pending.expire),
-      ...(webLink ? { webLink } : {}),
-      ...(qrPngPath ? { qrPngPath } : {}),
-      pushSent: options.pushSent,
-    };
+    return this.toLoginStartResult(requestId, loginState, options.pushSent);
   }
 
   private getOrCreateClient(): HasClient {

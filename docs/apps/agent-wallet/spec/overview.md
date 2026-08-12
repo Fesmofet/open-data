@@ -53,8 +53,9 @@ CI publishes `agent-wallet.js` + `agent-wallet.js.sha256` via [release-agent-wal
 
 | Tool | Returns |
 |------|---------|
-| `has_login_start` | `requestId`, `webLink`, `deepLink`, `qrAscii`, `expiresAt`, `expiresInSec`, `alreadyActive`, `pushSent`, optional `qrPngPath` |
-| `has_login_status` | `pending` / `active` / `rejected` / `expired` |
+| `has_login_start` | `requestId`, `alreadyActive`, `expiresAt`, `expiresInSec`, `pushSent`, `webLink` (compact fragment), `deepLink` only when no web link is configured |
+| `has_login_status` | `pending` (with `account`, `expiresInSec`, `webLink`) / `active` / `rejected` / `expired` |
+| `has_login_qr` | `deepLink`, `qrAscii`, optional `qrPngPath` for a pending login — terminal and second-device fallback only |
 | `has_session` | `account`, `expiresAt` (no secrets) |
 | `has_logout` | — |
 | `odl_build_object_create` | `ops`, `opsCount`, `bytes`, `warnings` |
@@ -70,7 +71,7 @@ CI publishes `agent-wallet.js` + `agent-wallet.js.sha256` via [release-agent-wal
 | `ODL_NETWORK` | `testnet` | `mainnet` \| `testnet` → `odl-mainnet` / `odl-testnet` |
 | `HAS_WS_URL` | `wss://hive-auth.arcange.eu` | HAS WebSocket server |
 | `HAS_APP_NAME` | `ODL Agent` | Shown in Keychain auth prompt |
-| `HAS_WEB_LINK_BASE` | `https://waiviodev.com` | Origin for clickable `webLink` (`/has#payload`); empty disables |
+| `HAS_WEB_LINK_BASE` | `https://waiviodev.com` | Origin for clickable `webLink` (`/has#<compact fragment>`); empty disables. Dev stand — replace once a production domain exists |
 | `AGENT_WALLET_DATA_DIR` | `~/.odl` | Token + session directory |
 | `AGENT_WALLET_NO_PERSIST` | `false` | Memory-only session when `true` |
 | `AGENT_WALLET_BEARER_TOKEN` | — | Fixed token (optional; else auto-generated) |

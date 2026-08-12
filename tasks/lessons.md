@@ -79,3 +79,15 @@
 **Pattern:** Nest/Express/Kysely/`load-esm` dynamic `require` → webpack `Critical dependency` warnings; MCP SDK / iterare → `source-map-loader` ENOENT in development. Not runtime bugs for this repo.
 
 **Rule:** Silence via shared `nestIgnoreWarnings` in `apps/nest-webpack.shared.js` (scoped to `node_modules` + source-map parse failures). Wire `ignoreWarnings: nestIgnoreWarnings` in each Nest `webpack.config.js`. Do not externalize packages just to quiet warnings.
+
+## Base64 of JSON in user-facing strings
+
+**Pattern:** A link fragment built as base64 of JSON always starts with `eyJ` (that is `{"`), which is indistinguishable from a JWT. Secret redactors in chat clients cut such strings in half, and the failure looks like an application bug: the user reports "invalid link" or "expired" while the page and the server are both correct. Assuming a length limit and shortening the link would not have fixed it.
+
+**Rule:** Never put base64-of-JSON into anything a human relays through a messenger. Use a binary or otherwise non-JWT-shaped encoding, and pin the invariant in a test (`expect(link).not.toContain('eyJ')`). When a string arrives mangled, first check its **shape** against redaction heuristics, and only then its length — measure both before designing a fix.
+
+## Tool responses that agents must relay
+
+**Pattern:** `has_login_start` returned a ~2 KB terminal QR plus two long links. The consuming agent could not tell which field to send, started post-processing it with `jq`/`python`/`xxd`, and blew the 60-second HAS window.
+
+**Rule:** A tool whose output a human must act on returns exactly what the human needs and nothing else. Heavy or fallback artefacts go behind a separate tool. Polling endpoints return a projection, not the whole stored state. State the required action in the tool description in imperative form.

@@ -12,7 +12,7 @@ export function registerAgentWalletTools(
     'has_login_start',
     {
       description:
-        'Start HAS login for a Hive account. Returns webLink for chat messengers (Telegram/Slack), deepLink for manual copy, and terminal qrAscii. Poll has_login_status until active. In chat: send webLink only — never qrAscii.',
+        'Start HAS login for a Hive account. Send the returned webLink to the user verbatim, in its own message, within 10 seconds — do not parse it, do not pipe it through a terminal, do not wrap it in a code fence. The login window is about 60 seconds. If alreadyActive is true no login is needed. Poll has_login_status until active. Calling this again for the same account reuses the pending request instead of invalidating the link already sent.',
       inputSchema: z.object({
         account: z.string().min(1).describe('Hive account name (with or without @)'),
       }),
@@ -30,7 +30,8 @@ export function registerAgentWalletTools(
   server.registerTool(
     'has_login_status',
     {
-      description: 'Poll login status for a requestId from has_login_start.',
+      description:
+        'Poll login status for a requestId from has_login_start. Poll every 3 seconds until active, rejected or expired.',
       inputSchema: z.object({
         requestId: z.string().min(1),
       }),
@@ -38,6 +39,24 @@ export function registerAgentWalletTools(
     async (args) => {
       const status = deps.hasSession.loginStatus(args.requestId);
       return jsonToolResult(status);
+    },
+  );
+
+  server.registerTool(
+    'has_login_qr',
+    {
+      description:
+        'Fallback artefacts for a pending login: terminal QR, PNG QR path and the raw has:// deep link. Use only for a terminal or a second device. Never send qrAscii or deepLink into a chat — the deep link is base64 of JSON, so it starts with eyJ and chat clients redact it as a leaked JWT.',
+      inputSchema: z.object({
+        requestId: z.string().min(1),
+      }),
+    },
+    async (args) => {
+      const artifacts = deps.hasSession.loginArtifacts(args.requestId);
+      if (!artifacts) {
+        return toolError('No pending login for this requestId');
+      }
+      return jsonToolResult(artifacts);
     },
   );
 

@@ -29,7 +29,7 @@ class FakeHasTransport implements HasTransport {
       queueMicrotask(() => {
         this.emit({
           cmd: HAS_CMD.AUTH_WAIT,
-          uuid: `auth-${this.sent.length}`,
+          uuid: crypto.randomUUID(),
           expire: Date.now() + 60_000,
           account: frame.account,
         });
@@ -83,6 +83,19 @@ describe('HasSessionService', () => {
     sessionPath: jest.Mock;
     qrPath: jest.Mock;
   };
+
+  function readAuthRequest(requestId: string): { uuid: string; key: string } {
+    const artifacts = service.loginArtifacts(requestId);
+    if (!artifacts) {
+      throw new Error(`No pending login for ${requestId}`);
+    }
+    return JSON.parse(
+      Buffer.from(
+        artifacts.deepLink.replace('has://auth_req/', ''),
+        'base64',
+      ).toString('utf8'),
+    ) as { uuid: string; key: string };
+  }
 
   afterEach(() => {
     service.onModuleDestroy();
@@ -139,12 +152,10 @@ describe('HasSessionService', () => {
     await moduleRef.get(AgentWalletAuthService).onModuleInit();
   });
 
-  it('returns login deep link immediately without waiting for approval', async () => {
+  it('returns a chat-safe web link immediately without waiting for approval', async () => {
     const started = await service.loginStart('alice');
 
-    expect(started.deepLink.startsWith('has://auth_req/')).toBe(true);
-    expect(started.webLink?.startsWith('https://waiviodev.com/has#')).toBe(true);
-    expect(started.qrAscii.length).toBeGreaterThan(0);
+    expect(started.webLink?.startsWith('https://waiviodev.com/has#1')).toBe(true);
     expect(started.alreadyActive).toBe(false);
     expect(started.expiresInSec).toBeGreaterThan(0);
     expect(started.pushSent).toBe(false);
@@ -152,13 +163,49 @@ describe('HasSessionService', () => {
     expect(service.loginStatus(started.requestId).status).toBe('pending');
   });
 
+  it('keeps heavy artefacts out of the start response and of the polled status', async () => {
+    const started = await service.loginStart('alice');
+
+    expect(started).not.toHaveProperty('qrAscii');
+    expect(started).not.toHaveProperty('deepLink');
+
+    const status = service.loginStatus(started.requestId);
+    expect(status).not.toHaveProperty('qrAscii');
+    expect(status).not.toHaveProperty('deepLink');
+    expect(status).toMatchObject({ status: 'pending', account: 'alice' });
+  });
+
+  it('never puts a JWT-shaped fragment into the web link', async () => {
+    const started = await service.loginStart('alice');
+
+    expect(started.webLink).not.toContain('eyJ');
+    expect(started.webLink?.length).toBeLessThan(120);
+  });
+
+  it('exposes deep link and QR only through has_login_qr', async () => {
+    const started = await service.loginStart('alice');
+
+    const artifacts = service.loginArtifacts(started.requestId);
+    expect(artifacts?.deepLink.startsWith('has://auth_req/')).toBe(true);
+    expect(artifacts?.qrAscii.length).toBeGreaterThan(0);
+    expect(artifacts?.qrPngPath).toBe('/tmp/agent-wallet-qr.png');
+    expect(service.loginArtifacts('unknown-request')).toBeNull();
+  });
+
+  it('reuses a live pending login instead of burning a new auth request', async () => {
+    const first = await service.loginStart('alice');
+    const framesAfterFirst = transport.sent.length;
+
+    const second = await service.loginStart('alice');
+
+    expect(second.requestId).toBe(first.requestId);
+    expect(second.webLink).toBe(first.webLink);
+    expect(transport.sent.length).toBe(framesAfterFirst);
+  });
+
   it('returns alreadyActive when session is valid for the account', async () => {
     const started = await service.loginStart('alice');
-    const { uuid, key } = JSON.parse(
-      Buffer.from(started.deepLink.replace('has://auth_req/', ''), 'base64').toString(
-        'utf8',
-      ),
-    ) as { uuid: string; key: string };
+    const { uuid, key } = readAuthRequest(started.requestId);
 
     transport.emit({
       cmd: HAS_CMD.AUTH_ACK,
@@ -180,11 +227,7 @@ describe('HasSessionService', () => {
   it('activates session after auth_ack and hides secrets in has_session', async () => {
     const started = await service.loginStart('alice');
 
-    const deepLinkPayload = JSON.parse(
-      Buffer.from(started.deepLink.replace('has://auth_req/', ''), 'base64').toString(
-        'utf8',
-      ),
-    ) as { uuid: string; key: string };
+    const deepLinkPayload = readAuthRequest(started.requestId);
 
     transport.emit({
       cmd: HAS_CMD.AUTH_ACK,
@@ -231,11 +274,7 @@ describe('HasSessionService', () => {
   it('marks login rejected on auth_nack', async () => {
     const started = await service.loginStart('alice');
 
-    const { uuid, key } = JSON.parse(
-      Buffer.from(started.deepLink.replace('has://auth_req/', ''), 'base64').toString(
-        'utf8',
-      ),
-    ) as { uuid: string; key: string };
+    const { uuid, key } = readAuthRequest(started.requestId);
 
     transport.emit({
       cmd: HAS_CMD.AUTH_NACK,

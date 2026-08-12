@@ -1,3 +1,4 @@
+import { decodeHasAuthCompactFragment } from './has-compact-link';
 import type { HasAuthPayloadInput } from './has-deep-link';
 
 export type HasAuthFragmentPayload = HasAuthPayloadInput;
@@ -16,11 +17,34 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function assertUsablePayload(payload: HasAuthFragmentPayload): HasAuthFragmentPayload {
+  const account = payload.account.trim();
+  const uuid = payload.uuid.trim();
+  const key = payload.key.trim();
+  const host = payload.host.trim();
+
+  if (!account || !uuid || !key || !host.startsWith('wss://')) {
+    throw new Error('invalid');
+  }
+
+  return { account, uuid, key, host };
+}
+
+/**
+ * Accepts both fragment formats: the compact binary one emitted by current
+ * agent-wallet builds, and the legacy base64-of-JSON one still produced by
+ * already released binaries.
+ */
 export function parseHasAuthFragmentPayload(rawHash: string): HasAuthFragmentPayload {
   const payload = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
   const trimmed = payload.trim();
   if (!trimmed) {
     throw new Error('missing');
+  }
+
+  const compact = decodeHasAuthCompactFragment(trimmed);
+  if (compact) {
+    return assertUsablePayload(compact);
   }
 
   let decoded: string;
@@ -50,19 +74,10 @@ export function parseHasAuthFragmentPayload(rawHash: string): HasAuthFragmentPay
     typeof account !== 'string' ||
     typeof uuid !== 'string' ||
     typeof key !== 'string' ||
-    typeof host !== 'string' ||
-    !account.trim() ||
-    !uuid.trim() ||
-    !key.trim() ||
-    !host.startsWith('wss://')
+    typeof host !== 'string'
   ) {
     throw new Error('invalid');
   }
 
-  return {
-    account: account.trim(),
-    uuid: uuid.trim(),
-    key: key.trim(),
-    host: host.trim(),
-  };
+  return assertUsablePayload({ account, uuid, key, host });
 }
