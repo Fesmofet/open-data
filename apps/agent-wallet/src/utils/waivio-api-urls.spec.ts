@@ -1,4 +1,8 @@
-import { buildWaivioAuthBaseUrl, buildWaivioIpfsGatewayBaseUrl } from './waivio-api-urls';
+import {
+  buildWaivioAuthBaseUrl,
+  buildWaivioIpfsGatewayBaseUrl,
+  imageContentUrlForCid,
+} from './waivio-api-urls';
 
 describe('waivio-api-urls', () => {
   it('defaults to waiviodev.com auth and ipfs paths', () => {
@@ -14,6 +18,9 @@ describe('waivio-api-urls', () => {
     );
     expect(buildWaivioIpfsGatewayBaseUrl('https://example.test/')).toBe(
       'https://example.test/ipfs-gateway',
+    );
+    expect(imageContentUrlForCid('https://example.test/', 'QmAbc')).toBe(
+      'https://example.test/ipfs-gateway/content/image/QmAbc',
     );
   });
 });

@@ -14,7 +14,34 @@ Use this skill when an agent must attach images to ODL object updates via `agent
 ipfs_upload_image({ filePath: "/absolute/or/relative/path/to/image.png" })
 ```
 
-Returns `{ cid, url? }` only. **Never** write `url` into ODL updates when `cid` is present.
+Returns `{ cid, contentUrl, url? }`. **Never** write `url` or `contentUrl` into ODL updates when `cid` is present — on-chain value is `{ "cid": "<returned-cid>" }` only.
+
+**Do not** bypass `ipfs_upload_image` with manual `curl` to the gateway. The tool sets the correct image MIME on multipart upload; raw `curl` without `Content-Type` yields `application/octet-stream` and gateway 400.
+
+## Avatar preparation
+
+Mirror the web image editor ([`image-editor-config.ts`](../../apps/web/src/modules/object-updates/application/image-editor-config.ts)):
+
+| updateType | Aspect | Max size | Agent action |
+|------------|--------|----------|--------------|
+| `image` (avatar) | **1:1** | **1024px** | Center-crop the subject; do not upload landscape/portrait as-is |
+| `imageBackground` | natural | 1920px | No forced square |
+| `imageGalleryItem` | natural | 1920px | No forced square |
+
+Rules:
+
+- The web UI renders avatars in a square frame with `object-cover` — a non-square upload is center-cropped without your control over framing.
+- When generating images (Grok, DALL·E, etc.), request **1024×1024** (1:1) from the start when possible.
+- For `image`, always use **IPFS** (`ipfs_upload_image` → `{ cid }`). Do not store generated or session CDN URLs on chain.
+- If the image comes from Grok/xAI (`files-cdn.x.ai`, etc.), download it locally, prepare 1:1, then upload via `ipfs_upload_image`. Temporary CDN URLs are not durable storage.
+- For gallery external URLs (`{ album, url }`), use only stable origins and verify the URL loads directly before broadcast. For generated or temporary CDN assets, prefer IPFS upload instead.
+
+## Verification before broadcast
+
+1. Confirm `contentUrl` from the tool response opens in a browser or returns `200` with an image content-type (`HEAD` or `GET`).
+2. After `wallet_broadcast` / `has_broadcast`, resolve the object via query-api (`resolve_object` on `POST /query/mcp` or equivalent) and check `fields.image` is the same content URL pattern: `{origin}/ipfs-gateway/content/image/{cid}`.
+
+If `fields.image` is set and the content URL loads, web avatars appear after deploy — no re-broadcast needed.
 
 ## Update policy
 
@@ -22,16 +49,18 @@ Returns `{ cid, url? }` only. **Never** write `url` into ODL updates when `cid` 
 
 **Mandatory IPFS path:**
 
-1. `ipfs_upload_image` the local file.
-2. Write update value as `{ "cid": "<returned-cid>" }` only.
-3. Use returned `url` for preview in chat if needed — not in the blockchain update.
+1. Prepare a **1:1** image (512–1024px, subject centered).
+2. `ipfs_upload_image` the local file.
+3. Verify `contentUrl` loads.
+4. Write update value as `{ "cid": "<returned-cid>" }` only.
+5. Use `contentUrl` for preview in chat if needed — not in the blockchain update.
 
 ### Gallery item (`updateType: "imageGalleryItem"`)
 
 Either:
 
 - `{ "album": "<albumId>", "cid": "<cid>" }` after IPFS upload, or
-- `{ "album": "<albumId>", "url": "https://..." }` for external HTTPS images.
+- `{ "album": "<albumId>", "url": "https://..." }` for stable external HTTPS images.
 
 Do not send both `cid` and `url` in the same gallery item.
 

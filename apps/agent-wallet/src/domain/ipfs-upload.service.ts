@@ -9,7 +9,11 @@ import {
   IPFS_UPLOAD_FIELD_NAME,
   IPFS_UPLOAD_MAX_BYTES,
 } from '../constants/ipfs-upload';
-import { buildWaivioIpfsGatewayBaseUrl } from '../utils/waivio-api-urls';
+import { mimeFromImageExtension } from '../utils/image-mime';
+import {
+  buildWaivioIpfsGatewayBaseUrl,
+  imageContentUrlForCid,
+} from '../utils/waivio-api-urls';
 import { WaivioAuthSessionService } from './waivio-auth-session.service';
 
 const SUPPORTED_IMAGE_EXTENSIONS = new Set([
@@ -18,12 +22,14 @@ const SUPPORTED_IMAGE_EXTENSIONS = new Set([
   '.png',
   '.gif',
   '.webp',
-  '.bmp',
-  '.svg',
+  '.avif',
+  '.tif',
+  '.tiff',
 ]);
 
 export type IpfsUploadResult = {
   cid: string;
+  contentUrl: string;
   url?: string;
 };
 
@@ -62,27 +68,36 @@ export class IpfsUploadService {
       throw new Error(`Unsupported image type: ${extension || '(none)'}`);
     }
 
+    const mime = mimeFromImageExtension(extension);
+    if (!mime) {
+      throw new Error(`Unsupported image type: ${extension || '(none)'}`);
+    }
+
     const fileBuffer = await import('node:fs/promises').then((fs) =>
       fs.readFile(resolvedPath),
     );
 
-    return this.uploadBuffer(fileBuffer, basename(resolvedPath));
+    return this.uploadBuffer(fileBuffer, basename(resolvedPath), mime);
+  }
+
+  private waivioApiOrigin(): string {
+    return this.config.get('waivioApiOrigin', { infer: true });
   }
 
   private async uploadBuffer(
     fileBuffer: Buffer,
     filename: string,
+    mime: string,
     allowRetry = true,
   ): Promise<IpfsUploadResult> {
     const accessToken = await this.waivioAuth.getAccessToken();
-    const uploadUrl = `${buildWaivioIpfsGatewayBaseUrl(
-      this.config.get('waivioApiOrigin', { infer: true }),
-    )}/upload/image`;
+    const origin = this.waivioApiOrigin();
+    const uploadUrl = `${buildWaivioIpfsGatewayBaseUrl(origin)}/upload/image`;
 
     const form = new FormData();
     form.append(
       IPFS_UPLOAD_FIELD_NAME,
-      new Blob([Uint8Array.from(fileBuffer)]),
+      new Blob([new Uint8Array(fileBuffer)], { type: mime }),
       filename,
     );
 
@@ -96,17 +111,25 @@ export class IpfsUploadService {
 
     if (response.status === 401 && allowRetry) {
       await this.waivioAuth.getAccessToken(true);
-      return this.uploadBuffer(fileBuffer, filename, false);
+      return this.uploadBuffer(fileBuffer, filename, mime, false);
     }
 
     if (response.status === 400) {
-      throw new Error('Invalid image upload');
+      const detail = await this.readErrorBody(response);
+      throw new Error(
+        detail ? `Invalid image upload: ${detail}` : 'Invalid image upload',
+      );
     }
     if (response.status === 413) {
       throw new Error('Image too large for gateway');
     }
     if (!response.ok) {
-      throw new Error(`IPFS upload failed (${response.status})`);
+      const detail = await this.readErrorBody(response);
+      throw new Error(
+        detail
+          ? `IPFS upload failed (${response.status}): ${detail}`
+          : `IPFS upload failed (${response.status})`,
+      );
     }
 
     let body: unknown;
@@ -128,7 +151,7 @@ export class IpfsUploadService {
       throw new Error('IPFS upload response missing cid');
     }
 
-    const url =
+    const gatewayUrl =
       typeof body === 'object' &&
       body !== null &&
       'url' in body &&
@@ -136,6 +159,33 @@ export class IpfsUploadService {
         ? (body as { url: string }).url
         : undefined;
 
-    return { cid, ...(url ? { url } : {}) };
+    return {
+      cid,
+      contentUrl: imageContentUrlForCid(origin, cid),
+      ...(gatewayUrl ? { url: gatewayUrl } : {}),
+    };
+  }
+
+  private async readErrorBody(response: Response): Promise<string | null> {
+    try {
+      const text = (await response.text()).trim();
+      if (!text) {
+        return null;
+      }
+      try {
+        const json = JSON.parse(text) as { message?: string | string[] };
+        if (typeof json.message === 'string') {
+          return json.message;
+        }
+        if (Array.isArray(json.message)) {
+          return json.message.join(', ');
+        }
+      } catch {
+        // not JSON
+      }
+      return text.length > 200 ? `${text.slice(0, 200)}…` : text;
+    } catch {
+      return null;
+    }
   }
 }

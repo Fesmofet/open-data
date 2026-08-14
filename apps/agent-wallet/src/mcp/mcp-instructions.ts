@@ -6,8 +6,9 @@ Workflow (HAS signing — default):
 1. Read MCP bearer token from ~/.odl/agent-wallet.token.
 2. has_login_start → send webLink to user → poll has_login_status until active.
 3. waivio_auth_start → poll waivio_auth_status until active (uses HAS session to sign auth challenge).
-4. ipfs_upload_image({ filePath }) for avatars — write only { "cid": "..." } in ODL image updates.
+4. ipfs_upload_image({ filePath }) for avatars — prepare 1:1 up to 1024px, upload, write only { "cid": "..." } on chain. Do not store generated CDN URLs (e.g. files-cdn.x.ai); download, crop, upload to IPFS. Verify contentUrl loads before broadcast.
 5. odl_build_object_create or custom ops → wallet_broadcast / has_broadcast → poll status.
+6. After broadcast, verify fields.image on the object via query-api (resolve_object) shows the content URL — do not use curl to bypass upload.
 
 Workflow (local keys — AGENT_WALLET_SIGNING_MODE=local):
 1. Set HIVE_ACCOUNT and HIVE_POSTING_KEY (optional HIVE_ACTIVE_KEY for active ops only).

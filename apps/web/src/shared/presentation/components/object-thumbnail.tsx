@@ -4,14 +4,14 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
+  getImagePathPost,
   getPreviewProxyImageUrl,
   normalizeLegacyObjectImageUrl,
-  resolveObjectImageUrl,
 } from '../../infrastructure/image/get-proxy-image-url';
 import { AVATAR_PLACEHOLDER_SRC } from '../avatar/resolve-avatar-url';
 import { shouldUnoptimizeRemoteImage } from '../image/should-unoptimize-remote-image';
 
-type LoadPhase = 'primary' | 'preview' | 'placeholder';
+type LoadPhase = 'raw' | 'proxy' | 'preview' | 'placeholder';
 
 export type ObjectThumbnailProps = {
   src: string | null | undefined;
@@ -43,36 +43,50 @@ export function ObjectThumbnail({
     return trimmed ? normalizeLegacyObjectImageUrl(trimmed, avatarSize) : '';
   }, [avatarSize, src]);
 
-  const primarySrc = useMemo(
-    () => resolveObjectImageUrl(src, avatarSize),
-    [avatarSize, src],
+  const proxySrc = useMemo(
+    () => (normalizedRaw ? getImagePathPost(normalizedRaw) : ''),
+    [normalizedRaw],
+  );
+
+  const hasProxyFallback = Boolean(
+    normalizedRaw && proxySrc && proxySrc !== normalizedRaw,
   );
 
   const [phase, setPhase] = useState<LoadPhase>(() =>
-    primarySrc ? 'primary' : 'placeholder',
+    normalizedRaw ? 'raw' : 'placeholder',
   );
 
   useEffect(() => {
-    setPhase(primarySrc ? 'primary' : 'placeholder');
-  }, [primarySrc, src]);
+    setPhase(normalizedRaw ? 'raw' : 'placeholder');
+  }, [normalizedRaw, src]);
 
   const displaySrc = useMemo(() => {
     if (phase === 'placeholder') {
       return AVATAR_PLACEHOLDER_SRC;
     }
+    if (phase === 'raw' && normalizedRaw) {
+      return normalizedRaw;
+    }
+    if (phase === 'proxy' && proxySrc) {
+      return proxySrc;
+    }
     if (phase === 'preview' && normalizedRaw) {
       return getPreviewProxyImageUrl(normalizedRaw) || AVATAR_PLACEHOLDER_SRC;
     }
-    return primarySrc ?? AVATAR_PLACEHOLDER_SRC;
-  }, [normalizedRaw, phase, primarySrc]);
+    return normalizedRaw || AVATAR_PLACEHOLDER_SRC;
+  }, [normalizedRaw, phase, proxySrc]);
 
   const onError = useCallback(() => {
-    if (phase === 'primary' && normalizedRaw) {
+    if (phase === 'raw') {
+      setPhase(hasProxyFallback ? 'proxy' : 'preview');
+      return;
+    }
+    if (phase === 'proxy') {
       setPhase('preview');
       return;
     }
     setPhase('placeholder');
-  }, [normalizedRaw, phase]);
+  }, [hasProxyFallback, phase]);
 
   const resolvedSizes = sizes ?? (fill ? `${size}px` : `${size}px`);
   const unoptimized =

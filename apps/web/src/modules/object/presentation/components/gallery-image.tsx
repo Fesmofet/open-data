@@ -17,7 +17,7 @@ import {
 
 import { GalleryImageFailedState } from './gallery-image-failed-state';
 
-type LoadPhase = 'primary' | 'raw' | 'preview' | 'failed';
+type LoadPhase = 'raw' | 'proxy' | 'preview' | 'failed';
 
 function normalizeGallerySourceUrl(url: string): string {
   const trimmed = url.trim();
@@ -36,11 +36,9 @@ export type GalleryImageProps = {
 };
 
 /**
- * Gallery grid / full-view image with Hive UGC proxy and a styled fallback when
- * the remote URL fails (CDN 404, hotlink block, expired asset).
+ * Gallery grid / full-view image with raw-first loading and Hive UGC proxy fallbacks.
  *
- * Fallback chain (legacy body `data-fallback-src` + Photos album raw URLs):
- * proxied primary → raw canonical URL → legacy preview proxy → failed state.
+ * Fallback chain: normalized raw URL → Hive `0x0` proxy → legacy preview proxy → failed state.
  */
 export function GalleryImage({
   src,
@@ -52,46 +50,47 @@ export function GalleryImage({
   const { t } = useI18n();
   const rawSrc = useMemo(() => normalizeGallerySourceUrl(src), [src]);
 
-  const primarySrc = useMemo(
+  const proxySrc = useMemo(
     () => (rawSrc ? getImagePathPost(rawSrc) : ''),
     [rawSrc],
   );
 
-  const usesRawFallback = rawSrc !== primarySrc;
+  const hasProxyFallback = Boolean(rawSrc && proxySrc && proxySrc !== rawSrc);
 
-  const [phase, setPhase] = useState<LoadPhase>(() =>
-    primarySrc ? 'primary' : 'failed',
-  );
+  const [phase, setPhase] = useState<LoadPhase>(() => (rawSrc ? 'raw' : 'failed'));
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setPhase(primarySrc ? 'primary' : 'failed');
+    setPhase(rawSrc ? 'raw' : 'failed');
     setLoaded(false);
-  }, [primarySrc, rawSrc]);
+  }, [rawSrc, src]);
 
   const displaySrc = useMemo(() => {
     if (phase === 'raw') {
       return rawSrc;
     }
+    if (phase === 'proxy') {
+      return proxySrc;
+    }
     if (phase === 'preview' && rawSrc) {
       return getPreviewProxyImageUrl(rawSrc) || rawSrc;
     }
-    return primarySrc;
-  }, [phase, primarySrc, rawSrc]);
+    return rawSrc;
+  }, [phase, proxySrc, rawSrc]);
 
   const onError = useCallback(() => {
-    if (phase === 'primary') {
-      setPhase(usesRawFallback ? 'raw' : 'preview');
+    if (phase === 'raw') {
+      setPhase(hasProxyFallback ? 'proxy' : 'preview');
       setLoaded(false);
       return;
     }
-    if (phase === 'raw') {
+    if (phase === 'proxy') {
       setPhase('preview');
       setLoaded(false);
       return;
     }
     setPhase('failed');
-  }, [phase, usesRawFallback]);
+  }, [hasProxyFallback, phase]);
 
   if (phase === 'failed' || !displaySrc) {
     return <GalleryImageFailedState message={t('gallery_image_failed_to_load')} />;

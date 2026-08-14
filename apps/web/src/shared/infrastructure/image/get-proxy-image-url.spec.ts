@@ -107,6 +107,14 @@ describe('getProxyImageUrl', () => {
     expect(getImagePathPost(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);
   });
 
+  it('skips first-party ipfs-gateway content image URLs (Hive 0x0 returns 403)', () => {
+    const ipfs =
+      'https://waiviodev.com/ipfs-gateway/content/image/QmYJAscm8HHYEK2VrU1gZT9YaDoPPmGQArH3yyAVuki3mX';
+    expect(getProxyImageUrl(ipfs)).toBe(ipfs);
+    expect(getImagePathPost(ipfs)).toBe(ipfs);
+    expect(resolveObjectImageUrl(ipfs)).toBe(ipfs);
+  });
+
   it('leaves empty, data:, and relative paths unchanged', () => {
     expect(getProxyImageUrl('')).toBe('');
     expect(getProxyImageUrl(null)).toBe('');

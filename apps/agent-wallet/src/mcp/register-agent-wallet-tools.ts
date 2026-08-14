@@ -78,7 +78,7 @@ export function registerAgentWalletTools(
     'ipfs_upload_image',
     {
       description:
-        'Upload a local image to IPFS via Waivio gateway. Requires active Waivio auth. Returns { cid, url? } only.',
+        'Upload a local image to IPFS via Waivio gateway. Requires active Waivio auth. For avatars prepare 1:1 up to 1024px before upload. Returns { cid, contentUrl, url? }.',
       inputSchema: z.object({
         filePath: z.string().min(1).describe('Absolute or relative path to a local image file (max 50 MiB)'),
       }),

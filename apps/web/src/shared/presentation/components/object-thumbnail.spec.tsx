@@ -22,14 +22,45 @@ jest.mock('next/image', () => ({
 
 const STEEMIT = 'https://steemitimages.com/u/neoxian/avatar/large';
 const HIVE = 'https://images.hive.blog/u/neoxian/avatar/large';
+const SHOPIFY =
+  'https://www.saturdaydumpling.com/cdn/shop/files/SDCo_Logo_01_RGB_1920_1080-03_a7dbffe0-238d-4532-b2f5-87915f9d5745.png?v=1686063213';
+const XAI =
+  'https://files-cdn.x.ai/K_00d0HgT4Gd0iVrhfJ3Fw/file_af70707d-6f53-4471-8d33-f043489b784b.png';
 
 describe('ObjectThumbnail', () => {
-  it('renders normalized primary URL for steemitimages avatars', () => {
+  it('renders normalized raw URL for steemitimages avatars', () => {
     render(<ObjectThumbnail src={STEEMIT} size={40} />);
     expect(screen.getByTestId('object-thumb')).toHaveAttribute('src', HIVE);
   });
 
-  it('falls back to preview proxy then placeholder on repeated errors', () => {
+  it('loads modern CDN URLs directly before Hive proxy', () => {
+    render(<ObjectThumbnail src={SHOPIFY} size={40} />);
+    expect(screen.getByTestId('object-thumb')).toHaveAttribute('src', SHOPIFY);
+
+    render(<ObjectThumbnail src={XAI} size={40} />);
+    expect(screen.getAllByTestId('object-thumb')[1]).toHaveAttribute('src', XAI);
+  });
+
+  it('falls back to Hive proxy then preview then placeholder', () => {
+    render(<ObjectThumbnail src={SHOPIFY} size={40} />);
+    const img = screen.getByTestId('object-thumb');
+
+    fireEvent.error(img);
+    expect(img).toHaveAttribute(
+      'src',
+      `https://images.hive.blog/0x0/${SHOPIFY}`,
+    );
+
+    fireEvent.error(img);
+    expect(img.getAttribute('src')).toMatch(
+      /^https:\/\/images\.hive\.blog\/800x600\/https:\/\/images\.hive\.blog\/p\//,
+    );
+
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', AVATAR_PLACEHOLDER_SRC);
+  });
+
+  it('falls back to preview proxy then placeholder for steemitimages avatars', () => {
     render(<ObjectThumbnail src={STEEMIT} size={40} />);
     const img = screen.getByTestId('object-thumb');
 

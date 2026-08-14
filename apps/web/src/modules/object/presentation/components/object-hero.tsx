@@ -3,14 +3,13 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
-import Image from 'next/image';
-
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
-import { getImagePathPost } from '@/shared/infrastructure/image/get-proxy-image-url';
-import { ObjectThumbnail, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { ObjectThumbnail } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
+
+import { ObjectHeroCoverImage } from './object-hero-cover-image';
 
 export type ObjectHeroEditContext = {
   objectId: string;
@@ -103,7 +102,6 @@ export function ObjectHero({
 
   const hiddenOnDesktop = shouldHideHeroOnDesktop(resolvedMode);
   const hasCoverPhoto = Boolean(coverImageUrl?.trim());
-  const displayCoverUrl = coverImageUrl ? getImagePathPost(coverImageUrl) : null;
 
   const canEditAvatar =
     isEditMode && editContext?.supportedUpdateTypes.includes('image');
@@ -128,20 +126,11 @@ export function ObjectHero({
   return (
     <header className={hiddenOnDesktop ? HIDDEN_ON_DESKTOP_CLASS : undefined}>
       <ShellFullBleedBand className="relative overflow-hidden">
-        {hasCoverPhoto && displayCoverUrl ? (
-          <div className="absolute inset-0">
-            <Image
-              src={displayCoverUrl}
-              alt=""
-              fill
-              priority={!hiddenOnDesktop}
-              sizes="100vw"
-              className="object-cover"
-              unoptimized={shouldUnoptimizeRemoteImage(displayCoverUrl)}
-            />
-            <div className="hero-cover-vignette absolute inset-0" aria-hidden />
-            <div className="absolute inset-0 bg-nav-bg/65" aria-hidden />
-          </div>
+        {hasCoverPhoto && coverImageUrl ? (
+          <ObjectHeroCoverImage
+            coverImageUrl={coverImageUrl}
+            priority={!hiddenOnDesktop}
+          />
         ) : (
           <div className="absolute inset-0 bg-nav-bg" aria-hidden />
         )}

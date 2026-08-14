@@ -33,6 +33,8 @@ const SKIP_PROXY_SUBSTRINGS = [
   'img.youtube.com',
   'gstatic.com',
   'ecency.com',
+  // First-party ipfs-gateway content URLs — Hive 0x0 returns 403.
+  '/ipfs-gateway/content/image/',
 ] as const;
 
 const SPACES_SUBSTRING = 'nyc3.digitaloceanspaces';

@@ -13,3 +13,8 @@ export function buildWaivioAuthBaseUrl(origin: string): string {
 export function buildWaivioIpfsGatewayBaseUrl(origin: string): string {
   return `${normalizeApiOrigin(origin)}/ipfs-gateway`;
 }
+
+/** `{origin}/ipfs-gateway/content/image/{cid}` */
+export function imageContentUrlForCid(origin: string, cid: string): string {
+  return `${buildWaivioIpfsGatewayBaseUrl(origin)}/content/image/${cid}`;
+}

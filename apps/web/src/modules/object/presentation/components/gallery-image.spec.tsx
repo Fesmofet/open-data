@@ -41,6 +41,8 @@ jest.mock('@/i18n/providers/i18n-provider', () => ({
 
 const BUSY_IPFS =
   'https://ipfs.busy.org/ipfs/QmQ2G2GCrBVmwAQ8J6RCKZRrsXWByWAB6NGNaS6hCGa7go';
+const SHOPIFY =
+  'https://www.saturdaydumpling.com/cdn/shop/files/SDCo_Logo_01_RGB_1920_1080-03_a7dbffe0-238d-4532-b2f5-87915f9d5745.png?v=1686063213';
 
 describe('GalleryImageFailedState', () => {
   it('renders the failed-to-load message', () => {
@@ -56,35 +58,40 @@ describe('GalleryImageFailedState', () => {
 });
 
 describe('GalleryImage', () => {
-  it('proxies legacy ipfs.busy.org URLs for display', () => {
+  it('loads modern CDN URLs directly first', () => {
+    render(
+      <div className="relative aspect-square">
+        <GalleryImage src={SHOPIFY} sizes="400px" />
+      </div>,
+    );
+
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute('src', SHOPIFY);
+  });
+
+  it('loads legacy ipfs.busy.org URLs directly first', () => {
     render(
       <div className="relative aspect-square">
         <GalleryImage src={BUSY_IPFS} sizes="400px" />
       </div>,
     );
 
-    expect(screen.getByTestId('gallery-image')).toHaveAttribute(
-      'src',
-      `https://images.hive.blog/0x0/${BUSY_IPFS}`,
-    );
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute('src', BUSY_IPFS);
   });
 
-  it('falls back to raw URL when proxied primary fails', () => {
-    const raw = 'https://cdn.example.com/product.jpg';
+  it('falls back to Hive proxy when raw URL fails', () => {
     render(
       <div className="relative aspect-square">
-        <GalleryImage src={raw} sizes="400px" />
+        <GalleryImage src={BUSY_IPFS} sizes="400px" />
       </div>,
     );
 
     const img = screen.getByTestId('gallery-image');
-    expect(img).toHaveAttribute(
-      'src',
-      `https://images.hive.blog/0x0/${raw}`,
-    );
 
     fireEvent.error(img);
-    expect(img).toHaveAttribute('src', raw);
+    expect(img).toHaveAttribute(
+      'src',
+      `https://images.hive.blog/0x0/${BUSY_IPFS}`,
+    );
   });
 
   it('falls back to preview proxy then failed state on repeated errors', () => {
@@ -97,7 +104,7 @@ describe('GalleryImage', () => {
     const img = screen.getByTestId('gallery-image');
 
     fireEvent.error(img);
-    expect(img).toHaveAttribute('src', BUSY_IPFS);
+    expect(img).toHaveAttribute('src', `https://images.hive.blog/0x0/${BUSY_IPFS}`);
 
     fireEvent.error(img);
     expect(img.getAttribute('src')).toMatch(
