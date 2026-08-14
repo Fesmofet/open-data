@@ -9,5 +9,5 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 1
 fi
 
-pnpm install --prod --frozen-lockfile --ignore-workspace
+pnpm install --prod --ignore-workspace --no-frozen-lockfile
 echo "agent-wallet production dependencies installed."

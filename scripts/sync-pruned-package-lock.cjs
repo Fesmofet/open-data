@@ -3,7 +3,7 @@
 /**
  * Align dist/apps/<app>/package.json dependency specifiers with the pruned
  * pnpm-lock.yaml importers section, and drop workspace-only fields so
- * `pnpm install --prod --frozen-lockfile --ignore-workspace` works in CI smoke.
+ * `pnpm install --prod --ignore-workspace --no-frozen-lockfile` works in CI smoke.
  *
  * Usage (after nx run <app>:prune-lockfile):
  *   node scripts/sync-pruned-package-lock.cjs --app agent-wallet

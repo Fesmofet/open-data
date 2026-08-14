@@ -62,7 +62,9 @@ jobs:
         run: pnpm exec nx run agent-wallet:build --skip-nx-cache
 
       - name: Prune production package metadata
-        run: pnpm exec nx run agent-wallet:prune --skip-nx-cache
+        run: |
+          pnpm exec nx run agent-wallet:prune-lockfile --skip-nx-cache
+          node scripts/sync-pruned-package-lock.cjs --app agent-wallet
 
       - name: E2E tests
         run: pnpm nx e2e agent-wallet-e2e
