@@ -83,27 +83,31 @@ async function resolveChallengeProof(input: {
     return fromAuthAck;
   }
 
-  if (!input.auth.key) {
+  const authKey = input.auth.key;
+  if (!authKey) {
     throw new Error('HiveAuth did not return signed challenge proof');
   }
+
+  const authWithKey = { ...input.auth, key: authKey };
 
   // Mobile PKSA often completes auth_ack without challenge_data even when the
   // login challenge was requested — use challenge_req on the active session.
   const challengeAck = await HAS.challenge(
-    input.auth,
+    authWithKey,
     input.challengeData,
-    (evt: { uuid: string; expire: number }) => {
+    (evt) => {
+      const event = evt as { uuid: string; expire: number };
       const deepLink = buildHasAuthDeepLink({
         account: input.auth.username,
-        uuid: evt.uuid,
-        key: input.auth.key!,
+        uuid: event.uuid,
+        key: authKey,
         host: input.authHost,
       });
       input.onAuthWait?.({
-        uuid: evt.uuid,
-        expire: evt.expire,
+        uuid: event.uuid,
+        expire: event.expire,
         account: input.auth.username,
-        key: input.auth.key!,
+        key: authKey,
         deepLink,
       });
     },
