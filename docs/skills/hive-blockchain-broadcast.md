@@ -177,6 +177,8 @@ Import builders from `@opden-data-layer/hive-broadcast`:
 | Builder | ODL action(s) | Notes |
 |---------|---------------|--------|
 | `buildOdlUpdateCreateOp` | `update_create` | `valueKind`: text/geo/json/object_ref/user_ref; indexer auto-likes from `creator` |
+| `buildValidatedUpdateCreateOp` | `update_create` | Registry-validated wrapper around `buildOdlUpdateCreateOp` (agent-wallet `odl_build_update_create`) |
+| `buildGalleryItemBroadcastOp` | `imageGalleryItem` (+ optional `imageGallery` album ensure) | agent-wallet `odl_build_gallery_item` |
 | `buildOdlUpdateCreateWithRankVoteOp` | `update_create` (aggregateRating) + `rank_vote` | Same tx |
 | `buildOdlUpdateVoteOp` | `update_vote` | `for` / `against` / `remove` |
 | `buildOdlRankVoteOp` | `rank_vote` | rank 0–10000 |
@@ -209,12 +211,27 @@ Limits:
 - Max **5** `custom_json` ops per transaction for object create (web constant `OBJECT_CREATE_MAX_OPS_PER_TRX`)
 - Oversized payloads → IPFS + `buildOdlBatchImportOp`
 
-Example — single field update after object exists:
+Example — single field update after object exists (library or MCP `odl_build_update_create`):
+
+```ts
+import { buildValidatedUpdateCreateOp } from '@opden-data-layer/hive-broadcast';
+
+const odlCustomJsonId = 'odl-mainnet'; // session choice — see § ODL network
+
+const op = buildValidatedUpdateCreateOp({
+  id: odlCustomJsonId,
+  objectId: 'product-abc123',
+  updateType: 'title',
+  creator: 'alice',
+  value: 'My product',
+});
+// op.type === 'custom_json' — envelope has update_create only, no object_create
+```
+
+Lower-level builder (when value_kind is known):
 
 ```ts
 import { buildOdlUpdateCreateOp } from '@opden-data-layer/hive-broadcast';
-
-const odlCustomJsonId = 'odl-mainnet'; // session choice — see § ODL network
 
 const op = buildOdlUpdateCreateOp({
   id: odlCustomJsonId,
@@ -289,7 +306,7 @@ Map other `HiveOperation` types the same way as [`keychain-signer.ts`](../../../
 
 1. Start daemon: `pnpm nx serve agent-wallet` (binds `127.0.0.1:7500`, bearer token in `~/.odl/agent-wallet.token`).
 2. MCP tools: `has_login_start` → send **`webLink`** in chat ([has-login-from-chat](has-login-from-chat.md)) or QR in terminal → poll `has_login_status` until `active`.
-3. Build ops: `odl_build_object_create` or `@opden-data-layer/hive-broadcast` builders, then `has_broadcast` + poll `has_broadcast_status`.
+3. Build ops: `odl_build_object_create` (new) / `odl_build_update_create` / `odl_build_gallery_item`, or `@opden-data-layer/hive-broadcast` builders, then `has_broadcast` + poll `has_broadcast_status`.
 
 Full playbook: [hive-has-agent-wallet.md](hive-has-agent-wallet.md). Implementation: `apps/agent-wallet`, `@opden-data-layer/hive-auth`.
 

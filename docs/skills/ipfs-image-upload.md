@@ -43,6 +43,31 @@ Rules:
 
 If `fields.image` is set and the content URL loads, web avatars appear after deploy — no re-broadcast needed.
 
+## Broadcast to existing object
+
+**Do not** use `odl_build_object_create` when the object already exists — it always emits `object_create` and will fail.
+
+### Avatar (`updateType: "image"`)
+
+After `ipfs_upload_image`:
+
+```
+odl_build_update_create({
+  objectId: "recipe-butter-garlic-naan-tawa",
+  creator: "alice",
+  updateType: "image",
+  value: { cid: "Qm..." }
+})
+→ wallet_broadcast({ ops })
+```
+
+### Gallery photo (`updateType: "imageGalleryItem"`)
+
+1. `resolve_object` → read `fields.imageGallery` album names.
+2. Upload via IPFS or use a stable external URL.
+3. `odl_build_gallery_item({ objectId, creator, itemValue: { album, cid }, existingGalleryAlbumNames })`
+4. `wallet_broadcast({ ops })`
+
 ## Update policy
 
 ### Object avatar (`updateType: "image"`)
@@ -52,7 +77,7 @@ If `fields.image` is set and the content URL loads, web avatars appear after dep
 1. Prepare a **1:1** image (512–1024px, subject centered).
 2. `ipfs_upload_image` the local file.
 3. Verify `contentUrl` loads.
-4. Write update value as `{ "cid": "<returned-cid>" }` only.
+4. Write update value as `{ "cid": "<returned-cid>" }` only via `odl_build_update_create` (existing object) or `odl_build_object_create` fields (new object only).
 5. Use `contentUrl` for preview in chat if needed — not in the blockchain update.
 
 ### Gallery item (`updateType: "imageGalleryItem"`)

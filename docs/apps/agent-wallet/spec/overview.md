@@ -59,7 +59,9 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `has_login_qr` | `deepLink`, `qrAscii`, optional `qrPngPath` for a pending login — terminal and second-device fallback only |
 | `has_session` | `account`, `expiresAt` (no secrets) |
 | `has_logout` | — |
-| `odl_build_object_create` | `ops`, `opsCount`, `bytes`, `warnings` |
+| `odl_build_object_create` | `ops`, `opsCount`, `bytes`, `warnings` — **new objects only** |
+| `odl_build_update_create` | `ops`, `opsCount`, `bytes` — single `update_create` for existing object |
+| `odl_build_gallery_item` | `ops`, `opsCount`, `bytes` — gallery item (+ album ensure when needed) |
 | `has_broadcast` | `requestId` |
 | `has_broadcast_status` | `signed` / `rejected` / `error` / `expired`, `transactionId` |
 | `wallet_status` | signing mode, HAS/Waivio/local readiness (no secrets) |

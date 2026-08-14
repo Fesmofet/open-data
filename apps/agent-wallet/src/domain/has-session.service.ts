@@ -7,7 +7,11 @@ import {
   type HasSession,
   type HasTransportFactory,
 } from '@opden-data-layer/hive-auth';
-import { buildObjectCreateEnvelope } from '@opden-data-layer/hive-broadcast';
+import {
+  buildGalleryItemBroadcastOp,
+  buildObjectCreateEnvelope,
+  buildValidatedUpdateCreateOp,
+} from '@opden-data-layer/hive-broadcast';
 import qrcode from 'qrcode';
 
 import { AgentWalletAuthService } from '../auth/agent-wallet-auth.service';
@@ -258,6 +262,66 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       opsCount: result.ops.length,
       bytes,
       warnings: result.warnings,
+    };
+  }
+
+  buildUpdateCreate(input: {
+    objectId: string;
+    creator: string;
+    updateType: string;
+    value: unknown;
+    locale?: string;
+    language?: string;
+  }): {
+    ops: unknown[];
+    opsCount: number;
+    bytes: number;
+  } {
+    const op = buildValidatedUpdateCreateOp({
+      id: this.config.get('odlCustomJsonId', { infer: true }),
+      objectId: input.objectId,
+      creator: input.creator,
+      updateType: input.updateType,
+      value: input.value,
+      locale: input.locale,
+      language: input.language,
+    });
+
+    return this.singleOpBuildResult(op);
+  }
+
+  buildGalleryItem(input: {
+    objectId: string;
+    creator: string;
+    itemValue: unknown;
+    existingGalleryAlbumNames?: string[];
+  }): {
+    ops: unknown[];
+    opsCount: number;
+    bytes: number;
+  } {
+    const creator = input.creator.trim().replace(/^@/, '').toLowerCase();
+    const op = buildGalleryItemBroadcastOp({
+      id: this.config.get('odlCustomJsonId', { infer: true }),
+      objectId: input.objectId.trim(),
+      creator,
+      itemValue: input.itemValue,
+      onChainGalleryAlbumNames: input.existingGalleryAlbumNames ?? [],
+    });
+
+    return this.singleOpBuildResult(op);
+  }
+
+  private singleOpBuildResult(op: { json: string }): {
+    ops: unknown[];
+    opsCount: number;
+    bytes: number;
+  } {
+    const bytes = new TextEncoder().encode(op.json).length;
+    return {
+      ops: [op],
+      opsCount: 1,
+      bytes,
     };
   }
 

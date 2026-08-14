@@ -205,7 +205,7 @@ export function registerAgentWalletTools(
     'odl_build_object_create',
     {
       description:
-        'Build ODL object_create custom_json ops from object type and update fields.',
+        'Build ODL object_create custom_json ops for NEW objects only. Always includes object_create. Do not use when the object already exists.',
       inputSchema: z.object({
         objectType: z.string().min(1),
         objectId: z.string().optional(),
@@ -223,6 +223,52 @@ export function registerAgentWalletTools(
     async (args) => {
       try {
         const result = deps.hasSession.buildObjectCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'odl_build_update_create',
+    {
+      description:
+        'Build a single update_create custom_json op for an EXISTING object (avatar image, title, description, etc.). Do not use for new objects.',
+      inputSchema: z.object({
+        objectId: z.string().min(1),
+        creator: z.string().min(1),
+        updateType: z.string().min(1),
+        value: z.unknown(),
+        locale: z.string().optional(),
+        language: z.string().optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.hasSession.buildUpdateCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'odl_build_gallery_item',
+    {
+      description:
+        'Build imageGalleryItem custom_json op for an EXISTING object. Ensures album exists when missing from existingGalleryAlbumNames.',
+      inputSchema: z.object({
+        objectId: z.string().min(1),
+        creator: z.string().min(1),
+        itemValue: z.unknown().describe('{ album, cid } or { album, url }'),
+        existingGalleryAlbumNames: z.array(z.string()).optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.hasSession.buildGalleryItem(args);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);

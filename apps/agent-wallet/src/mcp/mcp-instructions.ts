@@ -7,8 +7,14 @@ Workflow (HAS signing — default):
 2. has_login_start → send webLink to user → poll has_login_status until active.
 3. waivio_auth_start → poll waivio_auth_status until active (uses HAS session to sign auth challenge).
 4. ipfs_upload_image({ filePath }) for avatars — prepare 1:1 up to 1024px, upload, write only { "cid": "..." } on chain. Do not store generated CDN URLs (e.g. files-cdn.x.ai); download, crop, upload to IPFS. Verify contentUrl loads before broadcast.
-5. odl_build_object_create or custom ops → wallet_broadcast / has_broadcast → poll status.
-6. After broadcast, verify fields.image on the object via query-api (resolve_object) shows the content URL — do not use curl to bypass upload.
+5. Build ops (see decision table below) → wallet_broadcast / has_broadcast → poll status.
+6. After broadcast, verify fields on the object via query-api (resolve_object).
+
+ODL build decision table:
+- NEW object → odl_build_object_create (always includes object_create)
+- EXISTING object, one field (avatar image, title, description, …) → odl_build_update_create
+- EXISTING object, gallery photo → odl_build_gallery_item (pass existingGalleryAlbumNames from resolve_object fields.imageGallery)
+- Avatar on existing object: ipfs_upload_image → odl_build_update_create({ updateType: "image", value: { cid } }) → wallet_broadcast
 
 Workflow (local keys — AGENT_WALLET_SIGNING_MODE=local):
 1. Set HIVE_ACCOUNT and HIVE_POSTING_KEY (optional HIVE_ACTIVE_KEY for active ops only).

@@ -137,7 +137,9 @@ Send JSON-RPC to `/agent-wallet/mcp` with bearer header. Tool names:
 | `has_login_qr` | Fallback artefacts for a pending login: `deepLink`, `qrAscii`, optional `qrPngPath` |
 | `has_session` | `{ active, session: { account, expiresAt } }` — no secrets |
 | `has_logout` | Clear session + session file |
-| `odl_build_object_create` | Build `custom_json` ops from registry-validated fields |
+| `odl_build_object_create` | Build `custom_json` ops for **new** objects only (always includes `object_create`) |
+| `odl_build_update_create` | Build single `update_create` op for an **existing** object |
+| `odl_build_gallery_item` | Build `imageGalleryItem` op for an **existing** object (album ensure when needed) |
 | `has_broadcast` | Start sign flow; returns `requestId` |
 | `has_broadcast_status` | Poll: `pending` / `signed` / `rejected` / `error` / `expired` |
 
@@ -154,7 +156,7 @@ Terminal / second device: call `has_login_qr` with the `requestId` and show `qrA
 
 Repeating `has_login_start` for the same account returns the existing pending request while it is still alive, so retries do not invalidate a link already sent.
 
-### 3. Build object create
+### 3. Build object create (new objects only)
 
 ```json
 // tools/call odl_build_object_create
@@ -171,18 +173,48 @@ Repeating `has_login_start` for the same account returns the existing pending re
 
 Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `opsCount`, `bytes`, `warnings`.
 
+**Do not use** when the object already exists.
+
+### 4. Update existing object (one field)
+
+```json
+// tools/call odl_build_update_create
+{
+  "objectId": "recipe-butter-garlic-naan-tawa",
+  "creator": "alice",
+  "updateType": "image",
+  "value": { "cid": "Qm..." }
+}
+```
+
+Returns `ops` with a single `update_create` event (no `object_create`).
+
+### 5. Gallery item on existing object
+
+```json
+// tools/call odl_build_gallery_item
+{
+  "objectId": "recipe-butter-garlic-naan-tawa",
+  "creator": "alice",
+  "itemValue": { "album": "Photos", "cid": "Qm..." },
+  "existingGalleryAlbumNames": ["Menu", "Photos"]
+}
+```
+
+Pass album names from `resolve_object` → `fields.imageGallery`. When the album is missing on chain, the tool emits album + item in one op.
+
 Resolve field shapes first via knowledge-api: `get_object_type`, `get_update_schema`.
 
-### 4. Broadcast
+### 6. Broadcast
 
 ```json
 // tools/call has_broadcast
-{ "ops": [/* from odl_build_object_create */], "keyType": "posting" }
+{ "ops": [/* from odl_build_* */], "keyType": "posting" }
 ```
 
 Poll `has_broadcast_status` until `signed` with `transactionId` or terminal failure (`rejected`, `error`, `expired`).
 
-### 5. Confirm indexing
+### 7. Confirm indexing
 
 Same as [hive-blockchain-broadcast § Step 4](hive-blockchain-broadcast.md#step-4--confirm-on-chain). Match `ODL_NETWORK` with chain-indexer / query-api.
 
@@ -198,7 +230,7 @@ Same as [hive-blockchain-broadcast § Step 4](hive-blockchain-broadcast.md#step-
 | Package | Role |
 |---------|------|
 | `@opden-data-layer/hive-auth` | Node HAS client (`HasClient`), deep links, crypto compatible with PKSA |
-| `@opden-data-layer/hive-broadcast` | `buildObjectCreateEnvelope`, chunking |
+| `@opden-data-layer/hive-broadcast` | `buildObjectCreateEnvelope`, `buildValidatedUpdateCreateOp`, `buildGalleryItemBroadcastOp`, chunking |
 | `apps/agent-wallet` | MCP daemon |
 
 Web HAS (`hive-auth-wrapper`) is **not** migrated — separate track.

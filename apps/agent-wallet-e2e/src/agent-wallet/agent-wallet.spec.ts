@@ -24,6 +24,8 @@ const REQUIRED_TOOLS = [
   'has_session',
   'has_logout',
   'odl_build_object_create',
+  'odl_build_update_create',
+  'odl_build_gallery_item',
   'has_broadcast',
   'has_broadcast_status',
 ];
@@ -184,6 +186,26 @@ describe('agent-wallet MCP (e2e)', () => {
       (result) => result.data.status === 'signed',
     );
     expect(broadcastStatus.data.transactionId).toBe('trx-fake-1');
+  });
+
+  it('builds update_create without object_create for existing objects', async () => {
+    const built = await mcpCallTool<{
+      ops: Array<{ json?: string }>;
+      opsCount: number;
+    }>('odl_build_update_create', {
+      objectId: 'recipe-e2e-existing',
+      creator: 'alice',
+      updateType: 'image',
+      value: { cid: 'QmE2eTestCid' },
+    });
+
+    expect(built.isError).toBe(false);
+    expect(built.data.opsCount).toBe(1);
+    const envelope = JSON.parse(built.data.ops[0]?.json ?? '{}') as {
+      events: Array<{ action: string }>;
+    };
+    expect(envelope.events).toHaveLength(1);
+    expect(envelope.events[0]?.action).toBe('update_create');
   });
 
   it('returns rejected broadcast status when user rejects', async () => {

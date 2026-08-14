@@ -82,6 +82,11 @@ export {
   type OdlCreateEvent,
 } from './odl-object-create';
 export {
+  buildValidatedUpdateCreateOp,
+  type BuildValidatedUpdateCreateOpInput,
+} from './odl-validated-update-create';
+export { buildGalleryItemBroadcastOp } from './build-gallery-item-broadcast-op';
+export {
   buildOblEnvelopeOp,
   buildOblOfferPublishOp,
   buildOblOfferUpdateOp,

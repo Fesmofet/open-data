@@ -20,7 +20,7 @@ import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
-import { buildGalleryItemBroadcastOp } from '@/modules/object-updates/application/build-gallery-item-broadcast-op';
+import { buildGalleryItemBroadcastOp } from '@opden-data-layer/hive-broadcast';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '@/modules/object-updates/constants';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { UpdateVoteControls } from '@/modules/object-updates/presentation/components/update-vote-controls';
