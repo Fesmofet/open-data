@@ -47,8 +47,15 @@ function addRuntimePackage(packages, spec) {
   packages.add(npmPackageName(spec));
 }
 
+function stripStringLiterals(code) {
+  return code
+    .replace(/'(?:\\.|[^'\\])*'/g, '""')
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
+    .replace(/`(?:\\.|[^`\\])*`/g, '""');
+}
+
 function extractExternalPackages(mainJsPath) {
-  const content = fs.readFileSync(mainJsPath, 'utf8');
+  const content = stripStringLiterals(fs.readFileSync(mainJsPath, 'utf8'));
   const packages = new Set();
   for (const re of [/require\("([^"]+)"\)/g, /import\("([^"]+)"\)/g]) {
     let m;

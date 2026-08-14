@@ -40,8 +40,21 @@
         "buildTarget": "build"
       }
     },
+    "sync-pruned-lockfile": {
+      "dependsOn": ["prune-lockfile"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../scripts/sync-pruned-package-lock.cjs --app agent-wallet",
+        "cwd": "apps/agent-wallet"
+      }
+    },
     "prune": {
-      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "dependsOn": [
+        "prune-lockfile",
+        "sync-pruned-lockfile",
+        "copy-workspace-modules"
+      ],
       "executor": "nx:noop"
     },
     "serve": {
