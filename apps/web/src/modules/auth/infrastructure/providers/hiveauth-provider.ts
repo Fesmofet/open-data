@@ -3,31 +3,37 @@
 import { hasExpireToVerifyUnix } from './has/has-expire';
 
 /**
- * HiveAuth login completes by sending `authData` JSON to the auth BFF verify endpoint.
+ * HiveAuth login completes by sending signed challenge proof to the auth BFF verify endpoint.
  */
 export function buildHiveAuthPayload(input: {
   username: string;
   expireUnix: number;
-  challengeMessage?: string;
+  challengeMessage: string;
+  pubkey: string;
+  signature: string;
 }): string {
   return JSON.stringify({
     username: input.username,
     expire: input.expireUnix,
-    ...(input.challengeMessage !== undefined
-      ? { challenge: input.challengeMessage }
-      : {}),
+    challenge: input.challengeMessage,
+    pubkey: input.pubkey,
+    signature: input.signature,
   });
 }
 
-/** Build verify payload from a HAS session (expire in milliseconds). */
+/** Build verify payload from a HAS session and signed challenge proof. */
 export function buildHiveAuthVerifyPayload(input: {
   username: string;
   expireMs: number;
   challengeMessage: string;
+  pubkey: string;
+  signature: string;
 }): string {
   return buildHiveAuthPayload({
     username: input.username,
     expireUnix: hasExpireToVerifyUnix(input.expireMs),
     challengeMessage: input.challengeMessage,
+    pubkey: input.pubkey,
+    signature: input.signature,
   });
 }

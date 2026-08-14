@@ -16,6 +16,7 @@ export {
   type HasAppMeta,
   type HasAuthPending,
   type HasChallengeData,
+  type HasChallengeProof,
   type HasClientOptions,
   type HasServerInfo,
   type HasSession,

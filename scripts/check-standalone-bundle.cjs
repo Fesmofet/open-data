@@ -14,7 +14,7 @@ const { builtinModules } = require('module');
 
 const ROOT = path.resolve(__dirname, '..');
 
-const STANDALONE_APPS = ['agent-wallet'];
+const STANDALONE_APPS: string[] = [];
 
 const NODE_BUILTINS = new Set([
   ...builtinModules,

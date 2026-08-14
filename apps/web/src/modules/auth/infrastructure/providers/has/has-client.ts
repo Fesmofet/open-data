@@ -12,6 +12,11 @@ import type { HasConfig } from '@/config/has-config-provider';
 
 import { buildHasAuthDeepLink } from './has-deep-link';
 import {
+  extractChallengeProofFromAckData,
+  extractChallengeProofFromAuthAck,
+  type HasChallengeProof,
+} from './has-challenge-proof';
+import {
   defaultHasSessionExpireMs,
   normalizeHasExpireTimestamp,
 } from './has-expire';
@@ -26,7 +31,9 @@ export type HasAuthWaitEvent = {
   deepLink: string;
 };
 
-export type HasAuthenticateResult = HasAuthSession;
+export type HasAuthenticateResult = HasAuthSession & {
+  challengeProof: HasChallengeProof;
+};
 
 let activeHasHost: string | null = null;
 
@@ -59,6 +66,59 @@ export async function ensureHasConnection(preferredUrl?: string): Promise<string
   throw new Error('Failed to connect to HiveAuth server');
 }
 
+async function resolveChallengeProof(input: {
+  auth: {
+    username: string;
+    expire?: number;
+    key?: string;
+    token?: string;
+  };
+  authHost: string;
+  challengeData: { key_type: string; challenge: string };
+  authAck: unknown;
+  onAuthWait?: (event: HasAuthWaitEvent) => void;
+}): Promise<HasChallengeProof> {
+  const fromAuthAck = extractChallengeProofFromAuthAck(input.authAck);
+  if (fromAuthAck) {
+    return fromAuthAck;
+  }
+
+  if (!input.auth.key) {
+    throw new Error('HiveAuth did not return signed challenge proof');
+  }
+
+  // Mobile PKSA often completes auth_ack without challenge_data even when the
+  // login challenge was requested — use challenge_req on the active session.
+  const challengeAck = await HAS.challenge(
+    input.auth,
+    input.challengeData,
+    (evt: { uuid: string; expire: number }) => {
+      const deepLink = buildHasAuthDeepLink({
+        account: input.auth.username,
+        uuid: evt.uuid,
+        key: input.auth.key!,
+        host: input.authHost,
+      });
+      input.onAuthWait?.({
+        uuid: evt.uuid,
+        expire: evt.expire,
+        account: input.auth.username,
+        key: input.auth.key!,
+        deepLink,
+      });
+    },
+  );
+
+  const fromChallengeAck = extractChallengeProofFromAckData(
+    (challengeAck as { data?: unknown }).data,
+  );
+  if (!fromChallengeAck) {
+    throw new Error('HiveAuth did not return signed challenge proof');
+  }
+
+  return fromChallengeAck;
+}
+
 export async function authenticateWithHas(input: {
   username: string;
   challengeMessage: string;
@@ -86,7 +146,7 @@ export async function authenticateWithHas(input: {
     challenge: input.challengeMessage,
   };
 
-  await HAS.authenticate(auth, appMeta, challengeData, (evt: {
+  const authAck = await HAS.authenticate(auth, appMeta, challengeData, (evt: {
     uuid: string;
     expire: number;
     account: string;
@@ -111,6 +171,14 @@ export async function authenticateWithHas(input: {
     throw new Error('HiveAuth authentication did not return session data');
   }
 
+  const challengeProof = await resolveChallengeProof({
+    auth,
+    authHost,
+    challengeData,
+    authAck,
+    onAuthWait: input.onAuthWait,
+  });
+
   return {
     username: auth.username,
     key: auth.key,
@@ -120,6 +188,7 @@ export async function authenticateWithHas(input: {
         : defaultHasSessionExpireMs(),
     ...(typeof auth.token === 'string' ? { hasSessionToken: auth.token } : {}),
     host: authHost,
+    challengeProof,
   };
 }
 

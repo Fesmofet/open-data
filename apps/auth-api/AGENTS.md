@@ -54,8 +54,8 @@ src/
 ## Authentication flows
 
 - **Hive Keychain:** persisted challenge + ECDSA signature against posting key from chain (`HiveNodeService` + dhive crypto).
-- **HiveAuth:** validate `authData` (Zod) + challenge match and expiry; no chain signature in this path.
-- **HiveSigner:** OAuth redirect + callback; exchange code, fetch `/api/me`, then issue session via `HivesignerCallbackService`.
+- **HiveAuth:** requires signed server challenge proof (`pubkey` + `signature` in `authData`); verified via `PostingSignatureVerifierService`.
+- **HiveSigner:** OAuth redirect + callback; **mandatory** `state`; validates `access_token` via HiveSigner `/api/me`; username from verified response only.
 
 Add new behavior with **new classes** or small modules — do not grow orchestrators into god services.
 

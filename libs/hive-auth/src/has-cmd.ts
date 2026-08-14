@@ -13,6 +13,11 @@ export const HAS_CMD = {
   ATTACH_REQ: 'attach_req',
   ATTACH_ACK: 'attach_ack',
   ATTACH_NACK: 'attach_nack',
+  CHALLENGE_REQ: 'challenge_req',
+  CHALLENGE_WAIT: 'challenge_wait',
+  CHALLENGE_ACK: 'challenge_ack',
+  CHALLENGE_NACK: 'challenge_nack',
+  CHALLENGE_ERR: 'challenge_err',
   ERROR: 'error',
 } as const;
 

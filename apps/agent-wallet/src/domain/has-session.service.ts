@@ -117,6 +117,20 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
+  getRawSession(): HasSession | null {
+    if (!this.session || !this.isSessionValid(this.session)) {
+      return null;
+    }
+    return this.session;
+  }
+
+  getClientForChallenge(): HasClient | null {
+    if (!this.session || !this.isSessionValid(this.session)) {
+      return null;
+    }
+    return this.getOrCreateClient();
+  }
+
   async loginStart(account: string): Promise<LoginStartResult> {
     const normalized = account.trim().replace(/^@/, '').toLowerCase();
 

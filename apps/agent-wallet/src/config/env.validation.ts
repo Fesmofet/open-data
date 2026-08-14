@@ -1,9 +1,16 @@
 import { z } from 'zod';
 
+import { DEFAULT_SIGNING_MODE, type SigningMode } from '../constants/signing';
+
 const boolEnv = z
   .string()
   .optional()
   .transform((v) => v === 'true' || v === '1');
+
+const signingModeEnv = z
+  .enum(['has', 'local'])
+  .optional()
+  .default(DEFAULT_SIGNING_MODE);
 
 export const agentWalletConfigSchema = z.object({
   PORT: z.coerce.number().optional().default(7500),
@@ -28,12 +35,33 @@ export const agentWalletConfigSchema = z.object({
       }
       return trimmed.replace(/\/$/, '');
     }),
+  WAIVIO_API_ORIGIN: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const trimmed = (v ?? 'https://waiviodev.com').trim();
+      return trimmed.replace(/\/$/, '') || 'https://waiviodev.com';
+    }),
+  AGENT_WALLET_SIGNING_MODE: signingModeEnv,
+  HIVE_ACCOUNT: z.string().optional(),
+  HIVE_POSTING_KEY: z.string().optional(),
+  HIVE_ACTIVE_KEY: z.string().optional(),
+  HIVE_RPC_NODES: z
+    .string()
+    .optional()
+    .transform((s) =>
+      s
+        ?.split(',')
+        .map((x) => x.trim())
+        .filter(Boolean),
+    ),
   AGENT_WALLET_DATA_DIR: z.string().optional(),
   AGENT_WALLET_NO_PERSIST: boolEnv,
   AGENT_WALLET_BEARER_TOKEN: z.string().min(16).optional(),
 });
 
 export type AgentWalletEnv = z.infer<typeof agentWalletConfigSchema>;
+export type { SigningMode };
 
 export function validateAgentWalletEnv(
   config: Record<string, unknown>,

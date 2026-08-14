@@ -23,7 +23,7 @@ env:
 
 jobs:
   release:
-    name: Build and publish agent-wallet.js
+    name: Build and publish portable agent-wallet
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,22 +56,31 @@ jobs:
         run: |
           pnpm nx test hive-auth
           pnpm nx test agent-wallet
+          pnpm nx test auth-api
 
       - name: Build production bundle
         run: pnpm exec nx run agent-wallet:build --skip-nx-cache
 
+      - name: Prune production package metadata
+        run: pnpm exec nx run agent-wallet:prune --skip-nx-cache
+
       - name: E2E tests
         run: pnpm nx e2e agent-wallet-e2e
 
-      - name: Verify standalone bundle (static)
-        run: pnpm check:standalone-bundle
+      - name: Verify bundle dependencies
+        run: pnpm check:bundle-deps -- --app agent-wallet
 
-      - name: Smoke run standalone bundle in empty directory
+      - name: Smoke portable install in empty directory
         run: |
           set -euo pipefail
           SMOKE_DIR="$(mktemp -d)"
           cp dist/apps/agent-wallet/main.js "$SMOKE_DIR/main.js"
+          cp dist/apps/agent-wallet/package.json "$SMOKE_DIR/package.json"
+          cp dist/apps/agent-wallet/pnpm-lock.yaml "$SMOKE_DIR/pnpm-lock.yaml"
+          cp apps/agent-wallet/scripts/install-prod-deps.sh "$SMOKE_DIR/install.sh"
+          chmod +x "$SMOKE_DIR/install.sh"
           cd "$SMOKE_DIR"
+          ./install.sh
           AGENT_WALLET_BEARER_TOKEN=ci-smoke-token-min-16-chars \
           AGENT_WALLET_NO_PERSIST=true \
           AGENT_WALLET_DATA_DIR="$SMOKE_DIR/data" \
@@ -90,36 +99,43 @@ jobs:
           kill "$PID" 2>/dev/null || true
           wait "$PID" 2>/dev/null || true
           if [ "$OK" != "1" ]; then
-            echo 'standalone smoke run failed: health endpoint did not respond'
+            echo 'portable smoke run failed: health endpoint did not respond'
             exit 1
           fi
-          echo 'standalone smoke run: OK'
+          echo 'portable smoke run: OK'
 
       - name: Prepare release assets
         run: |
           set -euo pipefail
           mkdir -p release
-          cp dist/apps/agent-wallet/main.js release/agent-wallet.js
-          (cd release && sha256sum agent-wallet.js > agent-wallet.js.sha256)
+          cp dist/apps/agent-wallet/main.js release/main.js
+          cp dist/apps/agent-wallet/package.json release/package.json
+          cp dist/apps/agent-wallet/pnpm-lock.yaml release/pnpm-lock.yaml
+          cp apps/agent-wallet/scripts/install-prod-deps.sh release/install.sh
+          cp apps/agent-wallet/scripts/install-prod-deps.ps1 release/install.ps1
+          (cd release && sha256sum main.js package.json pnpm-lock.yaml install.sh install.ps1 > SHA256SUMS)
           cat > release-notes.md <<EOF
           ## agent-wallet ${{ steps.version.outputs.version }}
 
-          Single-file Node.js daemon for HAS agent session and ODL broadcast via MCP.
+          Portable Node.js daemon: HAS session, local-key signing, Waivio JWT auth, IPFS upload via MCP.
 
-          **Requirements:** Node.js 20+
+          **Requirements:** Node.js 20+, pnpm (corepack enable)
 
           ### Install
 
           \`\`\`bash
-          curl -Lo agent-wallet.js https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/agent-wallet.js
-          sha256sum -c agent-wallet.js.sha256   # verify against release asset
-          node agent-wallet.js
+          curl -LO https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/agent-wallet-portable.tar.gz
+          tar xzf agent-wallet-portable.tar.gz
+          cd agent-wallet-portable
+          ./install.sh
+          node main.js
           \`\`\`
 
           Bearer token is written to \`~/.odl/agent-wallet.token\` on first start.
 
-          Full playbook: [hive-has-agent-wallet skill](https://github.com/${{ github.repository }}/blob/development/docs/skills/hive-has-agent-wallet.md)
+          Skills: [hive-has-agent-wallet](https://github.com/${{ github.repository }}/blob/development/docs/skills/hive-has-agent-wallet.md), [ipfs-image-upload](https://github.com/${{ github.repository }}/blob/development/docs/skills/ipfs-image-upload.md)
           EOF
+          tar czf release/agent-wallet-portable.tar.gz -C release main.js package.json pnpm-lock.yaml install.sh install.ps1 SHA256SUMS
 
       - name: Create GitHub release
         env:
@@ -128,8 +144,8 @@ jobs:
           set -euo pipefail
           ARGS=(
             "${{ steps.version.outputs.tag }}"
-            release/agent-wallet.js
-            release/agent-wallet.js.sha256
+            release/agent-wallet-portable.tar.gz
+            release/SHA256SUMS
             --title "agent-wallet ${{ steps.version.outputs.version }}"
             --notes-file release-notes.md
           )

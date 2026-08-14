@@ -21,6 +21,11 @@ export type HasChallengeData = {
   challenge: string;
 };
 
+export type HasChallengeProof = {
+  pubkey: string;
+  challenge: string;
+};
+
 export type HasServerInfo = {
   protocol: number;
   timeoutMs: number;
@@ -39,6 +44,7 @@ export type HasSession = {
   expire: number;
   token?: string;
   host?: string;
+  challengeProof?: HasChallengeProof;
 };
 
 export type HasSignPending = {
@@ -73,7 +79,15 @@ type SignAckWaiter = {
   timeoutId: ReturnType<typeof setTimeout>;
 };
 
-type SignWaitResolver = {
+type ChallengeAckWaiter = {
+  session: HasSession;
+  resolve: (proof: HasChallengeProof) => void;
+  reject: (error: Error) => void;
+  expireAt: number;
+  timeoutId: ReturnType<typeof setTimeout>;
+};
+
+type ChallengeWaitResolver = {
   resolve: (pending: HasSignPending) => void;
   reject: (error: Error) => void;
 };
@@ -103,8 +117,9 @@ export class HasClient {
   }> = [];
 
   private readonly authAckWaiters = new Map<string, AuthAckWaiter>();
-  private signWaitResolvers: SignWaitResolver[] = [];
+  private signWaitResolvers: ChallengeWaitResolver[] = [];
   private readonly signAckWaiters = new Map<string, SignAckWaiter>();
+  private readonly challengeAckWaiters = new Map<string, ChallengeAckWaiter>();
   private readonly attachWaiters = new Map<
     string,
     {
@@ -251,6 +266,86 @@ export class HasClient {
     return pending;
   }
 
+  async startChallenge(input: {
+    session: HasSession;
+    challenge: HasChallengeData;
+  }): Promise<HasSignPending> {
+    if (input.session.expire <= this.now()) {
+      throw new Error('HAS session expired');
+    }
+
+    await this.connect();
+
+    const data = encryptHasPayload(
+      {
+        key_type: input.challenge.key_type,
+        challenge: input.challenge.challenge,
+        nonce: this.now(),
+      },
+      input.session.key,
+    );
+
+    const pending = new Promise<HasSignPending>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        const index = this.signWaitResolvers.findIndex((r) => r.reject === reject);
+        if (index >= 0) {
+          this.signWaitResolvers.splice(index, 1);
+        }
+        reject(new Error('expired'));
+      }, this.timeoutMs);
+
+      this.signWaitResolvers.push({
+        resolve: (challengePending) => {
+          clearTimeout(timeoutId);
+          resolve(challengePending);
+        },
+        reject: (error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        },
+      });
+    });
+
+    this.transport?.send(
+      JSON.stringify({
+        cmd: HAS_CMD.CHALLENGE_REQ,
+        account: input.session.username,
+        data,
+      }),
+    );
+
+    return pending;
+  }
+
+  async awaitChallenge(
+    uuid: string,
+    session: HasSession,
+  ): Promise<HasChallengeProof> {
+    const existing = this.challengeAckWaiters.get(uuid);
+    if (existing) {
+      return new Promise<HasChallengeProof>((resolve, reject) => {
+        existing.resolve = resolve;
+        existing.reject = reject;
+      });
+    }
+
+    return new Promise<HasChallengeProof>((resolve, reject) => {
+      const expireAt = this.now() + this.timeoutMs;
+      const timeoutId = setTimeout(() => {
+        this.challengeAckWaiters.delete(uuid);
+        reject(new Error('expired'));
+      }, Math.max(0, expireAt - this.now()));
+
+      this.challengeAckWaiters.set(uuid, {
+        session,
+        resolve,
+        reject,
+        expireAt,
+        timeoutId,
+      });
+    });
+  }
+
   async awaitBroadcast(
     uuid: string,
     session: HasSession,
@@ -370,6 +465,18 @@ export class HasClient {
       case HAS_CMD.SIGN_ERR:
         this.handleSignErr(frame);
         break;
+      case HAS_CMD.CHALLENGE_WAIT:
+        this.handleChallengeWait(frame);
+        break;
+      case HAS_CMD.CHALLENGE_ACK:
+        this.handleChallengeAck(frame);
+        break;
+      case HAS_CMD.CHALLENGE_NACK:
+        this.handleChallengeNack(frame);
+        break;
+      case HAS_CMD.CHALLENGE_ERR:
+        this.handleChallengeErr(frame);
+        break;
       case HAS_CMD.ATTACH_ACK:
         this.handleAttachAck(frame);
         break;
@@ -439,7 +546,11 @@ export class HasClient {
     }
 
     try {
-      const data = decryptHasPayload<{ token?: string; expire: number }>(
+      const data = decryptHasPayload<{
+        token?: string;
+        expire: number;
+        challenge_data?: HasChallengeProof;
+      }>(
         frame.data,
         waiter.authKey,
       );
@@ -452,6 +563,7 @@ export class HasClient {
         expire: data.expire,
         ...(typeof data.token === 'string' ? { token: data.token } : {}),
         host: stripTrailingSlash(this.host),
+        ...(data.challenge_data ? { challengeProof: data.challenge_data } : {}),
       };
 
       waiter.resolve(session);
@@ -568,6 +680,74 @@ export class HasClient {
     }
   }
 
+  private handleChallengeWait(frame: HasFrame): void {
+    const resolver = this.signWaitResolvers.shift();
+    if (!resolver || !frame.uuid || frame.expire == null) {
+      return;
+    }
+
+    resolver.resolve({
+      uuid: frame.uuid,
+      expire: frame.expire,
+    });
+  }
+
+  private handleChallengeAck(frame: HasFrame): void {
+    if (!frame.uuid || !frame.data) {
+      return;
+    }
+
+    const waiter = this.challengeAckWaiters.get(frame.uuid);
+    if (!waiter) {
+      return;
+    }
+
+    try {
+      const proof = decryptHasPayload<HasChallengeProof>(
+        frame.data,
+        waiter.session.key,
+      );
+      if (!proof.pubkey || !proof.challenge) {
+        return;
+      }
+      clearTimeout(waiter.timeoutId);
+      this.challengeAckWaiters.delete(frame.uuid);
+      waiter.resolve(proof);
+    } catch {
+      // ignore undecryptable ack
+    }
+  }
+
+  private handleChallengeNack(frame: HasFrame): void {
+    if (!frame.uuid) {
+      return;
+    }
+
+    const waiter = this.challengeAckWaiters.get(frame.uuid);
+    if (!waiter) {
+      return;
+    }
+
+    clearTimeout(waiter.timeoutId);
+    this.challengeAckWaiters.delete(frame.uuid);
+    waiter.reject(new Error('challenge rejected'));
+  }
+
+  private handleChallengeErr(frame: HasFrame): void {
+    if (!frame.uuid) {
+      return;
+    }
+
+    const waiter = this.challengeAckWaiters.get(frame.uuid);
+    if (!waiter) {
+      return;
+    }
+
+    clearTimeout(waiter.timeoutId);
+    this.challengeAckWaiters.delete(frame.uuid);
+    waiter.reject(new Error('challenge error'));
+  }
+
   private handleAttachAck(frame: HasFrame): void {
     if (!frame.uuid) {
       return;
@@ -656,6 +836,12 @@ export class HasClient {
       clearTimeout(waiter.timeoutId);
       waiter.reject(error);
       this.signAckWaiters.delete(uuid);
+    }
+
+    for (const [uuid, waiter] of this.challengeAckWaiters.entries()) {
+      clearTimeout(waiter.timeoutId);
+      waiter.reject(error);
+      this.challengeAckWaiters.delete(uuid);
     }
 
     for (const [uuid, waiter] of this.attachWaiters.entries()) {

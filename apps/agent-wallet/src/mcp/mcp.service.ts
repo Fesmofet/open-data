@@ -3,7 +3,10 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Request, Response } from 'express';
 
+import { HiveBroadcastService, WalletStatusService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
+import { IpfsUploadService } from '../domain/ipfs-upload.service';
+import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { AGENT_WALLET_MCP_INSTRUCTIONS } from './mcp-instructions';
 import { registerAgentWalletTools } from './register-agent-wallet-tools';
 
@@ -11,7 +14,13 @@ import { registerAgentWalletTools } from './register-agent-wallet-tools';
 export class McpService {
   private readonly logger = new Logger(McpService.name);
 
-  constructor(private readonly hasSession: HasSessionService) {}
+  constructor(
+    private readonly hasSession: HasSessionService,
+    private readonly broadcast: HiveBroadcastService,
+    private readonly walletStatus: WalletStatusService,
+    private readonly waivioAuth: WaivioAuthOrchestratorService,
+    private readonly ipfsUpload: IpfsUploadService,
+  ) {}
 
   private createServer(): McpServer {
     const server = new McpServer(
@@ -22,7 +31,13 @@ export class McpService {
       },
     );
 
-    registerAgentWalletTools(server, { hasSession: this.hasSession });
+    registerAgentWalletTools(server, {
+      hasSession: this.hasSession,
+      broadcast: this.broadcast,
+      walletStatus: this.walletStatus,
+      waivioAuth: this.waivioAuth,
+      ipfsUpload: this.ipfsUpload,
+    });
     return server;
   }
 

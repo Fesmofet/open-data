@@ -1,4 +1,4 @@
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { chmod } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -10,6 +10,7 @@ import {
   AGENT_WALLET_QR_FILE,
   AGENT_WALLET_SESSION_FILE,
   AGENT_WALLET_TOKEN_FILE,
+  WAIVIO_AUTH_SESSION_FILE,
 } from '../constants/local-files';
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
 
@@ -37,6 +38,10 @@ export class LocalFilesService {
     return join(this.getDataDir(), AGENT_WALLET_SESSION_FILE);
   }
 
+  waivioAuthSessionPath(): string {
+    return join(this.getDataDir(), WAIVIO_AUTH_SESSION_FILE);
+  }
+
   async ensureDataDir(): Promise<void> {
     await mkdir(this.getDataDir(), { recursive: true });
   }
@@ -50,6 +55,19 @@ export class LocalFilesService {
       this.logger.warn(
         `Could not chmod ${path} to 0600: ${(error as Error).message}`,
       );
+    }
+  }
+
+  async writeSecretFileAtomic(path: string, content: string): Promise<void> {
+    await this.ensureDataDir();
+    const tempPath = `${path}.tmp-${process.pid}-${Date.now()}`;
+    try {
+      await writeFile(tempPath, content, { encoding: 'utf8', mode: 0o600 });
+      await chmodAsync(tempPath, 0o600);
+      await rename(tempPath, path);
+    } catch (error) {
+      await unlink(tempPath).catch(() => undefined);
+      throw error;
     }
   }
 

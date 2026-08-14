@@ -29,6 +29,7 @@ const WEBPACK_APPS = [
   'scheduler',
   'ipfs-gateway',
   'stack-watchdog',
+  'agent-wallet',
 ];
 
 function npmPackageName(spec) {

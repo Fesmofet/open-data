@@ -1,13 +1,129 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
+import { HiveBroadcastService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
+import { IpfsUploadService } from '../domain/ipfs-upload.service';
+import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
+import { WalletStatusService } from '../domain/hive-broadcast.service';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
 export function registerAgentWalletTools(
   server: McpServer,
-  deps: { hasSession: HasSessionService },
+  deps: {
+    hasSession: HasSessionService;
+    broadcast: HiveBroadcastService;
+    walletStatus: WalletStatusService;
+    waivioAuth: WaivioAuthOrchestratorService;
+    ipfsUpload: IpfsUploadService;
+  },
 ): void {
+  server.registerTool(
+    'wallet_status',
+    {
+      description:
+        'Return wallet readiness: signing mode, HAS session, Waivio auth, local keys. No secrets.',
+      inputSchema: z.object({}),
+    },
+    async () => jsonToolResult(deps.walletStatus.getStatus()),
+  );
+
+  server.registerTool(
+    'waivio_auth_start',
+    {
+      description:
+        'Start Waivio JWT auth. Local mode signs the challenge with HIVE_POSTING_KEY; HAS mode requires an active HAS session and phone approval for the challenge.',
+      inputSchema: z.object({
+        account: z.string().optional().describe('Hive account (defaults to configured/local/HAS session account)'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.waivioAuth.authStart(args.account);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'waivio_auth_status',
+    {
+      description: 'Poll Waivio auth status for a requestId from waivio_auth_start.',
+      inputSchema: z.object({
+        requestId: z.string().min(1),
+      }),
+    },
+    async (args) => jsonToolResult(deps.waivioAuth.authStatus(args.requestId)),
+  );
+
+  server.registerTool(
+    'waivio_auth_logout',
+    {
+      description: 'Revoke Waivio refresh token and clear local Waivio auth session.',
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        const result = await deps.waivioAuth.authLogout();
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'ipfs_upload_image',
+    {
+      description:
+        'Upload a local image to IPFS via Waivio gateway. Requires active Waivio auth. Returns { cid, url? } only.',
+      inputSchema: z.object({
+        filePath: z.string().min(1).describe('Absolute or relative path to a local image file (max 50 MiB)'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.ipfsUpload.uploadImage(args.filePath);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'wallet_broadcast',
+    {
+      description:
+        'Broadcast ops using the configured signing mode (HAS or local keys). Poll wallet_broadcast_status.',
+      inputSchema: z.object({
+        ops: z.array(z.unknown()).min(1),
+        keyType: z.enum(['posting', 'active']).default('posting'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.broadcast.broadcastStart(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'wallet_broadcast_status',
+    {
+      description: 'Poll wallet_broadcast status for a requestId.',
+      inputSchema: z.object({
+        requestId: z.string().min(1),
+      }),
+    },
+    async (args) => jsonToolResult(deps.broadcast.broadcastStatus(args.requestId)),
+  );
+
   server.registerTool(
     'has_login_start',
     {

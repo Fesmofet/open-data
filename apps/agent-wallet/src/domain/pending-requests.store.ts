@@ -26,10 +26,29 @@ export type BroadcastRequestState =
   | { status: 'error'; message: string }
   | { status: 'expired' };
 
+export type WaivioAuthRequestState =
+  | {
+      status: 'pending';
+      account: string;
+      provider: 'keychain' | 'hiveauth';
+      expiresAt: number;
+    }
+  | {
+      status: 'active';
+      account: string;
+      provider: 'keychain' | 'hiveauth';
+      expiresAt: number;
+    }
+  | { status: 'error' }
+  | { status: 'expired' };
+
+export type PendingWaivioAuthRequestState = WaivioAuthRequestState;
+
 @Injectable()
 export class PendingRequestsStore {
   private readonly loginRequests = new Map<string, LoginRequestState>();
   private readonly broadcastRequests = new Map<string, BroadcastRequestState>();
+  private readonly waivioAuthRequests = new Map<string, WaivioAuthRequestState>();
 
   setLogin(requestId: string, state: LoginRequestState): void {
     this.loginRequests.set(requestId, state);
@@ -64,5 +83,17 @@ export class PendingRequestsStore {
 
   updateBroadcast(requestId: string, state: BroadcastRequestState): void {
     this.broadcastRequests.set(requestId, state);
+  }
+
+  setWaivioAuth(requestId: string, state: WaivioAuthRequestState): void {
+    this.waivioAuthRequests.set(requestId, state);
+  }
+
+  getWaivioAuth(requestId: string): WaivioAuthRequestState | undefined {
+    return this.waivioAuthRequests.get(requestId);
+  }
+
+  updateWaivioAuth(requestId: string, state: WaivioAuthRequestState): void {
+    this.waivioAuthRequests.set(requestId, state);
   }
 }

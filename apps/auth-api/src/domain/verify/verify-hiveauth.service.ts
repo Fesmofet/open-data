@@ -4,23 +4,25 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { z } from 'zod';
-import { ChallengesRepository } from '../../repositories/challenges.repository';
 import { IssueSessionService } from '../session/issue-session.service';
+import { PostingSignatureVerifierService } from './posting-signature-verifier.service';
 
 /**
- * Payload the browser sends after a successful HiveAuth flow.
- * `challenge` should match the server-issued challenge message when challenge signing was used.
+ * Payload the browser or agent sends after a successful HiveAuth flow with
+ * a signed server challenge proof from HAS/PKSA.
  */
 const hiveAuthAuthDataSchema = z.object({
   username: z.string(),
   expire: z.number(),
-  challenge: z.string().optional(),
+  challenge: z.string().min(1),
+  pubkey: z.string().min(1),
+  signature: z.string().min(1),
 });
 
 @Injectable()
 export class VerifyHiveAuthService {
   constructor(
-    private readonly challenges: ChallengesRepository,
+    private readonly verifier: PostingSignatureVerifierService,
     private readonly sessions: IssueSessionService,
   ) {}
 
@@ -48,31 +50,21 @@ export class VerifyHiveAuthService {
       throw new UnauthorizedException('HiveAuth session expired');
     }
 
-    const challenge = await this.challenges.findById(input.challengeId);
-    if (!challenge) {
-      throw new UnauthorizedException('Invalid challenge');
-    }
-    if (challenge.provider !== 'hiveauth') {
-      throw new BadRequestException('Challenge provider mismatch');
-    }
-    if (challenge.used_at) {
-      throw new UnauthorizedException('Challenge already used');
-    }
-    if (challenge.expires_at.getTime() < Date.now()) {
-      throw new UnauthorizedException('Challenge expired');
-    }
-    if (challenge.hive_username !== username) {
-      throw new UnauthorizedException('Username mismatch');
-    }
+    const challenge = await this.verifier.validateChallenge({
+      challengeId: input.challengeId,
+      provider: 'hiveauth',
+      username,
+      signedMessage: parsed.challenge,
+    });
 
-    if (parsed.challenge !== undefined && parsed.challenge !== challenge.message) {
-      throw new UnauthorizedException('Challenge text mismatch');
-    }
+    await this.verifier.verifyPostingSignature({
+      username,
+      signedMessage: parsed.challenge,
+      signature: parsed.signature,
+      publicKey: parsed.pubkey,
+    });
 
-    const marked = await this.challenges.markUsed(challenge.id, new Date());
-    if (!marked) {
-      throw new UnauthorizedException('Challenge already used');
-    }
+    await this.verifier.consumeChallenge(challenge.id);
 
     return this.sessions.issueForUser({
       username,

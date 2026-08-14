@@ -39,14 +39,14 @@ Global HTTP prefix is `auth` (see `apps/auth-api/src/main.ts`); controller route
 ## HiveAuth
 
 1. Client requests `POST /auth/v1/challenge` with `{ provider: "hiveauth", username }`.
-2. User completes HAS + PKSA flow; client builds `authData` JSON with `username`, `expire` (unix seconds), and optional `challenge` matching server message.
-3. Client sends `POST /auth/v1/verify/hiveauth` with `challengeId`, `username`, `authData`.
+2. User completes HAS + PKSA flow; client builds `authData` JSON with `username`, `expire` (unix seconds), `challenge` (server message), `pubkey`, and `signature` (signed challenge proof from HAS `challenge_data`).
+3. Client sends `POST /auth/v1/verify/hiveauth` with `challengeId`, `username`, `authData`. Server verifies ECDSA signature against posting authority before issuing JWTs.
 
 ## HiveSigner
 
 1. Client requests `POST /auth/v1/challenge` with `{ provider: "hivesigner", username }` (requires `HIVESIGNER_*` env).
-2. Browser opens `authorizeUrl`; HiveSigner redirects to `HIVESIGNER_CALLBACK_URL` with `code` and `state`.
-3. Backend `GET /auth/v1/callback/hivesigner` exchanges code, calls HiveSigner `/api/me`, issues JWTs.
+2. Browser opens `authorizeUrl`; HiveSigner redirects to callback with `access_token` and **`state`** (required).
+3. Backend `GET /auth/v1/callback/hivesigner` validates `state`, verifies token via HiveSigner `/api/me`, issues JWTs for the verified account (query `username` must match or be omitted).
 
 ## Protected APIs
 

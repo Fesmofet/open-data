@@ -1,23 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
 
-import { HasSessionService } from '../domain/has-session.service';
+import { WalletStatusService } from '../domain/hive-broadcast.service';
 
 @Controller('health')
 export class HealthController {
-  constructor(private readonly hasSession: HasSessionService) {}
+  constructor(private readonly walletStatus: WalletStatusService) {}
 
   @Get()
   getHealth(): {
     status: string;
-    session: { active: boolean; account?: string; expiresAt?: number };
+    wallet: ReturnType<WalletStatusService['getStatus']>;
   } {
-    const session = this.hasSession.getSessionInfo();
     return {
       status: 'ok',
-      session: {
-        active: session != null,
-        ...(session ?? {}),
-      },
+      wallet: this.walletStatus.getStatus(),
     };
   }
 }

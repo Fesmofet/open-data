@@ -11,6 +11,13 @@ import {
 } from '../support/fake-has-server';
 
 const REQUIRED_TOOLS = [
+  'wallet_status',
+  'waivio_auth_start',
+  'waivio_auth_status',
+  'waivio_auth_logout',
+  'ipfs_upload_image',
+  'wallet_broadcast',
+  'wallet_broadcast_status',
   'has_login_start',
   'has_login_status',
   'has_login_qr',

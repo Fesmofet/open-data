@@ -28,7 +28,7 @@ module.exports = {
       outputHashing: 'none',
       generatePackageJson: true,
       sourceMap: !isProd,
-      externalDependencies: [],
+      externalDependencies: ['@hiveio/dhive', 'secp256k1'],
     }),
   ],
 };

@@ -86,6 +86,8 @@ export function useKeychainLogin({ onLoginSuccess }: UseKeychainLoginOptions = {
         username: trimmed,
         expireMs: session.expire,
         challengeMessage: ch.message,
+        pubkey: session.challengeProof.pubkey,
+        signature: session.challengeProof.signature,
       });
 
       try {
