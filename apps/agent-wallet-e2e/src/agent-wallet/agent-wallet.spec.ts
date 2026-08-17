@@ -163,6 +163,7 @@ describe('agent-wallet MCP (e2e)', () => {
       ops: unknown[];
       opsCount: number;
       bytes: number;
+      perOpBytes: number[];
     }>('odl_build_object_create', {
       objectType: 'recipe',
       objectId: 'recipe-e2e-1',
@@ -170,6 +171,7 @@ describe('agent-wallet MCP (e2e)', () => {
       fields: [{ updateType: 'name', value: 'Borscht' }],
     });
     expect(built.data.opsCount).toBeGreaterThan(0);
+    expect(built.data.perOpBytes).toHaveLength(built.data.opsCount);
 
     const broadcast = await mcpCallTool<{ requestId: string }>('has_broadcast', {
       ops: built.data.ops,

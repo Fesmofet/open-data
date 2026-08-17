@@ -4,6 +4,7 @@ import {
   buildHasAuthDeepLink,
   encodeHasAuthCompactFragment,
   HasClient,
+  HAS_SIGN_ACK_GRACE_MS,
   type HasSession,
   type HasTransportFactory,
 } from '@opden-data-layer/hive-auth';
@@ -17,6 +18,7 @@ import qrcode from 'qrcode';
 import { AgentWalletAuthService } from '../auth/agent-wallet-auth.service';
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
 import { LOGIN_REUSE_MIN_REMAINING_MS } from '../constants/login';
+import { computeObjectCreateBroadcastMeta } from '../constants/broadcast-size';
 import { LocalFilesService } from './local-files.service';
 import {
   PendingRequestsStore,
@@ -236,7 +238,9 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     ops: unknown[];
     opsCount: number;
     bytes: number;
+    perOpBytes: number[];
     warnings: string[];
+    suggestIpfsBatch: boolean;
   } {
     const creator = input.creator.trim().replace(/^@/, '').toLowerCase();
     const objectId =
@@ -252,16 +256,15 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       language: input.language,
     });
 
-    const bytes = result.ops.reduce(
-      (sum, op) => sum + new TextEncoder().encode(op.json).length,
-      0,
-    );
+    const meta = computeObjectCreateBroadcastMeta(result.ops, result.warnings);
 
     return {
       ops: result.ops,
-      opsCount: result.ops.length,
-      bytes,
-      warnings: result.warnings,
+      opsCount: meta.opsCount,
+      bytes: meta.bytes,
+      perOpBytes: meta.perOpBytes,
+      warnings: meta.warnings,
+      suggestIpfsBatch: meta.suggestIpfsBatch,
     };
   }
 
@@ -354,7 +357,12 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       expiresAt: signPending.expire,
     });
 
-    void this.awaitBroadcast(requestId, signPending.uuid, client).catch(
+    void this.awaitBroadcast(
+      requestId,
+      signPending.uuid,
+      signPending.expire,
+      client,
+    ).catch(
       (error) => {
         this.logger.warn(
           `Broadcast flow ${requestId} failed: ${(error as Error).message}`,
@@ -373,7 +381,10 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       return { status: 'expired' };
     }
 
-    if (state.status === 'pending' && state.expiresAt <= Date.now()) {
+    if (
+      state.status === 'pending' &&
+      state.expiresAt + HAS_SIGN_ACK_GRACE_MS <= Date.now()
+    ) {
       this.pending.updateBroadcast(requestId, { status: 'expired' });
       return { status: 'expired' };
     }
@@ -594,6 +605,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
   private async awaitBroadcast(
     requestId: string,
     uuid: string,
+    expireAt: number,
     client: HasClient,
   ): Promise<void> {
     if (!this.session) {
@@ -605,7 +617,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      const result = await client.awaitBroadcast(uuid, this.session);
+      const result = await client.awaitBroadcast(uuid, this.session, expireAt);
       this.pending.updateBroadcast(requestId, {
         status: 'signed',
         transactionId: result.transactionId,

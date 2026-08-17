@@ -171,7 +171,7 @@ Repeating `has_login_start` for the same account returns the existing pending re
 }
 ```
 
-Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `opsCount`, `bytes`, `warnings`.
+Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `opsCount`, `bytes`, `perOpBytes`, `warnings`, and `suggestIpfsBatch` when near Hive/HAS limits.
 
 **Do not use** when the object already exists.
 
@@ -187,7 +187,7 @@ Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `op
 }
 ```
 
-Returns `ops` with a single `update_create` event (no `object_create`).
+Returns `ops` with a single `update_create` event (no `object_create`). **Do not** follow with `update_vote` — chain-indexer auto-approves the creator's update.
 
 ### 5. Gallery item on existing object
 
@@ -201,7 +201,7 @@ Returns `ops` with a single `update_create` event (no `object_create`).
 }
 ```
 
-Pass album names from `resolve_object` → `fields.imageGallery`. When the album is missing on chain, the tool emits album + item in one op.
+Pass album names from `resolve_object` → `fields.imageGallery`. When the album is missing on chain, the tool emits album + item in one op. **Do not** broadcast `update_vote` after — indexer auto-approves creator validity.
 
 Resolve field shapes first via knowledge-api: `get_object_type`, `get_update_schema`.
 
@@ -212,17 +212,33 @@ Resolve field shapes first via knowledge-api: `get_object_type`, `get_update_sch
 { "ops": [/* from odl_build_* */], "keyType": "posting" }
 ```
 
-Poll `has_broadcast_status` until `signed` with `transactionId` or terminal failure (`rejected`, `error`, `expired`).
+Poll `has_broadcast_status` until `signed` with `transactionId` or terminal failure (`rejected`, `error`, `expired`). With Keychain posting auto-approve, poll immediately after the phone signs — do not wait for a UI "done" confirmation.
 
 ### 7. Confirm indexing
 
 Same as [hive-blockchain-broadcast § Step 4](hive-blockchain-broadcast.md#step-4--confirm-on-chain). Match `ODL_NETWORK` with chain-indexer / query-api.
 
+## Broadcast pitfalls
+
+| Situation | Action |
+|-----------|--------|
+| `odl_build_object_create` returns `suggestIpfsBatch` or `opsCount >= 4` | Prefer IPFS batch import instead of direct chain create |
+| Per-op JSON near 8 KB | May cause HAS sign timeout; split fields or use IPFS |
+| `has_broadcast_status` → `expired` | **`resolve_object` first** — tx may already be on chain; do not resend same ops |
+| Two `expired` in a row, no chain change | `has_login_start` (relogin); stop bulk loops |
+| After your own `update_create` | **No `update_vote`** — indexer auto-likes from creator |
+
+## Votes (do not duplicate on create)
+
+- **`update_create`** (object create fields, `odl_build_update_create`, `odl_build_gallery_item`): chain-indexer inserts creator validity vote `for` automatically. Never broadcast a separate `update_vote` for your own new update.
+- **`update_vote`**: only to approve/reject **someone else's** existing update (moderation).
+- **`rank_vote`**: multi-cardinality ranking only, or `aggregateRating` via `buildOdlUpdateCreateWithRankVoteOp`. Not for single-cardinality fields (`image`, `title`, `name`, …).
+
 ## Reject / failure handling
 
 - Login `rejected` → user declined in Keychain; call `has_login_start` again.
 - Broadcast `rejected` → user declined sign; do not retry silently — confirm with user.
-- `expired` → HAS timeout; restart the flow.
+- `expired` → verify chain before retry; if no change after two expires, relogin.
 - Never log or paste bearer token, session file contents, or `auth_key` from deep links.
 
 ## Libraries

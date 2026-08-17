@@ -1,4 +1,7 @@
 import { HAS_CMD, HAS_SUPPORTED_PROTOCOLS } from './has-cmd';
+
+/** Extra window after HAS sign deadline for late SIGN_ACK (e.g. Keychain already broadcast). */
+export const HAS_SIGN_ACK_GRACE_MS = 10_000;
 import {
   decryptHasError,
   decryptHasPayload,
@@ -77,6 +80,7 @@ type SignAckWaiter = {
   reject: (error: Error) => void;
   expireAt: number;
   timeoutId: ReturnType<typeof setTimeout>;
+  inGrace?: boolean;
 };
 
 type ChallengeAckWaiter = {
@@ -349,6 +353,7 @@ export class HasClient {
   async awaitBroadcast(
     uuid: string,
     session: HasSession,
+    expireAt: number,
   ): Promise<{ transactionId: string }> {
     const existing = this.signAckWaiters.get(uuid);
     if (existing) {
@@ -359,19 +364,32 @@ export class HasClient {
     }
 
     return new Promise<{ transactionId: string }>((resolve, reject) => {
-      const expireAt = this.now() + this.timeoutMs;
-      const timeoutId = setTimeout(() => {
-        this.signAckWaiters.delete(uuid);
-        reject(new Error('expired'));
-      }, Math.max(0, expireAt - this.now()));
-
-      this.signAckWaiters.set(uuid, {
+      const waiter: SignAckWaiter = {
         session,
         resolve,
         reject,
         expireAt,
-        timeoutId,
-      });
+        timeoutId: setTimeout(() => {
+          /* replaced by armExpireTimer */
+        }, 0),
+      };
+
+      const armExpireTimer = (deadline: number, inGrace: boolean): void => {
+        clearTimeout(waiter.timeoutId);
+        waiter.inGrace = inGrace;
+        waiter.expireAt = deadline;
+        waiter.timeoutId = setTimeout(() => {
+          if (!waiter.inGrace) {
+            armExpireTimer(deadline + HAS_SIGN_ACK_GRACE_MS, true);
+            return;
+          }
+          this.signAckWaiters.delete(uuid);
+          waiter.reject(new Error('expired'));
+        }, Math.max(0, deadline - this.now()));
+      };
+
+      armExpireTimer(expireAt, false);
+      this.signAckWaiters.set(uuid, waiter);
     });
   }
 

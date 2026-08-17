@@ -12,6 +12,7 @@ export {
 } from './has-compact-link';
 export { buildHasAuthDeepLink, type HasAuthDeepLinkInput } from './has-deep-link';
 export {
+  HAS_SIGN_ACK_GRACE_MS,
   HasClient,
   type HasAppMeta,
   type HasAuthPending,

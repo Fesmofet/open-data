@@ -7,14 +7,21 @@ Workflow (HAS signing — default):
 2. has_login_start → send webLink to user → poll has_login_status until active.
 3. waivio_auth_start → poll waivio_auth_status until active (uses HAS session to sign auth challenge).
 4. ipfs_upload_image({ filePath }) for avatars — prepare 1:1 up to 1024px, upload, write only { "cid": "..." } on chain. Do not store generated CDN URLs (e.g. files-cdn.x.ai); download, crop, upload to IPFS. Verify contentUrl loads before broadcast.
-5. Build ops (see decision table below) → wallet_broadcast / has_broadcast → poll status.
+5. Build ops (see decision table below) → wallet_broadcast / has_broadcast → poll status immediately after phone approve (posting key auto-approve does not send a "done" UI event).
 6. After broadcast, verify fields on the object via query-api (resolve_object).
 
 ODL build decision table:
-- NEW object → odl_build_object_create (always includes object_create)
+- NEW object → odl_build_object_create (always includes object_create; check suggestIpfsBatch / perOpBytes when warnings)
 - EXISTING object, one field (avatar image, title, description, …) → odl_build_update_create
 - EXISTING object, gallery photo → odl_build_gallery_item (pass existingGalleryAlbumNames from resolve_object fields.imageGallery)
 - Avatar on existing object: ipfs_upload_image → odl_build_update_create({ updateType: "image", value: { cid } }) → wallet_broadcast
+- After any update_create from the tools above: do NOT add update_vote — chain-indexer auto-approves creator validity
+
+Broadcast pitfalls:
+- One object per tx; prefer IPFS batch when odl_build_object_create returns suggestIpfsBatch or opsCount >= 4.
+- Fat custom_json (near 8 KB per op) may cause HAS sign timeout even when under Hive limit.
+- On has_broadcast_status expired: resolve_object first — do not resend same ops (Keychain may have already broadcast).
+- Two consecutive expired with no chain change → has_login_start (relogin); stop bulk catalog loops.
 
 Workflow (local keys — AGENT_WALLET_SIGNING_MODE=local):
 1. Set HIVE_ACCOUNT and HIVE_POSTING_KEY (optional HIVE_ACTIVE_KEY for active ops only).

@@ -3,7 +3,7 @@ import CryptoJS from 'crypto-js';
 import { HAS_CMD } from './has-cmd';
 import { encryptHasPayload } from './has-crypto';
 import { buildHasAuthDeepLink } from './has-deep-link';
-import { HasClient } from './has-client';
+import { HAS_SIGN_ACK_GRACE_MS, HasClient } from './has-client';
 import type { HasTransport, HasTransportFactory } from './has-transport';
 
 class FakeHasTransport implements HasTransport {
@@ -274,7 +274,11 @@ describe('HasClient', () => {
     });
 
     const signPending = await startPromise;
-    const ackPromise = client.awaitBroadcast(signPending.uuid, session);
+    const ackPromise = client.awaitBroadcast(
+      signPending.uuid,
+      session,
+      signPending.expire,
+    );
 
     transport.emit({
       cmd: HAS_CMD.SIGN_ACK,
@@ -310,7 +314,11 @@ describe('HasClient', () => {
     });
 
     const signPending = await startPromise;
-    const ackPromise = client.awaitBroadcast(signPending.uuid, session);
+    const ackPromise = client.awaitBroadcast(
+      signPending.uuid,
+      session,
+      signPending.expire,
+    );
 
     transport.emit({ cmd: HAS_CMD.SIGN_NACK, uuid: 's1' });
 
@@ -342,7 +350,11 @@ describe('HasClient', () => {
     });
 
     const signPending = await startPromise;
-    const ackPromise = client.awaitBroadcast(signPending.uuid, session);
+    const ackPromise = client.awaitBroadcast(
+      signPending.uuid,
+      session,
+      signPending.expire,
+    );
 
     transport.emit({
       cmd: HAS_CMD.SIGN_ERR,
@@ -382,14 +394,111 @@ describe('HasClient', () => {
     const firstPending = await firstStart;
     const secondPending = await secondStart;
 
-    const firstAck = client.awaitBroadcast(firstPending.uuid, session);
-    const secondAck = client.awaitBroadcast(secondPending.uuid, session);
+    const firstAck = client.awaitBroadcast(
+      firstPending.uuid,
+      session,
+      firstPending.expire,
+    );
+    const secondAck = client.awaitBroadcast(
+      secondPending.uuid,
+      session,
+      secondPending.expire,
+    );
 
     transport.emit({ cmd: HAS_CMD.SIGN_ACK, uuid: 's2', data: 'trx-B' });
     transport.emit({ cmd: HAS_CMD.SIGN_ACK, uuid: 's1', data: 'trx-A' });
 
     await expect(firstAck).resolves.toEqual({ transactionId: 'trx-A' });
     await expect(secondAck).resolves.toEqual({ transactionId: 'trx-B' });
+  });
+
+  it('awaitBroadcast rejects after SIGN_WAIT expire plus grace when no ack', async () => {
+    jest.useFakeTimers();
+    let nowMs = 1_000;
+    const transport = new FakeHasTransport();
+    const client = await openClient(transport, () => nowMs);
+
+    const session = {
+      username: 'alice',
+      key: 'k1',
+      token: 't1',
+      expire: 9_000,
+    };
+
+    const startPromise = client.startBroadcast({
+      session,
+      keyType: 'posting',
+      ops: [['vote', {}]],
+    });
+    await Promise.resolve();
+
+    const signExpire = 2_500;
+    transport.emit({
+      cmd: HAS_CMD.SIGN_WAIT,
+      uuid: 's1',
+      expire: signExpire,
+    });
+
+    const signPending = await startPromise;
+    const ackPromise = client.awaitBroadcast(
+      signPending.uuid,
+      session,
+      signPending.expire,
+    );
+    const rejectExpect = expect(ackPromise).rejects.toThrow('expired');
+
+    nowMs = signExpire;
+    await jest.advanceTimersByTimeAsync(signExpire - 1_000);
+    nowMs = signExpire + HAS_SIGN_ACK_GRACE_MS;
+    await jest.advanceTimersByTimeAsync(HAS_SIGN_ACK_GRACE_MS);
+
+    await rejectExpect;
+  });
+
+  it('awaitBroadcast accepts SIGN_ACK during grace after sign deadline', async () => {
+    jest.useFakeTimers();
+    let nowMs = 1_000;
+    const transport = new FakeHasTransport();
+    const client = await openClient(transport, () => nowMs);
+
+    const session = {
+      username: 'alice',
+      key: 'k1',
+      token: 't1',
+      expire: 9_000,
+    };
+
+    const startPromise = client.startBroadcast({
+      session,
+      keyType: 'posting',
+      ops: [['vote', {}]],
+    });
+    await Promise.resolve();
+
+    const signExpire = 2_500;
+    transport.emit({
+      cmd: HAS_CMD.SIGN_WAIT,
+      uuid: 's1',
+      expire: signExpire,
+    });
+
+    const signPending = await startPromise;
+    const ackPromise = client.awaitBroadcast(
+      signPending.uuid,
+      session,
+      signPending.expire,
+    );
+
+    nowMs = signExpire + 100;
+    await jest.advanceTimersByTimeAsync(signExpire - 1_000 + 100);
+
+    transport.emit({
+      cmd: HAS_CMD.SIGN_ACK,
+      uuid: 's1',
+      data: 'trx-late',
+    });
+
+    await expect(ackPromise).resolves.toEqual({ transactionId: 'trx-late' });
   });
 
   it('rejects broadcast when session is expired', async () => {

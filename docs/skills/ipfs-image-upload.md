@@ -61,12 +61,14 @@ odl_build_update_create({
 → wallet_broadcast({ ops })
 ```
 
+Single `update_create` only — **do not** broadcast `update_vote` afterward. Chain-indexer auto-approves the creator's update.
+
 ### Gallery photo (`updateType: "imageGalleryItem"`)
 
 1. `resolve_object` → read `fields.imageGallery` album names.
 2. Upload via IPFS or use a stable external URL.
 3. `odl_build_gallery_item({ objectId, creator, itemValue: { album, cid }, existingGalleryAlbumNames })`
-4. `wallet_broadcast({ ops })`
+4. `wallet_broadcast({ ops })` — no follow-up `update_vote`
 
 ## Update policy
 
