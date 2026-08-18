@@ -2,6 +2,11 @@ export type { ObjectTypeDefinition, ObjectTypeRegistry, SupposedUpdate } from '.
 export { OBJECT_TYPES } from './object-types';
 export type { ObjectType } from './object-types';
 export { OBJECT_TYPE_REGISTRY } from './object-type-registry';
+export {
+  OBJECT_CREATE_REQUIRED_BY_TYPE,
+  OBJECT_CREATE_REQUIRED_UPDATE_TYPES,
+  getRequiredObjectCreateUpdates,
+} from './object-create-policy';
 export { HASHTAG_OBJECT_TYPE } from './object-types/hashtag';
 export { LIST_OBJECT_TYPE } from './object-types/list';
 export { PRODUCT_OBJECT_TYPE } from './object-types/product';

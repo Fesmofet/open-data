@@ -63,6 +63,10 @@ export function getUpdateSchema(updateType: string): {
   description: string | null;
   cardinality: string;
   value_kind: string;
+  localizable: boolean;
+  namespace: string | null;
+  semantic_key: string | null;
+  applies_to: string[] | null;
   json_schema: Record<string, unknown> | null;
   example_payload: string;
   markdown: string;
@@ -74,6 +78,10 @@ export function getUpdateSchema(updateType: string): {
     description: def.description ?? null,
     cardinality: def.cardinality,
     value_kind: def.value_kind,
+    localizable: def.localizable === true,
+    namespace: def.namespace ?? null,
+    semantic_key: def.semantic_key ?? null,
+    applies_to: def.applies_to?.length ? [...def.applies_to] : null,
     json_schema: updateSchemaToJson(def),
     example_payload: updateTypeExamplePayload(def.value_kind, updateType),
     markdown: serializeUpdateType(updateType, def),

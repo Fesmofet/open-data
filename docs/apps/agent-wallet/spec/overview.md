@@ -62,6 +62,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `odl_build_object_create` | `ops`, `opsCount`, `bytes`, `warnings` — **new objects only** |
 | `odl_build_update_create` | `ops`, `opsCount`, `bytes` — single `update_create` for existing object |
 | `odl_build_gallery_item` | `ops`, `opsCount`, `bytes` — gallery item (+ album ensure when needed) |
+| `hive_build_post` | `ops`, `opsCount: 2`, `json_metadata`, `warnings` — root Hive post (`comment` + `comment_options`) |
 | `has_broadcast` | `requestId` |
 | `has_broadcast_status` | `signed` / `rejected` / `error` / `expired`, `transactionId` |
 | `wallet_status` | signing mode, HAS/Waivio/local readiness (no secrets) |

@@ -5,6 +5,7 @@ export * from './chunker/chunk-markdown';
 export * from './registry/object-type-serializer';
 export * from './registry/update-type-serializer';
 export * from './registry/build-registry-documents';
+export * from './registry/object-create-playbook';
 export * from './registry/registry-query';
 export * from './repository/types';
 export * from './repository/knowledge.repository';

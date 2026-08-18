@@ -6,6 +6,7 @@ import {
   WalletStatusService,
 } from './hive-broadcast.service';
 import { HasSessionService } from './has-session.service';
+import { HivePostBuildService } from './hive-post-build.service';
 import { IpfsUploadService } from './ipfs-upload.service';
 import { LocalKeysService } from './local-keys.service';
 import { PendingRequestsStore } from './pending-requests.store';
@@ -24,10 +25,12 @@ import { WaivioAuthSessionService } from './waivio-auth-session.service';
     LocalKeysService,
     HiveBroadcastService,
     WalletStatusService,
+    HivePostBuildService,
     IpfsUploadService,
   ],
   exports: [
     HasSessionService,
+    HivePostBuildService,
     WaivioAuthOrchestratorService,
     WaivioAuthSessionService,
     HiveBroadcastService,

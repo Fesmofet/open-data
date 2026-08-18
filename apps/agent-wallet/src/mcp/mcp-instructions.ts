@@ -14,6 +14,7 @@ ODL build decision table:
 - NEW object → odl_build_object_create (always includes object_create; check suggestIpfsBatch / perOpBytes when warnings)
 - EXISTING object, one field (avatar image, title, description, …) → odl_build_update_create
 - EXISTING object, gallery photo → odl_build_gallery_item (pass existingGalleryAlbumNames from resolve_object fields.imageGallery)
+- Hive root post (article, companion post, recipe walkthrough) → hive_build_post (see docs/skills/hive-post-create.md) → wallet_broadcast / has_broadcast
 - Avatar on existing object: ipfs_upload_image → odl_build_update_create({ updateType: "image", value: { cid } }) → wallet_broadcast
 - After any update_create from the tools above: do NOT add update_vote — chain-indexer auto-approves creator validity
 

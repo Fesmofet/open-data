@@ -5,6 +5,7 @@ import type { Request, Response } from 'express';
 
 import { HiveBroadcastService, WalletStatusService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
+import { HivePostBuildService } from '../domain/hive-post-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { AGENT_WALLET_MCP_INSTRUCTIONS } from './mcp-instructions';
@@ -16,6 +17,7 @@ export class McpService {
 
   constructor(
     private readonly hasSession: HasSessionService,
+    private readonly hivePostBuild: HivePostBuildService,
     private readonly broadcast: HiveBroadcastService,
     private readonly walletStatus: WalletStatusService,
     private readonly waivioAuth: WaivioAuthOrchestratorService,
@@ -33,6 +35,7 @@ export class McpService {
 
     registerAgentWalletTools(server, {
       hasSession: this.hasSession,
+      hivePostBuild: this.hivePostBuild,
       broadcast: this.broadcast,
       walletStatus: this.walletStatus,
       waivioAuth: this.waivioAuth,

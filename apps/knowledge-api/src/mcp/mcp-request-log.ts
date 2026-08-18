@@ -40,6 +40,7 @@ export function summarizeToolArguments(
     list_files: ['type', 'scope', 'status', 'tags'],
     reindex: ['path'],
     get_object_type: ['object_type'],
+    get_object_create_playbook: ['object_type'],
     get_update_schema: ['update_type'],
   };
 

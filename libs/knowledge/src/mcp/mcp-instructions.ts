@@ -28,6 +28,6 @@ Key paths:
 - docs/skills/build-tenant-site.md — create web project; fork apps/web (Next.js); never standalone .html; object-menu or custom UI + query-api
 - docs/apps/<app>/spec/ — feature specs
 
-Chain payloads: use get_object_type and get_update_schema, not search_knowledge.
+Chain payloads: use get_object_create_playbook (before create), get_object_type, and get_update_schema — not search_knowledge.
 
 Not indexed: .agents/skills/ (Cursor runtime only).`;

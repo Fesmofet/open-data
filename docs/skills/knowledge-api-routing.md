@@ -59,7 +59,9 @@ related:
 | App feature behavior | spec / overview | `docs/apps/<app>/spec/` or `overview.md` |
 | Live platform data (objects, feeds, posts, OBL reads) | skill | `docs/skills/query-api-mcp-routing.md` → query-api MCP |
 | Domain rules (votes, governance, OBL norms) | spec | `docs/spec/README.md` · `docs/spec/open-business-layer.md` |
-| Object/update payload shape | registry tools | `get_object_type` / `get_update_schema` |
+| Object/update payload shape | registry tools | `get_object_create_playbook` → `get_object_type` / `get_update_schema` |
+| Create recipe / restaurant / menu content | skill | `get_object_create_playbook` · [object-content-routing.md](object-content-routing.md) |
+| Publish Hive post / WAIV tags / companion post | skill | [hive-post-create.md](hive-post-create.md) |
 | Coding style in this repo | agents | `AGENTS.md` or `apps/<app>/AGENTS.md` |
 
 ## MCP tools cheat sheet
@@ -74,6 +76,7 @@ related:
 | `get_file` | Full doc after you have a path |
 | `list_tags` | Explore indexed topics |
 | `get_object_type` | Object create / type definition |
+| `get_object_create_playbook` | Registry + product baseline + type playbook excerpt (call before create) |
 | `get_update_schema` | Update payload JSON Schema |
 
 ## Indexed skills
@@ -90,7 +93,14 @@ related:
 | `docs/skills/obl-offers-contracts.md` | OBL offers: discover, publish, sign contracts |
 | `docs/skills/obl-ledger.md` | OBL invoices, payments, balances, ledger |
 | `docs/skills/obl-disputes.md` | OBL disputes and arbitration |
-| `docs/skills/build-tenant-site.md` | Build a web project. Default: start from waivio-pages-starter (static Next.js, GitHub Pages, Keychain, query-api client); agent uses its own GitHub account to fork/iterate/deploy. Server variant: fork apps/web from the monorepo. |
+| `docs/skills/object-content-routing.md` | Object create intent → playbook / workflow |
+| `docs/skills/object-content-standards.md` | Common dedupe, locales, images, broadcast rules |
+| `docs/skills/restaurant-menu-workflow.md` | Restaurant + menu composite workflow |
+| `docs/skills/companion-post-workflow.md` | Post linked to created object |
+| `docs/skills/hive-post-create.md` | Hive root post create + WAIV tags + `hive_build_post` |
+| `docs/skills/build-tenant-site.md` | Build a web project (waivio-pages-starter or fork apps/web) |
+
+Object-type playbooks (`docs/skills/object-create/*.md`): use `list_files({ type: "skill", tags: ["object-create-playbook"] })` or `get_object_create_playbook({ object_type })`.
 
 ## Verification
 

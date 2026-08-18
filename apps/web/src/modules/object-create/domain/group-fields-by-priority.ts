@@ -1,21 +1,21 @@
-import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
+import {
+  getRequiredObjectCreateUpdates,
+  OBJECT_CREATE_REQUIRED_BY_TYPE,
+  OBJECT_CREATE_REQUIRED_UPDATE_TYPES,
+  OBJECT_TYPE_REGISTRY,
+} from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import type { GroupedFieldTypes } from './object-create.types';
 
 /** Always treated as required when supported by the object type. */
-export const REQUIRED_UPDATE_TYPES: readonly string[] = [
-  UPDATE_TYPES.NAME,
-  UPDATE_TYPES.DESCRIPTION,
-  UPDATE_TYPES.IMAGE,
-];
+export const REQUIRED_UPDATE_TYPES: readonly string[] =
+  OBJECT_CREATE_REQUIRED_UPDATE_TYPES;
 
 /** Extra required updates per object type (when supported). */
 export const TYPE_SPECIFIC_REQUIRED_UPDATES: Readonly<
   Record<string, readonly string[]>
-> = {
-  recipe: [UPDATE_TYPES.INGREDIENTS],
-};
+> = OBJECT_CREATE_REQUIRED_BY_TYPE;
 
 /** Update types used for media section (also may appear in core fields). */
 export const MEDIA_UPDATE_TYPES: readonly string[] = [
@@ -108,11 +108,7 @@ export function groupFieldsByPriority(objectType: string): GroupedFieldTypes {
   );
   const supportedSet = new Set(supported);
 
-  const typeSpecific = TYPE_SPECIFIC_REQUIRED_UPDATES[objectType] ?? [];
-  const required = uniqueOrdered([
-    ...REQUIRED_UPDATE_TYPES.filter((t) => supportedSet.has(t)),
-    ...typeSpecific.filter((t) => supportedSet.has(t)),
-  ]);
+  const required = uniqueOrdered(getRequiredObjectCreateUpdates(objectType));
 
   const fromSupposed = def.supposed_updates.map((u) => u.update_type);
   const recommended = uniqueOrdered([

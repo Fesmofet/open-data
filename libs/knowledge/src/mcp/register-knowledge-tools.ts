@@ -13,6 +13,7 @@ import {
   listObjectTypes,
   listUpdateTypes,
 } from '../registry/registry-query';
+import { getObjectCreatePlaybook } from '../registry/object-create-playbook';
 import type { KnowledgeDatabase } from '../repository/types';
 import type { KnowledgeMcpDeps } from './mcp-tool.deps';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
@@ -246,6 +247,27 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
     },
     async (args) => {
       const result = getObjectType(args.object_type);
+      if (!result) {
+        return toolError(`Unknown object type: ${args.object_type}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_object_create_playbook',
+    {
+      description:
+        'Get object create playbook: registry summary, product required_updates, update_summaries, and indexed skill excerpt. Call before odl_build_object_create.',
+      inputSchema: z.object({
+        object_type: z.string().min(1).describe('Registry object type id'),
+      }),
+    },
+    async (args) => {
+      const result = await getObjectCreatePlaybook({
+        objectType: args.object_type,
+        repo: deps.repo,
+      });
       if (!result) {
         return toolError(`Unknown object type: ${args.object_type}`);
       }

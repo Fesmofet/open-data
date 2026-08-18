@@ -23,7 +23,7 @@ MCP HTTP service for agent access to project documentation, skills, lessons, and
 2. Resource `odl-knowledge://routing` or `get_file({ path: "docs/skills/knowledge-api-routing.md" })`.
 3. `resolve_doc({ topic: "<task>" })` → `get_file` on top path.
 4. `list_files({ type: "skill" })` — playbooks with `description` one-liners.
-5. Chain payloads: `get_object_type` / `get_update_schema` (not search).
+5. Chain payloads: `get_object_create_playbook` → `get_object_type` / `get_update_schema` (not search).
 
 Canonical detail: [Knowledge API routing skill](../../skills/knowledge-api-routing.md). Search detail: [hybrid search](search.md).
 
@@ -47,6 +47,7 @@ Canonical detail: [Knowledge API routing skill](../../skills/knowledge-api-routi
 | `reindex` | In-process reindex (dev only; `KNOWLEDGE_ALLOW_REINDEX=true`) |
 | `list_object_types` | `OBJECT_TYPE_REGISTRY` (live) |
 | `get_object_type` | Registry + supported/supposed updates |
+| `get_object_create_playbook` | Registry + product baseline + indexed type playbook excerpt |
 | `list_update_types` | `UPDATE_REGISTRY` (live) |
 | `get_update_schema` | Zod → JSON Schema + example payload |
 

@@ -7,6 +7,18 @@ export interface CuratedRoute {
 /** Static high-confidence routes for common agent intents. */
 export const CURATED_ROUTES: CuratedRoute[] = [
   {
+    path: 'docs/skills/object-content-routing.md',
+    keywords: [
+      'object create',
+      'create recipe',
+      'create restaurant',
+      'restaurant menu',
+      'object create playbook',
+      'odl_build_object_create',
+    ],
+    reason: 'curated:object-create',
+  },
+  {
     path: 'docs/skills/knowledge-api-routing.md',
     keywords: ['knowledge api', 'mcp routing', 'first visit', 'agent onboarding', 'how to use knowledge'],
     reason: 'curated:mcp-routing',
@@ -54,6 +66,20 @@ export const CURATED_ROUTES: CuratedRoute[] = [
       'agent-wallet mcp',
     ],
     reason: 'curated:has-agent-wallet',
+  },
+  {
+    path: 'docs/skills/hive-post-create.md',
+    keywords: [
+      'publish post',
+      'hive post',
+      'create post',
+      'waiv reward',
+      'post tags',
+      'hive_build_post',
+      'comment_options',
+      'companion post',
+    ],
+    reason: 'curated:hive-post-create',
   },
   {
     path: 'docs/skills/has-login-from-chat.md',

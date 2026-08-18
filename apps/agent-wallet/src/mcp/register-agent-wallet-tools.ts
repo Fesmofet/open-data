@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { HiveBroadcastService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
+import { HivePostBuildService } from '../domain/hive-post-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { WalletStatusService } from '../domain/hive-broadcast.service';
@@ -12,6 +13,7 @@ export function registerAgentWalletTools(
   server: McpServer,
   deps: {
     hasSession: HasSessionService;
+    hivePostBuild: HivePostBuildService;
     broadcast: HiveBroadcastService;
     walletStatus: WalletStatusService;
     waivioAuth: WaivioAuthOrchestratorService;
@@ -269,6 +271,51 @@ export function registerAgentWalletTools(
     async (args) => {
       try {
         const result = deps.hasSession.buildGalleryItem(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'hive_build_post',
+    {
+      description:
+        'Build Hive root post ops (comment + comment_options). Optional linked objects and beneficiaries (omit beneficiaries unless user requests — no default). Warns when tags lack WAIV-eligible tag. Broadcast via wallet_broadcast / has_broadcast after user approval.',
+      inputSchema: z.object({
+        author: z.string().min(1),
+        title: z.string().min(1),
+        body: z.string().min(1),
+        permlink: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        objects: z
+          .array(
+            z.object({
+              object_id: z.string().min(1),
+              percent: z.number(),
+            }),
+          )
+          .optional(),
+        beneficiaries: z
+          .array(
+            z.object({
+              account: z.string().min(1),
+              weight: z.number().int(),
+            }),
+          )
+          .optional(),
+        rewardMode: z
+          .enum(['fifty_fifty', 'hive_power', 'declined'])
+          .optional(),
+        parentPermlink: z.string().optional(),
+        app: z.string().optional(),
+        host: z.string().optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.hivePostBuild.buildPost(args);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);

@@ -199,7 +199,7 @@ Domain procedural playbooks for agents (Hive account creation, deploy runbooks, 
 
 **Agent onboarding:** [`docs/skills/knowledge-api-routing.md`](../skills/knowledge-api-routing.md) is the canonical first-visit map. MCP server `instructions` duplicate a compressed version; keep routing skill and instructions aligned when adding tools or paths.
 
-**CI:** `pnpm check:agent-docs` (runs on `docs/**` changes in verify workflow) requires non-empty `description` on every `docs/skills/*.md`, every file under `docs/apps/*/spec/`, and every `docs/spec/**/*.md`, plus valid `scope` on app overviews.
+**CI:** `pnpm check:agent-docs` and `pnpm check:object-create-playbooks` (registry ↔ `docs/skills/object-create/*.md` one-to-one) run on relevant `docs/**` and registry changes in verify workflow.
 
 Recommended sections (same spirit as feature specs):
 
@@ -207,7 +207,9 @@ Recommended sections (same spirit as feature specs):
 2. **When to use** — triggers, prerequisites, when *not* to use.
 3. **Steps** — ordered procedure; commands and payloads as fenced blocks.
 4. **Verification** — how to confirm success (commands, expected output, rollback).
-5. **Related** — links to specs, `AGENTS.md`, registry tools (`get_object_type`, …).
+5. **Related** — links to specs, `AGENTS.md`, registry tools (`get_object_create_playbook`, `get_object_type`, …).
+
+**Object-create playbooks:** every `OBJECT_TYPE_REGISTRY` key must have `docs/skills/object-create/{object_type}.md` with tag `object-create-playbook`. Template: [`docs/standards/templates/object-create-playbook.md`](../standards/templates/object-create-playbook.md).
 
 Example:
 

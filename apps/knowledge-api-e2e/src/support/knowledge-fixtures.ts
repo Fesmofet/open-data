@@ -7,6 +7,10 @@ export const PATHS = {
   oblOffersContracts: 'docs/skills/obl-offers-contracts.md',
   oblLedger: 'docs/skills/obl-ledger.md',
   oblDisputes: 'docs/skills/obl-disputes.md',
+  objectContentRouting: 'docs/skills/object-content-routing.md',
+  objectContentStandards: 'docs/skills/object-content-standards.md',
+  restaurantMenuWorkflow: 'docs/skills/restaurant-menu-workflow.md',
+  companionPostWorkflow: 'docs/skills/companion-post-workflow.md',
 } as const;
 
 export const ALL_SKILL_PATHS = [
@@ -17,6 +21,10 @@ export const ALL_SKILL_PATHS = [
   PATHS.oblOffersContracts,
   PATHS.oblLedger,
   PATHS.oblDisputes,
+  PATHS.objectContentRouting,
+  PATHS.objectContentStandards,
+  PATHS.restaurantMenuWorkflow,
+  PATHS.companionPostWorkflow,
 ] as const;
 
 export interface SearchResult {
@@ -82,6 +90,7 @@ export const CORE_MCP_TOOLS = [
   'get_context',
   'list_files',
   'list_tags',
+  'get_object_create_playbook',
 ] as const;
 
 export const APP_SPEC_DISCOVERY_QUERIES = [

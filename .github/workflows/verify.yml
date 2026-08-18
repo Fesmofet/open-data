@@ -23,6 +23,9 @@ jobs:
             docs:
               - 'docs/**'
               - 'scripts/check-agent-docs.ts'
+              - 'scripts/check-object-create-playbooks.ts'
+              - 'libs/core/src/object-type-registry/**'
+              - 'package.json'
 
       - uses: pnpm/action-setup@v4
         if: steps.paths.outputs.docs == 'true'
@@ -40,6 +43,10 @@ jobs:
       - name: Verify agent-oriented docs
         if: steps.paths.outputs.docs == 'true'
         run: pnpm check:agent-docs
+
+      - name: Verify object-create playbooks
+        if: steps.paths.outputs.docs == 'true'
+        run: pnpm check:object-create-playbooks
 
   knowledge-unit:
     name: Knowledge lib — unit tests

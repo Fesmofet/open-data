@@ -10,6 +10,7 @@ updated_at: 2026-06-10
 related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/hive-has-agent-wallet.md
+  - docs/skills/hive-post-create.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
   - docs/skills/obl-offers-contracts.md
@@ -92,7 +93,7 @@ flowchart LR
 |-------|----------------|------|
 | Operation builders | [`@opden-data-layer/hive-broadcast`](../../../libs/hive-broadcast/src/index.ts) | Normalized `HiveOperation` + ODL `custom_json` builders |
 | Registries (source of truth) | `@opden-data-layer/core` — `OBJECT_TYPE_REGISTRY`, `UPDATE_REGISTRY` | Valid object/update types |
-| Registry for agents | **knowledge-api MCP** — `list_object_types`, `get_object_type`, `list_update_types`, `get_update_schema` | Schemas, examples, supported/supposed updates |
+| Registry for agents | **knowledge-api MCP** — `get_object_create_playbook`, `list_object_types`, `get_object_type`, `list_update_types`, `get_update_schema` | Playbooks, schemas, examples, supported/supposed updates |
 | Object create (multi-event) | [`apps/web/.../build-create-ops.ts`](../../../apps/web/src/modules/object-create/application/build-create-ops.ts) | `object_create` + many `update_create`; chunking / IPFS |
 | Web signing | `getWalletFacade().broadcast()` | Browser wallets |
 | Standalone signing | `@hiveio/dhive` | `Client` + `PrivateKey` (posting) |
@@ -152,6 +153,7 @@ Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`, `object_a
 With **knowledge-api** running (`pnpm nx serve knowledge-api`):
 
 1. `list_object_types` — pick `object_type`.
+1. `get_object_create_playbook({ object_type })` — product baseline + playbook excerpt.
 2. `get_object_type({ object_type: "product" })` — returns:
    - `supported_updates`, `supposed_updates`
    - `example_create_payload` — minimal `object_create` wire example
@@ -206,6 +208,15 @@ Import builders from `@opden-data-layer/hive-broadcast`:
 | `buildReblogOp` | `custom_json` id `follow` |
 | `buildHiveFollowOp` / `buildHiveUnfollowOp` | Hive social follow |
 | `buildCustomJsonOp` | Low-level; prefer ODL helpers |
+
+### Hive root posts (agents)
+
+For publishing a **root post** (`comment` + `comment_options` in one tx), use the dedicated playbook — do not hand-roll beneficiaries or tag rules here:
+
+- Skill: [hive-post-create.md](hive-post-create.md) — WAIV-eligible tags, optional beneficiaries (user request only), linked `json_metadata.objects`
+- MCP: **`hive_build_post`** on **agent-wallet** → `wallet_broadcast` / `has_broadcast`
+
+Do **not** default beneficiaries (e.g. `waivio` 3%) — that is web UI behavior only.
 
 ### `object_create` (not a separate builder in hive-broadcast)
 
@@ -315,7 +326,7 @@ Map other `HiveOperation` types the same way as [`keychain-signer.ts`](../../../
 
 1. Start daemon: `pnpm nx serve agent-wallet` (binds `127.0.0.1:7500`, bearer token in `~/.odl/agent-wallet.token`).
 2. MCP tools: `has_login_start` → send **`webLink`** in chat ([has-login-from-chat](has-login-from-chat.md)) or QR in terminal → poll `has_login_status` until `active`.
-3. Build ops: `odl_build_object_create` (new) / `odl_build_update_create` / `odl_build_gallery_item`, or `@opden-data-layer/hive-broadcast` builders, then `has_broadcast` + poll `has_broadcast_status`.
+3. Build ops: `odl_build_object_create` (new) / `odl_build_update_create` / `odl_build_gallery_item` / `hive_build_post`, or `@opden-data-layer/hive-broadcast` builders, then `has_broadcast` + poll `has_broadcast_status`.
 
 Full playbook: [hive-has-agent-wallet.md](hive-has-agent-wallet.md). Implementation: `apps/agent-wallet`, `@opden-data-layer/hive-auth`.
 
