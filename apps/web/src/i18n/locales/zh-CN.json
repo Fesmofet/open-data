@@ -2167,6 +2167,8 @@
   "object_updates_rejected_by_admin": "被管理员拒绝",
   "object_updates_rejected_by_trusted": "被 trusted 拒绝",
   "object_updates_view_voters": "View voters",
+  "object_updates_view_json": "查看 JSON",
+  "object_updates_hide_json": "隐藏 JSON",
   "object_updates_vote_balance_help": "Approve vs reject weighted by voters' 30-day average WAIV Power.",
   "object_updates_vote_balance_help_aria": "What is vote balance?",
   "object_updates_vote_balance_label": "Vote balance",

@@ -71,3 +71,15 @@ describe('Update card decisive vote i18n keys (en-US)', () => {
     }
   });
 });
+
+describe('Update raw JSON toggle i18n keys (en-US)', () => {
+  it('defines view/hide JSON keys used by UpdateRawJsonToggle', () => {
+    const keys = ['object_updates_view_json', 'object_updates_hide_json'] as const;
+
+    for (const key of keys) {
+      const value = enUS[key];
+      expect(typeof value).toBe('string');
+      expect((value as string).length).toBeGreaterThan(0);
+    }
+  });
+});

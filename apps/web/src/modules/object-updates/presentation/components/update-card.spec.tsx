@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
@@ -123,5 +123,62 @@ describe('UpdateCard gallery rank', () => {
     );
 
     expect(screen.queryByRole('button', { name: 'Set gallery rank' })).not.toBeInTheDocument();
+  });
+});
+
+describe('UpdateCard raw JSON toggle', () => {
+  it('shows JSON toggle for gallery items with image previews and value_json', () => {
+    const valueJson = { album: 'Photos', cid: 'bafyTest' };
+
+    render(
+      <UpdateCard
+        item={galleryItem({
+          image_preview_urls: ['https://example.com/preview.jpg'],
+          value_json: valueJson,
+        })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /object_updates_view_json/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /object_updates_view_json/ }));
+
+    expect(screen.getByText(/bafyTest/)).toBeInTheDocument();
+  });
+
+  it('does not show JSON toggle when raw view value is absent', () => {
+    render(
+      <UpdateCard
+        item={galleryItem({ value_json: null, value_geo: null })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /object_updates_view_json/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows JSON toggle for geo updates with latitude and longitude', () => {
+    const valueGeo = { latitude: 49.28, longitude: -123.12 };
+
+    render(
+      <UpdateCard
+        item={galleryItem({
+          update_type: UPDATE_TYPES.GEO,
+          value_json: null,
+          value_geo: valueGeo,
+        })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /object_updates_view_json/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /object_updates_view_json/ }));
+
+    expect(screen.getByText(/49\.28/)).toBeInTheDocument();
+    expect(screen.getByText(/-123\.12/)).toBeInTheDocument();
   });
 });

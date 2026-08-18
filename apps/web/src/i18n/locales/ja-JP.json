@@ -2178,6 +2178,8 @@
   "object_updates_rejected_by_admin": "管理者によって拒否されました",
   "object_updates_rejected_by_trusted": "trusted により拒否",
   "object_updates_view_voters": "View voters",
+  "object_updates_view_json": "JSONを表示",
+  "object_updates_hide_json": "JSONを非表示",
   "object_updates_vote_balance_help": "Approve vs reject weighted by voters' 30-day average WAIV Power.",
   "object_updates_vote_balance_help_aria": "What is vote balance?",
   "object_updates_vote_balance_label": "Vote balance",

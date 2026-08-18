@@ -2178,6 +2178,8 @@
   "object_updates_rejected_by_admin": "відхилено адміністратором",
   "object_updates_rejected_by_trusted": "Відхилено trusted-користувачем",
   "object_updates_view_voters": "View voters",
+  "object_updates_view_json": "Переглянути JSON",
+  "object_updates_hide_json": "Сховати JSON",
   "object_updates_vote_balance_help": "Approve vs reject weighted by voters' 30-day average WAIV Power.",
   "object_updates_vote_balance_help_aria": "What is vote balance?",
   "object_updates_vote_balance_label": "Vote balance",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useId, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import {
@@ -26,20 +26,12 @@ const MAP_ZOOM_UI = {
 
 const OSM_COPYRIGHT_URL = 'https://www.openstreetmap.org/copyright';
 
-function prettifyJson(value: unknown): string {
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
-  }
-}
-
 export type UpdateCardValueProps = Pick<
   ObjectUpdateFeedItemView,
-  'value_text' | 'value_geo' | 'value_json'
+  'value_text' | 'value_geo'
 >;
 
-export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCardValueProps) {
+export function UpdateCardValue({ value_text, value_geo }: UpdateCardValueProps) {
   const { t } = useI18n();
   const mapLabelId = useId();
   const [expanded, setExpanded] = useState(false);
@@ -48,8 +40,6 @@ export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCar
   const hasLongText = text.length > TEXT_PREVIEW_MAX_CHARS;
   const shownText =
     !expanded && hasLongText ? `${text.slice(0, TEXT_PREVIEW_MAX_CHARS)}…` : text;
-
-  const jsonBlock = useMemo(() => prettifyJson(value_json), [value_json]);
 
   if (text.length > 0) {
     return (
@@ -105,14 +95,6 @@ export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCar
           </a>
         </p>
       </div>
-    );
-  }
-
-  if (value_json != null) {
-    return (
-      <pre className="max-h-80 overflow-auto rounded-btn border border-border bg-surface-alt p-3 text-caption text-fg">
-        <code>{jsonBlock}</code>
-      </pre>
     );
   }
 

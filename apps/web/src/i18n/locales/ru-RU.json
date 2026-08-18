@@ -2309,6 +2309,8 @@
   "object_updates_rejected_by_admin": "отклонено администратором",
   "object_updates_rejected_by_trusted": "Отклонено trusted-пользователем",
   "object_updates_view_voters": "Просмотреть голоса",
+  "object_updates_view_json": "Просмотреть JSON",
+  "object_updates_hide_json": "Скрыть JSON",
   "object_updates_vote_balance_help": "Approve vs reject weighted by voters' 30-day average WAIV Power.",
   "object_updates_vote_balance_help_aria": "What is vote balance?",
   "object_updates_vote_balance_label": "Vote balance",

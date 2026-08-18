@@ -22,22 +22,17 @@ import { labelForUpdateType } from '@/modules/object/domain/object-update-labels
 import { ObjectThumbnail, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
+import { resolveUpdateRawViewValue } from '../../application/resolve-update-raw-view-value';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '../../constants';
 
 import { UpdateApprovalStatusBlock } from './update-approval-status-block';
 import { UpdateCardValue } from './update-card-value';
+import { UpdateRawJsonToggle } from './update-raw-json-toggle';
 import { UpdateVoteControls } from './update-vote-controls';
 import { GalleryRankTriggerButton } from '@/modules/object/presentation/components/gallery-rank-trigger-button';
 
 const hiveAvatarUrl = (creator: string): string =>
   `https://images.hive.blog/u/${encodeURIComponent(creator)}/avatar`;
-
-/** When we render image previews, hide redundant `{ url | cid }` JSON for these types. */
-const UPDATE_TYPES_HIDE_JSON_WHEN_IMAGE: ReadonlySet<string> = new Set([
-  UPDATE_TYPES.IMAGE,
-  UPDATE_TYPES.IMAGE_BACKGROUND,
-  UPDATE_TYPES.IMAGE_GALLERY_ITEM,
-]);
 
 export type UpdateCardProps = {
   item: ObjectUpdateFeedItemView;
@@ -87,6 +82,7 @@ export function UpdateCard({
 
   const creatorProfileHref = profileHrefForUsername(item.creator);
   const privilegedVote = item.decisive_privileged_vote;
+  const rawViewValue = resolveUpdateRawViewValue(item);
 
   const voteDisabled = pending || confirming;
 
@@ -187,16 +183,37 @@ export function UpdateCard({
       </header>
 
       <div className="mt-3 border-t border-border pt-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-body-sm font-weight-strong text-fg">
-            {labelForUpdateType(item.update_type)}
-          </h3>
-          {showLocaleBadge ? (
-            <span className="rounded-btn border border-border bg-surface-alt px-2 py-0.5 text-caption text-fg-secondary">
-              {item.locale?.trim() ? item.locale : '—'}
-            </span>
-          ) : null}
-        </div>
+        {rawViewValue != null ? (
+          <UpdateRawJsonToggle value={rawViewValue}>
+            {({ button, panel }) => (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-body-sm font-weight-strong text-fg">
+                    {labelForUpdateType(item.update_type)}
+                  </h3>
+                  {button}
+                  {showLocaleBadge ? (
+                    <span className="ml-auto shrink-0 rounded-btn border border-border bg-surface-alt px-2 py-0.5 text-caption text-fg-secondary">
+                      {item.locale?.trim() ? item.locale : '—'}
+                    </span>
+                  ) : null}
+                </div>
+                {panel}
+              </>
+            )}
+          </UpdateRawJsonToggle>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-body-sm font-weight-strong text-fg">
+              {labelForUpdateType(item.update_type)}
+            </h3>
+            {showLocaleBadge ? (
+              <span className="rounded-btn border border-border bg-surface-alt px-2 py-0.5 text-caption text-fg-secondary">
+                {item.locale?.trim() ? item.locale : '—'}
+              </span>
+            ) : null}
+          </div>
+        )}
       </div>
 
       {item.image_preview_urls.length > 0 ? (
@@ -234,16 +251,7 @@ export function UpdateCard({
       ) : null}
 
       <div className="mt-3 border-t border-border pt-3">
-        <UpdateCardValue
-          value_text={item.value_text}
-          value_geo={item.value_geo}
-          value_json={
-            item.image_preview_urls.length > 0 &&
-            UPDATE_TYPES_HIDE_JSON_WHEN_IMAGE.has(item.update_type)
-              ? null
-              : item.value_json
-          }
-        />
+        <UpdateCardValue value_text={item.value_text} value_geo={item.value_geo} />
       </div>
 
       <div className="mt-3 border-t border-border pt-3">
