@@ -13,7 +13,7 @@ export function BottomNav({ children, className = '' }: BottomNavProps) {
     return (
       <nav
         className={[
-          'app-header-blur fixed inset-x-0 bottom-0 z-30 border-t border-border lg:hidden',
+          'app-header-blur app-bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-border lg:hidden',
           className,
         ].join(' ')}
         aria-label="Primary"

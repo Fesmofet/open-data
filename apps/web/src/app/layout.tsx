@@ -23,6 +23,10 @@ const SITE_NAME = 'Waivio';
 const SITE_DESCRIPTION =
   'Discover, organize, and earn rewards on the Hive blockchain.';
 
+export const viewport = {
+  viewportFit: 'cover',
+} as const;
+
 export const metadata: Metadata = {
   metadataBase: env.publicOrigin ? new URL(`${env.publicOrigin}/`) : undefined,
   title: {

@@ -45,6 +45,8 @@ Notifications UI: [notifications.md](pages/notifications/page.md). Editor entry:
 
 Sticky bar: `sticky top-0 z-40`, `min-h-shell-header`, nav tokens (`bg-nav-bg`, `border-border`, `backdrop-filter: var(--backdrop-nav)`). Account dropdown uses `z-[60]`.
 
+**iOS sticky scroll:** `AppShell` wraps the header in `.app-header-sticky-slot` (opaque `var(--color-nav-bg)` + compositor hint). `.app-top-header` carries solid nav bg plus `padding-top: max(1px, env(safe-area-inset-top))`; `.app-header-blur::before` extends upward by the same bleed so WebKit does not flash `body.bg-bg` through a subpixel gap during momentum scroll. Root layout exports `viewportFit: 'cover'` so safe-area env vars apply on notched iPhones. Backdrop blur stays on `::before` only — not on the sticky element itself.
+
 ## Session
 
 `createCookieAuthContextProvider().getUser()` in the `(app)` layout passes `{ username }` or `null` into the header. No global client auth context.

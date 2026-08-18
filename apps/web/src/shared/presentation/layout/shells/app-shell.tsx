@@ -58,7 +58,9 @@ export function AppShell({
           {showHeaderTopInset ? (
             <div className="pt-section-y-sm" aria-hidden />
           ) : null}
-          <div className="sticky top-0 z-40 w-full">{header}</div>
+          <div className="app-header-sticky-slot sticky top-0 z-40 w-full">
+            {header}
+          </div>
         </>
       ) : null}
       <div

@@ -345,19 +345,46 @@
    * App header: backdrop-filter on ::before (non-stacking) so the blur layer is composited
    * independently from the sticky scroll — avoids blur re-evaluation on every scroll tick.
    * The header element itself carries no filter; `isolation: isolate` keeps it in its own layer.
+   * Safe-area bleed + solid fallback bg close the iOS WebKit sticky subpixel gap above the bar.
    */
   .app-header-blur {
+    --app-header-bleed-top: max(1px, env(safe-area-inset-top, 0px));
+    --app-header-bleed-bottom: max(1px, env(safe-area-inset-bottom, 0px));
     position: relative;
     isolation: isolate;
   }
   .app-header-blur::before {
     content: '';
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    top: calc(-1 * var(--app-header-bleed-top));
+    height: calc(100% + var(--app-header-bleed-top));
     z-index: -1;
     backdrop-filter: var(--backdrop-nav);
     background-color: var(--color-nav-bg);
     will-change: transform;
+  }
+  .app-header-blur.app-bottom-nav {
+    padding-bottom: var(--app-header-bleed-bottom);
+  }
+  .app-header-blur.app-bottom-nav::before {
+    top: 0;
+    height: calc(100% + var(--app-header-bleed-bottom));
+  }
+  .app-top-header {
+    padding-top: var(--app-header-bleed-top);
+    background-color: var(--color-nav-bg);
+  }
+  /**
+   * Sticky slot in AppShell: opaque nav bg + compositor hint so iOS does not flash body bg
+   * through a subpixel gap above the header during momentum scroll.
+   */
+  .app-header-sticky-slot {
+    background-color: var(--color-nav-bg);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   /**
