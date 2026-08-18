@@ -560,10 +560,15 @@ export function ObjectPageShellClient({
         leftRail={leftRail}
         center={
           <div className="relative min-h-[12rem]">
-            {children}
+            <div
+              className={isNavigating ? 'pointer-events-none select-none' : undefined}
+              aria-hidden={isNavigating ? true : undefined}
+            >
+              {children}
+            </div>
             {isNavigating ? (
               <div
-                className="absolute inset-0 z-10 bg-bg/60 pt-2"
+                className="absolute inset-0 z-30 bg-bg/60 pt-2"
                 aria-busy="true"
                 aria-live="polite"
               >

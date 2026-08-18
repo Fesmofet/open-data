@@ -19,10 +19,15 @@ export function UserProfileMainContentPendingShell({
 
   return (
     <div className="relative min-h-[12rem] min-w-0">
-      {children}
+      <div
+        className={isNavigating ? 'pointer-events-none select-none' : undefined}
+        aria-hidden={isNavigating ? true : undefined}
+      >
+        {children}
+      </div>
       {isNavigating ? (
         <div
-          className="absolute inset-0 z-10 bg-bg px-card-padding pt-2"
+          className="absolute inset-0 z-30 bg-bg px-card-padding pt-2"
           aria-busy="true"
           aria-live="polite"
         >
