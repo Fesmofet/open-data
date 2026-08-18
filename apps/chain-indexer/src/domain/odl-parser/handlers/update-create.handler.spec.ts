@@ -99,6 +99,7 @@ describe('UpdateCreateHandler write guard', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -147,7 +148,7 @@ describe('UpdateCreateHandler write guard', () => {
 
   it('replaces existing single-cardinality row from same creator in one call', async () => {
     const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
-    const findByObjectTypeAndCreator = jest.fn().mockResolvedValue({
+    const findByObjectTypeCreatorAndLocale = jest.fn().mockResolvedValue({
       update_id: 'old-update-id',
       object_id: 'gov1',
       update_type: 'name',
@@ -156,7 +157,7 @@ describe('UpdateCreateHandler write guard', () => {
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
       createReplacingIfPresent,
-      findByObjectTypeAndCreator,
+      findByObjectTypeCreatorAndLocale,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -191,7 +192,12 @@ describe('UpdateCreateHandler write guard', () => {
     );
 
     expect(existsByObjectAndValue).toHaveBeenCalled();
-    expect(findByObjectTypeAndCreator).toHaveBeenCalledWith('gov1', 'name', 'owner');
+    expect(findByObjectTypeCreatorAndLocale).toHaveBeenCalledWith(
+      'gov1',
+      'name',
+      'owner',
+      null,
+    );
     expect(createReplacingIfPresent).toHaveBeenCalledWith('old-update-id', expect.any(Object));
   });
 
@@ -200,6 +206,7 @@ describe('UpdateCreateHandler write guard', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(true),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -243,6 +250,7 @@ describe('UpdateCreateHandler write guard', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -290,6 +298,7 @@ describe('UpdateCreateHandler write guard', () => {
       const objectUpdatesRepository = {
         createReplacingIfPresent,
         findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+        findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
         existsByObjectAndValue: jest.fn().mockResolvedValue(false),
       } as unknown as import('../../../repositories').ObjectUpdatesRepository;
       const objectsCoreRepository = {
@@ -358,6 +367,7 @@ describe('UpdateCreateHandler write guard', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {

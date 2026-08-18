@@ -50,6 +50,7 @@ function minimalModel(
     isFollowing: false,
     viewerBell: false,
     updateTypeCounts: {},
+    updateLocales: [],
     administrativeAuthorityCount: 0,
     ownershipAuthorityCount: 0,
     seo: null,

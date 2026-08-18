@@ -34,6 +34,7 @@ export function ObjectPageUpdatesFeedClient({
       filters={embeddedUpdatesFeed.filters}
       typeOptions={embeddedUpdatesFeed.typeOptions}
       showLocaleFilter={embeddedUpdatesFeed.showLocaleFilter}
+      localeOptions={embeddedUpdatesFeed.localeOptions}
       localizableTypes={embeddedUpdatesFeed.localizableTypes}
       filterSync="url"
       loadMoreAction={loadMoreObjectUpdatesFeedAction}

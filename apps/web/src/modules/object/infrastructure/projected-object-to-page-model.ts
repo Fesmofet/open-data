@@ -790,6 +790,7 @@ export function projectedObjectWithCountsToPageModel(
     isFollowing: api.is_following ?? false,
     viewerBell: api.viewer_bell ?? false,
     updateTypeCounts: api.update_type_counts ?? {},
+    updateLocales: api.update_locales ?? [],
     administrativeAuthorityCount: api.administrative_count ?? 0,
     ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,

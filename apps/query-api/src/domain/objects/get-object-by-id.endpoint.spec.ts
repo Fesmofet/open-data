@@ -138,8 +138,10 @@ describe('GetObjectByIdEndpoint', () => {
       }),
     } as unknown as UserObjectFollowsRepository;
     const updateTypeCounts = { name: 10, menuItem: 15 };
+    const updateLocales = ['en-US', 'ko-KR'];
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue(updateTypeCounts),
+      findDistinctLocalesByObjectId: jest.fn().mockResolvedValue(updateLocales),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest
@@ -183,6 +185,7 @@ describe('GetObjectByIdEndpoint', () => {
       is_following: true,
       viewer_bell: true,
       update_type_counts: updateTypeCounts,
+      update_locales: updateLocales,
     });
     expect(followsRepo.findByAccountAndObject).toHaveBeenCalledWith('alice', 'o1');
     expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
@@ -208,6 +211,7 @@ describe('GetObjectByIdEndpoint', () => {
     expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
     expect(expertiseRepo.countByObjectId).toHaveBeenCalledWith('o1');
     expect(updatesRepo.countByObjectIdGroupByUpdateType).toHaveBeenCalledWith('o1');
+    expect(updatesRepo.findDistinctLocalesByObjectId).toHaveBeenCalledWith('o1');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'administrative');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'ownership');
     expect(postsRepo.countPostObjectsByObjectId).toHaveBeenCalledWith('o1');
@@ -272,6 +276,7 @@ describe('GetObjectByIdEndpoint', () => {
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
+      findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn().mockResolvedValue(0),
@@ -347,6 +352,7 @@ describe('GetObjectByIdEndpoint', () => {
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
+      findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn().mockResolvedValue(0),
@@ -418,6 +424,7 @@ describe('GetObjectByIdEndpoint', () => {
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
+      findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn().mockResolvedValue(0),
@@ -478,6 +485,7 @@ describe('GetObjectByIdEndpoint', () => {
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn(),
+      findDistinctLocalesByObjectId: jest.fn(),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn(),
@@ -505,6 +513,7 @@ describe('GetObjectByIdEndpoint', () => {
     expect(projectionService.project).not.toHaveBeenCalled();
     expect(followsRepo.countByObjectId).not.toHaveBeenCalled();
     expect(updatesRepo.countByObjectIdGroupByUpdateType).not.toHaveBeenCalled();
+    expect(updatesRepo.findDistinctLocalesByObjectId).not.toHaveBeenCalled();
     expect(authorityRepo.countByObjectIdAndType).not.toHaveBeenCalled();
   });
 });

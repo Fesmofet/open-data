@@ -71,6 +71,7 @@ describe('UpdateCreateHandler localizable', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -104,6 +105,154 @@ describe('UpdateCreateHandler localizable', () => {
 
     expect(createReplacingIfPresent).toHaveBeenCalledWith(
       undefined,
+      expect.objectContaining({ locale: null }),
+    );
+  });
+
+  it('inserts localizable update in new locale without replacing other locales', async () => {
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const findByObjectTypeCreatorAndLocale = jest.fn().mockResolvedValue(undefined);
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeCreatorAndLocale,
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
+      runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
+      eventEmitter,
+      defaultNotificationEmitter(),
+    );
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'name',
+        creator: 'owner',
+        locale: 'en-US',
+        value_text: 'English title',
+      },
+      baseCtx,
+    );
+
+    expect(findByObjectTypeCreatorAndLocale).toHaveBeenCalledWith(
+      'gov1',
+      'name',
+      'owner',
+      'en-US',
+    );
+    expect(createReplacingIfPresent).toHaveBeenCalledWith(undefined, expect.any(Object));
+  });
+
+  it('replaces localizable update when same creator resubmits same locale', async () => {
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const findByObjectTypeCreatorAndLocale = jest.fn().mockResolvedValue({
+      update_id: 'old-en-name',
+      object_id: 'gov1',
+      update_type: 'name',
+      creator: 'owner',
+      locale: 'en-US',
+    });
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeCreatorAndLocale,
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
+      runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
+      eventEmitter,
+      defaultNotificationEmitter(),
+    );
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'name',
+        creator: 'owner',
+        locale: 'en-US',
+        value_text: 'Revised English title',
+      },
+      baseCtx,
+    );
+
+    expect(createReplacingIfPresent).toHaveBeenCalledWith(
+      'old-en-name',
+      expect.objectContaining({ locale: 'en-US' }),
+    );
+  });
+
+  it('replaces non-localizable single update by type and creator only', async () => {
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const findByObjectTypeAndCreator = jest.fn().mockResolvedValue({
+      update_id: 'old-non-local',
+      object_id: 'gov1',
+      update_type: 'test_non_local',
+      creator: 'owner',
+    });
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator,
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
+      runner,
+      defaultUpdateCreateValidityVotesDeps().validityVotesRepository,
+      eventEmitter,
+      defaultNotificationEmitter(),
+    );
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'test_non_local',
+        creator: 'owner',
+        locale: 'fr-FR',
+        value_text: 'revised',
+      },
+      baseCtx,
+    );
+
+    expect(findByObjectTypeAndCreator).toHaveBeenCalledWith(
+      'gov1',
+      'test_non_local',
+      'owner',
+    );
+    expect(createReplacingIfPresent).toHaveBeenCalledWith(
+      'old-non-local',
       expect.objectContaining({ locale: null }),
     );
   });

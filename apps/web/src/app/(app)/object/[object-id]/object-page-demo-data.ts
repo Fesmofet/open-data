@@ -164,6 +164,7 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
     identifier: 1,
     price: 1,
   },
+  update_locales: ['en-US'],
 };
 
 const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
@@ -187,6 +188,7 @@ const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
   is_following: false,
   viewer_bell: false,
   update_type_counts: { name: 1, description: 1 },
+  update_locales: ['en-US'],
 };
 
 const DEMO_BY_ID: Record<string, ProjectedObjectWithCountsView> = {

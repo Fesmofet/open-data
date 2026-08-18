@@ -11,4 +11,6 @@ export type ProjectedObjectWithCounts = ProjectedObject & {
   is_following: boolean;
   viewer_bell: boolean;
   update_type_counts: Record<string, number>;
+  /** Distinct non-null locales from object_updates rows for this object. */
+  update_locales: string[];
 };

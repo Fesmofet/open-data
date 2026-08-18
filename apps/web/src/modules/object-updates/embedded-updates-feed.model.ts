@@ -8,5 +8,6 @@ export type ObjectEmbeddedUpdatesFeedModel = {
   filters: ObjectUpdatesUrlFilters;
   typeOptions: UpdateTypeOption[];
   showLocaleFilter: boolean;
+  localeOptions: string[];
   localizableTypes: string[];
 };

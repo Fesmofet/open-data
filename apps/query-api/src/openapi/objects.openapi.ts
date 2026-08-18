@@ -22,6 +22,7 @@ const projectedObjectWithCountsSchema = registry.register(
     is_following: z.boolean(),
     viewer_bell: z.boolean(),
     update_type_counts: z.record(z.string(), z.number().int()),
+    update_locales: z.array(z.string()),
   }),
 );
 
@@ -71,7 +72,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Resolve projected object by id',
   description:
-    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Loads `objects_core` rows for any lifecycle status (object page); discovery endpoints still restrict to `status = active`. Includes `followers_count` from `user_object_follows`, `experts_count` from `user_object_expertise` (accounts with `weight > 0` on this object), `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, and `administrative_count` / `ownership_count` from `object_authority` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
+    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Loads `objects_core` rows for any lifecycle status (object page); discovery endpoints still restrict to `status = active`. Includes `followers_count` from `user_object_follows`, `experts_count` from `user_object_expertise` (accounts with `weight > 0` on this object), `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, `update_locales` as distinct non-null locales from `object_updates`, and `administrative_count` / `ownership_count` from `object_authority` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({

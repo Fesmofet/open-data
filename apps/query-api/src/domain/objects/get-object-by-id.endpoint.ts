@@ -77,6 +77,7 @@ export class GetObjectByIdEndpoint {
     const [
       projected,
       update_type_counts,
+      update_locales,
       followers_count,
       experts_count,
       posts_count,
@@ -93,6 +94,7 @@ export class GetObjectByIdEndpoint {
         includeSeo: true,
       }),
       this.objectUpdatesRepo.countByObjectIdGroupByUpdateType(objectId),
+      this.objectUpdatesRepo.findDistinctLocalesByObjectId(objectId),
       this.userObjectFollowsRepo.countByObjectId(objectId),
       this.userObjectExpertiseRepo.countByObjectId(objectId),
       this.postsRepo.countPostObjectsByObjectId(objectId),
@@ -116,6 +118,7 @@ export class GetObjectByIdEndpoint {
       is_following: viewerFollow != null,
       viewer_bell: viewerFollow?.bell ?? false,
       update_type_counts,
+      update_locales,
     };
   }
 }

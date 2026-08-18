@@ -12,6 +12,7 @@ describe('Object edit UI i18n keys (en-US)', () => {
       'object_edit_submitting',
       'object_edit_value_label',
       'object_edit_locale_label',
+      'object_updates_all_locales',
       'object_edit_cancel',
       'object_edit_validation_error',
       'object_edit_menu_item_title',

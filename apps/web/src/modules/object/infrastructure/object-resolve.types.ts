@@ -14,6 +14,7 @@ export const projectedObjectWithCountsSchema = projectedObjectViewSchema
     is_following: z.boolean().default(false),
     viewer_bell: z.boolean().default(false),
     update_type_counts: z.record(z.string(), z.number().int()).default({}),
+    update_locales: z.array(z.string()).default([]),
   })
   .passthrough();
 

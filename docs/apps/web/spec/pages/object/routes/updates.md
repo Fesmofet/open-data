@@ -29,6 +29,7 @@ updated_at: 2026-06-10
 ## UX
 
 - **Filters / sort** on `/object/.../updates` are **URL search params** (`sort`, `update_type`, `locale`).
+- **Locale filter:** default option label is **“All locales”** (no `locale` query param). Dropdown options come from **`update_locales`** on object resolve (distinct locales stored on the object), not the web interface locale catalog.
 - **Object profile tab “Updates”:** the same feed is shown in the **center column**; filters use **local state** + server actions so the tab does not reset when changing sort (no `router.replace` on the profile URL). A link opens the standalone `/updates` route for bookmarkable filters.
 - **Load more:** client accumulates items; server action passes opaque `cursor`.
 - **Cards:** avatar, creator, Waivio weight, relative time, update type label, locale badge when the type is localizable (from `UPDATE_REGISTRY`), value (text / map / JSON), approval % and for/against counts. Logged-in viewers can **Approve** (`update_vote` / `for`) or **Reject** (`against`) via Hive `custom_json` (`buildOdlUpdateVoteOp`); unauthenticated clicks open the login modal. After broadcast, `awaitTrxConfirmation` then `router.refresh()`.

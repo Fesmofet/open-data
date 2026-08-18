@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, type ChangeEvent } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
@@ -12,6 +12,7 @@ import {
 
 import type { ObjectUpdatesUrlFilters } from '../../application/parse-object-updates-search-params';
 
+import { LocaleFilterSelect } from './locale-filter-select';
 import { UpdateTypeFilterSelect } from './update-type-filter-select';
 
 export type UpdateTypeOption = { value: string; label: string; count?: number };
@@ -19,8 +20,8 @@ export type UpdateTypeOption = { value: string; label: string; count?: number };
 export type ObjectUpdatesFilterBarProps = {
   typeOptions: UpdateTypeOption[];
   showLocaleFilter: boolean;
-  /** BCP 47-ish locale codes for interface-language filter. */
-  localeOptions?: string[];
+  /** Distinct locale codes present on this object's updates. */
+  localeOptions: string[];
   onAddUpdate?: () => void;
 } & (
   | { mode?: 'url' }
@@ -31,17 +32,21 @@ export type ObjectUpdatesFilterBarProps = {
     }
 );
 
-const DEFAULT_LOCALE_OPTIONS = [
-  'en-US',
-  'es-ES',
-  'ru-RU',
-  'fr-FR',
-  'de-DE',
-  'it-IT',
-  'uk-UA',
-  'zh-CN',
-  'ja-JP',
-];
+function mergeLocaleOptions(
+  localeOptions: readonly string[],
+  activeLocale: string | undefined,
+): string[] {
+  const merged = [...localeOptions];
+  if (
+    activeLocale != null &&
+    activeLocale.length > 0 &&
+    !merged.includes(activeLocale)
+  ) {
+    merged.push(activeLocale);
+    merged.sort((a, b) => a.localeCompare(b));
+  }
+  return merged;
+}
 
 function IconAddUpdate() {
   return (
@@ -67,7 +72,7 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   const {
     typeOptions,
     showLocaleFilter,
-    localeOptions = DEFAULT_LOCALE_OPTIONS,
+    localeOptions,
     onAddUpdate,
   } = props;
   const { t } = useI18n();
@@ -90,6 +95,11 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   }, [searchParams]);
 
   const filters = props.mode === 'controlled' ? props.filters : urlFilters;
+
+  const resolvedLocaleOptions = useMemo(
+    () => mergeLocaleOptions(localeOptions, filters.locale),
+    [localeOptions, filters.locale],
+  );
 
   const replaceParams = useCallback(
     (mutate: (u: URLSearchParams) => void) => {
@@ -147,20 +157,19 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   );
 
   const onLocaleChange = useCallback(
-    (ev: ChangeEvent<HTMLSelectElement>) => {
-      const v = ev.target.value;
+    (locale: string | undefined) => {
       if (props.mode === 'controlled') {
         props.onFiltersChange({
           ...props.filters,
-          locale: v === '' ? undefined : v,
+          locale,
         });
         return;
       }
       replaceParams((u) => {
-        if (v === '') {
+        if (!locale) {
           u.delete('locale');
         } else {
-          u.set('locale', v);
+          u.set('locale', locale);
         }
       });
     },
@@ -176,35 +185,11 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
           onChange={onTypeChange}
         />
         {showLocaleFilter ? (
-          <label className="relative min-w-0 flex-1 sm:max-w-[14rem]">
-            <span className="sr-only">{t('object_updates_filter_locale')}</span>
-            <select
-              className="w-full appearance-none rounded-btn border border-accent bg-surface-control px-3 py-2 pe-8 text-body-sm text-fg"
-              value={filters.locale ?? ''}
-              onChange={onLocaleChange}
-            >
-              <option value="">{t('object_updates_filter_locale')}</option>
-              {localeOptions.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-            <span
-              className="pointer-events-none absolute inset-y-0 end-2 flex items-center text-fg-secondary"
-              aria-hidden
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 4l4 4 4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-          </label>
+          <LocaleFilterSelect
+            value={filters.locale}
+            options={resolvedLocaleOptions}
+            onChange={onLocaleChange}
+          />
         ) : null}
         {onAddUpdate ? (
           <button

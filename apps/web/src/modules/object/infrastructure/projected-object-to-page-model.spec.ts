@@ -52,6 +52,30 @@ describe('projectedObjectWithCountsToPageModel gallery', () => {
     expect(model.onChainGalleryAlbumNames).toEqual(['Photos']);
   });
 
+  it('maps update_locales from resolve payload to updateLocales', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'test-obj',
+      object_type: 'recipe',
+      semantic_type: 'schema:Recipe',
+      weight: 1,
+      fields: { name: 'Test' },
+      followers_count: 0,
+      experts_count: 0,
+      posts_count: 0,
+      updates_count: 2,
+      administrative_count: 0,
+      ownership_count: 0,
+      is_following: false,
+      viewer_bell: false,
+      update_type_counts: { name: 2 },
+      update_locales: ['en-US', 'ko-KR'],
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+
+    expect(model.updateLocales).toEqual(['en-US', 'ko-KR']);
+  });
+
   it('omits left-rail gallery block when previewGallery is avatar-only', () => {
     const api: ProjectedObjectWithCountsView = {
       object_id: 'test-obj',

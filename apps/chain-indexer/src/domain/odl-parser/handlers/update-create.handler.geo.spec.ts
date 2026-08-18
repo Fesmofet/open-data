@@ -43,6 +43,7 @@ describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {

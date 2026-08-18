@@ -85,12 +85,8 @@ export class ObjectUpdatesRepository {
   }
 
   /**
-   * True if this object already has an update with the same type and payload
-   * in the column implied by value_kind (value_text | value_geo | value_json; object_ref uses value_text).
-   */
-  /**
-   * At most one row per (object_id, update_type, creator) for single-cardinality types;
-   * used to decide replace-on-resubmit in update_create.
+   * At most one row per (object_id, update_type, creator) for non-localizable
+   * single-cardinality types; used to decide replace-on-resubmit in update_create.
    */
   async findByObjectTypeAndCreator(
     objectId: string,
@@ -104,6 +100,31 @@ export class ObjectUpdatesRepository {
       .where('creator', '=', creator)
       .selectAll()
       .executeTakeFirst();
+  }
+
+  /**
+   * At most one row per (object_id, update_type, creator, locale) for localizable
+   * single-cardinality types; used to decide replace-on-resubmit in update_create.
+   */
+  async findByObjectTypeCreatorAndLocale(
+    objectId: string,
+    updateType: string,
+    creator: string,
+    locale: string | null,
+  ) {
+    let q = this.db
+      .selectFrom('object_updates')
+      .where('object_id', '=', objectId)
+      .where('update_type', '=', updateType)
+      .where('creator', '=', creator);
+
+    if (locale === null) {
+      q = q.where('locale', 'is', null);
+    } else {
+      q = q.where('locale', '=', locale);
+    }
+
+    return q.selectAll().executeTakeFirst();
   }
 
   /**

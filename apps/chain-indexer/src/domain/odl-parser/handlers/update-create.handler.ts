@@ -210,11 +210,18 @@ export class UpdateCreateHandler implements OdlActionHandler {
 
     let replaceUpdateId: string | undefined;
     if (definition.cardinality === 'single') {
-      const existing = await this.objectUpdatesRepository.findByObjectTypeAndCreator(
-        object_id,
-        update_type,
-        creator,
-      );
+      const existing = definition.localizable
+        ? await this.objectUpdatesRepository.findByObjectTypeCreatorAndLocale(
+            object_id,
+            update_type,
+            creator,
+            effectiveLocale,
+          )
+        : await this.objectUpdatesRepository.findByObjectTypeAndCreator(
+            object_id,
+            update_type,
+            creator,
+          );
       if (existing) {
         replaceUpdateId = existing.update_id;
       }

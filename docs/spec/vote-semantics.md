@@ -199,8 +199,9 @@ Tiers 1 and 2 produce a binary `VALID`/`REJECTED` and short-circuit — communit
 
 For update types targeting a single-value field:
 
-- Key scope: `(object_id, field_key, creator)`.
-- Newer `update_create` from same creator for same field replaces previous current update in that scope.
+- Key scope: `(object_id, field_key, creator)` for non-localizable types.
+- For **localizable** single-cardinality types, key scope is `(object_id, field_key, creator, locale)` — resubmitting the same field in a different locale inserts a new row without replacing other locales.
+- Newer `update_create` from same creator for same field **and locale** replaces previous current update in that scope.
 
 Cross-creator “which update wins” for the public resolved field is defined in **§B — Tie-break for single-cardinality field winner**, not by §D alone.
 

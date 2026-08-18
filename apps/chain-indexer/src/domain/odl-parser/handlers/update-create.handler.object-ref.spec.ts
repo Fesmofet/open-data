@@ -84,6 +84,7 @@ describe('UpdateCreateHandler object_ref', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -129,6 +130,7 @@ describe('UpdateCreateHandler object_ref', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -177,6 +179,7 @@ describe('UpdateCreateHandler object_ref', () => {
     const objectUpdatesRepository = {
       createReplacingIfPresent,
       findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {

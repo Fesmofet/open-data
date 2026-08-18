@@ -47,6 +47,7 @@ export type ObjectUpdatesFeedProps = {
   filters: ObjectUpdatesUrlFilters;
   typeOptions: UpdateTypeOption[];
   showLocaleFilter: boolean;
+  localeOptions: string[];
   localizableTypes: string[];
   loadMoreAction: LoadMoreObjectUpdatesFn;
   /** `'url'` = filter bar reads/writes search params (standalone `/updates` page). `'local'` = filters in memory so the object profile tab does not navigate or lose active tab. */
@@ -63,6 +64,7 @@ export function ObjectUpdatesFeed({
   filters: filtersProp,
   typeOptions,
   showLocaleFilter,
+  localeOptions,
   localizableTypes,
   loadMoreAction,
   filterSync = 'url',
@@ -139,6 +141,7 @@ export function ObjectUpdatesFeed({
           {...filterBarExtra}
           typeOptions={typeOptions}
           showLocaleFilter={showLocaleFilter}
+          localeOptions={localeOptions}
           onAddUpdate={
             canAddUpdate
               ? () => {

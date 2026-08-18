@@ -36,7 +36,7 @@ export function filterUpdateTypeOptionsByQuery(
   );
 }
 
-function FilterSelectChevron({ open }: { open: boolean }) {
+export function FilterSelectChevron({ open }: { open: boolean }) {
   return (
     <svg
       aria-hidden="true"

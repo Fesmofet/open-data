@@ -369,6 +369,8 @@ export type ObjectPageViewModel = {
   viewerBell: boolean;
   /** Count of existing update rows per `update_type` (e.g. `{ menuItem: 12, name: 1 }`). */
   updateTypeCounts: Record<string, number>;
+  /** Distinct non-null locales from object update rows (for updates feed filter). */
+  updateLocales: string[];
   /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
   administrativeAuthorityCount: number;
   ownershipAuthorityCount: number;
