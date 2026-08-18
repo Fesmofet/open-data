@@ -78,6 +78,7 @@ function RatingsGrid({
   viewerUsername,
   onRequireLogin,
   compact = false,
+  mobileMaxVisible,
 }: {
   dims: CardRatingDimension[];
   objectId: string;
@@ -85,6 +86,8 @@ function RatingsGrid({
   onRequireLogin?: () => void;
   /** Single row — for narrow columns (profile map sidebar). */
   compact?: boolean;
+  /** Hide rating rows beyond this count below the `sm` breakpoint. */
+  mobileMaxVisible?: number;
 }) {
   if (dims.length === 0) {
     return null;
@@ -98,14 +101,17 @@ function RatingsGrid({
       }
     >
       {dims.map(
-        ({ dimension, update_id, averageRating01To5, userRating01To5, totalVoters }) => (
+        ({ dimension, update_id, averageRating01To5, userRating01To5, totalVoters }, index) => (
           <div
             key={dimension}
-            className={
+            className={[
               compact
                 ? 'flex min-w-0 flex-col items-start gap-0.5'
-                : 'flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-1.5'
-            }
+                : 'flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-1.5',
+              mobileMaxVisible != null && index >= mobileMaxVisible ? 'hidden sm:flex' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             <StarRating
               averageRating01To5={averageRating01To5}
@@ -139,7 +145,7 @@ export type ObjectCardProps = {
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
   /** Post editor: hide admin heart and use compact row with trailing controls. */
-  layout?: 'default' | 'editorRow' | 'mapSidebar';
+  layout?: 'default' | 'editorRow' | 'mapSidebar' | 'catalog';
   hideAdministrativeHeart?: boolean;
   /** Post editor: toggle + slider column on the right. */
   trailing?: ReactNode;
@@ -171,7 +177,9 @@ export function ObjectCard({
 }: ObjectCardProps) {
   const editorRow = layout === 'editorRow';
   const mapSidebar = layout === 'mapSidebar';
+  const catalog = layout === 'catalog';
   const stackedMobile = layout === 'default';
+  const horizontalRow = !stackedMobile;
   const thumbSize = editorRow ? 72 : mapSidebar ? MAP_SIDEBAR_THUMB_SIZE : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
@@ -252,13 +260,9 @@ export function ObjectCard({
       <div
         className={[
           'flex gap-3',
-          stackedMobile ? 'flex-col sm:flex-row sm:items-start' : '',
-          showHeart || userWeight != null
-            ? stackedMobile
-              ? 'sm:pe-8'
-              : 'pe-8'
-            : '',
-          trailing && !stackedMobile ? 'items-start' : '',
+          horizontalRow ? 'flex-row items-start' : 'flex-col sm:flex-row sm:items-start',
+          showHeart || userWeight != null ? (stackedMobile ? 'sm:pe-8' : 'pe-8') : '',
+          trailing && horizontalRow ? 'items-start' : '',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -315,7 +319,11 @@ export function ObjectCard({
             onPendingChange={onNavPendingChange}
             className={[
               'max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-              stackedMobile ? 'line-clamp-2 sm:line-clamp-none' : '',
+              stackedMobile
+                ? 'line-clamp-2 sm:line-clamp-none'
+                : catalog
+                  ? 'line-clamp-2'
+                  : '',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -326,7 +334,11 @@ export function ObjectCard({
             <p
               className={[
                 'mt-0.5 text-caption text-fg-secondary',
-                stackedMobile ? 'line-clamp-2 sm:line-clamp-none' : '',
+                stackedMobile
+                  ? 'line-clamp-2 sm:line-clamp-none'
+                  : catalog
+                    ? 'line-clamp-2'
+                    : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -341,6 +353,7 @@ export function ObjectCard({
               viewerUsername={viewerUsername}
               onRequireLogin={onRequireLogin}
               compact={mapSidebar}
+              mobileMaxVisible={mapSidebar ? undefined : 2}
             />
           ) : null}
           {description ? (
@@ -351,7 +364,9 @@ export function ObjectCard({
                   ? 'mt-1.5 line-clamp-2'
                   : stackedMobile
                     ? 'mt-2 line-clamp-3 sm:line-clamp-none'
-                    : 'mt-2',
+                    : catalog
+                      ? 'mt-2 line-clamp-3'
+                      : 'mt-2',
               ].join(' ')}
             >
               {description}

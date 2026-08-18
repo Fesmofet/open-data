@@ -104,6 +104,68 @@ describe('ObjectCard navigation', () => {
     expect(screen.getByRole('button', { name: 'Spicy Agedashi Tofu' })).toBeInTheDocument();
   });
 
+  it('hides ratings beyond the second row on mobile viewports', () => {
+    const { container } = render(
+      <ul>
+        <ObjectCard
+          object={{
+            ...sampleObject,
+            fields: {
+              ...sampleObject.fields,
+              aggregateRatingAspects: [
+                {
+                  dimension: 'Presentation',
+                  update_id: 'u1',
+                  averageRating: 4000,
+                  userRating: null,
+                  totalVoters: 2,
+                },
+                {
+                  dimension: 'Value',
+                  update_id: 'u2',
+                  averageRating: 3000,
+                  userRating: null,
+                  totalVoters: 1,
+                },
+                {
+                  dimension: 'Taste',
+                  update_id: 'u3',
+                  averageRating: 5000,
+                  userRating: null,
+                  totalVoters: 3,
+                },
+              ],
+            },
+          }}
+          layout="catalog"
+        />
+      </ul>,
+    );
+
+    const ratingRows = container.querySelectorAll('[data-testid="star-rating"]');
+    expect(ratingRows).toHaveLength(3);
+    expect(ratingRows[2]?.parentElement).toHaveClass('hidden');
+    expect(ratingRows[2]?.parentElement).toHaveClass('sm:flex');
+  });
+
+  it('catalog layout keeps horizontal row with fixed thumbnail at all breakpoints', () => {
+    const { container } = render(
+      <ul>
+        <ObjectCard object={sampleObject} layout="catalog" />
+      </ul>,
+    );
+
+    const flexRow = container.querySelector('.flex-row.items-start');
+    expect(flexRow).not.toBeNull();
+    expect(flexRow?.classList.contains('flex-col')).toBe(false);
+
+    const thumbWrapper = container.querySelector('a[aria-label="View object: Spicy Agedashi Tofu"] span');
+    expect(thumbWrapper).not.toBeNull();
+    expect(thumbWrapper?.classList.contains('aspect-[4/3]')).toBe(false);
+    expect(thumbWrapper?.classList.contains('w-full')).toBe(false);
+    expect(thumbWrapper).toHaveStyle({ width: '120px', height: '120px' });
+  });
+
   it('mapSidebar layout shows a single rating row', () => {
     const { container } = render(
       <ul>

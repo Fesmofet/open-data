@@ -25,6 +25,15 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 | Feed linked objects | Post body linked object chips |
 | User profile shop | Shop object lists |
 
+## Layout variants
+
+| `layout` | When | Mobile behavior |
+|----------|------|-----------------|
+| `default` | Discover feed, profile shop, post linked objects | Stacked hero image below 640px |
+| `catalog` | Object-page list feeds (embedded catalog, related/similar, category, books) | Horizontal row at all viewports; line-clamps in text column |
+| `editorRow` | Post editor linked-object row | Compact horizontal row |
+| `mapSidebar` | Profile map favorites sidebar | Compact horizontal row, single rating |
+
 ## Layout
 
 - Thumbnail (120×120), brand/parent caption (when present), title link, subtitle (`price` · `object_type` · tag categories).

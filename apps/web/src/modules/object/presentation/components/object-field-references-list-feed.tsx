@@ -87,6 +87,7 @@ export function ObjectFieldReferencesListFeed({
         {items.map((o) => (
           <ObjectCard
             key={o.object_id}
+            layout="catalog"
             object={o}
             viewerUsername={viewerUsername}
             onRequireLogin={onRequireLogin}

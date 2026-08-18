@@ -149,6 +149,7 @@ export function ObjectListContent({
           <ObjectCard
             key={item.objectId}
             as="div"
+            layout="catalog"
             object={projectedListItemToObjectView(item)}
             viewerUsername={viewerUsername}
             onRequireLogin={onRequireLogin}
