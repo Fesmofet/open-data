@@ -72,6 +72,7 @@ export type WalletCancelSavingsWithdrawModalState = {
 export type WalletSwapModalState = {
   kind: 'swap';
   fromSymbol?: string;
+  toSymbol?: string;
 };
 
 export type WalletDepositModalState = {

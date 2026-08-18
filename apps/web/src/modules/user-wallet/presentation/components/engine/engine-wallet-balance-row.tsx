@@ -4,6 +4,10 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { formatEngineTokenAmountDisplay } from '../../../domain/engine-token-amount';
 import type { EngineTokenBalanceRowView } from '../../../domain/types/engine-wallet-view';
+import {
+  WalletActionSplit,
+  type WalletActionSplitItem,
+} from '../shared/wallet-action-split';
 import { EngineWalletTokenIcon } from './engine-wallet-token-icon';
 
 function formatUsdEstimate(value: number, locale: string): string {
@@ -18,9 +22,17 @@ function formatUsdEstimate(value: number, locale: string): string {
 
 type EngineWalletBalanceRowProps = {
   token: EngineTokenBalanceRowView;
+  actions?: {
+    primaryLabel: string;
+    onPrimary: () => void;
+    menuItems?: WalletActionSplitItem[];
+  } | null;
 };
 
-export function EngineWalletBalanceRow({ token }: EngineWalletBalanceRowProps) {
+export function EngineWalletBalanceRow({
+  token,
+  actions,
+}: EngineWalletBalanceRowProps) {
   const { t, locale } = useI18n();
   const stake = formatEngineTokenAmountDisplay(token.stake);
   const balance = formatEngineTokenAmountDisplay(token.balance);
@@ -37,7 +49,7 @@ export function EngineWalletBalanceRow({ token }: EngineWalletBalanceRowProps) {
         <p className="text-body font-weight-strong text-fg">{token.symbol}</p>
         <p className="text-body-sm text-muted">{token.name}</p>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-0.5">
+      <div className="flex shrink-0 flex-col items-end gap-1">
         <p className="text-body-sm text-muted tabular-nums">
           {hasStake ? (
             <span className="text-caption">
@@ -54,6 +66,13 @@ export function EngineWalletBalanceRow({ token }: EngineWalletBalanceRowProps) {
             </span>
             <span className="font-weight-strong text-fg">{stake}</span>
           </p>
+        ) : null}
+        {actions ? (
+          <WalletActionSplit
+            primaryLabel={actions.primaryLabel}
+            onPrimary={actions.onPrimary}
+            menuItems={actions.menuItems}
+          />
         ) : null}
       </div>
     </div>

@@ -3,7 +3,6 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 
 import type { HiveEngineCustomJsonPayload } from '@opden-data-layer/hive-broadcast';
-import { ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS } from '@opden-data-layer/core/hive-engine-history';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
@@ -14,7 +13,8 @@ import type { EngineSwapListApiResponse } from '../../../application/dto/engine-
 import { validateEngineTokenAmount } from '../../../domain/engine-token-form-validation';
 import { parseEngineTokenAmount } from '../../../domain/engine-token-amount';
 import {
-  pickDefaultSwapSymbols,
+  isDoubleSwapToWaiv,
+  resolveInitialSwapSymbols,
   SWAP_IMPACT_PERCENT_OPTIONS,
 } from '../../../domain/swap-modal-defaults';
 import type { WalletSwapModalState } from '../../../domain/wallet-modal-types';
@@ -26,39 +26,6 @@ import { useWalletBalances } from './wallet-balances-context';
 import { WalletAssetAmountField } from './wallet-asset-amount-field';
 
 type EngineSwapListToken = EngineSwapListApiResponse['tokens'][number];
-
-const DOUBLE_SWAP_TO_WAIV = ENGINE_DOUBLE_SWAP_TO_WAIV_SYMBOLS as readonly string[];
-
-function resolveInitialSwapSymbols(
-  tokens: EngineSwapListToken[],
-  fromSymbol?: string,
-  toSymbol?: string,
-): { fromSymbol: string; toSymbol: string } {
-  const defaults = pickDefaultSwapSymbols(tokens);
-  if (!fromSymbol?.trim()) {
-    return defaults;
-  }
-  const from = fromSymbol.trim().toUpperCase();
-  const fromToken = tokens.find((token) => token.symbol === from);
-  if (!fromToken) {
-    return defaults;
-  }
-  const to = toSymbol?.trim().toUpperCase();
-  if (to && fromToken.pairs.some((pair) => pair.symbol === to)) {
-    return { fromSymbol: from, toSymbol: to };
-  }
-  return {
-    fromSymbol: from,
-    toSymbol: fromToken.pairs[0]?.symbol ?? defaults.toSymbol,
-  };
-}
-
-function isDoubleSwapToWaiv(from: string, to: string): boolean {
-  return (
-    (from === 'WAIV' && DOUBLE_SWAP_TO_WAIV.includes(to)) ||
-    (to === 'WAIV' && DOUBLE_SWAP_TO_WAIV.includes(from))
-  );
-}
 
 import { findEngineTokenUsdRate } from '../../../domain/wallet-engine-usd-rate';
 
@@ -114,6 +81,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
         const initial = resolveInitialSwapSymbols(
           list.tokens,
           state.fromSymbol,
+          state.toSymbol,
         );
         setFromSymbol(initial.fromSymbol);
         setToSymbol(initial.toSymbol);
@@ -135,7 +103,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
     return () => {
       cancelled = true;
     };
-  }, [open, account, state.fromSymbol, t]);
+  }, [open, account, state.fromSymbol, state.toSymbol, t]);
 
   const fromToken = useMemo(
     () => tokens.find((token) => token.symbol === fromSymbol) ?? null,
@@ -161,7 +129,7 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
     if (!fromToken) {
       return [];
     }
-    return fromToken.pairs.map((pair) => {
+    const options = fromToken.pairs.map((pair) => {
       const token = tokens.find((row) => row.symbol === pair.symbol);
       return {
         value: pair.symbol,
@@ -169,7 +137,19 @@ export function WalletSwapModal({ open, onClose, account, state }: WalletSwapMod
         balance: token?.balance ?? '0',
       };
     });
-  }, [fromToken, tokens]);
+    if (
+      isDoubleSwapToWaiv(fromSymbol, toSymbol) &&
+      !options.some((option) => option.value === toSymbol)
+    ) {
+      const waivToken = tokens.find((row) => row.symbol === toSymbol);
+      options.push({
+        value: toSymbol,
+        label: toSymbol,
+        balance: waivToken?.balance ?? '0',
+      });
+    }
+    return options;
+  }, [fromToken, fromSymbol, toSymbol, tokens]);
 
   useEffect(() => {
     if (!open || !fromSymbol || !toSymbol) {

@@ -7,8 +7,10 @@ import { render, screen } from '@testing-library/react';
 import { I18nProvider } from '@/i18n/providers/i18n-provider';
 import { useEffectiveViewerUsername } from '@/modules/object-updates/application/use-effective-viewer-username';
 
+import type { EngineWalletSummaryView } from '../../../domain/types/engine-wallet-view';
 import type { HiveWalletSummaryView } from '../../../domain/types/hive-wallet-view';
 import type { WaivWalletSummaryView } from '../../../domain/types/waiv-wallet-view';
+import { TransfersEngineWalletView } from './transfers-engine-wallet-view';
 import { TransfersHiveWalletView } from './transfers-hive-wallet-view';
 import { TransfersWaivWalletView } from './transfers-waiv-wallet-view';
 
@@ -40,6 +42,10 @@ jest.mock('../hive/history/hive-wallet-history-feed-client', () => ({
   HiveWalletHistoryFeedClient: () => null,
 }));
 
+jest.mock('../engine/history/engine-wallet-history-feed-client', () => ({
+  EngineWalletHistoryFeedClient: () => null,
+}));
+
 jest.mock('../waiv/waiv-wallet-summary', () => ({
   WaivWalletSummary: ({
     canManageWallet,
@@ -61,6 +67,19 @@ jest.mock('../hive/hive-wallet-summary', () => ({
   }) => (
     <div
       data-testid="hive-summary"
+      data-can-manage={String(canManageWallet)}
+    />
+  ),
+}));
+
+jest.mock('../engine/engine-wallet-summary', () => ({
+  EngineWalletSummary: ({
+    canManageWallet,
+  }: {
+    canManageWallet: boolean;
+  }) => (
+    <div
+      data-testid="engine-summary"
       data-can-manage={String(canManageWallet)}
     />
   ),
@@ -150,6 +169,29 @@ const hiveSummary = {
   pendingRewards: EMPTY_PENDING_REWARDS,
 } satisfies HiveWalletSummaryView;
 
+const engineSummary = {
+  account: 'alice',
+  pinnedTokens: [
+    {
+      symbol: 'SWAP.HIVE',
+      name: 'SWAP.HIVE',
+      iconUrl: null,
+      balance: '579.423',
+      stake: '0',
+      stakingEnabled: false,
+      precision: 8,
+      usdEstimate: 23.46,
+      isPinned: true,
+      unstakingCooldown: 0,
+      numberTransactions: 0,
+    },
+  ],
+  tokens: [],
+  powerEligibleTokens: [],
+  estimatedAccountValueUsd: 23.46,
+  rates: { hiveUsd: 0.25 },
+} satisfies EngineWalletSummaryView;
+
 function renderWithI18n(ui: ReactElement) {
   return render(
     <I18nProvider locale="en-US" messages={messages}>
@@ -214,5 +256,56 @@ describe('transfers wallet row actions', () => {
       'data-can-manage',
       'false',
     );
+  });
+
+  it('enables ENGINE summary actions when effective viewer matches profile owner', () => {
+    mockUseEffectiveViewerUsername.mockReturnValue('alice');
+
+    renderWithI18n(
+      <TransfersEngineWalletView
+        accountName="alice"
+        viewerUsername={null}
+        engineSummary={engineSummary}
+        engineError={null}
+      />,
+    );
+
+    expect(screen.getByTestId('engine-summary')).toHaveAttribute(
+      'data-can-manage',
+      'true',
+    );
+  });
+
+  it('disables ENGINE summary actions for non-owners', () => {
+    mockUseEffectiveViewerUsername.mockReturnValue('bob');
+
+    renderWithI18n(
+      <TransfersEngineWalletView
+        accountName="alice"
+        viewerUsername="bob"
+        engineSummary={engineSummary}
+        engineError={null}
+      />,
+    );
+
+    expect(screen.getByTestId('engine-summary')).toHaveAttribute(
+      'data-can-manage',
+      'false',
+    );
+  });
+
+  it('disables ENGINE summary actions when summary failed to load', () => {
+    mockUseEffectiveViewerUsername.mockReturnValue('alice');
+
+    renderWithI18n(
+      <TransfersEngineWalletView
+        accountName="alice"
+        viewerUsername={null}
+        engineSummary={null}
+        engineError="unavailable"
+      />,
+    );
+
+    expect(screen.queryByTestId('engine-summary')).not.toBeInTheDocument();
   });
 });

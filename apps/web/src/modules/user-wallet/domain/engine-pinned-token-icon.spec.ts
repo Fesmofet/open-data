@@ -11,9 +11,10 @@ describe('getEnginePinnedTokenFallbackIconSrc', () => {
     expect(getEnginePinnedTokenFallbackIconSrc('SWAP.BTC')).toBe(
       '/images/icons/cryptocurrencies/bitcoin.png',
     );
-    expect(getEnginePinnedTokenFallbackIconSrc('SWAP.ETH')).toBe(
-      '/images/icons/cryptocurrencies/ethereum.png',
-    );
+  });
+
+  it('returns null for disabled pegged symbols', () => {
+    expect(getEnginePinnedTokenFallbackIconSrc('SWAP.ETH')).toBeNull();
   });
 
   it('returns null for non-pinned symbols', () => {

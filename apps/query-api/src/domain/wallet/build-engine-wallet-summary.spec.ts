@@ -131,7 +131,6 @@ describe('buildEngineWalletSummary', () => {
       'SWAP.HIVE',
       'SWAP.LTC',
       'SWAP.BTC',
-      'SWAP.ETH',
     ]);
     expect(summary.pinnedTokens.every((row) => row.isPinned)).toBe(true);
     expect(summary.tokens).toHaveLength(1);
@@ -159,14 +158,13 @@ describe('buildEngineWalletSummary', () => {
         ['SWAP.HIVE', 0],
         ['SWAP.LTC', 0],
         ['SWAP.BTC', 0],
-        ['SWAP.ETH', 0],
       ]),
       marketMetrics: [],
       hiveUsd: 0,
     });
 
     expect(summary.tokens).toHaveLength(0);
-    expect(summary.pinnedTokens).toHaveLength(4);
+    expect(summary.pinnedTokens).toHaveLength(3);
     expect(summary.powerEligibleTokens).toHaveLength(0);
   });
 
@@ -207,7 +205,6 @@ describe('buildEngineWalletSummary', () => {
         ['SWAP.HIVE', 0],
         ['SWAP.LTC', 0],
         ['SWAP.BTC', 0],
-        ['SWAP.ETH', 0],
       ]),
       marketMetrics: [],
       hiveUsd: 0,
@@ -218,5 +215,36 @@ describe('buildEngineWalletSummary', () => {
     expect(summary.powerEligibleTokens[0]?.symbol).toBe('DUST');
     expect(summary.powerEligibleTokens[0]?.unstakingCooldown).toBe(14);
     expect(summary.powerEligibleTokens[0]?.numberTransactions).toBe(2);
+  });
+
+  it('hides disabled pegged SWAP.ETH from tokens and account value', () => {
+    const summary = buildEngineWalletSummary({
+      accountBalances: [
+        {
+          _id: 1,
+          account: 'alice',
+          symbol: 'SWAP.ETH',
+          balance: '1.5',
+          stake: '0',
+          pendingUnstake: '0',
+          delegationsIn: '0',
+          delegationsOut: '0',
+          pendingUndelegations: '0',
+        },
+      ],
+      tokenMetadata: [],
+      swapUsdBySymbol: new Map([
+        ['SWAP.HIVE', 0],
+        ['SWAP.LTC', 0],
+        ['SWAP.BTC', 0],
+        ['SWAP.ETH', 3000],
+      ]),
+      marketMetrics: [],
+      hiveUsd: 0,
+    });
+
+    expect(summary.pinnedTokens.map((row) => row.symbol)).not.toContain('SWAP.ETH');
+    expect(summary.tokens.map((row) => row.symbol)).not.toContain('SWAP.ETH');
+    expect(summary.estimatedAccountValueUsd).toBe(0);
   });
 });

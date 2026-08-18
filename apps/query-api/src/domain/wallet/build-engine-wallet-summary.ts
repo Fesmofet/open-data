@@ -7,6 +7,7 @@ import {
   ENGINE_PINNED_SWAP_SYMBOLS,
   ENGINE_WALLET_EXCLUDED_SYMBOLS,
   ENGINE_WALLET_MIN_DISPLAY_BALANCE,
+  isEngineDisabledPeggedSwapSymbol,
   type EnginePinnedSwapSymbol,
 } from '@opden-data-layer/core/hive-engine-history';
 
@@ -65,6 +66,9 @@ function shouldShowTokenRow(
   symbol: string,
   balance: HiveEngineTokenBalance,
 ): boolean {
+  if (isEngineDisabledPeggedSwapSymbol(symbol)) {
+    return false;
+  }
   if (symbol.includes('SWAP')) {
     return true;
   }

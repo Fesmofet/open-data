@@ -3,7 +3,6 @@ export const ENGINE_PINNED_SWAP_SYMBOLS = [
   'SWAP.HIVE',
   'SWAP.LTC',
   'SWAP.BTC',
-  'SWAP.ETH',
 ] as const;
 
 export type EnginePinnedSwapSymbol = (typeof ENGINE_PINNED_SWAP_SYMBOLS)[number];
@@ -20,7 +19,7 @@ export const ENGINE_HISTORY_EXCLUDED_SYMBOLS = ['WAIV'] as const;
 /** Minimum liquid or staked balance to show a non-SWAP token row. */
 export const ENGINE_WALLET_MIN_DISPLAY_BALANCE = 0.001;
 
-/** Pegged SWAP tokens shown in balance UI but blocked for deposit/withdraw/swap. */
+/** Pegged SWAP tokens blocked from balance UI and deposit/withdraw/swap. */
 export const ENGINE_DISABLED_PEGGED_SWAP_SYMBOLS = ['SWAP.ETH'] as const;
 
 /** L1 symbols blocked for deposit (mint disabled pegged token). */

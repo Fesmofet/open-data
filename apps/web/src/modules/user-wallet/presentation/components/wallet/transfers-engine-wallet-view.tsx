@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useEffectiveViewerUsername } from '@/modules/object-updates/application/use-effective-viewer-username';
 
 import type {
   EngineWalletLoadError,
@@ -11,16 +12,23 @@ import { EngineWalletHistoryFeedClient } from '../engine/history/engine-wallet-h
 
 export type TransfersEngineWalletViewProps = {
   accountName: string;
+  viewerUsername: string | null;
   engineSummary: EngineWalletSummaryView | null;
   engineError: EngineWalletLoadError | null;
 };
 
 export function TransfersEngineWalletView({
   accountName,
+  viewerUsername,
   engineSummary,
   engineError,
 }: TransfersEngineWalletViewProps) {
   const { t } = useI18n();
+  const viewerAccount = useEffectiveViewerUsername(viewerUsername);
+  const canManageWallet =
+    viewerAccount?.trim().toLowerCase() === accountName.trim().toLowerCase();
+  const summaryAvailable = engineError === null && engineSummary !== null;
+  const canManageWithSummary = canManageWallet && summaryAvailable;
 
   return (
     <>
@@ -31,7 +39,10 @@ export function TransfersEngineWalletView({
             : t('unavailable')}
         </p>
       ) : (
-        <EngineWalletSummary summary={engineSummary} />
+        <EngineWalletSummary
+          summary={engineSummary}
+          canManageWallet={canManageWithSummary}
+        />
       )}
       <EngineWalletHistoryFeedClient accountName={accountName} />
     </>

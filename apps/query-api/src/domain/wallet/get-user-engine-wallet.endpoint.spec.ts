@@ -83,7 +83,7 @@ describe('GetUserEngineWalletEndpoint', () => {
 
     const result = await endpoint.execute('alice');
     expect(result?.account).toBe('alice');
-    expect(result?.pinnedTokens).toHaveLength(4);
+    expect(result?.pinnedTokens).toHaveLength(3);
     expect(result?.pinnedTokens[0]?.symbol).toBe('SWAP.HIVE');
     expect(result?.rates.hiveUsd).toBe(0.25);
   });

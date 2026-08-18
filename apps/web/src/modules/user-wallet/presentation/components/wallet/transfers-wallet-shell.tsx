@@ -56,6 +56,7 @@ export function TransfersWalletShell({
     return (
       <TransfersEngineWalletView
         accountName={accountName}
+        viewerUsername={viewerUsername}
         engineSummary={engineSummary ?? null}
         engineError={engineError ?? null}
       />

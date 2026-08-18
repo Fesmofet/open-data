@@ -33,7 +33,7 @@ List endpoints use `findStrict` where noted below so RPC failures return **503**
 
 ## Disabled pegged token (`SWAP.ETH`)
 
-`SWAP.ETH` remains visible on the ENGINE wallet balance tab (`pinnedTokens`) but is **excluded** from deposit, withdraw, and swap list/quote endpoints. Blocklist: `ENGINE_DISABLED_PEGGED_SWAP_SYMBOLS` in `@opden-data-layer/core/hive-engine-history`. L1 **ETH** deposit and **WAIV→ETH** / **SWAP.ETH→ETH** withdraw are rejected.
+`SWAP.ETH` is **excluded** from the ENGINE wallet balance tab (`pinnedTokens` and `tokens`) and from deposit, withdraw, and swap list/quote endpoints. Blocklist: `ENGINE_DISABLED_PEGGED_SWAP_SYMBOLS` in `@opden-data-layer/core/hive-engine-history`. L1 **ETH** deposit and **WAIV→ETH** / **SWAP.ETH→ETH** withdraw are rejected.
 
 ## Swap list
 

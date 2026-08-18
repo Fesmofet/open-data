@@ -22,7 +22,7 @@ Returns live Hive Engine token balances for the profile account:
 
 | Field | Description |
 |-------|-------------|
-| `pinnedTokens` | Always four rows: `SWAP.HIVE`, `SWAP.LTC`, `SWAP.BTC`, `SWAP.ETH` (zero balance when absent on chain) |
+| `pinnedTokens` | Always three rows: `SWAP.HIVE`, `SWAP.LTC`, `SWAP.BTC` (zero balance when absent on chain) |
 | `tokens` | Other tokens with liquid or staked balance ≥ `0.001`, excluding `WAIV` and pinned SWAP symbols |
 | `powerEligibleTokens` | Staking-enabled tokens with any liquid or staked balance (no `0.001` display floor), excluding `ENGINE_WALLET_EXCLUDED_SYMBOLS` only — used for power up/down asset lists |
 | `estimatedAccountValueUsd` | Sum of row `usdEstimate` values |

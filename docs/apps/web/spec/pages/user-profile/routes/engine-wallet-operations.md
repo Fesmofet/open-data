@@ -58,9 +58,18 @@ On `/@name/transfers`, `TransfersWalletPageClient` alone provides account-scoped
 - **Deposit** — converter-api routing (`account`, `memo`, or `address`); list refetches on each open. HIVE uses hivepegged buy routing.
 - **Withdraw** — Two-sided UI: **You pay** (input token + amount) and **Receive** (quoted output + output token selector). Quotes use `POST .../engine/withdraw/quote` with input `quantity`; `previewOnly` when an external destination address is missing. USD estimate uses wallet balance rates on the pay amount. External destinations support a camera **QR scanner** (legacy URI format `scheme:address?amount=`); optional QR amount is resolved via iterative quotes (not client rate tables). Hive/HBD outputs use `@account` as destination (no QR). Server validates min/fee on final leg; `errorCode` / `errorParams` map to i18n.
 
+## ENGINE pinned-row actions
+
+On the ENGINE tab, each pinned SWAP token row (`SWAP.HIVE`, `SWAP.LTC`, `SWAP.BTC`) with liquid balance > 0 exposes inline owner actions when the viewer owns the wallet:
+
+- **Primary** — **Swap to WAIV** (opens swap modal with `fromSymbol` preset to the row token and `toSymbol: WAIV`).
+- **Menu** — **Swap** (general swap modal with `fromSymbol` preset only) and **Withdraw to {L1}** (opens withdraw modal with the matching pegged→L1 pair, e.g. `SWAP.HIVE`→`HIVE`).
+
+Zero-balance pinned rows and non-pinned tokens have no inline row actions. `SWAP.ETH` is not shown on the balance tab (compromised pegged token).
+
 ## Layout
 
-Center column balance rows show inline owner actions; the right sidebar also exposes transfer/power/delegate on desktop. ENGINE tab summary has no inline row actions (sidebar only).
+Center column balance rows show inline owner actions for pinned SWAP tokens with balance; the right sidebar also exposes swap/deposit/withdraw on desktop.
 
 ## Deposit QR
 

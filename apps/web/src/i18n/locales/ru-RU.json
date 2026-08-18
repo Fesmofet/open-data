@@ -3480,6 +3480,7 @@
   "wallet_withdraw_processed_by": "Withdrawals are processed by",
   "wallet_withdraw_quote_failed": "Could not calculate withdraw quote.",
   "wallet_withdraw_receive": "Receive",
+  "wallet_swap_to": "Swap to {symbol}",
   "wallet_withdraw_to": "Withdraw to {symbol}",
   "wallet_withdraw_value_usd": "Value: {amount} USD",
   "wallet_withdraw_you_pay": "You pay",
