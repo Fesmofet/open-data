@@ -1,6 +1,18 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
-import type { ProjectedListItem } from '../../domain/projected-list-item.types';
+import type { ProjectedListItem, ProjectedListItemRef } from '../../domain/projected-list-item.types';
+
+function listItemRefToFieldPayload(ref: ProjectedListItemRef): Record<string, unknown> {
+  const nested: Record<string, unknown> = { name: ref.name };
+  if (ref.imageUrl) {
+    nested.image = ref.imageUrl;
+  }
+  return {
+    object_id: ref.objectId,
+    object_type: ref.objectType,
+    fields: nested,
+  };
+}
 
 /** Maps catalog list rows to `ProjectedObjectView` for `ObjectCard`. */
 export function projectedListItemToObjectView(item: ProjectedListItem): ProjectedObjectView {
@@ -22,6 +34,15 @@ export function projectedListItemToObjectView(item: ProjectedListItem): Projecte
   }
   if (item.description) {
     fields.description = item.description;
+  }
+  if (item.price) {
+    fields.price = item.price;
+  }
+  if (item.brandRef) {
+    fields.brand = listItemRefToFieldPayload(item.brandRef);
+  }
+  if (item.parentRef) {
+    fields.parent = listItemRefToFieldPayload(item.parentRef);
   }
   if (tagCategoryLabels.length > 0) {
     fields.tagCategoryItem = tagCategoryLabels.map((value) => ({ value }));

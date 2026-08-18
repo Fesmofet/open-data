@@ -78,7 +78,7 @@ Each item is a compact projection (not full `ProjectedObject`):
 | Field | Description |
 | ----- | ----------- |
 | `object_id`, `object_type` | Target object identity. |
-| `fields` | Subset from `REF_SUMMARY_UPDATE_TYPES`: `name`, `image`, `description`, `tagCategoryItem`, `aggregateRating` (same aspect-row shape as resolve). |
+| `fields` | Subset from `REF_SUMMARY_UPDATE_TYPES`: `name`, `image`, `parent`, `price`, `brand`, `description`, `tagCategoryItem`, `aggregateRating` (same aspect-row shape as resolve). `parent` and `brand` are compact nested ref payloads `{ object_id, object_type, fields: { name, image? } }`. When the ref target has no image, `image` may be filled from the parent ref's image. |
 | `weight` | `objects_core.weight` (nullable). |
 | `addedAtUnix` | Present when sourced from an explicit ref update (optional). |
 | `listItemsCount` | Recursive list-item count when applicable (optional). |

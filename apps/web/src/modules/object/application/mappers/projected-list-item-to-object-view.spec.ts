@@ -45,4 +45,41 @@ describe('projectedListItemToObjectView', () => {
     ]);
     expect(view.hasAdministrativeAuthority).toBe(true);
   });
+
+  it('maps price and brand/parent refs for ObjectCard', () => {
+    const item: ProjectedListItem = {
+      objectId: 'product-1',
+      objectType: 'product',
+      name: 'Macadamia Tincture',
+      imageUrl: null,
+      weight: 1,
+      price: 'MX$225.00',
+      brandRef: {
+        objectId: 'brand-1',
+        objectType: 'business',
+        name: 'Itzayana',
+        imageUrl: null,
+      },
+      parentRef: {
+        objectId: 'shop-1',
+        objectType: 'shop',
+        name: 'Miss Bitcoin Shop',
+        imageUrl: null,
+      },
+    };
+
+    const view = projectedListItemToObjectView(item);
+
+    expect(view.fields.price).toBe('MX$225.00');
+    expect(view.fields.brand).toEqual({
+      object_id: 'brand-1',
+      object_type: 'business',
+      fields: { name: 'Itzayana' },
+    });
+    expect(view.fields.parent).toEqual({
+      object_id: 'shop-1',
+      object_type: 'shop',
+      fields: { name: 'Miss Bitcoin Shop' },
+    });
+  });
 });

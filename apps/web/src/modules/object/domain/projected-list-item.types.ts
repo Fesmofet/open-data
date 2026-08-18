@@ -18,6 +18,20 @@ export type ProjectedListItem = {
   aggregateRatingAspects?: ProjectedListItemRatingAspect[];
   /** Viewer has administrative authority on this ref target. */
   hasAdministrativeAuthority?: boolean;
+  /** Localized price string from projected `price` update. */
+  price?: string | null;
+  /** Compact brand ref from projected `brand` update (first when multi). */
+  brandRef?: ProjectedListItemRef | null;
+  /** Compact parent ref from projected `parent` update. */
+  parentRef?: ProjectedListItemRef | null;
+};
+
+/** Nested object_ref row on a list-item ref summary. */
+export type ProjectedListItemRef = {
+  objectId: string;
+  objectType: string;
+  name: string;
+  imageUrl: string | null;
 };
 
 export type ProjectedListItemRatingAspect = {

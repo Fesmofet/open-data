@@ -152,7 +152,7 @@ export type ObjectCardProps = {
 };
 
 /**
- * Shop / feed card: rectangular thumbnail, title, type · categories, rating, excerpt, admin heart.
+ * Shop / feed card: thumbnail, brand/parent caption, title, price · type · categories, rating, excerpt, admin heart.
  */
 export function ObjectCard({
   object: o,
@@ -175,7 +175,9 @@ export function ObjectCard({
   const thumbSize = editorRow ? 72 : mapSidebar ? MAP_SIDEBAR_THUMB_SIZE : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
-  const subtitleParts = [typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
+  const priceLabel = objectFields.price(o);
+  const brandOrParentLabel = objectFields.brandOrParentLabel(o);
+  const subtitleParts = [priceLabel, typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
   const subtitle = subtitleParts.join(' · ');
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
@@ -303,6 +305,9 @@ export function ObjectCard({
           </span>
         </CardNavTarget>
         <div className="min-w-0 flex-1">
+          {brandOrParentLabel ? (
+            <p className="text-caption text-fg-secondary">{brandOrParentLabel}</p>
+          ) : null}
           <CardNavTarget
             href={href}
             linkReplace={linkReplace}

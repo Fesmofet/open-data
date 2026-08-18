@@ -140,3 +140,74 @@ describe('ObjectCard navigation', () => {
     expect(screen.queryByText('Service')).not.toBeInTheDocument();
   });
 });
+
+describe('ObjectCard price and brand/parent', () => {
+  const productCard: ProjectedObjectView = {
+    object_id: 'macadamia',
+    object_type: 'product',
+    semantic_type: null,
+    weight: 1,
+    fields: {
+      name: 'Macadamia Tincture',
+      price: 'MX$225.00',
+      brand: {
+        object_id: 'brand-1',
+        object_type: 'business',
+        fields: { name: 'Itzayana' },
+      },
+      parent: {
+        object_id: 'shop-1',
+        object_type: 'shop',
+        fields: { name: 'Miss Bitcoin Shop' },
+      },
+      description: 'Herbal tincture',
+    },
+    hasAdministrativeAuthority: false,
+    hasOwnershipAuthority: false,
+  };
+
+  it('shows brand caption above title and price before type in subtitle', () => {
+    render(
+      <ul>
+        <ObjectCard object={productCard} />
+      </ul>,
+    );
+
+    expect(screen.getByText('Itzayana')).toBeInTheDocument();
+    expect(screen.getByText('Macadamia Tincture')).toBeInTheDocument();
+    expect(screen.getByText('MX$225.00 · Product')).toBeInTheDocument();
+  });
+
+  it('falls back to parent caption when brand is absent', () => {
+    const withoutBrand: ProjectedObjectView = {
+      ...productCard,
+      fields: {
+        name: productCard.fields.name,
+        price: productCard.fields.price,
+        parent: productCard.fields.parent,
+        description: productCard.fields.description,
+      },
+    };
+
+    render(
+      <ul>
+        <ObjectCard object={withoutBrand} />
+      </ul>,
+    );
+
+    expect(screen.getByText('Miss Bitcoin Shop')).toBeInTheDocument();
+    expect(screen.queryByText('Itzayana')).not.toBeInTheDocument();
+  });
+
+  it('omits caption and price segments when data is absent', () => {
+    render(
+      <ul>
+        <ObjectCard object={sampleObject} />
+      </ul>,
+    );
+
+    expect(screen.queryByText('Miss Bitcoin Shop')).not.toBeInTheDocument();
+    expect(screen.getByText('Dish')).toBeInTheDocument();
+    expect(screen.queryByText(/MX\$/)).not.toBeInTheDocument();
+  });
+});

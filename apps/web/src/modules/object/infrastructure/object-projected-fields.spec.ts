@@ -257,6 +257,58 @@ describe('object-projected-fields', () => {
     });
   });
 
+  it('projectedListItems reads price brand and parent from ref summary fields', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'parent-list',
+      object_type: 'list',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        listItem: [
+          {
+            object_id: 'product-1',
+            object_type: 'product',
+            weight: 2,
+            fields: {
+              name: 'Macadamia Tincture',
+              price: 'MX$225.00',
+              brand: {
+                object_id: 'brand-1',
+                object_type: 'business',
+                fields: { name: 'Itzayana' },
+              },
+              parent: {
+                object_id: 'shop-1',
+                object_type: 'shop',
+                fields: { name: 'Miss Bitcoin Shop' },
+              },
+            },
+          },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const items = projectedListItems(v);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      objectId: 'product-1',
+      price: 'MX$225.00',
+      brandRef: {
+        objectId: 'brand-1',
+        objectType: 'business',
+        name: 'Itzayana',
+        imageUrl: null,
+      },
+      parentRef: {
+        objectId: 'shop-1',
+        objectType: 'shop',
+        name: 'Miss Bitcoin Shop',
+        imageUrl: null,
+      },
+    });
+  });
+
   it('falls back to listItem refs when menuItem updates are absent', () => {
     const v: ProjectedObjectView = {
       object_id: 'ylr-waivio',

@@ -9,6 +9,7 @@ import type {
   CatalogListSortType,
   ProjectedListItem,
   ProjectedListItemRatingAspect,
+  ProjectedListItemRef,
   ProjectedSortCustom,
 } from '../domain/projected-list-item.types';
 
@@ -267,6 +268,44 @@ function refSummaryAggregateRatingAspects(
   return out;
 }
 
+function refSummaryRefPayload(raw: unknown): ProjectedListItemRef | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  const objectId = readString(raw['object_id']);
+  const objectType = readString(raw['object_type']);
+  if (!objectId || !objectType) {
+    return null;
+  }
+  const nested = raw['fields'];
+  let name = '';
+  let imageUrl: string | null = null;
+  if (isRecord(nested)) {
+    name = readString(nested['name']) ?? '';
+    imageUrl =
+      typeof nested['image'] === 'string' ? readString(nested['image']) ?? null : null;
+  }
+  return {
+    objectId,
+    objectType,
+    name: name.length > 0 ? name : objectId,
+    imageUrl,
+  };
+}
+
+function refSummaryFirstRefPayload(raw: unknown): ProjectedListItemRef | null {
+  if (Array.isArray(raw)) {
+    for (const row of raw) {
+      const parsed = refSummaryRefPayload(row);
+      if (parsed) {
+        return parsed;
+      }
+    }
+    return null;
+  }
+  return refSummaryRefPayload(raw);
+}
+
 function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem | null {
   const object_id = readString(row['object_id']);
   const object_type = readString(row['object_type']);
@@ -282,6 +321,9 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
       : undefined;
   const descriptionFromFields =
     isRecord(fields) ? readString(fields['description']) : undefined;
+  const priceFromFields = isRecord(fields) ? readString(fields['price']) : undefined;
+  const brandRef = isRecord(fields) ? refSummaryFirstRefPayload(fields['brand']) : null;
+  const parentRef = isRecord(fields) ? refSummaryRefPayload(fields['parent']) : null;
   const tagCategoryLabels = isRecord(fields) ? refSummaryTagCategoryLabels(fields) : [];
   const aggregateRatingAspects = isRecord(fields)
     ? refSummaryAggregateRatingAspects(fields)
@@ -301,6 +343,9 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
     ...(addedAtUnix !== null ? { addedAtUnix } : {}),
     ...(listItemsCount !== undefined ? { listItemsCount } : {}),
     ...(descriptionFromFields ? { description: descriptionFromFields } : {}),
+    ...(priceFromFields ? { price: priceFromFields } : {}),
+    ...(brandRef ? { brandRef } : {}),
+    ...(parentRef ? { parentRef } : {}),
     ...(tagCategoryLabels.length > 0 ? { tagCategoryLabels } : {}),
     ...(aggregateRatingAspects.length > 0 ? { aggregateRatingAspects } : {}),
     ...(hasAdministrativeAuthority ? { hasAdministrativeAuthority: true } : {}),

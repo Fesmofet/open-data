@@ -3,6 +3,8 @@ export const SHOP_CARD_UPDATE_TYPES = [
   'name',
   'image',
   'parent',
+  'price',
+  'brand',
   'description',
   'tagCategoryItem',
   'aggregateRating',

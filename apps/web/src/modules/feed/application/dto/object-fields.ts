@@ -66,6 +66,31 @@ function ratingStars01To5Compact(o: ProjectedObjectView): number | null {
   return Math.min(5, Math.max(0, avg / 2000));
 }
 
+function readObjectRefName(raw: unknown): string | undefined {
+  if (raw == null) {
+    return undefined;
+  }
+  const rows = Array.isArray(raw) ? raw : [raw];
+  for (const row of rows) {
+    if (row == null || typeof row !== 'object' || Array.isArray(row)) {
+      continue;
+    }
+    const record = row as Record<string, unknown>;
+    const nested = record['fields'];
+    if (nested != null && typeof nested === 'object' && !Array.isArray(nested)) {
+      const name = (nested as Record<string, unknown>)['name'];
+      if (typeof name === 'string' && name.trim().length > 0) {
+        return name.trim();
+      }
+    }
+    const objectId = record['object_id'];
+    if (typeof objectId === 'string' && objectId.trim().length > 0) {
+      return objectId.trim();
+    }
+  }
+  return undefined;
+}
+
 /**
  * Keys match `ProjectedObject.fields` from query-api (`updateType` / registry keys).
  * @see apps/query-api/src/domain/object-projection/project-object.ts
@@ -87,6 +112,22 @@ export const objectFields = {
   description: (o: ProjectedObjectView): string | undefined => {
     const v = o.fields['description'];
     return typeof v === 'string' ? v : undefined;
+  },
+  price: (o: ProjectedObjectView): string | undefined => {
+    const v = o.fields['price'];
+    if (typeof v !== 'string') {
+      return undefined;
+    }
+    const trimmed = v.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  },
+  /** Brand ref name when present; otherwise parent ref name. */
+  brandOrParentLabel: (o: ProjectedObjectView): string | undefined => {
+    const brand = readObjectRefName(o.fields['brand']);
+    if (brand) {
+      return brand;
+    }
+    return readObjectRefName(o.fields['parent']);
   },
   /** Parsed rows from `fields.aggregateRating` (always an array on the wire from query-api). */
   aggregateRatingAspects: (o: ProjectedObjectView): AggregateRatingAspectRow[] => {
