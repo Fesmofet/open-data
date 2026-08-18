@@ -51,8 +51,8 @@ function pickFlatIndexForRow(
 
 function discoverChipClass(): string {
   return [
-    'rounded-pill border border-transparent bg-surface-control px-2.5 py-1 text-caption text-fg-secondary transition-colors',
-    'hover:bg-ghost-surface hover:text-fg',
+    'rounded-pill border border-transparent bg-ghost-surface px-2.5 py-1 text-caption text-fg transition-colors',
+    'hover:[background-color:color-mix(in_srgb,var(--color-accent)_10%,var(--color-ghost-surface))]',
   ].join(' ');
 }
 
@@ -60,7 +60,7 @@ function ChipCountSuffix({ loading, value }: { loading: boolean; value: number }
   if (loading) {
     return (
       <span
-        className="ms-0.5 inline-block h-3 w-7 align-middle rounded-btn bg-surface-control animate-pulse"
+        className="ms-0.5 inline-block h-3 w-7 align-middle rounded-btn bg-ghost-surface animate-pulse"
         aria-hidden
       />
     );
@@ -72,7 +72,7 @@ function DiscoverChipSkeletons() {
   return CHIP_SKELETON_WIDTHS.map((w) => (
     <span
       key={w}
-      className="h-7 shrink-0 rounded-circle bg-surface-control animate-pulse"
+      className="h-7 shrink-0 rounded-circle bg-ghost-surface animate-pulse"
       style={{ width: w }}
       aria-hidden
     />
