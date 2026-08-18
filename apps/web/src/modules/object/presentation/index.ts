@@ -27,6 +27,8 @@ export { ObjectPrimaryNav } from './components/object-primary-nav';
 export type { ObjectPrimaryNavProps } from './components/object-primary-nav';
 export { ObjectPrimaryContent } from './components/object-primary-content';
 export type { ObjectPrimaryContentProps } from './components/object-primary-content';
+export { ObjectWidgetContent } from './components/object-widget-content';
+export type { ObjectWidgetContentProps } from './components/object-widget-content';
 export { ObjectFeedSubNav } from './components/object-feed-sub-nav';
 export type { ObjectFeedSubNavProps } from './components/object-feed-sub-nav';
 export { ObjectAuthoritySubNav } from './components/object-authority-sub-nav';

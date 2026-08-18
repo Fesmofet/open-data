@@ -3,6 +3,7 @@ import {
   buildObjectGalleryPath,
   buildObjectRelatedPath,
   buildObjectSimilarPath,
+  buildObjectWidgetPath,
 } from '@/modules/object/domain/object-page-url.constants';
 
 import {
@@ -10,6 +11,7 @@ import {
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from './object-page-search';
+import { WIDGET_PRIMARY_TAB_SEGMENT } from '@/modules/object/domain/widget.constants';
 
 export type ObjectPrimaryTabNavigation = {
   href: string;
@@ -68,6 +70,7 @@ export function buildObjectPrimaryTabNavigation(
   if (segment === 'gallery' || segment === 'experts') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
     u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
     u.delete('sort');
     u.delete('update_type');
     u.delete('locale');
@@ -80,6 +83,22 @@ export function buildObjectPrimaryTabNavigation(
     }
     return {
       href: qs ? `${base}/${segment}?${qs}` : `${base}/${segment}`,
+      method: 'replace',
+    };
+  }
+
+  if (segment === WIDGET_PRIMARY_TAB_SEGMENT) {
+    u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+    u.delete('sort');
+    u.delete('update_type');
+    u.delete('locale');
+    const qs = u.toString();
+    return {
+      href: qs
+        ? `${buildObjectWidgetPath(objectId)}?${qs}`
+        : buildObjectWidgetPath(objectId),
       method: 'replace',
     };
   }

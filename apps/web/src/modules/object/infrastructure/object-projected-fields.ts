@@ -3,6 +3,7 @@ import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-
 import type {
   ProjectedGalleryAlbumView,
   ProjectedGalleryPhotoView,
+  ProjectedWidgetConfigView,
 } from '../domain/object-page.types';
 import type { ProjectedMenuItem, ProjectedMenuItemObject } from '../domain/projected-menu-item.types';
 import type {
@@ -562,6 +563,71 @@ export function projectedLegalText(o: ProjectedObjectView): string | null {
 /** Sanitized HTML body for page-type objects and legal documents. */
 export function projectedHostHtmlBody(o: ProjectedObjectView): string | null {
   return projectedPageContent(o) ?? projectedLegalText(o);
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function parseWidgetConfigRecord(raw: unknown): ProjectedWidgetConfigView | null {
+  if (!isPlainRecord(raw)) {
+    return null;
+  }
+  const column = typeof raw.column === 'string' ? raw.column.trim() : '';
+  const type = typeof raw.type === 'string' ? raw.type.trim() : '';
+  const content = typeof raw.content === 'string' ? raw.content.trim() : '';
+  if (!column || !type || !content) {
+    return null;
+  }
+  const title = typeof raw.title === 'string' && raw.title.trim().length > 0
+    ? raw.title.trim()
+    : undefined;
+  return { column, type, content, ...(title ? { title } : {}) };
+}
+
+/**
+ * Parses the `widget` update field into embed config.
+ * Handles plain object, multi-cardinality array (first valid entry), and legacy stringified JSON.
+ */
+export function projectedWidgetConfig(o: ProjectedObjectView): ProjectedWidgetConfigView | null {
+  const raw = o.fields.widget;
+  if (raw == null) {
+    return null;
+  }
+
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      return null;
+    }
+    try {
+      const parsed: unknown = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        for (const entry of parsed) {
+          const config = parseWidgetConfigRecord(entry);
+          if (config) {
+            return config;
+          }
+        }
+        return null;
+      }
+      return parseWidgetConfigRecord(parsed);
+    } catch {
+      return null;
+    }
+  }
+
+  if (Array.isArray(raw)) {
+    for (const entry of raw) {
+      const config = parseWidgetConfigRecord(entry);
+      if (config) {
+        return config;
+      }
+    }
+    return null;
+  }
+
+  return parseWidgetConfigRecord(raw);
 }
 
 export function projectedDescriptionContent(o: ProjectedObjectView): string | null {

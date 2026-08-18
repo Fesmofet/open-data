@@ -628,4 +628,47 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     const kinds = model.leftRailBlocks.map((block) => block.kind);
     expect(kinds).not.toContain('typicalAgeRange');
   });
+
+  it('prepends Widget tab for widget object type', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'podcast-1',
+      object_type: 'widget',
+      semantic_type: null,
+      weight: 1,
+      fields: {
+        name: 'Podcast',
+        widget: { column: 'one', type: 'Widget', content: '<p>embed</p>' },
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.primaryTabs[0]).toEqual({ segment: 'widget', label: 'Widget' });
+    expect(model.primaryTabs[1]?.segment).toBe('reviews');
+    expect(model.widgetConfig).toEqual({
+      column: 'one',
+      type: 'Widget',
+      content: '<p>embed</p>',
+    });
+  });
+
+  it('does not prepend Widget tab for non-widget types', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: { name: 'Product' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.primaryTabs[0]?.segment).toBe('reviews');
+    expect(model.primaryTabs.some((tab) => tab.segment === 'widget')).toBe(false);
+    expect(model.widgetConfig).toBeNull();
+  });
 });

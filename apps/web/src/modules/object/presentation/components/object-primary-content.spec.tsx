@@ -54,6 +54,15 @@ jest.mock('./object-page-content-body', () => ({
   ObjectPageContentBody: () => null,
 }));
 
+jest.mock('./object-widget-content', () => ({
+  ObjectWidgetContent: ({ config }: { config: { content: string } | null }) =>
+    config ? (
+      <div data-testid="widget-content">{config.content}</div>
+    ) : (
+      <div data-testid="widget-empty">empty</div>
+    ),
+}));
+
 import { ObjectPrimaryContent } from './object-primary-content';
 
 const EMPTY_NESTED_STACK: never[] = [];
@@ -114,5 +123,39 @@ describe('ObjectPrimaryContent Reviews threads feed', () => {
     );
     expect(screen.getByText(/Reviews and discussions \(mock\)/)).toBeInTheDocument();
     expect(screen.getByText(/Posts list placeholder/)).toBeInTheDocument();
+  });
+});
+
+describe('ObjectPrimaryContent widget tab', () => {
+  it('renders widget content on widget tab segment', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        activePrimarySegment="widget"
+        objectType="widget"
+        hostWidgetConfig={{
+          column: 'one',
+          type: 'Widget',
+          content: '<p>podcast embed</p>',
+        }}
+      />,
+    );
+    expect(screen.getByTestId('widget-content')).toHaveTextContent('<p>podcast embed</p>');
+    expect(screen.queryByText(/Embedded widget \(mock\)/)).not.toBeInTheDocument();
+  });
+
+  it('does not render widget tab content on reviews segment', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        objectType="widget"
+        hostWidgetConfig={{
+          column: 'one',
+          type: 'Widget',
+          content: '<p>podcast embed</p>',
+        }}
+      />,
+    );
+    expect(screen.queryByTestId('widget-content')).not.toBeInTheDocument();
   });
 });

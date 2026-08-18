@@ -10,6 +10,7 @@ import {
   projectedListItems,
   projectedHostHtmlBody,
   projectedSortCustom,
+  projectedWidgetConfig,
 } from './object-projected-fields';
 import { sanitizePostHtml } from '@/shared/infrastructure/sanitize-post-html';
 
@@ -57,6 +58,7 @@ function nestedViewFromApi(
   const htmlBody = projectedHostHtmlBody(viewLike);
   const name = objectFields.name(viewLike)?.trim() || api.object_id;
   const objectType = toSwitcherKind(api.object_type);
+  const widgetConfig = projectedWidgetConfig(viewLike);
 
   return {
     objectId: api.object_id,
@@ -65,6 +67,7 @@ function nestedViewFromApi(
     listItems,
     listItemsSortCustom: sortCustom,
     pageContentHtml: htmlBody ? sanitizePostHtml(htmlBody) : null,
+    widgetConfig,
   };
 }
 

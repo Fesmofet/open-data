@@ -15,6 +15,7 @@ import type {
   ObjectNestedViewResolved,
   ObjectSwitcherKind,
   ProjectedGalleryAlbumView,
+  ProjectedWidgetConfigView,
 } from '../../domain/object-page.types';
 import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 
@@ -24,6 +25,7 @@ import {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from '../../domain/object-page-url.constants';
+import { WIDGET_PRIMARY_TAB_SEGMENT } from '../../domain/widget.constants';
 import { parseViewPathFromUrlSearchParams } from '../../domain/object-page-path';
 import {
   applySortCustomToListItems,
@@ -40,6 +42,7 @@ import { ObjectListContent } from './object-list-content';
 import { ObjectDescriptionBody } from './object-description-body';
 import { ObjectPageContentBody } from './object-page-content-body';
 import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
+import { ObjectWidgetContent } from './object-widget-content';
 
 const REVIEWS_SEGMENT = 'reviews';
 
@@ -122,6 +125,7 @@ function pendingEntryFromListItem(item: ProjectedListItem): ObjectNestedViewEntr
     listItems: [],
     listItemsSortCustom: null,
     pageContentHtml: null,
+    widgetConfig: null,
     pending: true,
   };
 }
@@ -167,6 +171,8 @@ export type ObjectPrimaryContentProps = {
   objectFieldReferencesFeed?: ReactNode | null;
   /** Raw page body for standalone page-type / legal_document host objects. */
   hostPageContent?: string | null;
+  /** Parsed widget config for widget-type host objects. */
+  hostWidgetConfig?: ProjectedWidgetConfigView | null;
   descriptionContent?: string | null;
   previewGallery?: ProjectedGalleryPhotoView[];
   galleryPhotosAlbum?: ProjectedGalleryAlbumView | null;
@@ -210,6 +216,7 @@ export function ObjectPrimaryContent({
   objectCategoryFeed,
   objectFieldReferencesFeed,
   hostPageContent = null,
+  hostWidgetConfig = null,
   descriptionContent = null,
   previewGallery = [],
   galleryPhotosAlbum = null,
@@ -397,6 +404,7 @@ export function ObjectPrimaryContent({
         listItems: top.listItems,
         listItemsSortCustom: top.listItemsSortCustom,
         pageContentHtml: top.pageContentHtml,
+        widgetConfig: top.widgetConfig,
         pending: top.pending,
         viewKey: top.objectId,
       };
@@ -407,6 +415,7 @@ export function ObjectPrimaryContent({
         listItems: defaultNestedContent.listItems,
         listItemsSortCustom: defaultNestedContent.listItemsSortCustom,
         pageContentHtml: defaultNestedContent.pageContentHtml,
+        widgetConfig: defaultNestedContent.widgetConfig,
         pending: false,
         viewKey: defaultNestedContent.objectId,
       };
@@ -416,6 +425,7 @@ export function ObjectPrimaryContent({
       listItems,
       listItemsSortCustom,
       pageContentHtml: null as string | null,
+      widgetConfig: hostWidgetConfig,
       pending: false,
       viewKey: objectId,
     };
@@ -427,6 +437,7 @@ export function ObjectPrimaryContent({
     listItemsSortCustom,
     objectId,
     activePrimarySegment,
+    hostWidgetConfig,
   ]);
 
   const [activeSortType, setActiveSortType] = useState<CatalogListSortOption>(() =>
@@ -493,6 +504,13 @@ export function ObjectPrimaryContent({
       );
     }
 
+    if (
+      currentView.objectType === 'widget' &&
+      activePrimarySegment !== REVIEWS_SEGMENT
+    ) {
+      return <ObjectWidgetContent config={currentView.widgetConfig} />;
+    }
+
     if (nestedStack.length === 0 && hostPageContent?.trim()) {
       return (
         <ObjectPageContentBody
@@ -533,6 +551,7 @@ export function ObjectPrimaryContent({
     viewerUsername,
     onRequireLogin,
     onOpenGalleryPhoto,
+    activePrimarySegment,
   ]);
 
   if (activePrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
@@ -552,6 +571,16 @@ export function ObjectPrimaryContent({
             <p className="text-fg">This object has no description yet.</p>
           </div>
         )}
+      </FeedColumn>
+    );
+  }
+
+  if (activePrimarySegment === WIDGET_PRIMARY_TAB_SEGMENT) {
+    const nestedTop = nestedStack.at(-1);
+    const widgetConfig = nestedTop?.widgetConfig ?? hostWidgetConfig;
+    return (
+      <FeedColumn>
+        <ObjectWidgetContent config={widgetConfig} />
       </FeedColumn>
     );
   }

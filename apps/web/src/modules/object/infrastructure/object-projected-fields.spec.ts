@@ -21,6 +21,7 @@ import {
   projectedLegalText,
   projectedHostHtmlBody,
   projectedPageContent,
+  projectedWidgetConfig,
   projectedPreviewGallery,
   projectedGalleryAlbums,
   linkKindPublicIconSrc,
@@ -740,5 +741,68 @@ describe('object-projected-fields', () => {
 
     expect(projectedPreviewGallery(v)[0]?.viewerRank).toBe(8000);
     expect(projectedGalleryAlbums(v)[0]?.items[0]?.viewerRank).toBe(6000);
+  });
+});
+
+describe('projectedWidgetConfig', () => {
+  const baseView = (fields: Record<string, unknown>): ProjectedObjectView => ({
+    object_id: 'w1',
+    object_type: 'widget',
+    semantic_type: null,
+    weight: null,
+    fields,
+    hasAdministrativeAuthority: false,
+    hasOwnershipAuthority: false,
+  });
+
+  it('parses plain object widget field', () => {
+    expect(
+      projectedWidgetConfig(
+        baseView({ widget: { column: 'one', type: 'Widget', content: '<p>x</p>' } }),
+      ),
+    ).toEqual({ column: 'one', type: 'Widget', content: '<p>x</p>' });
+  });
+
+  it('uses first valid entry from widget array', () => {
+    expect(
+      projectedWidgetConfig(
+        baseView({
+          widget: [
+            { column: 'one', type: 'Widget', content: '' },
+            { column: 'two', type: 'Widget', content: '<p>ok</p>' },
+          ],
+        }),
+      ),
+    ).toEqual({ column: 'two', type: 'Widget', content: '<p>ok</p>' });
+  });
+
+  it('parses legacy stringified JSON widget field', () => {
+    expect(
+      projectedWidgetConfig(
+        baseView({
+          widget: JSON.stringify({ column: 'one', type: 'Widget', content: '<p>x</p>' }),
+        }),
+      ),
+    ).toEqual({ column: 'one', type: 'Widget', content: '<p>x</p>' });
+  });
+
+  it('returns null for absent widget field', () => {
+    expect(projectedWidgetConfig(baseView({}))).toBeNull();
+  });
+
+  it('returns null for malformed stringified JSON', () => {
+    expect(projectedWidgetConfig(baseView({ widget: 'not-json{' }))).toBeNull();
+  });
+
+  it('returns null for empty widget array', () => {
+    expect(projectedWidgetConfig(baseView({ widget: [] }))).toBeNull();
+  });
+
+  it('returns null for whitespace-only content', () => {
+    expect(
+      projectedWidgetConfig(
+        baseView({ widget: { column: 'one', type: 'Widget', content: '   ' } }),
+      ),
+    ).toBeNull();
   });
 });

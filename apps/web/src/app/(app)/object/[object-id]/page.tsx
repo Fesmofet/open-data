@@ -235,6 +235,12 @@ export async function generateMetadata({
     const galleryLabel =
       typeof messages.gallery === 'string' ? messages.gallery : 'Gallery';
     title = `${baseTitle} · ${galleryLabel}`;
+  } else if (tab === 'widget') {
+    const widgetLabel =
+      typeof messages.object_widget_tab === 'string'
+        ? messages.object_widget_tab
+        : 'Widget';
+    title = `${baseTitle} · ${widgetLabel}`;
   } else if (tab === 'experts') {
     const expertsLabel =
       typeof messages.experts === 'string' ? messages.experts : 'Experts';

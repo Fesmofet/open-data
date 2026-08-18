@@ -9,7 +9,7 @@ import { isMenuInHostTargetType } from './object-menu.constants';
 export type ObjectDefaultLanding =
   | { kind: 'hostContent' }
   | { kind: 'nestedInHost'; targetObjectId: string }
-  | { kind: 'primaryTab'; segment: 'reviews' | 'newsfeed' | 'description' }
+  | { kind: 'primaryTab'; segment: 'reviews' | 'newsfeed' | 'description' | 'widget' }
   | { kind: 'routeStub'; segment: 'blog' | 'newsFilter'; ref: string };
 
 const HOST_SWITCHER_KINDS = new Set<ObjectSwitcherKind>([
@@ -231,6 +231,9 @@ function resolveHostTypeLanding(
 ): ObjectDefaultLanding | null {
   if (objectTypeKey === 'html' || objectTypeKey === 'legal_document') {
     return { kind: 'hostContent' };
+  }
+  if (objectTypeKey === 'widget') {
+    return { kind: 'primaryTab', segment: 'widget' };
   }
   if (HOST_SWITCHER_KINDS.has(switcherKind)) {
     return { kind: 'hostContent' };

@@ -21,6 +21,8 @@ import {
   resolveUpdateIdFromObjectUrl,
   sanitizeNestedStack,
 } from './object-page-search';
+import { buildObjectPrimaryTabNavigation } from './object-page-navigation';
+import { buildObjectWidgetPath } from '@/modules/object/domain/object-page-url.constants';
 
 describe('resolvePrimarySegmentForObjectPage', () => {
   const objectId = 'test-obj';
@@ -70,6 +72,17 @@ describe('resolvePrimarySegmentForObjectPage', () => {
     ).toBe('experts');
   });
 
+  it('returns explicit path segment widget', () => {
+    expect(
+      resolvePrimarySegmentForObjectPage(
+        objectId,
+        `${base}/widget`,
+        new URLSearchParams(),
+        '',
+      ),
+    ).toBe('widget');
+  });
+
   it('returns explicit ?tab= over default landing', () => {
     const sp = new URLSearchParams();
     sp.set(OBJECT_PAGE_PRIMARY_TAB_PARAM, 'updates');
@@ -111,6 +124,25 @@ describe('resolveDefaultPrimarySegmentFromLanding', () => {
         tabs,
       ),
     ).toBe(OBJECT_PAGE_DESCRIPTION_SEGMENT);
+  });
+
+  it('maps primaryTab widget when tab exists', () => {
+    const widgetTabs = ['widget', 'reviews', 'updates'] as const;
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'primaryTab', segment: 'widget' },
+        widgetTabs,
+      ),
+    ).toBe('widget');
+  });
+
+  it('returns empty for widget landing when tab not in primaryTabs', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'primaryTab', segment: 'widget' },
+        tabs,
+      ),
+    ).toBe('');
   });
 
   it('maps routeStub to reviews when tab exists', () => {
@@ -344,6 +376,7 @@ describe('sanitizeNestedStack', () => {
         listItems: [],
         listItemsSortCustom: null,
         pageContentHtml: null,
+        widgetConfig: null,
       },
     ];
     expect(sanitizeNestedStack(['a'], stack)).toEqual(stack);
@@ -358,8 +391,47 @@ describe('sanitizeNestedStack', () => {
         listItems: [],
         listItemsSortCustom: null,
         pageContentHtml: null,
+        widgetConfig: null,
       },
     ];
     expect(sanitizeNestedStack(['a'], stack)).toEqual([]);
+  });
+});
+
+describe('buildObjectPrimaryTabNavigation widget', () => {
+  const objectId = 'podcast-1';
+
+  it('navigates to widget path with replace and clears path param', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_VIEW_PATH_PARAM, 'nested');
+    sp.set('sub', 'administrative');
+    const nav = buildObjectPrimaryTabNavigation(objectId, 'widget', sp);
+    expect(nav).toEqual({
+      href: buildObjectWidgetPath(objectId),
+      method: 'replace',
+    });
+    expect(nav.href).not.toContain('path=');
+    expect(nav.href).not.toContain('sub=');
+  });
+
+  it('clears locale filter param on widget navigation', () => {
+    const sp = new URLSearchParams();
+    sp.set('locale', 'fr-FR');
+    const nav = buildObjectPrimaryTabNavigation(objectId, 'widget', sp);
+    expect(nav.href).toBe(buildObjectWidgetPath(objectId));
+  });
+});
+
+describe('resolvePrimarySegmentFromObjectUrl widget', () => {
+  it('resolves legacy ?tab=widget on bare object path', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_PRIMARY_TAB_PARAM, 'widget');
+    expect(resolvePrimarySegmentFromObjectUrl('abc', '/object/abc', sp)).toBe('widget');
+  });
+
+  it('prefers pathname widget segment over conflicting ?tab=', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_PRIMARY_TAB_PARAM, 'reviews');
+    expect(resolvePrimarySegmentFromObjectUrl('abc', '/object/abc/widget', sp)).toBe('widget');
   });
 });

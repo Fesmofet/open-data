@@ -51,6 +51,18 @@ describe('resolveObjectDefaultLanding', () => {
     expect(landing).toEqual({ kind: 'hostContent' });
   });
 
+  it('returns primaryTab widget for widget host', () => {
+    const landing = resolveObjectDefaultLanding(
+      view('widget', {
+        widget: { column: 'one', type: 'Widget', content: '<p>embed</p>' },
+      }),
+      'widget',
+      'widget',
+      DEPS,
+    );
+    expect(landing).toEqual({ kind: 'primaryTab', segment: 'widget' });
+  });
+
   it('returns hostContent for legal_document host', () => {
     const landing = resolveObjectDefaultLanding(
       view('legal_document', { legalText: '<p>Terms</p>' }),

@@ -384,6 +384,7 @@ export function ObjectPageTabPane({
       objectCategoryFeed={objectCategoryFeed}
       objectFieldReferencesFeed={objectFieldReferencesFeed}
       hostPageContent={hostPageContent}
+      hostWidgetConfig={model.widgetConfig}
       descriptionContent={model.descriptionContent}
       previewGallery={model.previewGallery}
       galleryPhotosAlbum={galleryPhotosAlbum}

@@ -16,6 +16,7 @@ export const OBJECT_PAGE_DESCRIPTION_SEGMENT = 'description';
  * Gallery and experts were previously `?tab=` only; all listed segments use clean paths.
  */
 export const OBJECT_PAGE_PATH_TAB_SEGMENTS = [
+  'widget',
   'reviews',
   'updates',
   'followers',
@@ -68,6 +69,10 @@ export function buildObjectGalleryAlbumPath(
 
 export function buildObjectGalleryPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/gallery`;
+}
+
+export function buildObjectWidgetPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/widget`;
 }
 
 export function buildObjectRelatedPath(objectId: string): string {

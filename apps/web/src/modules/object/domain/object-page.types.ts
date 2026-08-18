@@ -47,6 +47,14 @@ export type ObjectFeedSubTabView = {
   label: string;
 };
 
+/** Parsed `widget` update JSON for embed rendering. */
+export type ProjectedWidgetConfigView = {
+  column: string;
+  type: string;
+  content: string;
+  title?: string;
+};
+
 /** Center-column nested view entry (list/page stack). */
 export type ObjectNestedViewEntry = {
   objectId: string;
@@ -56,6 +64,7 @@ export type ObjectNestedViewEntry = {
   /** Raw `sortCustom` for client-side catalog sort override. */
   listItemsSortCustom: ProjectedSortCustom | null;
   pageContentHtml: string | null;
+  widgetConfig: ProjectedWidgetConfigView | null;
   pending: boolean;
 };
 
@@ -327,6 +336,8 @@ export type ObjectPageViewModel = {
   pageContent: string | null;
   /** Raw legal body (`legalText` update) for `legal_document` objects. */
   legalText: string | null;
+  /** Parsed `widget` update JSON for widget-type objects. */
+  widgetConfig: ProjectedWidgetConfigView | null;
   /** Raw description body (`description` update) for center-column `/description` route. */
   descriptionContent: string | null;
   /** Photos-album preview from query-api (legacy `preview_gallery`). */

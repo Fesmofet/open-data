@@ -28,7 +28,10 @@ import type {
   ObjectPrimaryTabView,
   ObjectSwitcherKind,
 } from '../domain/object-page.types';
-import { OBJECT_LEFT_RAIL_BLOCK_LABEL } from '../domain/object-update-labels';
+import {
+  OBJECT_LEFT_RAIL_BLOCK_LABEL,
+} from '../domain/object-update-labels';
+import { WIDGET_PRIMARY_TAB_SEGMENT } from '../domain/widget.constants';
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
 import type { ObjectOptionsApiResponse } from './fetch-object-options.server';
@@ -52,6 +55,7 @@ import {
   projectedObjectRefItems,
   projectedPageContent,
   projectedLegalText,
+  projectedWidgetConfig,
   projectedParentRow,
   resolveMenuItemsForView,
   projectedPrice,
@@ -134,19 +138,26 @@ function kindLabelFallback(switcher: ObjectSwitcherKind): string {
   }
 }
 
-function primaryTabs(
-  updatesCount: number,
-  followersCount: number,
-  expertsCount: number,
-): ObjectPrimaryTabView[] {
-  return [
+function buildPrimaryTabs(input: {
+  objectTypeKey: string;
+  updatesCount: number;
+  followersCount: number;
+  expertsCount: number;
+}): ObjectPrimaryTabView[] {
+  const base: ObjectPrimaryTabView[] = [
     { segment: 'reviews', label: 'Reviews' },
     { segment: 'gallery', label: 'Gallery' },
-    { segment: 'updates', label: 'Updates', count: updatesCount },
+    { segment: 'updates', label: 'Updates', count: input.updatesCount },
     { segment: 'authority', label: 'Authority' },
-    { segment: 'followers', label: 'Followers', count: followersCount },
-    { segment: 'experts', label: 'Experts', count: expertsCount },
+    { segment: 'followers', label: 'Followers', count: input.followersCount },
+    { segment: 'experts', label: 'Experts', count: input.expertsCount },
   ];
+
+  if (input.objectTypeKey === 'widget') {
+    return [{ segment: WIDGET_PRIMARY_TAB_SEGMENT, label: 'Widget' }, ...base];
+  }
+
+  return base;
 }
 
 const FEED_SUB_TABS: ObjectFeedSubTabView[] = [
@@ -719,6 +730,7 @@ export function projectedObjectWithCountsToPageModel(
   );
   const pageContent = projectedPageContent(viewLike);
   const legalText = projectedLegalText(viewLike);
+  const widgetConfig = projectedWidgetConfig(viewLike);
   const descriptionContent = projectedDescriptionContent(viewLike);
   const previewGallery = projectedPreviewGallery(viewLike);
   const galleryAlbums = projectedGalleryAlbums(viewLike);
@@ -760,12 +772,18 @@ export function projectedObjectWithCountsToPageModel(
     listItemsSortCustom: sortCustom,
     pageContent,
     legalText,
+    widgetConfig,
     descriptionContent,
     previewGallery,
     galleryAlbums,
     onChainGalleryAlbumNames,
     rating01To5: objectFields.ratingStars01To5(viewLike),
-    primaryTabs: primaryTabs(api.updates_count, api.followers_count, api.experts_count),
+    primaryTabs: buildPrimaryTabs({
+      objectTypeKey: objectTypeRaw,
+      updatesCount: api.updates_count,
+      followersCount: api.followers_count,
+      expertsCount: api.experts_count,
+    }),
     feedSubTabs: FEED_SUB_TABS,
     hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,

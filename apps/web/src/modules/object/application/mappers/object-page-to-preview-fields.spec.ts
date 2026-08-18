@@ -23,6 +23,7 @@ function minimalModel(
     listItemsSortCustom: null,
     pageContent: null,
     legalText: null,
+    widgetConfig: null,
     descriptionContent: 'A great neighborhood shop.',
     previewGallery: [],
     galleryAlbums: [],
