@@ -13,13 +13,17 @@ const UserMenuClient = dynamic(
 
 export type UserProfileSubmenuProps = {
   accountName: string;
+  viewerUsername?: string | null;
 };
 
 /**
  * Center-column sub-tabs (profile main layout), parity with object Reviews
  * {@link ObjectPrimaryContent} + {@link ObjectFeedSubNav}.
  */
-export function UserProfileSubmenu({ accountName }: UserProfileSubmenuProps) {
+export function UserProfileSubmenu({
+  accountName,
+  viewerUsername = null,
+}: UserProfileSubmenuProps) {
   const { pathname } = useEffectiveProfileNav();
   const variant = pathname ? getSubmenuVariant(pathname) : null;
 
@@ -29,7 +33,11 @@ export function UserProfileSubmenu({ accountName }: UserProfileSubmenuProps) {
 
   return (
     <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
-      <UserMenuClient accountName={accountName} rows="submenu" />
+      <UserMenuClient
+        accountName={accountName}
+        rows="submenu"
+        viewerUsername={viewerUsername}
+      />
     </div>
   );
 }

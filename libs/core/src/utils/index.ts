@@ -5,3 +5,4 @@ export * from './numeric-string';
 export * from './obl-usd-amount';
 export * from './service-order-schema';
 export * from './post-language';
+export * from './osl-messaging';

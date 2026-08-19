@@ -5,7 +5,7 @@ export function WaivWalletSummarySkeleton() {
       aria-busy="true"
       aria-label="Loading WAIV wallet"
     >
-      <div className="flex items-start gap-2 border-b border-border px-3 py-3 sm:gap-4 sm:px-card-padding sm:py-4 [background-color:color-mix(in_srgb,var(--color-accent)_7%,transparent)]">
+      <div className="flex items-start gap-2 border-b border-border px-3 py-3 sm:gap-4 sm:px-card-padding sm:py-4 bg-accent-soft">
         <div className="hidden h-10 w-10 shrink-0 sm:block" aria-hidden />
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="h-4 w-28 animate-pulse rounded bg-muted/50" />

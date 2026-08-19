@@ -33,6 +33,7 @@ import { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.re
 import { HiveEngineDepositRecordsRepository } from './hive-engine-deposit-records.repository';
 import { WaivGeneratedReportsRepository } from './waiv-generated-reports.repository';
 import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
+import { MessagingRepository } from './messaging.repository';
 
 @Module({
   providers: [
@@ -71,6 +72,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     WaivGeneratedReportsRepository,
     OblRepository,
     OblOfferDraftsRepository,
+    MessagingRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -108,6 +110,7 @@ import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
     WaivGeneratedReportsRepository,
     OblRepository,
     OblOfferDraftsRepository,
+    MessagingRepository,
   ],
 })
 export class RepositoriesModule {}

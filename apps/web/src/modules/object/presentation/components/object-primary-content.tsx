@@ -59,6 +59,8 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Authority';
     case 'followers':
       return 'Followers';
+    case 'messages':
+      return 'Messages';
     case 'experts':
       return 'Experts';
     case 'related':
@@ -158,6 +160,8 @@ export type ObjectPrimaryContentProps = {
   objectPostsFeed?: ReactNode;
   /** Injected threads feed when Reviews > Threads sub-tab is active. */
   objectThreadsFeed?: ReactNode;
+  /** Injected messages feed when Messages primary tab is active. */
+  objectMessagesFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Experts tab is active. */
@@ -207,6 +211,7 @@ export function ObjectPrimaryContent({
   objectUpdatesFeed,
   objectPostsFeed,
   objectThreadsFeed,
+  objectMessagesFeed,
   objectFollowersFeed,
   objectExpertsFeed,
   objectAuthorityFeed,
@@ -595,6 +600,25 @@ export function ObjectPrimaryContent({
     }
 
     if (activePrimarySegment === 'authority') {
+      return (
+        <FeedColumn>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+            <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+            <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
+          </div>
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'messages' && objectMessagesFeed != null) {
+      return (
+        <FeedColumn>
+          {objectMessagesFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'messages') {
       return (
         <FeedColumn>
           <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">

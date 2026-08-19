@@ -2,12 +2,8 @@ import type { ReactNode } from 'react';
 
 export type WalletSummaryHeaderTone = 'waiv' | 'hive' | 'engine';
 
-/**
- * Soft fills via color-mix — Tailwind `bg-accent/10` does not apply alpha to hex
- * CSS variables (`var(--color-accent)`), so the tint was invisible.
- */
 const TONE_BG_CLASS: Record<WalletSummaryHeaderTone, string> = {
-  waiv: '[background-color:color-mix(in_srgb,var(--color-accent)_7%,transparent)]',
+  waiv: 'bg-accent-soft',
   hive: '[background-color:color-mix(in_srgb,var(--color-error)_7%,transparent)]',
   engine:
     '[background-color:color-mix(in_srgb,var(--color-muted)_10%,transparent)]',

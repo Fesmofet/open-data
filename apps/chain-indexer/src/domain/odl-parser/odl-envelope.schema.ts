@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OSL_MESSAGING_ACTIONS } from '../osl-parser/osl-envelope.schema';
 
 // ---------------------------------------------------------------------------
 // Per-action payload schemas
@@ -148,7 +149,7 @@ export type OdlEvent = z.infer<typeof odlEventSchema>;
 /** Single event shape for IPFS batch files (same as on-chain envelope events). */
 export const odlEnvelopeEventSchema = odlEventSchema;
 
-/** IPFS batch child events: ODL object actions plus OSL `update_user_metadata` replay. */
+/** IPFS batch child events: ODL object actions plus OSL replay actions. */
 const batchImportChildEventSchema = z.object({
   action: z.enum([
     'object_create',
@@ -159,6 +160,7 @@ const batchImportChildEventSchema = z.object({
     'user_shop_deselect',
     'update_user_metadata',
     'batch_import',
+    ...OSL_MESSAGING_ACTIONS,
   ]),
   v: z.number().int().min(1),
   event_id: z.string().uuid().optional(),

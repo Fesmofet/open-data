@@ -30,6 +30,8 @@ import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 import { HiveEngineDepositRecordsRepository } from './hive-engine-deposit-records.repository';
 import { OblRepository } from './obl.repository';
+import { ChannelsRepository } from './channels.repository';
+import { MessagesRepository } from './messages.repository';
 
 @Module({
   providers: [
@@ -64,6 +66,8 @@ import { OblRepository } from './obl.repository';
     HiveEngineSwapsRepository,
     HiveEngineDepositRecordsRepository,
     OblRepository,
+    ChannelsRepository,
+    MessagesRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -97,6 +101,8 @@ import { OblRepository } from './obl.repository';
     HiveEngineSwapsRepository,
     HiveEngineDepositRecordsRepository,
     OblRepository,
+    ChannelsRepository,
+    MessagesRepository,
   ],
 })
 export class RepositoriesModule {}

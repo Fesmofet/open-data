@@ -5,6 +5,7 @@
  */
 export const USER_PROFILE_RESERVED_FIRST_SEGMENTS: readonly string[] = [
   'threads',
+  'messages',
   'comments',
   'mentions',
   'activity',
@@ -42,4 +43,8 @@ export function getSegmentsAfterAccount(pathname: string): string[] {
     return [];
   }
   return parts.slice(1);
+}
+
+export function isUserProfileMessagesTab(pathname: string): boolean {
+  return getSegmentsAfterAccount(pathname)[0] === 'messages';
 }

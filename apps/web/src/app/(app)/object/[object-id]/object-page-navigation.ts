@@ -38,6 +38,17 @@ export function buildObjectPrimaryTabNavigation(
     };
   }
 
+  if (segment === 'messages') {
+    u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+    const qs = u.toString();
+    return {
+      href: qs ? `${base}/messages?${qs}` : `${base}/messages`,
+      method: 'push',
+    };
+  }
+
   if (segment === 'updates') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
     u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);

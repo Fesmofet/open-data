@@ -18,6 +18,7 @@ export const OBJECT_PAGE_DESCRIPTION_SEGMENT = 'description';
 export const OBJECT_PAGE_PATH_TAB_SEGMENTS = [
   'widget',
   'reviews',
+  'messages',
   'updates',
   'followers',
   'authority',
@@ -220,6 +221,10 @@ export function isFieldReferenceFeedPathSegment(segment: string): boolean {
 
 export function buildObjectFollowersPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/followers`;
+}
+
+export function buildObjectMessagesPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/messages`;
 }
 
 export function buildObjectExpertsPath(objectId: string): string {

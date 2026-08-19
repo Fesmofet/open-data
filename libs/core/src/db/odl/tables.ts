@@ -92,6 +92,12 @@ export interface OdlDatabase {
   obl_service_orders: OblServiceOrdersTable;
   obl_reports: OblReportsTable;
   obl_offer_drafts: OblOfferDraftsTable;
+  channels: ChannelsTable;
+  channel_members: ChannelMembersTable;
+  channel_aliases: ChannelAliasesTable;
+  messages: MessagesTable;
+  message_tombstones: MessageTombstonesTable;
+  message_context_exclusions: MessageContextExclusionsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -1380,3 +1386,89 @@ export interface OblOfferDraftsTable {
 export type OblOfferDraft = Selectable<OblOfferDraftsTable>;
 export type NewOblOfferDraft = Insertable<OblOfferDraftsTable>;
 export type OblOfferDraftUpdate = Updateable<OblOfferDraftsTable>;
+
+// ---------------------------------------------------------------------------
+// OSL messaging
+// ---------------------------------------------------------------------------
+
+export interface ChannelsTable {
+  channel_id: string;
+  kind: string;
+  creator: string;
+  title: string | null;
+  image: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
+  object_id: string | null;
+  pair_hash: string | null;
+  access: string;
+  last_message_at_unix: number | null;
+  created_at_unix: number;
+  event_seq: bigint;
+  transaction_id: string;
+}
+
+export type Channel = Selectable<ChannelsTable>;
+export type NewChannel = Insertable<ChannelsTable>;
+export type ChannelUpdate = Updateable<ChannelsTable>;
+
+export interface ChannelMembersTable {
+  channel_id: string;
+  account: string;
+  role: string;
+  joined_at_unix: number;
+  last_read_at_unix: number | null;
+}
+
+export type ChannelMember = Selectable<ChannelMembersTable>;
+export type NewChannelMember = Insertable<ChannelMembersTable>;
+
+export interface ChannelAliasesTable {
+  alias: string;
+  channel_id: string;
+  registered_by: string;
+  created_at_unix: number;
+  event_seq: bigint;
+}
+
+export type ChannelAlias = Selectable<ChannelAliasesTable>;
+export type NewChannelAlias = Insertable<ChannelAliasesTable>;
+
+export interface MessagesTable {
+  message_id: string;
+  channel_id: string;
+  author: string;
+  body: string | null;
+  overflow_ref: string | null;
+  reply_to: string | null;
+  quote_json: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
+  attachments: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
+  mentions: string[];
+  created_at_unix: number;
+  event_seq: bigint;
+  transaction_id: string;
+  search_vector: string | null;
+}
+
+export type Message = Selectable<MessagesTable>;
+export type NewMessage = Insertable<MessagesTable>;
+
+export interface MessageTombstonesTable {
+  message_id: string;
+  channel_id: string;
+  deleted_by: string;
+  deleted_at_unix: number;
+  event_seq: bigint;
+  transaction_id: string;
+}
+
+export type MessageTombstone = Selectable<MessageTombstonesTable>;
+export type NewMessageTombstone = Insertable<MessageTombstonesTable>;
+
+export interface MessageContextExclusionsTable {
+  message_id: string;
+  excluded_by: string;
+  excluded_at_unix: number;
+  event_seq: bigint;
+}
+
+export type MessageContextExclusion = Selectable<MessageContextExclusionsTable>;
+export type NewMessageContextExclusion = Insertable<MessageContextExclusionsTable>;

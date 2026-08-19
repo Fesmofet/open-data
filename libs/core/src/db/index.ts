@@ -178,5 +178,18 @@ export type {
   OblOfferDraft,
   NewOblOfferDraft,
   OblOfferDraftUpdate,
+  Channel,
+  NewChannel,
+  ChannelUpdate,
+  ChannelMember,
+  NewChannelMember,
+  ChannelAlias,
+  NewChannelAlias,
+  Message,
+  NewMessage,
+  MessageTombstone,
+  NewMessageTombstone,
+  MessageContextExclusion,
+  NewMessageContextExclusion,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

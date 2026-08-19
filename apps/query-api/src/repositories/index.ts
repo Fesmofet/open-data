@@ -57,3 +57,4 @@ export { UserPostDraftsRepository } from './user-post-drafts.repository';
 export { UserAccountMutesRepository } from './user-account-mutes.repository';
 export { ThreadsRepository } from './threads.repository';
 export type { ThreadVoteSummary } from './threads.repository';
+export { MessagingRepository } from './messaging.repository';

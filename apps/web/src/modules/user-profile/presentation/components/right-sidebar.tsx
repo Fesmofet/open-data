@@ -7,8 +7,10 @@ import { CryptoMarketPanel } from '@/modules/currency/presentation/components/cr
 import { ClaimRewardsSidebarCard } from '@/modules/user-wallet/presentation/components/wallet/claim-rewards-sidebar-card';
 import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
 import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
+import { MessagingProfileAboutRail } from '@/modules/messaging/presentation/messaging-profile-about-rail';
 import { isUserProfileTransfersTab } from '../../domain/profile-transfers-url';
 import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
+import { isUserProfileMessagesTab } from './profile-path';
 import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
 import { isUserProfileShopOrRecipeTab } from '../../domain/profile-shop-filters-url';
 import { ProfilePostFiltersFromUrl } from './profile-post-filters';
@@ -44,6 +46,18 @@ function FiltersFallback() {
 
 function RightSidebarContent({ accountName, viewerUsername }: RightSidebarProps) {
   const pathname = usePathname();
+
+  if (isUserProfileMessagesTab(pathname)) {
+    return (
+      <Suspense fallback={<FiltersFallback />}>
+        <MessagingProfileAboutRail
+          accountName={accountName}
+          viewerUsername={viewerUsername ?? null}
+        />
+      </Suspense>
+    );
+  }
+
   if (isUserProfilePostsTab(pathname)) {
     return (
       <Suspense fallback={<FiltersFallback />}>

@@ -52,7 +52,10 @@ export default async function UserProfileMainShellLayout({
 
       <main className="min-h-[12rem] min-w-0">
         <FeedColumn>
-          <UserProfileSubmenu accountName={accountName} />
+          <UserProfileSubmenu
+            accountName={accountName}
+            viewerUsername={user?.username ?? null}
+          />
           <UserProfileMainContentPendingShell>
             {children}
           </UserProfileMainContentPendingShell>

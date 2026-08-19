@@ -358,6 +358,15 @@ MCP smoke:
 - `get_object_type` with a known type (e.g. `product`, `list`)
 - `get_update_schema` with `title`
 
+## OSL messaging (`libs/hive-broadcast/src/osl-operations.ts`)
+
+| Builder | Action |
+|---------|--------|
+| `buildOslChannelCreateOp` | `channel_create` (group/object) |
+| `buildOslMessageCreateOp` | `message_create` (DM bootstrap via `peer` or existing `channel_id`) |
+
+See [OSL channels](../../spec/osl/channels.md) and [OSL messages](../../spec/osl/messages.md).
+
 ## Related
 
 - [Hive account signup](hive-account-signup.md) — account + key custody choice

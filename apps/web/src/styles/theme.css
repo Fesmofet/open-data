@@ -28,6 +28,7 @@
   --color-heading: #333333;
   --color-accent: #f87007;
   --color-accent-fg: #ffffff;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #ffffff;
   --color-cta-secondary-fg: #333333;
   --color-code-bg: #f5f6f7;
@@ -127,6 +128,10 @@
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
   --shell-bottom-height: 3.5rem;
+  /** Profile messaging: distance from viewport top to the 3-column grid row (hero + primary nav). */
+  --shell-messaging-rail-chrome: 20.5rem;
+  /** Extra center-column chrome above the chat card (Posts submenu + feed gap). */
+  --shell-messaging-submenu-chrome: 4.5rem;
 
   --scrollbar-thumb: rgb(107 114 128 / 0.45);
   --scrollbar-track: transparent;
@@ -149,6 +154,7 @@
   --color-heading: #f0f0f0;
   --color-accent: #f87007;
   --color-accent-fg: #ffffff;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #2a2a2a;
   --color-cta-secondary-fg: #e8e8e8;
   --color-code-bg: #1c1c1c;
@@ -267,6 +273,7 @@
   --color-heading: #111827;
   --color-accent: #0d9488;
   --color-accent-fg: #ffffff;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #f3f4f6;
   --color-cta-secondary-fg: #111827;
   --color-code-bg: #374151;
@@ -388,6 +395,7 @@
   --color-heading: #f9fafb;
   --color-accent: #2dd4bf;
   --color-accent-fg: #0a0a0a;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #27272a;
   --color-cta-secondary-fg: #f3f4f6;
   --color-code-bg: #27272a;
@@ -508,6 +516,7 @@
   --color-heading: #433422;
   --color-accent: #8b6914;
   --color-accent-fg: #fffef8;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #e2d9c4;
   --color-cta-secondary-fg: #433422;
   --color-code-bg: #5c4d3a;
@@ -625,6 +634,7 @@
   --color-heading: #1d1d1f;
   --color-accent: #0071e3;
   --color-accent-fg: #ffffff;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #1d1d1f;
   --color-cta-secondary-fg: #ffffff;
   --color-code-bg: #1d1d1f;
@@ -736,6 +746,7 @@
   --color-heading: #222222;
   --color-accent: #ff385c;
   --color-accent-fg: #ffffff;
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, transparent);
   --color-cta-secondary-bg: #222222;
   --color-cta-secondary-fg: #ffffff;
   --color-code-bg: #f2f2f2;

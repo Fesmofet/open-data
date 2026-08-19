@@ -61,6 +61,7 @@ export interface EnvelopeDispatchOptions {
   };
   account: string;
   unknownActionLabel?: string;
+  skipPlatformBannedCheck?: boolean;
 }
 
 export async function dispatchEnvelope(
@@ -76,6 +77,7 @@ export async function dispatchEnvelope(
     hiveCtx,
     account,
     unknownActionLabel = 'unknown action',
+    skipPlatformBannedCheck = false,
   } = options;
 
   let parsed: unknown;
@@ -103,7 +105,7 @@ export async function dispatchEnvelope(
   }
 
   const gov = await governanceCache.resolvePlatform();
-  if (gov.banned.includes(account)) {
+  if (!skipPlatformBannedCheck && gov.banned.includes(account)) {
     logger.log(`account '${account}' is banned; ignoring all events`);
     return;
   }

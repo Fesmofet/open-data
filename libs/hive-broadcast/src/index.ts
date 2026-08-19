@@ -126,4 +126,8 @@ export {
   type BuildOslUpdateUserMetadataOpInput,
   type UpdateUserNotificationSettingsPayload,
   type UpdateUserMetadataPayload,
+  buildOslMessageCreateOp,
+  buildOslChannelCreateOp,
+  type BuildOslMessageCreateOpInput,
+  type BuildOslChannelCreateOpInput,
 } from './osl-operations';

@@ -1,0 +1,98 @@
+'use server';
+
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+
+import { getChannelByIdQuery } from '../application/queries/get-channel-by-id.query';
+import { getChannelMessagesQuery } from '../application/queries/get-channel-messages.query';
+import { getObjectChannelMessagesQuery } from '../application/queries/get-object-channel-messages.query';
+import { getViewerChannelsQuery } from '../application/queries/get-viewer-channels.query';
+import type { ChannelDetail } from '../domain/messaging.types';
+import { markChannelRead } from './messaging.client';
+import type { ChannelListPage, MessageHistoryPage } from '../domain/messaging.types';
+
+async function requireViewer(): Promise<string> {
+  const auth = createCookieAuthContextProvider();
+  const user = await auth.getUser();
+  const username = user?.username?.trim();
+  if (!username) {
+    throw new Error('Login required');
+  }
+  return username;
+}
+
+export async function loadMoreViewerChannelsAction(
+  cursor: string,
+): Promise<ChannelListPage> {
+  const viewer = await requireViewer();
+  return getViewerChannelsQuery(viewer, { cursor, limit: 20 });
+}
+
+export async function loadOlderChannelMessagesAction(
+  channelId: string,
+  cursor: string,
+): Promise<MessageHistoryPage> {
+  const viewer = await requireViewer();
+  return getChannelMessagesQuery(channelId, viewer, { cursor, limit: 50 });
+}
+
+export async function loadOlderObjectChannelMessagesAction(
+  objectId: string,
+  cursor: string,
+): Promise<MessageHistoryPage> {
+  const auth = createCookieAuthContextProvider();
+  const user = await auth.getUser();
+  return getObjectChannelMessagesQuery(
+    objectId,
+    { cursor, limit: 50 },
+    user?.username ?? null,
+  );
+}
+
+export async function markChannelReadAction(
+  channelId: string,
+  lastReadAtUnix: number,
+): Promise<void> {
+  const viewer = await requireViewer();
+  await markChannelRead(channelId, viewer, lastReadAtUnix);
+}
+
+function buildPeerChannelDetail(viewer: string, peer: string): ChannelDetail {
+  return {
+    channel_id: '',
+    kind: 'direct',
+    creator: viewer,
+    title: null,
+    image: null,
+    object_id: null,
+    access: 'members_only',
+    display_title: peer,
+    list_title: null,
+    peer,
+    members: [viewer, peer],
+  };
+}
+
+export async function loadProfileChannelAboutAction(input: {
+  channel?: string | null;
+  peer?: string | null;
+}): Promise<ChannelDetail | null> {
+  const viewer = await requireViewer();
+  const peer = input.peer?.trim() || null;
+  const channelId = input.channel?.trim() || null;
+
+  if (peer) {
+    return buildPeerChannelDetail(viewer, peer);
+  }
+
+  if (channelId) {
+    return getChannelByIdQuery(channelId, viewer);
+  }
+
+  const channels = await getViewerChannelsQuery(viewer, { limit: 1 });
+  const firstChannelId = channels.items[0]?.channel_id;
+  if (!firstChannelId) {
+    return null;
+  }
+
+  return getChannelByIdQuery(firstChannelId, viewer);
+}

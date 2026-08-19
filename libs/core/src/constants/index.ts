@@ -5,3 +5,4 @@ export * from './map-geo.constants';
 export * from './waiv-token.constants';
 export * from './voting-mana.constants';
 export * from './user.constants';
+export * from './osl-messaging.constants';

@@ -42,6 +42,7 @@ module.exports = {
         heading: 'var(--color-heading)',
         accent: 'var(--color-accent)',
         'accent-fg': 'var(--color-accent-fg)',
+        'accent-soft': 'var(--color-accent-soft)',
         'cta-secondary-bg': 'var(--color-cta-secondary-bg)',
         'cta-secondary-fg': 'var(--color-cta-secondary-fg)',
         'code-bg': 'var(--color-code-bg)',

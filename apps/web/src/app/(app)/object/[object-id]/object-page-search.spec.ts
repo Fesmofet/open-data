@@ -39,6 +39,17 @@ describe('resolvePrimarySegmentForObjectPage', () => {
     ).toBe('reviews');
   });
 
+  it('returns explicit path segment messages', () => {
+    expect(
+      resolvePrimarySegmentForObjectPage(
+        objectId,
+        `${base}/messages`,
+        new URLSearchParams(),
+        '',
+      ),
+    ).toBe('messages');
+  });
+
   it('returns explicit path segment description', () => {
     expect(
       resolvePrimarySegmentForObjectPage(

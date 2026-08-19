@@ -4,7 +4,15 @@ import type { CustomJsonOp } from './hive-operations';
 type OslEnvelopeAction =
   | 'hive_engine_deposit'
   | 'update_user_notification_settings'
-  | 'update_user_metadata';
+  | 'update_user_metadata'
+  | 'channel_create'
+  | 'channel_alias_register'
+  | 'channel_member_add'
+  | 'channel_member_remove'
+  | 'channel_update'
+  | 'message_create'
+  | 'message_delete'
+  | 'message_context_exclude';
 
 export type BuildOslEnvelopeOpInput = {
   readonly id: string;
@@ -142,5 +150,35 @@ export function buildOslUpdateUserMetadataOp(
     payload: input.metadata,
     required_auths: input.required_auths ?? [],
     required_posting_auths: input.required_posting_auths ?? [input.creator],
+  });
+}
+
+export type BuildOslMessageCreateOpInput = {
+  readonly id: string;
+  readonly creator: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslMessageCreateOp(input: BuildOslMessageCreateOpInput): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'message_create',
+    payload: input.payload,
+    required_posting_auths: [input.creator],
+  });
+}
+
+export type BuildOslChannelCreateOpInput = {
+  readonly id: string;
+  readonly creator: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslChannelCreateOp(input: BuildOslChannelCreateOpInput): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'channel_create',
+    payload: input.payload,
+    required_posting_auths: [input.creator],
   });
 }

@@ -42,6 +42,16 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:comments-feed`,
   userMentionsFeed: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:mentions-feed`,
+  viewerChannels: (accountName: string) =>
+    `query-api:messaging:${accountName.trim().toLowerCase()}:channels`,
+  channelDetail: (channelId: string) =>
+    `query-api:messaging:channel:${channelId.trim()}:detail`,
+  channelMessages: (channelId: string) =>
+    `query-api:messaging:channel:${channelId.trim()}:messages`,
+  objectChannel: (objectId: string) =>
+    `query-api:object:${objectId.trim()}:channel`,
+  objectChannelMessages: (objectId: string) =>
+    `query-api:object:${objectId.trim()}:channel-messages`,
   userNotificationSettings: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:notification-settings`,
   userActivityFeed: (accountName: string, filtersKey = '') => {

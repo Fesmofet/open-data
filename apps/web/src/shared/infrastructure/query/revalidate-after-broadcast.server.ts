@@ -31,6 +31,8 @@ export async function revalidateObjectAfterBroadcast(
   }
   updateTag(queryApiCacheTags.objectPostsFeed(id));
   updateTag(queryApiCacheTags.objectThreadsFeed(id));
+  updateTag(queryApiCacheTags.objectChannel(id));
+  updateTag(queryApiCacheTags.objectChannelMessages(id));
   revalidatePath(objectPath(id), 'layout');
 }
 
@@ -63,11 +65,25 @@ export async function revalidateHomeFeedAfterBroadcast(
   revalidatePath('/', 'page');
 }
 
-/** Profile feed tabs (posts, threads, comments, mentions) after vote/comment broadcast. */
+/** Profile feed tabs and messaging caches after vote/comment/channel broadcast. */
 export async function revalidateUserFeedAfterBroadcast(accountName: string): Promise<void> {
+  await revalidateMessagingAfterBroadcast(accountName);
+}
+
+/** Messaging channel list/detail/messages after OSL channel or message mutations. */
+export async function revalidateMessagingAfterBroadcast(
+  accountName: string,
+  channelId?: string,
+): Promise<void> {
   const name = accountName.trim().toLowerCase();
   if (name.length === 0) {
     return;
+  }
+  updateTag(queryApiCacheTags.viewerChannels(name));
+  const id = channelId?.trim();
+  if (id && id.length > 0) {
+    updateTag(queryApiCacheTags.channelDetail(id));
+    updateTag(queryApiCacheTags.channelMessages(id));
   }
   updateTag(queryApiCacheTags.userBlogFeed(name));
   updateTag(queryApiCacheTags.userThreadsFeed(name));

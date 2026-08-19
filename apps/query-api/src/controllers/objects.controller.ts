@@ -71,6 +71,16 @@ import {
   type UserThreadsFeedBody,
   type UserBlogFeedResponse,
 } from '../domain/feed';
+import {
+  GetObjectChannelEndpoint,
+  GetObjectChannelMessagesEndpoint,
+} from '../domain/messaging';
+import {
+  messageHistoryBodySchema,
+  type MessageHistoryBody,
+} from '../domain/messaging/schemas/messaging.schema';
+import type { MessageHistoryResponseDto } from '../domain/messaging';
+import type { ChannelDetailDto } from '../domain/messaging/get-channel-by-id.endpoint';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
@@ -94,6 +104,8 @@ export class ObjectsController {
     private readonly getObjectPostsFeed: GetObjectPostsFeedEndpoint,
     private readonly getObjectThreadsFeed: GetObjectThreadsFeedEndpoint,
     private readonly getObjectOptions: GetObjectOptionsEndpoint,
+    private readonly getObjectChannelEndpoint: GetObjectChannelEndpoint,
+    private readonly getObjectChannelMessagesEndpoint: GetObjectChannelMessagesEndpoint,
   ) {}
 
   @Get(':objectId/exists')
@@ -411,6 +423,39 @@ export class ObjectsController {
     const result = await this.getObjectThreadsFeed.execute(objectId, body, viewer);
     if (!result) {
       throw new NotFoundException(`Object not found: ${objectId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/channel')
+  async getObjectChannel(
+    @Param('objectId') rawObjectId: string,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ChannelDetailDto> {
+    const objectId = decodeURIComponent(rawObjectId);
+    const result = await this.getObjectChannelEndpoint.execute(objectId, viewer);
+    if (!result) {
+      throw new NotFoundException(`Object channel not found: ${objectId}`);
+    }
+    return result;
+  }
+
+  @Post(':objectId/channel/messages')
+  async getObjectChannelMessages(
+    @Param('objectId') rawObjectId: string,
+    @Body(new ZodBodyPipe(messageHistoryBodySchema)) body: MessageHistoryBody,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<MessageHistoryResponseDto> {
+    const objectId = decodeURIComponent(rawObjectId);
+    const result = await this.getObjectChannelMessagesEndpoint.execute(
+      objectId,
+      body,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object channel not found: ${objectId}`);
     }
     return result;
   }

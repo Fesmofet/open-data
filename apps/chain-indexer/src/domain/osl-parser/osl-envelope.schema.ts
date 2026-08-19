@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { imageCidOrUrlJsonSchema } from '@opden-data-layer/core';
+
+const hiveAccountSchema = z.string().min(1).max(32);
 
 export const hiveEngineDepositPayloadSchema = z
   .object({
@@ -91,11 +94,136 @@ export const updateUserMetadataPayloadSchema = z
 
 export type UpdateUserMetadataPayload = z.infer<typeof updateUserMetadataPayloadSchema>;
 
+// ---------------------------------------------------------------------------
+// OSL messaging payloads
+// ---------------------------------------------------------------------------
+
+export const channelCreatePayloadSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('group'),
+      channel_id: z.string().min(1).max(256),
+      title: z.string().max(256).optional(),
+      image: imageCidOrUrlJsonSchema.optional(),
+      members: z.array(hiveAccountSchema).min(1).max(64).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('object'),
+      channel_id: z.string().min(1).max(256),
+      object_id: z.string().min(1).max(256),
+      title: z.string().max(256).optional(),
+      image: imageCidOrUrlJsonSchema.optional(),
+    })
+    .strict(),
+]);
+
+export type ChannelCreatePayload = z.infer<typeof channelCreatePayloadSchema>;
+
+export const channelAliasRegisterPayloadSchema = z
+  .object({
+    alias: z.string().min(1).max(512),
+    channel_id: z.string().min(1).max(256),
+  })
+  .strict();
+
+export const channelMemberPayloadSchema = z
+  .object({
+    channel_id: z.string().min(1).max(256),
+    account: hiveAccountSchema,
+  })
+  .strict();
+
+export const channelUpdatePayloadSchema = z
+  .object({
+    channel_id: z.string().min(1).max(256),
+    title: z.string().max(256).optional(),
+    image: imageCidOrUrlJsonSchema.optional(),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    if (data.title === undefined && data.image === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'At least one of title or image is required',
+      });
+    }
+  });
+
+export const messageCreatePayloadSchema = z
+  .object({
+    channel_id: z.string().min(1).max(256).optional(),
+    peer: hiveAccountSchema.optional(),
+    members: z.array(hiveAccountSchema).length(2).optional(),
+    body: z.string().max(65535).optional(),
+    overflow_ref: z.string().min(1).max(512).optional(),
+    reply_to: z.string().min(1).max(256).optional(),
+    quote_json: z.record(z.string(), z.unknown()).optional(),
+    attachments: z.array(z.record(z.string(), z.unknown())).optional(),
+    mentions: z.array(hiveAccountSchema).optional(),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    const hasBody = data.body !== undefined && data.body !== '';
+    const hasOverflow = data.overflow_ref !== undefined && data.overflow_ref !== '';
+    if (!hasBody && !hasOverflow) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Either body or overflow_ref is required',
+      });
+    }
+    const hasChannel = data.channel_id !== undefined;
+    const hasPeer = data.peer !== undefined;
+    const hasMembers = data.members !== undefined;
+    if (!hasChannel && !hasPeer && !hasMembers) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'channel_id, peer, or members is required',
+      });
+    }
+    if (hasPeer && hasMembers) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide peer or members, not both',
+      });
+    }
+  });
+
+export type MessageCreatePayload = z.infer<typeof messageCreatePayloadSchema>;
+
+export const messageDeletePayloadSchema = z
+  .object({
+    channel_id: z.string().min(1).max(256),
+    message_id: z.string().min(1).max(256),
+  })
+  .strict();
+
+export const messageContextExcludePayloadSchema = z
+  .object({
+    message_id: z.string().min(1).max(256),
+  })
+  .strict();
+
+const oslMessagingActions = [
+  'channel_create',
+  'channel_alias_register',
+  'channel_member_add',
+  'channel_member_remove',
+  'channel_update',
+  'message_create',
+  'message_delete',
+  'message_context_exclude',
+] as const;
+
+export const OSL_MESSAGING_ACTIONS = oslMessagingActions;
+
 const oslEventSchema = z.object({
   action: z.enum([
     'hive_engine_deposit',
     'update_user_notification_settings',
     'update_user_metadata',
+    ...oslMessagingActions,
   ]),
   v: z.number().int().min(1),
   event_id: z.string().uuid().optional(),

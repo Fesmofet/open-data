@@ -146,6 +146,7 @@ function buildPrimaryTabs(input: {
 }): ObjectPrimaryTabView[] {
   const base: ObjectPrimaryTabView[] = [
     { segment: 'reviews', label: 'Reviews' },
+    { segment: 'messages', label: 'Messages' },
     { segment: 'gallery', label: 'Gallery' },
     { segment: 'updates', label: 'Updates', count: input.updatesCount },
     { segment: 'authority', label: 'Authority' },

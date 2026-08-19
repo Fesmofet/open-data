@@ -26,6 +26,14 @@ import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
 import { UserMetadataHandler } from '../osl-parser/handlers/user-metadata.handler';
+import { ChannelCreateHandler } from '../osl-parser/handlers/channel-create.handler';
+import { ChannelAliasRegisterHandler } from '../osl-parser/handlers/channel-alias-register.handler';
+import { ChannelMemberAddHandler } from '../osl-parser/handlers/channel-member-add.handler';
+import { ChannelMemberRemoveHandler } from '../osl-parser/handlers/channel-member-remove.handler';
+import { ChannelUpdateHandler } from '../osl-parser/handlers/channel-update.handler';
+import { MessageCreateHandler } from '../osl-parser/handlers/message-create.handler';
+import { MessageDeleteHandler } from '../osl-parser/handlers/message-delete.handler';
+import { MessageContextExcludeHandler } from '../osl-parser/handlers/message-context-exclude.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { batchImportChildEventSchema } from './odl-envelope.schema';
 
@@ -45,6 +53,14 @@ export class BatchImportWorker {
     private readonly rankVoteHandler: RankVoteHandler,
     private readonly authorityHandler: AuthorityHandler,
     private readonly userMetadataHandler: UserMetadataHandler,
+    private readonly channelCreateHandler: ChannelCreateHandler,
+    private readonly channelAliasRegisterHandler: ChannelAliasRegisterHandler,
+    private readonly channelMemberAddHandler: ChannelMemberAddHandler,
+    private readonly channelMemberRemoveHandler: ChannelMemberRemoveHandler,
+    private readonly channelUpdateHandler: ChannelUpdateHandler,
+    private readonly messageCreateHandler: MessageCreateHandler,
+    private readonly messageDeleteHandler: MessageDeleteHandler,
+    private readonly messageContextExcludeHandler: MessageContextExcludeHandler,
     private readonly shopDeselectHandler: ShopDeselectHandler,
   ) {
     this.handlerMap = {
@@ -54,6 +70,14 @@ export class BatchImportWorker {
       [this.rankVoteHandler.action]: this.rankVoteHandler,
       [this.authorityHandler.action]: this.authorityHandler,
       [this.userMetadataHandler.action]: this.userMetadataHandler,
+      [this.channelCreateHandler.action]: this.channelCreateHandler,
+      [this.channelAliasRegisterHandler.action]: this.channelAliasRegisterHandler,
+      [this.channelMemberAddHandler.action]: this.channelMemberAddHandler,
+      [this.channelMemberRemoveHandler.action]: this.channelMemberRemoveHandler,
+      [this.channelUpdateHandler.action]: this.channelUpdateHandler,
+      [this.messageCreateHandler.action]: this.messageCreateHandler,
+      [this.messageDeleteHandler.action]: this.messageDeleteHandler,
+      [this.messageContextExcludeHandler.action]: this.messageContextExcludeHandler,
       [this.shopDeselectHandler.action]: this.shopDeselectHandler,
     };
   }

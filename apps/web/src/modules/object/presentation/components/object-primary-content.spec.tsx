@@ -126,6 +126,19 @@ describe('ObjectPrimaryContent Reviews threads feed', () => {
   });
 });
 
+describe('ObjectPrimaryContent messages feed', () => {
+  it('renders injected object messages feed on Messages tab', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        activePrimarySegment="messages"
+        objectMessagesFeed={<div data-testid="object-messages-feed">Messages</div>}
+      />,
+    );
+    expect(screen.getByTestId('object-messages-feed')).toBeInTheDocument();
+  });
+});
+
 describe('ObjectPrimaryContent widget tab', () => {
   it('renders widget content on widget tab segment', () => {
     render(

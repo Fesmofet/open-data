@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth';
 import { DraftsModule } from '../domain/drafts/drafts.module';
 import { FeedModule } from '../domain/feed';
+import { MessagingModule } from '../domain/messaging';
 import { ObjectsModule } from '../domain/objects';
 import { UsersModule } from '../domain/users';
 import { CategoriesModule } from '../domain/categories/categories.module';
@@ -30,6 +31,7 @@ import { WaivWalletAdvancedReportController } from './waiv-wallet-advanced-repor
 import { WaivWalletGeneratedReportController } from './waiv-wallet-generated-report.controller';
 import { OblOfferDraftsController } from './obl-offer-drafts.controller';
 import { OblController } from './obl.controller';
+import { ChannelsController } from './channels.controller';
 
 @Module({
   imports: [
@@ -48,6 +50,7 @@ import { OblController } from './obl.controller';
     DiscoverModule,
     WalletModule,
     OblModule,
+    MessagingModule,
   ],
   controllers: [
     ObjectsController,
@@ -66,6 +69,7 @@ import { OblController } from './obl.controller';
     CategoriesController,
     OblOfferDraftsController,
     OblController,
+    ChannelsController,
   ],
 })
 export class ControllersModule {}
