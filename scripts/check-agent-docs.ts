@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import * as path from 'node:path';
+import { scanKnowledgeSourcePaths } from '../libs/knowledge/src/config/scan-sources';
 import { parseKnowledgeFile } from '../libs/knowledge/src/parser/parse-knowledge-file';
 import { parseFrontmatterYaml, splitFrontmatter } from '../libs/knowledge/src/parser/parse-frontmatter';
 
@@ -151,12 +152,30 @@ async function checkSpecDescriptions(): Promise<void> {
   }
 }
 
+async function checkIndexedFrontmatter(): Promise<void> {
+  const sourcePaths = await scanKnowledgeSourcePaths(ROOT);
+
+  for (const filePath of sourcePaths) {
+    if (filePath === 'tasks/lessons.md') {
+      continue;
+    }
+    const raw = await readFile(path.join(ROOT, filePath), 'utf8');
+    try {
+      parseKnowledgeFile(filePath, raw);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      fail(`${filePath}: invalid knowledge frontmatter: ${detail}`);
+    }
+  }
+}
+
 async function main(): Promise<void> {
   await checkSkills();
   await checkAppOverviews();
   await checkRoutingSkillPaths();
   await checkAppSpecScope();
   await checkSpecDescriptions();
+  await checkIndexedFrontmatter();
   console.log('check:agent-docs: OK');
 }
 

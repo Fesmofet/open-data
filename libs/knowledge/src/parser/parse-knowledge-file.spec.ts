@@ -45,6 +45,18 @@ Body line.`;
     expect(parsed.frontmatter.description).toBe('Short agent summary.');
   });
 
+  it('rejects unknown frontmatter type', () => {
+    const raw = `---
+type: template
+---
+# Template
+
+Body.`;
+    expect(() =>
+      parseKnowledgeFile('docs/standards/templates/object-create-playbook.md', raw),
+    ).toThrow(/Invalid option/);
+  });
+
   it('falls back to first body line after title for description', () => {
     const raw = `# My Skill
 

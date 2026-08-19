@@ -21,4 +21,6 @@ export const KNOWLEDGE_IGNORE_SEGMENTS = [
   'generated',
   '.git',
   'tmp',
+  /** Draft copies under docs/standards/templates — not agent-searchable. */
+  'templates',
 ];

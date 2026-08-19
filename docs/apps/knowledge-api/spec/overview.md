@@ -70,6 +70,8 @@ Canonical detail: [Knowledge API routing skill](../../skills/knowledge-api-routi
 
 ## Indexing
 
+Sources: `docs/**/*.md` (except path segment `templates/`, e.g. `docs/standards/templates/`), `tasks/lessons.md`, `**/AGENTS.md`, plus virtual registry docs. Frontmatter `type` must be one of `spec`, `skill`, `overview`, `adr`, `lesson`, `agents`, `registry`. Invalid type fails `pnpm knowledge:reindex` and `pnpm check:agent-docs`.
+
 ### Production / staging (Docker)
 
 The image bundles a staged knowledge workspace (`docs/`, `tasks/lessons.md`, `AGENTS.md` files). On startup:

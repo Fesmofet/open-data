@@ -209,7 +209,7 @@ Recommended sections (same spirit as feature specs):
 4. **Verification** — how to confirm success (commands, expected output, rollback).
 5. **Related** — links to specs, `AGENTS.md`, registry tools (`get_object_create_playbook`, `get_object_type`, …).
 
-**Object-create playbooks:** every `OBJECT_TYPE_REGISTRY` key must have `docs/skills/object-create/{object_type}.md` with tag `object-create-playbook`. Template: [`docs/standards/templates/object-create-playbook.md`](../standards/templates/object-create-playbook.md).
+**Object-create playbooks:** every `OBJECT_TYPE_REGISTRY` key must have `docs/skills/object-create/{object_type}.md` with tag `object-create-playbook`. Draft scaffold: [`docs/standards/templates/object-create-playbook.md`](../standards/templates/object-create-playbook.md) (`docs/standards/templates/` is **not** indexed; keep `type: template` there so a copy that forgets `type: skill` fails reindex).
 
 Example:
 
