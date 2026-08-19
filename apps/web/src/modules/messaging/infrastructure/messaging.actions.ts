@@ -7,6 +7,7 @@ import { getChannelMessagesQuery } from '../application/queries/get-channel-mess
 import { getObjectChannelMessagesQuery } from '../application/queries/get-object-channel-messages.query';
 import { getViewerChannelsQuery } from '../application/queries/get-viewer-channels.query';
 import type { ChannelDetail } from '../domain/messaging.types';
+import { EMPTY_LEAVE_POLICY } from '../domain/messaging.types';
 import { markChannelRead } from './messaging.client';
 import type { ChannelListPage, MessageHistoryPage } from '../domain/messaging.types';
 
@@ -68,7 +69,12 @@ function buildPeerChannelDetail(viewer: string, peer: string): ChannelDetail {
     display_title: peer,
     list_title: null,
     peer,
-    members: [viewer, peer],
+    members: [
+      { account: viewer, role: 'member' },
+      { account: peer, role: 'member' },
+    ],
+    viewer_role: null,
+    leave_policy: EMPTY_LEAVE_POLICY,
   };
 }
 

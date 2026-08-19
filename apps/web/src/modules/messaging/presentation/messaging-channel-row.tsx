@@ -1,5 +1,6 @@
 'use client';
 
+import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { UserAvatar } from '@/shared/presentation';
 
@@ -47,6 +48,7 @@ export function MessagingChannelRow({
   active,
   onSelect,
 }: MessagingChannelRowProps) {
+  const contentBaseUrl = useIpfsContentBaseUrl();
   const title = channel.display_title ?? channel.list_title ?? channel.channel_id;
   const preview = channel.last_message_preview ?? '';
 
@@ -69,7 +71,7 @@ export function MessagingChannelRow({
       ) : (
         <GroupChannelAvatar
           title={title}
-          imageUrl={resolveChannelImageUrl(channel.image)}
+          imageUrl={resolveChannelImageUrl(channel.image, contentBaseUrl)}
         />
       )}
       <div className="min-w-0 flex-1">

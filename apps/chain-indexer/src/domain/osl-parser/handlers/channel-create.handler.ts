@@ -5,10 +5,13 @@ import {
   CHANNEL_ACCESS,
   CHANNEL_KINDS,
   CHANNEL_MEMBER_ROLES,
+  MAX_GROUP_CHANNEL_MEMBERS,
 } from '@opden-data-layer/core';
-import { ObjectsCoreRepository } from '../../../repositories';
+import { GovernanceResolverService } from '../../governance/governance-resolver.service';
+import { ObjectsCoreRepository, SocialGraphRepository } from '../../../repositories';
 import { ChannelsRepository } from '../../../repositories/channels.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
+import { canAddGroupMember } from '../group-member-eligibility';
 import { channelCreatePayloadSchema } from '../osl-envelope.schema';
 
 @Injectable()
@@ -19,6 +22,8 @@ export class ChannelCreateHandler implements OdlActionHandler {
   constructor(
     private readonly channelsRepository: ChannelsRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly socialGraphRepository: SocialGraphRepository,
+    private readonly governanceResolver: GovernanceResolverService,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -96,6 +101,35 @@ export class ChannelCreateHandler implements OdlActionHandler {
     const memberSet = new Set(members);
     memberSet.add(ctx.creator);
 
+    if (memberSet.size > MAX_GROUP_CHANNEL_MEMBERS) {
+      this.logger.warn(
+        `channel_create: member count ${memberSet.size} exceeds cap (${MAX_GROUP_CHANNEL_MEMBERS}); skipping`,
+      );
+      return;
+    }
+
+    const governance = await this.governanceResolver.resolveMergedForObjectView();
+    const eligibleInvitees: string[] = [];
+    for (const account of members) {
+      if (account === ctx.creator) {
+        continue;
+      }
+      const eligibility = await canAddGroupMember({
+        adder: ctx.creator,
+        target: account,
+        governanceMutedAccounts: governance.muted,
+        muteExists: (muter, muted) =>
+          this.socialGraphRepository.muteExists(muter, muted),
+      });
+      if (!eligibility.ok) {
+        this.logger.warn(
+          `channel_create: skipping invitee '${account}' (${eligibility.reason})`,
+        );
+        continue;
+      }
+      eligibleInvitees.push(account);
+    }
+
     await this.channelsRepository.runInTransaction(async (trx) => {
       await this.channelsRepository.insertChannel(
         {
@@ -125,10 +159,7 @@ export class ChannelCreateHandler implements OdlActionHandler {
         trx,
       );
 
-      for (const account of memberSet) {
-        if (account === ctx.creator) {
-          continue;
-        }
+      for (const account of eligibleInvitees) {
         await this.channelsRepository.insertMember(
           {
             channel_id: data.channel_id,

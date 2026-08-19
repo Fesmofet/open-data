@@ -6,3 +6,4 @@ export * from './obl-usd-amount';
 export * from './service-order-schema';
 export * from './post-language';
 export * from './osl-messaging';
+export * from './group-member-eligibility';

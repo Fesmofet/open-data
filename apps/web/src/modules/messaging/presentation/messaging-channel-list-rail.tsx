@@ -7,10 +7,20 @@ import { useLoginModal } from '@/modules/auth';
 
 import { useCreateGroupChannel } from '../application/use-create-group-channel';
 import {
+  buildGroupChannelHref,
+  resolveStartChatAction,
+} from '../application/messaging-start-chat';
+import {
   buildOptimisticGroupChannelListItem,
   mergeChannelListItems,
 } from '../domain/messaging.helpers';
 import type { ChannelListItem } from '../domain/messaging.types';
+import {
+  mergeViewerChannels,
+  patchChannelListItem,
+  subscribeMessagingChannelUpdated,
+  subscribeMessagingChannelLeft,
+} from '../infrastructure/messaging-channel-sync';
 import { MESSAGING_CARD_SHELL_CLASS } from './messaging-layout.constants';
 import { MessagingChannelList } from './messaging-channel-list';
 import { MessagingViewportShell } from './messaging-viewport-shell';
@@ -36,8 +46,20 @@ export function MessagingChannelListRail({
   const basePath = `/@${accountName}/messages`;
 
   useEffect(() => {
-    setChannels((prev) => mergeChannelListItems(channelsProp, prev));
+    setChannels((prev) => mergeViewerChannels(channelsProp, prev));
   }, [channelsProp]);
+
+  useEffect(() => {
+    return subscribeMessagingChannelUpdated((patch) => {
+      setChannels((prev) => prev.map((item) => patchChannelListItem(item, patch)));
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeMessagingChannelLeft(({ channelId }) => {
+      setChannels((prev) => prev.filter((item) => item.channel_id !== channelId));
+    });
+  }, []);
 
   const prependGroupChannel = useCallback((item: ChannelListItem) => {
     setChannels((prev) => mergeChannelListItems([item], prev));
@@ -60,19 +82,18 @@ export function MessagingChannelListRail({
 
   const handleStartChat = useCallback(
     async (input: { peers: string[]; title?: string }) => {
-      if (input.peers.length === 0) {
+      const action = await resolveStartChatAction(accountName, viewerUsername, input);
+      if (action.kind === 'noop') {
         return;
       }
-      if (input.peers.length === 1) {
-        const params = new URLSearchParams();
-        params.set('peer', input.peers[0]!);
-        router.push(`${basePath}?${params.toString()}`);
+      if (action.kind === 'dm') {
+        router.push(action.href);
         setNewMessageOpen(false);
         return;
       }
       const channelId = await createGroupChannel({
-        members: input.peers,
-        title: input.title,
+        members: action.members,
+        title: action.title,
       });
       if (!channelId) {
         return;
@@ -80,23 +101,21 @@ export function MessagingChannelListRail({
       prependGroupChannel(
         buildOptimisticGroupChannelListItem({
           channelId,
-          members: input.peers,
+          members: action.members,
           viewerUsername,
-          title: input.title,
+          title: action.title,
         }),
       );
-      const params = new URLSearchParams();
-      params.set('channel', channelId);
-      router.push(`${basePath}?${params.toString()}`);
+      router.push(buildGroupChannelHref(accountName, channelId));
       router.refresh();
       setNewMessageOpen(false);
     },
-    [basePath, createGroupChannel, prependGroupChannel, router, viewerUsername],
+    [accountName, createGroupChannel, prependGroupChannel, router, viewerUsername],
   );
 
   return (
     <>
-      <MessagingViewportShell>
+      <MessagingViewportShell variant="sideRail">
         <div className={MESSAGING_CARD_SHELL_CLASS}>
           <MessagingChannelList
             variant="rail"

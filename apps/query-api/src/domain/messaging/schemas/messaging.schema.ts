@@ -21,3 +21,9 @@ export const markChannelReadBodySchema = z.object({
 });
 
 export type MarkChannelReadBody = z.infer<typeof markChannelReadBodySchema>;
+
+export const validateMembersBodySchema = z.object({
+  accounts: z.array(z.string().min(1).max(32)).max(100),
+});
+
+export type ValidateMembersBody = z.infer<typeof validateMembersBodySchema>;

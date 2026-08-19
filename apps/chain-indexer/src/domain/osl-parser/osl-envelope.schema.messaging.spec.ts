@@ -1,4 +1,8 @@
-import { messageCreatePayloadSchema } from './osl-envelope.schema';
+import {
+  channelLeavePayloadSchema,
+  channelCreatePayloadSchema,
+  messageCreatePayloadSchema,
+} from './osl-envelope.schema';
 
 describe('messageCreatePayloadSchema', () => {
   it('accepts peer bootstrap with body', () => {
@@ -11,6 +15,49 @@ describe('messageCreatePayloadSchema', () => {
 
   it('rejects missing body and overflow_ref', () => {
     const result = messageCreatePayloadSchema.safeParse({ peer: 'bob' });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('channelLeavePayloadSchema', () => {
+  it('accepts minimal leave payload', () => {
+    const result = channelLeavePayloadSchema.safeParse({ channel_id: 'grp-1' });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts leave with successor and delete flag', () => {
+    const result = channelLeavePayloadSchema.safeParse({
+      channel_id: 'grp-1',
+      successor_admin: 'bob',
+      delete_my_messages: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects empty channel_id', () => {
+    const result = channelLeavePayloadSchema.safeParse({ channel_id: '' });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('channelCreatePayloadSchema group members cap', () => {
+  it('accepts up to 99 invitees', () => {
+    const members = Array.from({ length: 99 }, (_, index) => `user${index}`);
+    const result = channelCreatePayloadSchema.safeParse({
+      kind: 'group',
+      channel_id: 'grp-1',
+      members,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects 100 invitees in payload', () => {
+    const members = Array.from({ length: 100 }, (_, index) => `user${index}`);
+    const result = channelCreatePayloadSchema.safeParse({
+      kind: 'group',
+      channel_id: 'grp-1',
+      members,
+    });
     expect(result.success).toBe(false);
   });
 });

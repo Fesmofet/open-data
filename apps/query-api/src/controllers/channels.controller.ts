@@ -16,14 +16,18 @@ import {
   GetChannelByAliasEndpoint,
   GetChannelMessagesEndpoint,
   MarkChannelReadEndpoint,
+  ValidateChannelMembersEndpoint,
+  ValidateGroupInviteesEndpoint,
 } from '../domain/messaging';
 import {
   channelListQuerySchema,
   messageHistoryBodySchema,
   markChannelReadBodySchema,
+  validateMembersBodySchema,
   type ChannelListQuery,
   type MessageHistoryBody,
   type MarkChannelReadBody,
+  type ValidateMembersBody,
 } from '../domain/messaging/schemas/messaging.schema';
 
 @Controller({ path: 'channels', version: ['1', '2'] })
@@ -34,6 +38,8 @@ export class ChannelsController {
     private readonly getChannelByAlias: GetChannelByAliasEndpoint,
     private readonly getChannelMessages: GetChannelMessagesEndpoint,
     private readonly markChannelRead: MarkChannelReadEndpoint,
+    private readonly validateChannelMembers: ValidateChannelMembersEndpoint,
+    private readonly validateGroupInvitees: ValidateGroupInviteesEndpoint,
   ) {}
 
   @Get()
@@ -42,6 +48,14 @@ export class ChannelsController {
     @Query(new ZodQueryPipe(channelListQuerySchema)) query: ChannelListQuery,
   ) {
     return this.getChannels.execute(viewer ?? '', query);
+  }
+
+  @Post('validate-invitees')
+  validateInvitees(
+    @ReqViewer() viewer: string | undefined,
+    @Body(new ZodBodyPipe(validateMembersBodySchema)) body: ValidateMembersBody,
+  ) {
+    return this.validateGroupInvitees.execute(viewer ?? '', body.accounts);
   }
 
   @Get('by-alias/:alias')
@@ -60,6 +74,15 @@ export class ChannelsController {
       throw new NotFoundException();
     }
     return result;
+  }
+
+  @Post(':channelId/validate-members')
+  validateMembers(
+    @Param('channelId') channelId: string,
+    @ReqViewer() viewer: string | undefined,
+    @Body(new ZodBodyPipe(validateMembersBodySchema)) body: ValidateMembersBody,
+  ) {
+    return this.validateChannelMembers.execute(channelId, viewer ?? '', body.accounts);
   }
 
   @Post(':channelId/messages')

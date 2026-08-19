@@ -22,4 +22,14 @@ export class UserAccountMutesRepository {
       .execute();
     return [...new Set(rows.map((r) => r.muted))];
   }
+
+  async muteExists(muter: string, muted: string): Promise<boolean> {
+    const row = await this.db
+      .selectFrom('user_account_mutes')
+      .select('muter')
+      .where('muter', '=', muter)
+      .where('muted', '=', muted)
+      .executeTakeFirst();
+    return row !== undefined;
+  }
 }

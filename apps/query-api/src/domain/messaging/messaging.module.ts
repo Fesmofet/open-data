@@ -10,6 +10,10 @@ import {
   GetObjectChannelMessagesEndpoint,
 } from './get-object-channel.endpoint';
 import { MarkChannelReadEndpoint } from './mark-channel-read.endpoint';
+import {
+  ValidateChannelMembersEndpoint,
+  ValidateGroupInviteesEndpoint,
+} from './validate-members.endpoint';
 
 @Module({
   imports: [RepositoriesModule, GovernanceModule],
@@ -21,6 +25,8 @@ import { MarkChannelReadEndpoint } from './mark-channel-read.endpoint';
     GetObjectChannelEndpoint,
     GetObjectChannelMessagesEndpoint,
     MarkChannelReadEndpoint,
+    ValidateChannelMembersEndpoint,
+    ValidateGroupInviteesEndpoint,
   ],
   exports: [
     GetChannelsEndpoint,
@@ -30,6 +36,8 @@ import { MarkChannelReadEndpoint } from './mark-channel-read.endpoint';
     GetObjectChannelEndpoint,
     GetObjectChannelMessagesEndpoint,
     MarkChannelReadEndpoint,
+    ValidateChannelMembersEndpoint,
+    ValidateGroupInviteesEndpoint,
   ],
 })
 export class MessagingModule {}

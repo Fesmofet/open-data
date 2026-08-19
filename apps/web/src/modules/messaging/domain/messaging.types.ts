@@ -17,6 +17,17 @@ export type ChannelListPage = {
   hasMore: boolean;
 };
 
+export type ChannelMemberView = {
+  account: string;
+  role: 'admin' | 'member';
+};
+
+export type ChannelLeavePolicy = {
+  can_leave: boolean;
+  requires_successor: boolean;
+  eligible_successors: string[];
+};
+
 export type ChannelDetail = {
   channel_id: string;
   kind: string;
@@ -28,7 +39,9 @@ export type ChannelDetail = {
   display_title: string | null;
   list_title: string | null;
   peer: string | null;
-  members: string[];
+  members: ChannelMemberView[];
+  viewer_role: 'admin' | 'member' | null;
+  leave_policy: ChannelLeavePolicy;
 };
 
 export type MessageItem = {
@@ -55,3 +68,9 @@ export type MessagingListFilter = 'all' | 'unread';
 export type SendMessageTarget =
   | { channelId: string; peer?: never }
   | { peer: string; channelId?: never };
+
+export const EMPTY_LEAVE_POLICY: ChannelLeavePolicy = {
+  can_leave: false,
+  requires_successor: false,
+  eligible_successors: [],
+};

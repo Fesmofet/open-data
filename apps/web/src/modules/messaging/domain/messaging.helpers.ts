@@ -1,4 +1,9 @@
+import { MAX_GROUP_CHANNEL_MEMBERS } from '@opden-data-layer/core/constants';
+
 import type { ChannelDetail, ChannelListItem, MessageItem } from './messaging.types';
+import { EMPTY_LEAVE_POLICY } from './messaging.types';
+
+export { MAX_GROUP_CHANNEL_MEMBERS };
 
 const GROUP_CHANNEL_ID_MAX_LENGTH = 256;
 const GROUP_CHANNEL_ID_PREFIX = 'grp-';
@@ -95,7 +100,13 @@ export function buildOptimisticGroupChannelDetail(input: {
     display_title: listItem.display_title,
     list_title: listItem.list_title,
     peer: null,
-    members: listItem.members,
+    members: listItem.members.map((account) => ({ account, role: 'member' as const })),
+    viewer_role: 'admin',
+    leave_policy: {
+      can_leave: true,
+      requires_successor: false,
+      eligible_successors: [],
+    },
   };
 }
 
@@ -110,7 +121,13 @@ export function mergeChannelListItems(
   for (const item of serverItems) {
     byId.set(item.channel_id, item);
   }
-  return [...byId.values()].sort((a, b) => {
+  return sortChannelListItems([...byId.values()]);
+}
+
+export function sortChannelListItems(
+  items: readonly ChannelListItem[],
+): ChannelListItem[] {
+  return [...items].sort((a, b) => {
     const aTs = a.last_message_at_unix;
     const bTs = b.last_message_at_unix;
     if (aTs == null && bTs == null) {
@@ -162,6 +179,8 @@ export function buildSyntheticObjectChannel(input: {
     list_title: null,
     peer: null,
     members: [],
+    viewer_role: null,
+    leave_policy: EMPTY_LEAVE_POLICY,
   };
 }
 
@@ -201,13 +220,82 @@ export function buildMessageCreatePayload(input: {
   throw new Error('channelId or peer is required');
 }
 
-export function resolveChannelImageUrl(image: unknown): string | null {
+export function buildChannelLeavePayload(input: {
+  channelId: string;
+  successorAdmin?: string;
+  deleteMyMessages?: boolean;
+}): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    channel_id: input.channelId,
+  };
+  const successor = input.successorAdmin?.trim();
+  if (successor) {
+    payload.successor_admin = successor;
+  }
+  if (input.deleteMyMessages === true) {
+    payload.delete_my_messages = true;
+  }
+  return payload;
+}
+
+export function buildChannelUpdatePayload(input: {
+  channelId: string;
+  title?: string;
+  imageCid?: string;
+}): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    channel_id: input.channelId,
+  };
+  const title = input.title?.trim();
+  if (title) {
+    payload.title = title;
+  }
+  const cid = input.imageCid?.trim();
+  if (cid) {
+    payload.image = { cid };
+  }
+  if (payload.title === undefined && payload.image === undefined) {
+    throw new Error('title or imageCid is required');
+  }
+  return payload;
+}
+
+export function buildChannelMemberAddPayload(input: {
+  channelId: string;
+  account: string;
+}): Record<string, string> {
+  return {
+    channel_id: input.channelId,
+    account: input.account.trim(),
+  };
+}
+
+export function remainingGroupMemberSlots(currentMemberCount: number): number {
+  return Math.max(0, MAX_GROUP_CHANNEL_MEMBERS - currentMemberCount);
+}
+
+export function canSelectMoreGroupMembers(
+  currentMemberCount: number,
+  additionalCount: number,
+): boolean {
+  return currentMemberCount + additionalCount <= MAX_GROUP_CHANNEL_MEMBERS;
+}
+
+export function resolveChannelImageUrl(
+  image: unknown,
+  contentBaseUrl?: string | null,
+): string | null {
   if (image == null || typeof image !== 'object') {
     return null;
   }
   const record = image as Record<string, unknown>;
   if (typeof record.url === 'string' && record.url.trim() !== '') {
     return record.url.trim();
+  }
+  const cid = typeof record.cid === 'string' ? record.cid.trim() : '';
+  if (cid && contentBaseUrl) {
+    const base = contentBaseUrl.replace(/\/$/, '');
+    return `${base}/ipfs-gateway/content/image/${cid}`;
   }
   return null;
 }

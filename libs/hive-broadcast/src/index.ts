@@ -128,6 +128,11 @@ export {
   type UpdateUserMetadataPayload,
   buildOslMessageCreateOp,
   buildOslChannelCreateOp,
+  buildOslChannelLeaveOp,
+  buildOslChannelUpdateOp,
+  buildOslChannelMemberAddOp,
   type BuildOslMessageCreateOpInput,
   type BuildOslChannelCreateOpInput,
+  type BuildOslChannelLeaveOpInput,
+  type BuildOslChannelUpdateOpInput,
 } from './osl-operations';

@@ -4,6 +4,8 @@ import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { MESSAGING_COLUMN_FOOTER_SHELL_CLASS } from './messaging-layout.constants';
+
 import { canSendMessageBody } from '../domain/messaging.helpers';
 
 export type MessagingComposeBarProps = {
@@ -36,8 +38,8 @@ export function MessagingComposeBar({
   }, [body, disabled, onRequireLogin, onSend]);
 
   return (
-    <div className="border-t border-border bg-bg px-4 py-3">
-      <div className="flex items-end gap-2">
+    <div className={MESSAGING_COLUMN_FOOTER_SHELL_CLASS}>
+      <div className="flex min-h-[2.5rem] items-end gap-2">
         <textarea
           value={body}
           onChange={(event) => setBody(event.target.value)}

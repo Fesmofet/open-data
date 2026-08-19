@@ -29,13 +29,14 @@ const messages = {
   messaging_list_filter_aria: 'Filters',
 } as Messages;
 
-function renderList(channels: ChannelListItem[]) {
+function renderList(channels: ChannelListItem[], onNewMessage?: () => void) {
   return render(
     <I18nProvider locale={'en-US' as LocaleId} messages={messages}>
       <MessagingChannelList
         channels={channels}
         activeChannelId={null}
         onSelectChannel={() => undefined}
+        onNewMessage={onNewMessage}
       />
     </I18nProvider>,
   );
@@ -76,5 +77,16 @@ describe('MessagingChannelList', () => {
     });
     expect(screen.getByText('WAIVIO Community')).toBeInTheDocument();
     expect(screen.queryByText('Quiet')).not.toBeInTheDocument();
+  });
+
+  it('renders New message as footer accent button', () => {
+    renderList(channels, jest.fn());
+    const button = screen.getByRole('button', { name: 'New message' });
+    expect(button.className).toContain('bg-accent');
+    expect(button.className).toContain('w-full');
+    const messagesHeading = screen.getByRole('heading', { name: 'Messages' });
+    expect(
+      messagesHeading.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

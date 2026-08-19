@@ -30,3 +30,28 @@ tags: [query-api, messaging]
 ## Object channel feed
 
 Excludes authors in governance `muted` and (when `X-Viewer` set) viewer `user_account_mutes`.
+
+## Channel detail extensions
+
+`GET /query/v1/channels/{id}` includes:
+
+| Field | Description |
+|-------|-------------|
+| `members[]` | `{ account, role: "admin" \| "member" }` |
+| `viewer_role` | Viewer's role or `null` |
+| `leave_policy` | `{ can_leave, requires_successor, eligible_successors[] }` |
+
+Dissolved channels (`dissolved_at_unix` set) return 404 and are excluded from `GET /query/v1/channels`.
+
+`leave_policy.requires_successor` is `true` when the viewer is the sole admin among 2+ members.
+
+## Validate members (preflight)
+
+| Method | Path | Notes |
+|--------|------|-------|
+| POST | `/query/v1/channels/{id}/validate-members` | Group admin + `X-Viewer`; body `{ accounts[] }` |
+| POST | `/query/v1/channels/validate-invitees` | New group create; body `{ accounts[] }` |
+
+Response: `{ results: [{ account, addable, reason? }] }` where `reason` is one of `muted_by_viewer`, `muted_viewer`, `governance_muted`, `already_member`, `group_full`.
+
+Max group size: **100** members (including creator).

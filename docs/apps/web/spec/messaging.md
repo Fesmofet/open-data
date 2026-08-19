@@ -24,7 +24,17 @@ Other users' profiles hide the Messages tab. Direct URL to another user's messag
 
 ## Layout
 
-Profile inbox uses three columns on desktop: channel list (left rail), chat (center), About (right rail). Object Messages uses center chat only at `/object/:id/messages`. All messaging shells share `MESSAGING_VIEWPORT_SHELL_CLASS` with internal scroll in list/message panels.
+Profile inbox uses three columns on desktop: channel list (left rail), chat (center), About (right rail). Object Messages uses center chat only at `/object/:id/messages`.
+
+| Shell | Class / variant | Notes |
+|-------|-----------------|-------|
+| Center chat | `MESSAGING_CENTER_VIEWPORT_SHELL_CLASS` | Sits below profile submenu chrome |
+| Left list + right About | `MessagingViewportShell` `variant="sideRail"` | Full grid-column height; top aligns with center column (submenu sits only in center) |
+| Object / standalone | `MessagingViewportShell` default | Full viewport minus header + rail chrome |
+
+Left rail: **Messages** header, scrollable channel list, **New message** as a full-width accent footer button. Right About rail: centered **About** heading and avatar; members scroll; **Leave group** pinned to the column footer.
+
+Internal scroll lives in list/message/members panels; column shells use `overflow-hidden` flex columns so footers align across all three columns.
 
 Outgoing message bubbles use `bg-accent-soft` + `text-fg` (see [theme.md](./theme.md)).
 
@@ -69,6 +79,34 @@ Per [channels.md](../../../spec/osl/channels.md), object channels require explic
 ## Unread (v1)
 
 Server-side `channel_members.last_read_at_unix`. List shows `unread_count`; All/Unread tabs filter client-side. Opening a channel calls mark-read with latest message timestamp.
+
+## Group leave
+
+About panel (profile right rail) shows **Leave** when `leave_policy.can_leave`.
+
+| Action | OSL |
+|--------|-----|
+| Leave group | `channel_leave { channel_id, successor_admin?, delete_my_messages? }` |
+
+- Sole admin with 2+ members must pick `successor_admin` in modal.
+- Last member dissolve removes channel from lists.
+- Optional checkbox deletes leaver's messages (bulk on indexer).
+
+Post-leave: redirect to `/@viewer/messages`, revalidate messaging caches, optimistic list remove.
+
+## Group edit (admin)
+
+About panel shows **Edit** when `viewer_role === 'admin'` on group channels.
+
+| Action | OSL |
+|--------|-----|
+| Rename / photo | `channel_update { channel_id, title?, image: { cid }? }` |
+
+Photo upload uses IPFS pipeline (`IpfsImageDropZone` + `useIpfsImageUpload`). `resolveChannelImageUrl` resolves `{ cid }` via ipfs-gateway content base.
+
+**Add members** (Edit modal, separate from Save): multi-select user search with preflight via `validate-members`; broadcasts one Hive trx with N `channel_member_add` ops. Max **100** members per group. Muted / governance-muted users blocked in UI and on indexer.
+
+New group create (`New message`, 2+ users): preflight via `validate-invitees` before `channel_create`.
 
 ## Out of scope (v1)
 

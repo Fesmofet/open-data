@@ -52,6 +52,53 @@ export class MessagesRepository {
       .execute();
   }
 
+  async listByAuthorInChannel(
+    channelId: string,
+    author: string,
+    trx?: DbExecutor,
+  ): Promise<Message[]> {
+    return this.executor(trx)
+      .selectFrom('messages')
+      .selectAll()
+      .where('channel_id', '=', channelId)
+      .where('author', '=', author)
+      .execute();
+  }
+
+  async deleteAllByAuthorInChannel(
+    input: {
+      channelId: string;
+      author: string;
+      deletedBy: string;
+      deletedAtUnix: number;
+      eventSeq: bigint;
+      transactionId: string;
+    },
+    trx?: DbExecutor,
+  ): Promise<void> {
+    const messages = await this.listByAuthorInChannel(
+      input.channelId,
+      input.author,
+      trx,
+    );
+    for (const message of messages) {
+      if (await this.tombstoneExists(message.message_id, trx)) {
+        continue;
+      }
+      await this.deleteAndTombstone(
+        {
+          message_id: message.message_id,
+          channel_id: input.channelId,
+          deleted_by: input.deletedBy,
+          deleted_at_unix: input.deletedAtUnix,
+          event_seq: input.eventSeq,
+          transaction_id: input.transactionId,
+        },
+        trx,
+      );
+    }
+  }
+
   async upsertContextExclusion(
     row: NewMessageContextExclusion,
     trx?: DbExecutor,

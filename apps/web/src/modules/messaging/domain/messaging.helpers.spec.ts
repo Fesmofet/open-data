@@ -1,5 +1,9 @@
 import {
   buildGroupChannelCreatePayload,
+  buildChannelLeavePayload,
+  buildChannelMemberAddPayload,
+  buildChannelUpdatePayload,
+  canSelectMoreGroupMembers,
   buildMessageCreatePayload,
   buildObjectChannelCreatePayload,
   buildOptimisticGroupChannelListItem,
@@ -7,6 +11,8 @@ import {
   filterChannelsByUnread,
   generateGroupChannelId,
   mergeChannelListItems,
+  remainingGroupMemberSlots,
+  resolveChannelImageUrl,
 } from './messaging.helpers';
 
 describe('filterChannelsByUnread', () => {
@@ -160,5 +166,89 @@ describe('buildObjectChannelCreatePayload', () => {
       object_id: 'obj-1',
       title: 'My Shop',
     });
+  });
+});
+
+describe('buildChannelLeavePayload', () => {
+  it('includes optional successor and delete flag', () => {
+    expect(
+      buildChannelLeavePayload({
+        channelId: 'grp-1',
+        successorAdmin: 'bob',
+        deleteMyMessages: true,
+      }),
+    ).toEqual({
+      channel_id: 'grp-1',
+      successor_admin: 'bob',
+      delete_my_messages: true,
+    });
+  });
+
+  it('omits optional fields when not set', () => {
+    expect(buildChannelLeavePayload({ channelId: 'grp-1' })).toEqual({
+      channel_id: 'grp-1',
+    });
+  });
+});
+
+describe('buildChannelUpdatePayload', () => {
+  it('builds title and image update payload', () => {
+    expect(
+      buildChannelUpdatePayload({
+        channelId: 'grp-1',
+        title: 'Team',
+        imageCid: 'QmTest',
+      }),
+    ).toEqual({
+      channel_id: 'grp-1',
+      title: 'Team',
+      image: { cid: 'QmTest' },
+    });
+  });
+
+  it('throws when no fields provided', () => {
+    expect(() => buildChannelUpdatePayload({ channelId: 'grp-1' })).toThrow(
+      'title or imageCid is required',
+    );
+  });
+});
+
+describe('remainingGroupMemberSlots', () => {
+  it('returns remaining slots until cap', () => {
+    expect(remainingGroupMemberSlots(98)).toBe(2);
+    expect(remainingGroupMemberSlots(100)).toBe(0);
+  });
+});
+
+describe('canSelectMoreGroupMembers', () => {
+  it('allows selection within cap', () => {
+    expect(canSelectMoreGroupMembers(98, 2)).toBe(true);
+    expect(canSelectMoreGroupMembers(98, 3)).toBe(false);
+  });
+});
+
+describe('buildChannelMemberAddPayload', () => {
+  it('builds member add payload', () => {
+    expect(
+      buildChannelMemberAddPayload({ channelId: 'grp-1', account: 'bob' }),
+    ).toEqual({ channel_id: 'grp-1', account: 'bob' });
+  });
+});
+
+describe('resolveChannelImageUrl', () => {
+  it('returns direct url when present', () => {
+    expect(resolveChannelImageUrl({ url: 'https://img.test/a.png' })).toBe(
+      'https://img.test/a.png',
+    );
+  });
+
+  it('resolves cid via content base', () => {
+    expect(
+      resolveChannelImageUrl({ cid: 'QmTest' }, 'https://cdn.example.com'),
+    ).toBe('https://cdn.example.com/ipfs-gateway/content/image/QmTest');
+  });
+
+  it('returns null for cid without content base', () => {
+    expect(resolveChannelImageUrl({ cid: 'QmTest' })).toBeNull();
   });
 });

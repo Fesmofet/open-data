@@ -147,6 +147,41 @@ export class ChannelsRepository {
     return Number(row?.count ?? 0);
   }
 
+  async countMembers(channelId: string, trx?: DbExecutor): Promise<number> {
+    const row = await this.executor(trx)
+      .selectFrom('channel_members')
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .where('channel_id', '=', channelId)
+      .executeTakeFirst();
+    return Number(row?.count ?? 0);
+  }
+
+  async updateMemberRole(
+    channelId: string,
+    account: string,
+    role: string,
+    trx?: DbExecutor,
+  ): Promise<void> {
+    await this.executor(trx)
+      .updateTable('channel_members')
+      .set({ role })
+      .where('channel_id', '=', channelId)
+      .where('account', '=', account)
+      .execute();
+  }
+
+  async dissolveChannel(
+    channelId: string,
+    dissolvedAtUnix: number,
+    trx?: DbExecutor,
+  ): Promise<void> {
+    await this.executor(trx)
+      .updateTable('channels')
+      .set({ dissolved_at_unix: dissolvedAtUnix })
+      .where('channel_id', '=', channelId)
+      .execute();
+  }
+
   async listMembers(channelId: string, trx?: DbExecutor): Promise<ChannelMember[]> {
     return this.executor(trx)
       .selectFrom('channel_members')

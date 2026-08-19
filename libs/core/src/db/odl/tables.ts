@@ -1401,6 +1401,7 @@ export interface ChannelsTable {
   pair_hash: string | null;
   access: string;
   last_message_at_unix: number | null;
+  dissolved_at_unix: number | null;
   created_at_unix: number;
   event_seq: bigint;
   transaction_id: string;

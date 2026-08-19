@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { imageCidOrUrlJsonSchema } from '@opden-data-layer/core';
+import {
+  imageCidOrUrlJsonSchema,
+  MAX_GROUP_CHANNEL_CREATE_INVITEES,
+} from '@opden-data-layer/core';
 
 const hiveAccountSchema = z.string().min(1).max(32);
 
@@ -105,7 +108,11 @@ export const channelCreatePayloadSchema = z.discriminatedUnion('kind', [
       channel_id: z.string().min(1).max(256),
       title: z.string().max(256).optional(),
       image: imageCidOrUrlJsonSchema.optional(),
-      members: z.array(hiveAccountSchema).min(1).max(64).optional(),
+      members: z
+        .array(hiveAccountSchema)
+        .min(1)
+        .max(MAX_GROUP_CHANNEL_CREATE_INVITEES)
+        .optional(),
     })
     .strict(),
   z
@@ -132,6 +139,14 @@ export const channelMemberPayloadSchema = z
   .object({
     channel_id: z.string().min(1).max(256),
     account: hiveAccountSchema,
+  })
+  .strict();
+
+export const channelLeavePayloadSchema = z
+  .object({
+    channel_id: z.string().min(1).max(256),
+    successor_admin: hiveAccountSchema.optional(),
+    delete_my_messages: z.boolean().optional(),
   })
   .strict();
 
@@ -210,6 +225,7 @@ const oslMessagingActions = [
   'channel_alias_register',
   'channel_member_add',
   'channel_member_remove',
+  'channel_leave',
   'channel_update',
   'message_create',
   'message_delete',

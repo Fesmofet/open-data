@@ -20,6 +20,7 @@ export class MessagingRepository {
       .innerJoin('channel_members', 'channel_members.channel_id', 'channels.channel_id')
       .selectAll('channels')
       .where('channel_members.account', '=', viewer)
+      .where('channels.dissolved_at_unix', 'is', null)
       .orderBy('channels.last_message_at_unix', 'desc')
       .orderBy('channels.channel_id', 'desc')
       .limit(limitPlusOne);
@@ -87,6 +88,25 @@ export class MessagingRepository {
       .where('account', '=', account)
       .executeTakeFirst();
     return row !== undefined;
+  }
+
+  async countMembers(channelId: string): Promise<number> {
+    const row = await this.db
+      .selectFrom('channel_members')
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .where('channel_id', '=', channelId)
+      .executeTakeFirst();
+    return Number(row?.count ?? 0);
+  }
+
+  async getMemberRole(channelId: string, account: string): Promise<string | undefined> {
+    const row = await this.db
+      .selectFrom('channel_members')
+      .select('role')
+      .where('channel_id', '=', channelId)
+      .where('account', '=', account)
+      .executeTakeFirst();
+    return row?.role;
   }
 
   async getMemberLastReadAt(

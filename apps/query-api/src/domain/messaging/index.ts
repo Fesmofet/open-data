@@ -10,3 +10,8 @@ export {
 } from './get-object-channel.endpoint';
 export { MarkChannelReadEndpoint } from './mark-channel-read.endpoint';
 export type { MarkChannelReadResponseDto } from './mark-channel-read.endpoint';
+export {
+  ValidateChannelMembersEndpoint,
+  ValidateGroupInviteesEndpoint,
+} from './validate-members.endpoint';
+export type { ValidateChannelMembersResponseDto } from './validate-members.endpoint';

@@ -12,6 +12,7 @@ import { ChannelCreateHandler } from './handlers/channel-create.handler';
 import { ChannelAliasRegisterHandler } from './handlers/channel-alias-register.handler';
 import { ChannelMemberAddHandler } from './handlers/channel-member-add.handler';
 import { ChannelMemberRemoveHandler } from './handlers/channel-member-remove.handler';
+import { ChannelLeaveHandler } from './handlers/channel-leave.handler';
 import { ChannelUpdateHandler } from './handlers/channel-update.handler';
 import { MessageCreateHandler } from './handlers/message-create.handler';
 import { MessageDeleteHandler } from './handlers/message-delete.handler';
@@ -30,6 +31,7 @@ export class OslCustomJsonParser {
     private readonly channelAliasRegisterHandler: ChannelAliasRegisterHandler,
     private readonly channelMemberAddHandler: ChannelMemberAddHandler,
     private readonly channelMemberRemoveHandler: ChannelMemberRemoveHandler,
+    private readonly channelLeaveHandler: ChannelLeaveHandler,
     private readonly channelUpdateHandler: ChannelUpdateHandler,
     private readonly messageCreateHandler: MessageCreateHandler,
     private readonly messageDeleteHandler: MessageDeleteHandler,
@@ -44,6 +46,7 @@ export class OslCustomJsonParser {
       [this.channelAliasRegisterHandler.action]: this.channelAliasRegisterHandler,
       [this.channelMemberAddHandler.action]: this.channelMemberAddHandler,
       [this.channelMemberRemoveHandler.action]: this.channelMemberRemoveHandler,
+      [this.channelLeaveHandler.action]: this.channelLeaveHandler,
       [this.channelUpdateHandler.action]: this.channelUpdateHandler,
       [this.messageCreateHandler.action]: this.messageCreateHandler,
       [this.messageDeleteHandler.action]: this.messageDeleteHandler,

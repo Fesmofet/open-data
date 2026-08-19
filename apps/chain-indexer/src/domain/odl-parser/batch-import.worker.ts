@@ -30,6 +30,7 @@ import { ChannelCreateHandler } from '../osl-parser/handlers/channel-create.hand
 import { ChannelAliasRegisterHandler } from '../osl-parser/handlers/channel-alias-register.handler';
 import { ChannelMemberAddHandler } from '../osl-parser/handlers/channel-member-add.handler';
 import { ChannelMemberRemoveHandler } from '../osl-parser/handlers/channel-member-remove.handler';
+import { ChannelLeaveHandler } from '../osl-parser/handlers/channel-leave.handler';
 import { ChannelUpdateHandler } from '../osl-parser/handlers/channel-update.handler';
 import { MessageCreateHandler } from '../osl-parser/handlers/message-create.handler';
 import { MessageDeleteHandler } from '../osl-parser/handlers/message-delete.handler';
@@ -57,6 +58,7 @@ export class BatchImportWorker {
     private readonly channelAliasRegisterHandler: ChannelAliasRegisterHandler,
     private readonly channelMemberAddHandler: ChannelMemberAddHandler,
     private readonly channelMemberRemoveHandler: ChannelMemberRemoveHandler,
+    private readonly channelLeaveHandler: ChannelLeaveHandler,
     private readonly channelUpdateHandler: ChannelUpdateHandler,
     private readonly messageCreateHandler: MessageCreateHandler,
     private readonly messageDeleteHandler: MessageDeleteHandler,
@@ -74,6 +76,7 @@ export class BatchImportWorker {
       [this.channelAliasRegisterHandler.action]: this.channelAliasRegisterHandler,
       [this.channelMemberAddHandler.action]: this.channelMemberAddHandler,
       [this.channelMemberRemoveHandler.action]: this.channelMemberRemoveHandler,
+      [this.channelLeaveHandler.action]: this.channelLeaveHandler,
       [this.channelUpdateHandler.action]: this.channelUpdateHandler,
       [this.messageCreateHandler.action]: this.messageCreateHandler,
       [this.messageDeleteHandler.action]: this.messageDeleteHandler,

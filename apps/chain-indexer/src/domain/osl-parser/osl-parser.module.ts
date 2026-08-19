@@ -9,6 +9,7 @@ import { ChannelCreateHandler } from './handlers/channel-create.handler';
 import { ChannelAliasRegisterHandler } from './handlers/channel-alias-register.handler';
 import { ChannelMemberAddHandler } from './handlers/channel-member-add.handler';
 import { ChannelMemberRemoveHandler } from './handlers/channel-member-remove.handler';
+import { ChannelLeaveHandler } from './handlers/channel-leave.handler';
 import { ChannelUpdateHandler } from './handlers/channel-update.handler';
 import { MessageCreateHandler } from './handlers/message-create.handler';
 import { MessageDeleteHandler } from './handlers/message-delete.handler';
@@ -19,6 +20,7 @@ const messagingHandlers = [
   ChannelAliasRegisterHandler,
   ChannelMemberAddHandler,
   ChannelMemberRemoveHandler,
+  ChannelLeaveHandler,
   ChannelUpdateHandler,
   MessageCreateHandler,
   MessageDeleteHandler,

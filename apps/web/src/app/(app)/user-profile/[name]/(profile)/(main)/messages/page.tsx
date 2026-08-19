@@ -34,15 +34,45 @@ export default async function UserProfileMessagesPage({
   const initialPeer = peerParam?.trim() || null;
   const channelFromUrl = channelParam?.trim() || null;
 
-  if (!channelFromUrl && !initialPeer && initialChannels.items[0]?.channel_id) {
-    redirect(
-      `/@${accountName}/messages?${new URLSearchParams({
-        channel: initialChannels.items[0].channel_id,
-      }).toString()}`,
-    );
+  if (!channelFromUrl && !initialPeer) {
+    for (const item of initialChannels.items) {
+      const channelId = item.channel_id?.trim();
+      if (!channelId) {
+        continue;
+      }
+      const detail = await getChannelByIdQuery(channelId, viewer);
+      if (detail) {
+        redirect(
+          `/@${accountName}/messages?${new URLSearchParams({
+            channel: channelId,
+          }).toString()}`,
+        );
+      }
+    }
   }
 
   const initialChannelId = channelFromUrl;
+
+  if (initialChannelId && !initialPeer) {
+    const requestedDetail = await getChannelByIdQuery(initialChannelId, viewer);
+    if (!requestedDetail) {
+      for (const item of initialChannels.items) {
+        const channelId = item.channel_id?.trim();
+        if (!channelId || channelId === initialChannelId) {
+          continue;
+        }
+        const detail = await getChannelByIdQuery(channelId, viewer);
+        if (detail) {
+          redirect(
+            `/@${accountName}/messages?${new URLSearchParams({
+              channel: channelId,
+            }).toString()}`,
+          );
+        }
+      }
+      redirect(`/@${accountName}/messages`);
+    }
+  }
 
   const initialMessages =
     initialChannelId && !initialPeer

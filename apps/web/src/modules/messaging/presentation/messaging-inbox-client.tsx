@@ -8,26 +8,50 @@ import { useLoginModal } from '@/modules/auth';
 
 import { useSendMessage } from '../application/use-send-message';
 import { useCreateGroupChannel } from '../application/use-create-group-channel';
+import { useLeaveGroupChannel } from '../application/use-leave-group-channel';
+import { useUpdateGroupChannel } from '../application/use-update-group-channel';
+import { useAddGroupMembers } from '../application/use-add-group-members';
 import {
   buildOptimisticGroupChannelDetail,
   buildOptimisticGroupChannelListItem,
   mergeChannelListItems,
 } from '../domain/messaging.helpers';
+import {
+  buildGroupChannelHref,
+  resolveStartChatAction,
+} from '../application/messaging-start-chat';
 import type {
   ChannelDetail,
   ChannelListPage,
   MessageHistoryPage,
   MessageItem,
 } from '../domain/messaging.types';
+import { EMPTY_LEAVE_POLICY } from '../domain/messaging.types';
 import {
   loadOlderChannelMessagesAction,
   markChannelReadAction,
 } from '../infrastructure/messaging.actions';
+import {
+  buildMessagesHref,
+  dispatchMessagingChannelUpdated,
+  dispatchMessagingChannelLeft,
+  dispatchMessagingChannelMembersAdded,
+  mergeViewerChannels,
+  patchChannelDetail,
+  patchChannelDetailMembers,
+  patchChannelListItem,
+  pickNextChannelAfterLeave,
+  subscribeMessagingChannelUpdated,
+  subscribeMessagingChannelLeft,
+  subscribeMessagingChannelMembersAdded,
+} from '../infrastructure/messaging-channel-sync';
 import { MessagingChannelAbout } from './messaging-channel-about';
 import { MessagingChannelList } from './messaging-channel-list';
 import { MessagingComposeBar } from './messaging-compose-bar';
 import { MessagingLayout } from './messaging-layout';
 import { MessagingMessageList } from './messaging-message-list';
+import { EditGroupModal } from './edit-group-modal';
+import { LeaveGroupModal } from './leave-group-modal';
 import { NewMessageModal } from './new-message-modal';
 
 export type MessagingInboxClientProps = {
@@ -67,6 +91,8 @@ export function MessagingInboxClient({
     initialChannelId || initialPeer ? 'chat' : 'list',
   );
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [pendingPeer, setPendingPeer] = useState<string | null>(initialPeer);
   const [loadingOlder, startOlderTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -89,36 +115,70 @@ export function MessagingInboxClient({
     revalidateAccountName: viewerUsername,
   });
 
+  const { leaveGroupChannel, pending: leavePending } = useLeaveGroupChannel({
+    viewerUsername,
+    onRequireLogin: openLogin,
+    revalidateAccountName: viewerUsername,
+    onLeft: (channelId) => {
+      dispatchMessagingChannelLeft({ channelId });
+    },
+  });
+
+  const { updateGroupChannel, pending: updatePending } = useUpdateGroupChannel({
+    viewerUsername,
+    onRequireLogin: openLogin,
+    revalidateAccountName: viewerUsername,
+    onUpdated: ({ channelId, title, imageCid }) => {
+      const patch = { channelId, title, imageCid };
+      setChannelDetail((prev) => (prev ? patchChannelDetail(prev, patch) : prev));
+      setChannels((prev) => prev.map((item) => patchChannelListItem(item, patch)));
+      dispatchMessagingChannelUpdated(patch);
+      setEditOpen(false);
+    },
+  });
+
+  const { addGroupMembers, pending: addMembersPending } = useAddGroupMembers({
+    viewerUsername,
+    onRequireLogin: openLogin,
+    revalidateAccountName: viewerUsername,
+    onAdded: ({ channelId, accounts }) => {
+      const patch = { channelId, accounts };
+      setChannelDetail((prev) =>
+        prev ? patchChannelDetailMembers(prev, patch) : prev,
+      );
+      dispatchMessagingChannelMembersAdded(patch);
+    },
+  });
+
   const handleStartChat = useCallback(
     async (input: { peers: string[]; title?: string }) => {
-      if (input.peers.length === 0) {
+      const action = await resolveStartChatAction(accountName, viewerUsername, input);
+      if (action.kind === 'noop') {
         return;
       }
-      if (input.peers.length === 1) {
-        const params = new URLSearchParams();
-        params.set('peer', input.peers[0]!);
-        router.push(`/@${accountName}/messages?${params.toString()}`);
+      if (action.kind === 'dm') {
+        router.push(action.href);
         setNewMessageOpen(false);
         return;
       }
       const channelId = await createGroupChannel({
-        members: input.peers,
-        title: input.title,
+        members: action.members,
+        title: action.title,
       });
       if (!channelId) {
         return;
       }
       const optimisticListItem = buildOptimisticGroupChannelListItem({
         channelId,
-        members: input.peers,
+        members: action.members,
         viewerUsername,
-        title: input.title,
+        title: action.title,
       });
       const optimisticDetail = buildOptimisticGroupChannelDetail({
         channelId,
-        members: input.peers,
+        members: action.members,
         viewerUsername,
-        title: input.title,
+        title: action.title,
       });
       setChannels((prev) => mergeChannelListItems([optimisticListItem], prev));
       setActiveChannelId(channelId);
@@ -128,9 +188,7 @@ export function MessagingInboxClient({
       setMessagesCursor(null);
       setHasMoreMessages(false);
       setMobileView('chat');
-      const params = new URLSearchParams();
-      params.set('channel', channelId);
-      router.push(`/@${accountName}/messages?${params.toString()}`);
+      router.push(buildGroupChannelHref(accountName, channelId));
       router.refresh();
       setNewMessageOpen(false);
     },
@@ -138,7 +196,7 @@ export function MessagingInboxClient({
   );
 
   useEffect(() => {
-    setChannels((prev) => mergeChannelListItems(initialChannels.items, prev));
+    setChannels((prev) => mergeViewerChannels(initialChannels.items, prev));
   }, [initialChannels.items]);
 
   useEffect(() => {
@@ -156,7 +214,12 @@ export function MessagingInboxClient({
         display_title: initialPeer,
         list_title: null,
         peer: initialPeer,
-        members: [viewerUsername, initialPeer],
+        members: [
+          { account: viewerUsername, role: 'member' },
+          { account: initialPeer, role: 'member' },
+        ],
+        viewer_role: null,
+        leave_policy: EMPTY_LEAVE_POLICY,
       });
     }
   }, [initialPeer, viewerUsername]);
@@ -170,6 +233,10 @@ export function MessagingInboxClient({
       setChannelDetail(initialChannelDetail);
       setPendingPeer(null);
       setMobileView('chat');
+    } else if (!initialPeer) {
+      setActiveChannelId(null);
+      setChannelDetail(null);
+      setMobileView('list');
     }
   }, [
     initialChannelDetail,
@@ -177,6 +244,7 @@ export function MessagingInboxClient({
     initialMessages.cursor,
     initialMessages.hasMore,
     initialMessages.items,
+    initialPeer,
   ]);
 
   useEffect(() => {
@@ -204,6 +272,39 @@ export function MessagingInboxClient({
       void markReadForMessages(initialMessages.items);
     }
   }, [activeChannelId, initialMessages.items, markReadForMessages]);
+
+  useEffect(() => {
+    return subscribeMessagingChannelUpdated((patch) => {
+      setChannelDetail((prev) => (prev ? patchChannelDetail(prev, patch) : prev));
+      setChannels((prev) => prev.map((item) => patchChannelListItem(item, patch)));
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeMessagingChannelLeft(({ channelId }) => {
+      setLeaveOpen(false);
+      setChannels((prev) => {
+        const remaining = prev.filter((item) => item.channel_id !== channelId);
+        const nextChannelId = pickNextChannelAfterLeave(prev, channelId);
+        router.replace(buildMessagesHref(accountName, nextChannelId));
+        return remaining;
+      });
+      setActiveChannelId(null);
+      setChannelDetail(null);
+      setMessages([]);
+      setMessagesCursor(null);
+      setHasMoreMessages(false);
+      setMobileView('list');
+    });
+  }, [accountName, router]);
+
+  useEffect(() => {
+    return subscribeMessagingChannelMembersAdded((patch) => {
+      setChannelDetail((prev) =>
+        prev ? patchChannelDetailMembers(prev, patch) : prev,
+      );
+    });
+  }, []);
 
   const selectChannel = useCallback(
     (channelId: string) => {
@@ -326,7 +427,11 @@ export function MessagingInboxClient({
             ? undefined
             : channelDetail
               ? (
-                  <MessagingChannelAbout channel={channelDetail} />
+                  <MessagingChannelAbout
+                    channel={channelDetail}
+                    onEdit={() => setEditOpen(true)}
+                    onLeave={() => setLeaveOpen(true)}
+                  />
                 )
               : undefined
         }
@@ -337,6 +442,50 @@ export function MessagingInboxClient({
         viewerUsername={viewerUsername}
         pending={groupCreatePending}
         onStartChat={handleStartChat}
+      />
+      <LeaveGroupModal
+        open={leaveOpen}
+        onClose={() => setLeaveOpen(false)}
+        channel={channelDetail}
+        leavePolicy={channelDetail?.leave_policy ?? EMPTY_LEAVE_POLICY}
+        pending={leavePending}
+        onConfirm={async (input) => {
+          if (!channelDetail?.channel_id) {
+            return;
+          }
+          const ok = await leaveGroupChannel({
+            channelId: channelDetail.channel_id,
+            successorAdmin: input.successorAdmin,
+            deleteMyMessages: input.deleteMyMessages,
+          });
+          if (ok) {
+            setLeaveOpen(false);
+          }
+        }}
+      />
+      <EditGroupModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        channel={channelDetail}
+        viewerUsername={viewerUsername}
+        pending={updatePending}
+        addPending={addMembersPending}
+        onSave={async (input) => {
+          if (!channelDetail?.channel_id) {
+            return;
+          }
+          await updateGroupChannel({
+            channelId: channelDetail.channel_id,
+            title: input.title,
+            imageCid: input.imageCid,
+          });
+        }}
+        onAddMembers={async (accounts) => {
+          if (!channelDetail?.channel_id) {
+            return;
+          }
+          await addGroupMembers({ channelId: channelDetail.channel_id, accounts });
+        }}
       />
     </>
   );

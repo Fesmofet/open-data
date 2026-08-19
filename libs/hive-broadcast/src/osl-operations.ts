@@ -9,6 +9,7 @@ type OslEnvelopeAction =
   | 'channel_alias_register'
   | 'channel_member_add'
   | 'channel_member_remove'
+  | 'channel_leave'
   | 'channel_update'
   | 'message_create'
   | 'message_delete'
@@ -180,5 +181,52 @@ export function buildOslChannelCreateOp(input: BuildOslChannelCreateOpInput): Cu
     action: 'channel_create',
     payload: input.payload,
     required_posting_auths: [input.creator],
+  });
+}
+
+export type BuildOslChannelLeaveOpInput = {
+  readonly id: string;
+  readonly leaver: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslChannelLeaveOp(input: BuildOslChannelLeaveOpInput): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'channel_leave',
+    payload: input.payload,
+    required_posting_auths: [input.leaver],
+  });
+}
+
+export type BuildOslChannelUpdateOpInput = {
+  readonly id: string;
+  readonly admin: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslChannelUpdateOp(input: BuildOslChannelUpdateOpInput): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'channel_update',
+    payload: input.payload,
+    required_posting_auths: [input.admin],
+  });
+}
+
+export type BuildOslChannelMemberAddOpInput = {
+  readonly id: string;
+  readonly admin: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslChannelMemberAddOp(
+  input: BuildOslChannelMemberAddOpInput,
+): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'channel_member_add',
+    payload: input.payload,
+    required_posting_auths: [input.admin],
   });
 }

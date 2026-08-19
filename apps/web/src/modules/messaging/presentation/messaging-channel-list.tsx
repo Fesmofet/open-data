@@ -14,6 +14,10 @@ import {
   filterChannelsByUnread,
 } from '../domain/messaging.helpers';
 import type { ChannelListItem, MessagingListFilter } from '../domain/messaging.types';
+import {
+  MESSAGING_COLUMN_FOOTER_INNER_CLASS,
+  MESSAGING_COLUMN_FOOTER_SHELL_CLASS,
+} from './messaging-layout.constants';
 import { MessagingChannelRow } from './messaging-channel-row';
 
 export type MessagingChannelListProps = {
@@ -51,19 +55,8 @@ export function MessagingChannelList({
         variant === 'embedded' ? 'border-r border-border' : '',
       ].join(' ')}
     >
-      <div className="border-b border-border px-3 py-3">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-body-lg font-weight-strong text-fg">{t('messages')}</h2>
-          {onNewMessage ? (
-            <button
-              type="button"
-              className="rounded-btn px-2 py-1 text-body-sm font-weight-label text-accent hover:bg-accent-soft"
-              onClick={onNewMessage}
-            >
-              {t('messaging_new_message')}
-            </button>
-          ) : null}
-        </div>
+      <div className="shrink-0 border-b border-border px-3 py-3">
+        <h2 className="text-body-lg font-weight-strong text-fg">{t('messages')}</h2>
         <input
           type="search"
           value={search}
@@ -103,6 +96,19 @@ export function MessagingChannelList({
           ))
         )}
       </div>
+      {onNewMessage ? (
+        <div className={[MESSAGING_COLUMN_FOOTER_SHELL_CLASS, 'mt-auto'].join(' ')}>
+          <div className={MESSAGING_COLUMN_FOOTER_INNER_CLASS}>
+            <button
+              type="button"
+              className="w-full rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg"
+              onClick={onNewMessage}
+            >
+              {t('messaging_new_message')}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
