@@ -1,0 +1,120 @@
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { GetChannelByIdEndpoint } from './get-channel-by-id.endpoint';
+import type { MessagingRepository } from '../../repositories/messaging.repository';
+
+describe('GetChannelByIdEndpoint', () => {
+  const groupChannel = {
+    channel_id: 'grp-1',
+    kind: 'group',
+    creator: 'alice',
+    title: 'Team',
+    image: null,
+    object_id: null,
+    pair_hash: null,
+    access: 'members_only',
+    last_message_at_unix: null,
+    dissolved_at_unix: null,
+    created_at_unix: 1,
+    event_seq: BigInt(1),
+    transaction_id: 'tx-0',
+  };
+
+  const objectChannel = {
+    ...groupChannel,
+    channel_id: 'obj-ch-1',
+    kind: 'object',
+    title: 'Object chat',
+    object_id: 'obj-1',
+    access: 'public_read',
+  };
+
+  function makeEndpoint(messaging: Partial<MessagingRepository>) {
+    const repo = {
+      findChannelById: jest.fn(),
+      listMembers: jest.fn(),
+      isMember: jest.fn(),
+      ...messaging,
+    } as unknown as MessagingRepository;
+    return { endpoint: new GetChannelByIdEndpoint(repo), repo };
+  }
+
+  it('returns null when channel not found', async () => {
+    const { endpoint } = makeEndpoint({
+      findChannelById: jest.fn().mockResolvedValue(undefined),
+    });
+
+    await expect(endpoint.execute('missing', 'alice')).resolves.toBeNull();
+  });
+
+  it('throws when channel is dissolved', async () => {
+    const { endpoint } = makeEndpoint({
+      findChannelById: jest.fn().mockResolvedValue({
+        ...groupChannel,
+        dissolved_at_unix: 999,
+      }),
+    });
+
+    await expect(endpoint.execute('grp-1', 'alice')).rejects.toThrow(NotFoundException);
+  });
+
+  it('loads members for group channels', async () => {
+    const members = [
+      {
+        channel_id: 'grp-1',
+        account: 'alice',
+        role: 'admin',
+        joined_at_unix: 1,
+        last_read_at_unix: null,
+      },
+    ];
+    const { endpoint, repo } = makeEndpoint({
+      findChannelById: jest.fn().mockResolvedValue(groupChannel),
+      listMembers: jest.fn().mockResolvedValue(members),
+      isMember: jest.fn().mockResolvedValue(true),
+    });
+
+    const result = await endpoint.execute('grp-1', 'alice');
+
+    expect(repo.listMembers).toHaveBeenCalledWith('grp-1');
+    expect(result?.members).toEqual([{ account: 'alice', role: 'admin' }]);
+    expect(result?.viewer_role).toBe('admin');
+  });
+
+  it('skips listMembers and returns empty members for object channels', async () => {
+    const { endpoint, repo } = makeEndpoint({
+      findChannelById: jest.fn().mockResolvedValue(objectChannel),
+      listMembers: jest.fn().mockResolvedValue([
+        {
+          channel_id: 'obj-ch-1',
+          account: 'legacy',
+          role: 'member',
+          joined_at_unix: 1,
+          last_read_at_unix: null,
+        },
+      ]),
+      isMember: jest.fn(),
+    });
+
+    const result = await endpoint.execute('obj-ch-1', 'alice');
+
+    expect(repo.listMembers).not.toHaveBeenCalled();
+    expect(repo.isMember).not.toHaveBeenCalled();
+    expect(result?.members).toEqual([]);
+    expect(result?.viewer_role).toBeNull();
+    expect(result?.leave_policy).toEqual({
+      can_leave: false,
+      requires_successor: false,
+      eligible_successors: [],
+    });
+  });
+
+  it('requires membership for non-object channels', async () => {
+    const { endpoint } = makeEndpoint({
+      findChannelById: jest.fn().mockResolvedValue(groupChannel),
+      listMembers: jest.fn().mockResolvedValue([]),
+      isMember: jest.fn().mockResolvedValue(false),
+    });
+
+    await expect(endpoint.execute('grp-1', 'bob')).rejects.toThrow(ForbiddenException);
+  });
+});

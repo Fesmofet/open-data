@@ -34,9 +34,23 @@ export class ChannelMemberAddHandler implements OdlActionHandler {
 
     const { channel_id, account } = result.data;
     const channel = await this.channelsRepository.findById(channel_id);
-    if (!channel || channel.kind !== CHANNEL_KINDS[1]) {
+    if (!channel) {
       this.logger.warn(
-        `channel_member_add: group channel '${channel_id}' not found; skipping`,
+        `channel_member_add: channel '${channel_id}' not found; skipping`,
+      );
+      return;
+    }
+
+    if (channel.kind === CHANNEL_KINDS[2]) {
+      this.logger.warn(
+        `channel_member_add: object channels do not support membership; skipping`,
+      );
+      return;
+    }
+
+    if (channel.kind !== CHANNEL_KINDS[1]) {
+      this.logger.warn(
+        `channel_member_add: not a group channel '${channel_id}'; skipping`,
       );
       return;
     }

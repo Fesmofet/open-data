@@ -43,7 +43,10 @@ export class GetChannelByIdEndpoint {
       throw new NotFoundException('Channel not found');
     }
 
-    const members = await this.messagingRepo.listMembers(channel.channel_id);
+    const members =
+      channel.kind === 'object'
+        ? []
+        : await this.messagingRepo.listMembers(channel.channel_id);
 
     if (channel.kind !== 'object') {
       const viewerTrimmed = viewer?.trim() ?? '';

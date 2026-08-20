@@ -37,7 +37,7 @@ Excludes authors in governance `muted` and (when `X-Viewer` set) viewer `user_ac
 
 | Field | Description |
 |-------|-------------|
-| `members[]` | `{ account, role: "admin" \| "member" }` |
+| `members[]` | `{ account, role: "admin" \| "member" }`. For `kind=object` always `[]` (no membership roster). |
 | `viewer_role` | Viewer's role or `null` |
 | `leave_policy` | `{ can_leave, requires_successor, eligible_successors[] }` |
 

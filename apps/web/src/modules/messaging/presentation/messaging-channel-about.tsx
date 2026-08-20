@@ -10,6 +10,7 @@ import {
   hiveAvatarUrl,
   resolveChannelImageUrl,
 } from '../domain/messaging.helpers';
+import type { ChannelDetail } from '../domain/messaging.types';
 import {
   MESSAGING_COLUMN_FOOTER_INNER_CLASS,
   MESSAGING_COLUMN_FOOTER_SHELL_CLASS,
@@ -37,6 +38,7 @@ export function MessagingChannelAbout({
   const imageUrl = resolveChannelImageUrl(channel.image, contentBaseUrl);
   const isGroupAdmin = channel.kind === 'group' && channel.viewer_role === 'admin';
   const canLeave = channel.kind === 'group' && channel.leave_policy.can_leave;
+  const showMemberRoster = channel.kind !== 'object';
 
   return (
     <aside
@@ -75,9 +77,11 @@ export function MessagingChannelAbout({
           {description ? (
             <p className="mt-2 text-body-sm text-muted">{description}</p>
           ) : null}
-          <p className="mt-1 text-caption text-muted">
-            {t('messaging_members_count').replace('{count}', String(channel.members.length))}
-          </p>
+          {showMemberRoster ? (
+            <p className="mt-1 text-caption text-muted">
+              {t('messaging_members_count').replace('{count}', String(channel.members.length))}
+            </p>
+          ) : null}
           {isGroupAdmin && onEdit ? (
             <button
               type="button"
@@ -89,32 +93,39 @@ export function MessagingChannelAbout({
           ) : null}
         </div>
       </div>
-      <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
-        <h3 className="text-body-sm font-weight-label text-fg">{t('messaging_members')}</h3>
-        <ul className="mt-2 space-y-2">
-          {channel.members.slice(0, 8).map((member) => (
-            <li key={member.account}>
-              <Link
-                href={`/@${member.account}`}
-                className="flex items-center gap-2 rounded-btn px-1 py-1 hover:bg-surface-control/60"
-              >
-                <UserAvatar
-                  username={member.account}
-                  avatarUrl={hiveAvatarUrl(member.account)}
-                  displayName={member.account}
-                  size={32}
-                />
-                <span className="truncate text-body-sm text-fg">{member.account}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        {channel.members.length > 8 ? (
-          <p className="mt-2 text-caption text-muted">
-            {t('messaging_members_more').replace('{count}', String(channel.members.length - 8))}
-          </p>
-        ) : null}
-      </div>
+      {showMemberRoster ? (
+        <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
+          <h3 className="text-body-sm font-weight-label text-fg">{t('messaging_members')}</h3>
+          <ul className="mt-2 space-y-2">
+            {channel.members.slice(0, 8).map((member) => (
+              <li key={member.account}>
+                <Link
+                  href={`/@${member.account}`}
+                  className="flex items-center gap-2 rounded-btn px-1 py-1 hover:bg-surface-control/60"
+                >
+                  <UserAvatar
+                    username={member.account}
+                    avatarUrl={hiveAvatarUrl(member.account)}
+                    displayName={member.account}
+                    size={32}
+                  />
+                  <span className="truncate text-body-sm text-fg">{member.account}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {channel.members.length > 8 ? (
+            <p className="mt-2 text-caption text-muted">
+              {t('messaging_members_more').replace(
+                '{count}',
+                String(channel.members.length - 8),
+              )}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <div className="min-h-0 flex-1" />
+      )}
       {canLeave && onLeave ? (
         <div className={[MESSAGING_COLUMN_FOOTER_SHELL_CLASS, 'mt-auto'].join(' ')}>
           <div className={MESSAGING_COLUMN_FOOTER_INNER_CLASS}>

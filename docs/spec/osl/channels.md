@@ -37,6 +37,8 @@ No `kind=agent` — see [agents.md](agents.md).
 - One channel per `object_id` (unique index).
 - Default `access=public_read`.
 - Alias `obj:{object_id}` on create.
+- **No membership roster:** `channel_create` does not insert `channel_members` rows; posting a message does not add the author as a member. Chat participants are message **authors** in `messages`, not `channel_members`.
+- **`channel_member_add`**, **`channel_member_remove`**, and **`channel_leave`** are not applicable (indexer warn-skip). Legacy rows in `channel_members` for object channels, if any, are ignored by query-api (`members: []`).
 - Indexer does **not** filter `banned`/`muted` on write for object channels; query-api applies mute filters on read.
 
 ## Group membership limits and mute rules (v1)

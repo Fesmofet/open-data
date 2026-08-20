@@ -393,7 +393,7 @@ export function MessagingInboxClient({
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="border-b border-border px-4 py-3">
                 <h3 className="truncate font-weight-strong text-fg">{chatTitle}</h3>
-                {channelDetail?.members.length ? (
+                {channelDetail?.kind === 'group' && channelDetail.members.length ? (
                   <p className="text-caption text-muted">
                     {t('messaging_members_count').replace(
                       '{count}',

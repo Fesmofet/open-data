@@ -36,6 +36,13 @@ export class ChannelMemberRemoveHandler implements OdlActionHandler {
       return;
     }
 
+    if (channel.kind === CHANNEL_KINDS[2]) {
+      this.logger.warn(
+        `channel_member_remove: object channels do not support membership; skipping`,
+      );
+      return;
+    }
+
     if (channel.kind !== CHANNEL_KINDS[1]) {
       this.logger.warn(
         `channel_member_remove: not a group channel '${channel_id}'; skipping`,

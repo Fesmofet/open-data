@@ -67,7 +67,7 @@ Optional group title is shown when two or more users are selected. `channel_id` 
 
 ## Object channel bootstrap
 
-Object Messages always renders the chat UI (compose + message list), even when query-api has no channel yet.
+Object Messages always renders the chat UI (compose + message list), even when query-api has no channel yet. Object channels do **not** show a member roster (no `{count} members` or Members list); chat participants are message authors only.
 
 Per [channels.md](../../../spec/osl/channels.md), object channels require explicit `channel_create` before `message_create`. The UI uses deterministic `buildObjectChannelId(objectId)` → `obj-ch-{objectId}` for the pending channel.
 

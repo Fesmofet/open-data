@@ -115,6 +115,23 @@ describe('ChannelMemberAddHandler', () => {
     expect(channels.insertMember).not.toHaveBeenCalled();
   });
 
+  it('skips when channel is object kind', async () => {
+    const { handler, channels } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          ...groupChannel,
+          channel_id: 'obj-ch-1',
+          kind: CHANNEL_KINDS[2],
+          object_id: 'obj-1',
+        }),
+      },
+    });
+
+    await handler.handle({ channel_id: 'obj-ch-1', account: 'bob' }, baseCtx);
+
+    expect(channels.insertMember).not.toHaveBeenCalled();
+  });
+
   it('skips when target already member', async () => {
     const { handler, channels } = makeHandler({
       channels: { isMember: jest.fn().mockResolvedValue(true) },

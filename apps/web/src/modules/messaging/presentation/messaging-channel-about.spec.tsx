@@ -117,4 +117,30 @@ describe('MessagingChannelAbout', () => {
     );
     expect(screen.queryByRole('button', { name: 'Leave group' })).not.toBeInTheDocument();
   });
+
+  it('hides member roster for object channels', () => {
+    render(
+      <I18nProvider locale={'en-US' as LocaleId} messages={messages}>
+        <MessagingChannelAbout
+          channel={{
+            ...groupChannel,
+            channel_id: 'obj-ch-1',
+            kind: 'object',
+            object_id: 'obj-1',
+            members: [{ account: 'legacy', role: 'member' }],
+            viewer_role: null,
+            leave_policy: {
+              can_leave: false,
+              requires_successor: false,
+              eligible_successors: [],
+            },
+          }}
+          variant="rail"
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.queryByText('1 members')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Members' })).not.toBeInTheDocument();
+  });
 });
