@@ -91,6 +91,12 @@
 
 **Rule:** A tool whose output a human must act on returns exactly what the human needs and nothing else. Heavy or fallback artefacts go behind a separate tool. Polling endpoints return a projection, not the whole stored state. State the required action in the tool description in imperative form.
 
+## Keychain request methods must keep their `this`
+
+**Pattern:** `requestEncodeMessage` / `requestVerifyKey` are declared **optional** on `HiveKeychainWindow`, and TypeScript drops property narrowing inside a nested closure (the `new Promise(...)` executor), so `kc.requestEncodeMessage(...)` reports "possibly undefined". Hoisting the method to a local (`const fn = kc?.requestEncodeMessage`) silences the compiler but **detaches the method from its receiver**; the extension internally calls `this.dispatchCustomEvent(...)`, so the browser fails at runtime with `this.dispatchCustomEvent is not a function`. A typecheck-only fix produced a runtime bug that no build step could catch.
+
+**Rule:** Narrow with `if (!kc?.method) throw`, then capture **`kc.method.bind(kc)`** — never a bare property reference. Non-optional members (`requestSignBuffer`, `requestBroadcast`) can stay as direct `kc.method(...)` calls. Cover it with a jsdom spec whose Keychain stub routes through `this` (see `keychain-memo-crypto.adapter.spec.ts`) so a detached reference fails the suite.
+
 ## `libs/*/package.json`: no `type` field
 
 **Pattern:** `libs/hive-memo-crypto/package.json` carried `"type": "commonjs"` from the `@nx/js:library` generator while the source is ESM. Nest consumers never noticed (webpack and ts-jest transpile to CJS), but the moment a client component pulled the barrel in, Turbopack walked up to the nearest `package.json`, saw an explicit CJS declaration against `import`/`export` source, and failed the whole `next build`. Flipping to `"type": "module"` fixes Turbopack but silently switches `@nx/js:tsc` output from CJS to ESM ("Package type is set to module but cjs format is included") — a fix for the symptom that breaks the build format.

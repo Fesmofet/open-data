@@ -91,10 +91,11 @@ export async function encodeMessageWithKeychain(
     throw new Error('Keychain memo encrypt requires Keychain login');
   }
   const kc = (window as HiveKeychainWindow).hive_keychain;
-  const requestEncodeMessage = kc?.requestEncodeMessage;
-  if (!requestEncodeMessage) {
+  if (!kc?.requestEncodeMessage) {
     throw new Error('Keychain encode not available');
   }
+  // Keychain methods rely on `this` — bind instead of detaching the reference.
+  const requestEncodeMessage = kc.requestEncodeMessage.bind(kc);
   return new Promise((resolve, reject) => {
     requestEncodeMessage(
       hiveAccount(sender),
@@ -125,10 +126,11 @@ export async function decodeMessageWithKeychain(
     throw new Error('Keychain memo decrypt requires Keychain login');
   }
   const kc = (window as HiveKeychainWindow).hive_keychain;
-  const requestVerifyKey = kc?.requestVerifyKey;
-  if (!requestVerifyKey) {
+  if (!kc?.requestVerifyKey) {
     throw new Error('Keychain decode not available');
   }
+  // Keychain methods rely on `this` — bind instead of detaching the reference.
+  const requestVerifyKey = kc.requestVerifyKey.bind(kc);
   return new Promise((resolve, reject) => {
     requestVerifyKey(
       hiveAccount(viewer),
