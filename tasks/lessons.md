@@ -90,3 +90,9 @@
 **Pattern:** `has_login_start` returned a ~2 KB terminal QR plus two long links. The consuming agent could not tell which field to send, started post-processing it with `jq`/`python`/`xxd`, and blew the 60-second HAS window.
 
 **Rule:** A tool whose output a human must act on returns exactly what the human needs and nothing else. Heavy or fallback artefacts go behind a separate tool. Polling endpoints return a projection, not the whole stored state. State the required action in the tool description in imperative form.
+
+## `libs/*/package.json`: no `type` field
+
+**Pattern:** `libs/hive-memo-crypto/package.json` carried `"type": "commonjs"` from the `@nx/js:library` generator while the source is ESM. Nest consumers never noticed (webpack and ts-jest transpile to CJS), but the moment a client component pulled the barrel in, Turbopack walked up to the nearest `package.json`, saw an explicit CJS declaration against `import`/`export` source, and failed the whole `next build`. Flipping to `"type": "module"` fixes Turbopack but silently switches `@nx/js:tsc` output from CJS to ESM ("Package type is set to module but cjs format is included") — a fix for the symptom that breaks the build format.
+
+**Rule:** Libs are **not** pnpm workspace packages (`pnpm-workspace.yaml` lists only `apps/*`, and `node_modules/@opden-data-layer/` does not exist), so `name`/`main`/`types`/`dependencies` in a lib `package.json` are dead metadata — resolution goes through tsconfig `paths` straight to `src/index.ts`. The only field with real effect is `type`, and it can only cause harm. **Never set `type` in `libs/*/package.json`**; delete it if a generator adds one. Most libs have no `package.json` at all — that is the preferred shape.
