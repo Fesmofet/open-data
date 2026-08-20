@@ -91,11 +91,12 @@ export async function encodeMessageWithKeychain(
     throw new Error('Keychain memo encrypt requires Keychain login');
   }
   const kc = (window as HiveKeychainWindow).hive_keychain;
-  if (!kc?.requestEncodeMessage) {
+  const requestEncodeMessage = kc?.requestEncodeMessage;
+  if (!requestEncodeMessage) {
     throw new Error('Keychain encode not available');
   }
   return new Promise((resolve, reject) => {
-    kc.requestEncodeMessage(
+    requestEncodeMessage(
       hiveAccount(sender),
       hiveAccount(receiver),
       memoPlaintextForKeychain(plaintext),
@@ -124,11 +125,12 @@ export async function decodeMessageWithKeychain(
     throw new Error('Keychain memo decrypt requires Keychain login');
   }
   const kc = (window as HiveKeychainWindow).hive_keychain;
-  if (!kc?.requestVerifyKey) {
+  const requestVerifyKey = kc?.requestVerifyKey;
+  if (!requestVerifyKey) {
     throw new Error('Keychain decode not available');
   }
   return new Promise((resolve, reject) => {
-    kc.requestVerifyKey(
+    requestVerifyKey(
       hiveAccount(viewer),
       normalizeHiveMemoCiphertext(ciphertext),
       'Memo',

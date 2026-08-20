@@ -4,10 +4,11 @@ import {
 } from './messaging.helpers';
 import type { MessageItem } from './messaging.types';
 
-const baseMessage: Pick<MessageItem, 'body' | 'encryption' | 'author'> = {
+const baseMessage: Pick<MessageItem, 'body' | 'encryption' | 'author' | 'overflow_ref'> = {
   body: null,
   encryption: null,
   author: 'alice',
+  overflow_ref: null,
 };
 
 describe('resolveMessagePresentation', () => {

@@ -170,7 +170,7 @@ export type MessagePresentation =
   | { kind: 'decrypted'; text: string };
 
 export function resolveMessagePresentation(
-  message: Pick<MessageItem, 'body' | 'encryption' | 'author'>,
+  message: Pick<MessageItem, 'body' | 'encryption' | 'author' | 'overflow_ref'>,
   viewerUsername: string | null,
   decryptedText?: string | null,
 ): MessagePresentation {
