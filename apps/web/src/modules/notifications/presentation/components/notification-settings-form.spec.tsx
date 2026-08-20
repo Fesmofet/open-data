@@ -30,6 +30,7 @@ const initialSettings: NotificationSettingsFormState = {
   my_comment: false,
   my_like: false,
   minimal_transfer: 0,
+  messages: true,
 };
 
 describe('NotificationSettingsForm', () => {

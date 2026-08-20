@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { GovernanceModule } from '../governance/governance.module';
 import { RepositoriesModule } from '../../repositories';
+import { NotificationAdapterModule } from '../notification-adapter/notification-adapter.module';
 import { OslCustomJsonParser } from './osl-custom-json-parser';
 import { HiveEngineDepositHandler } from './handlers/hive-engine-deposit.handler';
 import { UserNotificationSettingsHandler } from './handlers/user-notification-settings.handler';
@@ -28,7 +29,7 @@ const messagingHandlers = [
 ];
 
 @Module({
-  imports: [RepositoriesModule, GovernanceModule],
+  imports: [RepositoriesModule, GovernanceModule, NotificationAdapterModule],
   providers: [
     OslCustomJsonParser,
     HiveEngineDepositHandler,

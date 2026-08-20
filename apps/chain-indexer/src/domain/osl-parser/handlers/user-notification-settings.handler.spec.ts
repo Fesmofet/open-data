@@ -33,6 +33,7 @@ const validPayload = {
   my_comment: false,
   my_like: false,
   minimal_transfer: 0,
+  messages: true,
 };
 
 describe('UserNotificationSettingsHandler', () => {

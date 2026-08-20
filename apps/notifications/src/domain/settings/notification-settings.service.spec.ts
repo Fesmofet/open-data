@@ -203,4 +203,60 @@ describe('NotificationSettingsService', () => {
       ]),
     ).toBe(true);
   });
+
+  it('blocks message_direct and message_group when messages setting is false', () => {
+    const settings = baseSettings({ messages: false });
+    const direct = {
+      type: 'message_direct',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        channelId: 'dm-1',
+        messageId: 'msg-1',
+        author: 'alice',
+        encrypted: false,
+      },
+    } as AnyNotificationEvent;
+    const group = {
+      type: 'message_group',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        channelId: 'grp-1',
+        messageId: 'msg-2',
+        author: 'alice',
+        channelTitle: 'Team',
+        encrypted: false,
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, direct, null)).toBe(false);
+    expect(service.isAllowed(settings, group, null)).toBe(false);
+  });
+
+  it('allows bell_object_message when messages setting is false', () => {
+    const settings = baseSettings({ messages: false });
+    const event = {
+      type: 'bell_object_message',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: 'obj-1',
+      actor: 'alice',
+      payload: {
+        channelId: 'obj-ch-1',
+        messageId: 'msg-3',
+        author: 'alice',
+        encrypted: false,
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, null)).toBe(true);
+  });
 });

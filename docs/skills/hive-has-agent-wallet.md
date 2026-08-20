@@ -10,6 +10,7 @@ updated_at: 2026-08-12
 related:
   - docs/skills/setup-workspace.md
   - docs/skills/hive-blockchain-broadcast.md
+  - docs/skills/osl-messaging.md
   - docs/skills/has-login-from-chat.md
   - docs/skills/knowledge-api-routing.md
   - docs/apps/agent-wallet/spec/overview.md
@@ -32,6 +33,7 @@ Local NestJS daemon (`apps/agent-wallet`) that holds a **HAS session** (not priv
 
 - Interactive browser session — use web wallets (Keychain extension, HiveAuth in browser).
 - User explicitly wants **session posting key** automation — see [hive-blockchain-broadcast § B](hive-blockchain-broadcast.md#b-hiveiodhive-script--agent-with-session-posting-key).
+- **Encrypted OSL messages** — HAS cannot sign memo keys; use `AGENT_WALLET_SIGNING_MODE=local` + `HIVE_MEMO_KEY` per [osl-messaging.md](osl-messaging.md).
 - Hosted/multi-user signing service — out of scope; this daemon is **localhost only**.
 
 ## Security model

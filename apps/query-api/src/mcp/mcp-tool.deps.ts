@@ -62,6 +62,15 @@ import type {
   GetUserExpertiseCountersEndpoint,
   GetUserExpertiseObjectsEndpoint,
 } from '../domain/expertise';
+import type { GetMemoPublicKeyEndpoint } from '../domain/messaging/get-memo-public-key.endpoint';
+import type { GetChannelsEndpoint } from '../domain/messaging/get-channels.endpoint';
+import type { GetChannelByIdEndpoint } from '../domain/messaging/get-channel-by-id.endpoint';
+import type { GetChannelByAliasEndpoint } from '../domain/messaging/get-channel-by-alias.endpoint';
+import type { GetChannelMessagesEndpoint } from '../domain/messaging/get-channel-messages.endpoint';
+import type {
+  GetObjectChannelEndpoint,
+  GetObjectChannelMessagesEndpoint,
+} from '../domain/messaging/get-object-channel.endpoint';
 import type { GetUserProfileEndpoint, GetUserAccountSidebarEndpoint, GetUserNotificationSettingsEndpoint } from '../domain/users';
 import type {
   GetUserEngineTokenDelegationsEndpoint,
@@ -146,4 +155,11 @@ export interface McpToolDeps {
   oblConversion: OblConversionService;
   oblRelationships: OblRelationshipsService;
   oblArbitration: OblArbitrationService;
+  getChannels: GetChannelsEndpoint;
+  getChannelById: GetChannelByIdEndpoint;
+  getChannelByAlias: GetChannelByAliasEndpoint;
+  getChannelMessages: GetChannelMessagesEndpoint;
+  getObjectChannel: GetObjectChannelEndpoint;
+  getObjectChannelMessages: GetObjectChannelMessagesEndpoint;
+  getMemoPublicKey: GetMemoPublicKeyEndpoint;
 }

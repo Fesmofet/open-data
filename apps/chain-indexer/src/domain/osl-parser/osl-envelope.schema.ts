@@ -63,6 +63,7 @@ export const updateUserNotificationSettingsPayloadSchema = z
     my_comment: z.boolean(),
     my_like: z.boolean(),
     minimal_transfer: z.number(),
+    messages: z.boolean().optional().default(true),
   })
   .strict();
 

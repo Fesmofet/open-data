@@ -99,6 +99,7 @@ export class WalletStatusService {
   getStatus(): {
     signingMode: 'has' | 'local';
     waivioApiOrigin: string;
+    memoReady: boolean;
     hasSession: { active: boolean; account?: string; expiresAt?: number };
     waivioAuth: ReturnType<WaivioAuthSessionService['getStatus']>;
     localKeys: ReturnType<LocalKeysService['getReadiness']>;
@@ -106,6 +107,7 @@ export class WalletStatusService {
     return {
       signingMode: this.broadcast.getSigningMode(),
       waivioApiOrigin: this.config.get('waivioApiOrigin', { infer: true }),
+      memoReady: this.localKeys.isMemoReady(),
       hasSession: {
         active: this.hasSession.getSessionInfo() != null,
         ...(this.hasSession.getSessionInfo() ?? {}),

@@ -46,6 +46,7 @@ export const agentWalletConfigSchema = z.object({
   HIVE_ACCOUNT: z.string().optional(),
   HIVE_POSTING_KEY: z.string().optional(),
   HIVE_ACTIVE_KEY: z.string().optional(),
+  HIVE_MEMO_KEY: z.string().optional(),
   HIVE_RPC_NODES: z
     .string()
     .optional()
@@ -58,6 +59,7 @@ export const agentWalletConfigSchema = z.object({
   AGENT_WALLET_DATA_DIR: z.string().optional(),
   AGENT_WALLET_NO_PERSIST: boolEnv,
   AGENT_WALLET_BEARER_TOKEN: z.string().min(16).optional(),
+  NOTIFICATIONS_WS_URL: z.string().optional(),
 });
 
 export type AgentWalletEnv = z.infer<typeof agentWalletConfigSchema>;

@@ -113,6 +113,13 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_obl_service_order` | `GET /query/v1/obl/service-orders/:serviceOrderId` | [service-orders.md](../../spec/obl/service-orders.md) |
 | `get_obl_report` | `GET /query/v1/obl/reports/:reportId` | [reports.md](../../spec/obl/reports.md) |
 | `convert_usd_to_waiv` | `GET /query/v1/obl/convert/usd-to-waiv` | [payments.md](../../spec/obl/payments.md) |
+| `get_channels` | `GET /query/v1/channels` | [osl-messaging.md](osl-messaging.md) |
+| `get_channel_by_id` | `GET /query/v1/channels/:id` | [osl-messaging.md](osl-messaging.md) |
+| `get_channel_by_alias` | `GET /query/v1/channels/by-alias/:alias` | [osl-messaging.md](osl-messaging.md) |
+| `get_channel_messages` | `POST /query/v1/channels/:id/messages` | [osl-messaging.md](osl-messaging.md) |
+| `get_object_channel` | `GET /query/v1/objects/:object_id/channel` | [osl-messaging.md](osl-messaging.md) |
+| `get_object_channel_messages` | `POST /query/v1/objects/:object_id/channel/messages` | [osl-messaging.md](osl-messaging.md) |
+| `get_memo_public_key` | `GET /query/v1/users/:account/memo-public-key` | [osl-messaging.md](osl-messaging.md) |
 
 ## Cursor MCP config
 

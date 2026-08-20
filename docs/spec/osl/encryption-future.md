@@ -59,7 +59,7 @@ Invariants:
 
 ## Shared crypto lib
 
-`@opden-data-layer/hive-memo-crypto` — reusable from `apps/agent-wallet` (future MCP tools) via `MemoCryptoOperations` port. Web uses Keychain adapter for browser signing/decrypt.
+`@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt for agent-wallet MCP tools. See [osl-messaging skill](../../skills/osl-messaging.md).
 
 ## Future (out of v1)
 

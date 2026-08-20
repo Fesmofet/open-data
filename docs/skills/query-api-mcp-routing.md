@@ -12,6 +12,7 @@ related:
   - docs/apps/query-api/spec/obl.md
   - docs/apps/query-api/spec/objects-resolve-nested.md
   - docs/skills/knowledge-api-routing.md
+  - docs/skills/osl-messaging.md
   - docs/skills/obl-offers-contracts.md
   - docs/skills/obl-ledger.md
   - docs/skills/obl-disputes.md
@@ -63,6 +64,10 @@ related:
 | OBL relationships list | `get_obl_relationships` |
 | OBL arbitration inbox | `get_obl_arbitration` |
 | USD → WAIV conversion hint | `convert_usd_to_waiv` |
+| Messaging inbox / channels | `get_channels`, `get_channel_by_id`, `get_channel_messages` |
+| Object channel feed | `get_object_channel`, `get_object_channel_messages` |
+| Memo key for encrypt | `get_memo_public_key` |
+| Send / encrypt / inbound notify | Not in query-api MCP — use [osl-messaging](osl-messaging.md) skill + **agent-wallet** (`osl_build_*`, `wallet_broadcast`, `notifications_pull`) |
 
 ## Contrast with knowledge-api
 

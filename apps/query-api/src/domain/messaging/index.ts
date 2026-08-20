@@ -15,3 +15,5 @@ export {
   ValidateGroupInviteesEndpoint,
 } from './validate-members.endpoint';
 export type { ValidateChannelMembersResponseDto } from './validate-members.endpoint';
+export { GetMemoPublicKeyEndpoint } from './get-memo-public-key.endpoint';
+export type { MemoPublicKeyResponseDto } from './get-memo-public-key.endpoint';

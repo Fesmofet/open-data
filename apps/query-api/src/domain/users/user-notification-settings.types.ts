@@ -26,6 +26,7 @@ export function defaultUserNotificationSettingsView(): UserNotificationSettingsV
     my_comment: false,
     my_like: false,
     minimal_transfer: 0,
+    messages: true,
   };
 }
 

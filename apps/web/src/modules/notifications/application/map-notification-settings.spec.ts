@@ -20,6 +20,7 @@ const sample: NotificationSettingsFormState = {
   my_comment: true,
   my_like: false,
   minimal_transfer: 2.5,
+  messages: true,
 };
 
 describe('map-notification-settings', () => {

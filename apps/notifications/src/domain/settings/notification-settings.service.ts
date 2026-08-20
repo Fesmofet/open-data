@@ -27,6 +27,7 @@ type SettingsColumn = keyof Pick<
   | 'claimed_object_updates'
   | 'group_id_control'
   | 'followed_user_threads'
+  | 'messages'
 >;
 
 const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = {
@@ -52,6 +53,8 @@ const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = 
   object_update: 'claimed_object_updates',
   object_update_reject: 'claimed_object_updates',
   update_vote_cast: 'claimed_object_updates',
+  message_direct: 'messages',
+  message_group: 'messages',
 };
 
 const MINIMAL_TRANSFER_TYPES = new Set<NotificationEventType>([

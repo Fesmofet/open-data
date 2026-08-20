@@ -84,6 +84,15 @@ import {
   OblOffersService,
   OblRelationshipsService,
 } from '../domain/obl';
+import {
+  GetChannelsEndpoint,
+  GetChannelByIdEndpoint,
+  GetChannelByAliasEndpoint,
+  GetChannelMessagesEndpoint,
+  GetObjectChannelEndpoint,
+  GetObjectChannelMessagesEndpoint,
+  GetMemoPublicKeyEndpoint,
+} from '../domain/messaging';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import type { McpToolDeps } from './mcp-tool.deps';
 import { registerAllMcpTools } from './register-all-tools';
@@ -160,6 +169,13 @@ export class McpService {
     private readonly oblConversion: OblConversionService,
     private readonly oblRelationships: OblRelationshipsService,
     private readonly oblArbitration: OblArbitrationService,
+    private readonly getChannels: GetChannelsEndpoint,
+    private readonly getChannelById: GetChannelByIdEndpoint,
+    private readonly getChannelByAlias: GetChannelByAliasEndpoint,
+    private readonly getChannelMessages: GetChannelMessagesEndpoint,
+    private readonly getObjectChannel: GetObjectChannelEndpoint,
+    private readonly getObjectChannelMessages: GetObjectChannelMessagesEndpoint,
+    private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
   ) {}
 
   private buildDeps(): McpToolDeps {
@@ -230,6 +246,13 @@ export class McpService {
       oblConversion: this.oblConversion,
       oblRelationships: this.oblRelationships,
       oblArbitration: this.oblArbitration,
+      getChannels: this.getChannels,
+      getChannelById: this.getChannelById,
+      getChannelByAlias: this.getChannelByAlias,
+      getChannelMessages: this.getChannelMessages,
+      getObjectChannel: this.getObjectChannel,
+      getObjectChannelMessages: this.getObjectChannelMessages,
+      getMemoPublicKey: this.getMemoPublicKey,
     };
   }
 

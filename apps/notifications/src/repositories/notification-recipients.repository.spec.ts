@@ -73,5 +73,20 @@ describe('NotificationRecipientsRepository', () => {
     await expect(repo.findObjectCreator('obj')).resolves.toBeNull();
     await expect(repo.findAdministrativeAuthorities('obj')).resolves.toEqual([]);
     await expect(repo.findBellFollowers('obj')).resolves.toEqual([]);
+    await expect(repo.findChannelMembers('ch-1')).resolves.toEqual([]);
+  });
+
+  it('findChannelMembers returns account names', async () => {
+    const chain = mockQueryChain([{ account: 'alice' }, { account: 'bob' }]);
+    const db = {
+      selectFrom: jest.fn().mockReturnValue(chain),
+    } as unknown as Kysely<OdlDatabase>;
+
+    const repo = new NotificationRecipientsRepository(db);
+    const accounts = await repo.findChannelMembers('grp-1');
+
+    expect(accounts).toEqual(['alice', 'bob']);
+    expect(db.selectFrom).toHaveBeenCalledWith('channel_members');
+    expect(chain.where).toHaveBeenCalledWith('channel_id', '=', 'grp-1');
   });
 });

@@ -88,6 +88,7 @@ export type UpdateUserNotificationSettingsPayload = {
   readonly my_comment: boolean;
   readonly my_like: boolean;
   readonly minimal_transfer: number;
+  readonly messages: boolean;
 };
 
 export type BuildOslUpdateUserNotificationSettingsOpInput = {

@@ -490,6 +490,50 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     httpEquivalent: 'GET /query/v1/obl/reports/:reportId',
     specPath: 'docs/spec/obl/reports.md',
   },
+  {
+    name: 'get_channels',
+    description:
+      'Viewer inbox: DM, group, and object channels the account belongs to. Requires viewer.',
+    httpEquivalent: 'GET /query/v1/channels',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
+    name: 'get_channel_by_id',
+    description: 'Channel detail for a member (or public object channel when allowed).',
+    httpEquivalent: 'GET /query/v1/channels/:id',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
+    name: 'get_channel_by_alias',
+    description: 'Resolve a channel by dm: or obj: alias.',
+    httpEquivalent: 'GET /query/v1/channels/by-alias/:alias',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
+    name: 'get_channel_messages',
+    description: 'Keyset-paginated message history for a channel the viewer can access.',
+    httpEquivalent: 'POST /query/v1/channels/:id/messages',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
+    name: 'get_object_channel',
+    description: 'Default object channel metadata for an object id.',
+    httpEquivalent: 'GET /query/v1/objects/:object_id/channel',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
+    name: 'get_object_channel_messages',
+    description:
+      'Public object channel message feed with governance and viewer mute filters.',
+    httpEquivalent: 'POST /query/v1/objects/:object_id/channel/messages',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
+    name: 'get_memo_public_key',
+    description: 'Public memo key for a Hive account (encrypt/decrypt addressing).',
+    httpEquivalent: 'GET /query/v1/users/:account/memo-public-key',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
 ] as const;
 
 export const REGISTERED_MCP_TOOL_NAMES: readonly string[] = QUERY_MCP_TOOL_CATALOG.map(

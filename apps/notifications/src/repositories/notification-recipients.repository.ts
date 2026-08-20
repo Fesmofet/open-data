@@ -91,4 +91,18 @@ export class NotificationRecipientsRepository {
       return [];
     }
   }
+
+  async findChannelMembers(channelId: string): Promise<string[]> {
+    try {
+      const rows = await this.db
+        .selectFrom('channel_members')
+        .select('account')
+        .where('channel_id', '=', channelId)
+        .execute();
+      return rows.map((r) => r.account);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
+  }
 }

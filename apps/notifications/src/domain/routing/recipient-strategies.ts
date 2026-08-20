@@ -256,6 +256,54 @@ export class ThreadAuthorFollowerRecipientStrategy implements RecipientStrategy 
 }
 
 @Injectable()
+export class ChannelMessagingRecipientStrategy implements RecipientStrategy {
+  private readonly types = new Set<AnyNotificationEvent['type']>([
+    'message_direct',
+    'message_group',
+    'bell_object_message',
+  ]);
+
+  constructor(
+    private readonly recipientsRepository: NotificationRecipientsRepository,
+  ) {}
+
+  supports(type: AnyNotificationEvent['type']): boolean {
+    return this.types.has(type);
+  }
+
+  async resolveRecipients(event: AnyNotificationEvent): Promise<string[]> {
+    switch (event.type) {
+      case 'message_direct':
+      case 'message_group': {
+        const members = await this.recipientsRepository.findChannelMembers(
+          event.payload.channelId,
+        );
+        const recipients = new Set(members);
+        if (event.actor) {
+          recipients.delete(event.actor);
+        }
+        return [...recipients];
+      }
+      case 'bell_object_message': {
+        if (!event.objectId) {
+          return [];
+        }
+        const bellFollowers = await this.recipientsRepository.findBellFollowers(
+          event.objectId,
+        );
+        const recipients = new Set(bellFollowers);
+        if (event.actor) {
+          recipients.delete(event.actor);
+        }
+        return [...recipients];
+      }
+      default:
+        return [];
+    }
+  }
+}
+
+@Injectable()
 export class RecipientStrategyRegistry {
   constructor(
     private readonly direct: DirectRecipientStrategy,
@@ -264,6 +312,7 @@ export class RecipientStrategyRegistry {
     private readonly objectAudience: ObjectAudienceRecipientStrategy,
     private readonly userBell: UserBellRecipientStrategy,
     private readonly threadAuthorFollower: ThreadAuthorFollowerRecipientStrategy,
+    private readonly channelMessaging: ChannelMessagingRecipientStrategy,
   ) {}
 
   private strategies(): RecipientStrategy[] {
@@ -274,6 +323,7 @@ export class RecipientStrategyRegistry {
       this.objectAudience,
       this.userBell,
       this.threadAuthorFollower,
+      this.channelMessaging,
     ];
   }
 

@@ -14,6 +14,7 @@ import { computeDmPairHash } from '@opden-data-layer/core/utils/osl-messaging-cr
 import { ChannelsRepository } from '../../../repositories/channels.repository';
 import { MessagesRepository } from '../../../repositories/messages.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
+import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 import { messageCreatePayloadSchema } from '../osl-envelope.schema';
 
 @Injectable()
@@ -24,6 +25,7 @@ export class MessageCreateHandler implements OdlActionHandler {
   constructor(
     private readonly channelsRepository: ChannelsRepository,
     private readonly messagesRepository: MessagesRepository,
+    private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -92,6 +94,13 @@ export class MessageCreateHandler implements OdlActionHandler {
       return;
     }
 
+    if (channel.dissolved_at_unix != null) {
+      this.logger.warn(
+        `message_create: channel '${channelId}' is dissolved; skipping`,
+      );
+      return;
+    }
+
     const existingMessage = await this.messagesRepository.findById(messageId);
     if (existingMessage) {
       return;
@@ -124,6 +133,67 @@ export class MessageCreateHandler implements OdlActionHandler {
       );
       await this.channelsRepository.updateLastMessageAt(channelId!, createdAtUnix, trx);
     });
+
+    this.emitMessageNotification(channel, channelId!, messageId, data, ctx);
+  }
+
+  private emitMessageNotification(
+    channel: NonNullable<Awaited<ReturnType<ChannelsRepository['findById']>>>,
+    channelId: string,
+    messageId: string,
+    data: { encrypted_body?: string | null },
+    ctx: OdlEventContext,
+  ): void {
+    const encrypted = data.encrypted_body != null;
+    const emitCtx = this.notificationEmitter.odlContext(ctx);
+
+    if (channel.kind === CHANNEL_KINDS[2]) {
+      if (!channel.object_id) {
+        return;
+      }
+      this.notificationEmitter.emitWithContext(emitCtx, {
+        type: 'bell_object_message',
+        objectId: channel.object_id,
+        actor: ctx.creator,
+        payload: {
+          channelId,
+          messageId,
+          author: ctx.creator,
+          encrypted,
+        },
+      });
+      return;
+    }
+
+    if (channel.kind === CHANNEL_KINDS[0]) {
+      this.notificationEmitter.emitWithContext(emitCtx, {
+        type: 'message_direct',
+        objectId: null,
+        actor: ctx.creator,
+        payload: {
+          channelId,
+          messageId,
+          author: ctx.creator,
+          encrypted,
+        },
+      });
+      return;
+    }
+
+    if (channel.kind === CHANNEL_KINDS[1]) {
+      this.notificationEmitter.emitWithContext(emitCtx, {
+        type: 'message_group',
+        objectId: null,
+        actor: ctx.creator,
+        payload: {
+          channelId,
+          messageId,
+          author: ctx.creator,
+          channelTitle: channel.title,
+          encrypted,
+        },
+      });
+    }
   }
 
   private resolveDmMembers(

@@ -62,6 +62,7 @@ related:
 | Object/update payload shape | registry tools | `get_object_create_playbook` → `get_object_type` / `get_update_schema` |
 | Create recipe / restaurant / menu content | skill | `get_object_create_playbook` · [object-content-routing.md](object-content-routing.md) |
 | Publish Hive post / WAIV tags / companion post | skill | [hive-post-create.md](hive-post-create.md) |
+| OSL messaging (DM / group / object channels) | skill | [osl-messaging.md](osl-messaging.md) |
 | Coding style in this repo | agents | `AGENTS.md` or `apps/<app>/AGENTS.md` |
 
 ## MCP tools cheat sheet
@@ -98,6 +99,7 @@ related:
 | `docs/skills/restaurant-menu-workflow.md` | Restaurant + menu composite workflow |
 | `docs/skills/companion-post-workflow.md` | Post linked to created object |
 | `docs/skills/hive-post-create.md` | Hive root post create + WAIV tags + `hive_build_post` |
+| `docs/skills/osl-messaging.md` | OSL DM/group/object messaging for agents |
 | `docs/skills/build-tenant-site.md` | Build a web project (waivio-pages-starter or fork apps/web) |
 
 Object-type playbooks (`docs/skills/object-create/*.md`): use `list_files({ type: "skill", tags: ["object-create-playbook"] })` or `get_object_create_playbook({ object_type })`.

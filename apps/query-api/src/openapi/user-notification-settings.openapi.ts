@@ -29,6 +29,7 @@ const userNotificationSettingsViewSchema = registry.register(
     my_comment: z.boolean(),
     my_like: z.boolean(),
     minimal_transfer: z.number(),
+    messages: z.boolean(),
   }),
 );
 

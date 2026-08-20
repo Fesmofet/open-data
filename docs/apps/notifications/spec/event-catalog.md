@@ -95,6 +95,18 @@ For `object_update`, `object_update_reject`, `object_status_change`, and `update
 | `batch_import_completed` | Yes | IPFS batch import |
 | `trx_processed` | No | WebSocket subscribers only |
 
+## OSL messaging
+
+Emitted from **chain-indexer** `MessageCreateHandler` after `message_create` is persisted. See [OSL messaging notifications](../../../spec/osl/notifications.md).
+
+| Type | Payload highlights | Typical recipients |
+|------|-------------------|-------------------|
+| `message_direct` | `channelId`, `messageId`, `author`, `encrypted` | Other DM channel members |
+| `message_group` | above + `channelTitle` | Other group channel members |
+| `bell_object_message` | above; adapter adds `objectName` when resolvable | Object bell followers |
+
+Message text is **never** included in the payload.
+
 ## Settings gating
 
 `apps/notifications` maps each type to a column on `user_notification_settings` and applies `minimal_transfer` (USD) for inbound transfers via `@opden-data-layer/currency`. If USD rates are unavailable, transfer notifications are **not** dropped.
@@ -110,7 +122,8 @@ For `object_update`, `object_update_reject`, `object_status_change`, and `update
 | `claimed_object_updates` | `object_update`, `object_update_reject`, `update_vote_cast` | `false` → block |
 | `group_id_control` | `object_update`, `object_update_reject` | when `payload.updateType === productGroupId`, `false` → block |
 | `followed_user_threads` | `bell_thread`, `thread_author_follower` | `false` → block |
+| `messages` | `message_direct`, `message_group` | `false` → block |
 
-`object_status_change` is **not** gated by user settings (column removed in migration `00050`).
+`bell_object_message` is **not** gated by `messages` (object bell only). `object_status_change` is **not** gated by user settings (column removed in migration `00050`).
 
 Settings are read from Postgres in bulk per stream batch and are not cached. Accounts that are not registered ODL users receive nothing; registered accounts without a row use `DEFAULT_NOTIFICATION_SETTINGS` — see [transport spec](transport.md).

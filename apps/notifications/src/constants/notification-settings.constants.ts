@@ -29,4 +29,5 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsView = {
   claimed_object_updates: true,
   group_id_control: true,
   followed_user_threads: true,
+  messages: true,
 };

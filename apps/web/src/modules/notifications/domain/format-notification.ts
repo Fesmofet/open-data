@@ -39,6 +39,26 @@ export function formatNotification(item: UserNotificationItem): FormattedNotific
   };
 }
 
+export function resolveNotificationHref(
+  item: UserNotificationItem,
+  formatted: FormattedNotification,
+  viewerUsername?: string,
+): string | null {
+  if (viewerUsername && (item.type === 'message_direct' || item.type === 'message_group')) {
+    const channelId =
+      typeof item.payload === 'object' &&
+      item.payload !== null &&
+      'channelId' in item.payload &&
+      typeof (item.payload as { channelId?: string }).channelId === 'string'
+        ? (item.payload as { channelId: string }).channelId
+        : null;
+    if (channelId) {
+      return `/@${encodeURIComponent(viewerUsername)}/messages?channel=${encodeURIComponent(channelId)}`;
+    }
+  }
+  return formatted.href;
+}
+
 export function notificationIconType(item: UserNotificationItem): NotificationIconType {
   const message = buildNotificationMessage({
     type: item.type as NotificationEventType,

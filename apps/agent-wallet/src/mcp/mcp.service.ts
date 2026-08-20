@@ -7,6 +7,8 @@ import { HiveBroadcastService, WalletStatusService } from '../domain/hive-broadc
 import { HasSessionService } from '../domain/has-session.service';
 import { HivePostBuildService } from '../domain/hive-post-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
+import { NotificationsSocketService } from '../domain/notifications-socket.service';
+import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { AGENT_WALLET_MCP_INSTRUCTIONS } from './mcp-instructions';
 import { registerAgentWalletTools } from './register-agent-wallet-tools';
@@ -22,6 +24,8 @@ export class McpService {
     private readonly walletStatus: WalletStatusService,
     private readonly waivioAuth: WaivioAuthOrchestratorService,
     private readonly ipfsUpload: IpfsUploadService,
+    private readonly oslMessaging: OslMessagingService,
+    private readonly notificationsSocket: NotificationsSocketService,
   ) {}
 
   private createServer(): McpServer {
@@ -40,6 +44,8 @@ export class McpService {
       walletStatus: this.walletStatus,
       waivioAuth: this.waivioAuth,
       ipfsUpload: this.ipfsUpload,
+      oslMessaging: this.oslMessaging,
+      notificationsSocket: this.notificationsSocket,
     });
     return server;
   }

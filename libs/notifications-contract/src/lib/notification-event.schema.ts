@@ -201,6 +201,21 @@ const batchImportPayload = z.object({
   cid: z.string(),
 });
 
+const messageDirectPayload = z.object({
+  channelId: z.string(),
+  messageId: z.string(),
+  author: z.string(),
+  encrypted: z.boolean(),
+});
+
+const messageGroupPayload = messageDirectPayload.extend({
+  channelTitle: z.string().nullable(),
+});
+
+const bellObjectMessagePayload = messageDirectPayload.extend({
+  objectName: z.string().nullable().optional(),
+});
+
 const emptyPayload = z.object({}).strict();
 
 const notificationEventVariants = [
@@ -362,6 +377,21 @@ const notificationEventVariants = [
     type: z.literal('batch_import_completed'),
     ...envelopeSchema,
     payload: batchImportPayload,
+  }),
+  z.object({
+    type: z.literal('message_direct'),
+    ...envelopeSchema,
+    payload: messageDirectPayload,
+  }),
+  z.object({
+    type: z.literal('message_group'),
+    ...envelopeSchema,
+    payload: messageGroupPayload,
+  }),
+  z.object({
+    type: z.literal('bell_object_message'),
+    ...envelopeSchema,
+    payload: bellObjectMessagePayload,
   }),
   z.object({
     type: z.literal('trx_processed'),

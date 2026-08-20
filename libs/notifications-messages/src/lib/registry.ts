@@ -1,5 +1,6 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import { buildBellMessage } from './builders/bell';
+import { buildMessagingMessage } from './builders/messaging';
 import { buildObjectMessage } from './builders/objects';
 import { buildServiceMessage } from './builders/service';
 import { buildSocialMessage } from './builders/social';
@@ -9,6 +10,7 @@ import { GENERIC_NOTIFICATION_KEY, type NotificationMessage } from './message';
 const BUILDERS = [
   buildSocialMessage,
   buildBellMessage,
+  buildMessagingMessage,
   buildWalletMessage,
   buildObjectMessage,
   buildServiceMessage,

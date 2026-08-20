@@ -140,6 +140,29 @@ export function minimalNotificationEventPayload(
       return { updateId: 'u', updateType: 'title' };
     case 'batch_import_completed':
       return { cid: 'c' };
+    case 'message_direct':
+      return {
+        channelId: 'ch-1',
+        messageId: 'msg-1',
+        author: 'alice',
+        encrypted: false,
+      };
+    case 'message_group':
+      return {
+        channelId: 'grp-1',
+        messageId: 'msg-2',
+        author: 'alice',
+        channelTitle: 'Team',
+        encrypted: false,
+      };
+    case 'bell_object_message':
+      return {
+        channelId: 'obj-ch-1',
+        messageId: 'msg-3',
+        author: 'alice',
+        encrypted: false,
+        objectName: 'Shop',
+      };
     case 'trx_processed':
       return {};
     default:

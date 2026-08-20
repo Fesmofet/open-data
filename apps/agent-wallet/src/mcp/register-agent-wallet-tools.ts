@@ -5,6 +5,8 @@ import { HiveBroadcastService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
 import { HivePostBuildService } from '../domain/hive-post-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
+import { NotificationsSocketService } from '../domain/notifications-socket.service';
+import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { WalletStatusService } from '../domain/hive-broadcast.service';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
@@ -18,6 +20,8 @@ export function registerAgentWalletTools(
     walletStatus: WalletStatusService;
     waivioAuth: WaivioAuthOrchestratorService;
     ipfsUpload: IpfsUploadService;
+    oslMessaging: OslMessagingService;
+    notificationsSocket: NotificationsSocketService;
   },
 ): void {
   server.registerTool(
@@ -359,5 +363,146 @@ export function registerAgentWalletTools(
       const status = deps.hasSession.broadcastStatus(args.requestId);
       return jsonToolResult(status);
     },
+  );
+
+  server.registerTool(
+    'osl_build_channel_create',
+    {
+      description:
+        'Build OSL channel_create custom_json op for a new group or object channel. Broadcast via wallet_broadcast (local) or has_broadcast.',
+      inputSchema: z.object({
+        kind: z.enum(['group', 'object']),
+        creator: z.string().min(1),
+        channelId: z.string().optional(),
+        members: z.array(z.string()).optional(),
+        objectId: z.string().optional(),
+        title: z.string().optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.oslMessaging.buildChannelCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_build_message_create',
+    {
+      description:
+        'Build plaintext OSL message_create custom_json op. Use channelId or peer for DM bootstrap.',
+      inputSchema: z.object({
+        creator: z.string().min(1),
+        channelId: z.string().optional(),
+        peer: z.string().optional(),
+        body: z.string().min(1),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.oslMessaging.buildMessageCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_build_encrypted_message_create',
+    {
+      description:
+        'Encrypt with local HIVE_MEMO_KEY and build OSL message_create. Requires AGENT_WALLET_SIGNING_MODE=local and memoReady. Broadcast via wallet_broadcast only.',
+      inputSchema: z.object({
+        creator: z.string().min(1),
+        channelId: z.string().optional(),
+        peer: z.string().optional(),
+        recipient: z.string().min(1),
+        plaintext: z.string().min(1),
+        mode: z.enum(['memo', 'ephemeral']).default('memo'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.oslMessaging.buildEncryptedMessageCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_memo_encrypt',
+    {
+      description:
+        'Encrypt plaintext with recipient memo public key. memo mode requires HIVE_MEMO_KEY; ephemeral is one-way to recipient.',
+      inputSchema: z.object({
+        recipientMemoPublic: z.string().min(1),
+        plaintext: z.string().min(1),
+        mode: z.enum(['memo', 'ephemeral']).default('memo'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.oslMessaging.memoEncrypt(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_memo_decrypt',
+    {
+      description:
+        'Decrypt Hive memo ciphertext with configured HIVE_MEMO_KEY. Requires memoReady.',
+      inputSchema: z.object({
+        ciphertext: z.string().min(1),
+      }),
+    },
+    async (args) => {
+      try {
+        const plaintext = deps.oslMessaging.memoDecrypt(args);
+        return jsonToolResult({ plaintext });
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'notifications_pull',
+    {
+      description:
+        'Drain buffered messaging notifications from the notifications WS bridge (message_direct, message_group, bell_object_message). Requires active Waivio auth.',
+      inputSchema: z.object({
+        limit: z.number().int().min(1).max(100).optional(),
+        waitMs: z.number().int().min(0).max(60_000).optional(),
+        types: z.array(z.string()).optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.notificationsSocket.pull(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'notifications_status',
+    {
+      description:
+        'Notifications WS bridge status: connection, buffered count, account. No secrets or tokens.',
+      inputSchema: z.object({}),
+    },
+    async () => jsonToolResult(deps.notificationsSocket.getStatus()),
   );
 }

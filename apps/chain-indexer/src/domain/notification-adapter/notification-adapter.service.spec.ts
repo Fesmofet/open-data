@@ -96,4 +96,31 @@ describe('NotificationAdapterService', () => {
 
     expect(publisher.published[0]).toEqual(event);
   });
+
+  it('enriches bell_object_message when objectName is null', async () => {
+    objectNameResolver.resolve.mockResolvedValue('Object Shop');
+
+    await service.onNotification({
+      type: 'bell_object_message',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 100,
+      trxId: 'trx-1',
+      objectId: 'obj-1',
+      actor: 'alice',
+      payload: {
+        channelId: 'obj-ch-1',
+        messageId: 'msg-1',
+        author: 'alice',
+        encrypted: false,
+      },
+    });
+
+    expect(objectNameResolver.resolve).toHaveBeenCalledWith('obj-1');
+    expect(publisher.published[0]).toMatchObject({
+      type: 'bell_object_message',
+      payload: {
+        objectName: 'Object Shop',
+      },
+    });
+  });
 });

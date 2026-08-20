@@ -8,6 +8,7 @@ scope: platform
 tags: [osl, messaging]
 related:
   - docs/spec/osl/channels.md
+  - docs/spec/osl/notifications.md
 ---
 
 # OSL messages

@@ -9,6 +9,7 @@ tags: [agent-wallet, has, mcp, overview]
 updated_at: 2026-08-12
 related:
   - docs/skills/hive-has-agent-wallet.md
+  - docs/skills/osl-messaging.md
   - docs/skills/hive-blockchain-broadcast.md
   - docs/apps/knowledge-api/spec/overview.md
 ---
@@ -40,7 +41,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 - NestJS, `@modelcontextprotocol/sdk` Streamable HTTP (stateless MCP per request)
 - `@opden-data-layer/hive-auth` — `HasClient`
 - `@opden-data-layer/hive-broadcast` — `buildObjectCreateEnvelope`
-- `@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt port for future encrypted OSL message MCP tools (not wired in v1)
+- `@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt; wired via `osl_memo_*` MCP tools ([osl-messaging skill](../../skills/osl-messaging.md))
 - Default bind **`127.0.0.1:7500`** — no CORS
 
 ## Feature specs
@@ -48,6 +49,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | Feature | Doc |
 |---------|-----|
 | HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
+| OSL messaging (read/send/encrypt/notify) | [osl-messaging skill](../../skills/osl-messaging.md) |
 | HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
 | IPFS image upload + avatar/gallery policy | [ipfs-image-upload skill](../../skills/ipfs-image-upload.md) |
 
@@ -70,6 +72,11 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `waivio_auth_start` / `waivio_auth_status` / `waivio_auth_logout` | Waivio JWT session (separate from HAS) |
 | `ipfs_upload_image` | `{ cid, url? }` after authenticated upload |
 | `wallet_broadcast` / `wallet_broadcast_status` | mode-aware broadcast (HAS or local keys) |
+| `osl_build_channel_create` | group / object `channel_create` envelope |
+| `osl_build_message_create` | plaintext `message_create` |
+| `osl_build_encrypted_message_create` | encrypted `message_create` (local memo only) |
+| `osl_memo_encrypt` / `osl_memo_decrypt` | memo crypto helpers |
+| `notifications_pull` / `notifications_status` | WS notification bridge for inbound messaging |
 
 ## Environment
 
@@ -86,6 +93,8 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `HIVE_ACCOUNT` | — | Required in `local` mode |
 | `HIVE_POSTING_KEY` | — | Env-only posting WIF for local mode (never persisted) |
 | `HIVE_ACTIVE_KEY` | — | Optional env-only active WIF (active ops only) |
+| `HIVE_MEMO_KEY` | — | Optional memo WIF for encrypted messaging (local mode) |
+| `NOTIFICATIONS_WS_URL` | derived from `WAIVIO_API_ORIGIN` | Notifications WS for inbound message push |
 | `HIVE_RPC_NODES` | `https://api.hive.blog` | Comma-separated Hive RPC URLs |
 | `AGENT_WALLET_DATA_DIR` | `~/.odl` | MCP token + HAS + Waivio refresh session files |
 | `AGENT_WALLET_NO_PERSIST` | `false` | Memory-only session when `true` |

@@ -136,3 +136,10 @@ export {
   type BuildOslChannelLeaveOpInput,
   type BuildOslChannelUpdateOpInput,
 } from './osl-operations';
+export {
+  generateGroupChannelId,
+  buildGroupChannelCreatePayload,
+  buildObjectChannelCreatePayload,
+  buildMessageCreatePayload,
+  buildEncryptedMessageCreatePayload,
+} from './osl-messaging-payloads';

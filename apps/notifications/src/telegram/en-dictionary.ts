@@ -19,6 +19,9 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_bell_object_post: '{author} referenced {wobjectName}',
   notification_bell_post: 'New post by {username}: {title}',
   notification_bell_reblog: "{account} re-blogged {author}'s post: {title}",
+  notification_bell_object_message: '{author} sent a message to {objectName}',
+  notification_message_direct: '{author} sent a new message to {recipient}',
+  notification_message_group: '{channelTitle} has new messages',
   notification_downvoted_username_post:
     "{username} downvoted {recipient}'s post",
   notification_engine_delegate: '{from} delegated {amount} to {to}',

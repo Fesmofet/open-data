@@ -155,6 +155,11 @@ export function NotificationSettingsForm({
           checked={form.followed_user_threads}
           onChange={setBool('followed_user_threads')}
         />
+        <CheckboxField
+          label={t('notification_settings_messages')}
+          checked={form.messages}
+          onChange={setBool('messages')}
+        />
       </SettingsSection>
 
       <SettingsSection title={t('wallet_transactions')}>

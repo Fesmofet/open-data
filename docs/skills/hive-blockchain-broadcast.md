@@ -10,6 +10,7 @@ updated_at: 2026-06-10
 related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/hive-has-agent-wallet.md
+  - docs/skills/osl-messaging.md
   - docs/skills/hive-post-create.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
@@ -364,6 +365,8 @@ MCP smoke:
 |---------|--------|
 | `buildOslChannelCreateOp` | `channel_create` (group/object) |
 | `buildOslMessageCreateOp` | `message_create` (DM bootstrap via `peer` or existing `channel_id`) |
+
+Payload shapes (`buildGroupChannelCreatePayload`, `buildMessageCreatePayload`, `buildEncryptedMessageCreatePayload`, …) live in `@opden-data-layer/hive-broadcast` — see [osl-messaging skill](osl-messaging.md) for agent workflows.
 
 See [OSL channels](../../spec/osl/channels.md) and [OSL messages](../../spec/osl/messages.md).
 

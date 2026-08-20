@@ -54,7 +54,7 @@ export function NotificationsPageClient({
       ) : items.length > 0 ? (
         <div className="divide-y divide-border rounded-card border border-border bg-surface">
           {items.map((item) => (
-            <NotificationRow key={item.id} item={item} />
+            <NotificationRow key={item.id} item={item} viewerUsername={username} />
           ))}
         </div>
       ) : (

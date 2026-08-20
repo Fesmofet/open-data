@@ -50,6 +50,7 @@ export class UserNotificationSettingsRepository {
           my_comment: data.my_comment,
           my_like: data.my_like,
           minimal_transfer: data.minimal_transfer,
+          messages: data.messages,
         }),
       )
       .execute();

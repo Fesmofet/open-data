@@ -2,6 +2,7 @@ import {
   applyNotificationParams,
   formatNotification,
   notificationIconType,
+  resolveNotificationHref,
 } from './format-notification';
 import type { UserNotificationItem } from '../infrastructure/notifications-ws-client';
 
@@ -74,6 +75,62 @@ describe('formatNotification', () => {
       }),
     );
     expect(result.params).toEqual({ username: '?' });
+  });
+});
+
+describe('resolveNotificationHref', () => {
+  it('builds inbox href for message_direct when viewer is known', () => {
+    const formatted = formatNotification(
+      item({
+        type: 'message_direct',
+        payload: {
+          channelId: 'dm-1',
+          messageId: 'msg-1',
+          author: 'bob',
+          encrypted: false,
+        },
+      }),
+    );
+    const notification = item({
+      type: 'message_direct',
+      payload: {
+        channelId: 'dm-1',
+        messageId: 'msg-1',
+        author: 'bob',
+        encrypted: false,
+      },
+    });
+    expect(resolveNotificationHref(notification, formatted, 'alice')).toBe(
+      '/@alice/messages?channel=dm-1',
+    );
+  });
+
+  it('returns formatted href for bell_object_message without viewer', () => {
+    const formatted = formatNotification(
+      item({
+        type: 'bell_object_message',
+        objectId: 'obj-1',
+        payload: {
+          channelId: 'obj-ch-1',
+          messageId: 'msg-1',
+          author: 'bob',
+          encrypted: false,
+          objectName: 'Shop',
+        },
+      }),
+    );
+    const notification = item({
+      type: 'bell_object_message',
+      objectId: 'obj-1',
+      payload: {
+        channelId: 'obj-ch-1',
+        messageId: 'msg-1',
+        author: 'bob',
+        encrypted: false,
+        objectName: 'Shop',
+      },
+    });
+    expect(resolveNotificationHref(notification, formatted)).toBe('/object/obj-1');
   });
 });
 

@@ -9,6 +9,8 @@ import { HasSessionService } from './has-session.service';
 import { HivePostBuildService } from './hive-post-build.service';
 import { IpfsUploadService } from './ipfs-upload.service';
 import { LocalKeysService } from './local-keys.service';
+import { NotificationsSocketService } from './notifications-socket.service';
+import { OslMessagingService } from './osl-messaging.service';
 import { PendingRequestsStore } from './pending-requests.store';
 import { WaivioAuthClientService } from './waivio-auth-client.service';
 import { WaivioAuthOrchestratorService } from './waivio-auth-orchestrator.service';
@@ -23,6 +25,8 @@ import { WaivioAuthSessionService } from './waivio-auth-session.service';
     WaivioAuthSessionService,
     WaivioAuthOrchestratorService,
     LocalKeysService,
+    OslMessagingService,
+    NotificationsSocketService,
     HiveBroadcastService,
     WalletStatusService,
     HivePostBuildService,
@@ -37,6 +41,8 @@ import { WaivioAuthSessionService } from './waivio-auth-session.service';
     WalletStatusService,
     IpfsUploadService,
     LocalKeysService,
+    OslMessagingService,
+    NotificationsSocketService,
     PendingRequestsStore,
   ],
 })

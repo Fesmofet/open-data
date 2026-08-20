@@ -42,6 +42,9 @@ export const NOTIFICATION_EVENT_TYPES = [
   /** @deprecated Prefer `object_update`; kept for in-flight producers */
   'object_created',
   'batch_import_completed',
+  'message_direct',
+  'message_group',
+  'bell_object_message',
   'trx_processed',
 ] as const;
 
@@ -269,6 +272,26 @@ export interface NotificationPayloadMap {
   };
   batch_import_completed: {
     cid: string;
+  };
+  message_direct: {
+    channelId: string;
+    messageId: string;
+    author: string;
+    encrypted: boolean;
+  };
+  message_group: {
+    channelId: string;
+    messageId: string;
+    author: string;
+    channelTitle: string | null;
+    encrypted: boolean;
+  };
+  bell_object_message: {
+    channelId: string;
+    messageId: string;
+    author: string;
+    encrypted: boolean;
+    objectName?: string | null;
   };
   trx_processed: Record<string, never>;
 }

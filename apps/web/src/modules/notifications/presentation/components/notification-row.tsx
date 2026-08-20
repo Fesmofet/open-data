@@ -8,6 +8,7 @@ import { formatRelativeFeedTime } from '@/shared/utils/format-relative-time';
 import {
   formatNotification,
   notificationIconType,
+  resolveNotificationHref,
 } from '../../domain/format-notification';
 import type { UserNotificationItem } from '../../infrastructure/notifications-ws-client';
 import { NotificationMessageText } from './notification-message-text';
@@ -90,11 +91,13 @@ const AVATAR_SIZE = 36;
 
 export type NotificationRowProps = {
   item: UserNotificationItem;
+  viewerUsername?: string;
 };
 
-export function NotificationRow({ item }: NotificationRowProps) {
+export function NotificationRow({ item, viewerUsername }: NotificationRowProps) {
   const { t, locale } = useI18n();
   const formatted = formatNotification(item);
+  const href = resolveNotificationHref(item, formatted, viewerUsername);
   const template = t(formatted.key);
   const timeLabel = formatRelativeFeedTime(item.occurredAt, locale);
   const actor = formatted.actor?.trim();
@@ -102,7 +105,7 @@ export function NotificationRow({ item }: NotificationRowProps) {
     (href) => href.trim().length > 0,
   );
   const rowClassName = `flex gap-3 px-3 py-2.5 ${
-    !hasInlineLinks && formatted.href ? 'hover:bg-bg-muted' : ''
+    !hasInlineLinks && href ? 'hover:bg-bg-muted' : ''
   }`;
 
   const content = (
@@ -125,10 +128,10 @@ export function NotificationRow({ item }: NotificationRowProps) {
     </>
   );
 
-  if (!hasInlineLinks && formatted.href) {
+  if (!hasInlineLinks && href) {
     return (
       <Link
-        href={formatted.href}
+        href={href}
         className={rowClassName}
         suppressHydrationWarning
       >
