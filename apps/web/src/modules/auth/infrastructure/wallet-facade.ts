@@ -31,6 +31,10 @@ export class DefaultWalletFacade implements WalletFacade {
     this.activeProvider = provider;
   }
 
+  getActiveProvider(): WalletProviderId | null {
+    return this.activeProvider;
+  }
+
   async login(providerId: WalletProviderId, username: string): Promise<void> {
     this.activeProvider = providerId;
     const ch = await this.bff.challenge({ provider: providerId, username });

@@ -1438,6 +1438,11 @@ export interface MessagesTable {
   author: string;
   body: string | null;
   overflow_ref: string | null;
+  encrypted_body: string | null;
+  encryption_mode: string | null;
+  encrypted_to: string | null;
+  encryption_v: number | null;
+  encryption_meta: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   reply_to: string | null;
   quote_json: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   attachments: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;

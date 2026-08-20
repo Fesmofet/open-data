@@ -15,12 +15,24 @@ tags: [query-api, messaging]
 | Method | Path | Notes |
 |--------|------|-------|
 | POST | `/query/v1/channels/{id}/read` | Body `{ last_read_at_unix }`; member-only; monotonic update |
-| GET | `/query/v1/channels` | Requires `X-Viewer`; items include `unread_count`, `image`, `last_message_preview` |
+| GET | `/query/v1/channels` | Requires `X-Viewer`; items include `unread_count`, `image`, `last_message_preview`, `last_message_encrypted` |
 | GET | `/query/v1/channels/{id}` | Member required (except object `public_read` via object route) |
 | GET | `/query/v1/channels/by-alias/{alias}` | Resolve `dm:` / `obj:` aliases |
 | POST | `/query/v1/channels/{id}/messages` | Keyset cursor `(created_at_unix, event_seq)` |
 | GET | `/query/v1/objects/{object_id}/channel` | Default object channel meta |
 | POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; governance + viewer mute filters |
+| GET | `/query/v1/users/{account}/memo-public-key` | Public memo key for encryption; 404 if account missing |
+
+## Message DTO encryption fields
+
+`MessageDto` includes:
+
+| Field | Description |
+|-------|-------------|
+| `encrypted_body` | Ciphertext or `null` for plaintext |
+| `encryption` | `{ v, mode, to }` or `null` |
+
+Server **never** decrypts. Channel list preview: encrypted last message → `last_message_preview: null`, `last_message_encrypted: true` (ciphertext never in preview).
 
 ## DM projection
 

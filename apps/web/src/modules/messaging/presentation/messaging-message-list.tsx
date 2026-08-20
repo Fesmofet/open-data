@@ -1,16 +1,20 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
+import { AppModal, AppModalCloseButton } from '@/shared/presentation';
 import { OptimisticNavLink } from '@/shared/presentation/navigation';
 
+import { useDecryptMessage } from '../application/use-decrypt-message';
 import {
   groupMessagesByDay,
   isOutgoingMessage,
-  messageDisplayBody,
+  resolveMessagePresentation,
 } from '../domain/messaging.helpers';
 import type { MessageItem } from '../domain/messaging.types';
+import { LockClosedIcon } from './messaging-icons';
 
 export type MessagingMessageListProps = {
   messages: MessageItem[];
@@ -35,6 +39,13 @@ export function MessagingMessageList({
   loadingOlder = false,
 }: MessagingMessageListProps) {
   const { t, locale } = useI18n();
+  useHydrateWalletProvider();
+  const { openLogin } = useLoginModal();
+  const { decryptMessage, getDecryptedText } = useDecryptMessage(viewerUsername);
+  const [decryptError, setDecryptError] = useState<string | null>(null);
+  const [keychainGateOpen, setKeychainGateOpen] = useState(false);
+  const [decryptPendingId, setDecryptPendingId] = useState<string | null>(null);
+  const [decryptBlockedByProvider, setDecryptBlockedByProvider] = useState(false);
 
   const chronological = useMemo(
     () => [...messages].sort((a, b) => a.created_at_unix - b.created_at_unix),
@@ -53,57 +64,170 @@ export function MessagingMessageList({
     [chronological, locale],
   );
 
+  const handleEncryptedClick = useCallback(
+    async (message: MessageItem) => {
+      setDecryptError(null);
+      setDecryptPendingId(message.message_id);
+      try {
+        const result = await decryptMessage(message);
+        if (!result.ok) {
+          if (result.error === 'requires_keychain') {
+            const provider = getWalletFacade().getActiveProvider();
+            setDecryptBlockedByProvider(
+              provider === 'hivesigner' || provider === 'hiveauth',
+            );
+            setKeychainGateOpen(true);
+            return;
+          }
+          if (result.error === 'not_for_you') {
+            setDecryptError(t('messaging_decrypt_not_for_you'));
+            return;
+          }
+          setDecryptError(t('messaging_decrypt_failed'));
+        }
+      } finally {
+        setDecryptPendingId(null);
+      }
+    },
+    [decryptMessage, t],
+  );
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-3">
-      {topSentinelRef ? <div ref={topSentinelRef} aria-hidden className="h-px w-full" /> : null}
-      {loadingOlder ? (
-        <p className="py-2 text-center text-caption text-muted">{t('messaging_loading_older')}</p>
-      ) : null}
-      {groups.map((group) => (
-        <div key={group.dayKey} className="mb-4">
-          <div className="mb-3 flex justify-center">
-            <span className="rounded-full bg-surface-control px-3 py-1 text-caption text-muted">
-              {group.label}
-            </span>
-          </div>
-          <div className="space-y-2">
-            {group.messages.map((message) => {
-              const outgoing = isOutgoingMessage(message, viewerUsername);
-              const body = messageDisplayBody(message);
-              return (
-                <div
-                  key={message.message_id}
-                  className={outgoing ? 'flex justify-end' : 'flex justify-start'}
-                >
-                  <div
-                    className={[
-                      'max-w-[min(100%,28rem)] rounded-card px-3 py-2',
-                      outgoing
-                        ? 'bg-accent-soft text-fg'
-                        : 'border border-border bg-surface text-fg',
-                    ].join(' ')}
-                  >
-                    {!outgoing && showAuthorNames ? (
-                      <p className="mb-1 text-caption font-weight-label">
-                        <OptimisticNavLink
-                          href={`/@${encodeURIComponent(message.author)}`}
-                          className="text-accent hover:underline"
-                        >
-                          {message.author}
-                        </OptimisticNavLink>
-                      </p>
-                    ) : null}
-                    <p className="whitespace-pre-wrap break-words text-body-sm">{body}</p>
-                    <p className="mt-1 text-caption text-muted">
-                      {formatTime(message.created_at_unix)}
+    <>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-3">
+        {topSentinelRef ? <div ref={topSentinelRef} aria-hidden className="h-px w-full" /> : null}
+        {loadingOlder ? (
+          <p className="py-2 text-center text-caption text-muted">{t('messaging_loading_older')}</p>
+        ) : null}
+        {decryptError ? (
+          <p className="mb-2 text-center text-body-sm text-danger">{decryptError}</p>
+        ) : null}
+        {groups.map((group) => (
+          <div key={group.dayKey} className="mb-4">
+            <div className="mb-3 flex justify-center">
+              <span className="rounded-full bg-surface-control px-3 py-1 text-caption text-muted">
+                {group.label}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {group.messages.map((message) => {
+                const outgoing = isOutgoingMessage(message, viewerUsername);
+                const decryptedText = getDecryptedText(message.message_id);
+                const presentation = resolveMessagePresentation(
+                  message,
+                  viewerUsername,
+                  decryptedText,
+                );
+                const bubbleClass = [
+                  'max-w-[min(100%,28rem)] rounded-card px-3 py-2',
+                  outgoing
+                    ? 'bg-accent-soft text-fg'
+                    : 'border border-border bg-surface text-fg',
+                ].join(' ');
+
+                let bodyNode: React.ReactNode;
+                if (presentation.kind === 'plain' || presentation.kind === 'decrypted') {
+                  bodyNode = (
+                    <p className="whitespace-pre-wrap break-words text-body-sm">{presentation.text}</p>
+                  );
+                } else if (presentation.kind === 'one-way') {
+                  bodyNode = (
+                    <p className="flex items-center gap-2 text-body-sm text-muted">
+                      <LockClosedIcon className="size-4 shrink-0" />
+                      {t('messaging_message_one_way').replace('{to}', presentation.to)}
                     </p>
+                  );
+                } else {
+                  bodyNode = (
+                    <button
+                      type="button"
+                      disabled={decryptPendingId === message.message_id}
+                      onClick={() => void handleEncryptedClick(message)}
+                      className="flex w-full items-center gap-2 text-left text-body-sm text-muted hover:text-fg disabled:opacity-50"
+                    >
+                      <LockClosedIcon className="size-4 shrink-0" />
+                      {t('messaging_message_encrypted')}
+                    </button>
+                  );
+                }
+
+                return (
+                  <div
+                    key={message.message_id}
+                    className={outgoing ? 'flex justify-end' : 'flex justify-start'}
+                  >
+                    <div className={bubbleClass}>
+                      {!outgoing && showAuthorNames ? (
+                        <p className="mb-1 text-caption font-weight-label">
+                          <OptimisticNavLink
+                            href={`/@${encodeURIComponent(message.author)}`}
+                            className="text-accent hover:underline"
+                          >
+                            {message.author}
+                          </OptimisticNavLink>
+                        </p>
+                      ) : null}
+                      {bodyNode}
+                      <p className="mt-1 text-caption text-muted">
+                        {formatTime(message.created_at_unix)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+        ))}
+      </div>
+
+      <AppModal
+        open={keychainGateOpen}
+        onClose={() => {
+          setKeychainGateOpen(false);
+          setDecryptBlockedByProvider(false);
+        }}
+        panelClassName="p-4"
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <h2 className="text-section font-weight-strong text-fg">
+            {decryptBlockedByProvider
+              ? t('messaging_decrypt_requires_keychain_login')
+              : t('messaging_decrypt_requires_keychain')}
+          </h2>
+          <AppModalCloseButton
+            onClose={() => {
+              setKeychainGateOpen(false);
+              setDecryptBlockedByProvider(false);
+            }}
+            ariaLabel={t('close')}
+          />
         </div>
-      ))}
-    </div>
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            className="rounded-btn border border-border px-3 py-2 text-body-sm"
+            onClick={() => {
+              setKeychainGateOpen(false);
+              setDecryptBlockedByProvider(false);
+            }}
+          >
+            {t('cancel')}
+          </button>
+          {!decryptBlockedByProvider ? (
+            <button
+              type="button"
+              className="rounded-btn bg-accent px-3 py-2 text-body-sm font-weight-label text-accent-fg"
+              onClick={() => {
+                setKeychainGateOpen(false);
+                setDecryptBlockedByProvider(false);
+                openLogin();
+              }}
+            >
+              {t('messaging_login_required')}
+            </button>
+          ) : null}
+        </div>
+      </AppModal>
+    </>
   );
 }

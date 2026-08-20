@@ -7,6 +7,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useLoginModal } from '@/modules/auth';
 
 import { useSendMessage } from '../application/use-send-message';
+import { useSendEncryptedMessage } from '../application/use-send-encrypted-message';
 import { useCreateGroupChannel } from '../application/use-create-group-channel';
 import { useLeaveGroupChannel } from '../application/use-leave-group-channel';
 import { useUpdateGroupChannel } from '../application/use-update-group-channel';
@@ -25,6 +26,7 @@ import type {
   ChannelListPage,
   MessageHistoryPage,
   MessageItem,
+  SendEncryptedMessageInput,
 } from '../domain/messaging.types';
 import { EMPTY_LEAVE_POLICY } from '../domain/messaging.types';
 import {
@@ -106,6 +108,14 @@ export function MessagingInboxClient({
     viewerUsername,
     onRequireLogin: openLogin,
     revalidateAccountName: viewerUsername,
+    onSent: refreshAfterSend,
+  });
+
+  const { sendEncryptedMessage, pendingEncrypted } = useSendEncryptedMessage({
+    viewerUsername,
+    onRequireLogin: openLogin,
+    revalidateAccountName: viewerUsername,
+    markReadChannelId: activeChannelId,
     onSent: refreshAfterSend,
   });
 
@@ -362,7 +372,7 @@ export function MessagingInboxClient({
     activeChannel?.display_title ??
     t('messaging_select_chat');
 
-  const onSend = useCallback(
+  const onSendPlain = useCallback(
     async (body: string) => {
       if (pendingPeer) {
         const ok = await sendMessage({ peer: pendingPeer }, body);
@@ -378,6 +388,33 @@ export function MessagingInboxClient({
     },
     [activeChannelId, pendingPeer, sendMessage],
   );
+
+  const onSendEncrypted = useCallback(
+    async (input: SendEncryptedMessageInput) => {
+      if (pendingPeer) {
+        return sendEncryptedMessage({ peer: pendingPeer }, input);
+      }
+      if (!activeChannelId) {
+        return false;
+      }
+      return sendEncryptedMessage({ channelId: activeChannelId }, input);
+    },
+    [activeChannelId, pendingPeer, sendEncryptedMessage],
+  );
+
+  const composeChannelKind: 'direct' | 'group' | 'object' =
+    channelDetail?.kind === 'group'
+      ? 'group'
+      : channelDetail?.kind === 'object'
+        ? 'object'
+        : 'direct';
+
+  const composeMembers =
+    channelDetail?.members.map((member) => member.account) ??
+    activeChannel?.members ??
+    [];
+
+  const composePeer = pendingPeer ?? channelDetail?.peer ?? activeChannel?.peer ?? null;
 
   const showAuthorNames = channelDetail?.kind === 'group';
 
@@ -411,8 +448,14 @@ export function MessagingInboxClient({
               />
               <div ref={bottomRef} aria-hidden className="h-px" />
               <MessagingComposeBar
+                channelKind={composeChannelKind}
+                peer={composePeer}
+                members={composeMembers}
+                viewerUsername={viewerUsername}
                 pending={pending}
-                onSend={onSend}
+                pendingEncrypted={pendingEncrypted}
+                onSendPlain={onSendPlain}
+                onSendEncrypted={onSendEncrypted}
                 onRequireLogin={openLogin}
               />
             </div>

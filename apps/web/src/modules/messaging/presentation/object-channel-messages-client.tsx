@@ -38,7 +38,7 @@ export function ObjectChannelMessagesClient({
   const bottomRef = useRef<HTMLDivElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
 
-  const { sendMessage, pending } = useSendObjectChannelMessage({
+  const { sendMessage, sendEncryptedMessage, pending } = useSendObjectChannelMessage({
     viewerUsername,
     objectId,
     objectName,
@@ -107,11 +107,16 @@ export function ObjectChannelMessagesClient({
           />
           <div ref={bottomRef} aria-hidden className="h-px" />
           <MessagingComposeBar
+            channelKind="object"
+            members={channel.members.map((member) => member.account)}
+            viewerUsername={viewerUsername}
             disabled={!viewerUsername}
             pending={pending}
-            onSend={async (body) => {
+            pendingEncrypted={pending}
+            onSendPlain={async (body) => {
               await sendMessage(body);
             }}
+            onSendEncrypted={sendEncryptedMessage}
             onRequireLogin={openLogin}
           />
         </div>

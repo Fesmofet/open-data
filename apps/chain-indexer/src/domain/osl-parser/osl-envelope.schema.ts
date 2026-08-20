@@ -3,8 +3,17 @@ import {
   imageCidOrUrlJsonSchema,
   MAX_GROUP_CHANNEL_CREATE_INVITEES,
 } from '@opden-data-layer/core';
+import { HIVE_MEMO_CIPHERTEXT_REGEX } from '@opden-data-layer/hive-memo-crypto';
 
 const hiveAccountSchema = z.string().min(1).max(32);
+
+const messageEncryptionSchema = z
+  .object({
+    v: z.literal(1),
+    mode: z.enum(['memo', 'ephemeral']),
+    to: hiveAccountSchema,
+  })
+  .strict();
 
 export const hiveEngineDepositPayloadSchema = z
   .object({
@@ -172,6 +181,13 @@ export const messageCreatePayloadSchema = z
     peer: hiveAccountSchema.optional(),
     members: z.array(hiveAccountSchema).length(2).optional(),
     body: z.string().max(65535).optional(),
+    encrypted_body: z
+      .string()
+      .min(2)
+      .max(65535)
+      .regex(HIVE_MEMO_CIPHERTEXT_REGEX)
+      .optional(),
+    encryption: messageEncryptionSchema.optional(),
     overflow_ref: z.string().min(1).max(512).optional(),
     reply_to: z.string().min(1).max(256).optional(),
     quote_json: z.record(z.string(), z.unknown()).optional(),
@@ -182,10 +198,26 @@ export const messageCreatePayloadSchema = z
   .superRefine((data, ctx) => {
     const hasBody = data.body !== undefined && data.body !== '';
     const hasOverflow = data.overflow_ref !== undefined && data.overflow_ref !== '';
-    if (!hasBody && !hasOverflow) {
+    const hasEncrypted =
+      data.encrypted_body !== undefined && data.encrypted_body !== '';
+    if (!hasBody && !hasOverflow && !hasEncrypted) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Either body or overflow_ref is required',
+        message: 'Either body, overflow_ref, or encrypted_body is required',
+      });
+    }
+    if (hasBody && hasEncrypted) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide body or encrypted_body, not both',
+      });
+    }
+    const hasEncryptedBody = data.encrypted_body !== undefined;
+    const hasEncryption = data.encryption !== undefined;
+    if (hasEncryptedBody !== hasEncryption) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'encrypted_body and encryption must be provided together',
       });
     }
     const hasChannel = data.channel_id !== undefined;

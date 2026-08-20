@@ -132,6 +132,7 @@ export type HiveAccountWalletFields = {
   reputation?: number;
   voting_manabar?: HiveManabar;
   downvote_manabar?: HiveManabar;
+  memo_key?: string;
 };
 
 export type HiveRewardFund = {

@@ -34,6 +34,19 @@ export type HiveKeychainWindow = Window & {
       callback: (response: KeychainBroadcastResponse) => void,
       rpc?: string | null,
     ) => void;
+    requestEncodeMessage?: (
+      username: string,
+      receiver: string,
+      message: string,
+      keyType: string,
+      callback: (response: KeychainResponse) => void,
+    ) => void;
+    requestVerifyKey?: (
+      username: string,
+      encryptedMessage: string,
+      keyType: string,
+      callback: (response: KeychainResponse) => void,
+    ) => void;
   };
 };
 

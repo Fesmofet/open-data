@@ -17,6 +17,42 @@ describe('messageCreatePayloadSchema', () => {
     const result = messageCreatePayloadSchema.safeParse({ peer: 'bob' });
     expect(result.success).toBe(false);
   });
+
+  it('accepts encrypted message_create payload', () => {
+    const result = messageCreatePayloadSchema.safeParse({
+      channel_id: 'grp-1',
+      encrypted_body: '#Ab3xYz',
+      encryption: { v: 1, mode: 'memo', to: 'bob' },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects encrypted_body without encryption object', () => {
+    const result = messageCreatePayloadSchema.safeParse({
+      channel_id: 'grp-1',
+      encrypted_body: '#Ab3xYz',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects body and encrypted_body together', () => {
+    const result = messageCreatePayloadSchema.safeParse({
+      channel_id: 'grp-1',
+      body: 'hi',
+      encrypted_body: '#Ab3xYz',
+      encryption: { v: 1, mode: 'memo', to: 'bob' },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects invalid ciphertext regex', () => {
+    const result = messageCreatePayloadSchema.safeParse({
+      channel_id: 'grp-1',
+      encrypted_body: 'not-encrypted',
+      encryption: { v: 1, mode: 'memo', to: 'bob' },
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('channelLeavePayloadSchema', () => {

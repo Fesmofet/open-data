@@ -1,3 +1,9 @@
+export type MessageEncryption = {
+  v: number;
+  mode: 'memo' | 'ephemeral';
+  to: string;
+};
+
 export type ChannelListItem = {
   channel_id: string;
   kind: string;
@@ -9,6 +15,7 @@ export type ChannelListItem = {
   unread_count: number;
   image: unknown;
   last_message_preview: string | null;
+  last_message_encrypted?: boolean;
 };
 
 export type ChannelListPage = {
@@ -49,6 +56,8 @@ export type MessageItem = {
   channel_id: string;
   author: string;
   body: string | null;
+  encrypted_body: string | null;
+  encryption: MessageEncryption | null;
   overflow_ref: string | null;
   reply_to: string | null;
   quote_json: unknown;
@@ -68,6 +77,15 @@ export type MessagingListFilter = 'all' | 'unread';
 export type SendMessageTarget =
   | { channelId: string; peer?: never }
   | { peer: string; channelId?: never };
+
+export type SendEncryptedMessageInput = {
+  ciphertext: string;
+  mode: 'memo' | 'ephemeral';
+  to: string;
+};
+
+export const PLAIN_SEND_DISCLAIMER_STORAGE_KEY =
+  'odl:messaging:plain-send-disclaimer-v1';
 
 export const EMPTY_LEAVE_POLICY: ChannelLeavePolicy = {
   can_leave: false,

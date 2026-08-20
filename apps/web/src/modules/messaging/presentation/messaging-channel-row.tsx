@@ -9,6 +9,7 @@ import {
   resolveChannelImageUrl,
 } from '../domain/messaging.helpers';
 import type { ChannelListItem } from '../domain/messaging.types';
+import { LockClosedIcon } from './messaging-icons';
 
 export type MessagingChannelRowProps = {
   channel: ChannelListItem;
@@ -48,9 +49,11 @@ export function MessagingChannelRow({
   active,
   onSelect,
 }: MessagingChannelRowProps) {
+  const { t } = useI18n();
   const contentBaseUrl = useIpfsContentBaseUrl();
   const title = channel.display_title ?? channel.list_title ?? channel.channel_id;
   const preview = channel.last_message_preview ?? '';
+  const encryptedPreview = channel.last_message_encrypted === true;
 
   return (
     <button
@@ -85,6 +88,11 @@ export function MessagingChannelRow({
         </div>
         {preview ? (
           <p className="mt-0.5 truncate text-body-sm text-muted">{preview}</p>
+        ) : encryptedPreview ? (
+          <p className="mt-0.5 flex items-center gap-1 truncate text-body-sm text-muted">
+            <LockClosedIcon className="size-3.5 shrink-0" />
+            {t('messaging_message_encrypted')}
+          </p>
         ) : null}
       </div>
     </button>

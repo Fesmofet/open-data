@@ -94,11 +94,5 @@ export async function loadProfileChannelAboutAction(input: {
     return getChannelByIdQuery(channelId, viewer);
   }
 
-  const channels = await getViewerChannelsQuery(viewer, { limit: 1 });
-  const firstChannelId = channels.items[0]?.channel_id;
-  if (!firstChannelId) {
-    return null;
-  }
-
-  return getChannelByIdQuery(firstChannelId, viewer);
+  return null;
 }

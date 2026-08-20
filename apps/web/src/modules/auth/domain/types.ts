@@ -24,4 +24,5 @@ export interface WalletFacade {
   broadcast(input: BroadcastTransactionInput): Promise<BroadcastTransactionResult>;
   /** Restore active provider after full page reload (e.g. from sessionStorage); no re-auth. */
   setActiveProvider(provider: WalletProviderId | null): void;
+  getActiveProvider(): WalletProviderId | null;
 }

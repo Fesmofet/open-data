@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 
 import { useInstantNavigation } from '@/shared/presentation';
 
@@ -31,7 +32,9 @@ export function UserProfileMainContentPendingShell({
           aria-busy="true"
           aria-live="polite"
         >
-          <ProfileMainPendingSkeleton />
+          <Suspense fallback={null}>
+            <ProfileMainPendingSkeleton />
+          </Suspense>
         </div>
       ) : null}
     </div>

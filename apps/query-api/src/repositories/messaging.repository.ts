@@ -162,25 +162,31 @@ export class MessagingRepository {
     return Number(result.numUpdatedRows) > 0;
   }
 
-  async getLastMessagePreview(channelId: string): Promise<string | null> {
+  async getLastMessagePreview(channelId: string): Promise<{
+    preview: string | null;
+    encrypted: boolean;
+  }> {
     const row = await this.db
       .selectFrom('messages')
-      .select(['body', 'overflow_ref'])
+      .select(['body', 'overflow_ref', 'encryption_mode'])
       .where('channel_id', '=', channelId)
       .orderBy('created_at_unix', 'desc')
       .orderBy('event_seq', 'desc')
       .limit(1)
       .executeTakeFirst();
     if (!row) {
-      return null;
+      return { preview: null, encrypted: false };
+    }
+    if (row.encryption_mode != null) {
+      return { preview: null, encrypted: true };
     }
     if (row.body != null && row.body.trim() !== '') {
-      return row.body;
+      return { preview: row.body, encrypted: false };
     }
     if (row.overflow_ref != null && row.overflow_ref.trim() !== '') {
-      return row.overflow_ref;
+      return { preview: row.overflow_ref, encrypted: false };
     }
-    return null;
+    return { preview: null, encrypted: false };
   }
 
   async listChannelMessages(

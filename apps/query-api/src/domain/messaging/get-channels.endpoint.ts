@@ -22,6 +22,7 @@ export type ChannelListItemDto = {
   unread_count: number;
   image: unknown;
   last_message_preview: string | null;
+  last_message_encrypted: boolean;
 };
 
 export type ChannelListResponseDto = {
@@ -84,7 +85,7 @@ export class GetChannelsEndpoint {
         viewerTrimmed,
         lastReadAt,
       );
-      const lastMessagePreview = await this.messagingRepo.getLastMessagePreview(
+      const lastMessage = await this.messagingRepo.getLastMessagePreview(
         channel.channel_id,
       );
 
@@ -98,7 +99,8 @@ export class GetChannelsEndpoint {
         last_message_at_unix: channel.last_message_at_unix,
         unread_count: unreadCount,
         image: channel.image,
-        last_message_preview: lastMessagePreview,
+        last_message_preview: lastMessage.preview,
+        last_message_encrypted: lastMessage.encrypted,
       });
     }
 

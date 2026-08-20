@@ -40,6 +40,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 - NestJS, `@modelcontextprotocol/sdk` Streamable HTTP (stateless MCP per request)
 - `@opden-data-layer/hive-auth` — `HasClient`
 - `@opden-data-layer/hive-broadcast` — `buildObjectCreateEnvelope`
+- `@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt port for future encrypted OSL message MCP tools (not wired in v1)
 - Default bind **`127.0.0.1:7500`** — no CORS
 
 ## Feature specs

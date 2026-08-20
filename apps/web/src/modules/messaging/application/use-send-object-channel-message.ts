@@ -15,9 +15,11 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import {
+  buildEncryptedMessageCreatePayload,
   buildMessageCreatePayload,
   buildObjectChannelCreatePayload,
 } from '../domain/messaging.helpers';
+import type { SendEncryptedMessageInput } from '../domain/messaging.types';
 
 export function useSendObjectChannelMessage(options: {
   viewerUsername: string | null;
@@ -90,5 +92,62 @@ export function useSendObjectChannelMessage(options: {
     [channelExists, oslCustomJsonId, options, pending, router],
   );
 
-  return { sendMessage, pending, channelExists };
+  const sendEncryptedMessage = useCallback(
+    async (encrypted: SendEncryptedMessageInput) => {
+      const account = options.viewerUsername?.trim();
+      if (!account) {
+        options.onRequireLogin?.();
+        return false;
+      }
+      if (pending) {
+        return false;
+      }
+      setPending(true);
+      try {
+        const messagePayload = buildEncryptedMessageCreatePayload({
+          channelId: options.channelId,
+          ciphertext: encrypted.ciphertext,
+          mode: encrypted.mode,
+          to: encrypted.to,
+        });
+        const messageOp = buildOslMessageCreateOp({
+          id: oslCustomJsonId,
+          creator: account,
+          payload: messagePayload,
+        });
+        const operations = channelExists
+          ? [messageOp]
+          : [
+              buildOslChannelCreateOp({
+                id: oslCustomJsonId,
+                creator: account,
+                payload: buildObjectChannelCreatePayload({
+                  objectId: options.objectId,
+                  objectName: options.objectName,
+                }),
+              }),
+              messageOp,
+            ];
+        const { transactionId } = await getWalletFacade().broadcast({
+          operations,
+        });
+        await awaitTrxConfirmation(transactionId);
+        if (!channelExists) {
+          setChannelExists(true);
+          options.onBootstrapComplete?.();
+        }
+        await refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(options.objectId),
+        );
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setPending(false);
+      }
+    },
+    [channelExists, oslCustomJsonId, options, pending, router],
+  );
+
+  return { sendMessage, sendEncryptedMessage, pending, channelExists };
 }

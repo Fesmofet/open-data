@@ -88,6 +88,13 @@ export function MessagingProfileAboutRail({
   useEffect(() => {
     if (!isOwnInbox) {
       setDetail(null);
+      setPending(false);
+      return;
+    }
+
+    if (!channel && !peer) {
+      setDetail(null);
+      setPending(false);
       return;
     }
 

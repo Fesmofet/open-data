@@ -53,8 +53,28 @@ Outgoing message bubbles use `bg-accent-soft` + `text-fg` (see [theme.md](./them
 
 Client builds `message_create` via `@opden-data-layer/hive-broadcast` (`buildOslMessageCreateOp`), broadcasts with wallet, awaits trx confirmation, revalidates cache tags.
 
-- Existing channel: `{ channel_id, body }`
-- New DM: `{ peer, body }`
+- Existing channel (plain): `{ channel_id, body }`
+- New DM (plain): `{ peer, body }`
+- Encrypted: `{ channel_id, encrypted_body, encryption: { v: 1, mode, to } }` — no `body`
+
+## Compose bar (plain + encrypted)
+
+Two icon buttons in `MessagingComposeBar`:
+
+| Button | Action |
+|--------|--------|
+| Arrow | Plain send — `PlainSendDisclaimerModal` until user dismisses |
+| Lock | `EncryptedSendModal` — pick recipient, encrypt (Keychain memo or ephemeral fallback), send |
+
+Recipient selection: DM = peer; group = member dropdown; object = user search.
+
+Decrypt in `MessagingMessageList`: click encrypted bubble → Keychain `requestVerifyKey`; ephemeral outgoing bubbles are not clickable.
+
+## API mapping (encryption)
+
+| UI need | query-api |
+|---------|-----------|
+| Recipient memo public key | `GET /query/v1/users/{account}/memo-public-key` (BFF: `/api/users/{name}/memo-public-key`) |
 
 ## Group chat (profile New message)
 
@@ -114,4 +134,5 @@ New group create (`New message`, 2+ users): preflight via `validate-invitees` be
 - Attachments, emoji, delete UI
 - Pinned messages (empty About section)
 - Global nav unread badge
-- DM encryption
+- HiveSigner / HiveAuth decrypt
+- Multi-recipient encrypted messages

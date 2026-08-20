@@ -1,5 +1,4 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
-import { Message } from '@opden-data-layer/odl-db-types';
 
 import {
   MessagingRepository,
@@ -8,20 +7,10 @@ import {
   decodeMessageCursor,
   encodeMessageCursor,
 } from './message-feed-cursor';
+import { mapMessageToDto, type MessageDto } from './message-projection';
 import type { MessageHistoryBody } from './schemas/messaging.schema';
 
-export type MessageDto = {
-  message_id: string;
-  channel_id: string;
-  author: string;
-  body: string | null;
-  overflow_ref: string | null;
-  reply_to: string | null;
-  quote_json: unknown;
-  attachments: unknown;
-  mentions: string[];
-  created_at_unix: number;
-};
+export type { MessageDto, MessageEncryptionDto } from './message-projection';
 
 export type MessageHistoryResponseDto = {
   items: MessageDto[];
@@ -86,7 +75,7 @@ export class GetChannelMessagesEndpoint {
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
 
-    const items = page.map(mapMessage);
+    const items = page.map(mapMessageToDto);
     const last = page[page.length - 1];
     const nextCursor =
       hasMore && last
@@ -98,19 +87,4 @@ export class GetChannelMessagesEndpoint {
 
     return { items, cursor: nextCursor, hasMore };
   }
-}
-
-function mapMessage(row: Message): MessageDto {
-  return {
-    message_id: row.message_id,
-    channel_id: row.channel_id,
-    author: row.author,
-    body: row.body,
-    overflow_ref: row.overflow_ref,
-    reply_to: row.reply_to,
-    quote_json: row.quote_json,
-    attachments: row.attachments,
-    mentions: row.mentions,
-    created_at_unix: row.created_at_unix,
-  };
 }

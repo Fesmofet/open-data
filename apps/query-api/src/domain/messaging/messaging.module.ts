@@ -14,6 +14,7 @@ import {
   ValidateChannelMembersEndpoint,
   ValidateGroupInviteesEndpoint,
 } from './validate-members.endpoint';
+import { GetMemoPublicKeyEndpoint } from './get-memo-public-key.endpoint';
 
 @Module({
   imports: [RepositoriesModule, GovernanceModule],
@@ -27,6 +28,7 @@ import {
     MarkChannelReadEndpoint,
     ValidateChannelMembersEndpoint,
     ValidateGroupInviteesEndpoint,
+    GetMemoPublicKeyEndpoint,
   ],
   exports: [
     GetChannelsEndpoint,
@@ -38,6 +40,7 @@ import {
     MarkChannelReadEndpoint,
     ValidateChannelMembersEndpoint,
     ValidateGroupInviteesEndpoint,
+    GetMemoPublicKeyEndpoint,
   ],
 })
 export class MessagingModule {}

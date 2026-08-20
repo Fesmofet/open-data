@@ -81,8 +81,13 @@ export async function queryApiFetchOutcome<T>(
     }
     return { ok: false, status: res.status };
   }
-  const data = (await res.json()) as T;
-  return { ok: true, data };
+  try {
+    const data = (await res.json()) as T;
+    return { ok: true, data };
+  } catch (err) {
+    console.error(`[query-api] invalid JSON for ${path}:`, err);
+    return { ok: false, status: res.status };
+  }
 }
 
 /**
@@ -113,7 +118,12 @@ export async function queryApiFetch<T>(
     console.error(`[query-api] ${res.status} for ${path}`);
     return null;
   }
-  return res.json() as Promise<T>;
+  try {
+    return (await res.json()) as T;
+  } catch (err) {
+    console.error(`[query-api] invalid JSON for ${path}:`, err);
+    return null;
+  }
 }
 
 /** Uncached query-api read — **post-broadcast server actions only** (not page-load clients). */

@@ -17,7 +17,38 @@ related:
 - Flat sequence per channel; optional `reply_to`, `quote_json`, `attachments`, `mentions`.
 - `message_id` = `{transaction_id}-{trxIdx}-{opIdx}-{eventIndex}`.
 - DM bootstrap: `peer` or `members` (exactly 2, includes signer); no `channel_id` in bootstrap payload.
-- Requires `body` or `overflow_ref`.
+- Requires **one of** `body`, `overflow_ref`, or `encrypted_body` (+ `encryption`).
+
+### Plaintext
+
+```json
+{ "channel_id": "dm-…", "body": "hello" }
+```
+
+### Encrypted
+
+```json
+{
+  "channel_id": "grp-abc",
+  "encrypted_body": "#5HQ7…",
+  "encryption": { "v": 1, "mode": "memo", "to": "bob" }
+}
+```
+
+| Field | Values |
+|-------|--------|
+| `encrypted_body` | `#` + base58 Hive memo ciphertext |
+| `encryption.v` | `1` |
+| `encryption.mode` | `memo` \| `ephemeral` |
+| `encryption.to` | Hive account — intended recipient |
+
+Reject (warn-only skip, no DB write):
+
+- `body` and `encrypted_body` together
+- `encrypted_body` without `encryption` (or reverse)
+- Invalid ciphertext regex or unknown `mode`
+
+See [encryption-future.md](./encryption-future.md) for UX and crypto semantics.
 
 ## `message_delete` (v1)
 

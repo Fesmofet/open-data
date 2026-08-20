@@ -2,7 +2,7 @@ import { MAX_GROUP_CHANNEL_MEMBERS } from '@opden-data-layer/core/constants';
 import { buildObjectChannelId } from '@opden-data-layer/core/utils/osl-messaging';
 
 import type { ChannelDetail, ChannelListItem, MessageItem } from './messaging.types';
-import { EMPTY_LEAVE_POLICY } from './messaging.types';
+import { EMPTY_LEAVE_POLICY, PLAIN_SEND_DISCLAIMER_STORAGE_KEY } from './messaging.types';
 
 export { MAX_GROUP_CHANNEL_MEMBERS, buildObjectChannelId };
 
@@ -75,6 +75,7 @@ export function buildOptimisticGroupChannelListItem(input: {
     unread_count: 0,
     image: null,
     last_message_preview: null,
+    last_message_encrypted: false,
   };
 }
 
@@ -214,6 +215,92 @@ export function buildMessageCreatePayload(input: {
     return { peer: input.peer, body };
   }
   throw new Error('channelId or peer is required');
+}
+
+export function buildEncryptedMessageCreatePayload(input: {
+  channelId?: string;
+  peer?: string;
+  ciphertext: string;
+  mode: 'memo' | 'ephemeral';
+  to: string;
+}): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    encrypted_body: input.ciphertext,
+    encryption: { v: 1, mode: input.mode, to: input.to },
+  };
+  if (input.channelId) {
+    payload.channel_id = input.channelId;
+  } else if (input.peer) {
+    payload.peer = input.peer;
+  } else {
+    throw new Error('channelId or peer is required');
+  }
+  return payload;
+}
+
+export type MessagePresentation =
+  | { kind: 'plain'; text: string }
+  | { kind: 'encrypted'; clickable: true }
+  | { kind: 'one-way'; to: string }
+  | { kind: 'decrypted'; text: string };
+
+export function resolveMessagePresentation(
+  message: Pick<MessageItem, 'body' | 'encryption' | 'author'>,
+  viewerUsername: string | null,
+  decryptedText?: string | null,
+): MessagePresentation {
+  if (decryptedText != null && decryptedText.length > 0) {
+    return { kind: 'decrypted', text: decryptedText };
+  }
+  if (message.encryption == null) {
+    return { kind: 'plain', text: messageDisplayBody(message) };
+  }
+  const viewer = viewerUsername?.trim().toLowerCase() ?? '';
+  const outgoing =
+    viewer.length > 0 && message.author.trim().toLowerCase() === viewer;
+  if (outgoing && message.encryption.mode === 'ephemeral') {
+    return { kind: 'one-way', to: message.encryption.to };
+  }
+  return { kind: 'encrypted', clickable: true };
+}
+
+export function canViewerAttemptDecryptMessage(
+  message: Pick<MessageItem, 'encryption' | 'author'>,
+  viewerUsername: string | null,
+): boolean {
+  if (message.encryption == null) {
+    return false;
+  }
+  const viewer = viewerUsername?.trim().toLowerCase() ?? '';
+  if (!viewer) {
+    return false;
+  }
+  if (message.encryption.to.trim().toLowerCase() === viewer) {
+    return true;
+  }
+  if (message.encryption.mode === 'memo') {
+    return message.author.trim().toLowerCase() === viewer;
+  }
+  return false;
+}
+
+export function isPlainSendDisclaimerDismissed(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  try {
+    return localStorage.getItem(PLAIN_SEND_DISCLAIMER_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function dismissPlainSendDisclaimer(): void {
+  try {
+    localStorage.setItem(PLAIN_SEND_DISCLAIMER_STORAGE_KEY, '1');
+  } catch {
+    // ignore
+  }
 }
 
 export function buildChannelLeavePayload(input: {

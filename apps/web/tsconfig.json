@@ -63,6 +63,9 @@
       "@opden-data-layer/hive-broadcast": [
         "../../libs/hive-broadcast/src/index.ts"
       ],
+      "@opden-data-layer/hive-memo-crypto": [
+        "../../libs/hive-memo-crypto/src/index.ts"
+      ],
       "@opden-data-layer/notifications-contract": [
         "../../libs/notifications-contract/src/index.ts"
       ],

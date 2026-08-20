@@ -79,6 +79,10 @@ import {
   type UserExpertiseCountersResponse,
   type UserExpertiseObjectsQuery,
 } from '../domain/expertise';
+import {
+  GetMemoPublicKeyEndpoint,
+  type MemoPublicKeyResponseDto,
+} from '../domain/messaging/get-memo-public-key.endpoint';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -101,6 +105,7 @@ export class UsersController {
     private readonly getUserExpertiseObjects: GetUserExpertiseObjectsEndpoint,
     private readonly getUserAccountSidebar: GetUserAccountSidebarEndpoint,
     private readonly getUserNotificationSettings: GetUserNotificationSettingsEndpoint,
+    private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -278,6 +283,13 @@ export class UsersController {
     @ReqViewer() viewer: string | undefined,
   ): Promise<UserNotificationSettingsView> {
     return this.getUserNotificationSettings.execute(name, viewer);
+  }
+
+  @Get(':name/memo-public-key')
+  async getMemoPublicKeyRoute(
+    @Param('name') name: string,
+  ): Promise<MemoPublicKeyResponseDto> {
+    return this.getMemoPublicKey.execute(name);
   }
 
   @Get(':name/profile')
