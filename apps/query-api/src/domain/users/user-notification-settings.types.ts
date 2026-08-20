@@ -1,4 +1,4 @@
-import type { UserNotificationSettings } from '@opden-data-layer/core';
+import type { UserNotificationSettings } from '@opden-data-layer/odl-db-types';
 
 /** API view of notification settings (excludes legacy `deactivation_campaign`). */
 export type UserNotificationSettingsView = Omit<

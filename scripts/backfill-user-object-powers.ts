@@ -13,7 +13,7 @@
  * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
  * Optional HIVE_ENGINE_NODES (comma-separated); defaults from libs/clients hive-engine constants.
  */
-import type { OdlDatabase } from '../libs/core/src/index';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { resolveConnectionString } from '../libs/migrations/src/connection';
 import {
   HIVE_ENGINE_NODES,

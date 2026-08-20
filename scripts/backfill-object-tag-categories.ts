@@ -8,7 +8,7 @@
  * DB connection is skipped when --dry-run.
  */
 import { resolveConnectionString } from '../libs/migrations/src/connection';
-import { type OdlDatabase } from '../libs/core/src/index';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import pg from 'pg';
 

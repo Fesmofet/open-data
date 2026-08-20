@@ -1,18 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Kysely } from 'kysely';
-import {
-  type NewPostObject,
-  extractObjectIdsFromCommentBody,
-  isThreadParentAccount,
-  MAX_POST_OBJECTS_PER_POST,
-} from '@opden-data-layer/core';
+import { extractObjectIdsFromCommentBody, isThreadParentAccount, MAX_POST_OBJECTS_PER_POST } from '@opden-data-layer/core';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
 import type { CommentOperationPayload } from './hive-comment.schema';
 import { PostUpsertService } from './post-upsert.service';
 import { PostRelatedImagesSyncService } from './post-related-images-sync.service';
+import type { NewPostObject } from '@opden-data-layer/odl-db-types';
 import {
   POST_OBJECT_CHANGED_EVENT,
   PostObjectChangedEvent,

@@ -166,7 +166,7 @@ Maps legacy camelCase fields into `hive_engine_deposit_records`. New on-chain wr
 
 ## Post export mapping
 
-Source shape: legacy Mongo [`PostSchema`](../../tmp/PostSchema.js). ODL columns: [`libs/core/src/db/odl/tables.ts`](../../libs/core/src/db/odl/tables.ts).
+Source shape: legacy Mongo [`PostSchema`](../../tmp/PostSchema.js). ODL columns: [`libs/odl-db-types/src/odl/tables.ts`](../../libs/odl-db-types/src/odl/tables.ts).
 
 - **Skipped:** `blocked_for_apps`, singular `language`, `reblog_to`. Posts with both `title` and `body` empty after trim are ignored entirely (stat `postsSkippedEmptyTitleBody`).
 - **`post_languages`:** `languages[]` may use regional tags (`en-US`). The importer stores the **primary language subtag** only (`en`), canonicalized with `Intl`, and dedupes per post (e.g. `en-US` + `en-GB` → one `en` row).
@@ -179,7 +179,7 @@ Inserts use `ON CONFLICT DO NOTHING` on natural keys so re-runs are idempotent.
 
 ## User export mapping
 
-Source: [`tmp/UserSchema.js`](../../tmp/UserSchema.js). ODL: [`libs/core/src/db/odl/tables.ts`](../../libs/core/src/db/odl/tables.ts).
+Source: [`tmp/UserSchema.js`](../../tmp/UserSchema.js). ODL: [`libs/odl-db-types/src/odl/tables.ts`](../../libs/odl-db-types/src/odl/tables.ts).
 
 - **`user_notification_settings.vote`:** from nested JSON `user_metadata.settings.userNotifications.like` (Mongo field name `like`; stored as column `vote` because `like` is a PostgreSQL reserved word).
 - **`user_post_bookmarks`:** only entries in `user_metadata.bookmarks[]` containing `/` are split into `author` + `permlink`; others are skipped (object bookmarks not modeled).

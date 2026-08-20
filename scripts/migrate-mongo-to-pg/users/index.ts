@@ -23,7 +23,7 @@ import type {
   NewUserPostBookmark,
   NewUserReferral,
   OdlDatabase,
-} from '../../../libs/core/src/db';
+} from '@opden-data-layer/odl-db-types';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';

@@ -1,5 +1,5 @@
-import type { AccountSyncQueueRow } from '@opden-data-layer/core';
 import { AccountSyncWorker } from './account-sync.worker';
+import { AccountSyncQueueRow } from '@opden-data-layer/odl-db-types';
 
 function row(partial: Partial<AccountSyncQueueRow>): AccountSyncQueueRow {
   return {

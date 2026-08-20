@@ -1,7 +1,7 @@
-import type { RankVote } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { VoterWaivPowerMap } from '../types/aggregated-object';
 import { computeUpdateRankPersistence } from './resolve-ranking';
+import { RankVote } from '@opden-data-layer/odl-db-types';
 
 const EMPTY_GOVERNANCE: GovernanceSnapshot = {
   admins: [],

@@ -1,5 +1,6 @@
 import { HiveClient, type HiveContentType } from '@opden-data-layer/clients';
-import type { Post } from '@opden-data-layer/core';
+import { Post } from '@opden-data-layer/odl-db-types';
+
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository } from '../../repositories/aggregated-object.repository';

@@ -1,5 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
-import type { Message } from '@opden-data-layer/core';
+import { Message } from '@opden-data-layer/odl-db-types';
+
 import {
   MessagingRepository,
 } from '../../repositories';

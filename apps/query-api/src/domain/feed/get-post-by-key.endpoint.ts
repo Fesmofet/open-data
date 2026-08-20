@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { HiveClient } from '@opden-data-layer/clients';
 import { POST_LINKED_OBJECT_UPDATE_TYPES } from '@opden-data-layer/core';
-import type { Post, SupportedCurrency } from '@opden-data-layer/core';
+import { SupportedCurrency } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
+import type { Post } from '@opden-data-layer/odl-db-types';
 import {
   AggregatedObjectRepository,
   AccountsCurrentRepository,

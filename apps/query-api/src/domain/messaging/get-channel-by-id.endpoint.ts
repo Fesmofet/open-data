@@ -1,5 +1,6 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
-import type { Channel, ChannelMember } from '@opden-data-layer/core';
+import { Channel, ChannelMember } from '@opden-data-layer/odl-db-types';
+
 import { MessagingRepository } from '../../repositories/messaging.repository';
 import {
   buildDmListTitle,

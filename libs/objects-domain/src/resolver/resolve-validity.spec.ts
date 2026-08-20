@@ -1,7 +1,11 @@
-import type { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
 import { MIN_PERCENT_TO_SHOW_UPDATE } from '../constants';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { VoterWaivPowerMap } from '../types/aggregated-object';
+import type {
+  ObjectUpdate,
+  ValidityVote,
+  ObjectAuthority,
+} from '@opden-data-layer/odl-db-types';
 import {
   computeApprovePercent,
   computeCuratorSet,

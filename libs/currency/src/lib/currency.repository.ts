@@ -9,7 +9,7 @@ import type {
   NewCurrencyStatisticsRow,
   NewHiveEngineRatesRow,
   OdlDatabase,
-} from '@opden-data-layer/core';
+} from '@opden-data-layer/odl-db-types';
 
 import {
   FIAT_TARGET_CODES,

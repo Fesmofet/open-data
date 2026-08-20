@@ -1,4 +1,4 @@
-import type { ValidityVote } from '@opden-data-layer/core';
+import type { ValidityVote } from '@opden-data-layer/odl-db-types';
 
 export const VALIDITY_VOTE_PREVIEW_LIMIT = 3;
 export const VALIDITY_VOTER_LIST_LIMIT = 100;

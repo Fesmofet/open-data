@@ -12,6 +12,12 @@ Specialization for this app. **Shared policy** (monorepo, docs standards, cross-
 
 - **Next.js App Router** (`src/app/`) — not NestJS.
 
+## Core and DB type imports
+
+- Routing table: [`docs/standards/core-imports.md`](../../docs/standards/core-imports.md).
+- Server Components may use `@opden-data-layer/core` barrel; client components prefer subpaths for tree-shaking.
+- Kysely row types: `import type` from `@opden-data-layer/odl-db-types` only.
+
 ## Verification (before push / Docker)
 
 | Command | What it checks |

@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { JsonValue, UserMetadata } from '@opden-data-layer/core';
+import { JsonValue, UserMetadata } from '@opden-data-layer/odl-db-types';
 
 /** Payload for full `update_user_metadata` OSL overwrite (aligned with {@link UserMetadata} excluding PK). */
 export type UserMetadataUpsertPayload = Omit<UserMetadata, 'account'>;

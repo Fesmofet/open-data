@@ -1,4 +1,4 @@
-import type { HiveBeneficiary, NewPost } from '@opden-data-layer/core';
+import type { HiveBeneficiary, NewPost } from '@opden-data-layer/odl-db-types';
 
 /**
  * Hive sometimes returns `json_metadata` as an object; DB column is TEXT storing JSON text.

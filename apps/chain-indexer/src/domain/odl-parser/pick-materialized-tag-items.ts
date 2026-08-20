@@ -1,6 +1,6 @@
-import type { JsonValue } from '@opden-data-layer/core';
 import { OBJECT_TYPE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
 
 export type MaterializedTagCategoryItem = {
   category: string;

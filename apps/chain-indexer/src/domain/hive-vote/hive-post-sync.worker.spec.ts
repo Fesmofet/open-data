@@ -1,5 +1,5 @@
-import type { PostSyncQueueRow } from '@opden-data-layer/core';
 import { HivePostSyncWorker } from './hive-post-sync.worker';
+import { PostSyncQueueRow } from '@opden-data-layer/odl-db-types';
 
 function row(partial: Partial<PostSyncQueueRow>): PostSyncQueueRow {
   return {

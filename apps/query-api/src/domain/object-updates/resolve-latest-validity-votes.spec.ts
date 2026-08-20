@@ -1,5 +1,4 @@
-import type { ValidityVote } from '@opden-data-layer/core';
-
+import type { ValidityVote } from '@opden-data-layer/odl-db-types';
 import {
   previewValidityVoters,
   resolveLatestValidityVoters,

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { NewThread } from '@opden-data-layer/core';
+import { NewThread } from '@opden-data-layer/odl-db-types';
+
 import {
   DEFAULT_PERCENT_HBD,
   blockTimestampToUnixSeconds,

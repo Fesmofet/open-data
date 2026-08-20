@@ -1,6 +1,5 @@
-import type { AccountCurrent } from '@opden-data-layer/core';
-
 import { mapAccountToUserProfileView } from './account-mapper';
+import { AccountCurrent } from '@opden-data-layer/odl-db-types';
 
 function accountRow(overrides: Partial<AccountCurrent> = {}): AccountCurrent {
   return {

@@ -1214,8 +1214,8 @@ export function projectedIdentifierRows(o: ProjectedObjectView): ProjectedIdenti
 }
 
 /**
- * Canonical `link.type` strings — mirror {@link libs/core/src/update-registry/updates/link.ts}
- * (do not import `@opden-data-layer/core` in this Next-facing module).
+ * Canonical `link.type` strings — mirror {@link libs/core/src/update-registry/updates/link.ts}.
+ * Client bundles: prefer registry subpaths over the core barrel for tree-shaking.
  */
 const OBJECT_LINK_KINDS = [
   'facebook',

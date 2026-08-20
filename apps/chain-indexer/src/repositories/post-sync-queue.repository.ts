@@ -3,7 +3,7 @@ import type { Kysely, Transaction } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { PostSyncQueueRow } from '@opden-data-layer/core';
+import { PostSyncQueueRow } from '@opden-data-layer/odl-db-types';
 
 @Injectable()
 export class PostSyncQueueRepository {

@@ -1,5 +1,4 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ReqLocale } from '@opden-data-layer/core';
 import {
   categoryObjectsQuerySchema,
   GetCategoryObjectsEndpoint,
@@ -7,6 +6,7 @@ import {
 } from '../domain/categories';
 import type { ObjectRefListResponseDto } from '../domain/objects/schemas/object-ref-list.schema';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodQueryPipe } from '../pipes';
 

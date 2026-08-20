@@ -6,7 +6,7 @@
  */
 
 import { resolveConnectionString } from '../libs/migrations/src/connection';
-import type { OdlDatabase } from '../libs/core/src/db';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 

@@ -1,5 +1,5 @@
-import type { ValidityVote } from '@opden-data-layer/core';
 import { DEFAULT_GOVERNANCE_SNAPSHOT } from '@opden-data-layer/objects-domain';
+import { ValidityVote } from '@opden-data-layer/odl-db-types';
 
 import { GetUpdateVotersEndpoint } from './get-update-voters.endpoint';
 

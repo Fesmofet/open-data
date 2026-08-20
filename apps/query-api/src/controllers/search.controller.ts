@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetSearchCountsEndpoint,
   GetSearchEndpoint,
@@ -15,6 +14,7 @@ import {
   type SearchResponseDto,
 } from '../domain/search';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 

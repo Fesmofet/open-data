@@ -1,4 +1,4 @@
-import type { OblDisputeRule } from '@opden-data-layer/core';
+import type { OblDisputeRule } from '@opden-data-layer/odl-db-types';
 
 import type {
   LedgerContractRow,

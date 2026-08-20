@@ -1,5 +1,5 @@
 import type { HiveContentType } from '@opden-data-layer/clients';
-import type { Post } from '@opden-data-layer/core';
+import { Post } from '@opden-data-layer/odl-db-types';
 
 import { enrichDiscussionCommentsRewards } from './enrich-discussion-comments-rewards';
 import type { DiscussionCommentDto } from './feed-story-dtos';

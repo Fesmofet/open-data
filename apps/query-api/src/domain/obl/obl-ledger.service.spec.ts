@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import type { OblInvoiceLineView } from './obl-invoice-line';
-import type { OblPayment } from '@opden-data-layer/core';
+import { OblPayment } from '@opden-data-layer/odl-db-types';
+
 import { OblLedgerService } from './obl-ledger.service';
 import type { OblRepository } from '../../repositories/obl.repository';
 

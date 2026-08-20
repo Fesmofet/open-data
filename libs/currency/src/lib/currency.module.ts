@@ -6,7 +6,7 @@ import { CurrencyRepository } from './currency.repository';
 import { CURRENCY_DATABASE } from './currency.tokens';
 
 export type CurrencyModuleOptions = {
-  /** Kysely token for {@link import('@opden-data-layer/core').OdlDatabase} (e.g. app `KYSELY`). */
+  /** Kysely token for {@link import('@opden-data-layer/odl-db-types').OdlDatabase} (e.g. app `KYSELY`). */
   kyselyToken: string | symbol;
   /**
    * When true, registers {@link CurrencyCollectService}. You must pass `imports` that provide

@@ -3,8 +3,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import type { JsonValue, OblOfferDraft } from '@opden-data-layer/odl-db-types';
 import { randomUUID } from 'crypto';
-import type { JsonValue, OblOfferDraft } from '@opden-data-layer/core';
+
 import { OblOfferDraftsRepository } from '../../repositories/obl.repository';
 import type {
   CreateOblOfferDraftBody,

@@ -3,7 +3,8 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { UserObjectFollow } from '@opden-data-layer/core';
+import { UserObjectFollow } from '@opden-data-layer/odl-db-types';
+
 import type { UserSubscriptionSort, SubscriptionJoinedAccountRow } from './user-subscriptions.repository';
 
 export type UserObjectFollowSortMode = 'weight' | 'recency';

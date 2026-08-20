@@ -1,17 +1,13 @@
 import { MAX_GROUP_CHANNEL_MEMBERS } from '@opden-data-layer/core/constants';
+import { buildObjectChannelId } from '@opden-data-layer/core/utils/osl-messaging';
 
 import type { ChannelDetail, ChannelListItem, MessageItem } from './messaging.types';
 import { EMPTY_LEAVE_POLICY } from './messaging.types';
 
-export { MAX_GROUP_CHANNEL_MEMBERS };
+export { MAX_GROUP_CHANNEL_MEMBERS, buildObjectChannelId };
 
 const GROUP_CHANNEL_ID_MAX_LENGTH = 256;
 const GROUP_CHANNEL_ID_PREFIX = 'grp-';
-
-/** Must stay in sync with `@opden-data-layer/core` `buildObjectChannelId`. */
-export function buildObjectChannelId(objectId: string): string {
-  return `obj-ch-${objectId}`;
-}
 
 export function generateGroupChannelId(): string {
   const id = `${GROUP_CHANNEL_ID_PREFIX}${crypto.randomUUID()}`;

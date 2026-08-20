@@ -3,7 +3,8 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { Post, PostObject } from '@opden-data-layer/core';
+import { Post, PostObject } from '@opden-data-layer/odl-db-types';
+
 import {
   postKeysMatchingAllObjectIds,
   ROOT_POST_PREDICATE_P,

@@ -7,7 +7,7 @@ import {
   Query,
   Param,
 } from '@nestjs/common';
-import { ReqLocale, UPDATE_TYPES } from '@opden-data-layer/core';
+import { UPDATE_TYPES } from '@opden-data-layer/core';
 import {
   CheckObjectExistsEndpoint,
   GetObjectByIdEndpoint,
@@ -82,6 +82,7 @@ import {
 import type { MessageHistoryResponseDto } from '../domain/messaging';
 import type { ChannelDetailDto } from '../domain/messaging/get-channel-by-id.endpoint';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 

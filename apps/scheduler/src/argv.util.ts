@@ -1,4 +1,4 @@
-import type { JsonValue } from '@opden-data-layer/core';
+import type { JsonValue } from '@opden-data-layer/odl-db-types';
 
 export type ParsedSchedulerArgv = {
   runJob: string | null;

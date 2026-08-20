@@ -1,11 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
-import type {
-  Message,
-  NewMessage,
-  NewMessageContextExclusion,
-  NewMessageTombstone,
-} from '@opden-data-layer/core';
+import { Message, NewMessage, NewMessageContextExclusion, NewMessageTombstone } from '@opden-data-layer/odl-db-types';
+
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { DbExecutor } from './channels.repository';

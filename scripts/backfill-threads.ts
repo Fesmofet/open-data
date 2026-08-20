@@ -6,7 +6,7 @@
  *   pnpm exec tsx --env-file=.env scripts/backfill-threads.ts [--author leothreads] [--page-size 20] [--dry-run]
  */
 import { Client } from '@hiveio/dhive';
-import type { NewThread, NewThreadActiveVote, OdlDatabase } from '../libs/core/src/db';
+import type { NewThread, NewThreadActiveVote, OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 

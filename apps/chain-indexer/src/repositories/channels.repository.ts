@@ -1,13 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
-import type {
-  Channel,
-  ChannelMember,
-  JsonValue,
-  NewChannel,
-  NewChannelAlias,
-  NewChannelMember,
-} from '@opden-data-layer/core';
+import { Channel, ChannelMember, JsonValue, NewChannel, NewChannelAlias, NewChannelMember } from '@opden-data-layer/odl-db-types';
+
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 

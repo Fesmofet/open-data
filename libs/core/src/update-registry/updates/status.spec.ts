@@ -1,4 +1,11 @@
-import { UPDATE_STATUS_SCHEMA } from './status';
+import { OBJECT_STATUS_VALUES as DB_OBJECT_STATUS_VALUES } from '@opden-data-layer/odl-db-types';
+import { OBJECT_STATUS_VALUES, UPDATE_STATUS_SCHEMA } from './status';
+
+describe('OBJECT_STATUS_VALUES', () => {
+  it('matches odl-db-types (single source of truth)', () => {
+    expect([...OBJECT_STATUS_VALUES]).toEqual([...DB_OBJECT_STATUS_VALUES]);
+  });
+});
 
 describe('UPDATE_STATUS_SCHEMA', () => {
   it('accepts relisted with non-empty link', () => {

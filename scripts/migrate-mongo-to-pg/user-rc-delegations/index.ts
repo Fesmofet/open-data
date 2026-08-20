@@ -12,7 +12,7 @@ import { pipeline as streamPipeline } from 'node:stream/promises';
 import { Writable } from 'node:stream';
 
 import { resolveConnectionString } from '../../../libs/migrations/src/connection';
-import type { NewUserRcDelegation, OdlDatabase } from '../../../libs/core/src/db';
+import type { NewUserRcDelegation, OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';

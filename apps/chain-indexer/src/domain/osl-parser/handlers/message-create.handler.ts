@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { JsonValue } from '@opden-data-layer/core';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
+
 import {
   blockTimestampToUnixSeconds,
   buildDmAlias,
@@ -8,8 +9,8 @@ import {
   CHANNEL_ACCESS,
   CHANNEL_KINDS,
   CHANNEL_MEMBER_ROLES,
-  computeDmPairHash,
 } from '@opden-data-layer/core';
+import { computeDmPairHash } from '@opden-data-layer/core/utils/osl-messaging-crypto';
 import { ChannelsRepository } from '../../../repositories/channels.repository';
 import { MessagesRepository } from '../../../repositories/messages.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';

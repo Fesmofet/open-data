@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Kysely, Transaction } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { NewPostObjectRelatedImage } from '@opden-data-layer/core';
+import { NewPostObjectRelatedImage } from '@opden-data-layer/odl-db-types';
 
 type DbExecutor = Kysely<Database> | Transaction<Database>;
 

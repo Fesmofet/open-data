@@ -6,7 +6,7 @@
  */
 import { Writable } from 'node:stream';
 
-import type { NewHiveEngineDepositRecord, OdlDatabase } from '../../../libs/core/src/db';
+import type { NewHiveEngineDepositRecord, OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';

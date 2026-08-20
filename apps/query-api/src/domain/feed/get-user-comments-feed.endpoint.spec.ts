@@ -1,6 +1,7 @@
 import { HiveClient } from '@opden-data-layer/clients';
 import type { HiveContentType } from '@opden-data-layer/clients';
-import type { AccountCurrent } from '@opden-data-layer/core';
+import { AccountCurrent } from '@opden-data-layer/odl-db-types';
+
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';

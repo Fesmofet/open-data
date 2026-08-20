@@ -1,5 +1,6 @@
 import type { HiveEngineAccountHistoryEntry } from '@opden-data-layer/clients';
-import type { HiveEngineSwap, HiveEngineWaivAirdrop, HiveEngineDepositRecord } from '@opden-data-layer/core';
+import { HiveEngineSwap, HiveEngineWaivAirdrop, HiveEngineDepositRecord } from '@opden-data-layer/odl-db-types';
+
 import {
   classifyWaivEngineOperation,
   WAIV_WALLET_HISTORY_AIRDROP_OP,

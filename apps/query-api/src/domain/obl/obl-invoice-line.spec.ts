@@ -1,5 +1,5 @@
-import type { OblInvoice, OblObligationLine } from '@opden-data-layer/core';
 import { aggregateInvoiceLineView } from './obl-invoice-line';
+import { OblInvoice, OblObligationLine } from '@opden-data-layer/odl-db-types';
 
 const header: OblInvoice = {
   invoice_id: 'inv-1',

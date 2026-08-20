@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
-import type { Post, PostUpdate } from '@opden-data-layer/core';
+import { Post, PostUpdate } from '@opden-data-layer/odl-db-types';
+
 import { KYSELY, type Database } from '../database';
 
 export type HivePayoutFieldUpdate = Pick<

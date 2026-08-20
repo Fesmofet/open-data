@@ -1,7 +1,7 @@
-import type { AccountCurrent } from '@opden-data-layer/core';
 import { parsePostingMetadata } from './parse-posting-metadata';
 import { resolvePostingJsonMetadata } from './resolve-posting-json-metadata';
 import type { UserProfileView } from './user-profile.types';
+import { AccountCurrent } from '@opden-data-layer/odl-db-types';
 
 export function mapAccountToUserProfileView(
   row: AccountCurrent,

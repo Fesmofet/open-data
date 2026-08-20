@@ -7,7 +7,8 @@ import {
   UPDATE_REGISTRY,
   UPDATE_TYPES,
 } from '@opden-data-layer/core';
-import type { JsonValue, NewObjectUpdate, ObjectStatus } from '@opden-data-layer/core';
+import type { ObjectStatus } from '@opden-data-layer/core';
+import type { JsonValue, NewObjectUpdate } from '@opden-data-layer/odl-db-types';
 import { HiveClient } from '@opden-data-layer/clients';
 import {
   AccountSyncQueueRepository,

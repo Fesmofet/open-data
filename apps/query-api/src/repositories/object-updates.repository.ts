@@ -3,11 +3,7 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  ObjectUpdate,
-  NewObjectUpdate,
-  ObjectUpdateUpdate,
-} from '@opden-data-layer/core';
+import { ObjectUpdate, NewObjectUpdate, ObjectUpdateUpdate } from '@opden-data-layer/odl-db-types';
 
 @Injectable()
 export class ObjectUpdatesRepository {

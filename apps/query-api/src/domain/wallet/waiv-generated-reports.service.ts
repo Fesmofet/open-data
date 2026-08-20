@@ -4,7 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { WaivGeneratedReport } from '@opden-data-layer/core';
+import type {
+  JsonValue,
+  WaivGeneratedReport,
+  WaivGeneratedReportStoredRow,
+} from '@opden-data-layer/odl-db-types';
+
 import {
   flushMergeRewardFold,
   mergeWaivRewardRowsInStream,
@@ -326,7 +331,7 @@ export class WaivGeneratedReportsService {
         timestamp: row.timestamp,
         user_name: row.userName,
         checked: row.checked ?? false,
-        row: row as unknown as import('@opden-data-layer/core').JsonValue,
+        row: row as unknown as JsonValue,
       })),
     );
   }
@@ -355,7 +360,7 @@ function toSummaryDto(report: WaivGeneratedReport): WaivGeneratedReportSummaryDt
 }
 
 function storedRowToDto(
-  stored: import('@opden-data-layer/core').WaivGeneratedReportStoredRow,
+  stored: WaivGeneratedReportStoredRow,
 ): WaivAdvancedReportRowDto {
   const snapshot = stored.row as WaivAdvancedReportRowDto;
   return {

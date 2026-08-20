@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
-import type { OdlDatabase, UserNotificationSettings } from '@opden-data-layer/core';
+import { OdlDatabase, UserNotificationSettings } from '@opden-data-layer/odl-db-types';
+
 import { KYSELY } from '../database';
 import { Inject } from '@nestjs/common';
 

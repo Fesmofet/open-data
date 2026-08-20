@@ -7,7 +7,6 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetUserBlogFeedEndpoint,
   GetUserBlogObjectFiltersEndpoint,
@@ -28,6 +27,7 @@ import {
   type UserNotificationSettingsView,
 } from '../domain/users';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 import {

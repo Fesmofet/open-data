@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { AccountSyncQueueRepository } from '../../repositories/account-sync-queue.repository';
-import type { AccountCurrentUpdate } from '@opden-data-layer/core';
+import { AccountCurrentUpdate } from '@opden-data-layer/odl-db-types';
+
 import { parseJsonObject, profileAliasAndImageFromHiveStrings } from './account-hive-metadata.util';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';

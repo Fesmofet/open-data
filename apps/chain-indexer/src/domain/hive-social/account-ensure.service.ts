@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { AccountSyncQueueRepository } from '../../repositories/account-sync-queue.repository';
-import type { NewAccountCurrent } from '@opden-data-layer/core';
+import { NewAccountCurrent } from '@opden-data-layer/odl-db-types';
 
 function extractNewAccountName(payload: Record<string, unknown>): string | null {
   const n = payload['new_account_name'];

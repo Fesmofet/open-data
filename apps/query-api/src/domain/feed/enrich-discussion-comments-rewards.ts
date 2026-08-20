@@ -1,5 +1,6 @@
 import type { HiveContentType } from '@opden-data-layer/clients';
-import type { Post } from '@opden-data-layer/core';
+import { Post } from '@opden-data-layer/odl-db-types';
+
 import type { SupportedCurrency } from '@opden-data-layer/core';
 
 import { buildPostRewardInputFromSources } from './build-post-reward-input';

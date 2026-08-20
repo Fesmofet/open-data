@@ -2,11 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  ObjectsCore,
-  NewObjectsCore,
-  ObjectsCoreUpdate,
-} from '@opden-data-layer/core';
+import { ObjectsCore, NewObjectsCore, ObjectsCoreUpdate } from '@opden-data-layer/odl-db-types';
 
 const OBJECT_ID_IN_CHUNK = 400;
 

@@ -45,6 +45,15 @@
       "@opden-data-layer/core/utils/numeric-string": [
         "./libs/core/src/utils/numeric-string.ts"
       ],
+      "@opden-data-layer/core/utils/osl-messaging": [
+        "./libs/core/src/utils/osl-messaging.ts"
+      ],
+      "@opden-data-layer/core/utils/osl-messaging-crypto": [
+        "./libs/core/src/utils/osl-messaging-crypto.ts"
+      ],
+      "@opden-data-layer/core/utils/hive-tx-signer": [
+        "./libs/core/src/utils/hive-tx-signer.ts"
+      ],
       "@opden-data-layer/migrations": ["./libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["./libs/clients/src/index.ts"],
       "@opden-data-layer/objects-domain": [
@@ -74,7 +83,8 @@
         "./libs/notifications-messages/src/testing/index.ts"
       ],
       "@opden-data-layer/system-alerts": ["./libs/system-alerts/src/index.ts"],
-      "@opden-data-layer/hive-auth": ["./libs/hive-auth/src/index.ts"]
+      "@opden-data-layer/hive-auth": ["./libs/hive-auth/src/index.ts"],
+      "@opden-data-layer/odl-db-types": ["./libs/odl-db-types/src/index.ts"]
     },
     "strict": false,
     "noUncheckedSideEffectImports": false,

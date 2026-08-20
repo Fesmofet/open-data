@@ -1,4 +1,4 @@
-import type { JsonValue } from '@opden-data-layer/core';
+import type { JsonValue } from '@opden-data-layer/odl-db-types';
 import type {
   GovernanceScope,
   ObjectControlMode,

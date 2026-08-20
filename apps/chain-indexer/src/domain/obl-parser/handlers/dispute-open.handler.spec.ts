@@ -1,7 +1,7 @@
-import type { OblInvoice, OblObligationLine } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { DisputeOpenHandler } from './dispute-open.handler';
+import { OblInvoice, OblObligationLine } from '@opden-data-layer/odl-db-types';
 
 const invoiceHeader: OblInvoice = {
   invoice_id: 'inv-1',

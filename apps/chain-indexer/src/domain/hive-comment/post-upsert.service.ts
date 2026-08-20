@@ -4,13 +4,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Kysely } from 'kysely';
 import type { HiveContentType } from '@opden-data-layer/clients';
 import { HiveClient } from '@opden-data-layer/clients';
-import type {
-  NewPost,
-  NewPostActiveVote,
-  NewPostObject,
-  Post,
-  PostActiveVote,
-} from '@opden-data-layer/core';
+import { NewPost, NewPostActiveVote, NewPostObject, Post, PostActiveVote } from '@opden-data-layer/odl-db-types';
+
 import {
   bindPostObjectsToPost,
   blockTimestampToUnixSeconds,

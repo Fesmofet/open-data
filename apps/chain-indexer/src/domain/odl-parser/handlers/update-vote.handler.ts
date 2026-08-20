@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { NewValidityVote } from '@opden-data-layer/core';
+import { NewValidityVote } from '@opden-data-layer/odl-db-types';
+
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import {
   ObjectUpdatesRepository,

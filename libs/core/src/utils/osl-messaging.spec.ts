@@ -1,8 +1,8 @@
 import {
   buildDmChannelId,
   buildObjectChannelId,
-  computeDmPairHash,
-} from '@opden-data-layer/core';
+} from './osl-messaging';
+import { computeDmPairHash } from './osl-messaging-crypto';
 
 describe('osl-messaging utils', () => {
   it('computeDmPairHash is order-independent', () => {

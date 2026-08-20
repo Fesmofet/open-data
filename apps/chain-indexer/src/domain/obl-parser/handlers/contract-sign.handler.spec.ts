@@ -1,7 +1,7 @@
-import type { OblOffer } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { ContractSignHandler } from './contract-sign.handler';
+import { OblOffer } from '@opden-data-layer/odl-db-types';
 
 const baseOffer: OblOffer = {
   offer_id: 'offer-1',

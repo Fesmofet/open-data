@@ -2,7 +2,8 @@ import { AccountsCurrentRepository } from '../../repositories/accounts-current.r
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
 import { UserAccountMutesRepository } from '../../repositories/user-account-mutes.repository';
-import type { Thread } from '@opden-data-layer/core';
+import { Thread } from '@opden-data-layer/odl-db-types';
+
 import { encodeFeedCursor } from './feed-cursor';
 import { GetObjectThreadsFeedEndpoint } from './get-object-threads-feed.endpoint';
 import * as threadFeedHydrator from './thread-feed-hydrator';

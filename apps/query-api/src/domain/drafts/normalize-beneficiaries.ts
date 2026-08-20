@@ -1,4 +1,4 @@
-import type { HiveBeneficiary } from '@opden-data-layer/core';
+import type { HiveBeneficiary } from '@opden-data-layer/odl-db-types';
 
 /**
  * Expand various legacy shapes to a list of raw items (objects or JSON strings).

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { OblContract, OblDispute, OblOffer, OblPayment } from '@opden-data-layer/core';
+import { OblContract, OblDispute, OblOffer, OblPayment } from '@opden-data-layer/odl-db-types';
+
 import { normalizeHiveAccount } from '../../auth';
 import { OblRepository } from '../../repositories/obl.repository';
 import { computePairBalance } from './compute-pair-balance';

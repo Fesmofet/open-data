@@ -1,7 +1,8 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
-import type { UserRcDelegation } from '@opden-data-layer/core';
+import { UserRcDelegation } from '@opden-data-layer/odl-db-types';
+
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 

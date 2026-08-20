@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { JsonValue } from '@opden-data-layer/core';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
+
 import {
   UserMetadataRepository,
   type UserMetadataUpsertPayload,

@@ -1,5 +1,6 @@
 import { UPDATE_TYPES } from '@opden-data-layer/core';
-import type { JsonValue } from '@opden-data-layer/core';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
+
 import type { ResolvedUpdate } from '@opden-data-layer/objects-domain';
 
 /** `{IPFS_CONTENT_BASE_URL}/ipfs-gateway/content/image/{cid}` */

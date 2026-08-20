@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Kysely, Transaction } from 'kysely';
-import type { NewPostObject } from '@opden-data-layer/core';
+import { NewPostObject } from '@opden-data-layer/odl-db-types';
+
 import {
   buildRelatedImageRows,
   extractPostImageUrls,

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { OblDisputeRule } from '@opden-data-layer/core';
+import { OblDisputeRule } from '@opden-data-layer/odl-db-types';
+
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { disputeResolvePayloadSchema } from '../obl-envelope.schema';

@@ -1,7 +1,7 @@
-import type { OblContract } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { ServiceOrderCreateHandler } from './service-order-create.handler';
+import { OblContract } from '@opden-data-layer/odl-db-types';
 
 const contract: OblContract = {
   contract_id: 'c-1',

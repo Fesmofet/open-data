@@ -1,5 +1,6 @@
 import type { HiveClient } from '@opden-data-layer/clients';
-import type { ObjectsCore } from '@opden-data-layer/core';
+import { ObjectsCore } from '@opden-data-layer/odl-db-types';
+
 import type {
   AccountSyncQueueRepository,
   AccountsCurrentRepository,

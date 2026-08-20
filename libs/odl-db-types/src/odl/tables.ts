@@ -16,8 +16,7 @@ import type {
   Selectable,
   Updateable,
 } from 'kysely';
-import type { ObjectStatus } from '../../update-registry/updates/status';
-
+import type { ObjectStatus } from '../object-status';
 type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 

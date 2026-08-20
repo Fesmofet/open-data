@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
-import type { Channel, ChannelMember, Message } from '@opden-data-layer/core';
+import { Channel, ChannelMember, Message } from '@opden-data-layer/odl-db-types';
+
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { ChannelCursorPayload, MessageCursorPayload } from '../domain/messaging/message-feed-cursor';

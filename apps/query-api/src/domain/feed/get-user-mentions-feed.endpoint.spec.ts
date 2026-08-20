@@ -1,4 +1,3 @@
-import type { AccountCurrent } from '@opden-data-layer/core';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { PostsRepository, type FeedBranchRow } from '../../repositories/posts.repository';
 import { UserAccountMutesRepository } from '../../repositories/user-account-mutes.repository';
@@ -6,6 +5,7 @@ import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import type { FeedStoryItemDto } from './feed-story-dtos';
 import { createPassthroughPostRewardServiceMock } from './post-reward.service.mock';
 import type { PostRewardService } from './post-reward.service';
+import { AccountCurrent } from '@opden-data-layer/odl-db-types';
 
 jest.mock('./build-feed-story-items-from-post-page', () => ({
   buildFeedStoryItemsFromPostPage: jest.fn(),

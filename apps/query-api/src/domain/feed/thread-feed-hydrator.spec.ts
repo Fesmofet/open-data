@@ -1,10 +1,9 @@
-import type { Thread } from '@opden-data-layer/core';
-
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
 import { encodeFeedCursor } from './feed-cursor';
 import type { FeedStoryItemDto } from './feed-story-dtos';
 import { hydrateThreadFeedPage } from './thread-feed-hydrator';
+import { Thread } from '@opden-data-layer/odl-db-types';
 
 function threadRow(
   author: string,

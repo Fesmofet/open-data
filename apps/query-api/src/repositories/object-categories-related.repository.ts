@@ -2,7 +2,8 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { ObjectCategoriesRelatedRow } from '@opden-data-layer/core';
+import { ObjectCategoriesRelatedRow } from '@opden-data-layer/odl-db-types';
+
 import { buildUserScopeKey } from '@opden-data-layer/core';
 
 @Injectable()

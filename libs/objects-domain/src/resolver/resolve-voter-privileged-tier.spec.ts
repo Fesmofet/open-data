@@ -1,7 +1,6 @@
-import type { ObjectAuthority } from '@opden-data-layer/core';
-
 import { DEFAULT_GOVERNANCE_SNAPSHOT } from '../types/governance-snapshot';
 import { resolveVoterPrivilegedTier } from './resolve-voter-privileged-tier';
+import { ObjectAuthority } from '@opden-data-layer/odl-db-types';
 
 const governance = {
   ...DEFAULT_GOVERNANCE_SNAPSHOT,

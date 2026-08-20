@@ -1,15 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
-import type {
-  WaivGeneratedReport,
-  WaivGeneratedReportAccountProgress,
-  WaivGeneratedReportStatus,
-  WaivGeneratedReportStoredRow,
-  NewWaivGeneratedReport,
-  NewWaivGeneratedReportStoredRow,
-  WaivGeneratedReportUpdate,
-  JsonValue,
-} from '@opden-data-layer/core';
+import { WaivGeneratedReport, WaivGeneratedReportAccountProgress, WaivGeneratedReportStatus, WaivGeneratedReportStoredRow, NewWaivGeneratedReport, NewWaivGeneratedReportStoredRow, WaivGeneratedReportUpdate, JsonValue } from '@opden-data-layer/odl-db-types';
+
 import { calcDepositWithdrawals } from '@opden-data-layer/core/waiv-advanced-report';
 import type { WaivAdvancedReportRowDto } from '../domain/wallet/schemas/waiv-advanced-report.schema';
 import type { Database } from '../database';

@@ -7,10 +7,9 @@
 
 ## Web: `@opden-data-layer/core` barrel in App Router
 
-**Pattern:** Importing `@opden-data-layer/core` in a Server Component can pull **`libs/core` HTTP/Nest** code and fail Turbopack (`class-validator`, etc.).
+**Pattern (historical):** Importing `@opden-data-layer/core` in a Server Component could pull Nest HTTP code and fail Turbopack.
 
-**Rule:** For **registry-only** data in web, use scoped TS paths added to `apps/web/tsconfig.json` (and `tsconfig.base.json`):  
-`@opden-data-layer/core/object-type-registry`, `@opden-data-layer/core/update-registry`, `@opden-data-layer/core/update-types` (constants only — avoids pulling `http`/Nest into client bundles).
+**Current rule:** Core barrel is **web-safe** after the split (Nest `ReqLocale` moved to query-api; DB types moved to `@opden-data-layer/odl-db-types`). For **large registries** in client components, still prefer subpaths (`/update-registry`, `/object-type-registry`, `/update-types`) for tree-shaking. See [`docs/standards/core-imports.md`](../docs/standards/core-imports.md) and `pnpm check:core-imports`.
 
 ## Web: Leaflet must not load on the server at module evaluation
 

@@ -1,5 +1,4 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetDiscoverObjectsEndpoint,
   GetDiscoverTagCategoriesEndpoint,
@@ -15,6 +14,7 @@ import {
   type DiscoverUsersResponseDto,
 } from '../domain/discover';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodQueryPipe } from '../pipes';
 

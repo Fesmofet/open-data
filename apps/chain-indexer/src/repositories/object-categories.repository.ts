@@ -2,10 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  NewObjectCategoriesRow,
-  ObjectCategoriesRowUpdate,
-} from '@opden-data-layer/core';
+import { NewObjectCategoriesRow, ObjectCategoriesRowUpdate } from '@opden-data-layer/odl-db-types';
 
 @Injectable()
 export class ObjectCategoriesRepository {

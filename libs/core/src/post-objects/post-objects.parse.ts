@@ -1,4 +1,4 @@
-import type { NewPostObject } from '../db';
+import type { NewPostObject } from '@opden-data-layer/odl-db-types';
 import { MAX_POST_OBJECTS_PER_POST } from './post-objects.constants';
 import {
   extractFirstObjectPathSlug,

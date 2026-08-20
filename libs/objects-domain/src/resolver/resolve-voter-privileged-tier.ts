@@ -1,6 +1,5 @@
-import type { ObjectAuthority } from '@opden-data-layer/core';
-
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
+import { ObjectAuthority } from '@opden-data-layer/odl-db-types';
 
 export type VoterPrivilegedTier = 'admin' | 'trusted';
 

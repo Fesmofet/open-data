@@ -1,4 +1,5 @@
-import { OBJECT_TYPES, type JsonValue, parseOblUsdAmount, type OblUsdAmountKind } from '@opden-data-layer/core';
+import { OBJECT_TYPES, parseOblUsdAmount, type OblUsdAmountKind } from '@opden-data-layer/core';
+import type { JsonValue } from '@opden-data-layer/odl-db-types';
 
 export function asJsonValue(value: unknown): JsonValue {
   return JSON.parse(JSON.stringify(value)) as JsonValue;

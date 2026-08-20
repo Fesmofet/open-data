@@ -1,7 +1,8 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { sql, type Kysely } from 'kysely';
-import type { SiteRegistryRow } from '@opden-data-layer/core';
+import { SiteRegistryRow } from '@opden-data-layer/odl-db-types';
+
 import {
   buildFallbackCanonicalUrl,
   checkUrlHealth,

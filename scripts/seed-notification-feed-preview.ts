@@ -20,7 +20,7 @@ import type {
   NotificationPayloadMap,
 } from '@opden-data-layer/notifications-contract';
 import { NOTIFICATION_EVENT_TYPES } from '@opden-data-layer/notifications-contract';
-import type { OdlDatabase } from '../libs/core/src/db';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { resolveConnectionString } from '../libs/migrations/src/connection';
 import {
   NOTIFICATION_EXPIRY_SEC,

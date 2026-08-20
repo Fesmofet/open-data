@@ -1,5 +1,5 @@
 import type { Kysely } from 'kysely';
-import type { OdlDatabase } from '@opden-data-layer/core';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { NotificationReadCursorRepository } from './notification-read-cursor.repository';
 
 function createMockDb(

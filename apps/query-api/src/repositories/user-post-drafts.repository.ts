@@ -2,11 +2,8 @@ import { Injectable, Inject } from '@nestjs/common';
 import { sql, type Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  NewUserPostDraft,
-  UserPostDraft,
-  UserPostDraftUpdate,
-} from '@opden-data-layer/core';
+import { NewUserPostDraft, UserPostDraft, UserPostDraftUpdate } from '@opden-data-layer/odl-db-types';
+
 import { normalizeBeneficiariesForDb } from '../domain/drafts/normalize-beneficiaries';
 
 function jsonMetadataForJsonb(value: unknown): Record<string, unknown> {

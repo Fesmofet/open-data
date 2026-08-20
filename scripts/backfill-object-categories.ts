@@ -12,11 +12,11 @@
  * DB connection is skipped when --dry-run.
  */
 import { resolveConnectionString } from '../libs/migrations/src/connection';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import {
-  type OdlDatabase,
   buildUserScopeKey,
   SHOP_TYPE_BUCKETS,
-} from '../libs/core/src/index';
+} from '@opden-data-layer/core';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import pg from 'pg';
 

@@ -3,10 +3,8 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  ObjectAuthority,
-  NewObjectAuthority,
-} from '@opden-data-layer/core';
+import { ObjectAuthority, NewObjectAuthority } from '@opden-data-layer/odl-db-types';
+
 import type { UserSubscriptionSort, SubscriptionJoinedAccountRow } from './user-subscriptions.repository';
 
 @Injectable()

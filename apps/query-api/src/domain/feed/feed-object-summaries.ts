@@ -1,5 +1,5 @@
-import type { PostObject } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
+import { PostObject } from '@opden-data-layer/odl-db-types';
 
 import type {
   BatchProjectOptions,

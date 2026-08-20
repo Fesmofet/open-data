@@ -1,4 +1,4 @@
-import type { OdlDatabase } from '../../../libs/core/src/db';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { Kysely, sql } from 'kysely';
 
 async function logDeletedRows(label: string): Promise<void> {

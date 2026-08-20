@@ -2,7 +2,7 @@ import { buildUserScopeKey } from '@opden-data-layer/core';
 import { CategorySyncHandler } from './category-sync.handler';
 import { CategoryMutatedEvent } from '../category-mutated.event';
 import { AdministrativeAuthorityChangedEvent } from '../authority-changed.event';
-import type { ObjectAuthority } from '@opden-data-layer/core';
+import { ObjectAuthority } from '@opden-data-layer/odl-db-types';
 
 describe('CategorySyncHandler', () => {
   it('enqueues object + global + user shop buckets + post authors on category mutated', async () => {

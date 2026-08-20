@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
-import type { OdlDatabase } from '@opden-data-layer/core';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 
 export const KYSELY = Symbol('KYSELY');
 

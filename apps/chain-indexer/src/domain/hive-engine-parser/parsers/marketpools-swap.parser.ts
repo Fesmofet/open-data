@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { HiveEngineBlock, HiveEngineTransaction } from '@opden-data-layer/clients';
-import type { NewHiveEngineSwap } from '@opden-data-layer/core';
+import { NewHiveEngineSwap } from '@opden-data-layer/odl-db-types';
+
 import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import { HiveEngineSwapsRepository } from '../../../repositories/hive-engine-swaps.repository';
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';

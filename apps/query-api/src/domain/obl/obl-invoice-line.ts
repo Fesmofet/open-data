@@ -4,7 +4,7 @@ import type {
   OblInvoiceKind,
   OblInvoiceState,
   OblObligationLine,
-} from '@opden-data-layer/core';
+} from '@opden-data-layer/odl-db-types';
 
 export type OblInvoiceLineView = {
   invoice_id: string;

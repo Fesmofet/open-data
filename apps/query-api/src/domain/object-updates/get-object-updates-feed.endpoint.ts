@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { ObjectAuthority, ValidityVote } from '@opden-data-layer/core';
+import { ObjectAuthority, ValidityVote } from '@opden-data-layer/odl-db-types';
+
 import type { GovernanceSnapshot, VoterWaivPowerMap } from '@opden-data-layer/objects-domain';
 import {
   computeApprovePercent,

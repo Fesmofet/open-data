@@ -21,4 +21,4 @@ export type {
   ResetDatabaseOptions,
   RestoreSnapshotOptions,
 } from './snapshot';
-export type { OdlDatabase } from '@opden-data-layer/core';
+export type { OdlDatabase } from '@opden-data-layer/odl-db-types';

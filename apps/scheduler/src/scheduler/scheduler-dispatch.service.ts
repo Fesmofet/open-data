@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { JsonValue } from '@opden-data-layer/core';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
+
 import { getJobByName } from '../jobs/jobs.registry';
 import { SchedulerLockService } from './scheduler-lock.service';
 import { SchedulerRepository, type JobTrigger } from '../repositories/scheduler.repository';

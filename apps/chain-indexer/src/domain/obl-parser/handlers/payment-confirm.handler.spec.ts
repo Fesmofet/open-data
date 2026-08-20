@@ -1,7 +1,7 @@
-import type { OblPayment } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { PaymentConfirmHandler } from './payment-confirm.handler';
+import { OblPayment } from '@opden-data-layer/odl-db-types';
 
 const pendingPayment: OblPayment = {
   payment_id: 'pay-declare',

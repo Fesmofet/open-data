@@ -1,9 +1,9 @@
 import type {
-  ObjectsCore,
-  ObjectUpdate,
-  ValidityVote,
   ObjectAuthority,
-} from '@opden-data-layer/core';
+  ObjectUpdate,
+  ObjectsCore,
+  ValidityVote,
+} from '@opden-data-layer/odl-db-types';
 
 /**
  * All DB rows for a single object, grouped in memory after the load pipeline.

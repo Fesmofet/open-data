@@ -1,6 +1,5 @@
-import type { Post } from '@opden-data-layer/core';
-
 import { GetPostVotersEndpoint } from './get-post-voters.endpoint';
+import { Post } from '@opden-data-layer/odl-db-types';
 
 function makePost(): Post {
   return {

@@ -1,6 +1,6 @@
-import type { ObjectUpdate } from '@opden-data-layer/core';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import { applyAggregateRatingRankScoreFallback } from './aggregated-object.repository';
+import { ObjectUpdate } from '@opden-data-layer/odl-db-types';
 
 describe('applyAggregateRatingRankScoreFallback', () => {
   const base = (overrides: Partial<ObjectUpdate>): ObjectUpdate =>

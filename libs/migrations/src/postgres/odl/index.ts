@@ -54,7 +54,7 @@ import * as m00053 from './00053_channel_members_last_read';
 import * as m00054 from './00054_channels_dissolved_at';
 import type { Migration } from 'kysely';
 
-/** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
+/** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/odl-db-types OdlDatabase and docs/spec/data-model/schema.sql */
 export const MIGRATIONS: Record<string, Migration> = {
   '00001_odl_schema': { up: m00001.up, down: m00001.down },
   '00002_scheduler': { up: m00002.up, down: m00002.down },

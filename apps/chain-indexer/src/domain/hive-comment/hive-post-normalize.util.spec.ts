@@ -1,4 +1,4 @@
-import type { NewPost } from '@opden-data-layer/core';
+import type { NewPost } from '@opden-data-layer/odl-db-types';
 import {
   normalizeHiveBeneficiariesForStorage,
   normalizeHiveJsonMetadataForStorage,

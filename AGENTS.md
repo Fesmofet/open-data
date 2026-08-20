@@ -73,6 +73,21 @@ await this.db.transaction().execute(async (trx) => {
 - Project tags (e.g. `type:app`, `type:lib`, `scope:shared`, `scope:infra`, `scope:domain`) set in `project.json`.
 - ESLint `@nx/enforce-module-boundaries` enforces: apps depend only on libs; `scope:shared` libs have no internal lib deps; `scope:infra` may depend on `scope:shared`; `scope:domain` may depend on `scope:infra` and `scope:shared`. Do not violate these constraints.
 
+### `@opden-data-layer/core` import routing
+
+Full routing table: [`docs/standards/core-imports.md`](docs/standards/core-imports.md). CI: `pnpm check:core-imports`.
+
+| Need | Import from |
+|------|-------------|
+| Registries, constants, pure domain utils | `@opden-data-layer/core` barrel or subpaths (`/update-registry`, `/object-type-registry`, …) |
+| Kysely row/table types (`Post`, `OdlDatabase`, `JsonValue`, …) | `@opden-data-layer/odl-db-types` |
+| Nest HTTP param decorators (`ReqLocale`, …) | App-local `apps/query-api/src/http/` — **not** core |
+| Node crypto OSL helpers (`computeDmPairHash`) | `@opden-data-layer/core/utils/osl-messaging-crypto` |
+| Dhive tx signer (unused surface) | `@opden-data-layer/core/utils/hive-tx-signer` subpath only |
+
+- **`@opden-data-layer/core` barrel is web-safe** (no Nest, dhive, or `node:crypto`).
+- **`apps/web` client components:** prefer subpaths for large registries; never runtime-import `@opden-data-layer/odl-db-types` (type-only OK).
+
 ### Domain Constants
 
 - Domain-specific constants (object types, field names, supposed updates, translations) belong in `@opden-data-layer/domain-constants` when it exists.

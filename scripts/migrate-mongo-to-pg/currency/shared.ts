@@ -16,7 +16,7 @@ import type {
   NewCurrencyRatesRow,
   NewCurrencyStatisticsRow,
   NewHiveEngineRatesRow,
-} from '../../../libs/core/src/db';
+} from '@opden-data-layer/odl-db-types';
 
 export const BATCH = 5000;
 

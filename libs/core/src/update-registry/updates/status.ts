@@ -1,18 +1,12 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
+import {
+  OBJECT_STATUS_VALUES,
+  type ObjectStatus,
+} from '@opden-data-layer/odl-db-types';
 
-export const OBJECT_STATUS_VALUES = [
-  'active',
-  'relisted',
-  'unavailable',
-  'closed',
-  'privacy_erasure',
-  'nsfw',
-  'flagged',
-] as const;
-
-export type ObjectStatus = (typeof OBJECT_STATUS_VALUES)[number];
+export { OBJECT_STATUS_VALUES, type ObjectStatus };
 
 /** Statuses allowed on direct object page resolve (`/object/:id`). Currently all values. */
 export const OBJECT_PAGE_VISIBLE_STATUSES: readonly ObjectStatus[] =

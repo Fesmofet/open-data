@@ -192,4 +192,6 @@ export type {
   MessageContextExclusion,
   NewMessageContextExclusion,
 } from './odl/tables';
+export type { ObjectStatus } from './object-status';
+export { OBJECT_STATUS_VALUES } from './object-status';
 export type { OdlDatabase } from './odl/database';

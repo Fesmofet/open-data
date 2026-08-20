@@ -1,7 +1,7 @@
-import type { OblOffer } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { OfferRetireHandler } from './offer-retire.handler';
+import { OblOffer } from '@opden-data-layer/odl-db-types';
 
 describe('OfferRetireHandler', () => {
   it('retires all versions for offer_id', async () => {

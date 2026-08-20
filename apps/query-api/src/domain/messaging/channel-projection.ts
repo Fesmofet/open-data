@@ -1,4 +1,4 @@
-import type { ChannelMember } from '@opden-data-layer/core';
+import type { ChannelMember } from '@opden-data-layer/odl-db-types';
 
 export type ChannelMemberView = {
   account: string;

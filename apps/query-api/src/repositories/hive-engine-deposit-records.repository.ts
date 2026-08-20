@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
-import type { HiveEngineDepositRecord } from '@opden-data-layer/core';
+import { HiveEngineDepositRecord } from '@opden-data-layer/odl-db-types';
+
 import { ENGINE_HISTORY_EXCLUDED_SYMBOLS } from '@opden-data-layer/core/hive-engine-history';
 import type { Database } from '../database';
 import { KYSELY } from '../database';

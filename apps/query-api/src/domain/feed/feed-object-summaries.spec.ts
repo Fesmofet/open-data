@@ -1,5 +1,4 @@
-import type { PostObject } from '@opden-data-layer/core';
-
+import type { PostObject } from '@opden-data-layer/odl-db-types';
 import {
   assembleFeedObjectChipsForPost,
   groupPostObjectsByPostKey,

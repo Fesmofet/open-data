@@ -1,7 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import type { PostSyncQueueRow } from '@opden-data-layer/core';
+import { PostSyncQueueRow } from '@opden-data-layer/odl-db-types';
+
 import { HiveClient } from '@opden-data-layer/clients';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
 import { PostsRepository } from '../../repositories/posts.repository';

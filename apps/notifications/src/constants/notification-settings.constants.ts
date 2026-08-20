@@ -1,4 +1,4 @@
-import type { UserNotificationSettings } from '@opden-data-layer/core';
+import type { UserNotificationSettings } from '@opden-data-layer/odl-db-types';
 
 /** Settings without the owning account — gating never needs the account name. */
 export type NotificationSettingsView = Omit<UserNotificationSettings, 'account'>;

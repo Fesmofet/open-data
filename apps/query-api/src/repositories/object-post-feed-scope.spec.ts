@@ -6,7 +6,7 @@ import {
   PostgresQueryCompiler,
   type RawBuilder,
 } from 'kysely';
-import type { OdlDatabase } from '@opden-data-layer/core';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 
 import type { ObjectPostFeedScope } from './object-post-feed-scope.types';
 import {

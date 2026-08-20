@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Kysely, Transaction } from 'kysely';
 import { sql } from 'kysely';
-import type { JsonValue } from '@opden-data-layer/core';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
+
 import { KYSELY } from '../database';
 import type { Database } from '../database/types';
 

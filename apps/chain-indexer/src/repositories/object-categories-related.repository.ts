@@ -3,11 +3,8 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import {
-  UNCATEGORIZED_CATEGORY_SENTINEL,
-  type NewObjectCategoriesRelatedRow,
-  type ObjectCategoriesRelatedScopeType,
-} from '@opden-data-layer/core';
+import { UNCATEGORIZED_CATEGORY_SENTINEL } from '@opden-data-layer/core';
+import type { NewObjectCategoriesRelatedRow, ObjectCategoriesRelatedScopeType } from '@opden-data-layer/odl-db-types';
 
 type AggregationRowRaw = {
   category_name: string;

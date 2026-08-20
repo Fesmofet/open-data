@@ -42,7 +42,7 @@ updated_at: 2026-06-10
 ## Registries
 
 - Filter options use `OBJECT_TYPE_REGISTRY[objectTypeKey].supported_updates` and `UPDATE_REGISTRY[..].localizable`.
-- Imports use scoped paths `@opden-data-layer/core/object-type-registry` and `@opden-data-layer/core/update-registry` (not the core barrel) so the web bundle does not pull Nest/HTTP helpers.
+- Imports use scoped paths `@opden-data-layer/core/object-type-registry` and `@opden-data-layer/core/update-registry` (not the core barrel) to keep client bundles tree-shakeable.
 
 ## i18n
 

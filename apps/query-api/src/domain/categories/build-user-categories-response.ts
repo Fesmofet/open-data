@@ -1,8 +1,9 @@
-import { UNCATEGORIZED_CATEGORY_SENTINEL, type ObjectCategoriesRelatedRow } from '@opden-data-layer/core';
+import { UNCATEGORIZED_CATEGORY_SENTINEL } from '@opden-data-layer/core';
 import { filterRootDepartments } from './level1-filter';
 import { filterSubDepartments, hasDescendantBeyondLineage } from './level2-filter';
 import type { UserCategoriesQuery, UserCategoriesResponse } from './categories-query.schema';
 import { toNavigationRow } from './category-navigation.types';
+import type { ObjectCategoriesRelatedRow } from '@opden-data-layer/odl-db-types';
 
 /**
  * Builds the same payload as {@link GetUserCategoriesEndpoint} from pre-fetched related rows.

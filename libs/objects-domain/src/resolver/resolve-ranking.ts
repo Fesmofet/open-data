@@ -1,7 +1,7 @@
-import type { RankVote } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ResolvedUpdate } from '../types/resolved-view';
 import type { VoterWaivPowerMap } from '../types/aggregated-object';
+import { RankVote } from '@opden-data-layer/odl-db-types';
 
 export function waivVoteWeight(waivPower: number): number {
   return waivPower > 1 ? waivPower : 1;

@@ -1,4 +1,4 @@
-import type { ObjectCategoriesRelatedRow } from '@opden-data-layer/core';
+import type { ObjectCategoriesRelatedRow } from '@opden-data-layer/odl-db-types';
 
 /** Narrow row shape for filtering (counts as numbers). */
 export interface CategoryNavigationRow {

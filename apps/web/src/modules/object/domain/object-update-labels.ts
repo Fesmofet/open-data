@@ -1,7 +1,8 @@
 /**
  * Human-readable titles for left-rail blocks keyed by ODL `update_type`.
- * Uses literal strings aligned with {@link libs/core/src/update-registry/update-types.ts}
- * — do not import `@opden-data-layer/core` here (Next.js client bundles must avoid the core barrel).
+ * Uses literal strings aligned with {@link libs/core/src/update-registry/update-types.ts}.
+ * Client bundles: prefer registry subpaths over the core barrel for tree-shaking
+ * (`@opden-data-layer/core/update-registry`, etc.).
  *
  * @see scripts/migrate-mongo-to-pg/objects/field-name-map.ts
  */

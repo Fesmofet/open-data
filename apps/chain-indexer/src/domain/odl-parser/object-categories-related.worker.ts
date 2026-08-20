@@ -1,7 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import type { ObjectCategoriesRelatedSyncQueueRow } from '@opden-data-layer/core';
+import { ObjectCategoriesRelatedSyncQueueRow } from '@opden-data-layer/odl-db-types';
+
 import { parseUserScopeKey, SHOP_TYPE_BUCKETS } from '@opden-data-layer/core';
 import { ObjectCategoriesRelatedRepository } from '../../repositories/object-categories-related.repository';
 import { ObjectCategoriesRelatedSyncQueueRepository } from '../../repositories/object-categories-related-sync-queue.repository';

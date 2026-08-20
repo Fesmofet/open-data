@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import type { UserNotificationSettings } from '@opden-data-layer/odl-db-types';
 import type {
   AnyNotificationEvent,
   NotificationEventType,
 } from '@opden-data-layer/notifications-contract';
-import type { UserNotificationSettings } from '@opden-data-layer/core';
+
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { NotificationSettingsView } from '../../constants/notification-settings.constants';
 

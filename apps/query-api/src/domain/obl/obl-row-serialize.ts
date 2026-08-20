@@ -1,13 +1,6 @@
-import type {
-  OblContract,
-  OblDispute,
-  OblInvoice,
-  OblObligationLine,
-  OblReport,
-  OblServiceOrder,
-} from '@opden-data-layer/core';
 import type { OblInvoiceLineView } from './obl-invoice-line';
 import { aggregateInvoiceLineView } from './obl-invoice-line';
+import { OblContract, OblDispute, OblInvoice, OblObligationLine, OblReport, OblServiceOrder } from '@opden-data-layer/odl-db-types';
 
 function toIso(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : String(value);

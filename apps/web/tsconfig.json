@@ -43,6 +43,12 @@
       "@opden-data-layer/core/utils/service-order-schema": [
         "../../libs/core/src/utils/service-order-schema.ts"
       ],
+      "@opden-data-layer/core/utils/osl-messaging": [
+        "../../libs/core/src/utils/osl-messaging.ts"
+      ],
+      "@opden-data-layer/odl-db-types": [
+        "../../libs/odl-db-types/src/index.ts"
+      ],
       "@opden-data-layer/migrations": ["../../libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["../../libs/clients/src/index.ts"],
       "@opden-data-layer/objects-domain": [

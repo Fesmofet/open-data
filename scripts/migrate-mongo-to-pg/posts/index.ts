@@ -26,7 +26,7 @@ import type {
   NewPostObjectRelatedImage,
   NewPostRebloggedUser,
   OdlDatabase,
-} from '../../../libs/core/src/db';
+} from '@opden-data-layer/odl-db-types';
 import {
   bindPostObjectsToPost,
   parsePostObjectsForInsert,

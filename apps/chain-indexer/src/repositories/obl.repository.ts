@@ -1,26 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
-import type {
-  NewOblContract,
-  NewOblDispute,
-  NewOblInvoice,
-  NewOblLedger,
-  NewOblOffer,
-  NewOblObligationLine,
-  NewOblPayment,
-  NewOblReport,
-  NewOblServiceOrder,
-  OblContract,
-  OblDispute,
-  OblInvoice,
-  OblInvoiceState,
-  OblObligationLine,
-  OblOffer,
-  OblOfferStatus,
-  OblPayment,
-  OblReport,
-  OblServiceOrder,
-} from '@opden-data-layer/core';
+import { NewOblContract, NewOblDispute, NewOblInvoice, NewOblLedger, NewOblOffer, NewOblObligationLine, NewOblPayment, NewOblReport, NewOblServiceOrder, OblContract, OblDispute, OblInvoice, OblInvoiceState, OblObligationLine, OblOffer, OblOfferStatus, OblPayment, OblReport, OblServiceOrder } from '@opden-data-layer/odl-db-types';
+
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 

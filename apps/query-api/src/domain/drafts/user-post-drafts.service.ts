@@ -3,14 +3,15 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import type {
   HiveBeneficiary,
   JsonValue,
   Post,
   UserPostDraft,
   UserPostDraftUpdate,
-} from '@opden-data-layer/core';
+} from '@opden-data-layer/odl-db-types';
+import { randomUUID } from 'crypto';
+
 import { PostsRepository } from '../../repositories/posts.repository';
 import { UserPostDraftsRepository } from '../../repositories/user-post-drafts.repository';
 import {
@@ -271,4 +272,3 @@ function asJsonMetadata(v: unknown): JsonValue {
   }
   return v as JsonValue;
 }
-

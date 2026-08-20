@@ -1,8 +1,8 @@
-import type { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
 import { MIN_PERCENT_TO_SHOW_UPDATE } from '../constants';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ValidityStatus, ValidityTier, VoterWaivPowerMap } from '../types';
 import { waivVoteWeight } from './resolve-ranking';
+import { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/odl-db-types';
 
 /** Result of {@link resolveUpdateValidity} including tier metadata for single-cardinality ordering. */
 export type ResolveUpdateValidityResult = {

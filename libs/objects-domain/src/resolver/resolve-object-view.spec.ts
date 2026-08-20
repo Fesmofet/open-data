@@ -1,9 +1,9 @@
-import type { ObjectsCore, ObjectAuthority, ObjectUpdate, ValidityVote } from '@opden-data-layer/core';
 import type { AggregatedObject, VoterWaivPowerMap } from '../types/aggregated-object';
 import type { ResolveOptions } from '../types/resolve-options';
 import type { ResolvedUpdate } from '../types/resolved-view';
 import { DEFAULT_GOVERNANCE_SNAPSHOT } from '../types/governance-snapshot';
 import { filterByLocalePreference, resolveObjectViews } from './resolve-object-view';
+import { ObjectsCore, ObjectAuthority, ObjectUpdate, ValidityVote } from '@opden-data-layer/odl-db-types';
 
 function makeCore(objectId: string, creator = 'alice', canonical: string | null = null): ObjectsCore {
   return {

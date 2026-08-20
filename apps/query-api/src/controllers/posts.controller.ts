@@ -1,5 +1,5 @@
 import { Controller, Get, Header, NotFoundException, Param, Post, Query, Body } from '@nestjs/common';
-import { ReqLocale, type SupportedCurrency } from '@opden-data-layer/core';
+import { type SupportedCurrency } from '@opden-data-layer/core';
 import {
   GetPostByKeyEndpoint,
   GetPostDiscussionEndpoint,
@@ -15,6 +15,7 @@ import {
 import { postVotersQuerySchema } from '../domain/feed/schemas/post-voters.schema';
 import { ReqCurrency } from '../http/currency-query.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodQueryPipe, ZodBodyPipe } from '../pipes';
 import type { PostVotersQuery } from '../domain/feed/schemas/post-voters.schema';

@@ -1,5 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { WaivGeneratedReport } from '@opden-data-layer/odl-db-types';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
 
 import { WaivGeneratedReportsService } from './waiv-generated-reports.service';
 import { WaivGeneratedReportsRepository } from '../../repositories/waiv-generated-reports.repository';
@@ -8,8 +10,6 @@ import { WaivAdvancedReportPricingService } from './waiv-advanced-report-pricing
 import { WAIV_GENERATED_REPORT_STATUS } from '../../constants/waiv-generated-report.constants';
 import type { WaivAdvancedReportRowDto } from './schemas/waiv-advanced-report.schema';
 import type { WaivAdvancedReportRawRow } from './waiv-advanced-report-pager.service';
-import type { WaivGeneratedReport } from '@opden-data-layer/core';
-import type { JsonValue } from '@opden-data-layer/core';
 
 describe('WaivGeneratedReportsService', () => {
   let service: WaivGeneratedReportsService;

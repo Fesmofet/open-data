@@ -1,9 +1,8 @@
-import type { Post } from '@opden-data-layer/core';
-
 import { buildFeedStoryItemsFromPostPage } from './build-feed-story-items-from-post-page';
 import type { FeedStoryItemDto } from './feed-story-dtos';
 import { createPassthroughPostRewardServiceMock } from './post-reward.service.mock';
 import type { PostRewardService } from './post-reward.service';
+import { Post } from '@opden-data-layer/odl-db-types';
 
 describe('buildFeedStoryItemsFromPostPage', () => {
   it('calls batchProject once for a multi-post page', async () => {

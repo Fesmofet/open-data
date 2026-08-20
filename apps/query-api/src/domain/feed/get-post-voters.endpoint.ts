@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { ActiveVotesType } from '@opden-data-layer/clients';
 import { HiveClient } from '@opden-data-layer/clients';
-import type { Post, SupportedCurrency } from '@opden-data-layer/core';
+import { SupportedCurrency } from '@opden-data-layer/core';
 import { moneyLineFromUsd } from '@opden-data-layer/currency';
+import { Post } from '@opden-data-layer/odl-db-types';
 
 import {
   AccountsCurrentRepository,

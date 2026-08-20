@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { OblObligationLine } from '@opden-data-layer/odl-db-types';
 
 import { normalizeHiveAccount } from '../../auth';
 import { OblRepository } from '../../repositories/obl.repository';
-import type { OblObligationLine } from '@opden-data-layer/core';
+
 import type { CursorPage } from './obl-pagination';
 import { aggregateInvoiceLineView } from './obl-invoice-line';
 import {

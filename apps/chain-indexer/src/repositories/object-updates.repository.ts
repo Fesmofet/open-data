@@ -3,12 +3,12 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import { GeoJsonPoint } from '@opden-data-layer/core';
 import type {
-  GeoJsonPoint,
   ObjectUpdate,
   NewObjectUpdate,
   ObjectUpdateUpdate,
-} from '@opden-data-layer/core';
+} from '@opden-data-layer/odl-db-types';
 import {
   geoDuplicateMatchSql,
   geoJsonPointToText,

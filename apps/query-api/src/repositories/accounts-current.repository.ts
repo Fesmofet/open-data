@@ -2,11 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  AccountCurrent,
-  NewAccountCurrent,
-  AccountCurrentUpdate,
-} from '@opden-data-layer/core';
+import { AccountCurrent, NewAccountCurrent, AccountCurrentUpdate } from '@opden-data-layer/odl-db-types';
 
 @Injectable()
 export class AccountsCurrentRepository {

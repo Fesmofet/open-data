@@ -4,7 +4,7 @@
  * Usage:
  *   pnpm exec tsx --env-file=.env scripts/inspect-obl-pair-balance.ts flowmaster fesmofet
  */
-import type { OdlDatabase } from '../libs/core/src/db';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { computePairBalance } from '../apps/query-api/src/domain/obl/compute-pair-balance';
 import { resolveConnectionString } from '../libs/migrations/src/connection';
 import { Kysely, PostgresDialect } from 'kysely';

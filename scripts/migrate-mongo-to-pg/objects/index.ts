@@ -31,7 +31,7 @@ import type {
   NewRankVote,
   NewValidityVote,
   OdlDatabase,
-} from '../../../libs/core/src/db';
+} from '@opden-data-layer/odl-db-types';
 import { OBJECT_TYPE_REGISTRY } from '../../../libs/core/src/object-type-registry';
 import { UPDATE_REGISTRY } from '../../../libs/core/src/update-registry';
 import { Kysely, PostgresDialect, sql } from 'kysely';

@@ -1,5 +1,5 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
-import { localeFromHeaders } from './locale-from-headers';
+import { localeFromHeaders } from '@opden-data-layer/core';
 
 function headerValue(
   raw: string | string[] | undefined,

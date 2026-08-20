@@ -1,6 +1,5 @@
-import type { Post, Thread } from '@opden-data-layer/core';
-
 import type { VoteValuePostContext } from './calculate-vote-value-usd';
+import { Post, Thread } from '@opden-data-layer/odl-db-types';
 
 export function buildVoteValueContextFromPost(
   post: Post,

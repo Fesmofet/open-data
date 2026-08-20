@@ -55,4 +55,4 @@ Documented in the app’s generated OpenAPI registry (`openapi/users.openapi.ts`
 
 ## See also
 
-- DB types: [`libs/core/src/db/odl/tables.ts`](../../../../libs/core/src/db/odl/tables.ts) — `AccountsCurrentTable`
+- DB types: [`libs/odl-db-types/src/odl/tables.ts`](../../../../libs/odl-db-types/src/odl/tables.ts) — `AccountsCurrentTable`

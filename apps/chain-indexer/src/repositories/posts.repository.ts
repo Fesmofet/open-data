@@ -3,18 +3,8 @@ import type { Kysely, Transaction } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type {
-  NewPost,
-  Post,
-  PostActiveVote,
-  NewPostActiveVote,
-  NewPostObject,
-  NewPostLink,
-  NewPostMention,
-  NewPostLanguage,
-  NewPostRebloggedUser,
-  PostUpdate,
-} from '@opden-data-layer/core';
+import { NewPost, Post, PostActiveVote, NewPostActiveVote, NewPostObject, NewPostLink, NewPostMention, NewPostLanguage, NewPostRebloggedUser, PostUpdate } from '@opden-data-layer/odl-db-types';
+
 import type { ActiveVotesType } from '@opden-data-layer/clients';
 import { sanitizePostRowJsonColumnsForDatabase } from '../domain/hive-comment/hive-post-normalize.util';
 

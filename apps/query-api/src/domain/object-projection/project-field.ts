@@ -1,9 +1,9 @@
-import type { JsonValue } from '@opden-data-layer/core';
 import { UPDATE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedField } from '@opden-data-layer/objects-domain';
 import { imageContentUrlForCid, pickSingleImageDisplayUrlFromResolvedUpdate } from './image-display-url';
 import type { ProjectedAggregateRatingRow, RankVoteProjection } from './projected-object.types';
 import { emptyRankVoteProjection } from './projected-object.types';
+import { JsonValue } from '@opden-data-layer/odl-db-types';
 
 /** PostGIS EWKB flag: next uint32 is SRID. @see https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT */
 const POSTGIS_WKB_SRID_FLAG = 0x20000000;

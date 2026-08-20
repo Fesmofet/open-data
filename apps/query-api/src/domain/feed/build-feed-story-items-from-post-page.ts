@@ -1,6 +1,6 @@
-import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
+import type { Post } from '@opden-data-layer/odl-db-types';
 import {
   AggregatedObjectRepository,
   AccountsCurrentRepository,

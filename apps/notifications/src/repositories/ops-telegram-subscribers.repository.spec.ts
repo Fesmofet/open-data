@@ -1,5 +1,5 @@
 import type { Kysely } from 'kysely';
-import type { OdlDatabase } from '@opden-data-layer/core';
+import type { OdlDatabase } from '@opden-data-layer/odl-db-types';
 import { OpsTelegramSubscribersRepository } from './ops-telegram-subscribers.repository';
 
 describe('OpsTelegramSubscribersRepository', () => {

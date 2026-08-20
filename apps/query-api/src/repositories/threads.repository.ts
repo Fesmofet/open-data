@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
-import type { Thread } from '@opden-data-layer/core';
+import { Thread } from '@opden-data-layer/odl-db-types';
+
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 

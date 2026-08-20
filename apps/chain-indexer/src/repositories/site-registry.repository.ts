@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import type { NewSiteRegistryRow } from '@opden-data-layer/core';
+import { NewSiteRegistryRow } from '@opden-data-layer/odl-db-types';
 
 @Injectable()
 export class SiteRegistryRepository {

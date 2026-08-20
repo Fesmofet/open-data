@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { sql, type Kysely, type Transaction } from 'kysely';
-import type { Post, PostExpertiseDelta } from '@opden-data-layer/core';
+import { PostExpertiseDelta } from '@opden-data-layer/core';
 import { KYSELY, type Database } from '../database';
+import { Post } from '@opden-data-layer/odl-db-types';
 
 type DbExecutor = Kysely<Database> | Transaction<Database>;
 

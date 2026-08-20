@@ -10,6 +10,25 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  core-imports:
+    name: Core import boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify core import boundaries
+        run: pnpm check:core-imports
+
   agent-docs:
     name: Agent docs — frontmatter and routing paths
     runs-on: ubuntu-latest
@@ -24,6 +43,10 @@ jobs:
               - 'docs/**'
               - 'scripts/check-agent-docs.ts'
               - 'scripts/check-object-create-playbooks.ts'
+              - 'scripts/check-core-imports.ts'
+              - 'libs/core/**'
+              - 'libs/odl-db-types/**'
+              - 'apps/web/src/**'
               - 'libs/core/src/object-type-registry/**'
               - 'package.json'
 
@@ -173,6 +196,7 @@ jobs:
               - 'apps/scheduler/**'
               - 'apps/stack-watchdog/**'
               - 'libs/clients/**'
+              - 'libs/odl-db-types/**'
               - 'libs/system-alerts/**'
               - 'tsconfig.base.json'
               - 'package.json'

@@ -1,4 +1,3 @@
-import type { Thread } from '@opden-data-layer/core';
 import type { AccountsCurrentRepository, ThreadsRepository } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import type { UserProfileView } from '../users/user-profile.types';
@@ -7,6 +6,7 @@ import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
+import type { Thread } from '@opden-data-layer/odl-db-types';
 import {
   toFeedAuthorProfileFallback,
   toFeedAuthorProfileFromUserProfile,

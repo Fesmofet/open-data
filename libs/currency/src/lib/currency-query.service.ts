@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-
-import type { CurrencyStatisticsRow } from '@opden-data-layer/core';
+import { CurrencyStatisticsRow } from '@opden-data-layer/odl-db-types';
 
 import {
   ENGINE_BASE_WAIV,
@@ -523,7 +522,6 @@ export class CurrencyQueryService {
   }
 }
 
-
 function utcYmd(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
@@ -566,7 +564,6 @@ function normalizeChartWindow(
   }
   return CHART_WINDOWS[key] ?? fallback;
 }
-
 
 function simplePricePayloadFromPgOrdinary(
   row: CurrencyStatisticsRow,

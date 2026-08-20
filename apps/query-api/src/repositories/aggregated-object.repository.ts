@@ -1,14 +1,10 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
-import type { ObjectStatus } from '@opden-data-layer/core';
+import type { ObjectStatus } from '@opden-data-layer/odl-db-types';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
-import type {
-  ObjectsCore,
-  ObjectUpdate,
-  ValidityVote,
-  ObjectAuthority,
-} from '@opden-data-layer/core';
+import { ObjectsCore, ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/odl-db-types';
+
 import type {
   AggregatedObject,
   VoterWaivPowerMap,

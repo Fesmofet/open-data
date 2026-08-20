@@ -1,4 +1,4 @@
-import type { JsonValue } from '@opden-data-layer/core';
+import type { JsonValue } from '@opden-data-layer/odl-db-types';
 
 /** Maps chain `posts.json_metadata` text into JSONB for drafts. */
 export function parsePostJsonMetadataString(text: string): JsonValue {

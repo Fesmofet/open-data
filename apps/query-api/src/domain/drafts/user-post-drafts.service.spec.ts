@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
-import type { Post, UserPostDraft } from '@opden-data-layer/core';
+import { Post, UserPostDraft } from '@opden-data-layer/odl-db-types';
+
 import { PostsRepository } from '../../repositories/posts.repository';
 import { UserPostDraftsRepository } from '../../repositories/user-post-drafts.repository';
 import { UserPostDraftsService } from './user-post-drafts.service';
