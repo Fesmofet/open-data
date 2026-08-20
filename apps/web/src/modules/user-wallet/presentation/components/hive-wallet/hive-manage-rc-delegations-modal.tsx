@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useState } from 'react';
 
-import { buildUndelegateRcOp } from '@opden-data-layer/hive-broadcast';
+import { buildDelegateRcOp } from '@opden-data-layer/hive-broadcast';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
@@ -66,8 +66,12 @@ export function HiveManageRcDelegationsModal({
     return () => ac.abort();
   }, [open, loadDelegations]);
 
-  const onUndelegate = async (to: string, rc: number) => {
-    const op = buildUndelegateRcOp({ from: account, to, rc });
+  const onUndelegate = async (to: string) => {
+    const op = buildDelegateRcOp({
+      from: account,
+      delegatees: [to],
+      maxRc: 0,
+    });
     const ok = await broadcast([op]);
     if (ok) {
       await loadDelegations();
@@ -126,7 +130,7 @@ export function HiveManageRcDelegationsModal({
                             type="button"
                             className="rounded-btn border border-accent px-2 py-1 text-body-sm font-weight-label text-accent disabled:opacity-50"
                             disabled={pending}
-                            onClick={() => void onUndelegate(row.to, row.delegatedRc)}
+                            onClick={() => void onUndelegate(row.to)}
                           >
                             {t('undelegate')}
                           </button>

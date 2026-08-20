@@ -6,10 +6,11 @@ type: overview
 status: active
 scope: agent-wallet
 tags: [agent-wallet, has, mcp, overview]
-updated_at: 2026-08-12
+updated_at: 2026-08-20
 related:
   - docs/skills/hive-has-agent-wallet.md
   - docs/skills/osl-messaging.md
+  - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/hive-blockchain-broadcast.md
   - docs/apps/knowledge-api/spec/overview.md
 ---
@@ -50,6 +51,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 |---------|-----|
 | HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
 | OSL messaging (read/send/encrypt/notify) | [osl-messaging skill](../../skills/osl-messaging.md) |
+| Wallet delegations / balances / swaps | [wallet-delegation-swap-for-agents skill](../../skills/wallet-delegation-swap-for-agents.md) |
 | HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
 | IPFS image upload + avatar/gallery policy | [ipfs-image-upload skill](../../skills/ipfs-image-upload.md) |
 
@@ -77,6 +79,9 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `osl_build_encrypted_message_create` | encrypted `message_create` (local memo only) |
 | `osl_memo_encrypt` / `osl_memo_decrypt` | memo crypto helpers |
 | `notifications_pull` / `notifications_status` | WS notification bridge for inbound messaging |
+| `hive_build_hp_delegation` | `ops`, `keyType: active`, `warnings` — HP delegate/undelegate |
+| `hive_build_rc_delegation` | `ops`, `keyType: posting`, `warnings` — RC delegate/remove (`maxRc: 0`) |
+| `engine_build_token_delegation` | `ops`, `keyType: active`, `warnings` — WAIV/Engine delegate/undelegate |
 
 ## Environment
 

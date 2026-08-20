@@ -76,6 +76,7 @@ import type {
   GetUserEngineTokenDelegationsEndpoint,
   GetUserHiveHpDelegationsEndpoint,
   GetUserHiveRcDelegationsEndpoint,
+  GetUserHiveWalletEndpoint,
   GetUserWaivWalletEndpoint,
   GetUserWaivWalletHistoryEndpoint,
   GetUserEngineWalletEndpoint,
@@ -131,6 +132,7 @@ export interface McpToolDeps {
   getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint;
   getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint;
   getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint;
+  getUserHiveWallet: GetUserHiveWalletEndpoint;
   getHiveAdvancedReport: GetHiveAdvancedReportEndpoint;
   upsertHiveWalletExemption: UpsertHiveWalletExemptionEndpoint;
   getUserFollowers: GetUserFollowersEndpoint;

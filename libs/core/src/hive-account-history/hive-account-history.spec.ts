@@ -1,5 +1,6 @@
 import {
   classifyActivityOperation,
+  hpToVestingShares,
   parseCustomJsonOp,
   vestToHp,
   HIVE_OP,
@@ -42,6 +43,23 @@ describe('vestToHp', () => {
 
   it('returns 0 for invalid input', () => {
     expect(vestToHp('x', '0', '1')).toBe(0);
+  });
+});
+
+describe('hpToVestingShares', () => {
+  const totalVestingShares = '341884293795.055689 VESTS';
+  const totalVestingFundSteem = '210857021.344 HIVE';
+
+  it('formats six-decimal VESTS string', () => {
+    const vests = hpToVestingShares(1, totalVestingShares, totalVestingFundSteem);
+    expect(vests).toMatch(/^\d+\.\d{6} VESTS$/);
+    expect(vestToHp(vests, totalVestingShares, totalVestingFundSteem)).toBeCloseTo(1, 4);
+  });
+
+  it('returns zero VESTS for non-positive HP', () => {
+    expect(hpToVestingShares(0, totalVestingShares, totalVestingFundSteem)).toBe(
+      '0.000000 VESTS',
+    );
   });
 });
 

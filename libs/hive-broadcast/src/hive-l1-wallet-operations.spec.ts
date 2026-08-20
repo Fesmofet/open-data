@@ -1,5 +1,6 @@
 import {
   buildClaimRewardBalanceOp,
+  buildDelegateRcOp,
   buildTransferOp,
   formatHiveAssetAmount,
 } from './hive-l1-wallet-operations';
@@ -42,5 +43,39 @@ describe('hive-l1-wallet-operations', () => {
       reward_hbd: '0.012 HBD',
       reward_vests: '123.456789 VESTS',
     });
+  });
+
+  it('builds delegate_rc with peakd-compatible payload', () => {
+    const op = buildDelegateRcOp({
+      from: 'flowmaster',
+      delegatees: ['wiv01'],
+      maxRc: 111_000_000_000,
+    });
+
+    expect(op.type).toBe('custom_json');
+    expect(op.id).toBe('rc');
+    expect(op.required_auths).toEqual([]);
+    expect(op.required_posting_auths).toEqual(['flowmaster']);
+    expect(JSON.parse(op.json)).toEqual([
+      'delegate_rc',
+      {
+        from: 'flowmaster',
+        delegatees: ['wiv01'],
+        max_rc: 111_000_000_000,
+      },
+    ]);
+  });
+
+  it('builds delegate_rc removal with max_rc zero', () => {
+    const op = buildDelegateRcOp({
+      from: 'alice',
+      delegatees: ['bob'],
+      maxRc: 0,
+    });
+
+    expect(JSON.parse(op.json)).toEqual([
+      'delegate_rc',
+      { from: 'alice', delegatees: ['bob'], max_rc: 0 },
+    ]);
   });
 });

@@ -29,7 +29,6 @@ export {
   buildClaimHbdInterestOps,
   buildClaimRewardBalanceOp,
   buildDelegateRcOp,
-  buildUndelegateRcOp,
   formatHiveAssetAmount,
   type HiveTransferAsset,
 } from './hive-l1-wallet-operations';
@@ -44,7 +43,7 @@ export {
   buildHiveUnfollowOp,
   type CommentOptionsBeneficiary,
 } from './operation-builders';
-export { wireCommentOptionsPayload } from './hive-operation-wire';
+export { wireCommentOptionsPayload, toHiveWireOperation, toHiveWireOperations, type HiveWireOperation } from './hive-operation-wire';
 export {
   buildOdlUpdateCreateOp,
   buildOdlGalleryItemWithAlbumEnsureOp,

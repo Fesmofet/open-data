@@ -72,8 +72,8 @@ export function HiveDelegateRcModal({
     }
     const op = buildDelegateRcOp({
       from: account,
-      to: to.trim().toLowerCase(),
-      rc: parsed,
+      delegatees: [to.trim().toLowerCase()],
+      maxRc: parsed,
     });
     const ok = await broadcast([op]);
     if (ok) {

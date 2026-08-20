@@ -269,6 +269,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-waiv-wallet-endpoint.md',
   },
   {
+    name: 'get_user_hive_wallet',
+    description:
+      'Live Hive L1 wallet summary: liquid HIVE, Hive Power, RC, savings, HBD, delegation nets, USD estimate.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/hive',
+    specPath: 'docs/apps/query-api/spec/user-hive-wallet-endpoint.md',
+  },
+  {
     name: 'get_user_hive_hp_delegations',
     description: 'Incoming, outgoing, and expiring HIVE Power delegations for a user.',
     httpEquivalent: 'GET /query/v1/users/:name/wallet/hive/delegations',

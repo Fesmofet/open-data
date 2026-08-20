@@ -8,6 +8,7 @@ import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { NotificationsSocketService } from '../domain/notifications-socket.service';
 import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
+import { WalletDelegationBuildService } from '../domain/wallet-delegation-build.service';
 import { WalletStatusService } from '../domain/hive-broadcast.service';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
@@ -22,6 +23,7 @@ export function registerAgentWalletTools(
     ipfsUpload: IpfsUploadService;
     oslMessaging: OslMessagingService;
     notificationsSocket: NotificationsSocketService;
+    walletDelegationBuild: WalletDelegationBuildService;
   },
 ): void {
   server.registerTool(
@@ -504,5 +506,72 @@ export function registerAgentWalletTools(
       inputSchema: z.object({}),
     },
     async () => jsonToolResult(deps.notificationsSocket.getStatus()),
+  );
+
+  server.registerTool(
+    'hive_build_hp_delegation',
+    {
+      description:
+        'Build delegate_vesting_shares op for HP delegation or undelegation. Undelegate with amountHp 0. Returns keyType active — pass to wallet_broadcast({ ops, keyType: "active" }). HP returns over ~5 days (check expirations via query-api).',
+      inputSchema: z.object({
+        delegator: z.string().min(1),
+        delegatee: z.string().min(1),
+        amountHp: z.number().optional(),
+        vestingShares: z.string().optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.walletDelegationBuild.buildHpDelegation(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'hive_build_rc_delegation',
+    {
+      description:
+        'Build delegate_rc custom_json (id rc, posting auth). Set maxRc 0 to remove delegation. Returns keyType posting — pass to wallet_broadcast({ ops, keyType: "posting" }). Verify via get_user_hive_rc_delegations.',
+      inputSchema: z.object({
+        from: z.string().min(1),
+        delegatees: z.array(z.string().min(1)).min(1).max(100),
+        maxRc: z.number().int().min(0),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.walletDelegationBuild.buildRcDelegation(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'engine_build_token_delegation',
+    {
+      description:
+        'Build Hive Engine tokens delegate/undelegate custom_json. Returns keyType active — pass to wallet_broadcast({ ops, keyType: "active" }). Verify via get_user_engine_token_delegations.',
+      inputSchema: z.object({
+        account: z.string().min(1),
+        symbol: z.string().min(1),
+        quantity: z.string().min(1),
+        action: z.enum(['delegate', 'undelegate']),
+        to: z.string().optional(),
+        from: z.string().optional(),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.walletDelegationBuild.buildEngineDelegation(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
   );
 }

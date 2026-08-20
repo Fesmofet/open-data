@@ -5,7 +5,7 @@ type: skill
 status: active
 scope: platform
 tags: [query-api, mcp, agent, routing, live-data]
-updated_at: 2026-06-11
+updated_at: 2026-08-20
 related:
   - docs/apps/query-api/spec/mcp.md
   - docs/apps/query-api/spec/overview.md
@@ -13,6 +13,7 @@ related:
   - docs/apps/query-api/spec/objects-resolve-nested.md
   - docs/skills/knowledge-api-routing.md
   - docs/skills/osl-messaging.md
+  - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/obl-offers-contracts.md
   - docs/skills/obl-ledger.md
   - docs/skills/obl-disputes.md
@@ -67,6 +68,12 @@ related:
 | Messaging inbox / channels | `get_channels`, `get_channel_by_id`, `get_channel_messages` |
 | Object channel feed | `get_object_channel`, `get_object_channel_messages` |
 | Memo key for encrypt | `get_memo_public_key` |
+| Hive L1 wallet summary | `get_user_hive_wallet` |
+| HP / RC delegation lists | `get_user_hive_hp_delegations`, `get_user_hive_rc_delegations` |
+| WAIV / Engine balances | `get_user_waiv_wallet`, `get_user_engine_wallet` |
+| Engine token delegations | `get_user_engine_token_delegations` (symbol e.g. `WAIV`) |
+| Engine swaps / withdraw quotes | `get_user_engine_swap_list`, `post_user_engine_swap_quote`, `post_user_engine_withdraw_quote` |
+| Build / broadcast delegations | Not in query-api MCP — [wallet-delegation-swap-for-agents](wallet-delegation-swap-for-agents.md) + **agent-wallet** (`hive_build_*`, `engine_build_*`, `wallet_broadcast`) |
 | Send / encrypt / inbound notify | Not in query-api MCP — use [osl-messaging](osl-messaging.md) skill + **agent-wallet** (`osl_build_*`, `wallet_broadcast`, `notifications_pull`) |
 
 ## Contrast with knowledge-api

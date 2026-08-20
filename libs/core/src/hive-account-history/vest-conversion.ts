@@ -75,3 +75,18 @@ export function vestToHp(
   }
   return (totalFund * vests) / totalVests || 0;
 }
+
+/** Convert HP to vesting shares string for chain operations. */
+export function hpToVestingShares(
+  hp: number,
+  totalVestingShares: string,
+  totalVestingFundSteem: string,
+): string {
+  const totalVests = parseAssetNumber(totalVestingShares);
+  const totalFund = parseAssetNumber(totalVestingFundSteem);
+  if (hp <= 0 || totalFund <= 0 || totalVests <= 0) {
+    return '0.000000 VESTS';
+  }
+  const vests = (hp * totalVests) / totalFund;
+  return `${vests.toFixed(6)} VESTS`;
+}

@@ -453,6 +453,21 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_hive_wallet',
+    {
+      description: catalogDescription('get_user_hive_wallet'),
+      inputSchema: z.object({ ...accountField }),
+    },
+    async (args) => {
+      const result = await deps.getUserHiveWallet.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_hive_hp_delegations',
     {
       description: catalogDescription('get_user_hive_hp_delegations'),

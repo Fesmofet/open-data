@@ -1,4 +1,4 @@
-import { vestToHp } from '@opden-data-layer/core/hive-account-history';
+import { hpToVestingShares as coreHpToVestingShares, vestToHp } from '@opden-data-layer/core/hive-account-history';
 
 /** Hive L1 assets (HIVE, HBD) support at most 3 decimal places on chain. */
 export const HIVE_AMOUNT_MAX_DECIMAL_PLACES = 3;
@@ -98,13 +98,7 @@ export function hpToVestingShares(
   totalVestingShares: string,
   totalVestingFundSteem: string,
 ): string {
-  const totalVests = parseAssetNumber(totalVestingShares);
-  const totalFund = parseAssetNumber(totalVestingFundSteem);
-  if (hp <= 0 || totalFund <= 0 || totalVests <= 0) {
-    return '0.000000 VESTS';
-  }
-  const vests = (hp * totalVests) / totalFund;
-  return `${vests.toFixed(6)} VESTS`;
+  return coreHpToVestingShares(hp, totalVestingShares, totalVestingFundSteem);
 }
 
 export function vestingSharesToHp(

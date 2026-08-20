@@ -157,34 +157,16 @@ export function buildClaimRewardBalanceOp(input: {
 
 export function buildDelegateRcOp(input: {
   from: string;
-  to: string;
-  rc: number;
+  delegatees: readonly string[];
+  /** Absolute RC units; `0` removes the delegation to each delegatee. */
+  maxRc: number;
 }): CustomJsonOp {
   const json = JSON.stringify([
     'delegate_rc',
     {
       from: input.from,
-      delegatees: [{ to: input.to, rc: input.rc }],
-    },
-  ]);
-  return buildCustomJsonOp({
-    required_auths: [],
-    required_posting_auths: [input.from],
-    id: HIVE_RC_CUSTOM_JSON_ID,
-    json,
-  });
-}
-
-export function buildUndelegateRcOp(input: {
-  from: string;
-  to: string;
-  rc: number;
-}): CustomJsonOp {
-  const json = JSON.stringify([
-    'undelegate_rc',
-    {
-      from: input.from,
-      delegatees: [{ to: input.to, rc: input.rc }],
+      delegatees: [...input.delegatees],
+      max_rc: input.maxRc,
     },
   ]);
   return buildCustomJsonOp({

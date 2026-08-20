@@ -10,6 +10,7 @@ import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { NotificationsSocketService } from '../domain/notifications-socket.service';
 import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
+import { WalletDelegationBuildService } from '../domain/wallet-delegation-build.service';
 import { AGENT_WALLET_MCP_INSTRUCTIONS } from './mcp-instructions';
 import { registerAgentWalletTools } from './register-agent-wallet-tools';
 
@@ -26,6 +27,7 @@ export class McpService {
     private readonly ipfsUpload: IpfsUploadService,
     private readonly oslMessaging: OslMessagingService,
     private readonly notificationsSocket: NotificationsSocketService,
+    private readonly walletDelegationBuild: WalletDelegationBuildService,
   ) {}
 
   private createServer(): McpServer {
@@ -46,6 +48,7 @@ export class McpService {
       ipfsUpload: this.ipfsUpload,
       oslMessaging: this.oslMessaging,
       notificationsSocket: this.notificationsSocket,
+      walletDelegationBuild: this.walletDelegationBuild,
     });
     return server;
   }

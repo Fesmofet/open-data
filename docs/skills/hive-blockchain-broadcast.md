@@ -11,6 +11,7 @@ related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/hive-has-agent-wallet.md
   - docs/skills/osl-messaging.md
+  - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/hive-post-create.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
@@ -209,6 +210,21 @@ Import builders from `@opden-data-layer/hive-broadcast`:
 | `buildReblogOp` | `custom_json` id `follow` |
 | `buildHiveFollowOp` / `buildHiveUnfollowOp` | Hive social follow |
 | `buildCustomJsonOp` | Low-level; prefer ODL helpers |
+| `buildDelegateVestingSharesOp` | `delegate_vesting_shares` (active) |
+| `buildDelegateRcOp` | `custom_json` id `rc` — `{ from, delegatees[], max_rc }` (posting) |
+| `buildHiveEngineTokensOp` | Engine delegate/undelegate (active) |
+
+### Wallet delegations (agents)
+
+Full playbook: [wallet-delegation-swap-for-agents.md](wallet-delegation-swap-for-agents.md).
+
+| Build (agent-wallet MCP) | keyType | Verify (query-api MCP) |
+|--------------------------|---------|------------------------|
+| `hive_build_hp_delegation` | `active` | `get_user_hive_hp_delegations` |
+| `hive_build_rc_delegation` | `posting` | `get_user_hive_rc_delegations` |
+| `engine_build_token_delegation` | `active` | `get_user_engine_token_delegations` |
+
+Always pass `keyType` from the build result to `wallet_broadcast`. RC removal: `maxRc: 0`. HP undelegate: `amountHp: 0`.
 
 ### Hive root posts (agents)
 

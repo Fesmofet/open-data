@@ -38,8 +38,36 @@ describe('wire-operations', () => {
     ]);
   });
 
+  it('converts delegate_vesting_shares to wire tuple', () => {
+    const ops = toHiveWireOperations([
+      {
+        type: 'delegate_vesting_shares',
+        delegator: 'alice',
+        delegatee: 'bob',
+        vesting_shares: '1.000000 VESTS',
+      },
+    ]);
+
+    expect(ops).toEqual([
+      [
+        'delegate_vesting_shares',
+        {
+          delegator: 'alice',
+          delegatee: 'bob',
+          vesting_shares: '1.000000 VESTS',
+        },
+      ],
+    ]);
+  });
+
   it('passes through already-wired ops', () => {
     const wired = [['custom_json', { id: 'odl-testnet' }]];
     expect(toHiveWireOperations(wired)).toEqual(wired);
+  });
+
+  it('rejects unsupported operation shapes', () => {
+    expect(() => toHiveWireOperations([{ foo: 'bar' }])).toThrow(
+      'Unsupported operation shape for broadcast',
+    );
   });
 });

@@ -63,6 +63,7 @@ related:
 | Create recipe / restaurant / menu content | skill | `get_object_create_playbook` · [object-content-routing.md](object-content-routing.md) |
 | Publish Hive post / WAIV tags / companion post | skill | [hive-post-create.md](hive-post-create.md) |
 | OSL messaging (DM / group / object channels) | skill | [osl-messaging.md](osl-messaging.md) |
+| Wallet delegations / balances / swaps | skill | [wallet-delegation-swap-for-agents.md](wallet-delegation-swap-for-agents.md) |
 | Coding style in this repo | agents | `AGENTS.md` or `apps/<app>/AGENTS.md` |
 
 ## MCP tools cheat sheet
@@ -90,6 +91,8 @@ related:
 | `docs/skills/hive-blockchain-broadcast.md` | Sign and broadcast ODL / Hive ops |
 | `docs/skills/hive-has-agent-wallet.md` | Local HAS agent-wallet MCP daemon |
 | `docs/skills/has-login-from-chat.md` | HAS login via webLink in Telegram/Slack |
+| `docs/skills/osl-messaging.md` | OSL messaging read/send via query-api + agent-wallet |
+| `docs/skills/wallet-delegation-swap-for-agents.md` | HP/RC/WAIV delegations, balances, swaps |
 | `docs/skills/query-api-mcp-routing.md` | Live-data query-api MCP tool map |
 | `docs/skills/obl-offers-contracts.md` | OBL offers: discover, publish, sign contracts |
 | `docs/skills/obl-ledger.md` | OBL invoices, payments, balances, ledger |

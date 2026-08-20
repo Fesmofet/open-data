@@ -10,6 +10,7 @@ updated_at: 2026-06-11
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/skills/query-api-mcp-routing.md
+  - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/knowledge-api-routing.md
 ---
 
@@ -96,6 +97,7 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_engine_deposit_address` | `GET .../wallet/engine/deposit/address` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `post_user_engine_withdraw_quote` | `POST .../wallet/engine/withdraw/quote` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `get_user_engine_token_delegations` | `GET .../wallet/engine/{symbol}/delegations` | [user-waiv-wallet-endpoint.md](user-waiv-wallet-endpoint.md) |
+| `get_user_hive_wallet` | `GET .../wallet/hive` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |
 | `get_user_hive_hp_delegations` | `GET .../wallet/hive/delegations` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |
 | `get_user_hive_rc_delegations` | `GET .../wallet/hive/rc-delegations` | [user-hive-wallet-endpoint.md](user-hive-wallet-endpoint.md) |
 | `get_post` | `GET /query/v1/posts/:author/:permlink` | [single-post-endpoint.md](single-post-endpoint.md) |
