@@ -1,3 +1,17 @@
+---
+id: docs-spec-object-ownership
+title: Object Ownership
+description: Content moderation edge with exclusive vs supervised ownership — `object_ownership` chain action, validity rules, and query-api surfaces.
+type: spec
+status: active
+scope: platform
+tags: [platform, domain]
+updated_at: 2026-08-21
+related:
+  - docs/spec/object-favorite.md
+  - docs/spec/governance-resolution.md
+---
+
 # object_ownership
 
 Content moderation edge with `ownership_type`: `exclusive` | `supervised`.
