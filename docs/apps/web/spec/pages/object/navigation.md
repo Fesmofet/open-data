@@ -16,7 +16,7 @@ updated_at: 2026-06-10
 
 # Object page — navigation & transitions
 
-**Back:** [web overview](../../overview.md) · **Related:** [page-shell.md](page-shell.md), [right-rail.md](routes/right-rail.md), [updates.md](routes/updates.md), [followers.md](routes/followers.md), [experts.md](routes/experts.md), [authority.md](routes/authority.md), [gallery.md](routes/gallery.md)
+**Back:** [web overview](../../overview.md) · **Related:** [page-shell.md](page-shell.md), [right-rail.md](routes/right-rail.md), [updates.md](routes/updates.md), [followers.md](routes/followers.md), [experts.md](routes/experts.md), [ownership.md](routes/ownership.md), [gallery.md](routes/gallery.md)
 
 ## Scope
 
@@ -34,7 +34,7 @@ Covers all navigation behaviour on the object detail page (`/object/[object-id]`
 | `/object/:id/reviews` | Reviews tab | Reviews |
 | `/object/:id/updates` | Updates feed | Updates |
 | `/object/:id/followers` | Followers list | Followers |
-| `/object/:id/authority` | Authority list | Authority |
+| `/object/:id/ownership` | Ownership list | Ownership |
 | `/object/:id/description` | Full description + gallery interleave | none |
 | `/object/:id/gallery` | Gallery tab — albums grid | Gallery |
 | `/object/:id/gallery/album/:name` | Gallery tab — album photo grid | Gallery |
@@ -60,7 +60,7 @@ All `/object/:id/<tab>` paths are rewritten server-side to `/object/:id` with `?
 
 On every URL change (including browser back/forward), `ObjectPageClient` calls `resolvePrimarySegmentForObjectPage` in `apps/web/src/app/(app)/object/[object-id]/object-page-search.ts`:
 
-1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|authority|description|gallery|gallery/album/:name|category/:name|experts|related|similar|add-on`, then legacy `?tab=`.
+1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|ownership|description|gallery|gallery/album/:name|category/:name|experts|related|similar|add-on`, then legacy `?tab=`.
 2. If that returns a segment, use it (explicit tab in URL).
 3. If `?path=` is present, use `''` (menu landing with user-driven nested stack).
 4. Otherwise keep the SSR default tab from default landing (`initialPrimarySegment`) — e.g. Reviews on clean `/object/:id` without requiring `/reviews` in the path.
@@ -78,7 +78,7 @@ Implemented in `onPrimarySelect` in `apps/web/src/app/(app)/object/[object-id]/o
 | `reviews` | `push` | `/object/:id/reviews` | `?path=`, `?sub=` |
 | `updates` | `replace` | `/object/:id/updates` | `?tab=`, `?sub=` |
 | `followers` | `replace` | `/object/:id/followers` | `?tab=`, `?sub=` |
-| `authority` | `replace` | `/object/:id/authority` | `?tab=` |
+| `ownership` | `replace` | `/object/:id/ownership` (legacy `/authority` → same) | `?tab=` |
 | `gallery` | `replace` | `/object/:id/gallery` | `?tab=`, `?sub=`, `sort`, `update_type`, `locale` |
 | `experts` | `replace` | `/object/:id/experts` | `?tab=`, `?sub=`, `sort`, `update_type`, `locale` |
 | `widget` | `replace` | `/object/:id/widget` | `?tab=`, `?sub=`, `?path=`, `sort`, `update_type`, `locale` |
@@ -98,7 +98,7 @@ activePrimarySegment === ''   → Menu landing: shows defaultNestedContent or ro
 activePrimarySegment === 'reviews' → Reviews column (Write-review prompt + sub-nav for `default` type)
                                      No defaultNestedContent injected
 activePrimarySegment === 'widget'  → Widget embed (`ObjectWidgetContent`) for widget host objects
-activePrimarySegment === 'updates|followers|authority|…' → Respective feed/list injected
+activePrimarySegment === 'updates|followers|ownership|…' → Respective feed/list injected
 ```
 
 ### Default landing resolution (clean `/object/:id`)

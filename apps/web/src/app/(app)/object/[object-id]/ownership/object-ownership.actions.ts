@@ -1,6 +1,6 @@
 'use server';
 
-import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
+import { getObjectOwnershipPageQuery } from '@/modules/object/application/queries/get-object-ownership-page.query';
 import type {
   PaginatedUserFollowListView,
   UserSubscriptionSort,
@@ -8,17 +8,17 @@ import type {
 import { USER_SOCIAL_PAGE_SIZE } from '@/modules/user-social/constants';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
-export async function loadMoreObjectAuthorityAction(
+export async function loadMoreObjectOwnershipAction(
   objectId: string,
-  authorityType: 'administrative' | 'ownership',
+  ownershipType: 'supervised' | 'exclusive',
   sort: UserSubscriptionSort,
   skip: number,
 ): Promise<PaginatedUserFollowListView> {
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
-  return getObjectAuthorityPageQuery(
+  return getObjectOwnershipPageQuery(
     objectId,
-    { authorityType, sort, skip, limit: USER_SOCIAL_PAGE_SIZE },
+    { ownershipType, sort, skip, limit: USER_SOCIAL_PAGE_SIZE },
     user?.username ?? null,
   );
 }

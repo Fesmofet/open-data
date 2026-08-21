@@ -2,6 +2,7 @@ export { resolveObjectViews, filterByLocalePreference } from './resolve-object-v
 export {
   computeApprovePercent,
   computeCuratorSet,
+  computeExclusiveOwnerSet,
   resolveUpdateValidity,
   type ResolveUpdateValidityResult,
 } from './resolve-validity';

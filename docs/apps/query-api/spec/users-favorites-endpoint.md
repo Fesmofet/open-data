@@ -20,7 +20,7 @@ related:
 
 Expose legacy-equivalent favorites scope for profile `/@:name/favorites`:
 
-- **Administrative** `object_authority` (not ownership)
+- **Favorites** `object_favorite` (not ownership)
 - **Post-linked** `post_objects` where `author = :name` and `object_type ∈ FAVORITES_OBJECT_TYPES`
 - Exclude `user_shop_deselect` object ids (post-linked branch only)
 - Respect `user_metadata.hide_favorite_objects` (hides all post-linked favorites)

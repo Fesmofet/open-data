@@ -40,8 +40,9 @@ function viewWithMenu(
     semantic_type: null,
     weight: null,
     fields: { menuItem, sortCustom },
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 }
 
@@ -206,8 +207,9 @@ describe('object-projected-fields', () => {
           },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const items = projectedListItems(v);
     expect(items.map((i) => i.objectId)).toEqual([
@@ -242,8 +244,9 @@ describe('object-projected-fields', () => {
           },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const items = projectedListItems(v);
     expect(items).toHaveLength(1);
@@ -287,8 +290,9 @@ describe('object-projected-fields', () => {
           },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const items = projectedListItems(v);
     expect(items).toHaveLength(1);
@@ -343,8 +347,9 @@ describe('object-projected-fields', () => {
           exclude: [],
         },
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const items = resolveMenuItemsForView(v);
     expect(items.map((i) => i.displayTitle)).toEqual([
@@ -370,8 +375,9 @@ describe('object-projected-fields', () => {
           { object_id: 'child-list', object_type: 'list', fields: { name: 'List child' } },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const items = resolveMenuItemsForView(v);
     expect(items).toHaveLength(1);
@@ -387,8 +393,9 @@ describe('object-projected-fields', () => {
       fields: {
         identifier: [{ type: 'TEST', value: '25011012' }],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedIdentifierRows(v)).toEqual([{ type: 'TEST', value: '25011012' }]);
   });
@@ -420,8 +427,9 @@ describe('object-projected-fields', () => {
       semantic_type: null,
       weight: null,
       fields: { geo: { latitude: '10.5', longitude: '-66.89' } },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedGeoLatLon(v)).toEqual({ latitude: 10.5, longitude: -66.89 });
   });
@@ -435,8 +443,9 @@ describe('object-projected-fields', () => {
       fields: {
         geo: { type: 'Point', coordinates: [-66.89, 10.5] },
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedGeoLatLon(v)).toEqual({ latitude: 10.5, longitude: -66.89 });
   });
@@ -455,8 +464,9 @@ describe('object-projected-fields', () => {
           { value: 'development', category: 'Pros' },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const sections = projectedTagCategorySections(v);
     expect(sections.map((s) => s.categoryTitle)).toEqual(['Pros', 'Test']);
@@ -479,8 +489,9 @@ describe('object-projected-fields', () => {
           { value: 'automation', category: 'Pros', update_id: 'upd-1' },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const sections = projectedTagCategorySections(v);
     expect(sections[0].tags).toEqual([{ value: 'automation', updateId: 'upd-1' }]);
@@ -496,8 +507,9 @@ describe('object-projected-fields', () => {
         tagCategory: ['Pros', 'Cons'],
         tagCategoryItem: [{ value: 'a', category: 'Pros' }],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     });
     const merged = mergeTagCategorySectionsForEditMode(['Pros', 'Cons'], sections);
     expect(merged.map((s) => s.categoryTitle)).toEqual(['Pros', 'Cons']);
@@ -518,8 +530,9 @@ describe('object-projected-fields', () => {
           { symbol: 'LBTC', address: 'test' },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     const rows = projectedWalletAddressRows(v);
     expect(rows.map((r) => r.lineText)).toEqual([
@@ -555,8 +568,9 @@ describe('object-projected-fields', () => {
           { title: 'Menu', link: 'https://example.com/menu' },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedButtonItems(v)).toEqual([
       { title: 'Book now', href: 'https://example.com/book' },
@@ -577,8 +591,9 @@ describe('object-projected-fields', () => {
           { type: 'hive', value: 'acc' },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedObjectLinkRows(v)).toEqual([
       { iconSrc: '/images/icons/twitter-x.svg', label: 'X', href: 'https://x.com/x' },
@@ -605,8 +620,9 @@ describe('object-projected-fields', () => {
           },
         },
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedParentRow(v)).toEqual({
       objectId: 'fcs-test-brand-02021105',
@@ -628,8 +644,9 @@ describe('object-projected-fields', () => {
           fields: { name: 'Nested' },
         },
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
       parent: {
         object_id: 'root-pref',
         object_type: 'business',
@@ -655,8 +672,9 @@ describe('object-projected-fields', () => {
           { value: '+971-65315252' },
         ],
       },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedTelephoneEntries(v)).toEqual([
       { value: '+1 604-423-3447', title: 'Телефон' },
@@ -671,8 +689,9 @@ describe('object-projected-fields', () => {
       semantic_type: null,
       weight: null,
       fields: { telephone: '+58 212-555-0100' },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedTelephoneEntries(v)).toEqual([{ value: '+58 212-555-0100' }]);
   });
@@ -684,8 +703,9 @@ describe('object-projected-fields', () => {
       semantic_type: null,
       weight: null,
       fields: { legalText: '  <p>Terms</p>  ' },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedLegalText(v)).toBe('<p>Terms</p>');
     expect(projectedHostHtmlBody(v)).toBe('<p>Terms</p>');
@@ -698,8 +718,9 @@ describe('object-projected-fields', () => {
       semantic_type: null,
       weight: null,
       fields: { pageContent: 'Page body', legalText: 'Legal body' },
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     };
     expect(projectedPageContent(v)).toBe('Page body');
     expect(projectedHostHtmlBody(v)).toBe('Page body');
@@ -712,8 +733,9 @@ describe('object-projected-fields', () => {
       semantic_type: null,
       weight: null,
       fields: {},
-      hasAdministrativeAuthority: false,
-      hasOwnershipAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
       previewGallery: [
         {
           url: 'https://example.com/a.jpg',
@@ -751,8 +773,9 @@ describe('projectedWidgetConfig', () => {
     semantic_type: null,
     weight: null,
     fields,
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   });
 
   it('parses plain object widget field', () => {

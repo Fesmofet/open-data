@@ -329,7 +329,8 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
   const aggregateRatingAspects = isRecord(fields)
     ? refSummaryAggregateRatingAspects(fields)
     : [];
-  const hasAdministrativeAuthority = row['hasAdministrativeAuthority'] === true;
+  const isFavorited =
+    row['isFavorited'] === true || row['hasAdministrativeAuthority'] === true;
   const rawCount = row['listItemsCount'];
   const listItemsCount =
     typeof rawCount === 'number' && Number.isFinite(rawCount) ? rawCount : undefined;
@@ -349,7 +350,7 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
     ...(parentRef ? { parentRef } : {}),
     ...(tagCategoryLabels.length > 0 ? { tagCategoryLabels } : {}),
     ...(aggregateRatingAspects.length > 0 ? { aggregateRatingAspects } : {}),
-    ...(hasAdministrativeAuthority ? { hasAdministrativeAuthority: true } : {}),
+    ...(isFavorited ? { isFavorited: true } : {}),
   };
 }
 

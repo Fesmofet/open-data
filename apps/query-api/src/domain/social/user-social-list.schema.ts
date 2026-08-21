@@ -30,14 +30,14 @@ export const userSocialListQuerySchema = z.object({
 
 export type UserSocialListQuery = z.infer<typeof userSocialListQuerySchema>;
 
-/** Query for GET object authority accounts list. */
-export const objectAuthorityQuerySchema = userSocialListQuerySchema.extend({
-  authority_type: z
-    .enum(['administrative', 'ownership'])
-    .describe('Authority role filter'),
+/** Query for GET object ownership accounts list. */
+export const objectOwnershipQuerySchema = userSocialListQuerySchema.extend({
+  ownership_type: z
+    .enum(['exclusive', 'supervised'])
+    .describe('Ownership role filter'),
 });
 
-export type ObjectAuthorityQuery = z.infer<typeof objectAuthorityQuerySchema>;
+export type ObjectOwnershipQuery = z.infer<typeof objectOwnershipQuerySchema>;
 
 /** Query for GET following-objects list. */
 export const userFollowingObjectsQuerySchema = z.object({

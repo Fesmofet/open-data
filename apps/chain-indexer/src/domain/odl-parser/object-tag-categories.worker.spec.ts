@@ -27,7 +27,8 @@ describe('ObjectTagCategoriesWorker', () => {
       updates: [],
       validity_votes: [],
       rank_votes: [],
-      authorities: [],
+      favorites: [],
+      ownerships: [],
     };
     const resolve = jest.fn().mockReturnValue([
       {
@@ -88,7 +89,8 @@ describe('ObjectTagCategoriesWorker', () => {
       updates: [],
       validity_votes: [],
       rank_votes: [],
-      authorities: [],
+      favorites: [],
+      ownerships: [],
     };
     const replaceForObject = jest.fn().mockResolvedValue(undefined);
 

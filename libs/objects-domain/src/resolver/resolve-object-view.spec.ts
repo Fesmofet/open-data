@@ -3,7 +3,7 @@ import type { ResolveOptions } from '../types/resolve-options';
 import type { ResolvedUpdate } from '../types/resolved-view';
 import { DEFAULT_GOVERNANCE_SNAPSHOT } from '../types/governance-snapshot';
 import { filterByLocalePreference, resolveObjectViews } from './resolve-object-view';
-import { ObjectsCore, ObjectAuthority, ObjectUpdate, ValidityVote } from '@opden-data-layer/odl-db-types';
+import { ObjectsCore, ObjectOwnership, ObjectUpdate, ValidityVote } from '@opden-data-layer/odl-db-types';
 
 function makeCore(objectId: string, creator = 'alice', canonical: string | null = null): ObjectsCore {
   return {
@@ -53,7 +53,7 @@ function makeAggregated(
   objectId: string,
   updates: ObjectUpdate[],
   validityVotes: ValidityVote[] = [],
-  authorities: ObjectAuthority[] = [],
+  ownerships: ObjectOwnership[] = [],
   creator = 'alice',
   canonical: string | null = null,
 ): AggregatedObject {
@@ -61,7 +61,8 @@ function makeAggregated(
     core: makeCore(objectId, creator, canonical),
     updates,
     validity_votes: validityVotes,
-    authorities,
+    favorites: [],
+    ownerships,
   };
 }
 
@@ -118,8 +119,8 @@ describe('resolveObjectViews', () => {
 
   it('keeps REJECTED aggregateRating rows when rank_score is persisted (curator filter)', () => {
     const governance = { ...DEFAULT_GOVERNANCE_SNAPSHOT, object_control: 'full' as const };
-    const authorities: ObjectAuthority[] = [
-      { object_id: 'obj1', account: 'owner1', authority_type: 'ownership', created_at: new Date() },
+    const ownerships: ObjectOwnership[] = [
+      { object_id: 'obj1', account: 'owner1', ownership_type: 'exclusive', event_seq: BigInt(1), created_at: new Date() },
     ];
     const ratingUpdate: ObjectUpdate = {
       ...makeUpdate('r1', 'obj1', 'aggregateRating', 'stranger', BigInt(1), 'en-US'),
@@ -127,7 +128,7 @@ describe('resolveObjectViews', () => {
       value_text_normalized: 'overall',
       rank_score: 9000,
     };
-    const obj = makeAggregated('obj1', [ratingUpdate], [], authorities, 'alice', null);
+    const obj = makeAggregated('obj1', [ratingUpdate], [], ownerships, 'alice', null);
     const result = resolveObjectViews(
       [obj],
       EMPTY_WAIV_POWERS,

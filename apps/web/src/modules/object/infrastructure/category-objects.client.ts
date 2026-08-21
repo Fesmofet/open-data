@@ -17,7 +17,7 @@ const refSummarySchema = z.object({
   object_type: z.string(),
   fields: z.record(z.string(), z.unknown()),
   weight: z.coerce.number().nullable().optional(),
-  hasAdministrativeAuthority: z.boolean().optional(),
+  isFavorited: z.boolean().optional(),
 });
 
 const categoryObjectsResponseSchema = z.object({

@@ -9,7 +9,9 @@ import { ObjectStatusHandler } from './handlers/object-status.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
-import { AuthorityHandler } from './handlers/authority.handler';
+import { FavoriteHandler } from './handlers/favorite.handler';
+import { OwnershipHandler } from './handlers/ownership.handler';
+import { ObjectFavoriteReputationService } from './object-favorite-reputation.service';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
 import { FollowObjectHandler } from './handlers/follow-object.handler';
@@ -56,7 +58,9 @@ import {
     ObjectStatusHandler,
     UpdateVoteHandler,
     RankVoteHandler,
-    AuthorityHandler,
+    FavoriteHandler,
+    OwnershipHandler,
+    ObjectFavoriteReputationService,
     FollowObjectHandler,
     FollowUserBellHandler,
     ShopDeselectHandler,

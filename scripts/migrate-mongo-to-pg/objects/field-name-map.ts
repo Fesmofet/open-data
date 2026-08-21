@@ -15,7 +15,7 @@ export const SKIP_LEGACY_FIELD_NAMES = new Set([
   'cost',
 ]);
 
-/** Routed to object_authority, not object_updates. */
+/** Routed to object_favorite / object_ownership, not object_updates. */
 export const AUTHORITY_LEGACY_FIELD_NAME = 'authority';
 
 /**

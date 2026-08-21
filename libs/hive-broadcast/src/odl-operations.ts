@@ -250,30 +250,65 @@ export function buildOdlRankVoteOp(input: BuildOdlRankVoteOpInput): CustomJsonOp
   });
 }
 
-export type OdlAuthorityType = 'administrative' | 'ownership';
-export type OdlAuthorityMethod = 'add' | 'remove';
+export type OdlFavoriteMethod = 'add' | 'remove';
 
-export type BuildOdlObjectAuthorityOpInput = {
+export type BuildOdlObjectFavoriteOpInput = {
   readonly id: string;
   readonly objectId: string;
-  readonly authorityType: OdlAuthorityType;
-  readonly method: OdlAuthorityMethod;
+  readonly method: OdlFavoriteMethod;
   readonly required_auths?: readonly string[];
   readonly required_posting_auths?: readonly string[];
 };
 
 /**
- * Builds a Hive `custom_json` op with one `object_authority` event (grant or revoke).
+ * Builds a Hive `custom_json` op with one `object_favorite` event (heart / favorited-by).
  */
-export function buildOdlObjectAuthorityOp(input: BuildOdlObjectAuthorityOpInput): CustomJsonOp {
+export function buildOdlObjectFavoriteOp(input: BuildOdlObjectFavoriteOpInput): CustomJsonOp {
   const envelope = {
     events: [
       {
-        action: 'object_authority' as const,
+        action: 'object_favorite' as const,
         v: 1,
         payload: {
           object_id: input.objectId,
-          authority_type: input.authorityType,
+          method: input.method,
+        },
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: input.required_posting_auths ?? [],
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}
+
+export type OdlOwnershipType = 'exclusive' | 'supervised';
+export type OdlOwnershipMethod = 'add' | 'remove';
+
+export type BuildOdlObjectOwnershipOpInput = {
+  readonly id: string;
+  readonly objectId: string;
+  readonly ownershipType: OdlOwnershipType;
+  readonly method: OdlOwnershipMethod;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * Builds a Hive `custom_json` op with one `object_ownership` event (claim supervised/exclusive).
+ */
+export function buildOdlObjectOwnershipOp(input: BuildOdlObjectOwnershipOpInput): CustomJsonOp {
+  const envelope = {
+    events: [
+      {
+        action: 'object_ownership' as const,
+        v: 1,
+        payload: {
+          object_id: input.objectId,
+          ownership_type: input.ownershipType,
           method: input.method,
         },
       },

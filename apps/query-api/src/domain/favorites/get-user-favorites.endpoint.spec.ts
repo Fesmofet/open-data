@@ -108,7 +108,7 @@ describe('GetUserFavoritesEndpoint', () => {
 
     const aggregatedObjectRepo = {
       loadByObjectIds: jest.fn().mockResolvedValue({
-        objects: [{ core, updates: [], validity_votes: [], authorities: [] }],
+        objects: [{ core, updates: [], validity_votes: [], favorites: [], ownerships: [] }],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
@@ -125,7 +125,9 @@ describe('GetUserFavoritesEndpoint', () => {
       status: 'active',
       weight: 5,
       fields: { name: 'Cafe' },
-      hasAdministrativeAuthority: true,
+      isFavorited: true,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
       hasOwnershipAuthority: false,
     };
 

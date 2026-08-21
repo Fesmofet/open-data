@@ -5,7 +5,8 @@ import type { ObjectCreateHandler } from './handlers/object-create.handler';
 import type { UpdateCreateHandler } from './handlers/update-create.handler';
 import type { UpdateVoteHandler } from './handlers/update-vote.handler';
 import type { RankVoteHandler } from './handlers/rank-vote.handler';
-import type { AuthorityHandler } from './handlers/authority.handler';
+import type { FavoriteHandler } from './handlers/favorite.handler';
+import type { OwnershipHandler } from './handlers/ownership.handler';
 import type { BatchImportHandler } from './handlers/batch-import.handler';
 import type { FollowObjectHandler } from './handlers/follow-object.handler';
 import type { FollowUserBellHandler } from './handlers/follow-user-bell.handler';
@@ -57,10 +58,15 @@ describe('OdlCustomJsonParser', () => {
     handle: jest.fn(),
   } as unknown as RankVoteHandler;
 
-  const authorityHandler = {
-    action: 'object_authority',
+  const favoriteHandler = {
+    action: 'object_favorite',
     handle: jest.fn(),
-  } as unknown as AuthorityHandler;
+  } as unknown as FavoriteHandler;
+
+  const ownershipHandler = {
+    action: 'object_ownership',
+    handle: jest.fn(),
+  } as unknown as OwnershipHandler;
 
   const shopDeselectHandler = {
     action: 'user_shop_deselect',
@@ -99,7 +105,8 @@ describe('OdlCustomJsonParser', () => {
       updateCreateHandler,
       updateVoteHandler,
       rankVoteHandler,
-      authorityHandler,
+      favoriteHandler,
+      ownershipHandler,
       shopDeselectHandler,
       batchImportHandler,
       followObjectHandler,
@@ -122,7 +129,8 @@ describe('OdlCustomJsonParser', () => {
       updateCreateHandler,
       updateVoteHandler,
       rankVoteHandler,
-      authorityHandler,
+      favoriteHandler,
+      ownershipHandler,
       shopDeselectHandler,
       batchImportHandler,
       followObjectHandler,

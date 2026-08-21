@@ -72,7 +72,7 @@ Gated by hero Edit toggle + `viewerUsername` from server.
 | Updates | [routes/updates.md](routes/updates.md) |
 | Gallery | [routes/gallery.md](routes/gallery.md) |
 | Followers | [routes/followers.md](routes/followers.md) |
-| Authority | [routes/authority.md](routes/authority.md) |
+| Ownership | [routes/ownership.md](routes/ownership.md) |
 | Related / Similar / Add-On feeds | [routes/ref-feeds.md](routes/ref-feeds.md) |
 | Category objects feed | [routes/category-feed.md](routes/category-feed.md) |
 | Edit mode | [routes/edit-mode.md](routes/edit-mode.md) |

@@ -27,7 +27,7 @@ related:
 | Viewer | Feed scope |
 |--------|------------|
 | Guest (no `X-Viewer`) | All root posts in `posts`, ordered by `created_unix` DESC. |
-| Logged-in (`X-Viewer`) | Posts matching **any** of: author in `user_subscriptions.following` for viewer; linked object in `user_object_follows` for viewer; linked object in `object_authority` for viewer (`administrative` or `ownership`). |
+| Logged-in (`X-Viewer`) | Posts matching **any** of: author in `user_subscriptions.following` for viewer; linked object in `user_object_follows` for viewer; linked object in `object_favorite` or `object_ownership` for viewer. |
 
 Muted authors (`user_account_mutes`) are excluded for logged-in viewers. Reblogs are not included in v1.
 

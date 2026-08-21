@@ -4,7 +4,8 @@ import {
   buildUserScopeKey,
   SHOP_TYPE_BUCKETS,
 } from '@opden-data-layer/core';
-import { ObjectAuthorityRepository } from '../../../repositories/object-authority.repository';
+import { ObjectFavoriteRepository } from '../../../repositories/object-favorite.repository';
+import { ObjectOwnershipRepository } from '../../../repositories/object-ownership.repository';
 import { PostsRepository } from '../../../repositories/posts.repository';
 import { ObjectCategoriesRelatedSyncQueueRepository } from '../../../repositories/object-categories-related-sync-queue.repository';
 import { ObjectCategoriesSyncQueueRepository } from '../../../repositories/object-categories-sync-queue.repository';
@@ -13,13 +14,13 @@ import {
   CATEGORY_MUTATED_EVENT,
 } from '../category-mutated.event';
 import {
-  AdministrativeAuthorityChangedEvent,
-  ADMINISTRATIVE_AUTHORITY_CHANGED_EVENT,
-} from '../authority-changed.event';
+  ObjectFavoriteChangedEvent,
+  OBJECT_FAVORITE_CHANGED_EVENT,
+} from '../object-favorite-changed.event';
 import {
-  OwnershipAuthorityChangedEvent,
-  OWNERSHIP_AUTHORITY_CHANGED_EVENT,
-} from '../ownership-authority-changed.event';
+  OwnershipChangedEvent,
+  OWNERSHIP_CHANGED_EVENT,
+} from '../ownership-changed.event';
 import {
   UserMetadataChangedEvent,
   USER_METADATA_CHANGED_EVENT,
@@ -43,7 +44,8 @@ export class CategorySyncHandler {
   constructor(
     private readonly objectCategoriesSyncQueueRepository: ObjectCategoriesSyncQueueRepository,
     private readonly objectCategoriesRelatedSyncQueueRepository: ObjectCategoriesRelatedSyncQueueRepository,
-    private readonly objectAuthorityRepository: ObjectAuthorityRepository,
+    private readonly objectFavoriteRepository: ObjectFavoriteRepository,
+    private readonly objectOwnershipRepository: ObjectOwnershipRepository,
     private readonly postsRepository: PostsRepository,
   ) {}
 
@@ -74,12 +76,16 @@ export class CategorySyncHandler {
 
       await this.objectCategoriesRelatedSyncQueueRepository.enqueue('global', '_', t);
 
-      const rows = await this.objectAuthorityRepository.findByObjectId(objectId);
       const seen = new Set<string>();
-      for (const row of rows) {
-        if (row.authority_type === 'ownership' || row.authority_type === 'administrative') {
-          seen.add(row.account);
-        }
+      const [favorites, ownerships] = await Promise.all([
+        this.objectFavoriteRepository.findByObjectId(objectId),
+        this.objectOwnershipRepository.findByObjectId(objectId),
+      ]);
+      for (const row of favorites) {
+        seen.add(row.account);
+      }
+      for (const row of ownerships) {
+        seen.add(row.account);
       }
 
       const postAuthors = await this.postsRepository.findDistinctAuthorsByLinkedObject(objectId);
@@ -99,10 +105,8 @@ export class CategorySyncHandler {
     }
   }
 
-  @OnEvent(ADMINISTRATIVE_AUTHORITY_CHANGED_EVENT)
-  async handleAdministrativeAuthorityChanged(
-    event: AdministrativeAuthorityChangedEvent,
-  ): Promise<void> {
+  @OnEvent(OBJECT_FAVORITE_CHANGED_EVENT)
+  async handleObjectFavoriteChanged(event: ObjectFavoriteChangedEvent): Promise<void> {
     await this.enqueueUserShopAccount(event.account);
   }
 
@@ -121,8 +125,8 @@ export class CategorySyncHandler {
     await this.enqueueUserShopAccount(event.postAuthor);
   }
 
-  @OnEvent(OWNERSHIP_AUTHORITY_CHANGED_EVENT)
-  async handleOwnershipAuthorityChanged(event: OwnershipAuthorityChangedEvent): Promise<void> {
+  @OnEvent(OWNERSHIP_CHANGED_EVENT)
+  async handleOwnershipChanged(event: OwnershipChangedEvent): Promise<void> {
     await this.enqueueUserShopAccount(event.account);
   }
 

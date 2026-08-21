@@ -191,7 +191,7 @@ function makeDeps(loadByObjectIds: jest.Mock) {
     locale: 'en-US',
     contentBaseUrl: 'https://ipfs.example',
     viewerAccount: undefined,
-    viewerAdminIds: undefined,
+    viewerFavoriteIds: undefined,
   };
 }
 

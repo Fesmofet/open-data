@@ -21,7 +21,8 @@ export async function revalidateObjectAfterBroadcast(
   if (id.length === 0) {
     return;
   }
-  updateTag(queryApiCacheTags.objectAuthority(id));
+  updateTag(queryApiCacheTags.objectOwnership(id));
+  updateTag(queryApiCacheTags.objectFavoritedBy(id));
   updateTag(queryApiCacheTags.objectFollowers(id));
   updateTag(queryApiCacheTags.objectExperts(id));
   updateTag(queryApiCacheTags.objectUpdates(id));

@@ -57,7 +57,8 @@ export function projectedListItemToObjectView(item: ProjectedListItem): Projecte
     semantic_type: null,
     weight: item.weight ?? 0,
     fields,
-    hasAdministrativeAuthority: item.hasAdministrativeAuthority ?? false,
-    hasOwnershipAuthority: false,
+    isFavorited: item.isFavorited ?? false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 }

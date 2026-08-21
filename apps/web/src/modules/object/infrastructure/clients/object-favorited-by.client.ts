@@ -20,10 +20,9 @@ function buildQuery(params: Record<string, string | number | undefined>): string
   return s ? `?${s}` : '';
 }
 
-export async function fetchObjectAuthority(
+export async function fetchObjectFavoritedBy(
   objectId: string,
   args: {
-    authorityType: 'administrative' | 'ownership';
     sort: UserSubscriptionSort;
     skip: number;
     limit: number;
@@ -31,12 +30,11 @@ export async function fetchObjectAuthority(
   init?: { viewer?: string | null },
 ): Promise<PaginatedUserFollowListView | null> {
   const qs = buildQuery({
-    authority_type: args.authorityType,
     sort: args.sort,
     skip: args.skip,
     limit: args.limit,
   });
-  const path = `/query/v1/objects/${encodeURIComponent(objectId)}/authority${qs}`;
+  const path = `/query/v1/objects/${encodeURIComponent(objectId)}/favorited-by${qs}`;
   const headers: Record<string, string> = {};
   const viewer = init?.viewer?.trim();
   if (viewer) {
@@ -44,6 +42,6 @@ export async function fetchObjectAuthority(
   }
   return queryApiFetch<PaginatedUserFollowListView>(path, {
     headers,
-    cacheTags: [queryApiCacheTags.objectAuthority(objectId)],
+    cacheTags: [queryApiCacheTags.objectFavoritedBy(objectId)],
   });
 }

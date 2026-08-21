@@ -9,7 +9,10 @@ import { SEMANTIC_TYPE_BY_OBJECT_TYPE } from './semantic-types';
 
 export type ProjectedObjectCore = Omit<
   ProjectedObject,
-  'hasAdministrativeAuthority' | 'hasOwnershipAuthority'
+  | 'isFavorited'
+  | 'hasSupervisedOwnership'
+  | 'hasExclusiveOwnership'
+  | 'hasOwnershipAuthority'
 >;
 
 const GOVERNANCE_SKIP = new Set(GOVERNANCE_UPDATE_TYPES);

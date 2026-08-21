@@ -12,7 +12,7 @@ describe('GetObjectUpdatesFeedEndpoint.executeByUpdateId', () => {
     findWaivPowersByAccounts: jest.fn(),
     findRankVoteProjectionForUpdates: jest.fn(),
   };
-  const objectAuthorityRepo = {
+  const objectOwnershipRepo = {
     findByObjectId: jest.fn(),
   };
   const governanceResolver = {
@@ -25,7 +25,7 @@ describe('GetObjectUpdatesFeedEndpoint.executeByUpdateId', () => {
   const endpoint = new GetObjectUpdatesFeedEndpoint(
     objectsCore as never,
     updatesFeedRepo as never,
-    objectAuthorityRepo as never,
+    objectOwnershipRepo as never,
     governanceResolver as never,
     config as never,
   );
@@ -59,7 +59,7 @@ describe('GetObjectUpdatesFeedEndpoint.executeByUpdateId', () => {
     governanceResolver.resolveMergedForObjectView.mockResolvedValue(
       DEFAULT_GOVERNANCE_SNAPSHOT,
     );
-    objectAuthorityRepo.findByObjectId.mockResolvedValue([]);
+    objectOwnershipRepo.findByObjectId.mockResolvedValue([]);
     updatesFeedRepo.findValidityVotesForObjectAndUpdates.mockResolvedValue([]);
     updatesFeedRepo.findWaivPowersByAccounts.mockResolvedValue(new Map());
     updatesFeedRepo.findRankVoteProjectionForUpdates.mockResolvedValue({
@@ -147,14 +147,14 @@ describe('GetObjectUpdatesFeedEndpoint.execute recency', () => {
     findWaivPowersByAccounts: jest.fn(),
     findRankVoteProjectionForUpdates: jest.fn(),
   };
-  const objectAuthorityRepo = { findByObjectId: jest.fn() };
+  const objectOwnershipRepo = { findByObjectId: jest.fn() };
   const governanceResolver = { resolveMergedForObjectView: jest.fn() };
   const config = { get: jest.fn() };
 
   const endpoint = new GetObjectUpdatesFeedEndpoint(
     objectsCore as never,
     updatesFeedRepo as never,
-    objectAuthorityRepo as never,
+    objectOwnershipRepo as never,
     governanceResolver as never,
     config as never,
   );
@@ -189,7 +189,7 @@ describe('GetObjectUpdatesFeedEndpoint.execute recency', () => {
     governanceResolver.resolveMergedForObjectView.mockResolvedValue(
       DEFAULT_GOVERNANCE_SNAPSHOT,
     );
-    objectAuthorityRepo.findByObjectId.mockResolvedValue([]);
+    objectOwnershipRepo.findByObjectId.mockResolvedValue([]);
     updatesFeedRepo.findRecencyPage.mockResolvedValue([joinRow]);
     updatesFeedRepo.findValidityVotesForObjectAndUpdates.mockResolvedValue([]);
     updatesFeedRepo.findWaivPowersByAccounts.mockResolvedValue(new Map());
@@ -227,14 +227,14 @@ describe('GetObjectUpdatesFeedEndpoint.execute approval', () => {
     findWaivPowersByAccounts: jest.fn(),
     findRankVoteProjectionForUpdates: jest.fn(),
   };
-  const objectAuthorityRepo = { findByObjectId: jest.fn() };
+  const objectOwnershipRepo = { findByObjectId: jest.fn() };
   const governanceResolver = { resolveMergedForObjectView: jest.fn() };
   const config = { get: jest.fn() };
 
   const endpoint = new GetObjectUpdatesFeedEndpoint(
     objectsCore as never,
     updatesFeedRepo as never,
-    objectAuthorityRepo as never,
+    objectOwnershipRepo as never,
     governanceResolver as never,
     config as never,
   );
@@ -269,7 +269,7 @@ describe('GetObjectUpdatesFeedEndpoint.execute approval', () => {
     governanceResolver.resolveMergedForObjectView.mockResolvedValue(
       DEFAULT_GOVERNANCE_SNAPSHOT,
     );
-    objectAuthorityRepo.findByObjectId.mockResolvedValue([]);
+    objectOwnershipRepo.findByObjectId.mockResolvedValue([]);
     updatesFeedRepo.findAllForApprovalSort.mockResolvedValue([joinRow]);
     updatesFeedRepo.findValidityVotesForObjectAndUpdates.mockResolvedValue([]);
     updatesFeedRepo.findWaivPowersByAccounts.mockResolvedValue(new Map());

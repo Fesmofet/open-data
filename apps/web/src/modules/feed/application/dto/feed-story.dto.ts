@@ -12,8 +12,9 @@ export const projectedObjectViewSchema = z.object({
   status: z.string().optional(),
   weight: z.number().nullable().optional(),
   fields: z.record(z.string(), z.unknown()),
-  hasAdministrativeAuthority: z.boolean().optional().default(false),
-  hasOwnershipAuthority: z.boolean().optional().default(false),
+  isFavorited: z.boolean().optional().default(false),
+  hasSupervisedOwnership: z.boolean().optional().default(false),
+  hasExclusiveOwnership: z.boolean().optional().default(false),
   seo: z.record(z.string(), z.unknown()).optional(),
   previewGallery: z
     .array(

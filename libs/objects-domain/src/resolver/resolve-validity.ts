@@ -2,7 +2,7 @@ import { MIN_PERCENT_TO_SHOW_UPDATE } from '../constants';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ValidityStatus, ValidityTier, VoterWaivPowerMap } from '../types';
 import { waivVoteWeight } from './resolve-ranking';
-import { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/odl-db-types';
+import { ObjectUpdate, ValidityVote, ObjectOwnership } from '@opden-data-layer/odl-db-types';
 
 /** Result of {@link resolveUpdateValidity} including tier metadata for single-cardinality ordering. */
 export type ResolveUpdateValidityResult = {
@@ -18,29 +18,28 @@ export type ResolveUpdateValidityResult = {
 };
 
 /**
- * Compute the curator set C for an object.
+ * Exclusive owner set E for curator filter.
  *
  * When object_control = 'full':
- *   C = governance.admins ∪ ownership_holders
- * Otherwise (null / unrecognised):
- *   C = ownership_holders ∩ (governance.admins ∪ governance.trusted)
+ *   E = governance.admins ∪ exclusive ownership holders
+ * Otherwise:
+ *   E = exclusive ownership holders ∩ (governance.admins ∪ governance.trusted)
  *
- * @see docs/spec/authority-entity.md §4
+ * Supervised ownership rows are stored but do not affect validity.
+ *
  * @see docs/spec/governance-resolution.md §8
  */
-export function computeCuratorSet(
-  authorities: ObjectAuthority[],
+export function computeExclusiveOwnerSet(
+  ownerships: ObjectOwnership[],
   governance: GovernanceSnapshot,
 ): Set<string> {
-  const ownershipHolders = new Set(
-    authorities
-      .filter((a) => a.authority_type === 'ownership')
-      .map((a) => a.account),
-  );
+  const exclusiveHolders = ownerships
+    .filter((o) => o.ownership_type === 'exclusive')
+    .map((o) => o.account);
 
   if (governance.object_control === 'full') {
     const full = new Set<string>(governance.admins);
-    for (const holder of ownershipHolders) {
+    for (const holder of exclusiveHolders) {
       full.add(holder);
     }
     return full;
@@ -48,13 +47,16 @@ export function computeCuratorSet(
 
   const adminOrTrusted = new Set([...governance.admins, ...governance.trusted]);
   const intersection = new Set<string>();
-  for (const holder of ownershipHolders) {
+  for (const holder of exclusiveHolders) {
     if (adminOrTrusted.has(holder)) {
       intersection.add(holder);
     }
   }
   return intersection;
 }
+
+/** @deprecated Use {@link computeExclusiveOwnerSet}. */
+export const computeCuratorSet = computeExclusiveOwnerSet;
 
 /**
  * Display / consensus approval percentage for one update (0–100, up to 3 decimals).
@@ -69,7 +71,7 @@ export function computeApprovePercent(
   validityVotes: ValidityVote[],
   governance: GovernanceSnapshot,
   voterWaivPowers: VoterWaivPowerMap,
-  objectAuthorities: ObjectAuthority[],
+  ownerships: ObjectOwnership[],
 ): number {
   const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
 
@@ -79,7 +81,7 @@ export function computeApprovePercent(
     return latest.vote === 'for' ? 100 : 0;
   }
 
-  const accountsWithAuthority = new Set(objectAuthorities.map((a) => a.account));
+  const accountsWithAuthority = new Set(ownerships.map((o) => o.account));
   const trustedWithAuthority = governance.trusted.filter((t) => accountsWithAuthority.has(t));
   const trustedVotes = updateVotes.filter((v) => trustedWithAuthority.includes(v.voter));
   if (trustedVotes.length > 0) {
@@ -139,14 +141,14 @@ export function resolveUpdateValidity(
   curatorSet: Set<string>,
   governance: GovernanceSnapshot,
   voterWaivPowers: VoterWaivPowerMap,
-  objectAuthorities: ObjectAuthority[],
+  ownerships: ObjectOwnership[],
 ): ResolveUpdateValidityResult {
   const approve_percent = computeApprovePercent(
     update,
     validityVotes,
     governance,
     voterWaivPowers,
-    objectAuthorities,
+    ownerships,
   );
 
   if (curatorSet.size > 0) {
@@ -167,7 +169,7 @@ export function resolveUpdateValidity(
     validityVotes,
     governance,
     voterWaivPowers,
-    objectAuthorities,
+    ownerships,
     approve_percent,
   );
 }
@@ -175,15 +177,22 @@ export function resolveUpdateValidity(
 function resolveCuratorFilter(
   update: ObjectUpdate,
   validityVotes: ValidityVote[],
-  curatorSet: Set<string>,
+  exclusiveSet: Set<string>,
 ): { status: ValidityStatus; field_weight: null } {
-  if (curatorSet.has(update.creator)) {
+  const exclusiveVotes = validityVotes.filter(
+    (v) => v.update_id === update.update_id && exclusiveSet.has(v.voter),
+  );
+
+  if (exclusiveVotes.length > 0) {
+    const latest = latestByEventSeq(exclusiveVotes);
+    return { status: latest.vote === 'for' ? 'VALID' : 'REJECTED', field_weight: null };
+  }
+
+  if (exclusiveSet.has(update.creator)) {
     return { status: 'VALID', field_weight: null };
   }
-  const hasCuratorForVote = validityVotes.some(
-    (v) => v.update_id === update.update_id && curatorSet.has(v.voter) && v.vote === 'for',
-  );
-  return { status: hasCuratorForVote ? 'VALID' : 'REJECTED', field_weight: null };
+
+  return { status: 'REJECTED', field_weight: null };
 }
 
 function resolveHierarchy(
@@ -191,7 +200,7 @@ function resolveHierarchy(
   validityVotes: ValidityVote[],
   governance: GovernanceSnapshot,
   voterWaivPowers: VoterWaivPowerMap,
-  objectAuthorities: ObjectAuthority[],
+  ownerships: ObjectOwnership[],
   approve_percent: number,
 ): ResolveUpdateValidityResult {
   const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
@@ -210,7 +219,7 @@ function resolveHierarchy(
     };
   }
 
-  const accountsWithAuthority = new Set(objectAuthorities.map((a) => a.account));
+  const accountsWithAuthority = new Set(ownerships.map((o) => o.account));
   const trustedWithAuthority = governance.trusted.filter((t) => accountsWithAuthority.has(t));
   const trustedVotes = updateVotes.filter((v) => trustedWithAuthority.includes(v.voter));
   if (trustedVotes.length > 0) {

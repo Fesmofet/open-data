@@ -1,5 +1,6 @@
 export type {
   AuthoritySubType,
+  FollowersSubType,
   ObjectFeedSubTabView,
   ObjectLeftRailBlock,
   ObjectNestedViewEntry,
@@ -8,8 +9,9 @@ export type {
   ObjectPrimaryTabView,
   ObjectRefCardView,
   ObjectSwitcherKind,
+  OwnershipSubType,
 } from './domain/object-page.types';
-export { AUTHORITY_SUB_VALUES } from './domain/object-page.types';
+export { AUTHORITY_SUB_VALUES, FOLLOWERS_SUB_VALUES, OWNERSHIP_SUB_VALUES } from './domain/object-page.types';
 export { OBJECT_PAGE_VIEW_PATH_PARAM } from './domain/object-page-url.constants';
 export type { ProjectedObjectWithCountsView } from './infrastructure/object-resolve.types';
 export type { ProjectedMenuItem } from './domain/projected-menu-item.types';
@@ -24,7 +26,8 @@ export {
   ObjectHero,
   ObjectPrimaryContent,
   ObjectPrimaryNav,
-  ObjectAuthoritySubNav,
+  ObjectOwnershipSubNav,
+  ObjectFollowersSubNav,
   ObjectRightSidebar,
   ObjectEditRightRail,
   ObjectRefListFeed,
@@ -42,7 +45,8 @@ export type {
   ObjectHeroProps,
   ObjectPrimaryContentProps,
   ObjectPrimaryNavProps,
-  ObjectAuthoritySubNavProps,
+  ObjectOwnershipSubNavProps,
+  ObjectFollowersSubNavProps,
   ObjectRightSidebarProps,
   ObjectEditRightRailProps,
   ObjectViewShellProps,

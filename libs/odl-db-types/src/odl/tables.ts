@@ -33,7 +33,8 @@ export interface OdlDatabase {
   rank_votes: RankVotesTable;
   user_object_powers: UserObjectPowersTable;
   user_waiv_power_history: UserWaivPowerHistoryTable;
-  object_authority: ObjectAuthorityTable;
+  object_favorite: ObjectFavoriteTable;
+  object_ownership: ObjectOwnershipTable;
   accounts_current: AccountsCurrentTable;
   user_metadata: UserMetadataTable;
   user_notification_settings: UserNotificationSettingsTable;
@@ -235,20 +236,37 @@ export type NewUserWaivPowerHistory = Insertable<UserWaivPowerHistoryTable>;
 export type UserWaivPowerHistoryUpdate = Updateable<UserWaivPowerHistoryTable>;
 
 // ---------------------------------------------------------------------------
-// object_authority
+// object_favorite
 // ---------------------------------------------------------------------------
 
-export interface ObjectAuthorityTable {
+export interface ObjectFavoriteTable {
   object_id: string;
   account: string;
-  authority_type: 'ownership' | 'administrative';
-  /** When authority was recorded (chain event time, migration backfill, etc.). */
-  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+  event_seq: bigint;
+  created_at: ColumnType<Date, Date | string, Date | string>;
 }
 
-export type ObjectAuthority = Selectable<ObjectAuthorityTable>;
-export type NewObjectAuthority = Insertable<ObjectAuthorityTable>;
-export type ObjectAuthorityUpdate = Updateable<ObjectAuthorityTable>;
+export type ObjectFavorite = Selectable<ObjectFavoriteTable>;
+export type NewObjectFavorite = Insertable<ObjectFavoriteTable>;
+export type ObjectFavoriteUpdate = Updateable<ObjectFavoriteTable>;
+
+// ---------------------------------------------------------------------------
+// object_ownership
+// ---------------------------------------------------------------------------
+
+export type ObjectOwnershipType = 'exclusive' | 'supervised';
+
+export interface ObjectOwnershipTable {
+  object_id: string;
+  account: string;
+  ownership_type: ObjectOwnershipType;
+  event_seq: bigint;
+  created_at: ColumnType<Date, Date | string, Date | string>;
+}
+
+export type ObjectOwnership = Selectable<ObjectOwnershipTable>;
+export type NewObjectOwnership = Insertable<ObjectOwnershipTable>;
+export type ObjectOwnershipUpdate = Updateable<ObjectOwnershipTable>;
 
 // ---------------------------------------------------------------------------
 // accounts_current

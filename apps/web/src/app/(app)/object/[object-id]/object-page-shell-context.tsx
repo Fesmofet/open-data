@@ -2,14 +2,18 @@
 
 import { createContext, useContext } from 'react';
 
-import type { AuthoritySubType } from '@/modules/object/domain/object-page.types';
+import type {
+  FollowersSubType,
+  OwnershipSubType,
+} from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 
 export type ObjectPageShellContextValue = {
   activePrimarySegment: string;
   activeGalleryAlbum: string | null;
   activeCategoryName: string | null;
-  onAuthoritySubSelect: (sub: AuthoritySubType) => void;
+  onOwnershipSubSelect: (sub: OwnershipSubType) => void;
+  onFollowersSubSelect: (sub: FollowersSubType) => void;
   onOpenGalleryAlbum: (albumName: string) => void;
   onBackToGalleryAlbums: () => void;
   onOpenGalleryPhoto: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;

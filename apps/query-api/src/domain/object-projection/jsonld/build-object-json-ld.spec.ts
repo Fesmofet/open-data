@@ -16,7 +16,9 @@ describe('buildObjectJsonLd', () => {
       price: '$9.99',
       image: 'https://cdn.example/widget.jpg',
     },
-    hasAdministrativeAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     hasOwnershipAuthority: false,
   };
 

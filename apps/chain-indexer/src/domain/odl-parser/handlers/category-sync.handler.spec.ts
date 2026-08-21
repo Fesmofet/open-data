@@ -1,23 +1,24 @@
 import { buildUserScopeKey } from '@opden-data-layer/core';
 import { CategorySyncHandler } from './category-sync.handler';
 import { CategoryMutatedEvent } from '../category-mutated.event';
-import { AdministrativeAuthorityChangedEvent } from '../authority-changed.event';
-import { ObjectAuthority } from '@opden-data-layer/odl-db-types';
+import { ObjectFavoriteChangedEvent } from '../object-favorite-changed.event';
+import { ObjectFavorite } from '@opden-data-layer/odl-db-types';
 
 describe('CategorySyncHandler', () => {
   it('enqueues object + global + user shop buckets + post authors on category mutated', async () => {
     const objectEnqueue = jest.fn().mockResolvedValue(undefined);
     const relatedEnqueue = jest.fn().mockResolvedValue(undefined);
-    const findByObjectId = jest.fn(
-      async (): Promise<ObjectAuthority[]> => [
+    const findFavoritesByObjectId = jest.fn(
+      async (): Promise<ObjectFavorite[]> => [
         {
           object_id: 'o1',
           account: 'shop',
-          authority_type: 'administrative',
+          event_seq: BigInt(1),
           created_at: new Date(),
         },
       ],
     );
+    const findOwnershipsByObjectId = jest.fn(async () => []);
     const findDistinctAuthorsByLinkedObject = jest.fn(async () => ['poster']);
 
     const handler = new CategorySyncHandler(
@@ -28,7 +29,10 @@ describe('CategorySyncHandler', () => {
         enqueue: relatedEnqueue,
       } as never,
       {
-        findByObjectId,
+        findByObjectId: findFavoritesByObjectId,
+      } as never,
+      {
+        findByObjectId: findOwnershipsByObjectId,
       } as never,
       {
         findDistinctAuthorsByLinkedObject,
@@ -67,10 +71,11 @@ describe('CategorySyncHandler', () => {
     expect(findDistinctAuthorsByLinkedObject).toHaveBeenCalledWith('o1');
   });
 
-  it('enqueues shop buckets on administrative authority change', async () => {
+  it('enqueues shop buckets on object favorite change', async () => {
     const objectEnqueue = jest.fn();
     const relatedEnqueue = jest.fn().mockResolvedValue(undefined);
-    const findByObjectId = jest.fn();
+    const findFavoritesByObjectId = jest.fn();
+    const findOwnershipsByObjectId = jest.fn();
     const findDistinctAuthorsByLinkedObject = jest.fn();
 
     const handler = new CategorySyncHandler(
@@ -78,12 +83,13 @@ describe('CategorySyncHandler', () => {
       {
         enqueue: relatedEnqueue,
       } as never,
-      { findByObjectId } as never,
+      { findByObjectId: findFavoritesByObjectId } as never,
+      { findByObjectId: findOwnershipsByObjectId } as never,
       { findDistinctAuthorsByLinkedObject } as never,
     );
 
-    await handler.handleAdministrativeAuthorityChanged(
-      new AdministrativeAuthorityChangedEvent('merchant'),
+    await handler.handleObjectFavoriteChanged(
+      new ObjectFavoriteChangedEvent('merchant'),
     );
 
     expect(objectEnqueue).not.toHaveBeenCalled();

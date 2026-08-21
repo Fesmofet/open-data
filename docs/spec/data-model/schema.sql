@@ -110,21 +110,37 @@ CREATE TABLE rank_votes (
 CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id);
 
 -- ---------------------------------------------------------------------------
--- object_authority
--- One row per (object_id, account, authority_type) claim.
--- Written by object_authority events (method: 'add' | 'remove').
+-- object_favorite
+-- Heart / favorited-by edge. Written by object_favorite events.
 -- ---------------------------------------------------------------------------
-CREATE TABLE object_authority (
-  object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
-  account         TEXT NOT NULL,
-  authority_type  TEXT NOT NULL CHECK (authority_type IN ('ownership', 'administrative')),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (object_id, account, authority_type)
+CREATE TABLE object_favorite (
+  object_id   TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  account     TEXT NOT NULL,
+  event_seq   BIGINT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (object_id, account)
 );
 
-CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type);
-CREATE INDEX idx_object_authority_account ON object_authority (account);
-CREATE INDEX idx_object_authority_object_id_type_created_at ON object_authority (object_id, authority_type, created_at DESC);
+CREATE INDEX idx_object_favorite_account ON object_favorite (account);
+CREATE INDEX idx_object_favorite_object_id ON object_favorite (object_id);
+
+-- ---------------------------------------------------------------------------
+-- object_ownership
+-- Moderation edge with ownership_type exclusive | supervised.
+-- Written by object_ownership events.
+-- ---------------------------------------------------------------------------
+CREATE TABLE object_ownership (
+  object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  account         TEXT NOT NULL,
+  ownership_type  TEXT NOT NULL CHECK (ownership_type IN ('exclusive', 'supervised')),
+  event_seq       BIGINT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (object_id, account)
+);
+
+CREATE INDEX idx_object_ownership_account ON object_ownership (account);
+CREATE INDEX idx_object_ownership_object_id_type ON object_ownership (object_id, ownership_type);
+CREATE INDEX idx_object_ownership_object_id_type_created_at ON object_ownership (object_id, ownership_type, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- user_object_powers

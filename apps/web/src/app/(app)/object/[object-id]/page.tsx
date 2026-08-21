@@ -21,7 +21,8 @@ import { loadMessages } from '@/i18n/runtime/load-messages';
 import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
 import { buildObjectMetadata } from '@/seo';
 
-import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
+import { getObjectOwnershipPageQuery } from '@/modules/object/application/queries/get-object-ownership-page.query';
+import { getObjectFavoritedByPageQuery } from '@/modules/object/application/queries/get-object-favorited-by-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
 import { getObjectExpertsPageQuery } from '@/modules/object/application/queries/get-object-experts-page.query';
 import {
@@ -64,7 +65,8 @@ import {
   OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   OBJECT_PAGE_UPDATE_ID_PARAM,
-  parseAuthoritySubTypeParam,
+  parseFollowersSubTypeParam,
+  parseOwnershipSubTypeParam,
   parseViewPathParam,
   resolveDefaultPrimarySegmentFromLanding,
   resolveFieldReferenceTypeForObjectPage,
@@ -222,10 +224,12 @@ export async function generateMetadata({
     const followersLabel =
       typeof messages.followers === 'string' ? messages.followers : 'Followers';
     title = `${baseTitle} · ${followersLabel}`;
-  } else if (tab === 'authority') {
-    const authorityLabel =
-      typeof messages.authority === 'string' ? messages.authority : 'Authority';
-    title = `${baseTitle} · ${authorityLabel}`;
+  } else if (tab === 'ownership' || tab === 'authority') {
+    const ownershipLabel =
+      typeof messages.object_ownership === 'string'
+        ? messages.object_ownership
+        : 'Ownership';
+    title = `${baseTitle} · ${ownershipLabel}`;
   } else if (tab === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
     const descriptionLabel =
       typeof messages.object_detail_description_button === 'string'
@@ -355,16 +359,17 @@ export default async function ObjectDetailPage({
     UPDATE_TYPES.ADD_ON,
   );
 
+  const followersSubType = parseFollowersSubTypeParam(sp);
   const followersSort = parseSubscriptionSortParam(sp.sort);
-  const authoritySubType = parseAuthoritySubTypeParam(sp);
-  const authoritySort = parseSubscriptionSortParam(sp.sort);
+  const ownershipSubType = parseOwnershipSubTypeParam(sp);
+  const ownershipSort = parseSubscriptionSortParam(sp.sort);
   const nestedResolveInit = { locale, viewer: viewerUsername };
   const refFetchInit = { locale, viewer: viewerUsername };
 
   const [
     embeddedFollowersPage,
     embeddedExpertsPage,
-    embeddedAuthorityPage,
+    embeddedOwnershipPage,
     embeddedRelatedPage,
     embeddedSimilarPage,
     embeddedAddOnPage,
@@ -374,11 +379,17 @@ export default async function ObjectDetailPage({
     defaultNestedContent,
   ] = await Promise.all([
     initialPrimarySegment === 'followers'
-      ? getObjectFollowersPageQuery(
-          objectId,
-          { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
-          viewerUsername,
-        )
+      ? followersSubType === 'favorited'
+        ? getObjectFavoritedByPageQuery(
+            objectId,
+            { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
+            viewerUsername,
+          )
+        : getObjectFollowersPageQuery(
+            objectId,
+            { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
+            viewerUsername,
+          )
       : Promise.resolve(null),
     initialPrimarySegment === 'experts'
       ? getObjectExpertsPageQuery(
@@ -387,12 +398,12 @@ export default async function ObjectDetailPage({
           viewerUsername,
         )
       : Promise.resolve(null),
-    initialPrimarySegment === 'authority'
-      ? getObjectAuthorityPageQuery(
+    initialPrimarySegment === 'ownership'
+      ? getObjectOwnershipPageQuery(
           objectId,
           {
-            authorityType: authoritySubType,
-            sort: authoritySort,
+            ownershipType: ownershipSubType,
+            sort: ownershipSort,
             skip: 0,
             limit: USER_SOCIAL_PAGE_SIZE,
           },
@@ -538,12 +549,18 @@ export default async function ObjectDetailPage({
       ) : null}
       <ObjectPageTabPane
         model={model}
-        embeddedFollowersPage={embeddedFollowersPage}
+        embeddedFollowersPage={
+          followersSubType === 'followed' ? embeddedFollowersPage : null
+        }
+        embeddedFavoritedByPage={
+          followersSubType === 'favorited' ? embeddedFollowersPage : null
+        }
         embeddedExpertsPage={embeddedExpertsPage}
+        followersSubType={followersSubType}
         followersSort={followersSort}
-        embeddedAuthorityPage={embeddedAuthorityPage}
-        authoritySubType={authoritySubType}
-        authoritySort={authoritySort}
+        embeddedOwnershipPage={embeddedOwnershipPage}
+        ownershipSubType={ownershipSubType}
+        ownershipSort={ownershipSort}
         embeddedRelatedPage={embeddedRelatedPage}
         embeddedSimilarPage={embeddedSimilarPage}
         embeddedAddOnPage={embeddedAddOnPage}

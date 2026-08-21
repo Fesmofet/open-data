@@ -73,12 +73,11 @@ export class UserFavoritesRepository {
         : sql``;
 
     return sql`
-      WITH authority_objects AS (
+      WITH favorite_objects AS (
         SELECT DISTINCT oc.object_id, oc.object_type, oc.weight
         FROM objects_core oc
-        INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-          AND oa.account = ${account}
-          AND oa.authority_type = 'administrative'
+        INNER JOIN object_favorite of ON of.object_id = oc.object_id
+          AND of.account = ${account}
           AND oc.object_type IN (${favoritesTypeListSql()})
           AND oc.status = 'active'
           ${typeFilter}
@@ -93,7 +92,7 @@ export class UserFavoritesRepository {
         WHERE (${postPred})
       ),
       scoped_objects AS (
-        SELECT object_id, object_type, weight FROM authority_objects
+        SELECT object_id, object_type, weight FROM favorite_objects
         UNION
         SELECT object_id, object_type, weight FROM post_linked_objects
       ),

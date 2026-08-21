@@ -47,7 +47,7 @@ Every App Router `page.tsx` under `apps/web/src/app/` maps to a **route area** f
 | Right rail previews | [routes/right-rail.md](object/routes/right-rail.md) | ref list previews |
 | Center ref-list tabs (related, similar, add-on) | [routes/ref-feeds.md](object/routes/ref-feeds.md) | `ObjectRefListFeed` |
 | `/object/:id/followers` | [routes/followers.md](object/routes/followers.md) | social list |
-| `/object/:id/authority` | [routes/authority.md](object/routes/authority.md) | authority lists |
+| `/object/:id/ownership` | [routes/ownership.md](object/routes/ownership.md) | ownership lists |
 | Edit mode UI | [routes/edit-mode.md](object/routes/edit-mode.md) | edit rail + modals |
 
 Cross-cutting: [object-card.md](../object-card.md), [object-follow.md](../object-follow.md), [routing-proxy.md](../routing-proxy.md), [seo.md](../seo.md).

@@ -9,29 +9,29 @@ import {
   horizontalTabNavScrollShellClass,
 } from '@/shared/presentation/layout';
 
-import type { AuthoritySubType } from '../../domain/object-page.types';
+import type { FollowersSubType } from '../../domain/object-page.types';
 
-export type ObjectAuthoritySubNavProps = {
-  administrativeCount: number;
-  ownershipCount: number;
-  activeSub: AuthoritySubType;
-  onSelect: (sub: AuthoritySubType) => void;
+export type ObjectFollowersSubNavProps = {
+  followedByCount: number;
+  favoritedByCount: number;
+  activeSub: FollowersSubType;
+  onSelect: (sub: FollowersSubType) => void;
 };
 
-export function ObjectAuthoritySubNav({
-  administrativeCount,
-  ownershipCount,
+export function ObjectFollowersSubNav({
+  followedByCount,
+  favoritedByCount,
   activeSub,
   onSelect,
-}: ObjectAuthoritySubNavProps) {
+}: ObjectFollowersSubNavProps) {
   const { t } = useI18n();
 
   const mkLabel = useCallback(
-    (sub: AuthoritySubType, count: number): string => {
+    (sub: FollowersSubType, count: number): string => {
       const base =
-        sub === 'administrative'
-          ? t('object_authority_sub_administrative')
-          : t('object_authority_sub_ownership');
+        sub === 'followed'
+          ? t('object_followers_sub_followed_by')
+          : t('object_followers_sub_favorited_by');
       return `${base} (${count})`;
     },
     [t],
@@ -40,12 +40,12 @@ export function ObjectAuthoritySubNav({
   return (
     <div className={horizontalTabNavScrollShellClass('card')}>
       <nav
-        aria-label={t('object_authority_sub_nav_aria')}
+        aria-label={t('object_followers_sub_nav_aria')}
         className={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
       >
-        {(['administrative', 'ownership'] as const).map((sub) => {
+        {(['followed', 'favorited'] as const).map((sub) => {
           const active = activeSub === sub;
-          const count = sub === 'administrative' ? administrativeCount : ownershipCount;
+          const count = sub === 'followed' ? followedByCount : favoritedByCount;
           return (
             <button
               key={sub}

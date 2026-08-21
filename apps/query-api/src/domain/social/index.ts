@@ -2,10 +2,10 @@ export { FOLLOWING_OBJECTS_CARD_UPDATE_TYPES } from './social.constants';
 export {
   userSocialListQuerySchema,
   userFollowingObjectsQuerySchema,
-  objectAuthorityQuerySchema,
+  objectOwnershipQuerySchema,
   type UserSocialListQuery,
   type UserFollowingObjectsQuery,
-  type ObjectAuthorityQuery,
+  type ObjectOwnershipQuery,
 } from './user-social-list.schema';
 export type { UserFollowListItem, PaginatedUserFollowList } from './user-follow-list.types';
 export type { PaginatedProjectedObjects } from './paginated-objects.types';

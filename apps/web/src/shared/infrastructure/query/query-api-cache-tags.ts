@@ -1,8 +1,13 @@
 /** Next.js Data Cache tags for query-api GET responses (see `revalidate-after-broadcast.server.ts`). */
 
 export const queryApiCacheTags = {
+  objectOwnership: (objectId: string) =>
+    `query-api:object:${objectId.trim()}:ownership`,
+  objectFavoritedBy: (objectId: string) =>
+    `query-api:object:${objectId.trim()}:favorited-by`,
+  /** @deprecated Use {@link queryApiCacheTags.objectOwnership} */
   objectAuthority: (objectId: string) =>
-    `query-api:object:${objectId.trim()}:authority`,
+    `query-api:object:${objectId.trim()}:ownership`,
   objectFollowers: (objectId: string) =>
     `query-api:object:${objectId.trim()}:followers`,
   objectExperts: (objectId: string) =>

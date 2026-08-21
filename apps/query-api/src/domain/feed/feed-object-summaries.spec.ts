@@ -27,7 +27,9 @@ function projected(id: string, image?: string): ProjectedObject {
     status: 'active',
     weight: null,
     fields: image ? { image } : {},
-    hasAdministrativeAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     hasOwnershipAuthority: false,
   };
 }

@@ -2,7 +2,13 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
-import { ObjectsCore, ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/odl-db-types';
+import {
+  ObjectsCore,
+  ObjectUpdate,
+  ValidityVote,
+  ObjectFavorite,
+  ObjectOwnership,
+} from '@opden-data-layer/odl-db-types';
 
 import type {
   AggregatedObject,
@@ -16,7 +22,7 @@ import type {
  *   1. objects_core
  *   2. object_updates (includes persisted rank_score / rank_context)
  *   3. validity_votes
- *   4. object_authority
+ *   4. object_favorite + object_ownership
  *   5. user_object_powers — distinct validity voters from step 3
  *
  * @see docs/spec/data-model/flow.md §Step 3
@@ -36,7 +42,7 @@ export class AggregatedObjectRepository {
     }
 
     try {
-      const [cores, updates, validityVotes, authorities] = await Promise.all([
+      const [cores, updates, validityVotes, favorites, ownerships] = await Promise.all([
         this.db
           .selectFrom('objects_core')
           .where('object_id', 'in', objectIds)
@@ -53,7 +59,12 @@ export class AggregatedObjectRepository {
           .selectAll()
           .execute(),
         this.db
-          .selectFrom('object_authority')
+          .selectFrom('object_favorite')
+          .where('object_id', 'in', objectIds)
+          .selectAll()
+          .execute(),
+        this.db
+          .selectFrom('object_ownership')
           .where('object_id', 'in', objectIds)
           .selectAll()
           .execute(),
@@ -73,7 +84,7 @@ export class AggregatedObjectRepository {
         }
       }
 
-      const objects = groupByObjectId(cores, updates, validityVotes, authorities);
+      const objects = groupByObjectId(cores, updates, validityVotes, favorites, ownerships);
       return { objects, voterWaivPowers };
     } catch (error) {
       this.logger.error(
@@ -94,12 +105,14 @@ function groupByObjectId(
   cores: ObjectsCore[],
   updates: ObjectUpdate[],
   validityVotes: ValidityVote[],
-  authorities: ObjectAuthority[],
+  favorites: ObjectFavorite[],
+  ownerships: ObjectOwnership[],
 ): AggregatedObject[] {
   return cores.map((core) => ({
     core,
     updates: updates.filter((u) => u.object_id === core.object_id),
     validity_votes: validityVotes.filter((v) => v.object_id === core.object_id),
-    authorities: authorities.filter((a) => a.object_id === core.object_id),
+    favorites: favorites.filter((f) => f.object_id === core.object_id),
+    ownerships: ownerships.filter((o) => o.object_id === core.object_id),
   }));
 }

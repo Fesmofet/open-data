@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
-import { AggregatedObjectRepository, ObjectAuthorityRepository } from '../../repositories';
+import { AggregatedObjectRepository, ObjectFavoriteRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { expandObjectRefs } from '../object-projection/object-ref-expansion';
 import { ListItemsRecursiveCountService } from '../object-projection/list-items-recursive-count.service';
@@ -30,7 +30,7 @@ export class GetNestedObjectsEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectFavoriteRepo: ObjectFavoriteRepository,
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly config: ConfigService,
   ) {}
@@ -59,13 +59,13 @@ export class GetNestedObjectsEndpoint {
 
     const viewerAccount = input.viewerAccount?.trim() || undefined;
     const allRefIds = [...new Set(views.flatMap((v) => collectObjectRefIdsFromView(v)))];
-    let viewerAdminIds: Set<string> | undefined;
+    let viewerFavoriteIds: Set<string> | undefined;
     if (viewerAccount && allRefIds.length > 0) {
-      const refAdminIds = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+      const refFavoriteIds = await this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(
         viewerAccount,
         allRefIds,
       );
-      viewerAdminIds = new Set(refAdminIds);
+      viewerFavoriteIds = new Set(refFavoriteIds);
     }
 
     const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
@@ -82,7 +82,7 @@ export class GetNestedObjectsEndpoint {
         locale: input.locale,
         contentBaseUrl,
         viewerAccount,
-        viewerAdminIds,
+        viewerFavoriteIds,
       });
 
       const projected = projectObjectCore({

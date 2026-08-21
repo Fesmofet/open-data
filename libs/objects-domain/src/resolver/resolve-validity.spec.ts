@@ -4,7 +4,7 @@ import type { VoterWaivPowerMap } from '../types/aggregated-object';
 import type {
   ObjectUpdate,
   ValidityVote,
-  ObjectAuthority,
+  ObjectOwnership,
 } from '@opden-data-layer/odl-db-types';
 import {
   computeApprovePercent,
@@ -60,58 +60,71 @@ function makeVote(
   };
 }
 
-function makeAuthority(
+function makeOwnership(
   account: string,
-  type: 'ownership' | 'administrative',
-): ObjectAuthority {
-  return { object_id: 'obj1', account, authority_type: type, created_at: new Date() };
+  ownership_type: 'exclusive' | 'supervised' = 'exclusive',
+): ObjectOwnership {
+  return {
+    object_id: 'obj1',
+    account,
+    ownership_type,
+    event_seq: BigInt(1),
+    created_at: new Date(),
+  };
 }
 
 describe('computeCuratorSet', () => {
-  it('returns empty set when no authorities exist', () => {
+  it('returns empty set when no ownerships exist', () => {
     const C = computeCuratorSet([], EMPTY_GOVERNANCE);
     expect(C.size).toBe(0);
   });
 
   it('returns empty set when ownership holders are not in admins or trusted', () => {
-    const authorities = [makeAuthority('bob', 'ownership')];
+    const ownerships = [makeOwnership('bob')];
     const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'] };
-    const C = computeCuratorSet(authorities, governance);
+    const C = computeCuratorSet(ownerships, governance);
     expect(C.size).toBe(0);
   });
 
   it('includes ownership holder who is in admins', () => {
-    const authorities = [makeAuthority('admin1', 'ownership')];
+    const ownerships = [makeOwnership('admin1')];
     const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'] };
-    const C = computeCuratorSet(authorities, governance);
+    const C = computeCuratorSet(ownerships, governance);
     expect(C.has('admin1')).toBe(true);
   });
 
   it('includes ownership holder who is in trusted', () => {
-    const authorities = [makeAuthority('trusted1', 'ownership')];
+    const ownerships = [makeOwnership('trusted1')];
     const governance = { ...EMPTY_GOVERNANCE, trusted: ['trusted1'] };
-    const C = computeCuratorSet(authorities, governance);
+    const C = computeCuratorSet(ownerships, governance);
     expect(C.has('trusted1')).toBe(true);
   });
 
-  it('with object_control=full: includes governance.admins union ownership holders', () => {
-    const authorities = [makeAuthority('bob', 'ownership')];
+  it('with object_control=full: includes governance.admins union exclusive ownership holders', () => {
+    const ownerships = [makeOwnership('bob')];
     const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'], object_control: 'full' as const };
-    const C = computeCuratorSet(authorities, governance);
+    const C = computeCuratorSet(ownerships, governance);
     expect(C.has('admin1')).toBe(true);
     expect(C.has('bob')).toBe(true);
+  });
+
+  it('excludes supervised ownership from exclusive owner set', () => {
+    const ownerships = [makeOwnership('trusted1', 'supervised')];
+    const governance = { ...EMPTY_GOVERNANCE, trusted: ['trusted1'] };
+    const C = computeCuratorSet(ownerships, governance);
+    expect(C.size).toBe(0);
   });
 });
 
 describe('resolveUpdateValidity — curator filter', () => {
   const curatorSet = new Set(['curator1']);
   const governance = { ...EMPTY_GOVERNANCE, admins: ['curator1'] };
-  const authorities = [makeAuthority('curator1', 'ownership')];
+  const ownerships = [makeOwnership('curator1')];
   const voterReputations: VoterWaivPowerMap = new Map();
 
   it('is VALID when update creator is in curator set', () => {
     const update = { ...BASE_UPDATE, creator: 'curator1' };
-    const result = resolveUpdateValidity(update, [], curatorSet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(update, [], curatorSet, governance, voterReputations, ownerships);
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeNull();
     expect(result.approve_percent).toBe(100);
@@ -123,7 +136,7 @@ describe('resolveUpdateValidity — curator filter', () => {
 
   it('is VALID when a curator member voted for', () => {
     const votes = [makeVote('curator1', 'for')];
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, curatorSet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, curatorSet, governance, voterReputations, ownerships);
     expect(result.status).toBe('VALID');
     expect(result.approve_percent).toBe(100);
     expect(result.validity_tier).toBeNull();
@@ -131,11 +144,29 @@ describe('resolveUpdateValidity — curator filter', () => {
   });
 
   it('is REJECTED when creator not in C and no curator voted for', () => {
-    const result = resolveUpdateValidity(BASE_UPDATE, [], curatorSet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, [], curatorSet, governance, voterReputations, ownerships);
     expect(result.status).toBe('REJECTED');
     expect(result.approve_percent).toBe(100);
     expect(result.validity_tier).toBeNull();
     expect(result.decisive_vote_event_seq).toBeNull();
+  });
+
+  it('latest exclusive vote wins over creator membership in E', () => {
+    const exclusiveSet = new Set(['owner1', 'owner2']);
+    const update = { ...BASE_UPDATE, creator: 'owner1' };
+    const votes = [
+      makeVote('owner2', 'for', BigInt(5)),
+      makeVote('owner2', 'against', BigInt(20)),
+    ];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      voterReputations,
+      [makeOwnership('owner1'), makeOwnership('owner2')],
+    );
+    expect(result.status).toBe('REJECTED');
   });
 });
 
@@ -143,11 +174,11 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
   const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'] };
   const emptySet = new Set<string>();
   const voterReputations: VoterWaivPowerMap = new Map();
-  const authorities: ObjectAuthority[] = [];
+  const ownerships: ObjectOwnership[] = [];
 
   it('VALID when admin voted for', () => {
     const votes = [makeVote('admin1', 'for')];
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, ownerships);
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeNull();
     expect(result.approve_percent).toBe(100);
@@ -159,7 +190,7 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
 
   it('REJECTED when admin voted against', () => {
     const votes = [makeVote('admin1', 'against')];
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, ownerships);
     expect(result.status).toBe('REJECTED');
     expect(result.approve_percent).toBe(0);
     expect(result.validity_tier).toBe('admin');
@@ -173,7 +204,7 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
       makeVote('admin1', 'for', BigInt(5)),
       makeVote('admin1', 'against', BigInt(10)),
     ];
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, ownerships);
     expect(result.status).toBe('REJECTED');
     expect(result.approve_percent).toBe(0);
     expect(result.validity_tier).toBe('admin');
@@ -194,7 +225,7 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
       emptySet,
       governanceMulti,
       voterReputations,
-      authorities,
+      ownerships,
     );
     expect(result.validity_tier).toBe('admin');
     expect(result.decisive_voter).toBe('admin2');
@@ -209,9 +240,9 @@ describe('resolveUpdateValidity — trusted decisive (LWTW)', () => {
   const voterReputations: VoterWaivPowerMap = new Map();
 
   it('VALID when trusted has authority on object and voted for', () => {
-    const authorities = [makeAuthority('trusted1', 'ownership')];
+    const ownerships = [makeOwnership('trusted1')];
     const votes = [makeVote('trusted1', 'for')];
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, ownerships);
     expect(result.status).toBe('VALID');
     expect(result.approve_percent).toBe(100);
     expect(result.validity_tier).toBe('trusted');
@@ -221,9 +252,9 @@ describe('resolveUpdateValidity — trusted decisive (LWTW)', () => {
   });
 
   it('falls through to community when trusted has no authority on object', () => {
-    const authorities: ObjectAuthority[] = [];
+    const ownerships: ObjectOwnership[] = [];
     const votes = [makeVote('trusted1', 'for')];
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, ownerships);
     // No authority on object → trusted vote is not decisive → no community votes → VALID baseline
     expect(result.status).toBe('VALID');
     expect(result.approve_percent).toBe(100);
@@ -235,10 +266,10 @@ describe('resolveUpdateValidity — trusted decisive (LWTW)', () => {
 describe('resolveUpdateValidity — community vote weight', () => {
   const governance = EMPTY_GOVERNANCE;
   const emptySet = new Set<string>();
-  const authorities: ObjectAuthority[] = [];
+  const ownerships: ObjectOwnership[] = [];
 
   it('baseline VALID when no votes exist', () => {
-    const result = resolveUpdateValidity(BASE_UPDATE, [], emptySet, governance, new Map(), authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, [], emptySet, governance, new Map(), ownerships);
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeNull();
     expect(result.approve_percent).toBe(100);
@@ -249,7 +280,7 @@ describe('resolveUpdateValidity — community vote weight', () => {
   it('VALID when only community for votes (approve_percent 100)', () => {
     const votes = [makeVote('voter1', 'for'), makeVote('voter2', 'for')];
     const reputations: VoterWaivPowerMap = new Map([['voter1', 0], ['voter2', 0]]);
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, ownerships);
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeGreaterThanOrEqual(0);
     expect(result.approve_percent).toBe(100);
@@ -260,7 +291,7 @@ describe('resolveUpdateValidity — community vote weight', () => {
   it('REJECTED when only community against votes', () => {
     const votes = [makeVote('voter1', 'against'), makeVote('voter2', 'against')];
     const reputations: VoterWaivPowerMap = new Map([['voter1', 0], ['voter2', 0]]);
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, ownerships);
     expect(result.status).toBe('REJECTED');
     expect(result.field_weight).toBeLessThan(0);
     expect(result.approve_percent).toBe(0);
@@ -271,7 +302,7 @@ describe('resolveUpdateValidity — community vote weight', () => {
   it('REJECTED when equal for and against weight (net 0)', () => {
     const votes = [makeVote('voter1', 'for'), makeVote('voter2', 'against')];
     const reputations: VoterWaivPowerMap = new Map([['voter1', 0], ['voter2', 0]]);
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, ownerships);
     expect(result.field_weight).toBe(0);
     expect(result.approve_percent).toBe(0);
     expect(result.status).toBe('REJECTED');
@@ -285,7 +316,7 @@ describe('resolveUpdateValidity — community vote weight', () => {
       ['voter1', 7],
       ['voter2', 3],
     ]);
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, ownerships);
     expect(result.approve_percent).toBe(70);
     expect(result.approve_percent > MIN_PERCENT_TO_SHOW_UPDATE).toBe(false);
     expect(result.status).toBe('REJECTED');
@@ -299,7 +330,7 @@ describe('resolveUpdateValidity — community vote weight', () => {
       makeVote('weak_voter', 'against'),
     ];
     const reputations: VoterWaivPowerMap = new Map([['power_voter', 3], ['weak_voter', 0]]);
-    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, authorities);
+    const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, ownerships);
     expect(result.approve_percent).toBe(75);
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBe(2);
@@ -310,28 +341,28 @@ describe('resolveUpdateValidity — community vote weight', () => {
 
 describe('computeApprovePercent', () => {
   const emptySet = new Set<string>();
-  const authorities: ObjectAuthority[] = [];
+  const ownerships: ObjectOwnership[] = [];
   const governance = EMPTY_GOVERNANCE;
 
   it('returns 100 when there are no votes', () => {
     expect(
-      computeApprovePercent(BASE_UPDATE, [], governance, new Map(), authorities),
+      computeApprovePercent(BASE_UPDATE, [], governance, new Map(), ownerships),
     ).toBe(100);
   });
 
   it('returns 100 / 0 for latest admin for / against', () => {
     const gov = { ...EMPTY_GOVERNANCE, admins: ['admin1'] };
     expect(
-      computeApprovePercent(BASE_UPDATE, [makeVote('admin1', 'for')], gov, new Map(), authorities),
+      computeApprovePercent(BASE_UPDATE, [makeVote('admin1', 'for')], gov, new Map(), ownerships),
     ).toBe(100);
     expect(
-      computeApprovePercent(BASE_UPDATE, [makeVote('admin1', 'against')], gov, new Map(), authorities),
+      computeApprovePercent(BASE_UPDATE, [makeVote('admin1', 'against')], gov, new Map(), ownerships),
     ).toBe(0);
   });
 
   it('returns 100 / 0 for trusted with authority for / against', () => {
     const gov = { ...EMPTY_GOVERNANCE, trusted: ['trusted1'] };
-    const auth = [makeAuthority('trusted1', 'ownership')];
+    const auth = [makeOwnership('trusted1')];
     expect(
       computeApprovePercent(BASE_UPDATE, [makeVote('trusted1', 'for')], gov, new Map(), auth),
     ).toBe(100);
@@ -343,19 +374,19 @@ describe('computeApprovePercent', () => {
   it('returns 100 when only community for votes', () => {
     const votes = [makeVote('a', 'for'), makeVote('b', 'for')];
     expect(
-      computeApprovePercent(BASE_UPDATE, votes, governance, new Map([['a', 0], ['b', 0]]), authorities),
+      computeApprovePercent(BASE_UPDATE, votes, governance, new Map([['a', 0], ['b', 0]]), ownerships),
     ).toBe(100);
   });
 
   it('returns 0 when only community against votes', () => {
     const votes = [makeVote('a', 'against')];
-    expect(computeApprovePercent(BASE_UPDATE, votes, governance, new Map([['a', 0]]), authorities)).toBe(0);
+    expect(computeApprovePercent(BASE_UPDATE, votes, governance, new Map([['a', 0]]), ownerships)).toBe(0);
   });
 
   it('returns 0 when equal for and against weight', () => {
     const votes = [makeVote('a', 'for'), makeVote('b', 'against')];
     expect(
-      computeApprovePercent(BASE_UPDATE, votes, governance, new Map([['a', 0], ['b', 0]]), authorities),
+      computeApprovePercent(BASE_UPDATE, votes, governance, new Map([['a', 0], ['b', 0]]), ownerships),
     ).toBe(0);
   });
 
@@ -374,7 +405,7 @@ describe('computeApprovePercent', () => {
       ['v4', 1],
       ['v5', 1],
     ]);
-    expect(computeApprovePercent(BASE_UPDATE, votes2, governance, m, authorities)).toBe(80);
+    expect(computeApprovePercent(BASE_UPDATE, votes2, governance, m, ownerships)).toBe(80);
   });
 
   it('returns 70 when for_weight 7 and against_weight 3', () => {
@@ -383,7 +414,7 @@ describe('computeApprovePercent', () => {
       ['v1', 7],
       ['v2', 3],
     ]);
-    expect(computeApprovePercent(BASE_UPDATE, votes, governance, m, authorities)).toBe(70);
+    expect(computeApprovePercent(BASE_UPDATE, votes, governance, m, ownerships)).toBe(70);
   });
 
   it('returns 66.667 when for_weight 2 and against_weight 1', () => {
@@ -392,7 +423,7 @@ describe('computeApprovePercent', () => {
       ['v1', 2],
       ['v2', 1],
     ]);
-    expect(computeApprovePercent(BASE_UPDATE, votes, governance, m, authorities)).toBe(66.667);
+    expect(computeApprovePercent(BASE_UPDATE, votes, governance, m, ownerships)).toBe(66.667);
   });
 
   it('ignores update when filtering by update_id', () => {
@@ -401,7 +432,7 @@ describe('computeApprovePercent', () => {
       update_id: 'other',
     };
     expect(
-      computeApprovePercent(BASE_UPDATE, [otherVote], governance, new Map(), authorities),
+      computeApprovePercent(BASE_UPDATE, [otherVote], governance, new Map(), ownerships),
     ).toBe(100);
   });
 
@@ -411,8 +442,8 @@ describe('computeApprovePercent', () => {
       ['voter1', 7],
       ['voter2', 3],
     ]);
-    const p = computeApprovePercent(BASE_UPDATE, votes, governance, reputations, authorities);
-    const r = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, authorities);
+    const p = computeApprovePercent(BASE_UPDATE, votes, governance, reputations, ownerships);
+    const r = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, reputations, ownerships);
     expect(r.approve_percent).toBe(p);
   });
 });

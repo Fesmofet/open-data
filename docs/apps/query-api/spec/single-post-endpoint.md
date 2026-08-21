@@ -32,7 +32,7 @@ Unlike `POST /query/v1/users/{name}/blog`, this endpoint does **not** cap tagged
 |--------|------|
 | `Accept-Language` / `X-Locale` | Locale for object view resolution (see `@ReqLocale`). |
 | `X-Governance-Object-Id` | Optional governance merge for object views (same as blog feed). |
-| `X-Viewer` | Optional Hive account of the viewer; when set, linked objects include `hasAdministrativeAuthority` and richer fields (see `@ReqViewer`), and `votes.voted` is `true` if that account has a row in `post_active_votes` for this post. |
+| `X-Viewer` | Optional Hive account of the viewer; when set, linked objects include `isFavorited` and richer fields (see `@ReqViewer`), and `votes.voted` is `true` if that account has a row in `post_active_votes` for this post. |
 
 ## Responses
 

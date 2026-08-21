@@ -41,8 +41,9 @@ Related files:
 | **object_updates**   | One row per active update. FK to objects_core ON DELETE CASCADE. Holds value (text/geo/json), plus `search_vector` (tsvector) and PostGIS `value_geo`. |
 | **validity_votes**   | One row per validity vote. FK to object_updates ON DELETE CASCADE — replacing an update deletes its votes automatically.                               |
 | **rank_votes**       | One row per rank vote. Same CASCADE. rank 0..10000 enforced by CHECK.                                                                                  |
-| **object_authority** | One row per `(object_id, account, authority_type)` authority claim. Written by `object_authority` Hive events (`method: 'add' | 'remove'`). Does not affect `seq`. See [authority-entity.md](../authority-entity.md). |
-| **accounts_current** | One row per Hive account. Hive-sourced fields synced from Hive node API; `object_reputation` maintained by Indexer from administrative authority events. Used at query time to compute community vote weight. See [social-account-ingestion.md](../social-account-ingestion.md). |
+| **object_favorite** | One row per `(object_id, account)` favorite. Written by `object_favorite` Hive events. See [object-favorite.md](../object-favorite.md). |
+| **object_ownership** | One row per `(object_id, account)` ownership claim (`exclusive` \| `supervised`). Written by `object_ownership` Hive events. See [object-ownership.md](../object-ownership.md). |
+| **accounts_current** | One row per Hive account. Hive-sourced fields synced from Hive node API; `object_reputation` maintained by Indexer from `object_favorite` events. Used at query time to compute community vote weight. See [social-account-ingestion.md](../social-account-ingestion.md). |
 
 
 The **resolved view** (final API response) is computed at request time from core + updates + votes + governance; it is not stored.
@@ -88,10 +89,15 @@ erDiagram
     text rank_context
   }
 
-  ObjectAuthority {
+  ObjectFavorite {
     text object_id FK
     text account
-    text authority_type
+  }
+
+  ObjectOwnership {
+    text object_id FK
+    text account
+    text ownership_type
   }
 
   AccountsCurrent {
@@ -102,7 +108,8 @@ erDiagram
     int post_count
   }
 
-  ObjectCore ||--o{ ObjectAuthority : "has"
+  ObjectCore ||--o{ ObjectFavorite : "has"
+  ObjectCore ||--o{ ObjectOwnership : "has"
   AccountsCurrent ||--o{ ValidityVote : "voter"
   AccountsCurrent ||--o{ ObjectCore : "creator"
 ```
@@ -111,7 +118,7 @@ erDiagram
 
 ## Write flow
 
-Content mutations (update_create, update_vote, rank_vote) run inside a single transaction. Authority events are a separate write path — no transaction needed, no `seq` increment.
+Content mutations (update_create, update_vote, rank_vote) run inside a single transaction. Favorite and ownership events are a separate write path — no transaction needed, no `seq` increment.
 
 ```mermaid
 flowchart LR
@@ -121,7 +128,7 @@ flowchart LR
   coreSeq --> upsert[UpsertUpdateOrVote]
   upsert --> commit["COMMIT"]
   commit --> done[(PostgreSQL)]
-  route -->|object_authority (method add/remove)| authWrite[UpsertOrDeleteAuthority]
+  route -->|object_favorite / object_ownership| authWrite[UpsertOrDeleteFavoriteOrOwnership]
   authWrite --> done
 ```
 
@@ -153,17 +160,19 @@ All in the same transaction as the seq increment.
 
 ### Authority events (separate path)
 
-- **object_authority (method = 'add')**: `INSERT INTO object_authority (object_id, account, authority_type) VALUES ($1, $2, $3) ON CONFLICT (object_id, account, authority_type) DO NOTHING`
-- **object_authority (method = 'remove')**: `DELETE FROM object_authority WHERE object_id = $1 AND account = $2 AND authority_type = $3`
+- **object_favorite (method = 'add')**: upsert into `object_favorite`
+- **object_favorite (method = 'remove')**: delete from `object_favorite`
+- **object_ownership (method = 'add')**: upsert into `object_ownership` (with `ownership_type`)
+- **object_ownership (method = 'remove')**: delete from `object_ownership`
 
 Executed outside any transaction together with content events.
 
-#### Reputation side-effect for `administrative` authority
+#### Reputation side-effect for favorites
 
-When `authority_type = 'administrative'`, the Indexer must update `accounts_current.object_reputation` for the target object's creator:
+When a user favorites an object (`object_favorite` add/remove), the Indexer updates `accounts_current.object_reputation` for the target object's creator:
 
-- **add**: Look up `objects_core.creator` for the target object. If the signing user differs from the creator and this is the first `administrative` claim by this user on any object by this creator, increment `accounts_current.object_reputation` for the creator.
-- **remove**: After deleting the authority row, check if the removed user still holds `administrative` authority on any other object by the same creator. If none remain, decrement `accounts_current.object_reputation` by 1.
+- **add**: Look up `objects_core.creator`. If the signing user differs from the creator and this is the first favorite by this user on any object by this creator, increment `object_reputation`.
+- **remove**: After deleting the row, if the user has no remaining favorites on objects by the same creator, decrement `object_reputation` by 1.
 
 See [social-account-ingestion.md § 4.2](../social-account-ingestion.md#42-object_reputation-maintenance) for the full maintenance algorithm and verification query.
 
@@ -243,8 +252,9 @@ SELECT * FROM object_updates WHERE object_id = ANY($objectIds);
 -- 3. Validity votes
 SELECT * FROM validity_votes WHERE object_id = ANY($objectIds);
 
--- 4. Authority claims
-SELECT * FROM object_authority WHERE object_id = ANY($objectIds);
+-- 4. Favorite + ownership
+SELECT * FROM object_favorite WHERE object_id = ANY($objectIds);
+SELECT * FROM object_ownership WHERE object_id = ANY($objectIds);
 
 -- 5. Voter waiv_power (community validity weight; see vote-semantics §C, waiv-power.md)
 SELECT account, waiv_power
@@ -258,7 +268,7 @@ Queries 1–4 can run in parallel. Collect distinct voter names from **query 3 o
 
 For each object, using the loaded rows, authority records, voter **waiv_power** map, and the governance snapshot:
 
-1. **Compute curator set** `C = { ownership holders for object_id from object_authority } ∩ { governance admins ∪ governance trusted }`.
+1. **Compute curator set** `C = { exclusive ownership holders for object_id from object_ownership } ∩ { governance admins ∪ governance trusted }`.
 2. Group updates by `update_type`.
 3. Resolve validity per update (tiered):
    - If `C` is non-empty, apply curator filter: an update is valid only if its `creator ∈ C` OR it has a positive validity vote from any member of `C`. Updates satisfying neither are treated as invalid regardless of other votes.
@@ -295,9 +305,11 @@ See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) and [
 | validity_votes | (object_id)                                         | B-tree           | Bulk load votes for an object             |
 | rank_votes       | (update_id, voter, rank_context)                    | UNIQUE           | One rank per voter per context                          |
 | rank_votes       | (object_id)                                         | B-tree           | Bulk load ranks for an object                           |
-| object_authority | (object_id, account, authority_type)                | UNIQUE           | Primary key; upsert/delete by event.                    |
-| object_authority | (object_id, authority_type)                         | B-tree           | Load all ownership holders for an object (curator set). |
-| object_authority | (account)                                           | B-tree           | Find all objects a user holds authority over.           |
+| object_favorite | (object_id, account)                                | UNIQUE           | Primary key; upsert/delete by event.                    |
+| object_ownership | (object_id, account)                               | UNIQUE           | Primary key; upsert/delete by event.                    |
+| object_ownership | (object_id, ownership_type)                        | B-tree           | Load ownership holders by type (curator set uses exclusive). |
+| object_favorite | (account)                                           | B-tree           | Find all objects a user favorited (governance authorities scope). |
+| object_ownership | (account)                                          | B-tree           | Find all objects a user owns.                           |
 | accounts_current | name                                                | PK / B-tree      | Primary lookup by account name.                         |
 | accounts_current | (object_reputation DESC)                            | B-tree           | Sorted listing by reputation.                           |
 | accounts_current | (hive_id)                                           | B-tree (partial) | Lookup by Hive numeric ID (WHERE hive_id IS NOT NULL).  |
@@ -370,7 +382,7 @@ For simple single-dimension searches you could query `object_updates` directly i
 ## Consistency model
 
 - **ACID**: Every content write is one transaction. No drift between “core” and “projection” because there is no projection.
-- **CASCADE**: Deleting an object or an update removes dependent rows in child tables automatically. \object_authority\ rows reference \object_id\ and should be removed when the object is deleted (FK with CASCADE or application-side).
+- **CASCADE**: Deleting an object or an update removes dependent rows in child tables automatically. `object_favorite` and `object_ownership` rows reference `object_id` and are removed when the object is deleted (FK with CASCADE or application-side).
 - **seq**: Kept for change tracking and optional consumers (e.g. incremental export); not required for correctness.
 - **Authority**: Authority events are written outside the content transaction. A failed authority write does not corrupt content state; the event can be replayed safely.
 

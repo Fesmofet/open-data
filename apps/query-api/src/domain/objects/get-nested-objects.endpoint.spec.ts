@@ -1,6 +1,6 @@
 import { DEFAULT_GOVERNANCE_SNAPSHOT, ObjectViewService } from '@opden-data-layer/objects-domain';
 import { ConfigService } from '@nestjs/config';
-import { AggregatedObjectRepository, ObjectAuthorityRepository } from '../../repositories';
+import { AggregatedObjectRepository, ObjectFavoriteRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { ListItemsRecursiveCountService } from '../object-projection/list-items-recursive-count.service';
 import { NESTED_OBJECT_UPDATE_TYPES } from './nested-object.constants';
@@ -36,9 +36,9 @@ function createEndpoint(viewService: ObjectViewService) {
     resolveMergedForObjectView: jest.fn().mockResolvedValue(DEFAULT_GOVERNANCE_SNAPSHOT),
   } as unknown as GovernanceResolverService;
 
-  const objectAuthorityRepo = {
-    findAdministrativeObjectIdsForAccount: jest.fn(),
-  } as unknown as ObjectAuthorityRepository;
+  const objectFavoriteRepo = {
+    findFavoriteObjectIdsForAccount: jest.fn(),
+  } as unknown as ObjectFavoriteRepository;
 
   const listItemsRecursiveCountService = {} as unknown as ListItemsRecursiveCountService;
 
@@ -50,7 +50,7 @@ function createEndpoint(viewService: ObjectViewService) {
     aggregatedObjectRepo,
     viewService,
     governanceResolver,
-    objectAuthorityRepo,
+    objectFavoriteRepo,
     listItemsRecursiveCountService,
     config,
   );

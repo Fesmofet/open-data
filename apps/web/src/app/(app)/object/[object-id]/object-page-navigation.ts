@@ -7,7 +7,7 @@ import {
 } from '@/modules/object/domain/object-page-url.constants';
 
 import {
-  OBJECT_PAGE_AUTHORITY_SUB_PARAM,
+  OBJECT_PAGE_OWNERSHIP_SUB_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from './object-page-search';
@@ -30,7 +30,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'reviews') {
     u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs ? `${base}/reviews?${qs}` : `${base}/reviews`,
@@ -40,7 +40,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'messages') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
     const qs = u.toString();
     return {
@@ -51,7 +51,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'updates') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs ? `${base}/updates?${qs}` : `${base}/updates`,
@@ -61,7 +61,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'followers') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs ? `${base}/followers?${qs}` : `${base}/followers`,
@@ -69,18 +69,18 @@ export function buildObjectPrimaryTabNavigation(
     };
   }
 
-  if (segment === 'authority') {
+  if (segment === 'ownership') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
     const qs = u.toString();
     return {
-      href: qs ? `${base}/authority?${qs}` : `${base}/authority`,
+      href: qs ? `${base}/ownership?${qs}` : `${base}/ownership`,
       method: 'replace',
     };
   }
 
   if (segment === 'gallery' || segment === 'experts') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
     u.delete('sort');
     u.delete('update_type');
@@ -100,7 +100,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === WIDGET_PRIMARY_TAB_SEGMENT) {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
     u.delete('sort');
     u.delete('update_type');
@@ -116,7 +116,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'related') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs
@@ -128,7 +128,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'similar') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs
@@ -140,7 +140,7 @@ export function buildObjectPrimaryTabNavigation(
 
   if (segment === 'add-on') {
     u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs
@@ -151,7 +151,7 @@ export function buildObjectPrimaryTabNavigation(
   }
 
   u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-  u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+  u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
   u.delete('sort');
   u.delete('update_type');
   u.delete('locale');
@@ -169,7 +169,7 @@ export function buildObjectUpdatesFieldHref(
   const base = `/object/${id}`;
   const u = new URLSearchParams(searchParams.toString());
   u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-  u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+  u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
   if (updateType) {
     u.set('update_type', updateType);
   } else {
@@ -179,7 +179,7 @@ export function buildObjectUpdatesFieldHref(
   return qs ? `${base}/updates?${qs}` : `${base}/updates`;
 }
 
-export function buildObjectAuthoritySubHref(
+export function buildObjectOwnershipSubHref(
   objectId: string,
   searchParams: URLSearchParams,
   sub: string,
@@ -188,9 +188,26 @@ export function buildObjectAuthoritySubHref(
   const base = `/object/${id}`;
   const u = new URLSearchParams(searchParams.toString());
   u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-  u.set(OBJECT_PAGE_AUTHORITY_SUB_PARAM, sub);
+  u.set(OBJECT_PAGE_OWNERSHIP_SUB_PARAM, sub);
   const qs = u.toString();
-  return qs ? `${base}/authority?${qs}` : `${base}/authority`;
+  return qs ? `${base}/ownership?${qs}` : `${base}/ownership`;
 }
+
+export function buildObjectFollowersSubHref(
+  objectId: string,
+  searchParams: URLSearchParams,
+  sub: string,
+): string {
+  const id = encodeURIComponent(objectId);
+  const base = `/object/${id}`;
+  const u = new URLSearchParams(searchParams.toString());
+  u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+  u.set(OBJECT_PAGE_OWNERSHIP_SUB_PARAM, sub);
+  const qs = u.toString();
+  return qs ? `${base}/followers?${qs}` : `${base}/followers`;
+}
+
+/** @deprecated Use {@link buildObjectOwnershipSubHref} */
+export const buildObjectAuthoritySubHref = buildObjectOwnershipSubHref;
 
 export { buildObjectGalleryPath };

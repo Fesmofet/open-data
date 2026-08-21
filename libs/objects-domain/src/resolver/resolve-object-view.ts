@@ -91,7 +91,7 @@ function resolveObject(
     (u) => !bannedSet.has(u.creator) && requestedTypes.has(u.update_type),
   );
 
-  const curatorSet = computeCuratorSet(obj.authorities, options.governance);
+  const curatorSet = computeCuratorSet(obj.ownerships, options.governance);
 
   const updatesByType = new Map<string, string[]>();
   for (const update of filteredUpdates) {
@@ -122,7 +122,7 @@ function resolveObject(
           curatorSet,
           options.governance,
           voterWaivPowers,
-          obj.authorities,
+          obj.ownerships,
         );
 
       return {

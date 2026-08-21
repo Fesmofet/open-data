@@ -11,7 +11,7 @@ describe('GetObjectFieldReferencesSummaryEndpoint', () => {
     core: { findByObjectIdForPage: jest.Mock };
     fieldReferencesRepo: { findReferencingObjectIds: jest.Mock };
     governanceResolver: { resolveMergedForObjectView: jest.Mock };
-    authorityRepo: { findAdministrativeObjectIdsForAccount: jest.Mock };
+    authorityRepo: { findFavoriteObjectIdsForAccount: jest.Mock };
     aggregated: { loadByObjectIds: jest.Mock };
     viewService: { resolve: jest.Mock };
   }) {
@@ -37,7 +37,7 @@ describe('GetObjectFieldReferencesSummaryEndpoint', () => {
       core: { findByObjectIdForPage: jest.fn().mockResolvedValue(null) },
       fieldReferencesRepo: { findReferencingObjectIds: jest.fn() },
       governanceResolver: { resolveMergedForObjectView: jest.fn() },
-      authorityRepo: { findAdministrativeObjectIdsForAccount: jest.fn() },
+      authorityRepo: { findFavoriteObjectIdsForAccount: jest.fn() },
       aggregated: { loadByObjectIds: jest.fn() },
       viewService: { resolve: jest.fn() },
     });
@@ -56,7 +56,7 @@ describe('GetObjectFieldReferencesSummaryEndpoint', () => {
       },
       fieldReferencesRepo: { findReferencingObjectIds: jest.fn() },
       governanceResolver: { resolveMergedForObjectView: jest.fn() },
-      authorityRepo: { findAdministrativeObjectIdsForAccount: jest.fn() },
+      authorityRepo: { findFavoriteObjectIdsForAccount: jest.fn() },
       aggregated: { loadByObjectIds: jest.fn() },
       viewService: { resolve: jest.fn() },
     });
@@ -80,7 +80,7 @@ describe('GetObjectFieldReferencesSummaryEndpoint', () => {
       governanceResolver: {
         resolveMergedForObjectView: jest.fn().mockResolvedValue(governance),
       },
-      authorityRepo: { findAdministrativeObjectIdsForAccount: jest.fn() },
+      authorityRepo: { findFavoriteObjectIdsForAccount: jest.fn() },
       aggregated: {
         loadByObjectIds: jest.fn().mockResolvedValue({
           objects: [
@@ -122,7 +122,7 @@ describe('GetObjectFieldReferencesByTypeEndpoint', () => {
       { loadByObjectIds: jest.fn() } as never,
       { resolve: jest.fn() } as never,
       { resolveMergedForObjectView: jest.fn() } as never,
-      { findAdministrativeObjectIdsForAccount: jest.fn() } as never,
+      { findFavoriteObjectIdsForAccount: jest.fn() } as never,
       { countForListRefIds: jest.fn() } as never,
       { findReferencingObjectIds: jest.fn() } as never,
       { get: jest.fn() } as never,

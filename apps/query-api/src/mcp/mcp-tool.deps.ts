@@ -27,7 +27,8 @@ import type { GetObjectUpdatesFeedEndpoint } from '../domain/object-updates/get-
 import type { GetUpdateVotersEndpoint } from '../domain/object-updates/get-update-voters.endpoint';
 import type {
   CheckObjectExistsEndpoint,
-  GetObjectAuthorityEndpoint,
+  GetObjectFavoritedByEndpoint,
+  GetObjectOwnershipEndpoint,
   GetObjectByIdEndpoint,
   GetObjectFollowersEndpoint,
   GetObjectExpertsEndpoint,
@@ -106,7 +107,8 @@ export interface McpToolDeps {
   getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint;
   getObjectFollowers: GetObjectFollowersEndpoint;
   getObjectExperts: GetObjectExpertsEndpoint;
-  getObjectAuthority: GetObjectAuthorityEndpoint;
+  getObjectFavoritedBy: GetObjectFavoritedByEndpoint;
+  getObjectOwnership: GetObjectOwnershipEndpoint;
   getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint;
   getObjectPostsFeed: GetObjectPostsFeedEndpoint;
   getObjectThreadsFeed: GetObjectThreadsFeedEndpoint;

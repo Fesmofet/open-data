@@ -1,5 +1,6 @@
 import type {
-  ObjectAuthority,
+  ObjectFavorite,
+  ObjectOwnership,
   ObjectUpdate,
   ObjectsCore,
   ValidityVote,
@@ -13,7 +14,8 @@ export interface AggregatedObject {
   core: ObjectsCore;
   updates: ObjectUpdate[];
   validity_votes: ValidityVote[];
-  authorities: ObjectAuthority[];
+  favorites: ObjectFavorite[];
+  ownerships: ObjectOwnership[];
 }
 
 /**

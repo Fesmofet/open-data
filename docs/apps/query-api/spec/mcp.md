@@ -69,7 +69,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_object_add_on` | `GET .../add-on` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
 | `get_object_followers` | `GET .../followers` | [user-social-lists.md](user-social-lists.md) |
 | `get_object_experts` | `GET .../experts` | [object-experts.md](object-experts.md) |
-| `get_object_authority` | `GET .../authority` | [user-social-lists.md](user-social-lists.md) |
+| `get_object_favorited_by` | `GET .../favorited-by` | [user-social-lists.md](user-social-lists.md) |
+| `get_object_ownership` | `GET .../ownership` | [user-social-lists.md](user-social-lists.md) |
 | `get_object_updates` | `GET .../updates` | — |
 | `get_user_profile` | `GET .../profile` | [users-profile-endpoint.md](users-profile-endpoint.md) |
 | `get_user_blog` | `POST .../blog` | [user-blog-feed-endpoint.md](user-blog-feed-endpoint.md) |

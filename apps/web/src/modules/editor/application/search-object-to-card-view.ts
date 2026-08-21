@@ -24,7 +24,8 @@ export function searchObjectResultToObjectView(
     semantic_type: null,
     weight: 0,
     fields,
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 }

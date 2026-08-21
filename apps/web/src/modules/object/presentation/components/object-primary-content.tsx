@@ -55,8 +55,8 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Gallery';
     case 'updates':
       return 'Updates';
-    case 'authority':
-      return 'Authority';
+    case 'ownership':
+      return 'Ownership';
     case 'followers':
       return 'Followers';
     case 'messages':
@@ -166,8 +166,8 @@ export type ObjectPrimaryContentProps = {
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Experts tab is active. */
   objectExpertsFeed?: ReactNode | null;
-  /** Injected feed (client) when the Authority tab is active. */
-  objectAuthorityFeed?: ReactNode | null;
+  /** Injected feed (client) when the Ownership tab is active. */
+  objectOwnershipFeed?: ReactNode | null;
   objectRelatedFeed?: ReactNode | null;
   objectSimilarFeed?: ReactNode | null;
   objectAddOnFeed?: ReactNode | null;
@@ -214,7 +214,7 @@ export function ObjectPrimaryContent({
   objectMessagesFeed,
   objectFollowersFeed,
   objectExpertsFeed,
-  objectAuthorityFeed,
+  objectOwnershipFeed,
   objectRelatedFeed,
   objectSimilarFeed,
   objectAddOnFeed,
@@ -591,15 +591,15 @@ export function ObjectPrimaryContent({
   }
 
   if (activePrimarySegment !== MENU_LANDING_SEGMENT && activePrimarySegment !== REVIEWS_SEGMENT) {
-    if (activePrimarySegment === 'authority' && objectAuthorityFeed != null) {
+    if (activePrimarySegment === 'ownership' && objectOwnershipFeed != null) {
       return (
         <FeedColumn>
-          {objectAuthorityFeed}
+          {objectOwnershipFeed}
         </FeedColumn>
       );
     }
 
-    if (activePrimarySegment === 'authority') {
+    if (activePrimarySegment === 'ownership') {
       return (
         <FeedColumn>
           <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">

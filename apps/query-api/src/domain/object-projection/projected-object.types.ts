@@ -15,8 +15,8 @@ export interface RefSummary {
   addedAtUnix?: number;
   /** Direct `listItem` update count; present only for `object_type === 'list'`. */
   listItemsCount?: number;
-  /** True when viewer has administrative authority on this ref target. */
-  hasAdministrativeAuthority?: boolean;
+  /** True when viewer has favorited this ref target. */
+  isFavorited?: boolean;
 }
 
 export interface ProjectedObjectSeo {
@@ -64,9 +64,13 @@ export interface ProjectedObject {
   /** From `objects_core.weight`. */
   weight: number | null;
   fields: Record<string, unknown>;
-  /** True when `viewerAccount` has an `administrative` row for this object. */
-  hasAdministrativeAuthority: boolean;
-  /** True when `viewerAccount` has an `ownership` row for this object. */
+  /** True when `viewerAccount` has an `object_favorite` row for this object. */
+  isFavorited: boolean;
+  /** True when `viewerAccount` has a `supervised` row in `object_ownership`. */
+  hasSupervisedOwnership: boolean;
+  /** True when `viewerAccount` has an `exclusive` row in `object_ownership`. */
+  hasExclusiveOwnership: boolean;
+  /** True when `viewerAccount` has any `object_ownership` row (supervised or exclusive). */
   hasOwnershipAuthority: boolean;
   seo?: ProjectedObjectSeo;
   /** Flat Photos-album list for sidebar carousel and description page (legacy `preview_gallery`). */

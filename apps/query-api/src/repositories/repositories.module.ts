@@ -4,7 +4,8 @@ import { ObjectUpdatesRepository } from './object-updates.repository';
 import { ValidityVotesRepository } from './validity-votes.repository';
 import { RankVotesRepository } from './rank-votes.repository';
 import { AccountsCurrentRepository } from './accounts-current.repository';
-import { ObjectAuthorityRepository } from './object-authority.repository';
+import { ObjectFavoriteRepository } from './object-favorite.repository';
+import { ObjectOwnershipRepository } from './object-ownership.repository';
 import { AggregatedObjectRepository } from './aggregated-object.repository';
 import { PostsRepository } from './posts.repository';
 import { UserPostDraftsRepository } from './user-post-drafts.repository';
@@ -42,7 +43,8 @@ import { MessagingRepository } from './messaging.repository';
     ValidityVotesRepository,
     RankVotesRepository,
     AccountsCurrentRepository,
-    ObjectAuthorityRepository,
+    ObjectFavoriteRepository,
+    ObjectOwnershipRepository,
     AggregatedObjectRepository,
     PostsRepository,
     UserPostDraftsRepository,
@@ -80,7 +82,8 @@ import { MessagingRepository } from './messaging.repository';
     ValidityVotesRepository,
     RankVotesRepository,
     AccountsCurrentRepository,
-    ObjectAuthorityRepository,
+    ObjectFavoriteRepository,
+    ObjectOwnershipRepository,
     AggregatedObjectRepository,
     PostsRepository,
     UserPostDraftsRepository,

@@ -10,8 +10,9 @@ function viewWithAgg(
     semantic_type: null,
     weight: null,
     fields: { aggregateRating },
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 }
 

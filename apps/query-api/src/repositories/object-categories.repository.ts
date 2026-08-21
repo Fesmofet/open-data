@@ -67,10 +67,15 @@ export class ObjectCategoriesRepository {
         WITH authority_objects AS (
           SELECT DISTINCT oc.object_id
           FROM objects_core oc
-          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-            AND oa.account = ${account}
-            AND oa.authority_type IN ('ownership', 'administrative')
+          INNER JOIN object_favorite of ON of.object_id = oc.object_id
+            AND of.account = ${account}
             AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+          UNION
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+            AND oo.account = ${account}
             AND oc.status = 'active'
         ),
         post_linked_objects AS (
@@ -159,10 +164,15 @@ export class ObjectCategoriesRepository {
         WITH authority_objects AS (
           SELECT DISTINCT oc.object_id
           FROM objects_core oc
-          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-            AND oa.account = ${account}
-            AND oa.authority_type IN ('ownership', 'administrative')
+          INNER JOIN object_favorite of ON of.object_id = oc.object_id
+            AND of.account = ${account}
             AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+          UNION
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+            AND oo.account = ${account}
             AND oc.status = 'active'
         ),
         post_linked_objects AS (
@@ -255,10 +265,15 @@ export class ObjectCategoriesRepository {
         WITH authority_objects AS (
           SELECT DISTINCT oc.object_id
           FROM objects_core oc
-          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-            AND oa.account = ${account}
-            AND oa.authority_type IN ('ownership', 'administrative')
+          INNER JOIN object_favorite of ON of.object_id = oc.object_id
+            AND of.account = ${account}
             AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+          UNION
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+            AND oo.account = ${account}
             AND oc.status = 'active'
         ),
         post_linked_objects AS (
@@ -338,10 +353,15 @@ export class ObjectCategoriesRepository {
         WITH authority_objects AS (
           SELECT DISTINCT oc.object_id
           FROM objects_core oc
-          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-            AND oa.account = ${account}
-            AND oa.authority_type IN ('ownership', 'administrative')
+          INNER JOIN object_favorite of ON of.object_id = oc.object_id
+            AND of.account = ${account}
             AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+          UNION
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+            AND oo.account = ${account}
             AND oc.status = 'active'
         ),
         post_linked_objects AS (
@@ -403,10 +423,15 @@ export class ObjectCategoriesRepository {
           WITH authority_objects AS (
             SELECT DISTINCT oc.object_id
             FROM objects_core oc
-            INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-              AND oa.account = ${account}
-              AND oa.authority_type IN ('ownership', 'administrative')
+            INNER JOIN object_favorite of ON of.object_id = oc.object_id
+              AND of.account = ${account}
               AND (${authorityTypeFilter})
+              AND oc.status = 'active'
+            UNION
+            SELECT DISTINCT oc.object_id
+            FROM objects_core oc
+            INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+              AND oo.account = ${account}
               AND oc.status = 'active'
           ),
           post_linked_objects AS (
@@ -452,10 +477,15 @@ export class ObjectCategoriesRepository {
         WITH authority_objects AS (
           SELECT DISTINCT oc.object_id
           FROM objects_core oc
-          INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-            AND oa.account = ${account}
-            AND oa.authority_type IN ('ownership', 'administrative')
+          INNER JOIN object_favorite of ON of.object_id = oc.object_id
+            AND of.account = ${account}
             AND (${authorityTypeFilter})
+            AND oc.status = 'active'
+          UNION
+          SELECT DISTINCT oc.object_id
+          FROM objects_core oc
+          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+            AND oo.account = ${account}
             AND oc.status = 'active'
         ),
         post_linked_objects AS (

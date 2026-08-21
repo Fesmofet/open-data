@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
+import { buildOdlObjectOwnershipOp } from '@opden-data-layer/hive-broadcast';
 
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -12,33 +12,33 @@ import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
-import type { AuthoritySubType } from '../../domain/object-page.types';
+import type { OwnershipSubType } from '../../domain/object-page.types';
 
-export type AuthorityActionButtonProps = {
+export type OwnershipActionButtonProps = {
   objectId: string;
-  authorityType: AuthoritySubType;
-  hasAuthority: boolean;
+  ownershipType: OwnershipSubType;
+  hasOwnership: boolean;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
 };
 
-export function AuthorityActionButton({
+export function OwnershipActionButton({
   objectId,
-  authorityType,
-  hasAuthority,
+  ownershipType,
+  hasOwnership,
   viewerUsername,
   onRequireLogin,
-}: AuthorityActionButtonProps) {
+}: OwnershipActionButtonProps) {
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
   const router = useRouter();
   const { t } = useI18n();
-  const [active, setActive] = useState(hasAuthority);
+  const [active, setActive] = useState(hasOwnership);
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    setActive(hasAuthority);
-  }, [hasAuthority, objectId, authorityType]);
+    setActive(hasOwnership);
+  }, [hasOwnership, objectId, ownershipType]);
 
   const onClick = useCallback(async () => {
     const account = viewerUsername?.trim();
@@ -54,10 +54,10 @@ export function AuthorityActionButton({
     setActive(!previous);
     setPending(true);
     try {
-      const op = buildOdlObjectAuthorityOp({
+      const op = buildOdlObjectOwnershipOp({
         id: odlCustomJsonId,
         objectId,
-        authorityType,
+        ownershipType,
         method,
         required_posting_auths: [account],
       });
@@ -77,7 +77,7 @@ export function AuthorityActionButton({
     }
   }, [
     active,
-    authorityType,
+    ownershipType,
     objectId,
     odlCustomJsonId,
     onRequireLogin,
@@ -86,7 +86,9 @@ export function AuthorityActionButton({
     viewerUsername,
   ]);
 
-  const label = active ? t('object_authority_action_remove') : t('object_authority_action_add');
+  const label = active
+    ? t('object_ownership_action_remove')
+    : t('object_ownership_action_claim');
 
   return (
     <div className="flex justify-end">
@@ -108,3 +110,7 @@ export function AuthorityActionButton({
     </div>
   );
 }
+
+/** @deprecated Use {@link OwnershipActionButton} */
+export const AuthorityActionButton = OwnershipActionButton;
+export type AuthorityActionButtonProps = OwnershipActionButtonProps;

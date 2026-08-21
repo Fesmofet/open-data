@@ -149,7 +149,7 @@ function buildPrimaryTabs(input: {
     { segment: 'messages', label: 'Messages' },
     { segment: 'gallery', label: 'Gallery' },
     { segment: 'updates', label: 'Updates', count: input.updatesCount },
-    { segment: 'authority', label: 'Authority' },
+    { segment: 'ownership', label: 'Ownership' },
     { segment: 'followers', label: 'Followers', count: input.followersCount },
     { segment: 'experts', label: 'Experts', count: input.expertsCount },
   ];
@@ -680,6 +680,41 @@ function buildLeftRailBlocks(
   return blocks;
 }
 
+function readIsFavorited(api: ProjectedObjectWithCountsView): boolean {
+  const legacy = (api as Record<string, unknown>)['hasAdministrativeAuthority'];
+  return api.isFavorited ?? legacy === true;
+}
+
+function readHasSupervisedOwnership(api: ProjectedObjectWithCountsView): boolean {
+  const legacy = (api as Record<string, unknown>)['hasOwnershipAuthority'];
+  return api.hasSupervisedOwnership ?? false;
+}
+
+function readHasExclusiveOwnership(api: ProjectedObjectWithCountsView): boolean {
+  const legacy = (api as Record<string, unknown>)['hasOwnershipAuthority'];
+  return api.hasExclusiveOwnership ?? legacy === true;
+}
+
+function readFavoritedByCount(api: ProjectedObjectWithCountsView): number {
+  const legacy = (api as Record<string, unknown>)['administrative_count'];
+  if (typeof api.favorited_by_count === 'number') {
+    return api.favorited_by_count;
+  }
+  return typeof legacy === 'number' ? legacy : 0;
+}
+
+function readSupervisedOwnershipCount(api: ProjectedObjectWithCountsView): number {
+  return typeof api.supervised_count === 'number' ? api.supervised_count : 0;
+}
+
+function readExclusiveOwnershipCount(api: ProjectedObjectWithCountsView): number {
+  if (typeof api.exclusive_count === 'number') {
+    return api.exclusive_count;
+  }
+  const legacy = (api as Record<string, unknown>)['ownership_count'];
+  return typeof legacy === 'number' ? legacy : 0;
+}
+
 export function projectedObjectWithCountsToPageModel(
   api: ProjectedObjectWithCountsView,
   optionsApi?: ObjectOptionsApiResponse | null,
@@ -700,8 +735,9 @@ export function projectedObjectWithCountsToPageModel(
     semantic_type: api.semantic_type,
     weight: api.weight ?? null,
     fields,
-    hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
-    hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
+    isFavorited: readIsFavorited(api),
+    hasSupervisedOwnership: readHasSupervisedOwnership(api),
+    hasExclusiveOwnership: readHasExclusiveOwnership(api),
     previewGallery: api.previewGallery,
     galleryAlbums: api.galleryAlbums,
     ...parentHoist,
@@ -786,14 +822,16 @@ export function projectedObjectWithCountsToPageModel(
       expertsCount: api.experts_count,
     }),
     feedSubTabs: FEED_SUB_TABS,
-    hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
-    hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
+    isFavorited: readIsFavorited(api),
+    hasSupervisedOwnership: readHasSupervisedOwnership(api),
+    hasExclusiveOwnership: readHasExclusiveOwnership(api),
     isFollowing: api.is_following ?? false,
     viewerBell: api.viewer_bell ?? false,
     updateTypeCounts: api.update_type_counts ?? {},
     updateLocales: api.update_locales ?? [],
-    administrativeAuthorityCount: api.administrative_count ?? 0,
-    ownershipAuthorityCount: api.ownership_count ?? 0,
+    favoritedByCount: readFavoritedByCount(api),
+    supervisedOwnershipCount: readSupervisedOwnershipCount(api),
+    exclusiveOwnershipCount: readExclusiveOwnershipCount(api),
     leftRailBlocks,
     tagCategoryNames,
     rightRelated: [],

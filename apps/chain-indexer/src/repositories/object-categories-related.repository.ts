@@ -113,9 +113,15 @@ export class ObjectCategoriesRelatedRepository {
       WITH authority_objects AS (
         SELECT DISTINCT oc.object_id
         FROM objects_core oc
-        INNER JOIN object_authority oa ON oa.object_id = oc.object_id
-          AND oa.account = ${account.trim()}
-          AND oa.authority_type IN ('ownership', 'administrative')
+        INNER JOIN object_favorite ofav ON ofav.object_id = oc.object_id
+          AND ofav.account = ${account.trim()}
+          AND (${authorityTypeFilter})
+          AND oc.status = 'active'
+        UNION
+        SELECT DISTINCT oc.object_id
+        FROM objects_core oc
+        INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+          AND oo.account = ${account.trim()}
           AND (${authorityTypeFilter})
           AND oc.status = 'active'
       ),

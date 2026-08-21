@@ -33,7 +33,7 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 | `admins`          | multi  | text — Hive account name | Account responsible for object data curation; highest precedence in vote resolution |
 | `trusted`         | multi  | text — Hive account name | Account responsible for object data curation on objects they have claimed authority over; lower precedence than `admins` |
 | `moderators`      | multi  | text — Hive account name | Account responsible for muting social content; their mutes form the resolved `muted` set |
-| `authorities`     | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account holds an `object_authority` record |
+| `authorities`     | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account has an `object_favorite` row |
 | `restricted`      | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
 | `banned`          | multi  | text — Hive account name | Platform-level ban: triggers deletion of all objects and updates created by this account; at governance level all remaining content from this account is excluded from resolved views |
 | `whitelist`       | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
@@ -148,13 +148,13 @@ When the resolved `authorities` set is non-empty, it acts as a **search scope re
 
 Query execution with a non-empty `authorities`:
 
-1. Look up `object_authority` for all entries where `username ∈ authorities` (any `authorityType`, any `targetKind = 'object'`).
-2. Collect the resulting set of `targetId` values — these are the **eligible object IDs**.
+1. Look up `object_favorite` for all entries where `account ∈ authorities` (objects only).
+2. Collect the resulting set of `object_id` values — these are the **eligible object IDs**.
 3. Restrict the object search to only those eligible IDs. Objects not present in the eligible set are excluded from results entirely, regardless of other filters.
 
 When `authorities` is empty, no scope restriction is applied — all objects are candidates.
 
-Use case: a governance context scoped to a specific curator's catalogue — only objects that curator has explicitly claimed authority over are visible in search results for that governance.
+Use case: a governance context scoped to a specific curator's catalogue — only objects that curator has **favorited** are visible in search results for that governance.
 
 ## 7) banned semantics
 
@@ -191,13 +191,13 @@ The read-side filter applies independently of the platform-level deletion — it
 
 | Value    | Behaviour |
 |----------|-----------|
-| `null`   | Control off (default). The curator filter from [authority-entity.md](authority-entity.md) applies only to objects that have explicit `object_authority` records. Objects without authority records use normal vote semantics. |
-| `'full'` | All objects behave as if they have active ownership authority. The curator filter applies to **every** object in the context, regardless of whether explicit `object_authority` records exist. Governance `admins` act as the implicit ownership authority across all objects. |
+| `null`   | Control off (default). The curator filter from [object-ownership.md](object-ownership.md) applies only to objects that have explicit `object_ownership` records. Objects without ownership records use normal vote semantics. |
+| `'full'` | All objects behave as if they have active ownership authority. The curator filter applies to **every** object in the context, regardless of whether explicit `object_ownership` records exist. Governance `admins` act as the implicit ownership authority across all objects. |
 
 In `'full'` mode the effective curator set for any object is:
 
 ```
-C = { governance admins } ∪ { explicit ownership holders from object_authority }
+C = { governance admins } ∪ { exclusive ownership holders from object_ownership }
 ```
 
 ### Future modes

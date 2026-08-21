@@ -18,7 +18,9 @@ function placeholderProjectedObject(o: PostObject): ProjectedObject {
     status: 'active',
     weight: null,
     fields: {},
-    hasAdministrativeAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
     hasOwnershipAuthority: false,
   });
 }

@@ -74,7 +74,7 @@ const categoryRefListResponseSchema = registry.register(
         weight: z.number().nullable(),
         addedAtUnix: z.number().optional(),
         listItemsCount: z.number().int().optional(),
-        hasAdministrativeAuthority: z.boolean().optional(),
+        isFavorited: z.boolean().optional(),
       }),
     ),
     hasMore: z.boolean(),

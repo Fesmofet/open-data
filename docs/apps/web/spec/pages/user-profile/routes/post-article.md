@@ -31,11 +31,11 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 ## Content layout
 
-`BlogPostScreen` accepts `variant="modal" | "page"`. The footer includes the same **`StoryVoteButton`** like control as feed cards (Hive `vote` op via wallet broadcast; see [feed.md](../../feed.md) “Likes”). **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **administrative authority** on that object (see query API).
+`BlogPostScreen` accepts `variant="modal" | "page"`. The footer includes the same **`StoryVoteButton`** like control as feed cards (Hive `vote` op via wallet broadcast; see [feed.md](../../feed.md) “Likes”). **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **favorited** that object (see query API).
 
 ## Single-post API (`X-Viewer`)
 
-`getSinglePostQuery` calls `GET /query/v1/posts/:author/:permlink` with an optional **`X-Viewer`** header set to the current Hive account when the user is logged in. The query-api uses it to populate `hasAdministrativeAuthority` on each object in `objects[]`, richer linked-object fields (`description`, `rating`, `categoryItems`), and **`votes.voted`** when the viewer has an active on-chain vote. Unauthenticated requests omit the header; authority, `voted`, and some fields fall back to defaults. The profile **posts** tab uses the same header on `POST /query/v1/users/:name/blog` so feed cards can show the voted state on the like control.
+`getSinglePostQuery` calls `GET /query/v1/posts/:author/:permlink` with an optional **`X-Viewer`** header set to the current Hive account when the user is logged in. The query-api uses it to populate `isFavorited` on each object in `objects[]`, richer linked-object fields (`description`, `rating`, `categoryItems`), and **`votes.voted`** when the viewer has an active on-chain vote. Unauthenticated requests omit the header; favorite state, `voted`, and some fields fall back to defaults. The profile **posts** tab uses the same header on `POST /query/v1/users/:name/blog` so feed cards can show the voted state on the like control.
 
 ## Post body HTML
 

@@ -20,8 +20,9 @@ export function searchObjectToProjectedView(
     semantic_type: null,
     weight: percent,
     fields,
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 }
 

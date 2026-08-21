@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
+import { buildOdlObjectFavoriteOp } from '@opden-data-layer/hive-broadcast';
 
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
@@ -37,8 +37,8 @@ export type AdministrativeHeartButtonProps = {
   initialActive: boolean;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
-  /** Called after a successful authority broadcast and cache revalidation. */
-  onAuthorityChange?: () => void;
+  /** Called after a successful favorite broadcast and cache revalidation. */
+  onFavoriteChange?: () => void;
 };
 
 export function AdministrativeHeartButton({
@@ -46,7 +46,7 @@ export function AdministrativeHeartButton({
   initialActive,
   viewerUsername,
   onRequireLogin,
-  onAuthorityChange,
+  onFavoriteChange,
 }: AdministrativeHeartButtonProps) {
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -73,10 +73,9 @@ export function AdministrativeHeartButton({
     setActive(!previous);
     setPending(true);
     try {
-      const op = buildOdlObjectAuthorityOp({
+      const op = buildOdlObjectFavoriteOp({
         id: odlCustomJsonId,
         objectId,
-        authorityType: 'administrative',
         method,
         required_posting_auths: [account],
       });
@@ -88,7 +87,7 @@ export function AdministrativeHeartButton({
           await revalidateObjectAfterBroadcast(objectId);
           await revalidateUserSocialAfterBroadcast(account);
         }).finally(() => {
-          onAuthorityChange?.();
+          onFavoriteChange?.();
           setPending(false);
         });
       });
@@ -96,7 +95,7 @@ export function AdministrativeHeartButton({
       setActive(previous);
       setPending(false);
     }
-  }, [active, objectId, odlCustomJsonId, onAuthorityChange, onRequireLogin, pending, router, viewerUsername]);
+  }, [active, objectId, odlCustomJsonId, onFavoriteChange, onRequireLogin, pending, router, viewerUsername]);
 
   const hint = active ? t('feed_linked_object_admin_hint') : t('object_detail_favorites_add');
   const canInteract = viewerUsername != null && viewerUsername.trim().length > 0;

@@ -22,7 +22,9 @@ export function normalizeProjectedObjectForJson(input: ProjectedObject): Project
         ? input.weight
         : null,
     fields,
-    hasAdministrativeAuthority: input.hasAdministrativeAuthority ?? false,
+    isFavorited: input.isFavorited ?? false,
+    hasSupervisedOwnership: input.hasSupervisedOwnership ?? false,
+    hasExclusiveOwnership: input.hasExclusiveOwnership ?? false,
     hasOwnershipAuthority: input.hasOwnershipAuthority ?? false,
     previewGallery: input.previewGallery ?? [],
     galleryAlbums: input.galleryAlbums ?? [],

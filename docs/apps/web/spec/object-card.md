@@ -39,7 +39,7 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 - Thumbnail (120×120), brand/parent caption (when present), title link, subtitle (`price` · `object_type` · tag categories).
 - **Rating grid** — 2 columns (`grid-cols-2`), fill order left→right, top→bottom (1→left, 2→left+right, 3→+bottom-left, 4→full 2×2).
 - Description excerpt (plain text, not italic), max **300 characters** (ellipsis when truncated).
-- **Administrative heart** (top-right).
+- **Favorite heart** (top-right).
 
 ## Rating grid
 
@@ -66,10 +66,10 @@ Requires logged-in viewer (`viewerUsername` + wallet). Discover passes viewer fr
 
 **Indexer:** `rank_vote` must resolve `create_event_id` to the sibling `update_create` in the same envelope (same pattern as `update_vote`). See `RankVoteHandler` in chain-indexer.
 
-## Administrative heart
+## Favorite heart
 
-- **State:** `object.hasAdministrativeAuthority` from query-api (viewer has administrative authority on the object).
-- **Toggle:** `buildOdlObjectAuthorityOp` — `method: 'add' | 'remove'`, `authorityType: 'administrative'`.
+- **State:** `object.isFavorited` from query-api (viewer has favorited the object).
+- **Toggle:** `buildOdlObjectFavoriteOp` — `method: 'add' | 'remove'`.
 - **Interactive** only when `viewerUsername` is set; otherwise static icon.
 
 ## Verification

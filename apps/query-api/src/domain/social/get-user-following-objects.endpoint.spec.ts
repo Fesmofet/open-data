@@ -67,7 +67,7 @@ describe('GetUserFollowingObjectsEndpoint', () => {
 
     const aggregatedObjectRepo = {
       loadByObjectIds: jest.fn().mockResolvedValue({
-        objects: [{ core, updates: [], validity_votes: [], authorities: [] }],
+        objects: [{ core, updates: [], validity_votes: [], favorites: [], ownerships: [] }],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
@@ -84,7 +84,9 @@ describe('GetUserFollowingObjectsEndpoint', () => {
       status: 'active',
       weight: 5,
       fields: {},
-      hasAdministrativeAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
       hasOwnershipAuthority: false,
     };
 

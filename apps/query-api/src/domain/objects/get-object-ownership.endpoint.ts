@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import {
   ObjectsCoreRepository,
-  ObjectAuthorityRepository,
+  ObjectOwnershipRepository,
   UserSubscriptionsRepository,
 } from '../../repositories';
-import type { ObjectAuthorityQuery, UserSocialListQuery } from '../social/user-social-list.schema';
+import type { ObjectOwnershipQuery, UserSocialListQuery } from '../social/user-social-list.schema';
 import type { PaginatedUserFollowList, UserFollowListItem } from '../social/user-follow-list.types';
 
 @Injectable()
-export class GetObjectAuthorityEndpoint {
+export class GetObjectOwnershipEndpoint {
   constructor(
     private readonly objectsCore: ObjectsCoreRepository,
-    private readonly objectAuthority: ObjectAuthorityRepository,
+    private readonly objectOwnership: ObjectOwnershipRepository,
     private readonly subscriptions: UserSubscriptionsRepository,
   ) {}
 
   async execute(
     objectId: string,
-    query: ObjectAuthorityQuery,
+    query: ObjectOwnershipQuery,
     viewerAccount: string | undefined,
   ): Promise<PaginatedUserFollowList | null> {
     const id = objectId.trim();
@@ -37,10 +37,10 @@ export class GetObjectAuthorityEndpoint {
     };
 
     const [total, rows] = await Promise.all([
-      this.objectAuthority.countByObjectIdAndType(id, query.authority_type),
-      this.objectAuthority.findAccountsByObjectIdAndType(
+      this.objectOwnership.countByObjectIdAndType(id, query.ownership_type),
+      this.objectOwnership.findAccountsByObjectIdAndType(
         id,
-        query.authority_type,
+        query.ownership_type,
         socialQuery.sort,
         socialQuery.skip,
         socialQuery.limit,
@@ -65,8 +65,7 @@ export class GetObjectAuthorityEndpoint {
     return {
       items,
       total,
-      hasMore:
-        items.length > 0 && socialQuery.skip + items.length < total,
+      hasMore: items.length > 0 && socialQuery.skip + items.length < total,
     };
   }
 }

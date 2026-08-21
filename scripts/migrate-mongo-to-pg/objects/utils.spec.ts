@@ -4,6 +4,7 @@ import {
   mongoActiveVotesHasVoter,
   parseMongoCreatedAt,
 } from './utils';
+import { mapMongoAuthorityField } from './authority-field-map';
 
 describe('parseMongoCreatedAt', () => {
   it('parses ISO string', () => {
@@ -62,5 +63,54 @@ describe('compareMongoObjectIdHex', () => {
     expect(
       compareMongoObjectIdHex('622e6c7ab8407648f662d73c', '631a58254aea5014d452dd2a'),
     ).toBeLessThan(0);
+  });
+});
+
+describe('mapMongoAuthorityField', () => {
+  const objectId = 'obj-abc';
+  const fieldId = '622e6c74e48e7448ee3a54f2';
+
+  it('maps administrative to object_favorite row', () => {
+    const result = mapMongoAuthorityField(objectId, {
+      _id: fieldId,
+      creator: 'alice',
+      body: 'administrative',
+    });
+
+    expect(result.kind).toBe('favorite');
+    if (result.kind !== 'favorite') {
+      return;
+    }
+    expect(result.row.object_id).toBe(objectId);
+    expect(result.row.account).toBe('alice');
+    expect(result.row.event_seq).toBeGreaterThan(0n);
+  });
+
+  it('maps ownership to object_ownership exclusive row', () => {
+    const result = mapMongoAuthorityField(objectId, {
+      _id: fieldId,
+      creator: 'bob',
+      body: 'ownership',
+    });
+
+    expect(result.kind).toBe('ownership');
+    if (result.kind !== 'ownership') {
+      return;
+    }
+    expect(result.row).toMatchObject({
+      object_id: objectId,
+      account: 'bob',
+      ownership_type: 'exclusive',
+    });
+  });
+
+  it('skips invalid authority body', () => {
+    expect(
+      mapMongoAuthorityField(objectId, {
+        _id: fieldId,
+        creator: 'alice',
+        body: 'unknown',
+      }),
+    ).toEqual({ kind: 'skip' });
   });
 });

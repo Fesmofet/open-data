@@ -61,7 +61,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.users],
   summary: 'List user favorite objects',
   description:
-    'Paginated favorites: `object_authority` (administrative) ∪ optional `post_objects`, filtered by `FAVORITES_OBJECT_TYPES`, `user_shop_deselect`, and `hide_favorite_objects`. Unknown account names return an empty page (`items: []`, `total: 0`) rather than 404. Blank `name` returns `null` body.',
+    'Paginated favorites: `object_favorite` ∪ optional `post_objects`, filtered by `FAVORITES_OBJECT_TYPES`, `user_shop_deselect`, and `hide_favorite_objects`. Unknown account names return an empty page (`items: []`, `total: 0`) rather than 404. Blank `name` returns `null` body.',
   request: {
     params: z.object({ name: accountNameParam }),
     headers: z.object({

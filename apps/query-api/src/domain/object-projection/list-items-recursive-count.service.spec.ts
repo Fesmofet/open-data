@@ -22,7 +22,7 @@ function agg(objectId: string, objectType: string): AggregatedObject {
     } as AggregatedObject['core'],
     updates: [],
     validity_votes: [],
-    authorities: [],
+    favorites: [], ownerships: [],
   };
 }
 

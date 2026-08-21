@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ObjectAuthority, ValidityVote } from '@opden-data-layer/odl-db-types';
+import { ObjectOwnership, ValidityVote } from '@opden-data-layer/odl-db-types';
 
 import type { GovernanceSnapshot, VoterWaivPowerMap } from '@opden-data-layer/objects-domain';
 import {
@@ -8,7 +8,7 @@ import {
   computeCuratorSet,
   resolveUpdateValidity,
 } from '@opden-data-layer/objects-domain';
-import { ObjectAuthorityRepository, ObjectsCoreRepository, UpdatesFeedRepository } from '../../repositories';
+import { ObjectOwnershipRepository, ObjectsCoreRepository, UpdatesFeedRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { feedItemImagePreviewUrls } from '../object-projection/image-display-url';
 import {
@@ -42,7 +42,7 @@ export class GetObjectUpdatesFeedEndpoint {
   constructor(
     private readonly objectsCore: ObjectsCoreRepository,
     private readonly updatesFeedRepo: UpdatesFeedRepository,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectOwnershipRepo: ObjectOwnershipRepository,
     private readonly governanceResolver: GovernanceResolverService,
     private readonly config: ConfigService,
   ) {}
@@ -56,7 +56,7 @@ export class GetObjectUpdatesFeedEndpoint {
     const governance = await this.governanceResolver.resolveMergedForObjectView(
       input.governanceObjectIdFromHeader,
     );
-    const authorities = await this.objectAuthorityRepo.findByObjectId(input.objectId);
+    const ownerships = await this.objectOwnershipRepo.findByObjectId(input.objectId);
 
     const filter = {
       updateType: input.query.update_type,
@@ -64,9 +64,9 @@ export class GetObjectUpdatesFeedEndpoint {
     };
 
     if (input.query.sort === 'recency') {
-      return this.recencyPage(input, governance, authorities, filter);
+      return this.recencyPage(input, governance, ownerships, filter);
     }
-    return this.approvalPage(input, governance, authorities, filter);
+    return this.approvalPage(input, governance, ownerships, filter);
   }
 
   async executeByUpdateId(input: {
@@ -91,12 +91,12 @@ export class GetObjectUpdatesFeedEndpoint {
     const governance = await this.governanceResolver.resolveMergedForObjectView(
       input.governanceObjectIdFromHeader,
     );
-    const authorities = await this.objectAuthorityRepo.findByObjectId(input.objectId);
+    const ownerships = await this.objectOwnershipRepo.findByObjectId(input.objectId);
     const items = await this.buildItemsForPage(
       input.objectId,
       [joinRow],
       governance,
-      authorities,
+      ownerships,
       input.viewerAccount,
     );
     return items[0] ?? null;
@@ -105,7 +105,7 @@ export class GetObjectUpdatesFeedEndpoint {
   private async recencyPage(
     input: GetObjectUpdatesFeedInput,
     governance: Parameters<typeof computeApprovePercent>[2],
-    authorities: ObjectAuthority[],
+    ownerships: ObjectOwnership[],
     filter: { updateType?: string; locale?: string },
   ): Promise<ObjectUpdatesFeedResponseDto> {
     const limit = input.query.limit;
@@ -130,7 +130,7 @@ export class GetObjectUpdatesFeedEndpoint {
       input.objectId,
       pageRows,
       governance,
-      authorities,
+      ownerships,
       input.viewerAccount,
     );
 
@@ -158,7 +158,7 @@ export class GetObjectUpdatesFeedEndpoint {
   private async approvalPage(
     input: GetObjectUpdatesFeedInput,
     governance: Parameters<typeof computeApprovePercent>[2],
-    authorities: ObjectAuthority[],
+    ownerships: ObjectOwnership[],
     filter: { updateType?: string; locale?: string },
   ): Promise<ObjectUpdatesFeedResponseDto> {
     const limit = input.query.limit;
@@ -191,7 +191,7 @@ export class GetObjectUpdatesFeedEndpoint {
 
     const withPercent = allRows.map((jr) => ({
       jr,
-      approve_percent: computeApprovePercent(jr.row, votes, governance, voterWaivPowers, authorities),
+      approve_percent: computeApprovePercent(jr.row, votes, governance, voterWaivPowers, ownerships),
     }));
     withPercent.sort((a, b) => {
       if (b.approve_percent !== a.approve_percent) {
@@ -209,14 +209,14 @@ export class GetObjectUpdatesFeedEndpoint {
     const hasMore = slice.length > limit;
     const pageSlice = hasMore ? slice.slice(0, limit) : slice;
 
-    const curatorSet = computeCuratorSet(authorities, governance);
+    const curatorSet = computeCuratorSet(ownerships, governance);
     const items: ObjectUpdateFeedItemDto[] = pageSlice.map((p) =>
       this.toDto(
         p.jr,
         p.approve_percent,
         votes,
         governance,
-        authorities,
+        ownerships,
         curatorSet,
         voterWaivPowers,
         input.viewerAccount,
@@ -239,7 +239,7 @@ export class GetObjectUpdatesFeedEndpoint {
     objectId: string,
     pageRows: Awaited<ReturnType<UpdatesFeedRepository['findRecencyPage']>>,
     governance: Parameters<typeof computeApprovePercent>[2],
-    authorities: ObjectAuthority[],
+    ownerships: ObjectOwnership[],
     viewerAccount: string | undefined,
   ): Promise<ObjectUpdateFeedItemDto[]> {
     const updateIds = pageRows.map((r) => r.row.update_id);
@@ -257,15 +257,15 @@ export class GetObjectUpdatesFeedEndpoint {
     const voterNames = [...new Set(votes.map((v) => v.voter))];
     const powersMap = await this.updatesFeedRepo.findWaivPowersByAccounts(voterNames);
     const voterWaivPowers: VoterWaivPowerMap = powersMap;
-    const curatorSet = computeCuratorSet(authorities, governance);
+    const curatorSet = computeCuratorSet(ownerships, governance);
 
     return pageRows.map((jr) =>
       this.toDto(
         jr,
-        computeApprovePercent(jr.row, votes, governance, voterWaivPowers, authorities),
+        computeApprovePercent(jr.row, votes, governance, voterWaivPowers, ownerships),
         votes,
         governance,
-        authorities,
+        ownerships,
         curatorSet,
         voterWaivPowers,
         viewerAccount,
@@ -314,7 +314,7 @@ export class GetObjectUpdatesFeedEndpoint {
     approvePercent: number,
     allVotes: ValidityVote[],
     governance: GovernanceSnapshot,
-    authorities: ObjectAuthority[],
+    ownerships: ObjectOwnership[],
     curatorSet: Set<string>,
     voterWaivPowers: VoterWaivPowerMap,
     viewerAccount: string | undefined,
@@ -361,7 +361,7 @@ export class GetObjectUpdatesFeedEndpoint {
       curatorSet,
       governance,
       voterWaivPowers,
-      authorities,
+      ownerships,
     );
     const decisive_privileged_vote = this.mapDecisivePrivilegedVote(validity);
     const { forVoters, againstVoters } = resolveLatestValidityVoters(updateVotes);

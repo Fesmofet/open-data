@@ -116,8 +116,10 @@ describe('GetPostByKeyEndpoint', () => {
           object_type: v.object_type,
           semantic_type: null,
           fields: {},
-          hasAdministrativeAuthority:
+          isFavorited:
             options.viewerAccount === 'bob' && v.object_id === 'obj-x',
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
           hasOwnershipAuthority: false,
         })),
       ),
@@ -290,7 +292,7 @@ describe('GetPostByKeyEndpoint', () => {
           },
           updates: [],
           validity_votes: [],
-          authorities: [],
+          favorites: [], ownerships: [],
         },
       ],
       voterWaivPowers: new Map(),
@@ -312,7 +314,7 @@ describe('GetPostByKeyEndpoint', () => {
     );
   });
 
-  it('sets hasAdministrativeAuthority from projection when viewer is bob', async () => {
+  it('sets isFavorited from projection when viewer is bob', async () => {
     const p = postRow();
     const postObject = {
       author: 'alice',
@@ -345,7 +347,7 @@ describe('GetPostByKeyEndpoint', () => {
           },
           updates: [],
           validity_votes: [],
-          authorities: [],
+          favorites: [], ownerships: [],
         },
       ],
       voterWaivPowers: new Map(),
@@ -366,6 +368,6 @@ describe('GetPostByKeyEndpoint', () => {
       expect.objectContaining({ viewerAccount: 'bob', rankVoteProjection: expect.any(Object) }),
     );
     expect(r?.objects).toHaveLength(1);
-    expect(r?.objects[0].hasAdministrativeAuthority).toBe(true);
+    expect(r?.objects[0].isFavorited).toBe(true);
   });
 });

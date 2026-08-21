@@ -148,7 +148,7 @@ Envelope shape (normative): [`docs/spec/README.md`](../spec/README.md) § ODL ev
 { "events": [ { "action": "…", "v": 1, "payload": { } } ] }
 ```
 
-Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`, `object_authority`, `object_follow`, `user_follow`, `batch_import`, … — indexer handlers in [odl-pipeline](../apps/chain-indexer/spec/odl-pipeline.md).
+Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`, `object_favorite`, `object_ownership`, `object_follow`, `user_follow`, `batch_import`, … — indexer handlers in [odl-pipeline](../apps/chain-indexer/spec/odl-pipeline.md).
 
 ## Step 1 — Resolve object/update schema (MCP)
 
@@ -186,7 +186,8 @@ Import builders from `@opden-data-layer/hive-broadcast`:
 | `buildOdlUpdateCreateWithRankVoteOp` | `update_create` (aggregateRating) + `rank_vote` | Same tx |
 | `buildOdlUpdateVoteOp` | `update_vote` | `for` / `against` / `remove` |
 | `buildOdlRankVoteOp` | `rank_vote` | rank 0–10000 |
-| `buildOdlObjectAuthorityOp` | `object_authority` | administrative / ownership |
+| `buildOdlObjectFavoriteOp` | `object_favorite` | add / remove favorite |
+| `buildOdlObjectOwnershipOp` | `object_ownership` | exclusive / supervised |
 | `buildOdlObjectFollowOp` | `object_follow` | follow / unfollow / bell |
 | `buildOdlUserFollowBellOp` | `user_follow` | bell toggle |
 | `buildOdlBatchImportOp` | `batch_import` | IPFS CID; large creates |

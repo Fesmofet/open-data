@@ -6,8 +6,9 @@ export type ProjectedObjectWithCounts = ProjectedObject & {
   /** Linked Hive posts for Reviews (`post_objects`). */
   posts_count: number;
   updates_count: number;
-  administrative_count: number;
-  ownership_count: number;
+  favorited_by_count: number;
+  supervised_count: number;
+  exclusive_count: number;
   is_following: boolean;
   viewer_bell: boolean;
   update_type_counts: Record<string, number>;

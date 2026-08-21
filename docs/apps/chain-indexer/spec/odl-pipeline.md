@@ -29,7 +29,7 @@ Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequence
 | [`OdlParserModule`](../../../../apps/chain-indexer/src/domain/odl-parser/odl-parser.module.ts) | Handlers, guards, `OdlCustomJsonParser`, `BatchImportWorker` |
 | [`OdlCustomJsonParser`](../../../../apps/chain-indexer/src/domain/odl-parser/odl-custom-json-parser.ts) | JSON parse → envelope schema → per-event dispatch |
 | [`odl-envelope.schema.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/odl-envelope.schema.ts) | Zod schemas for envelope and payloads |
-| [`RepositoriesModule`](../../../../apps/chain-indexer/src/repositories/repositories.module.ts) | Kysely repositories for objects, updates, votes, accounts, authority, aggregates |
+| [`RepositoriesModule`](../../../../apps/chain-indexer/src/repositories/repositories.module.ts) | Kysely repositories for objects, updates, votes, accounts, favorites, ownership, aggregates |
 
 ## 3) Envelope and event identity
 
@@ -47,7 +47,8 @@ Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequence
 | `update_create` | `UpdateCreateHandler` | Insert update row; auto-insert creator validity vote `for`; validate `object_type` / `update_type` against registries; run write guards |
 | `update_vote` | `UpdateVoteHandler` | Validity votes |
 | `rank_vote` | `RankVoteHandler` | Rank votes; rejects single-cardinality targets; recomputes `object_updates.rank_score` |
-| `authority` | `AuthorityHandler` | Object authority edges |
+| `object_favorite` | `FavoriteHandler` | Favorite rows + reputation side-effect |
+| `object_ownership` | `OwnershipHandler` | Ownership rows |
 | `object_follow` | `FollowObjectHandler` | Object follows: upsert / delete `user_object_follows`; toggle `bell` |
 | `user_follow` | `FollowUserBellHandler` | User subscription bell toggle on `user_subscriptions` (requires existing follow row) |
 | `batch_import` | `BatchImportHandler` | Emit in-process event for async IPFS processing |

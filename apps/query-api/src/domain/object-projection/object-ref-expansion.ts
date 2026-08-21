@@ -201,7 +201,7 @@ export async function expandObjectRefs(
     locale: string;
     contentBaseUrl: string | undefined;
     viewerAccount?: string;
-    viewerAdminIds?: Set<string>;
+    viewerFavoriteIds?: Set<string>;
   },
 ): Promise<Map<string, RefSummary>> {
   const {
@@ -213,7 +213,7 @@ export async function expandObjectRefs(
     locale,
     contentBaseUrl,
     viewerAccount,
-    viewerAdminIds,
+    viewerFavoriteIds,
   } = deps;
   const out = new Map<string, RefSummary>();
   if (refIds.length === 0) {
@@ -278,7 +278,7 @@ export async function expandObjectRefs(
       object_type: core.object_type,
       fields,
       weight: core.weight ?? null,
-      hasAdministrativeAuthority: viewerAdminIds?.has(id) ?? false,
+      isFavorited: viewerFavoriteIds?.has(id) ?? false,
     };
     if (core.object_type === 'list') {
       summary.listItemsCount = listItemCountsById.get(id) ?? 0;

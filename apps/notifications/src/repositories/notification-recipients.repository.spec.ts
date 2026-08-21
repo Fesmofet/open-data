@@ -28,7 +28,7 @@ describe('NotificationRecipientsRepository', () => {
     expect(db.selectFrom).toHaveBeenCalledWith('objects_core');
   });
 
-  it('findAdministrativeAuthorities returns account names', async () => {
+  it('findFavoriteAccounts returns account names', async () => {
     const chain = mockQueryChain([
       { account: 'admin1' },
       { account: 'admin2' },
@@ -38,10 +38,11 @@ describe('NotificationRecipientsRepository', () => {
     } as unknown as Kysely<OdlDatabase>;
 
     const repo = new NotificationRecipientsRepository(db);
-    const accounts = await repo.findAdministrativeAuthorities('obj-1');
+    const accounts = await repo.findFavoriteAccounts('obj-1');
 
     expect(accounts).toEqual(['admin1', 'admin2']);
-    expect(chain.where).toHaveBeenCalledWith('authority_type', '=', 'administrative');
+    expect(db.selectFrom).toHaveBeenCalledWith('object_favorite');
+    expect(chain.where).toHaveBeenCalledWith('object_id', '=', 'obj-1');
   });
 
   it('findBellFollowers returns accounts with bell enabled', async () => {
@@ -71,7 +72,7 @@ describe('NotificationRecipientsRepository', () => {
     const repo = new NotificationRecipientsRepository(db);
 
     await expect(repo.findObjectCreator('obj')).resolves.toBeNull();
-    await expect(repo.findAdministrativeAuthorities('obj')).resolves.toEqual([]);
+    await expect(repo.findFavoriteAccounts('obj')).resolves.toEqual([]);
     await expect(repo.findBellFollowers('obj')).resolves.toEqual([]);
     await expect(repo.findChannelMembers('ch-1')).resolves.toEqual([]);
   });

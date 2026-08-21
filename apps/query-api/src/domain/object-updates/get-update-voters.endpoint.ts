@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { resolveVoterPrivilegedTier } from '@opden-data-layer/objects-domain';
 
-import { AccountsCurrentRepository, ObjectAuthorityRepository, ObjectUpdatesRepository, UpdatesFeedRepository } from '../../repositories';
+import { AccountsCurrentRepository, ObjectOwnershipRepository, ObjectUpdatesRepository, UpdatesFeedRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import {
@@ -24,7 +24,7 @@ export class GetUpdateVotersEndpoint {
     private readonly objectUpdates: ObjectUpdatesRepository,
     private readonly updatesFeedRepo: UpdatesFeedRepository,
     private readonly accounts: AccountsCurrentRepository,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectOwnershipRepo: ObjectOwnershipRepository,
     private readonly governanceResolver: GovernanceResolverService,
   ) {}
 
@@ -38,9 +38,9 @@ export class GetUpdateVotersEndpoint {
       return null;
     }
 
-    const [governance, authorities] = await Promise.all([
+    const [governance, ownerships] = await Promise.all([
       this.governanceResolver.resolveMergedForObjectView(governanceObjectIdFromHeader),
-      this.objectAuthorityRepo.findByObjectId(objectId),
+      this.objectOwnershipRepo.findByObjectId(objectId),
     ]);
 
     const votes = await this.updatesFeedRepo.findValidityVotesForObjectAndUpdates(objectId, [
@@ -67,7 +67,7 @@ export class GetUpdateVotersEndpoint {
         voter: entry.voter,
         event_seq: entry.event_seq.toString(),
         waiv_power: waivPowers.get(entry.voter) ?? 0,
-        privileged_tier: resolveVoterPrivilegedTier(entry.voter, governance, authorities),
+        privileged_tier: resolveVoterPrivilegedTier(entry.voter, governance, ownerships),
         profile: {
           name: entry.voter,
           displayName: profile?.displayName ?? null,

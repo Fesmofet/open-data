@@ -5,7 +5,7 @@ import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
-  ObjectAuthorityRepository,
+  ObjectFavoriteRepository,
   ObjectRefListRepository,
   ObjectsCoreRepository,
 } from '../../repositories';
@@ -49,7 +49,7 @@ export class GetObjectRefListEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectFavoriteRepo: ObjectFavoriteRepository,
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly objectRefListRepo: ObjectRefListRepository,
     private readonly config: ConfigService,
@@ -115,13 +115,13 @@ export class GetObjectRefListEndpoint {
     }
 
     const viewer = viewerAccount?.trim() || undefined;
-    let viewerAdminIds: Set<string> | undefined;
+    let viewerFavoriteIds: Set<string> | undefined;
     if (viewer) {
-      const refAdminIds = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+      const refFavoriteIds = await this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(
         viewer,
         pageIds,
       );
-      viewerAdminIds = new Set(refAdminIds);
+      viewerFavoriteIds = new Set(refFavoriteIds);
     }
 
     const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
@@ -134,7 +134,7 @@ export class GetObjectRefListEndpoint {
       locale,
       contentBaseUrl,
       viewerAccount: viewer,
-      viewerAdminIds,
+      viewerFavoriteIds,
     });
 
     const items: RefSummary[] = [];

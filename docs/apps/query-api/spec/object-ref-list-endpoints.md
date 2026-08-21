@@ -45,7 +45,7 @@ Pagination is **offset-based**: `cursor` is the number of logical rows already c
 | ------ | ------- |
 | `Accept-Language` / `X-Locale` | Locale for resolved ref field values. |
 | `X-Governance-Object-Id` | Optional governance merge (same as `POST /objects/resolve`). |
-| `X-Viewer` | Optional Hive account; sets `hasAdministrativeAuthority` on each `RefSummary` when the viewer has administrative authority on that ref object. |
+| `X-Viewer` | Optional Hive account; sets `isFavorited` on each `RefSummary` when the viewer favorited that ref object. |
 
 ## Response
 
@@ -63,7 +63,7 @@ Pagination is **offset-based**: `cursor` is the number of logical rows already c
         "aggregateRating": []
       },
       "weight": 123.45,
-      "hasAdministrativeAuthority": false
+      "isFavorited": false
     }
   ],
   "hasMore": true,
@@ -82,7 +82,7 @@ Each item is a compact projection (not full `ProjectedObject`):
 | `weight` | `objects_core.weight` (nullable). |
 | `addedAtUnix` | Present when sourced from an explicit ref update (optional). |
 | `listItemsCount` | Recursive list-item count when applicable (optional). |
-| `hasAdministrativeAuthority` | Viewer-specific when `X-Viewer` is set. |
+| `isFavorited` | Viewer-specific when `X-Viewer` is set. |
 
 Inactive or missing ref targets are **omitted** from `items` (page may be shorter than `limit`).
 

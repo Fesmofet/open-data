@@ -6,14 +6,16 @@ import { usePathname, useSearchParams } from 'next/navigation';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import type {
-  AuthoritySubType,
+  FollowersSubType,
   ObjectNestedViewResolved,
   ObjectPageViewModel,
+  OwnershipSubType,
 } from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 import type { RelatedAlbumListView, RelatedAlbumPreviewView } from '@/modules/object/domain/related-album.types';
 import {
-  ObjectAuthoritySubNav,
+  ObjectFollowersSubNav,
+  ObjectOwnershipSubNav,
   ObjectPrimaryContent,
   ObjectRefListFeed,
 } from '@/modules/object';
@@ -22,7 +24,7 @@ import { ObjectFieldReferencesListFeed } from '@/modules/object/presentation/com
 import type { ObjectRefListPageView } from '@/modules/object/infrastructure/object-ref-list.client';
 import type { ObjectFieldReferencesPageView } from '@/modules/object/infrastructure/object-field-references.client';
 import type { CategoryObjectsPageView } from '@/modules/object/infrastructure/category-objects.client';
-import { AuthorityActionButton } from '@/modules/object/presentation/components/authority-action-button';
+import { OwnershipActionButton } from '@/modules/object/presentation/components/ownership-action-button';
 import type {
   PaginatedUserFollowListView,
   UserSubscriptionSort,
@@ -32,7 +34,8 @@ import { ObjectExpertsAccountList } from '@/modules/object/presentation/componen
 import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
 import { useLoginModal } from '@/modules/auth';
 
-import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
+import { loadMoreObjectOwnershipAction } from './ownership/object-ownership.actions';
+import { loadMoreObjectFavoritedByAction } from './followers/object-favorited-by.actions';
 import { loadMoreObjectExpertsAction } from './experts/object-experts.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
 import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
@@ -51,11 +54,13 @@ import { resolveGalleryPhotosAlbum } from '@/modules/object/domain/resolve-galle
 export type ObjectPageTabPaneProps = {
   model: ObjectPageViewModel;
   embeddedFollowersPage: PaginatedUserFollowListView | null;
+  embeddedFavoritedByPage: PaginatedUserFollowListView | null;
   embeddedExpertsPage: PaginatedObjectExpertListView | null;
+  followersSubType: FollowersSubType;
   followersSort: UserSubscriptionSort;
-  embeddedAuthorityPage: PaginatedUserFollowListView | null;
-  authoritySubType: AuthoritySubType;
-  authoritySort: UserSubscriptionSort;
+  embeddedOwnershipPage: PaginatedUserFollowListView | null;
+  ownershipSubType: OwnershipSubType;
+  ownershipSort: UserSubscriptionSort;
   embeddedRelatedPage: ObjectRefListPageView | null;
   embeddedSimilarPage: ObjectRefListPageView | null;
   embeddedAddOnPage: ObjectRefListPageView | null;
@@ -77,11 +82,13 @@ export type ObjectPageTabPaneProps = {
 export function ObjectPageTabPane({
   model,
   embeddedFollowersPage,
+  embeddedFavoritedByPage,
   embeddedExpertsPage,
+  followersSubType,
   followersSort,
-  embeddedAuthorityPage,
-  authoritySubType,
-  authoritySort,
+  embeddedOwnershipPage,
+  ownershipSubType,
+  ownershipSort,
   embeddedRelatedPage,
   embeddedSimilarPage,
   embeddedAddOnPage,
@@ -102,7 +109,8 @@ export function ObjectPageTabPane({
   const {
     activePrimarySegment,
     activeGalleryAlbum,
-    onAuthoritySubSelect,
+    onOwnershipSubSelect,
+    onFollowersSubSelect,
     onOpenGalleryAlbum,
     onBackToGalleryAlbums,
     onOpenGalleryPhoto,
@@ -130,23 +138,53 @@ export function ObjectPageTabPane({
     return registryEntry?.supported_updates ?? [];
   }, [model.objectTypeKey]);
 
+  const followersTabCount =
+    model.primaryTabs.find((tab) => tab.segment === 'followers')?.count ?? 0;
+
   const objectFollowersFeed = useMemo(() => {
-    if (embeddedFollowersPage == null) {
+    const page =
+      followersSubType === 'favorited' ? embeddedFavoritedByPage : embeddedFollowersPage;
+    if (page == null) {
       return null;
     }
+    const loadMoreAction =
+      followersSubType === 'favorited'
+        ? loadMoreObjectFavoritedByAction
+        : loadMoreObjectFollowersAction;
+    const listKind = followersSubType === 'favorited' ? 'favorited_by' : 'followers';
     return (
-      <UserSocialAccountList
-        key={`${model.objectId}-${followersSort}`}
-        profileAccountName={model.objectId}
-        listKind="followers"
-        initialPage={embeddedFollowersPage}
-        sort={followersSort}
-        currentUsername={viewerUsername}
-        loadMoreAction={loadMoreObjectFollowersAction}
-        onBroadcastRevalidate={revalidateObjectAfterBroadcast}
-      />
+      <div className="flex flex-col gap-4">
+        <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
+          <ObjectFollowersSubNav
+            followedByCount={followersTabCount}
+            favoritedByCount={model.favoritedByCount}
+            activeSub={followersSubType}
+            onSelect={onFollowersSubSelect}
+          />
+        </div>
+        <UserSocialAccountList
+          key={`${model.objectId}-${followersSubType}-${followersSort}`}
+          profileAccountName={model.objectId}
+          listKind={listKind}
+          initialPage={page}
+          sort={followersSort}
+          currentUsername={viewerUsername}
+          loadMoreAction={loadMoreAction}
+          onBroadcastRevalidate={revalidateObjectAfterBroadcast}
+        />
+      </div>
     );
-  }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
+  }, [
+    embeddedFavoritedByPage,
+    embeddedFollowersPage,
+    followersSort,
+    followersSubType,
+    followersTabCount,
+    model.favoritedByCount,
+    model.objectId,
+    onFollowersSubSelect,
+    viewerUsername,
+  ]);
 
   const objectExpertsFeed = useMemo(() => {
     if (embeddedExpertsPage == null) {
@@ -286,64 +324,64 @@ export function ObjectPageTabPane({
     viewerUsername,
   ]);
 
-  const loadMoreObjectAuthority = useMemo(
+  const loadMoreObjectOwnership = useMemo(
     () => (profileAccountName: string, sort: UserSubscriptionSort, skip: number) =>
-      loadMoreObjectAuthorityAction(profileAccountName, authoritySubType, sort, skip),
-    [authoritySubType],
+      loadMoreObjectOwnershipAction(profileAccountName, ownershipSubType, sort, skip),
+    [ownershipSubType],
   );
 
-  const objectAuthorityFeed = useMemo(() => {
-    if (embeddedAuthorityPage == null) {
+  const objectOwnershipFeed = useMemo(() => {
+    if (embeddedOwnershipPage == null) {
       return null;
     }
-    const viewerHasThisAuthority =
-      authoritySubType === 'administrative'
-        ? model.hasAdministrativeAuthority
-        : model.hasOwnershipAuthority;
+    const viewerHasThisOwnership =
+      ownershipSubType === 'supervised'
+        ? model.hasSupervisedOwnership
+        : model.hasExclusiveOwnership;
     return (
       <div className="flex flex-col gap-4">
         <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
-          <ObjectAuthoritySubNav
-            administrativeCount={model.administrativeAuthorityCount}
-            ownershipCount={model.ownershipAuthorityCount}
-            activeSub={authoritySubType}
-            onSelect={onAuthoritySubSelect}
+          <ObjectOwnershipSubNav
+            supervisedCount={model.supervisedOwnershipCount}
+            exclusiveCount={model.exclusiveOwnershipCount}
+            activeSub={ownershipSubType}
+            onSelect={onOwnershipSubSelect}
           />
         </div>
-        <AuthorityActionButton
+        <OwnershipActionButton
           objectId={model.objectId}
-          authorityType={authoritySubType}
-          hasAuthority={viewerHasThisAuthority}
+          ownershipType={ownershipSubType}
+          hasOwnership={viewerHasThisOwnership}
           viewerUsername={viewerUsername}
           onRequireLogin={openLogin}
         />
         <UserSocialAccountList
-          key={`${model.objectId}-${authoritySubType}-${authoritySort}`}
+          key={`${model.objectId}-${ownershipSubType}-${ownershipSort}`}
           profileAccountName={model.objectId}
           listKind={
-            authoritySubType === 'administrative'
-              ? 'authority_administrative'
-              : 'authority_ownership'
+            ownershipSubType === 'supervised'
+              ? 'ownership_supervised'
+              : 'ownership_exclusive'
           }
-          initialPage={embeddedAuthorityPage}
-          sort={authoritySort}
+          initialPage={embeddedOwnershipPage}
+          sort={ownershipSort}
           currentUsername={viewerUsername}
-          loadMoreAction={loadMoreObjectAuthority}
+          loadMoreAction={loadMoreObjectOwnership}
           onBroadcastRevalidate={revalidateObjectAfterBroadcast}
         />
       </div>
     );
   }, [
-    authoritySort,
-    authoritySubType,
-    embeddedAuthorityPage,
-    loadMoreObjectAuthority,
-    model.administrativeAuthorityCount,
-    model.hasAdministrativeAuthority,
-    model.hasOwnershipAuthority,
+    ownershipSort,
+    ownershipSubType,
+    embeddedOwnershipPage,
+    loadMoreObjectOwnership,
+    model.exclusiveOwnershipCount,
+    model.hasExclusiveOwnership,
+    model.hasSupervisedOwnership,
     model.objectId,
-    model.ownershipAuthorityCount,
-    onAuthoritySubSelect,
+    model.supervisedOwnershipCount,
+    onOwnershipSubSelect,
     openLogin,
     viewerUsername,
   ]);
@@ -380,7 +418,7 @@ export function ObjectPageTabPane({
       objectMessagesFeed={messagesFeedSlot}
       objectFollowersFeed={objectFollowersFeed}
       objectExpertsFeed={objectExpertsFeed}
-      objectAuthorityFeed={objectAuthorityFeed}
+      objectOwnershipFeed={objectOwnershipFeed}
       objectRelatedFeed={objectRelatedFeed}
       objectSimilarFeed={objectSimilarFeed}
       objectAddOnFeed={objectAddOnFeed}

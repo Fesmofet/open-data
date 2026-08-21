@@ -9,8 +9,9 @@ describe('projectedCategoryNames', () => {
     semantic_type: null,
     weight: null,
     fields,
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   });
 
   it('returns trimmed non-empty strings in order', () => {

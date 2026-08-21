@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
-  ObjectAuthorityRepository,
+  ObjectFavoriteRepository,
   ObjectFieldReferencesRepository,
   ObjectsCoreRepository,
 } from '../../repositories';
@@ -36,7 +36,7 @@ export class GetObjectFieldReferencesSummaryEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectFavoriteRepo: ObjectFavoriteRepository,
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly fieldReferencesRepo: ObjectFieldReferencesRepository,
     private readonly config: ConfigService,
@@ -154,13 +154,13 @@ export class GetObjectFieldReferencesSummaryEndpoint {
     );
 
     const viewer = params.viewerAccount?.trim() || undefined;
-    let viewerAdminIds: Set<string> | undefined;
+    let viewerFavoriteIds: Set<string> | undefined;
     if (viewer) {
-      const refAdminIds = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+      const refFavoriteIds = await this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(
         viewer,
         trimmed,
       );
-      viewerAdminIds = new Set(refAdminIds);
+      viewerFavoriteIds = new Set(refFavoriteIds);
     }
 
     const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
@@ -173,7 +173,7 @@ export class GetObjectFieldReferencesSummaryEndpoint {
       locale: params.locale,
       contentBaseUrl,
       viewerAccount: viewer,
-      viewerAdminIds,
+      viewerFavoriteIds,
     });
 
     const items: RefSummary[] = [];

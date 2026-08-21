@@ -8,7 +8,8 @@ import { ObjectCreateHandler } from './handlers/object-create.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
-import { AuthorityHandler } from './handlers/authority.handler';
+import { FavoriteHandler } from './handlers/favorite.handler';
+import { OwnershipHandler } from './handlers/ownership.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
 import { FollowObjectHandler } from './handlers/follow-object.handler';
@@ -25,7 +26,8 @@ export class OdlCustomJsonParser {
     private readonly updateCreateHandler: UpdateCreateHandler,
     private readonly updateVoteHandler: UpdateVoteHandler,
     private readonly rankVoteHandler: RankVoteHandler,
-    private readonly authorityHandler: AuthorityHandler,
+    private readonly favoriteHandler: FavoriteHandler,
+    private readonly ownershipHandler: OwnershipHandler,
     private readonly shopDeselectHandler: ShopDeselectHandler,
     private readonly batchImportHandler: BatchImportHandler,
     private readonly followObjectHandler: FollowObjectHandler,
@@ -37,7 +39,8 @@ export class OdlCustomJsonParser {
       [this.updateCreateHandler.action]: this.updateCreateHandler,
       [this.updateVoteHandler.action]: this.updateVoteHandler,
       [this.rankVoteHandler.action]: this.rankVoteHandler,
-      [this.authorityHandler.action]: this.authorityHandler,
+      [this.favoriteHandler.action]: this.favoriteHandler,
+      [this.ownershipHandler.action]: this.ownershipHandler,
       [this.followObjectHandler.action]: this.followObjectHandler,
       [this.followUserBellHandler.action]: this.followUserBellHandler,
       [this.shopDeselectHandler.action]: this.shopDeselectHandler,

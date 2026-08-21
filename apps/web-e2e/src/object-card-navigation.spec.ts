@@ -11,8 +11,9 @@ const MOCK_DISCOVER_OBJECT = {
     name: MOCK_OBJECT_NAME,
     description: '(Spicy) Fish flakes',
   },
-  hasAdministrativeAuthority: false,
-  hasOwnershipAuthority: false,
+  isFavorited: false,
+  hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
 };
 
 test.describe('ObjectCard navigation', () => {

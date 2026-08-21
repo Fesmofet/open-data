@@ -240,10 +240,10 @@ export function ObjectCard({
         <div className="absolute end-3 top-3">
           <AdministrativeHeartButton
             objectId={o.object_id}
-            initialActive={o.hasAdministrativeAuthority ?? false}
+            initialActive={o.isFavorited ?? false}
             viewerUsername={viewerUsername}
             onRequireLogin={onRequireLogin}
-            onAuthorityChange={onAdministrativeAuthorityChange}
+            onFavoriteChange={onAdministrativeAuthorityChange}
           />
         </div>
       ) : null}

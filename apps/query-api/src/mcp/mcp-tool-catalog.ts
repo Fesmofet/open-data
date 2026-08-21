@@ -122,9 +122,15 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/object-experts.md',
   },
   {
-    name: 'get_object_authority',
-    description: 'Authority holders for an object (administrative roles).',
-    httpEquivalent: 'GET /query/v1/objects/:id/authority',
+    name: 'get_object_favorited_by',
+    description: 'Accounts that favorited an object.',
+    httpEquivalent: 'GET /query/v1/objects/:id/favorited-by',
+    specPath: 'docs/apps/query-api/spec/user-social-lists.md',
+  },
+  {
+    name: 'get_object_ownership',
+    description: 'Ownership holders for an object (exclusive or supervised).',
+    httpEquivalent: 'GET /query/v1/objects/:id/ownership',
     specPath: 'docs/apps/query-api/spec/user-social-lists.md',
   },
   {

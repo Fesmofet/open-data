@@ -8,7 +8,7 @@ describe('normalizeProjectedObjectForJson', () => {
       object_type: undefined,
       semantic_type: undefined,
       fields: undefined,
-      hasAdministrativeAuthority: undefined,
+      isFavorited: undefined,
       hasOwnershipAuthority: undefined,
     } as unknown as ProjectedObject;
 
@@ -19,7 +19,9 @@ describe('normalizeProjectedObjectForJson', () => {
     expect(json.object_type).toBe('');
     expect(json.semantic_type).toBeNull();
     expect(json.fields).toEqual({});
-    expect(json.hasAdministrativeAuthority).toBe(false);
+    expect(json.isFavorited).toBe(false);
+    expect(json.hasSupervisedOwnership).toBe(false);
+    expect(json.hasExclusiveOwnership).toBe(false);
     expect(json.hasOwnershipAuthority).toBe(false);
     expect(json.weight).toBeNull();
     expect(json.seo).toBeUndefined();
@@ -33,7 +35,9 @@ describe('normalizeProjectedObjectForJson', () => {
       status: 'active',
       weight: 1.5,
       fields: {},
-      hasAdministrativeAuthority: false,
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
       hasOwnershipAuthority: false,
       seo: {
         title: undefined as unknown as null,

@@ -157,6 +157,41 @@ export class AccountsCurrentRepository {
       .executeTakeFirst();
   }
 
+  /** Insert a minimal row when missing (lazy account creation for ODL events). */
+  async ensureMinimal(name: string): Promise<void> {
+    await this.db
+      .insertInto('accounts_current')
+      .values({
+        name,
+        object_reputation: 0,
+        wobjects_weight: 0,
+        last_posts_count: 0,
+        users_following_count: 0,
+        followers_count: 0,
+        stage_version: 0,
+        comment_count: 0,
+        lifetime_vote_count: 0,
+        post_count: 0,
+      })
+      .onConflict((oc) => oc.column('name').doNothing())
+      .execute();
+  }
+
+  async adjustObjectReputation(name: string, delta: 1 | -1): Promise<void> {
+    await this.ensureMinimal(name);
+    await this.db
+      .updateTable('accounts_current')
+      .set((eb) => ({
+        object_reputation: eb(
+          'object_reputation',
+          '+',
+          delta,
+        ),
+      }))
+      .where('name', '=', name)
+      .execute();
+  }
+
   /** Batch bump `last_activity` for accounts active in a block (monotonic). */
   async touchLastActivity(names: string[], timestampUnix: number): Promise<void> {
     if (names.length === 0) {

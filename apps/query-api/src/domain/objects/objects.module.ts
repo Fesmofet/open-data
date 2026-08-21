@@ -7,7 +7,8 @@ import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
 import { GetNestedObjectsEndpoint } from './get-nested-objects.endpoint';
 import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
 import { GetObjectExpertsEndpoint } from './get-object-experts.endpoint';
-import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
+import { GetObjectFavoritedByEndpoint } from './get-object-favorited-by.endpoint';
+import { GetObjectOwnershipEndpoint } from './get-object-ownership.endpoint';
 import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
 import {
   GetObjectFieldReferencesByTypeEndpoint,
@@ -33,7 +34,8 @@ import { GetObjectOptionsEndpoint } from './get-object-options.endpoint';
     GetNestedObjectsEndpoint,
     GetObjectFollowersEndpoint,
     GetObjectExpertsEndpoint,
-    GetObjectAuthorityEndpoint,
+    GetObjectFavoritedByEndpoint,
+    GetObjectOwnershipEndpoint,
     GetObjectRefListEndpoint,
     GetObjectFieldReferencesSummaryEndpoint,
     GetObjectFieldReferencesByTypeEndpoint,
@@ -48,7 +50,8 @@ import { GetObjectOptionsEndpoint } from './get-object-options.endpoint';
     GetNestedObjectsEndpoint,
     GetObjectFollowersEndpoint,
     GetObjectExpertsEndpoint,
-    GetObjectAuthorityEndpoint,
+    GetObjectFavoritedByEndpoint,
+    GetObjectOwnershipEndpoint,
     GetObjectRefListEndpoint,
     GetObjectFieldReferencesSummaryEndpoint,
     GetObjectFieldReferencesByTypeEndpoint,

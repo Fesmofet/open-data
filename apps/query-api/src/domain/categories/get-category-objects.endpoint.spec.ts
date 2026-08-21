@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
-  ObjectAuthorityRepository,
+  ObjectFavoriteRepository,
   ObjectCategoriesRepository,
 } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
@@ -20,7 +20,7 @@ const expandObjectRefsMock = expandObjectRefs as jest.MockedFunction<typeof expa
 
 function makeEndpoint(deps: {
   objectCategoriesRepo: { findObjectIdsByCategoryName: jest.Mock };
-  objectAuthorityRepo?: { findAdministrativeObjectIdsForAccount: jest.Mock };
+  objectFavoriteRepo?: { findFavoriteObjectIdsForAccount: jest.Mock };
 }) {
   const governanceResolver = {
     resolveMergedForObjectView: jest.fn().mockResolvedValue({ platform: {}, merged: {} }),
@@ -37,9 +37,9 @@ function makeEndpoint(deps: {
     {} as unknown as AggregatedObjectRepository,
     {} as unknown as ObjectViewService,
     governanceResolver,
-    (deps.objectAuthorityRepo ?? {
-      findAdministrativeObjectIdsForAccount: jest.fn(),
-    }) as unknown as ObjectAuthorityRepository,
+    (deps.objectFavoriteRepo ?? {
+      findFavoriteObjectIdsForAccount: jest.fn(),
+    }) as unknown as ObjectFavoriteRepository,
     listItemsRecursiveCountService,
     config,
   );

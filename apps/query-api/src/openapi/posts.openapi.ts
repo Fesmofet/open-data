@@ -111,7 +111,7 @@ registry.registerPath({
       'x-governance-object-id': z.string().optional(),
       'x-viewer': z.string().optional().openapi({
         description:
-          'Hive account viewing the post; when set, linked objects include `hasAdministrativeAuthority` for administrative object_authority rows.',
+          'Hive account viewing the post; when set, linked objects include `isFavorited` for `object_favorite` rows.',
         example: 'alice',
       }),
     }),

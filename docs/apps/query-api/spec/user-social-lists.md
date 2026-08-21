@@ -1,7 +1,7 @@
 ---
 id: docs-apps-query-api-spec-user-social-lists
 title: User social lists
-description: Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows`, and `object_authority`.
+description: Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows`, `object_favorite`, and `object_ownership`.
 type: spec
 status: active
 scope: query-api
@@ -12,9 +12,9 @@ related:
   - docs/README.md
 ---
 
-# User social lists (`followers`, `following`, `following-objects`, object followers, object authority)
+# User social lists (`followers`, `following`, `following-objects`, object followers, favorited-by, ownership)
 
-Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows`, and `object_authority`.
+Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows`, `object_favorite`, and `object_ownership`.
 
 ## Routes
 
@@ -24,7 +24,8 @@ Read endpoints on `accounts_current`, `user_subscriptions`, `user_object_follows
 | `GET` | `/query/v1/users/{name}/following` | Accounts `{name}` follows, joined to `accounts_current`. |
 | `GET` | `/query/v1/users/{name}/following-objects` | Objects `{name}` follows; returns `ProjectedObject` JSON (`name`, `image`, `weight`). |
 | `GET` | `/query/v1/objects/{objectId}/followers` | Hive accounts following `{objectId}` (`user_object_follows` joined to `accounts_current`). Same list shape as user followers. |
-| `GET` | `/query/v1/objects/{objectId}/authority` | Accounts with `administrative` or `ownership` on `{objectId}` (`object_authority` joined to `accounts_current`). Query `authority_type`; same list shape as followers. |
+| `GET` | `/query/v1/objects/{objectId}/favorited-by` | Accounts that favorited `{objectId}` (`object_favorite` joined to `accounts_current`). Same list shape as followers. |
+| `GET` | `/query/v1/objects/{objectId}/ownership` | Accounts with `exclusive` or `supervised` ownership on `{objectId}` (`object_ownership` joined to `accounts_current`). Query `ownership_type`; same list shape as followers. |
 
 Optional header: **`X-Viewer`** — when set, each account row includes **`isCurrentFollowing`** (whether the viewer has a `user_subscriptions` edge to that account).
 
@@ -37,14 +38,20 @@ Followers / following / **object followers**:
 - `sort` — `rank` \| `followers` \| `a-z` \| `recency` (default `recency`)
 - `skip`, `limit` — pagination (`limit` max 50, default 20; **`limit=0` is valid** for `total` / tab counts without fetching rows)
 
-**Object authority** (`GET .../objects/{objectId}/authority`):
+**Object favorited-by** (`GET .../objects/{objectId}/favorited-by`):
 
-- `authority_type` — `administrative` \| `ownership` (required)
+- `sort`, `skip`, `limit` — same as followers / following
+
+**Object ownership** (`GET .../objects/{objectId}/ownership`):
+
+- `ownership_type` — `exclusive` \| `supervised` (required)
 - `sort`, `skip`, `limit` — same as followers / following
 
 For **object** `.../followers`, **`recency`** orders by `user_object_follows.created_at` (not `user_subscriptions`).
 
-For **object** `.../authority`, **`recency`** orders by `object_authority.created_at`.
+For **object** `.../favorited-by`, **`recency`** orders by `object_favorite.created_at`.
+
+For **object** `.../ownership`, **`recency`** orders by `object_ownership.created_at`.
 
 Following-objects:
 
@@ -58,7 +65,7 @@ Sort semantics:
 | `rank` | `wobjects_weight` DESC |
 | `followers` | `users_following_count` DESC |
 | `a-z` | `name` ASC |
-| `recency` | `user_subscriptions.created_at` DESC (users) / `user_object_follows.created_at` DESC (object followers) / `object_authority.created_at` DESC (object authority) |
+| `recency` | `user_subscriptions.created_at` DESC (users) / `user_object_follows.created_at` DESC (object followers) / `object_favorite.created_at` or `object_ownership.created_at` DESC (object social lists) |
 | `weight` (objects) | `objects_core.weight` DESC |
 | `recency` (objects) | `user_object_follows.created_at` DESC |
 
@@ -70,8 +77,8 @@ Response envelope:
 
 ## DDL
 
-`user_subscriptions.created_at`, `user_object_follows.created_at`, and `object_authority.created_at` are used for **`recency`** sorts. Migrations: `00009_subscription_follow_timestamps`, `00012_object_authority_created_at`; see [`docs/spec/data-model/users.md`](../../../spec/data-model/users.md).
+`user_subscriptions.created_at`, `user_object_follows.created_at`, `object_favorite.created_at`, and `object_ownership.created_at` are used for **`recency`** sorts. See [`docs/spec/data-model/users.md`](../../../spec/data-model/users.md).
 
 ## OpenAPI
 
-Registered in [`apps/query-api/src/openapi/users-social.openapi.ts`](../../../../apps/query-api/src/openapi/users-social.openapi.ts); object routes (`/followers`, `/authority`) in [`apps/query-api/src/openapi/objects.openapi.ts`](../../../../apps/query-api/src/openapi/objects.openapi.ts) (`generate-openapi` import).
+Registered in [`apps/query-api/src/openapi/users-social.openapi.ts`](../../../../apps/query-api/src/openapi/users-social.openapi.ts); object routes (`/followers`, `/favorited-by`, `/ownership`) in [`apps/query-api/src/openapi/objects.openapi.ts`](../../../../apps/query-api/src/openapi/objects.openapi.ts) (`generate-openapi` import).

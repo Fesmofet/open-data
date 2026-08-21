@@ -5,7 +5,7 @@
  *
  * --skip-indexes  Drop secondary indexes (and object_updates FTS trigger) on
  *                 objects_core, object_updates, validity_votes, rank_votes,
- *                 object_authority before bulk insert; recreate after.
+ *                 object_favorite, object_ownership before bulk insert; recreate after.
  *                 Keep in sync with libs/migrations/src/postgres/odl indexes on
  *                 those tables (through 00036_objects_core_meta_group_id_index).
  *
@@ -25,7 +25,8 @@ import { resolveConnectionString } from '../../../libs/migrations/src/connection
 import { dateFromMongoObjectIdHex } from '../mongo-object-id-date';
 
 import type {
-  NewObjectAuthority,
+  NewObjectFavorite,
+  NewObjectOwnership,
   NewObjectsCore,
   NewObjectUpdate,
   NewRankVote,
@@ -62,12 +63,11 @@ import {
   transformTagCategoryItemFromField,
   transformTelephoneFromField,
 } from './value-strategies';
+import { mapMongoAuthorityField } from './authority-field-map';
 
 const BATCH_SIZE = 5000;
 /** ODL default rank context (see rankVotePayloadSchema). */
 const LEGACY_RANK_CONTEXT = 'default';
-
-const AUTHORITY_TYPES = new Set<string>(['ownership', 'administrative']);
 
 type InsertUpdateRow = Omit<
   NewObjectUpdate,
@@ -90,7 +90,8 @@ interface MigrationStats {
   fieldsSkippedNoRegistry: number;
   fieldsSkippedBadPayload: number;
   fieldsSkippedAuthorityInvalid: number;
-  authorityRowsBuffered: number;
+  favoriteRowsBuffered: number;
+  ownershipRowsBuffered: number;
   updateRowsBuffered: number;
   voteRowsBuffered: number;
   coreRowsBuffered: number;
@@ -250,7 +251,9 @@ class MongoToPgMigrator {
 
   private updateBuffer: InsertUpdateRow[] = [];
 
-  private authorityBuffer: NewObjectAuthority[] = [];
+  private favoriteBuffer: NewObjectFavorite[] = [];
+
+  private ownershipBuffer: NewObjectOwnership[] = [];
 
   private voteBuffer: NewValidityVote[] = [];
 
@@ -266,7 +269,8 @@ class MongoToPgMigrator {
     fieldsSkippedNoRegistry: 0,
     fieldsSkippedBadPayload: 0,
     fieldsSkippedAuthorityInvalid: 0,
-    authorityRowsBuffered: 0,
+    favoriteRowsBuffered: 0,
+    ownershipRowsBuffered: 0,
     updateRowsBuffered: 0,
     voteRowsBuffered: 0,
     coreRowsBuffered: 0,
@@ -334,18 +338,29 @@ class MongoToPgMigrator {
       .execute();
   }
 
-  private async flushAuthority(): Promise<void> {
-    if (this.authorityBuffer.length === 0) {
+  private async flushFavorites(): Promise<void> {
+    if (this.favoriteBuffer.length === 0) {
       return;
     }
-    const chunk = this.authorityBuffer;
-    this.authorityBuffer = [];
+    const chunk = this.favoriteBuffer;
+    this.favoriteBuffer = [];
     await this.db
-      .insertInto('object_authority')
+      .insertInto('object_favorite')
       .values(chunk)
-      .onConflict((oc) =>
-        oc.columns(['object_id', 'account', 'authority_type']).doNothing(),
-      )
+      .onConflict((oc) => oc.columns(['object_id', 'account']).doNothing())
+      .execute();
+  }
+
+  private async flushOwnerships(): Promise<void> {
+    if (this.ownershipBuffer.length === 0) {
+      return;
+    }
+    const chunk = this.ownershipBuffer;
+    this.ownershipBuffer = [];
+    await this.db
+      .insertInto('object_ownership')
+      .values(chunk)
+      .onConflict((oc) => oc.columns(['object_id', 'account']).doNothing())
       .execute();
   }
 
@@ -377,12 +392,13 @@ class MongoToPgMigrator {
       .execute();
   }
 
-  /** FK-safe order: core → updates → rank_votes → authority → validity_votes. */
+  /** FK-safe order: core → updates → rank_votes → favorite/ownership → validity_votes. */
   async flushAll(): Promise<void> {
     await this.flushCore();
     await this.flushUpdates();
     await this.flushRankVotes();
-    await this.flushAuthority();
+    await this.flushFavorites();
+    await this.flushOwnerships();
     await this.flushVotes();
   }
 
@@ -395,11 +411,12 @@ class MongoToPgMigrator {
       await this.flushUpdates();
       await this.flushRankVotes();
     }
-    if (this.authorityBuffer.length >= BATCH_SIZE) {
+    if (this.favoriteBuffer.length >= BATCH_SIZE || this.ownershipBuffer.length >= BATCH_SIZE) {
       await this.flushCore();
       await this.flushUpdates();
       await this.flushRankVotes();
-      await this.flushAuthority();
+      await this.flushFavorites();
+      await this.flushOwnerships();
     }
     if (this.rankBuffer.length >= BATCH_SIZE) {
       await this.flushCore();
@@ -424,9 +441,14 @@ class MongoToPgMigrator {
     this.stats.updateRowsBuffered += 1;
   }
 
-  private pushAuthority(row: NewObjectAuthority): void {
-    this.authorityBuffer.push(row);
-    this.stats.authorityRowsBuffered += 1;
+  private pushFavorite(row: NewObjectFavorite): void {
+    this.favoriteBuffer.push(row);
+    this.stats.favoriteRowsBuffered += 1;
+  }
+
+  private pushOwnership(row: NewObjectOwnership): void {
+    this.ownershipBuffer.push(row);
+    this.stats.ownershipRowsBuffered += 1;
   }
 
   private pushVote(row: NewValidityVote): void {
@@ -703,21 +725,16 @@ class MongoToPgMigrator {
   }
 
   private processAuthorityField(objectId: string, field: MongoWObjectField): void {
-    const body = field.body?.trim();
-    const account = field.creator?.trim();
-    if (!body || !AUTHORITY_TYPES.has(body) || !account) {
+    const mapped = mapMongoAuthorityField(objectId, field);
+    if (mapped.kind === 'skip') {
       this.stats.fieldsSkippedAuthorityInvalid += 1;
       return;
     }
-    const idHex = mongoIdToString(field._id);
-    const createdAtSec = idHex ? createdAtUnixFromObjectId(idHex) : 0;
-    const createdAt = new Date(createdAtSec * 1000);
-    this.pushAuthority({
-      object_id: objectId,
-      account,
-      authority_type: body as 'ownership' | 'administrative',
-      created_at: createdAt,
-    });
+    if (mapped.kind === 'favorite') {
+      this.pushFavorite(mapped.row);
+      return;
+    }
+    this.pushOwnership(mapped.row);
   }
 
   private processVotesForField(
@@ -851,9 +868,11 @@ async function dropObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> 
   await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text_normalized`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_object_id_update_type`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_object_authority_object_id_type_created_at`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_object_authority_object_id_authority_type`.execute(db);
-  await sql`DROP INDEX IF EXISTS idx_object_authority_account`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_favorite_object_id`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_favorite_account`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_ownership_object_id_type`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_ownership_object_id_type_created_at`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_ownership_account`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_rank_votes_object_id`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_validity_votes_object_id`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_objects_core_meta_group_id_active`.execute(db);
@@ -904,13 +923,18 @@ async function recreateObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<vo
   console.log('  objects_core secondary indexes done');
   await sql`CREATE INDEX idx_validity_votes_object_id ON validity_votes (object_id)`.execute(db);
   await sql`CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id)`.execute(db);
-  await sql`CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type)`.execute(db);
-  await sql`CREATE INDEX idx_object_authority_account ON object_authority (account)`.execute(db);
+  await sql`CREATE INDEX idx_object_favorite_account ON object_favorite (account)`.execute(db);
+  await sql`CREATE INDEX idx_object_favorite_object_id ON object_favorite (object_id)`.execute(db);
   await sql`
-    CREATE INDEX idx_object_authority_object_id_type_created_at
-    ON object_authority (object_id, authority_type, created_at DESC)
+    CREATE INDEX idx_object_ownership_object_id_type
+    ON object_ownership (object_id, ownership_type)
   `.execute(db);
-  console.log('  validity_votes / rank_votes / object_authority indexes done');
+  await sql`
+    CREATE INDEX idx_object_ownership_object_id_type_created_at
+    ON object_ownership (object_id, ownership_type, created_at DESC)
+  `.execute(db);
+  await sql`CREATE INDEX idx_object_ownership_account ON object_ownership (account)`.execute(db);
+  console.log('  validity_votes / rank_votes / object_favorite / object_ownership indexes done');
   await sql`CREATE INDEX idx_object_updates_object_id_update_type ON object_updates (object_id, update_type)`.execute(db);
   await sql`CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_geo)`.execute(db);
   await sql`CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, LEFT(value_text, 2048)) WHERE value_text IS NOT NULL`.execute(db);

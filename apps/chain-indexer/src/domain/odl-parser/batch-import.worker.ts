@@ -24,7 +24,8 @@ import { ObjectCreateHandler } from './handlers/object-create.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
-import { AuthorityHandler } from './handlers/authority.handler';
+import { FavoriteHandler } from './handlers/favorite.handler';
+import { OwnershipHandler } from './handlers/ownership.handler';
 import { UserMetadataHandler } from '../osl-parser/handlers/user-metadata.handler';
 import { ChannelCreateHandler } from '../osl-parser/handlers/channel-create.handler';
 import { ChannelAliasRegisterHandler } from '../osl-parser/handlers/channel-alias-register.handler';
@@ -52,7 +53,8 @@ export class BatchImportWorker {
     private readonly updateCreateHandler: UpdateCreateHandler,
     private readonly updateVoteHandler: UpdateVoteHandler,
     private readonly rankVoteHandler: RankVoteHandler,
-    private readonly authorityHandler: AuthorityHandler,
+    private readonly favoriteHandler: FavoriteHandler,
+    private readonly ownershipHandler: OwnershipHandler,
     private readonly userMetadataHandler: UserMetadataHandler,
     private readonly channelCreateHandler: ChannelCreateHandler,
     private readonly channelAliasRegisterHandler: ChannelAliasRegisterHandler,
@@ -70,7 +72,8 @@ export class BatchImportWorker {
       [this.updateCreateHandler.action]: this.updateCreateHandler,
       [this.updateVoteHandler.action]: this.updateVoteHandler,
       [this.rankVoteHandler.action]: this.rankVoteHandler,
-      [this.authorityHandler.action]: this.authorityHandler,
+      [this.favoriteHandler.action]: this.favoriteHandler,
+      [this.ownershipHandler.action]: this.ownershipHandler,
       [this.userMetadataHandler.action]: this.userMetadataHandler,
       [this.channelCreateHandler.action]: this.channelCreateHandler,
       [this.channelAliasRegisterHandler.action]: this.channelAliasRegisterHandler,

@@ -36,9 +36,19 @@ export type ObjectPrimaryTabView = {
   count?: number;
 };
 
-/** Administrative vs ownership under object Authority tab (`?sub=`). */
-export const AUTHORITY_SUB_VALUES = ['administrative', 'ownership'] as const;
-export type AuthoritySubType = (typeof AUTHORITY_SUB_VALUES)[number];
+/** Supervised vs exclusive under object Ownership tab (`?sub=`). */
+export const OWNERSHIP_SUB_VALUES = ['supervised', 'exclusive'] as const;
+export type OwnershipSubType = (typeof OWNERSHIP_SUB_VALUES)[number];
+
+/** Followed-by vs favorited-by under object Followers tab (`?sub=`). */
+export const FOLLOWERS_SUB_VALUES = ['followed', 'favorited'] as const;
+export type FollowersSubType = (typeof FOLLOWERS_SUB_VALUES)[number];
+
+/** @deprecated Use {@link OwnershipSubType} */
+export type AuthoritySubType = OwnershipSubType;
+
+/** @deprecated Use {@link OWNERSHIP_SUB_VALUES} */
+export const AUTHORITY_SUB_VALUES = OWNERSHIP_SUB_VALUES;
 
 /** Posts / Threads row under Reviews (mock-only). */
 export type ObjectFeedSubTabView = {
@@ -359,10 +369,12 @@ export type ObjectPageViewModel = {
   rightRelatedHasMore: boolean;
   rightSimilarHasMore: boolean;
   rightAddOnHasMore: boolean;
-  /** Viewer has administrative authority on this object (favorites heart). */
-  hasAdministrativeAuthority: boolean;
-  /** Viewer has ownership authority on this object. */
-  hasOwnershipAuthority: boolean;
+  /** Viewer favorited this object (heart). */
+  isFavorited: boolean;
+  /** Viewer has supervised ownership on this object. */
+  hasSupervisedOwnership: boolean;
+  /** Viewer has exclusive ownership on this object. */
+  hasExclusiveOwnership: boolean;
   /** Viewer follows this object (`user_object_follows`). */
   isFollowing: boolean;
   /** Viewer bell notifications on this object follow row. */
@@ -371,8 +383,10 @@ export type ObjectPageViewModel = {
   updateTypeCounts: Record<string, number>;
   /** Distinct non-null locales from object update rows (for updates feed filter). */
   updateLocales: string[];
-  /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
-  administrativeAuthorityCount: number;
-  ownershipAuthorityCount: number;
+  /** For Followers tab sub-nav badges (`favorited_by_count` from resolve). */
+  favoritedByCount: number;
+  /** For Ownership tab sub-nav badges (`supervised_count` / `exclusive_count` from resolve). */
+  supervisedOwnershipCount: number;
+  exclusiveOwnershipCount: number;
   seo: ObjectPageSeoView | null;
 };

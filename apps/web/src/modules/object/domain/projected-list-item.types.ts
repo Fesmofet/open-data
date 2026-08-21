@@ -16,8 +16,8 @@ export type ProjectedListItem = {
   tagCategoryLabels?: string[];
   /** Parsed from projected `aggregateRating` on ref summaries. */
   aggregateRatingAspects?: ProjectedListItemRatingAspect[];
-  /** Viewer has administrative authority on this ref target. */
-  hasAdministrativeAuthority?: boolean;
+  /** Viewer favorited this ref target. */
+  isFavorited?: boolean;
   /** Localized price string from projected `price` update. */
   price?: string | null;
   /** Compact brand ref from projected `brand` update (first when multi). */

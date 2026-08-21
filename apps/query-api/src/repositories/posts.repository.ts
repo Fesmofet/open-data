@@ -246,11 +246,21 @@ export class PostsRepository {
             eb.exists(
               eb
                 .selectFrom('post_objects as po')
-                .innerJoin('object_authority as oa', (join) =>
+                .innerJoin('object_favorite as of', (join) =>
                   join
-                    .onRef('po.object_id', '=', 'oa.object_id')
-                    .on('oa.account', '=', viewer)
-                    .on('oa.authority_type', 'in', ['administrative', 'ownership']),
+                    .onRef('po.object_id', '=', 'of.object_id')
+                    .on('of.account', '=', viewer),
+                )
+                .whereRef('po.author', '=', 'p.author')
+                .whereRef('po.permlink', '=', 'p.permlink'),
+            ),
+            eb.exists(
+              eb
+                .selectFrom('post_objects as po')
+                .innerJoin('object_ownership as oo', (join) =>
+                  join
+                    .onRef('po.object_id', '=', 'oo.object_id')
+                    .on('oo.account', '=', viewer),
                 )
                 .whereRef('po.author', '=', 'p.author')
                 .whereRef('po.permlink', '=', 'p.permlink'),

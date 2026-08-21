@@ -32,10 +32,10 @@ Sentinel category name **`__uncategorized__`** carries the count of distinct pro
 
 For each user bucket SQL builds distinct `objects_core` ids from:
 
-1. **`object_authority`** where `authority_type ∈ ('ownership', 'administrative')`, `oa.account = :account`, and `object_core.object_type` matches the bucket types.
+1. **`object_favorite`** ∪ **`object_ownership`** where `account = :account`, and `object_core.object_type` matches the bucket types.
 2. **`post_objects`** where `post_objects.author = :account` (same types), unless hidden by **`user_metadata.hide_linked_objects`** (book/product bucket) or **`hide_recipe_objects`** (recipe bucket).
 
-**`user_shop_deselect`**: excludes **post-linked** objects only (`NOT IN` on the **`post_objects` branch`). Objects reached only via authority are unaffected. Rows are removed when the user **`add`**s **any** `object_authority` for that `object_id` (see **`AuthorityHandler`**).
+**`user_shop_deselect`**: excludes **post-linked** objects only (`NOT IN` on the **`post_objects` branch`). Objects reached only via favorite/ownership are unaffected. Rows are removed when the user **`add`**s **`object_favorite`** for that `object_id` (see **`FavoriteHandler`**).
 
 ## Triggers
 
@@ -46,8 +46,8 @@ Per-object sync queue (`object_categories_sync_queue`):
 
 Related scope sync queue (`object_categories_related_sync_queue`):
 
-- **`CategoryMutatedEvent`**: enqueue global (`'global','_'`); enqueue both shop buckets per **ownership/administrative** account on **`object_authority`** for this `object_id`; enqueue both buckets per **distinct post `author`** in **`post_objects`** for this `object_id`; enqueue the object row itself.
-- **`AdministrativeAuthorityChangedEvent`**, **`OwnershipAuthorityChangedEvent`**: enqueue both **`user`** shop bucket scopes for that account.
+- **`CategoryMutatedEvent`**: enqueue global (`'global','_'`); enqueue both shop buckets per account on **`object_favorite`** or **`object_ownership`** for this `object_id`; enqueue both buckets per **distinct post `author`** in **`post_objects`** for this `object_id`; enqueue the object row itself.
+- **`ObjectFavoriteChangedEvent`**, **`OwnershipChangedEvent`**: enqueue both **`user`** shop bucket scopes for that account.
 - **`UserMetadataChangedEvent`** (full **`user_metadata`** row replaced via OSL **`update_user_metadata`** action).
 - **`UserShopDeselectChangedEvent`** (`user_shop_deselect` ODL action).
 - **`PostObjectChangedEvent`** (root post / comment pipeline changed **`post_objects`** for an author).
@@ -56,7 +56,8 @@ Emitters:
 
 - [`update-create.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/update-create.handler.ts)
 - [`update-vote.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/update-vote.handler.ts)
-- [`authority.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/authority.handler.ts)
+- [`favorite.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/favorite.handler.ts)
+- [`ownership.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/ownership.handler.ts)
 - [`user-metadata.handler.ts`](../../../../apps/chain-indexer/src/domain/osl-parser/handlers/user-metadata.handler.ts) (OSL `update_user_metadata`)
 - [`shop-deselect.handler.ts`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/shop-deselect.handler.ts) (`user_shop_deselect`)
 - [`post-upsert.service.ts`](../../../../apps/chain-indexer/src/domain/hive-comment/post-upsert.service.ts), [`comment-post-object-bind.service.ts`](../../../../apps/chain-indexer/src/domain/hive-comment/comment-post-object-bind.service.ts)

@@ -17,8 +17,9 @@ const projectedObjectWithCountsSchema = registry.register(
     experts_count: z.number().int(),
     posts_count: z.number().int(),
     updates_count: z.number().int(),
-    administrative_count: z.number().int(),
-    ownership_count: z.number().int(),
+    favorited_by_count: z.number().int(),
+    supervised_count: z.number().int(),
+    exclusive_count: z.number().int(),
     is_following: z.boolean(),
     viewer_bell: z.boolean(),
     update_type_counts: z.record(z.string(), z.number().int()),
@@ -72,7 +73,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Resolve projected object by id',
   description:
-    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Loads `objects_core` rows for any lifecycle status (object page); discovery endpoints still restrict to `status = active`. Includes `followers_count` from `user_object_follows`, `experts_count` from `user_object_expertise` (accounts with `weight > 0` on this object), `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, `update_locales` as distinct non-null locales from `object_updates`, and `administrative_count` / `ownership_count` from `object_authority` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
+    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Loads `objects_core` rows for any lifecycle status (object page); discovery endpoints still restrict to `status = active`. Includes `followers_count` from `user_object_follows`, `experts_count` from `user_object_expertise` (accounts with `weight > 0` on this object), `posts_count` from `post_objects` (Reviews feed size), `updates_count` as total rows in `object_updates`, `update_type_counts` as per-type row counts from `object_updates`, `update_locales` as distinct non-null locales from `object_updates`, and `favorited_by_count`, `supervised_count`, and `exclusive_count` from `object_favorite` / `object_ownership` for this object. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_object_follows` for that account and object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ update_id, dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({
@@ -88,7 +89,7 @@ registry.registerPath({
       }),
       'x-viewer': z.string().optional().openapi({
         description:
-          'Optional Hive account viewing the object; used for `hasAdministrativeAuthority`, `hasOwnershipAuthority`, and each `fields.aggregateRating[]` row\'s `userRating` (resolved from `rank_votes` for that viewer, latest `event_seq` per aspect `update_id`).',
+          'Optional Hive account viewing the object; used for `isFavorited`, `hasSupervisedOwnership`, `hasExclusiveOwnership`, `hasOwnershipAuthority`, and each `fields.aggregateRating[]` row\'s `userRating` (resolved from `rank_votes` for that viewer, latest `event_seq` per aspect `update_id`).',
       }),
     }),
     body: {
@@ -384,11 +385,11 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get',
-  path: '/query/v1/objects/{objectId}/authority',
+  path: '/query/v1/objects/{objectId}/favorited-by',
   tags: [queryApiOpenApiTags.objects],
-  summary: 'List accounts with administrative or ownership authority on the object',
+  summary: 'List accounts that favorited the object',
   description:
-    'Joins `object_authority` (for an active object) with `accounts_current`. Filter rows with `authority_type` (`administrative` | `ownership`). Sort options match user-profile followers (`rank`, `followers`, `a-z`, `recency` on authority edge or account fields). Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
+    'Joins `object_favorite` (for an active object) with `accounts_current`. Sort options match user-profile followers (`rank`, `followers`, `a-z`, `recency` on favorite edge or account fields). Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
   request: {
     params: z.object({
       objectId: z
@@ -397,12 +398,9 @@ registry.registerPath({
         .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
     }),
     query: z.object({
-      authority_type: z.enum(['administrative', 'ownership']).openapi({
-        description: 'Which authority role to list.',
-      }),
       sort: z.enum(subscriptionSortEnum).optional().openapi({
         description:
-          '`rank` = wobjects_weight desc; `followers` = users_following_count desc; `a-z` = name asc; `recency` = authority row created_at desc.',
+          '`rank` = wobjects_weight desc; `followers` = users_following_count desc; `a-z` = name asc; `recency` = favorite row created_at desc.',
       }),
       skip: z.coerce.number().int().min(0).optional().openapi({ description: 'Pagination offset.' }),
       limit: z.coerce.number().int().min(0).max(50).optional().openapi({
@@ -417,7 +415,60 @@ registry.registerPath({
   },
   responses: {
     200: {
-      description: 'Paginated authority accounts.',
+      description: 'Paginated favorited-by accounts.',
+      content: {
+        'application/json': {
+          schema: paginatedUserFollowListOpenApiSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found or not active.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/ownership',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'List accounts with exclusive or supervised ownership on the object',
+  description:
+    'Joins `object_ownership` (for an active object) with `accounts_current`. Filter rows with `ownership_type` (`exclusive` | `supervised`). Sort options match user-profile followers. Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: z.object({
+      ownership_type: z.enum(['exclusive', 'supervised']).openapi({
+        description: 'Which ownership role to list.',
+      }),
+      sort: z.enum(subscriptionSortEnum).optional().openapi({
+        description:
+          '`rank` = wobjects_weight desc; `followers` = users_following_count desc; `a-z` = name asc; `recency` = ownership row created_at desc.',
+      }),
+      skip: z.coerce.number().int().min(0).optional().openapi({ description: 'Pagination offset.' }),
+      limit: z.coerce.number().int().min(0).max(50).optional().openapi({
+        description: 'Page size; use `0` for total/hasMore only (no rows).',
+      }),
+    }),
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description: 'Optional viewer account; populates `isCurrentFollowing` per row.',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Paginated ownership accounts.',
       content: {
         'application/json': {
           schema: paginatedUserFollowListOpenApiSchema,
@@ -444,7 +495,7 @@ const refSummaryOpenApiSchema = registry.register(
     weight: z.number().nullable(),
     addedAtUnix: z.number().optional(),
     listItemsCount: z.number().int().optional(),
-    hasAdministrativeAuthority: z.boolean().optional(),
+    isFavorited: z.boolean().optional(),
   }),
 );
 
@@ -498,7 +549,7 @@ function registerObjectRefListPath(
         }),
         'x-viewer': z.string().optional().openapi({
           description:
-            'Optional Hive account; sets `hasAdministrativeAuthority` on each ref when the viewer has administrative authority on that object.',
+            'Optional Hive account; sets `isFavorited` on each ref when the viewer favorited that object.',
         }),
       }),
     },

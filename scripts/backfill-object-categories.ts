@@ -100,10 +100,15 @@ async function main(): Promise<void> {
               )
               OR EXISTS (
                 SELECT 1
-                FROM object_authority oa
-                WHERE oa.object_id = ou.object_id
-                  AND oa.account = ${accountFilter}
-                  AND oa.authority_type IN ('ownership', 'administrative')
+                FROM object_favorite ofav
+                WHERE ofav.object_id = ou.object_id
+                  AND ofav.account = ${accountFilter}
+              )
+              OR EXISTS (
+                SELECT 1
+                FROM object_ownership oo
+                WHERE oo.object_id = ou.object_id
+                  AND oo.account = ${accountFilter}
               )
               OR EXISTS (
                 SELECT 1
@@ -151,17 +156,24 @@ async function main(): Promise<void> {
           ON CONFLICT (scope_type, scope_key) DO NOTHING
         `.execute(db);
 
-        const authorityRows = await db
-          .selectFrom('object_authority')
+        const favoriteRows = await db
+          .selectFrom('object_favorite')
           .select('account')
           .distinct()
-          .where('authority_type', 'in', ['ownership', 'administrative'])
+          .execute();
+        const ownershipRows = await db
+          .selectFrom('object_ownership')
+          .select('account')
+          .distinct()
           .execute();
 
         const postRows = await db.selectFrom('post_objects').select('author').distinct().execute();
 
         const accountSet = new Set<string>();
-        for (const r of authorityRows) {
+        for (const r of favoriteRows) {
+          accountSet.add(r.account);
+        }
+        for (const r of ownershipRows) {
           accountSet.add(r.account);
         }
         for (const r of postRows) {

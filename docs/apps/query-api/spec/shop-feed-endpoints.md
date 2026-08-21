@@ -22,7 +22,7 @@ related:
 
 **Rating filter SQL:** `rating=6|8|10` maps to ODL `rank_score >= threshold × 1000` on any `aggregateRating` update. Uses persisted `object_updates.rank_score`, or mean `rank_votes.rank` when score is null (same fallback as object projection). Legacy Mongo `average_rating_weight` (0–10) is migrated to `rank_score` during import.
 
-**Scope:** Same membership as `object_categories_related` user scopes (`object_authority` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
+**Scope:** Same membership as `object_categories_related` user scopes (`object_favorite` ∪ `object_ownership` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
 
 **Projection:** `ObjectViewService` with update types `name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`; then `ObjectProjectionService.batchProject`.
 

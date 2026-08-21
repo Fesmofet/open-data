@@ -56,8 +56,9 @@ const sampleObject: ProjectedObjectView = {
     name: 'Spicy Agedashi Tofu',
     description: '(Spicy) Fish flakes',
   },
-  hasAdministrativeAuthority: false,
-  hasOwnershipAuthority: false,
+  isFavorited: false,
+  hasSupervisedOwnership: false,
+  hasExclusiveOwnership: false,
 };
 
 describe('ObjectCard navigation', () => {
@@ -224,8 +225,9 @@ describe('ObjectCard price and brand/parent', () => {
       },
       description: 'Herbal tincture',
     },
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 
   it('shows brand caption above title and price before type in subtitle', () => {

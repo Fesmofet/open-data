@@ -13,7 +13,7 @@ related:
 
 # Social and Account Ingestion
 
-**Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [reject-codes](reject-codes.md), [acceptance-tests](acceptance-tests.md), [vote-semantics](vote-semantics.md), [authority-entity](authority-entity.md)
+**Back:** [Spec index](README.md) · **Related:** [architecture](../architecture/overview.md), [reject-codes](reject-codes.md), [acceptance-tests](acceptance-tests.md), [vote-semantics](vote-semantics.md), [object-favorite](object-favorite.md)
 
 ## 1) Scope
 
@@ -113,7 +113,7 @@ Hive account state plus ODL-computed reputation. Schema is a trimmed version of 
 
 **ODL-computed fields** (maintained by Indexer from authority events):
 
-- `object_reputation` (int, default 0 — count of unique users who hold `administrative` authority claims on objects created by this account, excluding self; see [authority-entity.md](authority-entity.md))
+- `object_reputation` (int, default 0 — count of unique users who favorited objects created by this account, excluding self; see [object-favorite.md](object-favorite.md))
 
 **Metadata:**
 
@@ -155,24 +155,23 @@ If the Hive API call fails, the existing row (if any) is preserved unchanged.
 
 ### 4.2 `object_reputation` maintenance
 
-`object_reputation` is maintained independently from Hive sync. It is updated by the Indexer when authority events arrive:
+`object_reputation` is maintained independently from Hive sync. It is updated by the Indexer when `object_favorite` events arrive:
 
-- **`object_authority` (method = 'add')** with `authority_type = 'administrative'`:
+- **`object_favorite` (method = 'add')**:
   1. Look up the object creator: `SELECT creator FROM objects_core WHERE object_id = $object_id`.
-  2. If the signing user (`account`) is **not** the creator themselves, increment the creator's `object_reputation` only if this is the **first** administrative claim by this user on **any** object by this creator.
-- **`object_authority` (method = 'remove')** with `authority_type = 'administrative'`:
-  1. After the authority row is deleted, check if the removed user still holds `administrative` authority on any other object by the same creator.
-  2. If no remaining claims, decrement the creator's `object_reputation` by 1.
+  2. If the signing user (`account`) is **not** the creator themselves, increment the creator's `object_reputation` only if this is the **first** favorite by this user on **any** object by this creator.
+- **`object_favorite` (method = 'remove')**:
+  1. After the favorite row is deleted, check if the removed user still holds a favorite on any other object by the same creator.
+  2. If no remaining favorites, decrement the creator's `object_reputation` by 1.
 
 The invariant:
 
 ```sql
 -- Verification query (must match accounts_current.object_reputation)
-SELECT oc.creator, COUNT(DISTINCT oa.account) AS expected_reputation
-FROM object_authority oa
-JOIN objects_core oc ON oa.object_id = oc.object_id
-WHERE oa.authority_type = 'administrative'
-  AND oa.account != oc.creator
+SELECT oc.creator, COUNT(DISTINCT of.account) AS expected_reputation
+FROM object_favorite of
+JOIN objects_core oc ON of.object_id = oc.object_id
+WHERE of.account != oc.creator
 GROUP BY oc.creator;
 ```
 

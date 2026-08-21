@@ -15,6 +15,11 @@ updated_at: 2026-06-10
 
 **Back:** [web overview](../../overview.md)
 
+## Sub-navigation
+
+- **Followed by** — `GET /query/v1/objects/:objectId/followers` (default sub-tab)
+- **Favorited by** — `GET /query/v1/objects/:objectId/favorited-by` via {@link apps/web/src/modules/object/infrastructure/clients/object-favorited-by.client.ts}
+
 ## Route
 
 - **URL:** `/object/[object-id]/followers` (optional `?sort=`). The path stays in the address bar; {@link apps/web/src/proxy.ts} rewrites internally to `/object/[object-id]?tab=followers` (existing query preserved).

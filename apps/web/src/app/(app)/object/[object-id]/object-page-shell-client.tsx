@@ -7,7 +7,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type {
   ObjectPageViewModel,
   ObjectLeftRailBlock,
-  AuthoritySubType,
+  OwnershipSubType,
+  FollowersSubType,
 } from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 import { resolveGalleryPhotosAlbum } from '@/modules/object/domain/resolve-gallery-photos-album';
@@ -29,7 +30,7 @@ import {
 } from '@/modules/object';
 import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
-import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
+import { buildOdlObjectFavoriteOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import {
@@ -53,7 +54,8 @@ import {
   resolvePrimarySegmentForObjectPage,
 } from './object-page-search';
 import {
-  buildObjectAuthoritySubHref,
+  buildObjectFollowersSubHref,
+  buildObjectOwnershipSubHref,
   buildObjectGalleryPath,
   buildObjectPrimaryTabNavigation,
   buildObjectUpdatesFieldHref,
@@ -112,7 +114,7 @@ export function ObjectPageShellClient({
   const [viewerBell, setViewerBell] = useState(model.viewerBell);
   const [followPending, setFollowPending] = useState(false);
   const [bellPending, setBellPending] = useState(false);
-  const [isFavorite, setFavorite] = useState(model.hasAdministrativeAuthority);
+  const [isFavorite, setFavorite] = useState(model.isFavorited);
   const [favoritePending, setFavoritePending] = useState(false);
   const defaultPrimaryWhenClean = useMemo(
     () =>
@@ -206,8 +208,8 @@ export function ObjectPageShellClient({
   ]);
 
   useEffect(() => {
-    setFavorite(model.hasAdministrativeAuthority);
-  }, [model.hasAdministrativeAuthority, model.objectId]);
+    setFavorite(model.isFavorited);
+  }, [model.isFavorited, model.objectId]);
 
   useEffect(() => {
     setFollowing(model.isFollowing);
@@ -255,9 +257,21 @@ export function ObjectPageShellClient({
     [model.objectId, model.updateTypeCounts, navigateInstant, searchParams, supportedUpdateTypes],
   );
 
-  const onAuthoritySubSelect = useCallback(
-    (sub: AuthoritySubType) => {
-      const href = buildObjectAuthoritySubHref(
+  const onOwnershipSubSelect = useCallback(
+    (sub: OwnershipSubType) => {
+      const href = buildObjectOwnershipSubHref(
+        model.objectId,
+        new URLSearchParams(searchParams.toString()),
+        sub,
+      );
+      navigateInstant({ href, method: 'replace', scroll: false });
+    },
+    [model.objectId, navigateInstant, searchParams],
+  );
+
+  const onFollowersSubSelect = useCallback(
+    (sub: FollowersSubType) => {
+      const href = buildObjectFollowersSubHref(
         model.objectId,
         new URLSearchParams(searchParams.toString()),
         sub,
@@ -403,10 +417,9 @@ export function ObjectPageShellClient({
     setFavorite(!previous);
     setFavoritePending(true);
     try {
-      const op = buildOdlObjectAuthorityOp({
+      const op = buildOdlObjectFavoriteOp({
         id: odlCustomJsonId,
         objectId: model.objectId,
-        authorityType: 'administrative',
         method,
         required_posting_auths: [account],
       });
@@ -506,7 +519,8 @@ export function ObjectPageShellClient({
       activePrimarySegment,
       activeGalleryAlbum,
       activeCategoryName,
-      onAuthoritySubSelect,
+      onOwnershipSubSelect,
+      onFollowersSubSelect,
       onOpenGalleryAlbum,
       onBackToGalleryAlbums,
       onOpenGalleryPhoto,
@@ -517,7 +531,8 @@ export function ObjectPageShellClient({
       activeGalleryAlbum,
       activePrimarySegment,
       isNavigating,
-      onAuthoritySubSelect,
+      onOwnershipSubSelect,
+      onFollowersSubSelect,
       onBackToGalleryAlbums,
       onOpenGalleryAlbum,
       onOpenGalleryPhoto,

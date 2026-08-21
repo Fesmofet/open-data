@@ -8,8 +8,9 @@ const projectedObjectApiSchema = z.object({
   object_type: z.string(),
   semantic_type: z.string().nullable(),
   fields: z.record(z.string(), z.unknown()),
-  hasAdministrativeAuthority: z.boolean().optional().default(false),
-  hasOwnershipAuthority: z.boolean().optional().default(false),
+  isFavorited: z.boolean().optional().default(false),
+  hasSupervisedOwnership: z.boolean().optional().default(false),
+  hasExclusiveOwnership: z.boolean().optional().default(false),
   seo: z.record(z.string(), z.unknown()).optional(),
 });
 

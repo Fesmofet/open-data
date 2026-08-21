@@ -54,6 +54,7 @@ import * as m00053 from './00053_channel_members_last_read';
 import * as m00054 from './00054_channels_dissolved_at';
 import * as m00055 from './00055_osl_messages_encryption';
 import * as m00056 from './00056_user_notification_settings_messages';
+import * as m00057 from './00057_object_favorite_ownership';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/odl-db-types OdlDatabase and docs/spec/data-model/schema.sql */
@@ -123,4 +124,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00054_channels_dissolved_at': { up: m00054.up, down: m00054.down },
   '00055_osl_messages_encryption': { up: m00055.up, down: m00055.down },
   '00056_user_notification_settings_messages': { up: m00056.up, down: m00056.down },
+  '00057_object_favorite_ownership': { up: m00057.up, down: m00057.down },
 };

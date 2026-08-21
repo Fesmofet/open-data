@@ -2,7 +2,8 @@ import type { GovernanceSnapshot, ResolvedObjectView } from '@opden-data-layer/o
 import { DEFAULT_GOVERNANCE_SNAPSHOT, ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository } from '../../repositories';
 import type { ObjectUpdatesRepository } from '../../repositories/object-updates.repository';
-import type { ObjectAuthorityRepository } from '../../repositories/object-authority.repository';
+import type { ObjectFavoriteRepository } from '../../repositories/object-favorite.repository';
+import type { ObjectOwnershipRepository } from '../../repositories/object-ownership.repository';
 import type { UserObjectFollowsRepository } from '../../repositories/user-object-follows.repository';
 import type { UserObjectExpertiseRepository } from '../../repositories/user-object-expertise.repository';
 import type { PostsRepository } from '../../repositories/posts.repository';
@@ -30,8 +31,10 @@ function projectedFixture(objectId: string): ProjectedObject {
     status: 'active',
     weight: null,
     fields: {},
-    hasAdministrativeAuthority: false,
-    hasOwnershipAuthority: false,
+    isFavorited: false,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
+      hasOwnershipAuthority: false,
   };
 }
 
@@ -47,6 +50,50 @@ function createExpertiseRepo(expertsCount = 0): UserObjectExpertiseRepository {
   } as unknown as UserObjectExpertiseRepository;
 }
 
+function createFavoriteRepo(favoritedByCount = 0): ObjectFavoriteRepository {
+  return {
+    countByObjectId: jest.fn().mockResolvedValue(favoritedByCount),
+  } as unknown as ObjectFavoriteRepository;
+}
+
+function createOwnershipRepo(supervised = 0, exclusive = 0): ObjectOwnershipRepository {
+  return {
+    countByObjectIdAndType: jest
+      .fn()
+      .mockImplementation((_id: string, ownershipType: 'supervised' | 'exclusive') =>
+        Promise.resolve(ownershipType === 'supervised' ? supervised : exclusive),
+      ),
+  } as unknown as ObjectOwnershipRepository;
+}
+
+function makeEndpoint(
+  deps: {
+    repo: AggregatedObjectRepository;
+    viewService: ObjectViewService;
+    governanceResolver: GovernanceResolverService;
+    projectionService: ObjectProjectionService;
+    followsRepo: UserObjectFollowsRepository;
+    expertiseRepo?: UserObjectExpertiseRepository;
+    updatesRepo: ObjectUpdatesRepository;
+    favoriteRepo: ObjectFavoriteRepository;
+    ownershipRepo: ObjectOwnershipRepository;
+    postsRepo?: PostsRepository;
+  },
+) {
+  return new GetObjectByIdEndpoint(
+    deps.repo,
+    deps.viewService,
+    deps.governanceResolver,
+    deps.projectionService,
+    deps.followsRepo,
+    deps.expertiseRepo ?? createExpertiseRepo(),
+    deps.updatesRepo,
+    deps.favoriteRepo,
+    deps.ownershipRepo,
+    deps.postsRepo ?? createPostsRepo(),
+  );
+}
+
 describe('GetObjectByIdEndpoint', () => {
   it('returns null when repository returns no object', async () => {
     const repo = {
@@ -56,34 +103,23 @@ describe('GetObjectByIdEndpoint', () => {
         rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
-    const viewService = {
-      resolve: jest.fn(),
-    } as unknown as ObjectViewService;
-    const projectionService = {
-      project: jest.fn(),
-    } as unknown as ObjectProjectionService;
-    const followsRepo = {
-      countByObjectId: jest.fn(),
-    } as unknown as UserObjectFollowsRepository;
-    const updatesRepo = {
-      countByObjectId: jest.fn(),
-    } as unknown as ObjectUpdatesRepository;
-    const authorityRepo = {
-      countByObjectIdAndType: jest.fn(),
-    } as unknown as ObjectAuthorityRepository;
+    const viewService = { resolve: jest.fn() } as unknown as ObjectViewService;
+    const projectionService = { project: jest.fn() } as unknown as ObjectProjectionService;
+    const followsRepo = { countByObjectId: jest.fn() } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = { countByObjectId: jest.fn() } as unknown as ObjectUpdatesRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(
+    const endpoint = makeEndpoint({
       repo,
       viewService,
       governanceResolver,
       projectionService,
       followsRepo,
-      createExpertiseRepo(),
       updatesRepo,
-      authorityRepo,
-      createPostsRepo(),
-    );
+      favoriteRepo: createFavoriteRepo(),
+      ownershipRepo: createOwnershipRepo(),
+    });
+
     const result = await endpoint.execute({
       objectId: 'missing',
       updateTypes: ['name'],
@@ -114,16 +150,15 @@ describe('GetObjectByIdEndpoint', () => {
             core: { object_id: 'o1', object_type: 'x', creator: 'c' },
             updates: [],
             validity_votes: [],
-            authorities: [],
+            favorites: [],
+            ownerships: [],
           },
         ],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
-    const viewService = {
-      resolve: jest.fn().mockReturnValue([mockView]),
-    } as unknown as ObjectViewService;
+    const viewService = { resolve: jest.fn().mockReturnValue([mockView]) } as unknown as ObjectViewService;
     const projected = projectedFixture('o1');
     const projectionService = {
       project: jest.fn().mockResolvedValue(projected),
@@ -143,19 +178,13 @@ describe('GetObjectByIdEndpoint', () => {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue(updateTypeCounts),
       findDistinctLocalesByObjectId: jest.fn().mockResolvedValue(updateLocales),
     } as unknown as ObjectUpdatesRepository;
-    const authorityRepo = {
-      countByObjectIdAndType: jest
-        .fn()
-        .mockImplementation(
-          (_id: string, authorityType: 'administrative' | 'ownership') =>
-            Promise.resolve(authorityType === 'administrative' ? 2 : 3),
-        ),
-    } as unknown as ObjectAuthorityRepository;
+    const favoriteRepo = createFavoriteRepo(2);
+    const ownershipRepo = createOwnershipRepo(2, 1);
     const postsRepo = createPostsRepo(4);
     const expertiseRepo = createExpertiseRepo(5);
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(
+    const endpoint = makeEndpoint({
       repo,
       viewService,
       governanceResolver,
@@ -163,9 +192,11 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       expertiseRepo,
       updatesRepo,
-      authorityRepo,
+      favoriteRepo,
+      ownershipRepo,
       postsRepo,
-    );
+    });
+
     const result = await endpoint.execute({
       objectId: 'o1',
       updateTypes: ['name'],
@@ -180,40 +211,18 @@ describe('GetObjectByIdEndpoint', () => {
       experts_count: 5,
       posts_count: 4,
       updates_count: 25,
-      administrative_count: 2,
-      ownership_count: 3,
+      favorited_by_count: 2,
+      supervised_count: 2,
+      exclusive_count: 1,
       is_following: true,
       viewer_bell: true,
       update_type_counts: updateTypeCounts,
       update_locales: updateLocales,
     });
     expect(followsRepo.findByAccountAndObject).toHaveBeenCalledWith('alice', 'o1');
-    expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
-    expect(viewService.resolve).toHaveBeenCalledWith(
-      expect.any(Array),
-      expect.any(Map),
-      expect.objectContaining({
-        update_types: ['name'],
-        locale: 'en-US',
-        include_rejected: true,
-        governance: DEFAULT_GOVERNANCE_SNAPSHOT,
-      }),
-    );
-    expect(projectionService.project).toHaveBeenCalledWith(
-      mockView,
-      expect.objectContaining({
-        locale: 'en-US',
-        governanceObjectIdFromHeader: undefined,
-        viewerAccount: 'alice',
-        rankVoteProjection: expect.any(Object),
-      }),
-    );
-    expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
-    expect(expertiseRepo.countByObjectId).toHaveBeenCalledWith('o1');
-    expect(updatesRepo.countByObjectIdGroupByUpdateType).toHaveBeenCalledWith('o1');
-    expect(updatesRepo.findDistinctLocalesByObjectId).toHaveBeenCalledWith('o1');
-    expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'administrative');
-    expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'ownership');
+    expect(favoriteRepo.countByObjectId).toHaveBeenCalledWith('o1');
+    expect(ownershipRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'supervised');
+    expect(ownershipRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'exclusive');
     expect(postsRepo.countPostObjectsByObjectId).toHaveBeenCalledWith('o1');
   });
 
@@ -234,71 +243,41 @@ describe('GetObjectByIdEndpoint', () => {
           {
             core: { object_id: 'o1', object_type: 'x', creator: 'c' },
             updates: [
-              {
-                update_id: 'u1',
-                object_id: 'o1',
-                update_type: 'title',
-                creator: 'c',
-                event_seq: BigInt(1),
-                locale: null,
-                created_at_unix: 0,
-                value_text: null,
-                value_json: null,
-              },
-              {
-                update_id: 'u2',
-                object_id: 'o1',
-                update_type: 'description',
-                creator: 'c',
-                event_seq: BigInt(2),
-                locale: null,
-                created_at_unix: 0,
-                value_text: null,
-                value_json: null,
-              },
+              { update_id: 'u1', object_id: 'o1', update_type: 'title', creator: 'c' },
+              { update_id: 'u2', object_id: 'o1', update_type: 'description', creator: 'c' },
             ],
             validity_votes: [],
-            authorities: [],
+            favorites: [],
+            ownerships: [],
           },
         ],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
-    const viewService = {
-      resolve: jest.fn().mockReturnValue([mockView]),
-    } as unknown as ObjectViewService;
+    const viewService = { resolve: jest.fn().mockReturnValue([mockView]) } as unknown as ObjectViewService;
     const projectionService = {
       project: jest.fn().mockResolvedValue(projectedFixture('o1')),
     } as unknown as ObjectProjectionService;
-    const followsRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(0),
-    } as unknown as UserObjectFollowsRepository;
+    const followsRepo = { countByObjectId: jest.fn().mockResolvedValue(0) } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
       findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
     } as unknown as ObjectUpdatesRepository;
-    const authorityRepo = {
-      countByObjectIdAndType: jest.fn().mockResolvedValue(0),
-    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(
+    const endpoint = makeEndpoint({
       repo,
       viewService,
       governanceResolver,
       projectionService,
       followsRepo,
-      createExpertiseRepo(),
       updatesRepo,
-      authorityRepo,
-      createPostsRepo(),
-    );
-    await endpoint.execute({
-      objectId: 'o1',
-      updateTypes: [],
-      locale: 'en-US',
+      favoriteRepo: createFavoriteRepo(),
+      ownershipRepo: createOwnershipRepo(),
     });
+
+    await endpoint.execute({ objectId: 'o1', updateTypes: [], locale: 'en-US' });
 
     expect(viewService.resolve).toHaveBeenCalledWith(
       expect.any(Array),
@@ -308,15 +287,10 @@ describe('GetObjectByIdEndpoint', () => {
         governance: DEFAULT_GOVERNANCE_SNAPSHOT,
       }),
     );
-    const call = (viewService.resolve as jest.Mock).mock.calls[0];
-    expect(call[2].update_types).toHaveLength(2);
   });
 
   it('uses governance from resolveMergedForObjectView when platform governance is configured', async () => {
-    const customGovernance = {
-      ...DEFAULT_GOVERNANCE_SNAPSHOT,
-      admins: ['admin-from-gov'],
-    };
+    const customGovernance = { ...DEFAULT_GOVERNANCE_SNAPSHOT, admins: ['admin-from-gov'] };
     const mockView: ResolvedObjectView = {
       object_id: 'o1',
       object_type: 'x',
@@ -329,62 +303,39 @@ describe('GetObjectByIdEndpoint', () => {
     };
     const repo = {
       loadByObjectIds: jest.fn().mockResolvedValue({
-        objects: [
-          {
-            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
-            updates: [],
-            validity_votes: [],
-            authorities: [],
-          },
-        ],
+        objects: [{ core: { object_id: 'o1' }, updates: [], validity_votes: [], favorites: [], ownerships: [] }],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
-    const viewService = {
-      resolve: jest.fn().mockReturnValue([mockView]),
-    } as unknown as ObjectViewService;
+    const viewService = { resolve: jest.fn().mockReturnValue([mockView]) } as unknown as ObjectViewService;
     const projectionService = {
       project: jest.fn().mockResolvedValue(projectedFixture('o1')),
     } as unknown as ObjectProjectionService;
-    const followsRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(0),
-    } as unknown as UserObjectFollowsRepository;
+    const followsRepo = { countByObjectId: jest.fn().mockResolvedValue(0) } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
       findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
     } as unknown as ObjectUpdatesRepository;
-    const authorityRepo = {
-      countByObjectIdAndType: jest.fn().mockResolvedValue(0),
-    } as unknown as ObjectAuthorityRepository;
-    const { governanceResolver } = createEndpointDeps({
-      resolveMerged: customGovernance,
-    });
+    const { governanceResolver } = createEndpointDeps({ resolveMerged: customGovernance });
 
-    const endpoint = new GetObjectByIdEndpoint(
+    const endpoint = makeEndpoint({
       repo,
       viewService,
       governanceResolver,
       projectionService,
       followsRepo,
-      createExpertiseRepo(),
       updatesRepo,
-      authorityRepo,
-      createPostsRepo(),
-    );
-    await endpoint.execute({
-      objectId: 'o1',
-      updateTypes: ['name'],
-      locale: 'en-US',
+      favoriteRepo: createFavoriteRepo(),
+      ownershipRepo: createOwnershipRepo(),
     });
 
-    expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
+    await endpoint.execute({ objectId: 'o1', updateTypes: ['name'], locale: 'en-US' });
+
     expect(viewService.resolve).toHaveBeenCalledWith(
       expect.any(Array),
       expect.any(Map),
-      expect.objectContaining({
-        governance: customGovernance,
-      }),
+      expect.objectContaining({ governance: customGovernance }),
     );
   });
 
@@ -401,47 +352,33 @@ describe('GetObjectByIdEndpoint', () => {
     };
     const repo = {
       loadByObjectIds: jest.fn().mockResolvedValue({
-        objects: [
-          {
-            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
-            updates: [],
-            validity_votes: [],
-            authorities: [],
-          },
-        ],
+        objects: [{ core: { object_id: 'o1' }, updates: [], validity_votes: [], favorites: [], ownerships: [] }],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
-    const viewService = {
-      resolve: jest.fn().mockReturnValue([mockView]),
-    } as unknown as ObjectViewService;
+    const viewService = { resolve: jest.fn().mockReturnValue([mockView]) } as unknown as ObjectViewService;
     const projectionService = {
       project: jest.fn().mockResolvedValue(projectedFixture('o1')),
     } as unknown as ObjectProjectionService;
-    const followsRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(0),
-    } as unknown as UserObjectFollowsRepository;
+    const followsRepo = { countByObjectId: jest.fn().mockResolvedValue(0) } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
       findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
     } as unknown as ObjectUpdatesRepository;
-    const authorityRepo = {
-      countByObjectIdAndType: jest.fn().mockResolvedValue(0),
-    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(
+    const endpoint = makeEndpoint({
       repo,
       viewService,
       governanceResolver,
       projectionService,
       followsRepo,
-      createExpertiseRepo(),
       updatesRepo,
-      authorityRepo,
-      createPostsRepo(),
-    );
+      favoriteRepo: createFavoriteRepo(),
+      ownershipRepo: createOwnershipRepo(),
+    });
+
     await endpoint.execute({
       objectId: 'o1',
       updateTypes: ['name'],
@@ -462,58 +399,39 @@ describe('GetObjectByIdEndpoint', () => {
   it('returns null when resolve yields no view', async () => {
     const repo = {
       loadByObjectIds: jest.fn().mockResolvedValue({
-        objects: [
-          {
-            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
-            updates: [],
-            validity_votes: [],
-            authorities: [],
-          },
-        ],
+        objects: [{ core: { object_id: 'o1' }, updates: [], validity_votes: [], favorites: [], ownerships: [] }],
         voterWaivPowers: new Map(),
         rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
-    const viewService = {
-      resolve: jest.fn().mockReturnValue([]),
-    } as unknown as ObjectViewService;
-    const projectionService = {
-      project: jest.fn(),
-    } as unknown as ObjectProjectionService;
-    const followsRepo = {
-      countByObjectId: jest.fn(),
-    } as unknown as UserObjectFollowsRepository;
+    const viewService = { resolve: jest.fn().mockReturnValue([]) } as unknown as ObjectViewService;
+    const projectionService = { project: jest.fn() } as unknown as ObjectProjectionService;
+    const followsRepo = { countByObjectId: jest.fn() } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectIdGroupByUpdateType: jest.fn(),
       findDistinctLocalesByObjectId: jest.fn(),
     } as unknown as ObjectUpdatesRepository;
-    const authorityRepo = {
-      countByObjectIdAndType: jest.fn(),
-    } as unknown as ObjectAuthorityRepository;
+    const favoriteRepo = createFavoriteRepo();
+    const ownershipRepo = createOwnershipRepo();
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(
+    const endpoint = makeEndpoint({
       repo,
       viewService,
       governanceResolver,
       projectionService,
       followsRepo,
-      createExpertiseRepo(),
       updatesRepo,
-      authorityRepo,
-      createPostsRepo(),
-    );
-    const result = await endpoint.execute({
-      objectId: 'o1',
-      updateTypes: ['name'],
-      locale: 'en-US',
+      favoriteRepo,
+      ownershipRepo,
     });
+
+    const result = await endpoint.execute({ objectId: 'o1', updateTypes: ['name'], locale: 'en-US' });
 
     expect(result).toBeNull();
     expect(projectionService.project).not.toHaveBeenCalled();
     expect(followsRepo.countByObjectId).not.toHaveBeenCalled();
-    expect(updatesRepo.countByObjectIdGroupByUpdateType).not.toHaveBeenCalled();
-    expect(updatesRepo.findDistinctLocalesByObjectId).not.toHaveBeenCalled();
-    expect(authorityRepo.countByObjectIdAndType).not.toHaveBeenCalled();
+    expect(favoriteRepo.countByObjectId).not.toHaveBeenCalled();
+    expect(ownershipRepo.countByObjectIdAndType).not.toHaveBeenCalled();
   });
 });

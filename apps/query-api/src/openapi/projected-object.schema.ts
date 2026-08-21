@@ -25,8 +25,12 @@ export const projectedObjectOpenApiSchema = registry.register(
     status: z.string(),
     weight: z.number().nullable(),
     fields: z.record(z.string(), z.unknown()),
-    hasAdministrativeAuthority: z.boolean(),
-    hasOwnershipAuthority: z.boolean(),
+    isFavorited: z.boolean(),
+    hasSupervisedOwnership: z.boolean(),
+    hasExclusiveOwnership: z.boolean(),
+    hasOwnershipAuthority: z
+      .boolean()
+      .describe('True when viewer has supervised or exclusive ownership (legacy aggregate flag).'),
     seo: projectedObjectSeoOpenApiSchema.optional(),
   }),
 );

@@ -39,7 +39,7 @@ Reward display uses server-computed `reward` from query-api (Plan A). The web ap
 
 ## Linked object cards
 
-Post bodies and discover use shared **`ObjectCard`** — see [object-card.md](object-card.md) (rating grid, administrative heart, description).
+Post bodies and discover use shared **`ObjectCard`** — see [object-card.md](object-card.md) (rating grid, favorite heart, description).
 
 ## Comment thread (feed rows)
 

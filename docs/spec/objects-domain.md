@@ -174,7 +174,7 @@ The repository is app-scoped (`chain-indexer` and `query-api`). It runs the **fi
 1. objects_core       ─┐
 2. object_updates      │  parallel Promise.all (includes rank fields)
 3. validity_votes      │
-4. object_authority   ─┘
+4. object_favorite + object_ownership ─┘
 5. user_object_powers — uses distinct validity voter names from step 3
 ```
 
@@ -217,5 +217,6 @@ This is useful in scripts, workers, or unit tests that do not run a full NestJS 
 - [data-model/flow.md](data-model/flow.md) — read flow, five-query pipeline, ResolvedView assembly steps
 - [vote-semantics.md](vote-semantics.md) — validity tiers, community vote weight, ranking
 - [waiv-power.md](waiv-power.md) — WAIV stake weighting and `user_object_powers`
-- [authority-entity.md](authority-entity.md) — curator filter, ownership vs administrative authority
+- [object-favorite.md](object-favorite.md) — favorites, reputation
+- [object-ownership.md](object-ownership.md) — curator filter (exclusive ownership for trusted tier)
 - [governance-resolution.md](governance-resolution.md) — GovernanceSnapshot construction

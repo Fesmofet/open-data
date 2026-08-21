@@ -1,6 +1,8 @@
 import {
-  AUTHORITY_SUB_VALUES,
-  type AuthoritySubType,
+  FOLLOWERS_SUB_VALUES,
+  OWNERSHIP_SUB_VALUES,
+  type FollowersSubType,
+  type OwnershipSubType,
 } from '@/modules/object/domain/object-page.types';
 import {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
@@ -26,8 +28,11 @@ import type { ObjectDefaultLanding } from '@/modules/object/domain/resolve-objec
 /** Search param for the object profile primary tab (Reviews, Updates, …). */
 export const OBJECT_PAGE_PRIMARY_TAB_PARAM = 'tab';
 
-/** Administrative vs ownership lists under the Authority tab. */
-export const OBJECT_PAGE_AUTHORITY_SUB_PARAM = 'sub';
+/** Supervised vs exclusive lists under the Ownership tab (`?sub=`). Also used for Followers sub (`followed` / `favorited`). */
+export const OBJECT_PAGE_OWNERSHIP_SUB_PARAM = 'sub';
+
+/** @deprecated Use {@link OBJECT_PAGE_OWNERSHIP_SUB_PARAM} */
+export const OBJECT_PAGE_AUTHORITY_SUB_PARAM = OBJECT_PAGE_OWNERSHIP_SUB_PARAM;
 
 export {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
@@ -38,7 +43,10 @@ export {
   OBJECT_PAGE_VIEW_PATH_PARAM,
 };
 
-export type { AuthoritySubType };
+export type { FollowersSubType, OwnershipSubType };
+
+/** @deprecated Use {@link OwnershipSubType} */
+export type AuthoritySubType = OwnershipSubType;
 
 export function firstSearchParam(
   sp: Record<string, string | string[] | undefined>,
@@ -51,14 +59,35 @@ export function firstSearchParam(
   return v;
 }
 
-export function parseAuthoritySubTypeParam(
+const LEGACY_OWNERSHIP_SUB_MAP: Record<string, OwnershipSubType> = {
+  administrative: 'supervised',
+  ownership: 'exclusive',
+};
+
+export function parseOwnershipSubTypeParam(
   sp: Record<string, string | string[] | undefined>,
-): AuthoritySubType {
-  const v = firstSearchParam(sp, OBJECT_PAGE_AUTHORITY_SUB_PARAM)?.trim();
-  if (v && AUTHORITY_SUB_VALUES.includes(v as AuthoritySubType)) {
-    return v as AuthoritySubType;
+): OwnershipSubType {
+  const v = firstSearchParam(sp, OBJECT_PAGE_OWNERSHIP_SUB_PARAM)?.trim();
+  if (v && OWNERSHIP_SUB_VALUES.includes(v as OwnershipSubType)) {
+    return v as OwnershipSubType;
   }
-  return 'administrative';
+  if (v && LEGACY_OWNERSHIP_SUB_MAP[v]) {
+    return LEGACY_OWNERSHIP_SUB_MAP[v];
+  }
+  return 'supervised';
+}
+
+/** @deprecated Use {@link parseOwnershipSubTypeParam} */
+export const parseAuthoritySubTypeParam = parseOwnershipSubTypeParam;
+
+export function parseFollowersSubTypeParam(
+  sp: Record<string, string | string[] | undefined>,
+): FollowersSubType {
+  const v = firstSearchParam(sp, OBJECT_PAGE_OWNERSHIP_SUB_PARAM)?.trim();
+  if (v && FOLLOWERS_SUB_VALUES.includes(v as FollowersSubType)) {
+    return v as FollowersSubType;
+  }
+  return 'followed';
 }
 
 /** Ordered object ids from `?path=id1,id2` (empty when absent or invalid). */
@@ -133,7 +162,13 @@ export function resolvePrimarySegmentFromObjectUrl(
       return segment;
     }
   }
+  if (path === `${base}/authority`) {
+    return 'ownership';
+  }
   const tab = searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
+  if (tab === 'authority') {
+    return 'ownership';
+  }
   return tab ?? '';
 }
 
@@ -192,7 +227,7 @@ export function resolveGalleryAlbumFromObjectUrl(
   try {
     return decodeURIComponent(encoded);
   } catch {
-    return null;
+    return encoded;
   }
 }
 

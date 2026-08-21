@@ -21,7 +21,7 @@ const refSummarySchema = z.object({
   object_type: z.string(),
   fields: z.record(z.string(), z.unknown()),
   weight: z.number().nullable().optional(),
-  hasAdministrativeAuthority: z.boolean().optional(),
+  isFavorited: z.boolean().optional(),
 });
 
 const objectRefListResponseSchema = z.object({
@@ -57,8 +57,9 @@ export function refSummaryToProjectedObjectView(
     semantic_type: null,
     weight: ref.weight ?? null,
     fields: ref.fields,
-    hasAdministrativeAuthority: ref.hasAdministrativeAuthority ?? false,
-    hasOwnershipAuthority: false,
+    isFavorited: ref.isFavorited ?? false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
   };
 }
 

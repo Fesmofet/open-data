@@ -14,7 +14,7 @@ describe('GetUpdateVotersEndpoint', () => {
   const accounts = {
     findByNames: jest.fn(),
   };
-  const objectAuthorityRepo = {
+  const objectOwnershipRepo = {
     findByObjectId: jest.fn(),
   };
   const governanceResolver = {
@@ -25,7 +25,7 @@ describe('GetUpdateVotersEndpoint', () => {
     objectUpdates as never,
     updatesFeedRepo as never,
     accounts as never,
-    objectAuthorityRepo as never,
+    objectOwnershipRepo as never,
     governanceResolver as never,
   );
 
@@ -36,11 +36,12 @@ describe('GetUpdateVotersEndpoint', () => {
       admins: ['alice'],
       trusted: ['carol'],
     });
-    objectAuthorityRepo.findByObjectId.mockResolvedValue([
+    objectOwnershipRepo.findByObjectId.mockResolvedValue([
       {
         object_id: 'obj1',
         account: 'carol',
-        authority_type: 'ownership',
+        ownership_type: 'exclusive',
+        event_seq: BigInt(1),
         created_at: new Date(0),
       },
     ]);

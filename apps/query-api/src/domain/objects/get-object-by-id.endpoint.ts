@@ -3,7 +3,8 @@ import { OBJECT_PAGE_VISIBLE_STATUSES } from '@opden-data-layer/core';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
-  ObjectAuthorityRepository,
+  ObjectFavoriteRepository,
+  ObjectOwnershipRepository,
   ObjectUpdatesRepository,
   PostsRepository,
   UserObjectFollowsRepository,
@@ -20,7 +21,7 @@ export interface GetObjectByIdInput {
   includeRejected?: boolean;
   /** Optional `X-Governance-Object-Id` value; merged with config governance when set. */
   governanceObjectIdFromHeader?: string;
-  /** Optional `X-Viewer` Hive account for projection authority / rating context. */
+  /** Optional `X-Viewer` Hive account for projection favorite / ownership / rating context. */
   viewerAccount?: string;
 }
 
@@ -34,7 +35,8 @@ export class GetObjectByIdEndpoint {
     private readonly userObjectFollowsRepo: UserObjectFollowsRepository,
     private readonly userObjectExpertiseRepo: UserObjectExpertiseRepository,
     private readonly objectUpdatesRepo: ObjectUpdatesRepository,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectFavoriteRepo: ObjectFavoriteRepository,
+    private readonly objectOwnershipRepo: ObjectOwnershipRepository,
     private readonly postsRepo: PostsRepository,
   ) {}
 
@@ -81,8 +83,9 @@ export class GetObjectByIdEndpoint {
       followers_count,
       experts_count,
       posts_count,
-      administrative_count,
-      ownership_count,
+      favorited_by_count,
+      supervised_count,
+      exclusive_count,
       viewerFollow,
     ] = await Promise.all([
       this.objectProjectionService.project(view, {
@@ -98,8 +101,9 @@ export class GetObjectByIdEndpoint {
       this.userObjectFollowsRepo.countByObjectId(objectId),
       this.userObjectExpertiseRepo.countByObjectId(objectId),
       this.postsRepo.countPostObjectsByObjectId(objectId),
-      this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
-      this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
+      this.objectFavoriteRepo.countByObjectId(objectId),
+      this.objectOwnershipRepo.countByObjectIdAndType(objectId, 'supervised'),
+      this.objectOwnershipRepo.countByObjectIdAndType(objectId, 'exclusive'),
       input.viewerAccount
         ? this.userObjectFollowsRepo.findByAccountAndObject(input.viewerAccount, objectId)
         : Promise.resolve(null),
@@ -113,8 +117,9 @@ export class GetObjectByIdEndpoint {
       experts_count,
       posts_count,
       updates_count,
-      administrative_count,
-      ownership_count,
+      favorited_by_count,
+      supervised_count,
+      exclusive_count,
       is_following: viewerFollow != null,
       viewer_bell: viewerFollow?.bell ?? false,
       update_type_counts,

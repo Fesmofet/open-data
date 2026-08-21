@@ -21,7 +21,7 @@ export const OBJECT_PAGE_PATH_TAB_SEGMENTS = [
   'messages',
   'updates',
   'followers',
-  'authority',
+  'ownership',
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   'gallery',
   'experts',

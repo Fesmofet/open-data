@@ -26,7 +26,7 @@ export type RefSummaryDto = {
   weight: number | null;
   addedAtUnix?: number;
   listItemsCount?: number;
-  hasAdministrativeAuthority?: boolean;
+  isFavorited?: boolean;
 };
 
 export type ObjectRefListResponseDto = {

@@ -20,7 +20,7 @@ describe('projectedListItemToObjectView', () => {
           totalVoters: 3,
         },
       ],
-      hasAdministrativeAuthority: true,
+      isFavorited: true,
     };
 
     const view = projectedListItemToObjectView(item);
@@ -43,7 +43,7 @@ describe('projectedListItemToObjectView', () => {
         totalVoters: 3,
       },
     ]);
-    expect(view.hasAdministrativeAuthority).toBe(true);
+    expect(view.isFavorited).toBe(true);
   });
 
   it('maps price and brand/parent refs for ObjectCard', () => {

@@ -14,7 +14,8 @@ import {
   GetNestedObjectsEndpoint,
   GetObjectFollowersEndpoint,
   GetObjectExpertsEndpoint,
-  GetObjectAuthorityEndpoint,
+  GetObjectFavoritedByEndpoint,
+  GetObjectOwnershipEndpoint,
   GetObjectRefListEndpoint,
   GetObjectFieldReferencesSummaryEndpoint,
   GetObjectFieldReferencesByTypeEndpoint,
@@ -48,10 +49,10 @@ import {
 } from '../domain/objects';
 import {
   userSocialListQuerySchema,
-  objectAuthorityQuerySchema,
+  objectOwnershipQuerySchema,
   type PaginatedUserFollowList,
   type UserSocialListQuery,
-  type ObjectAuthorityQuery,
+  type ObjectOwnershipQuery,
 } from '../domain/social';
 import {
   GetObjectUpdatesFeedEndpoint,
@@ -95,7 +96,8 @@ export class ObjectsController {
     private readonly getUpdateVoters: GetUpdateVotersEndpoint,
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
     private readonly getObjectExpertsEndpoint: GetObjectExpertsEndpoint,
-    private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
+    private readonly getObjectFavoritedByEndpoint: GetObjectFavoritedByEndpoint,
+    private readonly getObjectOwnershipEndpoint: GetObjectOwnershipEndpoint,
     private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
     private readonly getObjectFieldReferencesSummaryEndpoint: GetObjectFieldReferencesSummaryEndpoint,
     private readonly getObjectFieldReferencesByTypeEndpoint: GetObjectFieldReferencesByTypeEndpoint,
@@ -286,14 +288,28 @@ export class ObjectsController {
     return result;
   }
 
-  @Get(':objectId/authority')
-  async getObjectAuthorityList(
+  @Get(':objectId/favorited-by')
+  async getObjectFavoritedByList(
     @Param('objectId') objectId: string,
-    @Query(new ZodQueryPipe(objectAuthorityQuerySchema)) query: ObjectAuthorityQuery,
+    @Query(new ZodQueryPipe(userSocialListQuerySchema)) query: UserSocialListQuery,
     @ReqViewer() viewer: string | undefined,
   ): Promise<PaginatedUserFollowList> {
     const decodedId = decodeURIComponent(objectId);
-    const result = await this.getObjectAuthorityEndpoint.execute(decodedId, query, viewer);
+    const result = await this.getObjectFavoritedByEndpoint.execute(decodedId, query, viewer);
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
+
+  @Get(':objectId/ownership')
+  async getObjectOwnershipList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectOwnershipQuerySchema)) query: ObjectOwnershipQuery,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedUserFollowList> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectOwnershipEndpoint.execute(decodedId, query, viewer);
     if (!result) {
       throw new NotFoundException(`Object not found: ${decodedId}`);
     }

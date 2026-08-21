@@ -69,13 +69,20 @@ export const rankVotePayloadSchema = z
 
 export type RankVotePayload = z.infer<typeof rankVotePayloadSchema>;
 
-export const authorityPayloadSchema = z.object({
+export const objectFavoritePayloadSchema = z.object({
   object_id: z.string().min(1).max(256),
-  authority_type: z.enum(['ownership', 'administrative']),
   method: z.enum(['add', 'remove']),
 });
 
-export type AuthorityPayload = z.infer<typeof authorityPayloadSchema>;
+export type ObjectFavoritePayload = z.infer<typeof objectFavoritePayloadSchema>;
+
+export const objectOwnershipPayloadSchema = z.object({
+  object_id: z.string().min(1).max(256),
+  method: z.enum(['add', 'remove']),
+  ownership_type: z.enum(['exclusive', 'supervised']).default('exclusive'),
+});
+
+export type ObjectOwnershipPayload = z.infer<typeof objectOwnershipPayloadSchema>;
 
 export const userShopDeselectPayloadSchema = z.object({
   object_id: z.string().min(1).max(256),
@@ -127,7 +134,8 @@ const odlEventSchema = z.object({
     'update_create',
     'update_vote',
     'rank_vote',
-    'object_authority',
+    'object_favorite',
+    'object_ownership',
     'object_follow',
     'user_follow',
     'user_shop_deselect',
@@ -156,7 +164,8 @@ const batchImportChildEventSchema = z.object({
     'update_create',
     'update_vote',
     'rank_vote',
-    'object_authority',
+    'object_favorite',
+    'object_ownership',
     'user_shop_deselect',
     'update_user_metadata',
     'batch_import',

@@ -47,19 +47,23 @@ export class NotificationRecipientsRepository {
     }
   }
 
-  async findAdministrativeAuthorities(objectId: string): Promise<string[]> {
+  async findFavoriteAccounts(objectId: string): Promise<string[]> {
     try {
       const rows = await this.db
-        .selectFrom('object_authority')
+        .selectFrom('object_favorite')
         .select('account')
         .where('object_id', '=', objectId)
-        .where('authority_type', '=', 'administrative')
         .execute();
       return rows.map((r) => r.account);
     } catch (e) {
       this.logger.error((e as Error).message);
       return [];
     }
+  }
+
+  /** @deprecated Use {@link findFavoriteAccounts}. */
+  async findAdministrativeAuthorities(objectId: string): Promise<string[]> {
+    return this.findFavoriteAccounts(objectId);
   }
 
   async findBellFollowers(objectId: string): Promise<string[]> {

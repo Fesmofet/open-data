@@ -3,7 +3,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ObjectStatus } from '@opden-data-layer/odl-db-types';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
-import { ObjectsCore, ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/odl-db-types';
+import { ObjectsCore, ObjectUpdate, ValidityVote, ObjectFavorite, ObjectOwnership } from '@opden-data-layer/odl-db-types';
 
 import type {
   AggregatedObject,
@@ -38,7 +38,7 @@ export interface LoadAggregatedObjectsOptions {
  *   1. objects_core
  *   2. object_updates (includes persisted rank_score / rank_context)
  *   3. validity_votes
- *   4. object_authority
+ *   4. object_favorite + object_ownership
  *   5. user_object_powers — distinct validity voters from step 3
  *   6. rank_votes — optional aggregates for projection (counts, viewer ranks, AVG fallback)
  *
@@ -130,7 +130,7 @@ export class AggregatedObjectRepository {
   /**
    * Minimal load for recursive list-item counting. Compared to {@link loadByObjectIds}:
    *   - `object_updates`: only `listItem` rows (not all update types)
-   *   - `validity_votes` and `object_authority`: only for `list`-type objects (leaves need none)
+   *   - `validity_votes`, `object_favorite`, and `object_ownership`: only for `list`-type objects (leaves need none)
    *   - `user_object_powers`: only for voters on those list objects
    *   - `rank_votes`: skipped entirely (not needed for counting)
    */
@@ -164,16 +164,22 @@ export class AggregatedObjectRepository {
         .map((c) => c.object_id);
 
       let validityVotes: ValidityVote[] = [];
-      let authorities: ObjectAuthority[] = [];
+      let favorites: ObjectFavorite[] = [];
+      let ownerships: ObjectOwnership[] = [];
       if (listObjectIds.length > 0) {
-        [validityVotes, authorities] = await Promise.all([
+        [validityVotes, favorites, ownerships] = await Promise.all([
           this.db
             .selectFrom('validity_votes')
             .where('object_id', 'in', listObjectIds)
             .selectAll()
             .execute(),
           this.db
-            .selectFrom('object_authority')
+            .selectFrom('object_favorite')
+            .where('object_id', 'in', listObjectIds)
+            .selectAll()
+            .execute(),
+          this.db
+            .selectFrom('object_ownership')
             .where('object_id', 'in', listObjectIds)
             .selectAll()
             .execute(),
@@ -193,7 +199,7 @@ export class AggregatedObjectRepository {
         }
       }
 
-      const objects = groupByObjectId(cores, listItemUpdates, validityVotes, authorities);
+      const objects = groupByObjectId(cores, listItemUpdates, validityVotes, favorites, ownerships);
       const elapsedMs = Date.now() - started;
       if (objectIds.length > LIST_TREE_WARN_NODE_COUNT || elapsedMs > 500) {
         this.logger.warn(
@@ -223,7 +229,7 @@ export class AggregatedObjectRepository {
 
     try {
       const statuses = options?.statuses ?? (['active'] as const);
-      const [cores, updates, validityVotes, authorities] = await Promise.all([
+      const [cores, updates, validityVotes, favorites, ownerships] = await Promise.all([
         this.db
           .selectFrom('objects_core')
           .where('object_id', 'in', objectIds)
@@ -241,7 +247,12 @@ export class AggregatedObjectRepository {
           .selectAll()
           .execute(),
         this.db
-          .selectFrom('object_authority')
+          .selectFrom('object_favorite')
+          .where('object_id', 'in', objectIds)
+          .selectAll()
+          .execute(),
+        this.db
+          .selectFrom('object_ownership')
           .where('object_id', 'in', objectIds)
           .selectAll()
           .execute(),
@@ -309,7 +320,7 @@ export class AggregatedObjectRepository {
         }
       }
 
-      const objects = groupByObjectId(cores, updatesWithRankFallback, validityVotes, authorities);
+      const objects = groupByObjectId(cores, updatesWithRankFallback, validityVotes, favorites, ownerships);
       return { objects, voterWaivPowers, rankVoteProjection };
     } catch (error) {
       this.logger.error(
@@ -350,12 +361,14 @@ function groupByObjectId(
   cores: ObjectsCore[],
   updates: ObjectUpdate[],
   validityVotes: ValidityVote[],
-  authorities: ObjectAuthority[],
+  favorites: ObjectFavorite[],
+  ownerships: ObjectOwnership[],
 ): AggregatedObject[] {
   return cores.map((core) => ({
     core,
     updates: updates.filter((u) => u.object_id === core.object_id),
     validity_votes: validityVotes.filter((v) => v.object_id === core.object_id),
-    authorities: authorities.filter((a) => a.object_id === core.object_id),
+    favorites: favorites.filter((f) => f.object_id === core.object_id),
+    ownerships: ownerships.filter((o) => o.object_id === core.object_id),
   }));
 }

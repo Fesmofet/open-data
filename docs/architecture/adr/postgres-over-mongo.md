@@ -21,7 +21,7 @@ related:
 ## 1. Context
 
 The Open Data Layer needs a persistent store for five entity types:
-`objects_core`, `object_updates`, `validity_votes`, `rank_votes`, and `object_authority`.
+`objects_core`, `object_updates`, `validity_votes`, `rank_votes`, `object_favorite`, and `object_ownership`.
 
 Two storage concepts were fully designed and compared:
 
@@ -47,10 +47,11 @@ The ODL domain model is not a tree of nested documents. It is a normalized graph
 ```
 objects_core 1──* object_updates 1──* validity_votes
                                   1──* rank_votes
-objects_core 1──* object_authority
+objects_core 1──* object_favorite
+objects_core 1──* object_ownership
 ```
 
-Every event type (`update_create`, `update_vote`, `rank_vote`, `object_authority`) operates on a specific row in a specific table via a typed foreign key. The updates, votes, and authority claims are independent entities that reference each other — the classic shape that relational databases model directly and document stores have to simulate.
+Every event type (`update_create`, `update_vote`, `rank_vote`, `object_favorite`, `object_ownership`) operates on a specific row in a specific table via a typed foreign key.
 
 Forcing this into MongoDB requires either:
 

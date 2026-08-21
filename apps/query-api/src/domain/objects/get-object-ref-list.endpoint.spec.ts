@@ -9,7 +9,7 @@ describe('GetObjectRefListEndpoint', () => {
     aggregated: { loadByObjectIds: jest.Mock };
     viewService: { resolve: jest.Mock };
     governanceResolver: { resolveMergedForObjectView: jest.Mock };
-    authorityRepo: { findAdministrativeObjectIdsForAccount: jest.Mock };
+    authorityRepo: { findFavoriteObjectIdsForAccount: jest.Mock };
     objectRefListRepo: {
       findMetaGroupIdsByObjectIds: jest.Mock;
       findCategoryNamesByObjectId: jest.Mock;
@@ -49,7 +49,7 @@ describe('GetObjectRefListEndpoint', () => {
       aggregated: { loadByObjectIds: jest.fn() },
       viewService: { resolve: jest.fn() },
       governanceResolver: { resolveMergedForObjectView: jest.fn().mockResolvedValue(governance) },
-      authorityRepo: { findAdministrativeObjectIdsForAccount: jest.fn() },
+      authorityRepo: { findFavoriteObjectIdsForAccount: jest.fn() },
       objectRefListRepo: defaultRefRepo,
     });
 
@@ -79,7 +79,7 @@ describe('GetObjectRefListEndpoint', () => {
       },
       viewService: { resolve: jest.fn().mockReturnValue([view]) },
       governanceResolver: { resolveMergedForObjectView: jest.fn().mockResolvedValue(governance) },
-      authorityRepo: { findAdministrativeObjectIdsForAccount: jest.fn() },
+      authorityRepo: { findFavoriteObjectIdsForAccount: jest.fn() },
       objectRefListRepo: defaultRefRepo,
     });
 

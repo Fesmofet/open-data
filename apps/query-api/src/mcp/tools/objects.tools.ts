@@ -11,7 +11,7 @@ import {
   resolveObjectBodySchema,
 } from '../../domain/objects';
 import {
-  objectAuthorityQuerySchema,
+  objectOwnershipQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
 import { objectExpertListQuerySchema } from '../../domain/objects/object-expert-list.schema';
@@ -317,21 +317,46 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   );
 
   server.registerTool(
-    'get_object_authority',
+    'get_object_favorited_by',
     {
-      description: catalogDescription('get_object_authority'),
+      description: catalogDescription('get_object_favorited_by'),
       inputSchema: withMcpLocaleContext(
-        objectAuthorityQuerySchema.extend({
+        userSocialListQuerySchema.extend({
           object_id: z.string().min(1).describe('Object id'),
         }),
       ),
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { object_id, sort, skip, limit, authority_type } = args;
-      const result = await deps.getObjectAuthority.execute(
+      const { object_id, sort, skip, limit } = args;
+      const result = await deps.getObjectFavoritedBy.execute(
         object_id,
-        { sort, skip, limit, authority_type },
+        { sort, skip, limit },
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_object_ownership',
+    {
+      description: catalogDescription('get_object_ownership'),
+      inputSchema: withMcpLocaleContext(
+        objectOwnershipQuerySchema.extend({
+          object_id: z.string().min(1).describe('Object id'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { object_id, sort, skip, limit, ownership_type } = args;
+      const result = await deps.getObjectOwnership.execute(
+        object_id,
+        { sort, skip, limit, ownership_type },
         ctx.viewerAccount,
       );
       if (!result) {

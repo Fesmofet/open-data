@@ -4,7 +4,11 @@ import { RedisClientFactory } from '@opden-data-layer/clients';
 import type { GovernanceSnapshot } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
-import { AggregatedObjectRepository, ObjectAuthorityRepository } from '../../repositories';
+import {
+  AggregatedObjectRepository,
+  ObjectFavoriteRepository,
+  ObjectOwnershipRepository,
+} from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { expandObjectRefsWithCache } from './expand-object-refs-cached';
 import { ListItemsRecursiveCountService } from './list-items-recursive-count.service';
@@ -22,7 +26,7 @@ export interface ProjectOptions {
   /** Pre-resolved governance snapshot; skips duplicate resolve when provided. */
   governance?: GovernanceSnapshot;
   /**
-   * Current viewer (e.g. from `X-Viewer`). Used for `hasAdministrativeAuthority`, `hasOwnershipAuthority`,
+   * Current viewer (e.g. from `X-Viewer`). Used for `isFavorited`, ownership flags,
    * and `aggregateRating` per-aspect `userRating`.
    */
   viewerAccount?: string;
@@ -49,7 +53,8 @@ export class ObjectProjectionService {
 
   constructor(
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly objectFavoriteRepo: ObjectFavoriteRepository,
+    private readonly objectOwnershipRepo: ObjectOwnershipRepository,
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
@@ -67,26 +72,39 @@ export class ObjectProjectionService {
         options.governanceObjectIdFromHeader,
       ));
 
-    let hasAdministrativeAuthority = false;
+    let isFavorited = false;
+    let hasSupervisedOwnership = false;
+    let hasExclusiveOwnership = false;
     let hasOwnershipAuthority = false;
-    let viewerAdminIds: Set<string> | undefined;
+    let viewerFavoriteIds: Set<string> | undefined;
     if (viewerAccount) {
-      const [adminIds, ownershipIds] = await Promise.all([
-        this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(viewerAccount, [view.object_id]),
-        this.objectAuthorityRepo.findOwnershipObjectIdsForAccount(viewerAccount, [view.object_id]),
+      const [favoriteIds, supervisedIds, exclusiveIds] = await Promise.all([
+        this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(viewerAccount, [view.object_id]),
+        this.objectOwnershipRepo.findOwnershipObjectIdsForAccountByType(
+          viewerAccount,
+          [view.object_id],
+          'supervised',
+        ),
+        this.objectOwnershipRepo.findOwnershipObjectIdsForAccountByType(
+          viewerAccount,
+          [view.object_id],
+          'exclusive',
+        ),
       ]);
-      hasAdministrativeAuthority = adminIds.includes(view.object_id);
-      hasOwnershipAuthority = ownershipIds.includes(view.object_id);
-      viewerAdminIds = new Set(adminIds);
+      isFavorited = favoriteIds.includes(view.object_id);
+      hasSupervisedOwnership = supervisedIds.includes(view.object_id);
+      hasExclusiveOwnership = exclusiveIds.includes(view.object_id);
+      hasOwnershipAuthority = hasSupervisedOwnership || hasExclusiveOwnership;
+      viewerFavoriteIds = new Set(favoriteIds);
     }
 
     const refIds = collectObjectRefIdsFromView(view);
     if (viewerAccount && refIds.length > 0) {
-      const refAdminIds = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+      const refFavoriteIds = await this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(
         viewerAccount,
         refIds,
       );
-      viewerAdminIds = new Set([...(viewerAdminIds ?? []), ...refAdminIds]);
+      viewerFavoriteIds = new Set([...(viewerFavoriteIds ?? []), ...refFavoriteIds]);
     }
 
     const refSummariesById = await expandObjectRefsWithCache(
@@ -100,7 +118,7 @@ export class ObjectProjectionService {
         locale: options.locale,
         contentBaseUrl,
         viewerAccount,
-        viewerAdminIds,
+        viewerFavoriteIds,
       },
       this.redisFactory,
       this.logger,
@@ -116,7 +134,9 @@ export class ObjectProjectionService {
 
     const projected: ProjectedObject = {
       ...projectedCore,
-      hasAdministrativeAuthority,
+      isFavorited,
+      hasSupervisedOwnership,
+      hasExclusiveOwnership,
       hasOwnershipAuthority,
     };
 
@@ -131,7 +151,7 @@ export class ObjectProjectionService {
   }
 
   /**
-   * Projects multiple views with one batched administrative/ownership lookup.
+   * Projects multiple views with one batched favorite/ownership lookup.
    * Order of the returned array matches the order of `views`.
    */
   async batchProject(views: ResolvedObjectView[], options: BatchProjectOptions): Promise<ProjectedObject[]> {
@@ -148,26 +168,28 @@ export class ObjectProjectionService {
       ));
 
     const objectIds = views.map((v) => v.object_id);
-    let adminSet = new Set<string>();
-    let ownershipSet = new Set<string>();
-    let viewerAdminIds: Set<string> | undefined;
+    let favoriteSet = new Set<string>();
+    let supervisedSet = new Set<string>();
+    let exclusiveSet = new Set<string>();
+    let viewerFavoriteIds: Set<string> | undefined;
     if (viewerAccount) {
-      const [adminIds, ownershipIds] = await Promise.all([
-        this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(viewerAccount, objectIds),
-        this.objectAuthorityRepo.findOwnershipObjectIdsForAccount(viewerAccount, objectIds),
+      const [favoriteIds, ownershipGrouped] = await Promise.all([
+        this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(viewerAccount, objectIds),
+        this.objectOwnershipRepo.findOwnershipObjectIdsByAccountGrouped(viewerAccount, objectIds),
       ]);
-      adminSet = new Set(adminIds);
-      ownershipSet = new Set(ownershipIds);
-      viewerAdminIds = new Set(adminIds);
+      favoriteSet = new Set(favoriteIds);
+      supervisedSet = ownershipGrouped.supervised;
+      exclusiveSet = ownershipGrouped.exclusive;
+      viewerFavoriteIds = new Set(favoriteIds);
     }
 
     const allRefIds = [...new Set(views.flatMap((v) => collectObjectRefIdsFromView(v)))];
     if (viewerAccount && allRefIds.length > 0) {
-      const refAdminIds = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+      const refFavoriteIds = await this.objectFavoriteRepo.findFavoriteObjectIdsForAccount(
         viewerAccount,
         allRefIds,
       );
-      viewerAdminIds = new Set([...(viewerAdminIds ?? []), ...refAdminIds]);
+      viewerFavoriteIds = new Set([...(viewerFavoriteIds ?? []), ...refFavoriteIds]);
     }
 
     const rankVp = options.rankVoteProjection;
@@ -185,7 +207,7 @@ export class ObjectProjectionService {
           locale: options.locale,
           contentBaseUrl,
           viewerAccount,
-          viewerAdminIds,
+          viewerFavoriteIds,
         },
         this.redisFactory,
         this.logger,
@@ -201,8 +223,11 @@ export class ObjectProjectionService {
 
       let projected: ProjectedObject = {
         ...projectedCore,
-        hasAdministrativeAuthority: adminSet.has(view.object_id),
-        hasOwnershipAuthority: ownershipSet.has(view.object_id),
+        isFavorited: favoriteSet.has(view.object_id),
+        hasSupervisedOwnership: supervisedSet.has(view.object_id),
+        hasExclusiveOwnership: exclusiveSet.has(view.object_id),
+        hasOwnershipAuthority:
+          supervisedSet.has(view.object_id) || exclusiveSet.has(view.object_id),
       };
 
       if (options.includeSeo === true) {

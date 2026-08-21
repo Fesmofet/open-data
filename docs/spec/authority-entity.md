@@ -1,99 +1,26 @@
 ---
 id: docs-spec-authority-entity
-title: Object Authority Entity
-description: `object_authority` is an open registry that records which users have claimed authority roles on specific objects. Any user may claim or relinquish authority via Hive events. The indexer stores all valid claims as neutral state without permission checks.
+title: Object Authority Entity (superseded)
+description: Legacy `object_authority` split into `object_favorite` and `object_ownership`. See linked specs.
 type: spec
-status: active
+status: deprecated
 scope: platform
 tags: [platform, domain]
-updated_at: 2026-06-10
+updated_at: 2026-08-21
 related:
-  - docs/spec/README.md
+  - docs/spec/object-favorite.md
+  - docs/spec/object-ownership.md
 ---
 
-# Object Authority Entity
+# Object Authority Entity (superseded)
 
-**Back:** [Spec index](README.md) · **Related:** [vote-semantics](vote-semantics.md), [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md), [social-account-ingestion](social-account-ingestion.md)
+> **Superseded.** Legacy `object_authority` was removed in migration `00057`. Use:
+>
+> - [object-favorite.md](object-favorite.md) — former `administrative` authority (heart / favorites; drives `object_reputation` and governance `authorities` search scope)
+> - [object-ownership.md](object-ownership.md) — former `ownership` authority (`exclusive` / `supervised` claim; curator filter for trusted tier)
 
-## 1. Purpose
+**Back:** [Spec index](README.md)
 
-`object_authority` is an open registry that records which users have claimed authority roles on specific objects. Any user may claim or relinquish authority via Hive events. The indexer stores all valid claims as neutral state without permission checks.
+## Historical note
 
-Authority drives the **curator filter** applied during ResolvedView assembly when the authority holder is also a governance admin or trusted member.
-
-## 2. Schema (logical)
-
-- `object_id`: string — the ID of the object
-- `account`: string — Hive account
-- `authority_type`: `'ownership'` | `'administrative'`
-
-Unique key: `(object_id, account, authority_type)` — a user may hold multiple roles on the same object.
-
-## 3. Write rules
-
-Written exclusively via Hive events. Any user may submit:
-
-- `action: 'object_authority', method: 'add'` — insert `(object_id, account, authority_type)` for the signing account (no-op if already exists)
-- `action: 'object_authority', method: 'remove'` — delete `(object_id, account, authority_type)` for the signing account
-
-Authority events do **not** increment `objects_core.seq`. They are written directly to `object_authority` and do not affect content state of the target.
-
-## 4. Effect on ResolvedView: curator filter
-
-Authority with `authority_type = 'ownership'` triggers a curator filter when the holder is also a member of the resolved governance `admins` or `trusted` sets.
-
-### Rule
-
-For a given object and governance snapshot, define the curator set:
-
-```
-C = { ownership holders for object_id } ∩ { governance admins ∪ governance trusted }
-```
-
-If `C` is non-empty, only updates satisfying **at least one** of the following are treated as valid for this governance context:
-
-- **A)** The update was **created by** a member of `C`
-- **B)** The update has a positive **validity vote from** a member of `C`
-
-Updates that satisfy neither condition are treated as invalid, regardless of other votes or their own validity-vote tally.
-
-If `C` is empty (no overlap), normal vote semantics apply without the curator filter.
-
-### Curator filter applied per object per governance snapshot
-
-The filter is request-scoped. The same object may appear with different validity results under different governance snapshots depending on who holds ownership in each governance context.
-
-## 5. Indexer behavior
-
-The indexer stores all authority events as neutral state. No permission check is performed — any user can claim ownership on any object. The semantic weight of that claim depends entirely on the governance snapshot at query time.
-
-## 6. Payload shape (Hive custom_json)
-
-```json
-{ "action": "object_authority", "v": 1, "payload": { "object_id": "product123", "authority_type": "ownership", "method": "add" } }
-{ "action": "object_authority", "v": 1, "payload": { "object_id": "product123", "authority_type": "ownership", "method": "remove" } }
-```
-
-The `account` is taken from the Hive transaction signing account, not from the payload.
-
-## 7. Authority types and their effects
-
-### `ownership`
-
-Drives the **curator filter** during ResolvedView assembly. When an ownership holder is also a governance admin or trusted member, their presence gates which updates are treated as valid for the object. See [section 4](#4-effect-on-resolvedview-curator-filter) above.
-
-### `administrative`
-
-Drives the **object reputation** metric. The count of unique users who hold `administrative` authority on a creator's objects (excluding the creator themselves) is stored as `object_reputation` in [`accounts_current`](social-account-ingestion.md).
-
-`object_reputation` feeds the community vote weight system — it determines each voter's `votePower` when no admin or trusted decisive vote exists:
-
-```
-votePower = 1 + log₂(1 + object_reputation)
-```
-
-See [vote-semantics.md § C](vote-semantics.md#c-community-vote-weight) for the full community weight resolution.
-
-### Side-effects on authority write
-
-When `administrative` authority is added or removed, the Indexer must update `accounts_current.object_reputation` for the target object's creator. See [social-account-ingestion.md § 4.2](social-account-ingestion.md#42-object_reputation-maintenance) for the maintenance algorithm.
+Before the split, one table stored `(object_id, account, authority_type)` with `authority_type ∈ { administrative, ownership }`. Hive action `object_authority` became `object_favorite` and `object_ownership` ODL actions.
