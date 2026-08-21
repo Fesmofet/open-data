@@ -4,6 +4,7 @@ import {
   ObjectOwnershipRepository,
   UserSubscriptionsRepository,
 } from '../../repositories';
+import { avatarUrlFromJoinedAccountRow } from '../users/resolve-avatar-url-from-hive-metadata';
 import type { ObjectOwnershipQuery, UserSocialListQuery } from '../social/user-social-list.schema';
 import type { PaginatedUserFollowList, UserFollowListItem } from '../social/user-follow-list.types';
 
@@ -56,7 +57,7 @@ export class GetObjectOwnershipEndpoint {
 
     const items: UserFollowListItem[] = rows.map((r) => ({
       name: r.name,
-      avatarUrl: r.profile_image,
+      avatarUrl: avatarUrlFromJoinedAccountRow(r),
       wobjectsWeight: r.wobjects_weight,
       usersFollowingCount: r.users_following_count,
       isCurrentFollowing: followedByViewer.has(r.name),

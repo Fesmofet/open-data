@@ -27,13 +27,19 @@ describe('GetUserFollowersEndpoint', () => {
       findFollowersOf: jest.fn().mockResolvedValue([
         {
           name: 'bob',
+          posting_json_metadata: null,
+          json_metadata: null,
           profile_image: null,
           wobjects_weight: 9.1,
           users_following_count: 4,
         },
         {
           name: 'carol',
-          profile_image: 'https://x/ava.png',
+          posting_json_metadata: JSON.stringify({
+            profile: { profile_image: 'https://x/ava.png' },
+          }),
+          json_metadata: null,
+          profile_image: 'https://legacy/ava.png',
           wobjects_weight: 0,
           users_following_count: 100,
         },
@@ -74,7 +80,14 @@ describe('GetUserFollowersEndpoint', () => {
     const subs = {
       countFollowersOf: jest.fn().mockResolvedValue(30),
       findFollowersOf: jest.fn().mockResolvedValue([
-        { name: 'b', profile_image: null, wobjects_weight: 0, users_following_count: 0 },
+        {
+          name: 'b',
+          posting_json_metadata: null,
+          json_metadata: null,
+          profile_image: null,
+          wobjects_weight: 0,
+          users_following_count: 0,
+        },
       ]),
       listFollowedSubset: jest.fn().mockResolvedValue([]),
     } as unknown as UserSubscriptionsRepository;

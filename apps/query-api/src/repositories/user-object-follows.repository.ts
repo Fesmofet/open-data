@@ -119,6 +119,8 @@ export class UserObjectFollowsRepository {
         .where('uof.object_id', '=', objectId)
         .select([
           sql<string>`ac.name`.as('name'),
+          sql<string | null>`ac.posting_json_metadata`.as('posting_json_metadata'),
+          sql<string | null>`ac.json_metadata`.as('json_metadata'),
           sql<string | null>`ac.profile_image`.as('profile_image'),
           sql<number>`ac.wobjects_weight`.as('wobjects_weight'),
           sql<number>`ac.users_following_count`.as('users_following_count'),

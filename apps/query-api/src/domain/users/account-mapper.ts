@@ -1,4 +1,5 @@
 import { parsePostingMetadata } from './parse-posting-metadata';
+import { resolveAvatarUrlFromHiveMetadata } from './resolve-avatar-url-from-hive-metadata';
 import { resolvePostingJsonMetadata } from './resolve-posting-json-metadata';
 import type { UserProfileView } from './user-profile.types';
 import { AccountCurrent } from '@opden-data-layer/odl-db-types';
@@ -21,14 +22,12 @@ export function mapAccountToUserProfileView(
 
   const bio = meta?.profile.about ?? '';
 
-  const avatarFromColumn = row.profile_image?.trim() ?? '';
-  const avatarFromMeta = meta?.profile.profile_image?.trim() ?? '';
-  const avatarUrl =
-    avatarFromColumn !== ''
-      ? avatarFromColumn
-      : avatarFromMeta !== ''
-        ? avatarFromMeta
-        : null;
+  const avatarUrl = resolveAvatarUrlFromHiveMetadata({
+    postingJsonMetadata: row.posting_json_metadata,
+    jsonMetadata: row.json_metadata,
+    chainPostingJsonMetadata,
+    profileImageColumn: row.profile_image,
+  });
 
   const coverTrimmed = meta?.profile.cover_image?.trim() ?? '';
   const coverImageUrl = coverTrimmed !== '' ? coverTrimmed : null;

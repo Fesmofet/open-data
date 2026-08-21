@@ -5,6 +5,7 @@ function accountRow(overrides: Partial<AccountCurrent> = {}): AccountCurrent {
   return {
     name: 'grampo',
     alias: null,
+    json_metadata: null,
     profile_image: null,
     posting_json_metadata: null,
     followers_count: 468,
@@ -43,5 +44,35 @@ describe('mapAccountToUserProfileView', () => {
       }),
     );
     expect(view.bio).toBe('live bio');
+  });
+
+  it('prefers posting_json_metadata avatar over json_metadata and profile_image column', () => {
+    const view = mapAccountToUserProfileView(
+      accountRow({
+        profile_image: 'https://column.test/c.jpg',
+        json_metadata: JSON.stringify({
+          profile: { profile_image: 'https://json.test/b.jpg' },
+        }),
+        posting_json_metadata: JSON.stringify({
+          profile: { profile_image: 'https://posting.test/a.jpg' },
+        }),
+      }),
+    );
+    expect(view.avatarUrl).toBe('https://posting.test/a.jpg');
+  });
+
+  it('falls back to json_metadata avatar when posting has no profile_image', () => {
+    const view = mapAccountToUserProfileView(
+      accountRow({
+        profile_image: 'https://column.test/c.jpg',
+        json_metadata: JSON.stringify({
+          profile: { profile_image: 'https://json.test/b.jpg' },
+        }),
+        posting_json_metadata: JSON.stringify({
+          profile: { name: 'Alice' },
+        }),
+      }),
+    );
+    expect(view.avatarUrl).toBe('https://json.test/b.jpg');
   });
 });

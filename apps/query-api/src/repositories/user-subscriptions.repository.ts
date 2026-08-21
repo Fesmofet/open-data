@@ -9,6 +9,8 @@ export type UserSubscriptionSort = 'rank' | 'followers' | 'a-z' | 'recency';
 /** Account row joined from a subscription edge (follower or following side). */
 export interface SubscriptionJoinedAccountRow {
   name: string;
+  posting_json_metadata: string | null;
+  json_metadata: string | null;
   profile_image: string | null;
   wobjects_weight: number;
   users_following_count: number;
@@ -66,6 +68,8 @@ export class UserSubscriptionsRepository {
         .where('us.following', '=', following)
         .select([
           sql<string>`ac.name`.as('name'),
+          sql<string | null>`ac.posting_json_metadata`.as('posting_json_metadata'),
+          sql<string | null>`ac.json_metadata`.as('json_metadata'),
           sql<string | null>`ac.profile_image`.as('profile_image'),
           sql<number>`ac.wobjects_weight`.as('wobjects_weight'),
           sql<number>`ac.users_following_count`.as('users_following_count'),
@@ -105,6 +109,8 @@ export class UserSubscriptionsRepository {
         .where('us.follower', '=', follower)
         .select([
           sql<string>`ac.name`.as('name'),
+          sql<string | null>`ac.posting_json_metadata`.as('posting_json_metadata'),
+          sql<string | null>`ac.json_metadata`.as('json_metadata'),
           sql<string | null>`ac.profile_image`.as('profile_image'),
           sql<number>`ac.wobjects_weight`.as('wobjects_weight'),
           sql<number>`ac.users_following_count`.as('users_following_count'),
