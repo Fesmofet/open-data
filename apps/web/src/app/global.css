@@ -198,7 +198,8 @@
 
   /** Full-screen gallery viewer chrome on near-black scrim (theme-independent). */
   .gallery-scrim {
-    background-color: rgb(10 10 10 / 0.92);
+    /* Fully opaque — semi-transparent scrim let hero/page content bleed through letterbox areas and flicker during repaints. */
+    background-color: rgb(10 10 10);
   }
 
   .gallery-chrome-text {

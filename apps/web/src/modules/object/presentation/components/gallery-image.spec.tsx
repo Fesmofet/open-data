@@ -68,6 +68,17 @@ describe('GalleryImage', () => {
     expect(screen.getByTestId('gallery-image')).toHaveAttribute('src', SHOPIFY);
   });
 
+  it('skips the loading skeleton when priority is set (fullscreen viewer)', () => {
+    const { container } = render(
+      <div className="relative aspect-square">
+        <GalleryImage src={SHOPIFY} sizes="100vw" priority />
+      </div>,
+    );
+
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute('src', SHOPIFY);
+    expect(container.querySelector('.animate-pulse')).not.toBeInTheDocument();
+  });
+
   it('loads legacy ipfs.busy.org URLs directly first', () => {
     render(
       <div className="relative aspect-square">

@@ -98,7 +98,7 @@ export function GalleryImage({
 
   return (
     <div className="absolute inset-0">
-      {!loaded ? (
+      {!loaded && !priority ? (
         <div
           className="absolute inset-0 animate-pulse bg-surface-control"
           aria-hidden

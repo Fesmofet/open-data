@@ -738,6 +738,7 @@ export function ObjectGalleryViewer({
         zIndex={MODAL_Z_INDEX_GALLERY}
         closeOnEscape={!rankModalOpen}
         ariaLabel={t('gallery')}
+        scrimClassName="bg-transparent"
         panelClassName="gallery-scrim text-fg"
         scrollBody={false}
         header={galleryHeader}
