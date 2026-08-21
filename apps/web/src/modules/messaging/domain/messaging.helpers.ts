@@ -142,10 +142,35 @@ export function buildSyntheticObjectChannel(input: {
   };
 }
 
-export function filterChannelsByUnread<T extends Pick<ChannelListItem, 'unread_count'>>(
+export function filterChannelsByFollowing<T extends Pick<ChannelListItem, 'kind' | 'peer' | 'members'>>(
   channels: readonly T[],
+  followingSet: ReadonlySet<string>,
+  viewerUsername: string | null,
 ): T[] {
-  return channels.filter((channel) => channel.unread_count > 0);
+  const viewer = viewerUsername?.trim().toLowerCase() ?? '';
+  return channels.filter((channel) => {
+    if (channel.kind === 'object') {
+      return false;
+    }
+    if (channel.kind === 'direct') {
+      const peer = channel.peer?.trim().toLowerCase() ?? '';
+      return peer.length > 0 && followingSet.has(peer);
+    }
+    if (channel.kind === 'group') {
+      return channel.members.some((member) => {
+        const account = member.trim().toLowerCase();
+        return account.length > 0 && account !== viewer && followingSet.has(account);
+      });
+    }
+    return false;
+  });
+}
+
+export function shouldShowPlainSendDisclaimer(hasPriorMessages: boolean): boolean {
+  if (!hasPriorMessages) {
+    return true;
+  }
+  return !isPlainSendDisclaimerDismissed();
 }
 
 export function filterChannelsBySearch<T extends Pick<ChannelListItem, 'display_title' | 'list_title'>>(

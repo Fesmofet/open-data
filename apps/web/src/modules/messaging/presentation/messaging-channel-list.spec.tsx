@@ -23,13 +23,17 @@ const messages = {
   messages: 'Messages',
   messaging_search_chats: 'Search chats',
   messaging_all: 'All',
-  messaging_unread: 'Unread',
+  messaging_following: 'Following',
   messaging_no_channels: 'No conversations yet',
   messaging_new_message: 'New message',
   messaging_list_filter_aria: 'Filters',
 } as Messages;
 
-function renderList(channels: ChannelListItem[], onNewMessage?: () => void) {
+function renderList(
+  channels: ChannelListItem[],
+  onNewMessage?: () => void,
+  followingSet: ReadonlySet<string> = new Set(['alice']),
+) {
   return render(
     <I18nProvider locale={'en-US' as LocaleId} messages={messages}>
       <MessagingChannelList
@@ -37,6 +41,8 @@ function renderList(channels: ChannelListItem[], onNewMessage?: () => void) {
         activeChannelId={null}
         onSelectChannel={() => undefined}
         onNewMessage={onNewMessage}
+        followingSet={followingSet}
+        viewerUsername="bob"
       />
     </I18nProvider>,
   );
@@ -70,10 +76,10 @@ describe('MessagingChannelList', () => {
     },
   ];
 
-  it('Unread tab shows only channels with unread_count > 0', () => {
+  it('Following tab shows only channels with followed peers', () => {
     renderList(channels);
     act(() => {
-      screen.getByRole('button', { name: 'Unread' }).click();
+      screen.getByRole('button', { name: 'Following' }).click();
     });
     expect(screen.getByText('WAIVIO Community')).toBeInTheDocument();
     expect(screen.queryByText('Quiet')).not.toBeInTheDocument();

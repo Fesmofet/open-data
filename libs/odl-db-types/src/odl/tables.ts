@@ -57,8 +57,10 @@ export interface OdlDatabase {
   post_languages: PostLanguagesTable;
   post_links: PostLinksTable;
   post_mentions: PostMentionsTable;
+  post_replies: PostRepliesTable;
   user_post_drafts: UserPostDraftsTable;
   threads: ThreadsTable;
+  thread_replies: ThreadRepliesTable;
   thread_active_votes: ThreadActiveVotesTable;
   post_sync_queue: PostSyncQueueTable;
   account_sync_queue: AccountSyncQueueTable;
@@ -326,6 +328,8 @@ export interface UserMetadataTable {
   hide_recipe_objects: boolean;
   /** When true, exclude post-linked objects from favorites scope. */
   hide_favorite_objects: boolean;
+  profile_posts_last_read_at_unix: number | null;
+  profile_threads_last_read_at_unix: number | null;
 }
 
 export type UserMetadata = Selectable<UserMetadataTable>;
@@ -698,6 +702,24 @@ export type NewPostMention = Insertable<PostMentionsTable>;
 export type PostMentionUpdate = Updateable<PostMentionsTable>;
 
 // ---------------------------------------------------------------------------
+// post_replies (Hive comment replies for unread counts)
+// ---------------------------------------------------------------------------
+
+export interface PostRepliesTable {
+  author: string;
+  permlink: string;
+  root_author: string;
+  root_permlink: string;
+  parent_author: string;
+  parent_permlink: string;
+  created_unix: number;
+}
+
+export type PostReply = Selectable<PostRepliesTable>;
+export type NewPostReply = Insertable<PostRepliesTable>;
+export type PostReplyUpdate = Updateable<PostRepliesTable>;
+
+// ---------------------------------------------------------------------------
 // threads (Leo / Ecency thread-style comments)
 // ---------------------------------------------------------------------------
 
@@ -734,6 +756,22 @@ export interface ThreadsTable {
 export type Thread = Selectable<ThreadsTable>;
 export type NewThread = Insertable<ThreadsTable>;
 export type ThreadUpdate = Updateable<ThreadsTable>;
+
+// ---------------------------------------------------------------------------
+// thread_replies (nested thread replies for unread counts)
+// ---------------------------------------------------------------------------
+
+export interface ThreadRepliesTable {
+  author: string;
+  permlink: string;
+  parent_author: string;
+  parent_permlink: string;
+  created_unix: number;
+}
+
+export type ThreadReply = Selectable<ThreadRepliesTable>;
+export type NewThreadReply = Insertable<ThreadRepliesTable>;
+export type ThreadReplyUpdate = Updateable<ThreadRepliesTable>;
 
 // ---------------------------------------------------------------------------
 // thread_active_votes

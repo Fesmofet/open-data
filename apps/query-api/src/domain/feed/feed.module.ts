@@ -19,6 +19,8 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 import { GetUserActivityEndpoint } from './get-user-activity.endpoint';
 import { GetHomeFeedEndpoint } from './get-home-feed.endpoint';
 import { HiveAccountHistoryPagerService } from './hive-account-history-pager.service';
+import { GetUserFeedUnreadCountsEndpoint } from './get-user-feed-unread-counts.endpoint';
+import { MarkProfileFeedReadEndpoint } from './mark-profile-feed-read.endpoint';
 
 @Module({
   imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule, ObjectProjectionModule],
@@ -39,6 +41,8 @@ import { HiveAccountHistoryPagerService } from './hive-account-history-pager.ser
     PostRewardRatesCache,
     HiveGlobalPropertiesCache,
     PostRewardService,
+    GetUserFeedUnreadCountsEndpoint,
+    MarkProfileFeedReadEndpoint,
   ],
   exports: [
     GetObjectPostsFeedEndpoint,
@@ -56,6 +60,8 @@ import { HiveAccountHistoryPagerService } from './hive-account-history-pager.ser
     PostRewardRatesCache,
     HiveGlobalPropertiesCache,
     PostRewardService,
+    GetUserFeedUnreadCountsEndpoint,
+    MarkProfileFeedReadEndpoint,
   ],
 })
 export class FeedModule {}

@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PostsRepository } from '../../repositories/posts.repository';
+import { PostRepliesRepository } from '../../repositories/post-replies.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
 import {
+  blockTimestampToUnixSeconds,
   isThreadParentAccount,
   isTruthyMetadata,
   parseJsonMetadata,
@@ -24,6 +26,7 @@ export class CommentOperationOrchestrator {
     private readonly postUpsert: PostUpsertService,
     private readonly threadParse: ThreadParseService,
     private readonly postsRepository: PostsRepository,
+    private readonly postRepliesRepository: PostRepliesRepository,
     private readonly threadsRepository: ThreadsRepository,
     private readonly commentPostObjectBind: CommentPostObjectBindService,
     private readonly commentNotifications: HiveCommentNotificationService,
@@ -47,17 +50,39 @@ export class CommentOperationOrchestrator {
     }
 
     if (op.parent_author && op.parent_permlink) {
-      if (isThreadParentAccount(op.parent_author)) {
+      const isThreadRoot = isThreadParentAccount(op.parent_author);
+      if (isThreadRoot) {
         await this.threadParse.parseThread(op, {
           blockTimestamp,
         });
       } else {
-        await this.threadParse.parseThreadReply(op);
+        await this.threadParse.parseThreadReply(op, blockTimestamp);
       }
       await this.postsRepository.incrementChildren(
         op.parent_author,
         op.parent_permlink,
       );
+      if (!isThreadRoot) {
+        const root = await this.postRepliesRepository.resolveRoot(
+          op.parent_author,
+          op.parent_permlink,
+        );
+        if (root) {
+          await this.postRepliesRepository.upsertReply({
+            author: op.author,
+            permlink: op.permlink,
+            root_author: root.root_author,
+            root_permlink: root.root_permlink,
+            parent_author: op.parent_author,
+            parent_permlink: op.parent_permlink,
+            created_unix: blockTimestampToUnixSeconds(blockTimestamp),
+          });
+        } else {
+          this.logger.warn(
+            `Could not resolve post reply root for parent ${op.parent_author}/${op.parent_permlink}`,
+          );
+        }
+      }
       await this.commentPostObjectBind.tryBindObjectsFromComment(op, blockTimestamp);
     }
 

@@ -7,7 +7,6 @@ import { AppModal, AppModalCloseButton } from '@/shared/presentation';
 
 import {
   dismissPlainSendDisclaimer,
-  isPlainSendDisclaimerDismissed,
 } from '../domain/messaging.helpers';
 
 export type PlainSendDisclaimerModalProps = {
@@ -65,8 +64,4 @@ export function PlainSendDisclaimerModal({
       </div>
     </AppModal>
   );
-}
-
-export function shouldShowPlainSendDisclaimer(): boolean {
-  return !isPlainSendDisclaimerDismissed();
 }

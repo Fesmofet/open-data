@@ -123,6 +123,35 @@ export class MessagingRepository {
     return row?.last_read_at_unix ?? null;
   }
 
+  async countTotalUnreadForViewer(viewer: string): Promise<number> {
+    const viewerTrimmed = viewer.trim();
+    if (viewerTrimmed.length === 0) {
+      return 0;
+    }
+
+    const row = await this.db
+      .selectFrom('messages')
+      .innerJoin('channel_members', 'channel_members.channel_id', 'messages.channel_id')
+      .innerJoin('channels', 'channels.channel_id', 'messages.channel_id')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('channel_members.account', '=', viewerTrimmed)
+      .where('channels.dissolved_at_unix', 'is', null)
+      .where('messages.author', '!=', viewerTrimmed)
+      .where((eb) =>
+        eb.or([
+          eb('channel_members.last_read_at_unix', 'is', null),
+          eb(
+            'messages.created_at_unix',
+            '>',
+            eb.ref('channel_members.last_read_at_unix'),
+          ),
+        ]),
+      )
+      .executeTakeFirst();
+
+    return Number(row?.count ?? 0);
+  }
+
   async countUnreadMessages(
     channelId: string,
     viewer: string,

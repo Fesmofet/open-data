@@ -153,9 +153,11 @@ function LexicalAutoLinkConfigured() {
 function EditorBodyOnChangePlugin({
   onBodyChange,
   plainTextOnly,
+  lexicalJson,
 }: {
   onBodyChange?: (body: string) => void;
   plainTextOnly?: boolean;
+  lexicalJson?: boolean;
 }) {
   const [editor] = useLexicalComposerContext();
 
@@ -166,7 +168,7 @@ function EditorBodyOnChangePlugin({
         if (!onBodyChange) {
           return;
         }
-        if (plainTextOnly) {
+        if (plainTextOnly && !lexicalJson) {
           editorState.read(() => {
             onBodyChange($getRoot().getTextContent());
           });
@@ -184,6 +186,8 @@ function EditorInner({
   onBodyChange,
   compact,
   compactBottomInset,
+  messagingCompact,
+  composeTrailingInset,
   showFormatToolbar,
   enableImages,
   onObjectLinkedFromEditor,
@@ -193,26 +197,33 @@ function EditorInner({
   onBodyChange?: (body: string) => void;
   compact?: boolean;
   compactBottomInset?: boolean;
+  messagingCompact?: boolean;
+  composeTrailingInset?: boolean;
   showFormatToolbar?: boolean;
   enableImages?: boolean;
   onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
 }) {
-  const pillChrome = Boolean(compact && compactBottomInset);
+  const pillChrome = Boolean((compact || messagingCompact) && compactBottomInset);
 
   const minHeightClass = pillChrome
     ? 'min-h-11 max-h-32 resize-y overflow-y-auto'
-    : compact
+    : compact || messagingCompact
       ? 'min-h-[2rem]'
       : 'min-h-[12rem]';
-  const verticalPadClass = pillChrome ? 'py-1.5' : compact ? 'py-2' : 'py-3';
-  const padHorizontalClass = pillChrome ? 'ps-10 pe-4' : 'px-4 ps-8';
+  const verticalPadClass = pillChrome ? 'py-1.5' : compact || messagingCompact ? 'py-2' : 'py-3';
+  const padHorizontalClass = pillChrome
+    ? composeTrailingInset
+      ? 'ps-10 pe-24'
+      : 'ps-10 pe-4'
+    : 'px-4 ps-8';
 
   return (
     <>
       {initialBody ? <InitialBodyPlugin body={initialBody} /> : null}
       <EditorBodyOnChangePlugin
         onBodyChange={onBodyChange}
-        plainTextOnly={compact}
+        plainTextOnly={compact && !messagingCompact}
+        lexicalJson={messagingCompact}
       />
       <RichTextPlugin
         contentEditable={
@@ -227,7 +238,11 @@ function EditorInner({
           />
         }
         placeholder={
-          <Placeholder text={bodyPlaceholder} compact={compact} pillChrome={pillChrome} />
+          <Placeholder
+            text={bodyPlaceholder}
+            compact={compact || messagingCompact}
+            pillChrome={pillChrome}
+          />
         }
         ErrorBoundary={LexicalErrorBoundary}
       />
@@ -261,6 +276,10 @@ export type LexicalEditorProps = {
   onPlainTextChange?: (text: string) => void;
   compact?: boolean;
   compactBottomInset?: boolean;
+  /** Compact pill editor for messaging: images + object insert, Lexical JSON output. */
+  messagingCompact?: boolean;
+  /** Extra right padding for in-field lock + send controls (messaging compose bar). */
+  composeTrailingInset?: boolean;
 };
 
 export function LexicalPostEditor({
@@ -272,9 +291,11 @@ export function LexicalPostEditor({
   onPlainTextChange,
   compact,
   compactBottomInset,
+  messagingCompact,
+  composeTrailingInset,
 }: LexicalEditorProps) {
-  const pillChrome = Boolean(compact && compactBottomInset);
-  const enableImages = !compact;
+  const pillChrome = Boolean((compact || messagingCompact) && compactBottomInset);
+  const enableImages = !compact || Boolean(messagingCompact);
   const resolvedInitialBody = initialBody ?? initialPlainText;
   const resolvedOnBodyChange = onBodyChange ?? onPlainTextChange;
 
@@ -297,7 +318,7 @@ export function LexicalPostEditor({
 
   const shellMinClass = pillChrome
     ? 'min-h-11 max-h-32'
-    : compact
+    : compact || messagingCompact
       ? 'min-h-[2rem]'
       : 'min-h-[12rem]';
   return (
@@ -314,7 +335,9 @@ export function LexicalPostEditor({
           onBodyChange={resolvedOnBodyChange}
           compact={compact}
           compactBottomInset={compactBottomInset}
-          showFormatToolbar={enableImages}
+          messagingCompact={messagingCompact}
+          composeTrailingInset={composeTrailingInset}
+          showFormatToolbar={enableImages && !messagingCompact}
           enableImages={enableImages}
           onObjectLinkedFromEditor={onObjectLinkedFromEditor}
         />

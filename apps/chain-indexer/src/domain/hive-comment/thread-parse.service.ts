@@ -17,6 +17,7 @@ import {
   THREAD_TYPE_ECENCY,
 } from '@opden-data-layer/core';
 import { ThreadsRepository } from '../../repositories/threads.repository';
+import { ThreadRepliesRepository } from '../../repositories/thread-replies.repository';
 import type { CommentOperationPayload } from './hive-comment.schema';
 
 export interface ThreadParseOptions {
@@ -26,7 +27,10 @@ export interface ThreadParseOptions {
 
 @Injectable()
 export class ThreadParseService {
-  constructor(private readonly threadsRepository: ThreadsRepository) {}
+  constructor(
+    private readonly threadsRepository: ThreadsRepository,
+    private readonly threadRepliesRepository: ThreadRepliesRepository,
+  ) {}
 
   async parseThread(
     op: CommentOperationPayload,
@@ -76,12 +80,22 @@ export class ThreadParseService {
     await this.threadsRepository.upsertThread(row);
   }
 
-  async parseThreadReply(op: CommentOperationPayload): Promise<void> {
+  async parseThreadReply(
+    op: CommentOperationPayload,
+    blockTimestamp: string,
+  ): Promise<void> {
     const ref = `${op.author}/${op.permlink}`;
     await this.threadsRepository.addReply(
       op.parent_author,
       op.parent_permlink,
       ref,
     );
+    await this.threadRepliesRepository.upsertReply({
+      author: op.author,
+      permlink: op.permlink,
+      parent_author: op.parent_author,
+      parent_permlink: op.parent_permlink,
+      created_unix: blockTimestampToUnixSeconds(blockTimestamp),
+    });
   }
 }

@@ -10,9 +10,15 @@ import {
 import {
   GetUserBlogFeedEndpoint,
   GetUserBlogObjectFiltersEndpoint,
+  GetUserFeedUnreadCountsEndpoint,
   GetUserMentionsFeedEndpoint,
+  MarkProfileFeedReadEndpoint,
+  markProfileFeedReadBodySchema,
   userBlogFeedBodySchema,
   userBlogObjectFiltersQuerySchema,
+  type FeedUnreadCountsResponse,
+  type MarkProfileFeedReadBody,
+  type MarkProfileFeedReadResponse,
   type UserBlogFeedBody,
   type UserBlogFeedResponse,
   type UserBlogObjectFiltersQuery,
@@ -91,6 +97,8 @@ export class UsersController {
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
     private readonly getUserBlogObjectFilters: GetUserBlogObjectFiltersEndpoint,
     private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
+    private readonly getUserFeedUnreadCounts: GetUserFeedUnreadCountsEndpoint,
+    private readonly markProfileFeedRead: MarkProfileFeedReadEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
@@ -271,6 +279,31 @@ export class UsersController {
       governanceObjectIdFromHeader,
       viewer,
     );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/feed-unread-counts')
+  async getFeedUnreadCounts(
+    @Param('name') name: string,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<FeedUnreadCountsResponse> {
+    const result = await this.getUserFeedUnreadCounts.execute(name, viewer);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/feed-read')
+  async markFeedRead(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(markProfileFeedReadBodySchema)) body: MarkProfileFeedReadBody,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<MarkProfileFeedReadResponse> {
+    const result = await this.markProfileFeedRead.execute(name, body, viewer);
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);
     }

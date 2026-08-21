@@ -10,8 +10,8 @@ import {
 } from '@/shared/presentation/layout';
 
 import {
+  filterChannelsByFollowing,
   filterChannelsBySearch,
-  filterChannelsByUnread,
 } from '../domain/messaging.helpers';
 import type { ChannelListItem, MessagingListFilter } from '../domain/messaging.types';
 import {
@@ -25,6 +25,8 @@ export type MessagingChannelListProps = {
   activeChannelId: string | null;
   onSelectChannel: (channelId: string) => void;
   onNewMessage?: () => void;
+  followingSet?: ReadonlySet<string>;
+  viewerUsername?: string | null;
   /** `rail` — profile left column; `embedded` — inside center messenger shell. */
   variant?: 'rail' | 'embedded';
 };
@@ -34,6 +36,8 @@ export function MessagingChannelList({
   activeChannelId,
   onSelectChannel,
   onNewMessage,
+  followingSet = new Set<string>(),
+  viewerUsername = null,
   variant = 'embedded',
 }: MessagingChannelListProps) {
   const { t } = useI18n();
@@ -42,11 +46,11 @@ export function MessagingChannelList({
 
   const visibleChannels = useMemo(() => {
     const searched = filterChannelsBySearch(channels, search);
-    if (filter === 'unread') {
-      return filterChannelsByUnread(searched);
+    if (filter === 'following') {
+      return filterChannelsByFollowing(searched, followingSet, viewerUsername);
     }
     return searched;
-  }, [channels, filter, search]);
+  }, [channels, filter, followingSet, search, viewerUsername]);
 
   return (
     <div
@@ -69,14 +73,14 @@ export function MessagingChannelList({
             aria-label={t('messaging_list_filter_aria')}
             className={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
           >
-            {(['all', 'unread'] as const).map((tab) => (
+            {(['all', 'following'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
                 className={profileSectionTabClass(filter === tab, 'sub')}
                 onClick={() => setFilter(tab)}
               >
-                {tab === 'all' ? t('messaging_all') : t('messaging_unread')}
+                {tab === 'all' ? t('messaging_all') : t('messaging_following')}
               </button>
             ))}
           </nav>

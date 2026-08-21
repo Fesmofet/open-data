@@ -3900,5 +3900,11 @@
   "messaging_encrypt_failed": "Could not encrypt this message",
   "messaging_encrypt_checking_memo": "Checking memo key…",
   "messaging_encrypt_signer_one_way_info": "HiveSigner and HiveAuth can only send one-way encrypted messages. You will not be able to read them later.",
-  "messaging_decrypt_requires_keychain_login": "Decrypting encrypted messages requires logging in with Hive Keychain. HiveSigner and HiveAuth cannot decrypt in this version."
+  "messaging_decrypt_requires_keychain_login": "Decrypting encrypted messages requires logging in with Hive Keychain. HiveSigner and HiveAuth cannot decrypt in this version.",
+  "messaging_write_message": "Write your message...",
+  "messaging_following": "Following",
+  "messaging_encrypt_toggle_public": "Send public message",
+  "messaging_encrypt_toggle_encrypted": "Send encrypted message",
+  "messaging_encrypt_keychain_required_title": "Hive Keychain required",
+  "messaging_encrypt_keychain_required_body": "Install and log in with Hive Keychain to toggle encrypted messages. You can still send one-way encrypted messages from the send dialog."
 }

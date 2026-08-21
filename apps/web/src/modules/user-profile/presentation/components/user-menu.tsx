@@ -23,6 +23,7 @@ import {
 import { useUserProfileSocialCounts } from './user-profile-social-counts-context';
 import { useEffectiveProfileNav } from './user-profile-pending-nav-context';
 import { UserProfileNavLink } from './user-profile-nav-link';
+import { ProfileFeedTabLabel } from './profile-tab-unread-badge';
 
 export type UserMenuDirection = 'horizontal' | 'vertical';
 
@@ -184,7 +185,7 @@ function FeedSubmenuNav({
 
   const messagesLink = showMessages ? (
     <UserProfileNavLink href={`${base}/messages`} className={linkClass('messages')}>
-      {t('messages')}
+      <ProfileFeedTabLabel label={t('messages')} tab="messages" />
     </UserProfileNavLink>
   ) : null;
 
@@ -194,8 +195,12 @@ function FeedSubmenuNav({
         className={['flex flex-col gap-0.5', className].filter(Boolean).join(' ')}
         aria-label={t('user_profile_submenu_feed_aria')}
       >
-        <UserProfileNavLink href={base} className={linkClass('posts')}>{t('posts')}</UserProfileNavLink>
-        <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>{t('threads')}</UserProfileNavLink>
+        <UserProfileNavLink href={base} className={linkClass('posts')}>
+          <ProfileFeedTabLabel label={t('posts')} tab="posts" />
+        </UserProfileNavLink>
+        <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>
+          <ProfileFeedTabLabel label={t('threads')} tab="threads" />
+        </UserProfileNavLink>
         {messagesLink}
         <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
         <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>
@@ -211,8 +216,12 @@ function FeedSubmenuNav({
       bleed={bleed}
       className={className}
     >
-      <UserProfileNavLink href={base} className={linkClass('posts')}>{t('posts')}</UserProfileNavLink>
-      <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>{t('threads')}</UserProfileNavLink>
+      <UserProfileNavLink href={base} className={linkClass('posts')}>
+        <ProfileFeedTabLabel label={t('posts')} tab="posts" />
+      </UserProfileNavLink>
+      <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>
+        <ProfileFeedTabLabel label={t('threads')} tab="threads" />
+      </UserProfileNavLink>
       {messagesLink}
       <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>

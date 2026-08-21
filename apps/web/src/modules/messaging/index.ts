@@ -9,7 +9,7 @@ export type {
 } from './domain/messaging.types';
 
 export {
-  filterChannelsByUnread,
+  filterChannelsByFollowing,
   filterChannelsBySearch,
   buildMessageCreatePayload,
   buildGroupChannelCreatePayload,

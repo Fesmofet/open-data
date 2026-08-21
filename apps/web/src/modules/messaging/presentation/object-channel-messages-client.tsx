@@ -110,6 +110,7 @@ export function ObjectChannelMessagesClient({
             channelKind="object"
             members={channel.members.map((member) => member.account)}
             viewerUsername={viewerUsername}
+            hasPriorMessages={messages.length > 0 || initialChannelExists}
             disabled={!viewerUsername}
             pending={pending}
             pendingEncrypted={pending}

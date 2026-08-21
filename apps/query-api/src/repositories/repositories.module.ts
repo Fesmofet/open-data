@@ -35,6 +35,9 @@ import { HiveEngineDepositRecordsRepository } from './hive-engine-deposit-record
 import { WaivGeneratedReportsRepository } from './waiv-generated-reports.repository';
 import { OblRepository, OblOfferDraftsRepository } from './obl.repository';
 import { MessagingRepository } from './messaging.repository';
+import { ProfileFeedReadCursorRepository } from './profile-feed-read-cursor.repository';
+import { PostRepliesRepository } from './post-replies.repository';
+import { ThreadRepliesRepository } from './thread-replies.repository';
 
 @Module({
   providers: [
@@ -75,6 +78,9 @@ import { MessagingRepository } from './messaging.repository';
     OblRepository,
     OblOfferDraftsRepository,
     MessagingRepository,
+    ProfileFeedReadCursorRepository,
+    PostRepliesRepository,
+    ThreadRepliesRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -114,6 +120,9 @@ import { MessagingRepository } from './messaging.repository';
     OblRepository,
     OblOfferDraftsRepository,
     MessagingRepository,
+    ProfileFeedReadCursorRepository,
+    PostRepliesRepository,
+    ThreadRepliesRepository,
   ],
 })
 export class RepositoriesModule {}

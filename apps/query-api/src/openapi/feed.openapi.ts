@@ -1,6 +1,11 @@
 import { SUPPORTED_CURRENCIES } from '@opden-data-layer/core';
 import { z } from 'zod';
 
+import {
+  feedUnreadCountsResponseSchema,
+  markProfileFeedReadBodySchema,
+  markProfileFeedReadResponseSchema,
+} from '../domain/feed/feed-unread.schema';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 import { queryApiOpenApiTags } from './tags';
@@ -581,6 +586,121 @@ registry.registerPath({
       content: {
         'application/json': {
           schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+const forbiddenSchema = z.object({
+  statusCode: z.literal(403),
+  message: z.string(),
+  error: z.string(),
+});
+
+const feedUnreadCountsResponseOpenApiSchema = registry.register(
+  'FeedUnreadCountsResponse',
+  feedUnreadCountsResponseSchema,
+);
+
+const markProfileFeedReadBodyOpenApiSchema = registry.register(
+  'MarkProfileFeedReadBody',
+  markProfileFeedReadBodySchema,
+);
+
+const markProfileFeedReadResponseOpenApiSchema = registry.register(
+  'MarkProfileFeedReadResponse',
+  markProfileFeedReadResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/feed-unread-counts',
+  tags: [queryApiOpenApiTags.users],
+  summary: 'Profile feed unread badge counts',
+  description:
+    'Returns unread reply counts for posts and threads tabs plus total messaging unread when `X-Viewer` matches `:name`; otherwise 403.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'x-viewer': z.string().openapi({
+        description: 'Hive account of the viewer; must match `:name`.',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Unread counts per profile feed tab.',
+      content: {
+        'application/json': {
+          schema: feedUnreadCountsResponseOpenApiSchema,
+        },
+      },
+    },
+    403: {
+      description: 'Viewer does not match account.',
+      content: {
+        'application/json': {
+          schema: forbiddenSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Account not found.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/feed-read',
+  tags: [queryApiOpenApiTags.users],
+  summary: 'Mark profile feed tab as read',
+  description:
+    'Monotonically advances posts or threads read cursor in `user_metadata` when `X-Viewer` matches `:name`. Messages tab is a no-op (channel cursors handle messaging read state).',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'x-viewer': z.string().openapi({
+        description: 'Hive account of the viewer; must match `:name`.',
+      }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: markProfileFeedReadBodyOpenApiSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      description: 'Updated cursor state for the tab.',
+      content: {
+        'application/json': {
+          schema: markProfileFeedReadResponseOpenApiSchema,
+        },
+      },
+    },
+    403: {
+      description: 'Viewer does not match account.',
+      content: {
+        'application/json': {
+          schema: forbiddenSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Account not found.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
         },
       },
     },

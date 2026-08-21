@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
 import { AppModal, AppModalCloseButton } from '@/shared/presentation';
+import { sanitizePostBodyHtml } from '@/shared/infrastructure/post-body-html-pipeline';
 import { OptimisticNavLink } from '@/shared/presentation/navigation';
 
 import { useDecryptMessage } from '../application/use-decrypt-message';
@@ -128,7 +129,12 @@ export function MessagingMessageList({
                 let bodyNode: React.ReactNode;
                 if (presentation.kind === 'plain' || presentation.kind === 'decrypted') {
                   bodyNode = (
-                    <p className="whitespace-pre-wrap break-words text-body-sm">{presentation.text}</p>
+                    <div
+                      className="blog-post-body break-words text-body-sm [&_a]:text-link [&_a]:underline"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizePostBodyHtml(presentation.text),
+                      }}
+                    />
                   );
                 } else if (presentation.kind === 'one-way') {
                   bodyNode = (

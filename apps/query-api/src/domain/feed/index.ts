@@ -11,6 +11,16 @@ export { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 export { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 export { GetUserActivityEndpoint } from './get-user-activity.endpoint';
 export { GetHomeFeedEndpoint } from './get-home-feed.endpoint';
+export { GetUserFeedUnreadCountsEndpoint } from './get-user-feed-unread-counts.endpoint';
+export { MarkProfileFeedReadEndpoint } from './mark-profile-feed-read.endpoint';
+export {
+  feedUnreadCountsResponseSchema,
+  markProfileFeedReadBodySchema,
+  markProfileFeedReadResponseSchema,
+  type FeedUnreadCountsResponse,
+  type MarkProfileFeedReadBody,
+  type MarkProfileFeedReadResponse,
+} from './feed-unread.schema';
 export type {
   FeedStoryItemDto,
   FeedVoteSummaryDto,

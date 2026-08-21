@@ -59,3 +59,7 @@ export { UserAccountMutesRepository } from './user-account-mutes.repository';
 export { ThreadsRepository } from './threads.repository';
 export type { ThreadVoteSummary } from './threads.repository';
 export { MessagingRepository } from './messaging.repository';
+export { ProfileFeedReadCursorRepository } from './profile-feed-read-cursor.repository';
+export type { ProfileFeedReadCursors } from './profile-feed-read-cursor.repository';
+export { PostRepliesRepository } from './post-replies.repository';
+export { ThreadRepliesRepository } from './thread-replies.repository';

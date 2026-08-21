@@ -72,7 +72,7 @@ export type MessageHistoryPage = {
   hasMore: boolean;
 };
 
-export type MessagingListFilter = 'all' | 'unread';
+export type MessagingListFilter = 'all' | 'following';
 
 export type SendMessageTarget =
   | { channelId: string; peer?: never }

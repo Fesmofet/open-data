@@ -8,6 +8,8 @@ import { ObjectFavoriteRepository } from './object-favorite.repository';
 import { ObjectOwnershipRepository } from './object-ownership.repository';
 import { AggregatedObjectRepository } from './aggregated-object.repository';
 import { PostsRepository } from './posts.repository';
+import { PostRepliesRepository } from './post-replies.repository';
+import { ThreadRepliesRepository } from './thread-replies.repository';
 import { SocialGraphRepository } from './social-graph.repository';
 import { ThreadsRepository } from './threads.repository';
 import { PostSyncQueueRepository } from './post-sync-queue.repository';
@@ -45,8 +47,10 @@ import { MessagesRepository } from './messages.repository';
     ObjectOwnershipRepository,
     AggregatedObjectRepository,
     PostsRepository,
+    PostRepliesRepository,
     SocialGraphRepository,
     ThreadsRepository,
+    ThreadRepliesRepository,
     PostSyncQueueRepository,
     AccountSyncQueueRepository,
     CanonicalRecomputeRepository,
@@ -81,8 +85,10 @@ import { MessagesRepository } from './messages.repository';
     ObjectOwnershipRepository,
     AggregatedObjectRepository,
     PostsRepository,
+    PostRepliesRepository,
     SocialGraphRepository,
     ThreadsRepository,
+    ThreadRepliesRepository,
     PostSyncQueueRepository,
     AccountSyncQueueRepository,
     CanonicalRecomputeRepository,

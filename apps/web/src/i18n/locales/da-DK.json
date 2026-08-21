@@ -2742,5 +2742,11 @@
   "messaging_member_already": "Already a member",
   "messaging_slots_remaining": "{count} slots left",
   "messaging_leave_confirm": "Forlad",
-  "messaging_leave_select_admin_required": "Vælg en ny administrator, før du forlader."
+  "messaging_leave_select_admin_required": "Vælg en ny administrator, før du forlader.",
+  "messaging_write_message": "Write your message...",
+  "messaging_following": "Following",
+  "messaging_encrypt_toggle_public": "Send public message",
+  "messaging_encrypt_toggle_encrypted": "Send encrypted message",
+  "messaging_encrypt_keychain_required_title": "Hive Keychain required",
+  "messaging_encrypt_keychain_required_body": "Install and log in with Hive Keychain to toggle encrypted messages. You can still send one-way encrypted messages from the send dialog."
 }

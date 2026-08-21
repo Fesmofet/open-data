@@ -21,6 +21,7 @@ import {
   subscribeMessagingChannelUpdated,
   subscribeMessagingChannelLeft,
 } from '../infrastructure/messaging-channel-sync';
+import { useViewerFollowingSet } from '../application/use-viewer-following-set';
 import { MESSAGING_CARD_SHELL_CLASS } from './messaging-layout.constants';
 import { MessagingChannelList } from './messaging-channel-list';
 import { MessagingViewportShell } from './messaging-viewport-shell';
@@ -41,6 +42,7 @@ export function MessagingChannelListRail({
 }: MessagingChannelListRailProps) {
   const router = useRouter();
   const { openLogin } = useLoginModal();
+  const followingSet = useViewerFollowingSet(viewerUsername);
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [channels, setChannels] = useState(channelsProp);
   const basePath = `/@${accountName}/messages`;
@@ -123,6 +125,8 @@ export function MessagingChannelListRail({
             activeChannelId={activeChannelId}
             onSelectChannel={onSelectChannel}
             onNewMessage={() => setNewMessageOpen(true)}
+            followingSet={followingSet}
+            viewerUsername={viewerUsername}
           />
         </div>
       </MessagingViewportShell>

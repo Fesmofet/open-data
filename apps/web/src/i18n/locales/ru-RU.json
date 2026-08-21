@@ -3648,5 +3648,11 @@
   "messaging_encrypt_failed": "Не удалось зашифровать сообщение",
   "messaging_encrypt_checking_memo": "Проверка memo-ключа…",
   "messaging_encrypt_signer_one_way_info": "Через HiveSigner и HiveAuth доступна только односторонняя отправка. Вы не сможете прочитать такие сообщения позже.",
-  "messaging_decrypt_requires_keychain_login": "Расшифровка доступна только при входе через Hive Keychain. HiveSigner и HiveAuth пока не поддерживают расшифровку."
+  "messaging_decrypt_requires_keychain_login": "Расшифровка доступна только при входе через Hive Keychain. HiveSigner и HiveAuth пока не поддерживают расшифровку.",
+  "messaging_write_message": "Write your message...",
+  "messaging_following": "Following",
+  "messaging_encrypt_toggle_public": "Send public message",
+  "messaging_encrypt_toggle_encrypted": "Send encrypted message",
+  "messaging_encrypt_keychain_required_title": "Hive Keychain required",
+  "messaging_encrypt_keychain_required_body": "Install and log in with Hive Keychain to toggle encrypted messages. You can still send one-way encrypted messages from the send dialog."
 }

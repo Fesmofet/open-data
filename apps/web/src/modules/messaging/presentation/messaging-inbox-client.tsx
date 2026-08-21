@@ -8,6 +8,7 @@ import { useLoginModal } from '@/modules/auth';
 
 import { useSendMessage } from '../application/use-send-message';
 import { useSendEncryptedMessage } from '../application/use-send-encrypted-message';
+import { useViewerFollowingSet } from '../application/use-viewer-following-set';
 import { useCreateGroupChannel } from '../application/use-create-group-channel';
 import { useLeaveGroupChannel } from '../application/use-leave-group-channel';
 import { useUpdateGroupChannel } from '../application/use-update-group-channel';
@@ -81,6 +82,7 @@ export function MessagingInboxClient({
   const router = useRouter();
   const { t } = useI18n();
   const { openLogin } = useLoginModal();
+  const followingSet = useViewerFollowingSet(viewerUsername);
   const [channels, setChannels] = useState(initialChannels.items);
   const [activeChannelId, setActiveChannelId] = useState(initialChannelId);
   const [messages, setMessages] = useState<MessageItem[]>(initialMessages.items);
@@ -334,8 +336,15 @@ export function MessagingInboxClient({
       activeChannelId={activeChannelId}
       onSelectChannel={selectChannel}
       onNewMessage={() => setNewMessageOpen(true)}
+      followingSet={followingSet}
+      viewerUsername={viewerUsername}
     />
   );
+
+  const activeChannel =
+    channels.find((channel) => channel.channel_id === activeChannelId) ?? null;
+  const hasPriorMessages =
+    messages.length > 0 || (activeChannel?.last_message_at_unix ?? null) != null;
 
   const loadOlder = useCallback(() => {
     if (!activeChannelId || !messagesCursor || loadingOlder) {
@@ -366,7 +375,6 @@ export function MessagingInboxClient({
     return () => observer.disconnect();
   }, [hasMoreMessages, loadOlder]);
 
-  const activeChannel = channels.find((c) => c.channel_id === activeChannelId) ?? null;
   const chatTitle =
     channelDetail?.display_title ??
     activeChannel?.display_title ??
@@ -452,6 +460,7 @@ export function MessagingInboxClient({
                 peer={composePeer}
                 members={composeMembers}
                 viewerUsername={viewerUsername}
+                hasPriorMessages={hasPriorMessages}
                 pending={pending}
                 pendingEncrypted={pendingEncrypted}
                 onSendPlain={onSendPlain}

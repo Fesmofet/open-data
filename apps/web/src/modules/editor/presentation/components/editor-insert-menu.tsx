@@ -337,6 +337,7 @@ export function EditorInsertCaretOverlay({
   const [insertPanelCoords, setInsertPanelCoords] = useState<{
     top: number;
     left: number;
+    placement: 'above' | 'below';
   } | null>(null);
   const [portalReady, setPortalReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -439,8 +440,20 @@ export function EditorInsertCaretOverlay({
       return;
     }
     const r = btn.getBoundingClientRect();
-    setInsertPanelCoords({ top: r.bottom + 8, left: r.left + r.width / 2 });
-  }, []);
+    const panelHeight = insertPanelRef.current?.offsetHeight ?? 240;
+    const gap = 8;
+    const spaceBelow = window.innerHeight - r.bottom - gap;
+    const spaceAbove = r.top - gap;
+    const openAbove =
+      pinInsertCenterVertical ||
+      (spaceBelow < panelHeight && spaceAbove > spaceBelow);
+
+    setInsertPanelCoords({
+      top: openAbove ? r.top - gap : r.bottom + gap,
+      left: r.left + r.width / 2,
+      placement: openAbove ? 'above' : 'below',
+    });
+  }, [pinInsertCenterVertical]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -455,6 +468,13 @@ export function EditorInsertCaretOverlay({
       window.removeEventListener('scroll', updateInsertPanelCoords, true);
     };
   }, [open, updateInsertPanelCoords]);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      return;
+    }
+    updateInsertPanelCoords();
+  }, [insertView, open, updateInsertPanelCoords]);
 
   useEffect(() => {
     if (!objectSearchOpen) {
@@ -604,6 +624,7 @@ export function EditorInsertCaretOverlay({
             className={[
               'fixed z-[80] w-[min(100vw-2rem,20rem)] -translate-x-1/2 rounded-card border border-border',
               'bg-surface p-3 shadow-card',
+              insertPanelCoords.placement === 'above' ? '-translate-y-full' : '',
             ].join(' ')}
             style={{ top: insertPanelCoords.top, left: insertPanelCoords.left }}
             role="dialog"
