@@ -146,11 +146,10 @@ function buildPrimaryTabs(input: {
 }): ObjectPrimaryTabView[] {
   const base: ObjectPrimaryTabView[] = [
     { segment: 'reviews', label: 'Reviews' },
-    { segment: 'messages', label: 'Messages' },
     { segment: 'gallery', label: 'Gallery' },
     { segment: 'updates', label: 'Updates', count: input.updatesCount },
-    { segment: 'ownership', label: 'Ownership' },
     { segment: 'followers', label: 'Followers', count: input.followersCount },
+    { segment: 'ownership', label: 'Ownership' },
     { segment: 'experts', label: 'Experts', count: input.expertsCount },
   ];
 
@@ -164,6 +163,7 @@ function buildPrimaryTabs(input: {
 const FEED_SUB_TABS: ObjectFeedSubTabView[] = [
   { segment: 'posts', label: 'Posts' },
   { segment: 'threads', label: 'Threads' },
+  { segment: 'messages', label: 'Messages' },
 ];
 
 function coverImageUrl(fields: Record<string, unknown>): string | null {

@@ -13,14 +13,15 @@ const MOCK_PRIMARY_TABS: ObjectPrimaryTabView[] = [
   { segment: 'reviews', label: 'Reviews' },
   { segment: 'gallery', label: 'Gallery' },
   { segment: 'updates', label: 'Updates', count: 25 },
-  { segment: 'ownership', label: 'Ownership' },
   { segment: 'followers', label: 'Followers', count: 0 },
+  { segment: 'ownership', label: 'Ownership' },
   { segment: 'experts', label: 'Experts' },
 ];
 
 const MOCK_FEED_SUB_TABS: ObjectFeedSubTabView[] = [
   { segment: 'posts', label: 'Posts' },
   { segment: 'threads', label: 'Threads' },
+  { segment: 'messages', label: 'Messages' },
 ];
 
 function refCard(objectId: string, title: string): ObjectRefCardView {

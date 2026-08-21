@@ -4,13 +4,16 @@ import {
   buildObjectRelatedPath,
   buildObjectSimilarPath,
   buildObjectWidgetPath,
+  buildObjectReviewsSubPath,
 } from '@/modules/object/domain/object-page-url.constants';
 
 import {
   OBJECT_PAGE_OWNERSHIP_SUB_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
+  OBJECT_PAGE_REVIEWS_SUB_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from './object-page-search';
+import type { ReviewsFeedSubType } from '@/modules/object/domain/object-page.types';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '@/modules/object/domain/widget.constants';
 
 export type ObjectPrimaryTabNavigation = {
@@ -31,20 +34,10 @@ export function buildObjectPrimaryTabNavigation(
   if (segment === 'reviews') {
     u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
     u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
+    u.delete(OBJECT_PAGE_REVIEWS_SUB_PARAM);
     const qs = u.toString();
     return {
       href: qs ? `${base}/reviews?${qs}` : `${base}/reviews`,
-      method: 'push',
-    };
-  }
-
-  if (segment === 'messages') {
-    u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
-    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
-    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
-    const qs = u.toString();
-    return {
-      href: qs ? `${base}/messages?${qs}` : `${base}/messages`,
       method: 'push',
     };
   }
@@ -205,6 +198,21 @@ export function buildObjectFollowersSubHref(
   u.set(OBJECT_PAGE_OWNERSHIP_SUB_PARAM, sub);
   const qs = u.toString();
   return qs ? `${base}/followers?${qs}` : `${base}/followers`;
+}
+
+export function buildObjectReviewsSubHref(
+  objectId: string,
+  searchParams: URLSearchParams,
+  sub: ReviewsFeedSubType,
+): string {
+  const u = new URLSearchParams(searchParams.toString());
+  u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+  u.delete(OBJECT_PAGE_REVIEWS_SUB_PARAM);
+  u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
+  u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+  const qs = u.toString();
+  const path = buildObjectReviewsSubPath(objectId, sub);
+  return qs ? `${path}?${qs}` : path;
 }
 
 /** @deprecated Use {@link buildObjectOwnershipSubHref} */

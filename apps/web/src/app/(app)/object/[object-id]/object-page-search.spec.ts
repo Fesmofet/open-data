@@ -18,6 +18,7 @@ import {
   resolveDefaultPrimarySegmentFromLanding,
   resolvePrimarySegmentForObjectPage,
   resolvePrimarySegmentFromObjectUrl,
+  resolveReviewsFeedSubFromObjectUrl,
   resolveUpdateIdFromObjectUrl,
   sanitizeNestedStack,
 } from './object-page-search';
@@ -39,7 +40,7 @@ describe('resolvePrimarySegmentForObjectPage', () => {
     ).toBe('reviews');
   });
 
-  it('returns explicit path segment messages', () => {
+  it('maps legacy /messages path to reviews primary tab', () => {
     expect(
       resolvePrimarySegmentForObjectPage(
         objectId,
@@ -47,7 +48,18 @@ describe('resolvePrimarySegmentForObjectPage', () => {
         new URLSearchParams(),
         '',
       ),
-    ).toBe('messages');
+    ).toBe('reviews');
+  });
+
+  it('maps /reviews/messages path to reviews primary tab', () => {
+    expect(
+      resolvePrimarySegmentForObjectPage(
+        objectId,
+        `${base}/reviews/messages`,
+        new URLSearchParams(),
+        '',
+      ),
+    ).toBe('reviews');
   });
 
   it('returns explicit path segment description', () => {
@@ -444,5 +456,38 @@ describe('resolvePrimarySegmentFromObjectUrl widget', () => {
     const sp = new URLSearchParams();
     sp.set(OBJECT_PAGE_PRIMARY_TAB_PARAM, 'reviews');
     expect(resolvePrimarySegmentFromObjectUrl('abc', '/object/abc/widget', sp)).toBe('widget');
+  });
+});
+
+describe('resolveReviewsFeedSubFromObjectUrl', () => {
+  const objectId = 'test-obj';
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  it('returns posts for bare reviews path', () => {
+    expect(
+      resolveReviewsFeedSubFromObjectUrl(objectId, `${base}/reviews`, new URLSearchParams()),
+    ).toBe('posts');
+  });
+
+  it('returns messages from reviews sub-path', () => {
+    expect(
+      resolveReviewsFeedSubFromObjectUrl(
+        objectId,
+        `${base}/reviews/messages`,
+        new URLSearchParams(),
+      ),
+    ).toBe('messages');
+  });
+
+  it('returns messages from legacy /messages path', () => {
+    expect(
+      resolveReviewsFeedSubFromObjectUrl(objectId, `${base}/messages`, new URLSearchParams()),
+    ).toBe('messages');
+  });
+
+  it('returns threads from proxy query param', () => {
+    const sp = new URLSearchParams();
+    sp.set('reviews_sub', 'threads');
+    expect(resolveReviewsFeedSubFromObjectUrl(objectId, base, sp)).toBe('threads');
   });
 });

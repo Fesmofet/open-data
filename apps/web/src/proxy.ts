@@ -12,6 +12,8 @@ import {
   OBJECT_PAGE_FIELD_REFERENCES_PATH_SEGMENT,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
+  OBJECT_PAGE_REVIEWS_SUB_PARAM,
+  REVIEWS_FEED_PATH_SEGMENTS,
 } from '@/modules/object/domain/object-page-url.constants';
 import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presentation/components/profile-path';
 import {
@@ -117,6 +119,29 @@ export async function proxy(request: NextRequest) {
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', 'updates');
     url.searchParams.set(OBJECT_PAGE_UPDATE_ID_PARAM, updateEncoded);
+    return finish(NextResponse.rewrite(url));
+  }
+
+  const reviewsSubMatch = pathname.match(
+    new RegExp(`^/object/([^/]+)/reviews/(${REVIEWS_FEED_PATH_SEGMENTS.join('|')})/?$`),
+  );
+  if (reviewsSubMatch) {
+    const id = reviewsSubMatch[1];
+    const sub = reviewsSubMatch[2];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'reviews');
+    url.searchParams.set(OBJECT_PAGE_REVIEWS_SUB_PARAM, sub);
+    return finish(NextResponse.rewrite(url));
+  }
+
+  const legacyObjectMessagesMatch = pathname.match(/^\/object\/([^/]+)\/messages\/?$/);
+  if (legacyObjectMessagesMatch) {
+    const id = legacyObjectMessagesMatch[1];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'reviews');
+    url.searchParams.set(OBJECT_PAGE_REVIEWS_SUB_PARAM, 'messages');
     return finish(NextResponse.rewrite(url));
   }
 

@@ -59,8 +59,6 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Ownership';
     case 'followers':
       return 'Followers';
-    case 'messages':
-      return 'Messages';
     case 'experts':
       return 'Experts';
     case 'related':
@@ -160,7 +158,7 @@ export type ObjectPrimaryContentProps = {
   objectPostsFeed?: ReactNode;
   /** Injected threads feed when Reviews > Threads sub-tab is active. */
   objectThreadsFeed?: ReactNode;
-  /** Injected messages feed when Messages primary tab is active. */
+  /** Injected messages feed when Reviews > Messages sub-tab is active. */
   objectMessagesFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
@@ -610,25 +608,6 @@ export function ObjectPrimaryContent({
       );
     }
 
-    if (activePrimarySegment === 'messages' && objectMessagesFeed != null) {
-      return (
-        <FeedColumn>
-          {objectMessagesFeed}
-        </FeedColumn>
-      );
-    }
-
-    if (activePrimarySegment === 'messages') {
-      return (
-        <FeedColumn>
-          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
-            <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
-            <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
-          </div>
-        </FeedColumn>
-      );
-    }
-
     if (activePrimarySegment === 'followers' && objectFollowersFeed != null) {
       return (
         <FeedColumn>
@@ -777,6 +756,7 @@ export function ObjectPrimaryContent({
   const onReviewsCenter = isReviewsTab && nestedStack.length === 0;
   const onReviewsPostsTab = onReviewsCenter && activeFeedSubSegment === 'posts';
   const onReviewsThreadsTab = onReviewsCenter && activeFeedSubSegment === 'threads';
+  const onReviewsMessagesTab = onReviewsCenter && activeFeedSubSegment === 'messages';
 
   return (
     <FeedColumn>
@@ -813,6 +793,8 @@ export function ObjectPrimaryContent({
         <Fragment key="reviews-posts-feed">{objectPostsFeed}</Fragment>
       ) : onReviewsThreadsTab && objectThreadsFeed != null ? (
         <Fragment key="reviews-threads-feed">{objectThreadsFeed}</Fragment>
+      ) : onReviewsMessagesTab && objectMessagesFeed != null ? (
+        <Fragment key="reviews-messages-feed">{objectMessagesFeed}</Fragment>
       ) : (
         <Fragment key="center-type-content">{renderTypeContent()}</Fragment>
       )}

@@ -64,9 +64,11 @@ import {
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
+  OBJECT_PAGE_REVIEWS_SUB_PARAM,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   parseFollowersSubTypeParam,
   parseOwnershipSubTypeParam,
+  parseReviewsFeedSubParam,
   parseViewPathParam,
   resolveDefaultPrimarySegmentFromLanding,
   resolveFieldReferenceTypeForObjectPage,
@@ -240,6 +242,13 @@ export async function generateMetadata({
     const galleryLabel =
       typeof messages.gallery === 'string' ? messages.gallery : 'Gallery';
     title = `${baseTitle} · ${galleryLabel}`;
+  } else if (tab === 'reviews') {
+    const reviewsSub = firstSearchParam(sp, OBJECT_PAGE_REVIEWS_SUB_PARAM)?.trim();
+    if (reviewsSub === 'messages') {
+      const messagesLabel =
+        typeof messages.messages === 'string' ? messages.messages : 'Messages';
+      title = `${baseTitle} · ${messagesLabel}`;
+    }
   } else if (tab === 'messages') {
     const messagesLabel =
       typeof messages.messages === 'string' ? messages.messages : 'Messages';
@@ -338,6 +347,8 @@ export default async function ObjectDetailPage({
 
   const pathIds = parseViewPathParam(sp);
   const initialPrimarySegment = resolveInitialPrimarySegment(model, objectId, sp, pathIds);
+  const reviewsFeedSub = parseReviewsFeedSubParam(sp);
+  const onReviewsTab = initialPrimarySegment === 'reviews';
   const activeCategoryName =
     initialPrimarySegment === CATEGORY_PRIMARY_SEGMENT ? parseCategoryNameParam(sp) : null;
   const activeFieldReferenceType =
@@ -515,7 +526,7 @@ export default async function ObjectDetailPage({
     ) : null;
 
   const postsFeedSlot =
-    initialPrimarySegment === 'reviews' ? (
+    onReviewsTab && reviewsFeedSub === 'posts' ? (
       <Suspense key="object-posts-feed" fallback={<FeedPostsLoadingSkeleton />}>
         <ObjectPagePostsFeedSection
           objectId={objectId}
@@ -524,16 +535,17 @@ export default async function ObjectDetailPage({
       </Suspense>
     ) : null;
 
-  const threadsFeedSlot = (
-    <ObjectThreadsFeedList
-      key="object-threads-feed"
-      objectId={objectId}
-      currentUsername={viewerUsername}
-    />
-  );
+  const threadsFeedSlot =
+    onReviewsTab && reviewsFeedSub === 'threads' ? (
+      <ObjectThreadsFeedList
+        key="object-threads-feed"
+        objectId={objectId}
+        currentUsername={viewerUsername}
+      />
+    ) : null;
 
   const messagesFeedSlot =
-    initialPrimarySegment === 'messages' ? (
+    onReviewsTab && reviewsFeedSub === 'messages' ? (
       <ObjectPageMessagesFeedSection
         key="object-messages-feed"
         objectId={objectId}

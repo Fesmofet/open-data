@@ -74,6 +74,7 @@ const baseProps = {
   feedSubTabs: [
     { segment: 'posts', label: 'Posts' },
     { segment: 'threads', label: 'Threads' },
+    { segment: 'messages', label: 'Messages' },
   ],
   title: 'Waivio',
   objectType: 'default' as const,
@@ -127,11 +128,11 @@ describe('ObjectPrimaryContent Reviews threads feed', () => {
 });
 
 describe('ObjectPrimaryContent messages feed', () => {
-  it('renders injected object messages feed on Messages tab', () => {
+  it('renders injected object messages feed on Reviews > Messages', () => {
     render(
       <ObjectPrimaryContent
         {...baseProps}
-        activePrimarySegment="messages"
+        activeFeedSubSegment="messages"
         objectMessagesFeed={<div data-testid="object-messages-feed">Messages</div>}
       />,
     );

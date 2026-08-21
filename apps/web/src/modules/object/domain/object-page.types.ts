@@ -50,7 +50,11 @@ export type AuthoritySubType = OwnershipSubType;
 /** @deprecated Use {@link OWNERSHIP_SUB_VALUES} */
 export const AUTHORITY_SUB_VALUES = OWNERSHIP_SUB_VALUES;
 
-/** Posts / Threads row under Reviews (mock-only). */
+/** Posts / Threads / Messages row under Reviews. */
+export const REVIEWS_FEED_SUB_VALUES = ['posts', 'threads', 'messages'] as const;
+export type ReviewsFeedSubType = (typeof REVIEWS_FEED_SUB_VALUES)[number];
+
+/** Posts / Threads / Messages row under Reviews (mock-only). */
 export type ObjectFeedSubTabView = {
   segment: string;
   /** Display label from API or mock — not an i18n key. */

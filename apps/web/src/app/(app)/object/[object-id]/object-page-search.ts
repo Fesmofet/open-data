@@ -1,8 +1,10 @@
 import {
   FOLLOWERS_SUB_VALUES,
   OWNERSHIP_SUB_VALUES,
+  REVIEWS_FEED_SUB_VALUES,
   type FollowersSubType,
   type OwnershipSubType,
+  type ReviewsFeedSubType,
 } from '@/modules/object/domain/object-page.types';
 import {
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
@@ -15,6 +17,8 @@ import {
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_PATH_TAB_SEGMENTS,
   OBJECT_PAGE_VIEW_PATH_PARAM,
+  OBJECT_PAGE_REVIEWS_SUB_PARAM,
+  REVIEWS_FEED_PATH_SEGMENTS,
   isFieldReferenceFeedPathSegment,
   resolveCategoryNameFromObjectUrl,
   resolveCategoryNameForObjectPage,
@@ -41,9 +45,10 @@ export {
   OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
   OBJECT_PAGE_UPDATE_ID_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
+  OBJECT_PAGE_REVIEWS_SUB_PARAM,
 };
 
-export type { FollowersSubType, OwnershipSubType };
+export type { FollowersSubType, OwnershipSubType, ReviewsFeedSubType };
 
 /** @deprecated Use {@link OwnershipSubType} */
 export type AuthoritySubType = OwnershipSubType;
@@ -88,6 +93,48 @@ export function parseFollowersSubTypeParam(
     return v as FollowersSubType;
   }
   return 'followed';
+}
+
+export function parseReviewsFeedSubParam(
+  sp: Record<string, string | string[] | undefined>,
+): ReviewsFeedSubType {
+  const v = firstSearchParam(sp, OBJECT_PAGE_REVIEWS_SUB_PARAM)?.trim();
+  if (v && REVIEWS_FEED_SUB_VALUES.includes(v as ReviewsFeedSubType)) {
+    return v as ReviewsFeedSubType;
+  }
+  const tab = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
+  if (tab === 'messages') {
+    return 'messages';
+  }
+  return 'posts';
+}
+
+/** Resolves Reviews sub-tab from visible pathname (and proxy-injected `?reviews_sub=`). */
+export function resolveReviewsFeedSubFromObjectUrl(
+  objectId: string,
+  pathname: string,
+  searchParams: URLSearchParams,
+): ReviewsFeedSubType {
+  const base = `/object/${encodeURIComponent(objectId)}`;
+  const path = normalizePathname(pathname);
+  const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const subMatch = path.match(
+    new RegExp(`^${escapedBase}/reviews/(${REVIEWS_FEED_PATH_SEGMENTS.join('|')})$`),
+  );
+  if (subMatch?.[1] && REVIEWS_FEED_SUB_VALUES.includes(subMatch[1] as ReviewsFeedSubType)) {
+    return subMatch[1] as ReviewsFeedSubType;
+  }
+  if (path === `${base}/messages`) {
+    return 'messages';
+  }
+  const fromQuery = searchParams.get(OBJECT_PAGE_REVIEWS_SUB_PARAM)?.trim();
+  if (fromQuery && REVIEWS_FEED_SUB_VALUES.includes(fromQuery as ReviewsFeedSubType)) {
+    return fromQuery as ReviewsFeedSubType;
+  }
+  if (searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim() === 'messages') {
+    return 'messages';
+  }
+  return 'posts';
 }
 
 /** Ordered object ids from `?path=id1,id2` (empty when absent or invalid). */
@@ -157,6 +204,16 @@ export function resolvePrimarySegmentFromObjectUrl(
   if (path === `${base}/updates` || path.startsWith(updatesDetailPrefix)) {
     return 'updates';
   }
+  const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (
+    path === `${base}/reviews` ||
+    new RegExp(`^${escapedBase}/reviews/(${REVIEWS_FEED_PATH_SEGMENTS.join('|')})$`).test(path)
+  ) {
+    return 'reviews';
+  }
+  if (path === `${base}/messages`) {
+    return 'reviews';
+  }
   for (const segment of PATH_TAB_SEGMENTS) {
     if (path === `${base}/${segment}`) {
       return segment;
@@ -168,6 +225,9 @@ export function resolvePrimarySegmentFromObjectUrl(
   const tab = searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
   if (tab === 'authority') {
     return 'ownership';
+  }
+  if (tab === 'messages') {
+    return 'reviews';
   }
   return tab ?? '';
 }

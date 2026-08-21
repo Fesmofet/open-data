@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
@@ -10,7 +10,9 @@ import type {
   ObjectNestedViewResolved,
   ObjectPageViewModel,
   OwnershipSubType,
+  ReviewsFeedSubType,
 } from '@/modules/object/domain/object-page.types';
+import { REVIEWS_FEED_SUB_VALUES } from '@/modules/object/domain/object-page.types';
 import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 import type { RelatedAlbumListView, RelatedAlbumPreviewView } from '@/modules/object/domain/related-album.types';
 import {
@@ -43,7 +45,9 @@ import { loadMoreObjectFieldReferencesAction } from './field-references/load-mor
 import { loadMoreCategoryObjectsAction } from './category/load-more-category-objects.actions';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { useObjectPageShell } from './object-page-shell-context';
-import { resolveCategoryNameForObjectPage, resolveFieldReferenceTypeForObjectPage } from './object-page-search';
+import { resolveCategoryNameForObjectPage, resolveFieldReferenceTypeForObjectPage, resolveReviewsFeedSubFromObjectUrl } from './object-page-search';
+import { buildObjectReviewsSubHref } from './object-page-navigation';
+import { useInstantNavigation } from '@/shared/presentation';
 import {
   isAllowedFieldReferenceObjectType,
   isFieldReferenceSourceType,
@@ -117,6 +121,7 @@ export function ObjectPageTabPane({
   } = useObjectPageShell();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { navigateInstant } = useInstantNavigation();
   const categoryNameFromUrl = useMemo(
     () => resolveCategoryNameForObjectPage(model.objectId, pathname, searchParams),
     [model.objectId, pathname, searchParams],
@@ -128,8 +133,24 @@ export function ObjectPageTabPane({
   );
   const effectiveFieldReferenceType =
     activeFieldReferenceType ?? fieldReferenceTypeFromUrl;
-  const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
-  const [activeFeedSubSegment, setActiveFeedSubSegment] = useState(defaultFeedSub);
+  const activeFeedSubSegment = useMemo(
+    () => resolveReviewsFeedSubFromObjectUrl(model.objectId, pathname, searchParams),
+    [model.objectId, pathname, searchParams],
+  );
+  const onFeedSubSelect = useCallback(
+    (segment: string) => {
+      if (!REVIEWS_FEED_SUB_VALUES.includes(segment as ReviewsFeedSubType)) {
+        return;
+      }
+      const href = buildObjectReviewsSubHref(
+        model.objectId,
+        new URLSearchParams(searchParams.toString()),
+        segment as ReviewsFeedSubType,
+      );
+      navigateInstant({ href, method: 'replace', scroll: false });
+    },
+    [model.objectId, navigateInstant, searchParams],
+  );
   const { openLogin } = useLoginModal();
 
   const supportedUpdateTypes = useMemo(() => {
@@ -411,7 +432,7 @@ export function ObjectPageTabPane({
       initialNestedStack={initialNestedStack}
       defaultNestedContent={defaultNestedContent}
       menuRootName={menuRootName}
-      onFeedSubSelect={setActiveFeedSubSegment}
+      onFeedSubSelect={onFeedSubSelect}
       objectUpdatesFeed={updatesFeedSlot}
       objectPostsFeed={postsFeedSlot}
       objectThreadsFeed={threadsFeedSlot}

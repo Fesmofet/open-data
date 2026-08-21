@@ -18,7 +18,6 @@ export const OBJECT_PAGE_DESCRIPTION_SEGMENT = 'description';
 export const OBJECT_PAGE_PATH_TAB_SEGMENTS = [
   'widget',
   'reviews',
-  'messages',
   'updates',
   'followers',
   'ownership',
@@ -219,12 +218,27 @@ export function isFieldReferenceFeedPathSegment(segment: string): boolean {
   return isFieldReferencePathSegment(segment);
 }
 
+/** Internal query param when proxy rewrites `/object/:id/reviews/:feedSub`. */
+export const OBJECT_PAGE_REVIEWS_SUB_PARAM = 'reviews_sub';
+
+/** Path segments under `/object/:id/reviews/…` (Posts, Threads, Messages). */
+export const REVIEWS_FEED_PATH_SEGMENTS = ['posts', 'threads', 'messages'] as const;
+
 export function buildObjectFollowersPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/followers`;
 }
 
+/** @deprecated Prefer {@link buildObjectReviewsSubPath} with `messages`. */
 export function buildObjectMessagesPath(objectId: string): string {
-  return `/object/${encodeURIComponent(objectId)}/messages`;
+  return buildObjectReviewsSubPath(objectId, 'messages');
+}
+
+export function buildObjectReviewsSubPath(
+  objectId: string,
+  sub: (typeof REVIEWS_FEED_PATH_SEGMENTS)[number],
+): string {
+  const base = `/object/${encodeURIComponent(objectId)}/reviews`;
+  return sub === 'posts' ? base : `${base}/${sub}`;
 }
 
 export function buildObjectExpertsPath(objectId: string): string {
