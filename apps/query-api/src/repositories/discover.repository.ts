@@ -44,6 +44,8 @@ export interface DiscoverTagCategoryRow {
 
 export interface DiscoverUserRow {
   name: string;
+  posting_json_metadata: string | null;
+  json_metadata: string | null;
   profile_image: string | null;
   object_reputation: number;
   followers_count: number;
@@ -444,6 +446,8 @@ export class DiscoverRepository {
       const result = await sql<DiscoverUserRow>`
         SELECT
           ac.name AS name,
+          ac.posting_json_metadata AS posting_json_metadata,
+          ac.json_metadata AS json_metadata,
           ac.profile_image AS profile_image,
           ac.object_reputation AS object_reputation,
           ac.followers_count AS followers_count,
@@ -459,6 +463,8 @@ export class DiscoverRepository {
 
       const mapped = result.rows.map((r) => ({
         name: r.name,
+        posting_json_metadata: r.posting_json_metadata,
+        json_metadata: r.json_metadata,
         profile_image: r.profile_image,
         object_reputation: r.object_reputation,
         followers_count: r.followers_count,

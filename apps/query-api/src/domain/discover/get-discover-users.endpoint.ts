@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DiscoverRepository } from '../../repositories';
+import { avatarUrlFromJoinedAccountRow } from '../users/resolve-avatar-url-from-hive-metadata';
 import type { DiscoverUsersQuery } from './discover-query.schema';
 import type { DiscoverUsersResponseDto } from './discover.types';
 
@@ -23,7 +24,7 @@ export class GetDiscoverUsersEndpoint {
 
     const items = rows.map((r) => ({
       name: r.name,
-      profile_image: r.profile_image,
+      profile_image: avatarUrlFromJoinedAccountRow(r),
       reputation: r.object_reputation,
       wobjects_weight: r.wobjects_weight ?? 0,
       followers_count: r.followers_count,

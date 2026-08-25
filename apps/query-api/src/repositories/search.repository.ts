@@ -16,6 +16,8 @@ export interface SearchObjectCandidateRow {
 
 export interface SearchUserRow {
   name: string;
+  posting_json_metadata: string | null;
+  json_metadata: string | null;
   profile_image: string | null;
   object_reputation: number;
   wobjects_weight: number;
@@ -224,6 +226,8 @@ export class SearchRepository {
         .selectFrom('accounts_current')
         .select([
           'name',
+          'posting_json_metadata',
+          'json_metadata',
           'profile_image',
           'object_reputation',
           'wobjects_weight',
@@ -246,6 +250,8 @@ export class SearchRepository {
 
       return rows.map((r) => ({
         name: r.name,
+        posting_json_metadata: r.posting_json_metadata,
+        json_metadata: r.json_metadata,
         profile_image: r.profile_image,
         object_reputation: r.object_reputation,
         wobjects_weight: r.wobjects_weight ?? 0,

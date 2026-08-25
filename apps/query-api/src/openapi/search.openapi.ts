@@ -17,7 +17,10 @@ const searchUserResultSchema = registry.register(
   'SearchUserResult',
   z.object({
     name: z.string(),
-    profile_image: z.string().nullable(),
+    profile_image: z.string().nullable().openapi({
+      description:
+        'Profile avatar from `posting_json_metadata.profile.profile_image`, falling back to `json_metadata.profile.profile_image`, then `accounts_current.profile_image`.',
+    }),
     reputation: z.number(),
     wobjects_weight: z.number(),
     followers_count: z.number().int(),

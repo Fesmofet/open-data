@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { SearchRepository } from '../../repositories';
+import { avatarUrlFromJoinedAccountRow } from '../users/resolve-avatar-url-from-hive-metadata';
 import type {
   SearchResponseDto,
   SearchUserResult,
@@ -56,7 +57,7 @@ export class GetSearchEndpoint {
     const users: SearchUserResult[] = userRows.map(
       (r): SearchUserResult => ({
         name: r.name,
-        profile_image: r.profile_image,
+        profile_image: avatarUrlFromJoinedAccountRow(r),
         reputation: r.object_reputation,
         wobjects_weight: r.wobjects_weight,
         followers_count: r.followers_count,
