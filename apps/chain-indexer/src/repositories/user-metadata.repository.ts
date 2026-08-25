@@ -4,8 +4,11 @@ import type { Database } from '../database';
 import { KYSELY } from '../database';
 import { JsonValue, UserMetadata } from '@opden-data-layer/odl-db-types';
 
-/** Payload for full `update_user_metadata` OSL overwrite (aligned with {@link UserMetadata} excluding PK). */
-export type UserMetadataUpsertPayload = Omit<UserMetadata, 'account'>;
+/** OSL `update_user_metadata` overwrite fields (excludes server-managed profile read cursors). */
+export type UserMetadataUpsertPayload = Omit<
+  UserMetadata,
+  'account' | 'profile_posts_last_read_at_unix' | 'profile_threads_last_read_at_unix'
+>;
 
 @Injectable()
 export class UserMetadataRepository {
@@ -54,6 +57,8 @@ export class UserMetadataRepository {
         hide_linked_objects: data.hide_linked_objects,
         hide_recipe_objects: data.hide_recipe_objects,
         hide_favorite_objects: data.hide_favorite_objects,
+        profile_posts_last_read_at_unix: null,
+        profile_threads_last_read_at_unix: null,
       })
       .onConflict((oc) =>
         oc.column('account').doUpdateSet({
