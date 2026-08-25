@@ -4,6 +4,10 @@ import { NewValidityVote } from '@opden-data-layer/odl-db-types';
 
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import {
+  OBJECT_STATUS_RECOMPUTE_EVENT,
+  ObjectStatusRecomputeEvent,
+} from '../object-status-created.event';
+import {
   ObjectUpdatesRepository,
   ObjectsCoreRepository,
   ValidityVotesRepository,
@@ -131,6 +135,12 @@ export class UpdateVoteHandler implements OdlActionHandler {
           new SiteCanonicalRecomputeEvent(object_id),
         );
       }
+      if (votedUpdate.update_type === UPDATE_TYPES.STATUS) {
+        this.eventEmitter.emit(
+          OBJECT_STATUS_RECOMPUTE_EVENT,
+          new ObjectStatusRecomputeEvent(object_id),
+        );
+      }
       this.eventEmitter.emit(
         GOVERNANCE_OBJECT_MUTATED_EVENT,
         new GovernanceObjectMutatedEvent(object_id),
@@ -189,6 +199,12 @@ export class UpdateVoteHandler implements OdlActionHandler {
       this.eventEmitter.emit(
         SITE_CANONICAL_RECOMPUTE_EVENT,
         new SiteCanonicalRecomputeEvent(object_id),
+      );
+    }
+    if (votedUpdate.update_type === UPDATE_TYPES.STATUS) {
+      this.eventEmitter.emit(
+        OBJECT_STATUS_RECOMPUTE_EVENT,
+        new ObjectStatusRecomputeEvent(object_id),
       );
     }
     this.eventEmitter.emit(

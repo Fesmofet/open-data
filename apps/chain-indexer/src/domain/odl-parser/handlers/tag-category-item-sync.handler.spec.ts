@@ -1,5 +1,5 @@
 import { TagCategoryItemSyncHandler } from './tag-category-item-sync.handler';
-import { ObjectStatusCreatedEvent } from '../object-status-created.event';
+import { ObjectStatusRecomputeEvent } from '../object-status-created.event';
 import { TagCategoryItemMutatedEvent } from '../tag-category-item-mutated.event';
 
 describe('TagCategoryItemSyncHandler', () => {
@@ -21,13 +21,11 @@ describe('TagCategoryItemSyncHandler', () => {
     expect(enqueue).not.toHaveBeenCalled();
   });
 
-  it('enqueues object on status created', async () => {
+  it('enqueues object on status recompute', async () => {
     const enqueue = jest.fn().mockResolvedValue(undefined);
     const handler = new TagCategoryItemSyncHandler({ enqueue } as never);
 
-    await handler.handleObjectStatusCreated(
-      new ObjectStatusCreatedEvent('o2', 'admin', 'unavailable'),
-    );
+    await handler.handleObjectStatusRecompute(new ObjectStatusRecomputeEvent('o2'));
 
     expect(enqueue).toHaveBeenCalledWith('o2', expect.any(Number));
   });

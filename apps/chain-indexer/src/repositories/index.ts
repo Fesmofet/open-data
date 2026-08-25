@@ -19,3 +19,4 @@ export { UserObjectFollowsRepository } from './user-object-follows.repository';
 export { UserDelegationsRepository } from './user-delegations.repository';
 export { UserRcDelegationsRepository } from './user-rc-delegations.repository';
 export { UserNotificationSettingsRepository } from './user-notification-settings.repository';
+export { ObjectTagCategoriesSyncQueueRepository } from './object-tag-categories-sync-queue.repository';

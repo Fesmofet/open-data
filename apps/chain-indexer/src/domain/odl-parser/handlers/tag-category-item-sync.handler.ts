@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ObjectTagCategoriesSyncQueueRepository } from '../../../repositories/object-tag-categories-sync-queue.repository';
 import {
-  OBJECT_STATUS_CREATED_EVENT,
-  ObjectStatusCreatedEvent,
+  OBJECT_STATUS_RECOMPUTE_EVENT,
+  ObjectStatusRecomputeEvent,
 } from '../object-status-created.event';
 import {
   TagCategoryItemMutatedEvent,
@@ -43,8 +43,8 @@ export class TagCategoryItemSyncHandler {
     await this.enqueueObject(event.objectId);
   }
 
-  @OnEvent(OBJECT_STATUS_CREATED_EVENT)
-  async handleObjectStatusCreated(event: ObjectStatusCreatedEvent): Promise<void> {
+  @OnEvent(OBJECT_STATUS_RECOMPUTE_EVENT)
+  async handleObjectStatusRecompute(event: ObjectStatusRecomputeEvent): Promise<void> {
     await this.enqueueObject(event.objectId);
   }
 }

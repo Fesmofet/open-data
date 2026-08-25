@@ -7,7 +7,6 @@ import {
   UPDATE_REGISTRY,
   UPDATE_TYPES,
 } from '@opden-data-layer/core';
-import type { ObjectStatus } from '@opden-data-layer/core';
 import type { JsonValue, NewObjectUpdate } from '@opden-data-layer/odl-db-types';
 import { HiveClient } from '@opden-data-layer/clients';
 import {
@@ -47,8 +46,8 @@ import {
   TAG_CATEGORY_ITEM_MUTATED_EVENT,
 } from '../tag-category-item-mutated.event';
 import {
-  OBJECT_STATUS_CREATED_EVENT,
-  ObjectStatusCreatedEvent,
+  OBJECT_STATUS_RECOMPUTE_EVENT,
+  ObjectStatusRecomputeEvent,
 } from '../object-status-created.event';
 import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 
@@ -238,10 +237,10 @@ export class UpdateCreateHandler implements OdlActionHandler {
       this.logger.error((e as Error).message);
     }
     if (update_type === UPDATE_TYPES.STATUS) {
-      const statusPayload = valueResult.data as { title: ObjectStatus; link: string };
+      const statusPayload = valueResult.data as { title: string; link?: string };
       this.eventEmitter.emit(
-        OBJECT_STATUS_CREATED_EVENT,
-        new ObjectStatusCreatedEvent(object_id, ctx.creator, statusPayload.title),
+        OBJECT_STATUS_RECOMPUTE_EVENT,
+        new ObjectStatusRecomputeEvent(object_id),
       );
       this.notificationEmitter.emitWithContext(
         this.notificationEmitter.odlContext(ctx),

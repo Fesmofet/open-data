@@ -12,8 +12,8 @@ import {
 import type { OdlEventContext } from '../odl-action-handler';
 import { GovernanceWriteGuard, WriteGuardRunner } from '../guards';
 import {
-  OBJECT_STATUS_CREATED_EVENT,
-  ObjectStatusCreatedEvent,
+  OBJECT_STATUS_RECOMPUTE_EVENT,
+  ObjectStatusRecomputeEvent,
 } from '../object-status-created.event';
 import { TAG_CATEGORY_ITEM_MUTATED_EVENT } from '../tag-category-item-mutated.event';
 
@@ -282,7 +282,7 @@ describe('UpdateCreateHandler write guard', () => {
     expect(eventEmitter.emit).toHaveBeenCalled();
   });
 
-  it('emits OBJECT_STATUS_CREATED_EVENT after persisting a status update', async () => {
+  it('emits OBJECT_STATUS_RECOMPUTE_EVENT after persisting a status update', async () => {
       const create = jest.fn().mockResolvedValue(undefined);
       const objectUpdatesRepository = {
         create,
@@ -324,17 +324,15 @@ describe('UpdateCreateHandler write guard', () => {
 
       expect(create).toHaveBeenCalledTimes(1);
       expect(eventEmitter.emit).toHaveBeenCalledWith(
-        OBJECT_STATUS_CREATED_EVENT,
+        OBJECT_STATUS_RECOMPUTE_EVENT,
         expect.objectContaining({
           objectId: 'place1',
-          creator: 'alice',
-          status: 'unavailable',
         }),
       );
       const statusEmit = (eventEmitter.emit as jest.Mock).mock.calls.find(
-        (c: unknown[]) => c[0] === OBJECT_STATUS_CREATED_EVENT,
+        (c: unknown[]) => c[0] === OBJECT_STATUS_RECOMPUTE_EVENT,
       );
-      expect(statusEmit?.[1]).toBeInstanceOf(ObjectStatusCreatedEvent);
+      expect(statusEmit?.[1]).toBeInstanceOf(ObjectStatusRecomputeEvent);
     });
 
   it('emits TAG_CATEGORY_ITEM_MUTATED_EVENT after persisting tagCategoryItem', async () => {

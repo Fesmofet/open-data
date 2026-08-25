@@ -77,7 +77,7 @@ For **`update_create`**, a **duplicate-value** check (`existsByObjectAndValue` â
 
 [`GovernanceResolverService`](../../../../apps/chain-indexer/src/domain/governance/governance-resolver.service.ts) and [`assembleSnapshot`](../../../../apps/chain-indexer/src/domain/governance/assemble-snapshot.ts) are registered in the app for **shared governance snapshot** logic (similar structure exists on the query side). They are **not** invoked from `OdlCustomJsonParser` or Hive parsers in the current block loop. Request-time resolution semantics remain in [governance resolution](../../../spec/governance-resolution.md) and the query app.
 
-**Index-time exception:** [`ObjectStatusHandler`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/object-status.handler.ts) listens for **`OBJECT_STATUS_CREATED_EVENT`** (after a persisted `update_create` with `update_type: status`) and calls [`GovernanceCacheService.resolvePlatform()`](../../../../apps/chain-indexer/src/domain/governance/governance-cache.service.ts) so only platform **admins** can mutate `objects_core.status`. See [Object status](object-status.md).
+**Index-time status materialization:** [`ObjectStatusHandler`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/object-status.handler.ts) listens for **`OBJECT_STATUS_RECOMPUTE_EVENT`** (after a persisted `update_create` with `update_type: status`, or after `update_vote` on a status row) and calls [`GovernanceCacheService.resolvePlatform()`](../../../../apps/chain-indexer/src/domain/governance/governance-cache.service.ts) to resolve the vote-winning status update, then writes `objects_core.status` when the materialized value changes. See [Object status](object-status.md).
 
 ### Notification enrichment (ODL object names)
 

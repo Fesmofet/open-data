@@ -11,6 +11,7 @@ export const OBJECT_STATUS_DISCONTINUED_TYPES = [
 
 const DEFAULT_STATUS_LABEL_KEYS: Record<string, string> = {
   active: 'active',
+  protected: 'object_status_protected',
   unavailable: 'unavailable',
   relisted: 'relisted',
   closed: 'object_status_permanently_closed',

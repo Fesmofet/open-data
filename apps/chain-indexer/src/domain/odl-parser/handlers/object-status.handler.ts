@@ -1,10 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { GovernanceCacheService } from '../../governance/governance-cache.service';
-import { ObjectsCoreRepository } from '../../../repositories';
 import {
-  OBJECT_STATUS_CREATED_EVENT,
-  ObjectStatusCreatedEvent,
+  materializeObjectCoreStatus,
+  ObjectViewService,
+} from '@opden-data-layer/objects-domain';
+import { GovernanceCacheService } from '../../governance/governance-cache.service';
+import {
+  AggregatedObjectRepository,
+  ObjectTagCategoriesSyncQueueRepository,
+  ObjectsCoreRepository,
+} from '../../../repositories';
+import {
+  OBJECT_STATUS_RECOMPUTE_EVENT,
+  ObjectStatusRecomputeEvent,
 } from '../object-status-created.event';
 
 @Injectable()
@@ -13,19 +21,59 @@ export class ObjectStatusHandler {
 
   constructor(
     private readonly governanceCacheService: GovernanceCacheService,
+    private readonly aggregatedObjectRepository: AggregatedObjectRepository,
+    private readonly objectViewService: ObjectViewService,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly objectTagCategoriesSyncQueueRepository: ObjectTagCategoriesSyncQueueRepository,
   ) {}
 
-  @OnEvent(OBJECT_STATUS_CREATED_EVENT)
-  async handleObjectStatusCreated(event: ObjectStatusCreatedEvent): Promise<void> {
-    const snapshot = await this.governanceCacheService.resolvePlatform();
-    if (!snapshot.admins.includes(event.creator)) {
+  @OnEvent(OBJECT_STATUS_RECOMPUTE_EVENT)
+  async handleObjectStatusRecompute(event: ObjectStatusRecomputeEvent): Promise<void> {
+    const objectId = event.objectId.trim();
+    if (objectId.length === 0) {
+      return;
+    }
+
+    const { objects, voterWaivPowers } =
+      await this.aggregatedObjectRepository.loadByObjectIds([objectId]);
+    const aggregated = objects[0];
+    if (!aggregated) {
       this.logger.warn(
-        `UNAUTHORIZED_STATUS_UPDATE: signer '${event.creator}' is not a platform admin; skipping objects_core update for '${event.objectId}'`,
+        `object status recompute: object '${objectId}' not found; skipping`,
       );
       return;
     }
 
-    await this.objectsCoreRepository.update(event.objectId, { status: event.status });
+    const governance = await this.governanceCacheService.resolvePlatform();
+    const nextStatus = materializeObjectCoreStatus(
+      aggregated,
+      voterWaivPowers,
+      governance,
+      this.objectViewService,
+    );
+
+    const previousStatus = aggregated.core.status;
+    if (previousStatus === nextStatus) {
+      return;
+    }
+
+    await this.objectsCoreRepository.update(objectId, { status: nextStatus });
+
+    const wasActive = previousStatus === 'active';
+    const isActive = nextStatus === 'active';
+    if (wasActive !== isActive) {
+      try {
+        await this.objectTagCategoriesSyncQueueRepository.enqueue(
+          objectId,
+          Math.floor(Date.now() / 1000),
+        );
+      } catch (error) {
+        this.logger.error(
+          `object status recompute: tag category enqueue failed for '${objectId}': ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
   }
 }

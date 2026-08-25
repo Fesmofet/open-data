@@ -1,4 +1,5 @@
 export const STATUS_FORM_SELECTABLE_VALUES = [
+  'protected',
   'unavailable',
   'closed',
   'privacy_erasure',

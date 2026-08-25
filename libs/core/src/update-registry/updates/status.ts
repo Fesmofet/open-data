@@ -8,13 +8,34 @@ import {
 
 export { OBJECT_STATUS_VALUES, type ObjectStatus };
 
-/** Statuses allowed on direct object page resolve (`/object/:id`). Currently all values. */
+/** Allowed `value_json.title` values for `update_type: status` (includes update-only `protected`). */
+export const STATUS_UPDATE_TITLE_VALUES = [
+  'active',
+  'protected',
+  ...(OBJECT_STATUS_VALUES.filter((s) => s !== 'active') as Array<
+    Exclude<ObjectStatus, 'active'>
+  >),
+] as const;
+
+export type StatusUpdateTitle = (typeof STATUS_UPDATE_TITLE_VALUES)[number];
+
+/** Statuses allowed on direct object page resolve (`/object/:id`). Currently all core values. */
 export const OBJECT_PAGE_VISIBLE_STATUSES: readonly ObjectStatus[] =
   OBJECT_STATUS_VALUES;
 
+/** Maps a winning status update title to `objects_core.status`. */
+export function mapStatusUpdateTitleToCoreStatus(
+  title: StatusUpdateTitle,
+): ObjectStatus {
+  if (title === 'protected' || title === 'active') {
+    return 'active';
+  }
+  return title;
+}
+
 export const UPDATE_STATUS_SCHEMA = z
   .object({
-    title: z.enum(OBJECT_STATUS_VALUES),
+    title: z.enum(STATUS_UPDATE_TITLE_VALUES),
     link: z.string().optional(),
   })
   .superRefine((data, ctx) => {

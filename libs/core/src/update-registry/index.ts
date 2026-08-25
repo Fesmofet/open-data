@@ -72,9 +72,12 @@ export { UPDATE_CONTENT_POSITION } from './updates/content-position';
 export { UPDATE_HTML_CONTENT } from './updates/html-content';
 export { UPDATE_CONTENT_VIEW } from './updates/content-view';
 export {
+  mapStatusUpdateTitleToCoreStatus,
   OBJECT_PAGE_VISIBLE_STATUSES,
   OBJECT_STATUS_VALUES,
+  STATUS_UPDATE_TITLE_VALUES,
   type ObjectStatus,
+  type StatusUpdateTitle,
   UPDATE_STATUS,
   UPDATE_STATUS_SCHEMA,
 } from './updates/status';

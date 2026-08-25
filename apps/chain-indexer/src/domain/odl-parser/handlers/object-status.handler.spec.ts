@@ -1,65 +1,143 @@
-import { Logger } from '@nestjs/common';
+jest.mock('@opden-data-layer/objects-domain', () => {
+  const actual = jest.requireActual('@opden-data-layer/objects-domain') as typeof import('@opden-data-layer/objects-domain');
+  return {
+    ...actual,
+    materializeObjectCoreStatus: jest.fn(),
+  };
+});
+
+import {
+  materializeObjectCoreStatus,
+  ObjectViewService,
+} from '@opden-data-layer/objects-domain';
+
 import { ObjectStatusHandler } from './object-status.handler';
-import { ObjectStatusCreatedEvent } from '../object-status-created.event';
+import { ObjectStatusRecomputeEvent } from '../object-status-created.event';
+
+const materializeMock = materializeObjectCoreStatus as jest.MockedFunction<
+  typeof materializeObjectCoreStatus
+>;
 
 describe('ObjectStatusHandler', () => {
-  afterEach(() => {
-    jest.restoreAllMocks();
+  const aggregated = {
+    core: {
+      object_id: 'o1',
+      object_type: 'place',
+      creator: 'alice',
+      weight: null,
+      meta_group_id: null,
+      canonical: null,
+      canonical_creator: null,
+      transaction_id: 'tx0',
+      status: 'active' as const,
+      seq: 0,
+      created_at: new Date(),
+    },
+    updates: [],
+    validity_votes: [],
+    favorites: [],
+    ownerships: [],
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('updates objects_core when signer is a platform admin', async () => {
-    const governanceCacheService = {
-      resolvePlatform: jest.fn().mockResolvedValue({ admins: ['admin1'] }),
-    };
-    const update = jest.fn().mockResolvedValue(undefined);
-    const handler = new ObjectStatusHandler(
-      governanceCacheService as never,
-      { update } as never,
-    );
-
-    await handler.handleObjectStatusCreated(
-      new ObjectStatusCreatedEvent('o1', 'admin1', 'unavailable'),
-    );
-
-    expect(governanceCacheService.resolvePlatform).toHaveBeenCalledTimes(1);
-    expect(update).toHaveBeenCalledWith('o1', { status: 'unavailable' });
-  });
-
-  it('skips update when signer is not a platform admin', async () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const governanceCacheService = {
-      resolvePlatform: jest.fn().mockResolvedValue({ admins: ['admin1'] }),
-    };
-    const update = jest.fn();
-    const handler = new ObjectStatusHandler(
-      governanceCacheService as never,
-      { update } as never,
-    );
-
-    await handler.handleObjectStatusCreated(
-      new ObjectStatusCreatedEvent('o1', 'intruder', 'unavailable'),
-    );
-
-    expect(update).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('UNAUTHORIZED_STATUS_UPDATE'),
-    );
-  });
-
-  it('skips update when governance admins list is empty', async () => {
+  it('updates objects_core when materialized status differs', async () => {
+    materializeMock.mockReturnValue('unavailable');
     const governanceCacheService = {
       resolvePlatform: jest.fn().mockResolvedValue({ admins: [] }),
     };
-    const update = jest.fn();
+    const aggregatedObjectRepository = {
+      loadByObjectIds: jest.fn().mockResolvedValue({
+        objects: [aggregated],
+        voterWaivPowers: new Map(),
+      }),
+    };
+    const update = jest.fn().mockResolvedValue(undefined);
+    const enqueue = jest.fn().mockResolvedValue(undefined);
     const handler = new ObjectStatusHandler(
       governanceCacheService as never,
+      aggregatedObjectRepository as never,
+      new ObjectViewService(),
       { update } as never,
+      { enqueue } as never,
     );
 
-    await handler.handleObjectStatusCreated(
-      new ObjectStatusCreatedEvent('o1', 'anyone', 'flagged'),
+    await handler.handleObjectStatusRecompute(new ObjectStatusRecomputeEvent('o1'));
+
+    expect(governanceCacheService.resolvePlatform).toHaveBeenCalledTimes(1);
+    expect(materializeMock).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledWith('o1', { status: 'unavailable' });
+    expect(enqueue).toHaveBeenCalledWith('o1', expect.any(Number));
+  });
+
+  it('sets core to active when protected wins materialization', async () => {
+    materializeMock.mockReturnValue('active');
+    const aggregatedUnavailable = {
+      ...aggregated,
+      core: { ...aggregated.core, status: 'unavailable' as const },
+    };
+    const update = jest.fn().mockResolvedValue(undefined);
+    const enqueue = jest.fn().mockResolvedValue(undefined);
+    const handler = new ObjectStatusHandler(
+      { resolvePlatform: jest.fn().mockResolvedValue({}) } as never,
+      {
+        loadByObjectIds: jest.fn().mockResolvedValue({
+          objects: [aggregatedUnavailable],
+          voterWaivPowers: new Map(),
+        }),
+      } as never,
+      new ObjectViewService(),
+      { update } as never,
+      { enqueue } as never,
     );
+
+    await handler.handleObjectStatusRecompute(new ObjectStatusRecomputeEvent('o1'));
+
+    expect(update).toHaveBeenCalledWith('o1', { status: 'active' });
+    expect(enqueue).toHaveBeenCalledWith('o1', expect.any(Number));
+  });
+
+  it('skips update when materialized status unchanged', async () => {
+    materializeMock.mockReturnValue('active');
+    const update = jest.fn();
+    const handler = new ObjectStatusHandler(
+      { resolvePlatform: jest.fn().mockResolvedValue({}) } as never,
+      {
+        loadByObjectIds: jest.fn().mockResolvedValue({
+          objects: [aggregated],
+          voterWaivPowers: new Map(),
+        }),
+      } as never,
+      new ObjectViewService(),
+      { update } as never,
+      { enqueue: jest.fn() } as never,
+    );
+
+    await handler.handleObjectStatusRecompute(new ObjectStatusRecomputeEvent('o1'));
 
     expect(update).not.toHaveBeenCalled();
+  });
+
+  it('materializes for non-admin winning updates without admin gate', async () => {
+    materializeMock.mockReturnValue('unavailable');
+    const update = jest.fn().mockResolvedValue(undefined);
+    const handler = new ObjectStatusHandler(
+      { resolvePlatform: jest.fn().mockResolvedValue({ admins: ['admin1'] }) } as never,
+      {
+        loadByObjectIds: jest.fn().mockResolvedValue({
+          objects: [aggregated],
+          voterWaivPowers: new Map(),
+        }),
+      } as never,
+      new ObjectViewService(),
+      { update } as never,
+      { enqueue: jest.fn().mockResolvedValue(undefined) } as never,
+    );
+
+    await handler.handleObjectStatusRecompute(new ObjectStatusRecomputeEvent('o1'));
+
+    expect(update).toHaveBeenCalledWith('o1', { status: 'unavailable' });
   });
 });
