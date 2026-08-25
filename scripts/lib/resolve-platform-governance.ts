@@ -7,8 +7,8 @@ import {
   ObjectViewService,
   type GovernanceScope,
 } from '@opden-data-layer/objects-domain';
-import { assembleSnapshot } from '../../apps/chain-indexer/src/domain/governance/assemble-snapshot';
-import { GOVERNANCE_UPDATE_TYPES } from '../../apps/chain-indexer/src/domain/governance/governance.constants';
+import { assembleSnapshot } from './governance/assemble-snapshot';
+import { GOVERNANCE_UPDATE_TYPES } from './governance/governance.constants';
 import { loadAggregatedByObjectIds } from './load-aggregated-objects';
 
 const objectViewService = new ObjectViewService();
