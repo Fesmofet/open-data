@@ -13,7 +13,7 @@ import {
   ObjectViewService,
 } from '@opden-data-layer/objects-domain';
 import { resolveConnectionString } from '../libs/migrations/src/connection';
-import { Kysely, PostgresDialect, sql } from 'kysely';
+import { Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 import { loadAggregatedByObjectIds } from './lib/load-aggregated-objects';
 import { resolvePlatformGovernance } from './lib/resolve-platform-governance';
@@ -81,8 +81,10 @@ async function main(): Promise<void> {
   );
 
   let scanned = 0;
-  let updated = 0;
-  let unchanged = 0;
+  let alreadyCorrect = 0;
+  let rowsWritten = 0;
+  let wouldWrite = 0;
+  let missingCore = 0;
   let errors = 0;
 
   try {
@@ -106,6 +108,16 @@ async function main(): Promise<void> {
 
     for (const batch of chunk(objectIds, opts.batchSize)) {
       const { objects, voterWaivPowers } = await loadAggregatedByObjectIds(db, batch);
+      const loadedIds = new Set(objects.map((o) => o.core.object_id));
+
+      for (const objectId of batch) {
+        if (!loadedIds.has(objectId)) {
+          missingCore += 1;
+          // eslint-disable-next-line no-console
+          console.warn(`Skip ${objectId}: no objects_core row`);
+          continue;
+        }
+      }
 
       for (const agg of objects) {
         scanned += 1;
@@ -121,31 +133,36 @@ async function main(): Promise<void> {
           );
 
           if (nextStatus === currentStatus) {
-            unchanged += 1;
+            alreadyCorrect += 1;
             continue;
           }
 
           if (opts.dryRun) {
+            wouldWrite += 1;
             // eslint-disable-next-line no-console
             console.log(`[dry-run] ${objectId}: ${currentStatus} -> ${nextStatus}`);
-            updated += 1;
             continue;
           }
 
-          const result = await sql`
-            UPDATE objects_core
-            SET status = ${nextStatus}
-            WHERE object_id = ${objectId}
-              AND status IS DISTINCT FROM ${nextStatus}
-          `.execute(db);
+          const result = await db
+            .updateTable('objects_core')
+            .set({ status: nextStatus })
+            .where('object_id', '=', objectId)
+            .where('status', 'is distinct from', nextStatus)
+            .executeTakeFirst();
 
           const numUpdated = Number(result.numUpdatedRows ?? 0);
           if (numUpdated > 0) {
-            updated += 1;
+            rowsWritten += 1;
             // eslint-disable-next-line no-console
-            console.log(`${objectId}: ${currentStatus} -> ${nextStatus}`);
+            console.log(`updated ${objectId}: ${currentStatus} -> ${nextStatus}`);
           } else {
-            unchanged += 1;
+            // Concurrent writer (e.g. chain-indexer) applied the same status first.
+            alreadyCorrect += 1;
+            // eslint-disable-next-line no-console
+            console.log(
+              `skip ${objectId}: already ${nextStatus} (race with live indexer?)`,
+            );
           }
         } catch (error) {
           errors += 1;
@@ -157,10 +174,26 @@ async function main(): Promise<void> {
       }
     }
 
-    // eslint-disable-next-line no-console
-    console.log(
-      `Done. scanned=${scanned} updated=${updated} unchanged=${unchanged} errors=${errors} dry_run=${opts.dryRun}`,
-    );
+    if (opts.dryRun) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Done (dry run, no writes). scanned=${scanned} would_write=${wouldWrite} already_correct=${alreadyCorrect} missing_core=${missingCore} errors=${errors}`,
+      );
+    } else if (rowsWritten === 0) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Done. scanned=${scanned} rows_written=0 already_correct=${alreadyCorrect} missing_core=${missingCore} errors=${errors}`,
+      );
+      // eslint-disable-next-line no-console
+      console.log(
+        'No database writes — materialized status already matched objects_core for every scanned object (often because chain-indexer already recomputed them).',
+      );
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Done. scanned=${scanned} rows_written=${rowsWritten} already_correct=${alreadyCorrect} missing_core=${missingCore} errors=${errors}`,
+      );
+    }
   } finally {
     await pool.end();
   }
