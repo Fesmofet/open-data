@@ -39,6 +39,10 @@ import { EditorRegisterImagePlugin } from './editor-register-image-plugin';
 const URL_REG_EXP =
   /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
+/** Pill compose: insert btn radius (20px) + 10px gap before text (half of legacy ps-10 inset). */
+const PILL_COMPOSE_TEXT_INSET = 'ps-[1.875rem]';
+const PILL_COMPOSE_PLACEHOLDER_START = 'start-[1.875rem]';
+
 const lexicalTheme = {
   paragraph: 'mb-2 text-body text-fg font-weight-body leading-body',
   quote:
@@ -88,7 +92,7 @@ function Placeholder({
       className={[
         'pointer-events-none absolute text-body text-fg-tertiary select-none',
         pillChrome
-          ? 'start-10 top-1/2 -translate-y-1/2'
+          ? `${PILL_COMPOSE_PLACEHOLDER_START} top-1/2 -translate-y-1/2 leading-body`
           : compact
               ? 'start-8 top-2'
               : 'start-8 top-3',
@@ -218,11 +222,15 @@ function EditorInner({
     : compact || messagingCompact
       ? 'min-h-[2rem]'
       : 'min-h-[12rem]';
-  const verticalPadClass = pillChrome ? 'py-1.5' : compact || messagingCompact ? 'py-2' : 'py-3';
+  const verticalPadClass = pillChrome
+    ? 'py-[calc((2.75rem-1.43em)/2)]'
+    : compact || messagingCompact
+      ? 'py-2'
+      : 'py-3';
   const padHorizontalClass = pillChrome
     ? composeTrailingInset
-      ? 'ps-10 pe-24'
-      : 'ps-10 pe-4'
+      ? `${PILL_COMPOSE_TEXT_INSET} pe-24`
+      : `${PILL_COMPOSE_TEXT_INSET} pe-4`
     : 'px-4 ps-8';
 
   return (
@@ -237,7 +245,7 @@ function EditorInner({
         contentEditable={
           <ContentEditable
             className={[
-              'relative resize-y text-body text-fg outline-none',
+              'relative resize-y text-body leading-body text-fg outline-none',
               padHorizontalClass,
               verticalPadClass,
               minHeightClass,
