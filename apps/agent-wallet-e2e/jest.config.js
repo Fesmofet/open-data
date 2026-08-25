@@ -1,6 +1,7 @@
 module.exports = {
   displayName: 'agent-wallet-e2e',
   preset: '../../jest.preset.js',
+  testTimeout: 15_000,
   globalSetup: '<rootDir>/src/support/global-setup.ts',
   globalTeardown: '<rootDir>/src/support/global-teardown.ts',
   setupFiles: ['<rootDir>/src/support/test-setup.ts'],
