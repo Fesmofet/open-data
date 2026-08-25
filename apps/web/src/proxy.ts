@@ -122,6 +122,18 @@ export async function proxy(request: NextRequest) {
     return finish(NextResponse.rewrite(url));
   }
 
+  const legacyReviewsMessagesMatch = pathname.match(
+    /^\/object\/([^/]+)\/reviews\/messages\/?$/,
+  );
+  if (legacyReviewsMessagesMatch) {
+    const id = legacyReviewsMessagesMatch[1];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'reviews');
+    url.searchParams.set(OBJECT_PAGE_REVIEWS_SUB_PARAM, 'activity');
+    return finish(NextResponse.rewrite(url));
+  }
+
   const reviewsSubMatch = pathname.match(
     new RegExp(`^/object/([^/]+)/reviews/(${REVIEWS_FEED_PATH_SEGMENTS.join('|')})/?$`),
   );
@@ -141,7 +153,7 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', 'reviews');
-    url.searchParams.set(OBJECT_PAGE_REVIEWS_SUB_PARAM, 'messages');
+    url.searchParams.set(OBJECT_PAGE_REVIEWS_SUB_PARAM, 'activity');
     return finish(NextResponse.rewrite(url));
   }
 

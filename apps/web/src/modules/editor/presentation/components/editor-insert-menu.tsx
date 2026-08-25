@@ -316,6 +316,10 @@ function computeInsertOverlayTop(
 export type EditorInsertCaretOverlayProps = {
   /** Single-line bar (e.g. comment): pin (+) to vertical center instead of caret line. */
   pinInsertCenterVertical?: boolean;
+  /** Pill field: keep (+) inside the border (avoids FeedColumn clip). */
+  insetInsertButton?: boolean;
+  /** Left gutter column in feed compose — (+) centered in gutter, text never overlaps. */
+  composeGutter?: boolean;
   /** When user picks an object from inline search (Insert → Object). */
   onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
 };
@@ -326,6 +330,8 @@ export type EditorInsertCaretOverlayProps = {
  */
 export function EditorInsertCaretOverlay({
   pinInsertCenterVertical = false,
+  insetInsertButton = false,
+  composeGutter = false,
   onObjectLinkedFromEditor,
 }: EditorInsertCaretOverlayProps = {}) {
   const [editor] = useLexicalComposerContext();
@@ -546,7 +552,12 @@ export function EditorInsertCaretOverlay({
       <div
         ref={shellRef}
         className={[
-          'pointer-events-auto absolute start-0 z-[70] -translate-x-1/2',
+          'pointer-events-auto absolute z-[70]',
+          composeGutter
+            ? 'left-1/2 -translate-x-1/2'
+            : insetInsertButton
+              ? 'start-2'
+              : 'start-0 -translate-x-1/2',
           pinInsertCenterVertical ? 'top-1/2 -translate-y-1/2' : '',
         ].join(' ')}
         style={pinInsertCenterVertical ? undefined : { top: buttonTop }}

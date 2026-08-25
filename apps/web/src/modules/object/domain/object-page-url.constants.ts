@@ -221,16 +221,19 @@ export function isFieldReferenceFeedPathSegment(segment: string): boolean {
 /** Internal query param when proxy rewrites `/object/:id/reviews/:feedSub`. */
 export const OBJECT_PAGE_REVIEWS_SUB_PARAM = 'reviews_sub';
 
-/** Path segments under `/object/:id/reviews/…` (Posts, Threads, Messages). */
-export const REVIEWS_FEED_PATH_SEGMENTS = ['posts', 'threads', 'messages'] as const;
+/** Path segments under `/object/:id/reviews/…` (Posts, Threads, Activity). */
+export const REVIEWS_FEED_PATH_SEGMENTS = ['posts', 'threads', 'activity'] as const;
+
+/** Legacy Reviews sub-tab segment; maps to {@link ReviewsFeedSubType} `activity`. */
+export const LEGACY_REVIEWS_MESSAGES_SEGMENT = 'messages' as const;
 
 export function buildObjectFollowersPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/followers`;
 }
 
-/** @deprecated Prefer {@link buildObjectReviewsSubPath} with `messages`. */
+/** @deprecated Prefer {@link buildObjectReviewsSubPath} with `activity`. */
 export function buildObjectMessagesPath(objectId: string): string {
-  return buildObjectReviewsSubPath(objectId, 'messages');
+  return buildObjectReviewsSubPath(objectId, 'activity');
 }
 
 export function buildObjectReviewsSubPath(

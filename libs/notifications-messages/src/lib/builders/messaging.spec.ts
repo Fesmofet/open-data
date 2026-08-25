@@ -57,6 +57,6 @@ describe('buildMessagingMessage', () => {
     } as AnyNotificationEvent);
     expect(msg?.key).toBe('notification_bell_object_message');
     expect(msg?.params).toEqual({ author: 'carol', objectName: 'My Shop' });
-    expect(msg?.href).toBe('/object/obj-1');
+    expect(msg?.href).toBe('/object/obj-1/reviews/activity');
   });
 });

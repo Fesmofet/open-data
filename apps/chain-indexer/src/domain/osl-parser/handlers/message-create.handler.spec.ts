@@ -112,8 +112,8 @@ describe('MessageCreateHandler notifications', () => {
     );
   });
 
-  it('emits bell_object_message for object channels', async () => {
-    const { handler, notificationEmitter } = makeHandler({
+  it('skips encrypted object channel messages without emitting', async () => {
+    const { handler, messages, notificationEmitter } = makeHandler({
       channels: {
         findById: jest.fn().mockResolvedValue({
           channel_id: 'obj-ch-1',
@@ -134,13 +134,32 @@ describe('MessageCreateHandler notifications', () => {
       baseCtx,
     );
 
+    expect(messages.insertMessage).not.toHaveBeenCalled();
+    expect(notificationEmitter.emitWithContext).not.toHaveBeenCalled();
+  });
+
+  it('emits bell_object_message for plain object channel messages', async () => {
+    const { handler, notificationEmitter } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'obj-ch-1',
+          kind: CHANNEL_KINDS[2],
+          object_id: 'obj-1',
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+    });
+
+    await handler.handle({ channel_id: 'obj-ch-1', body: 'hello' }, baseCtx);
+
     expect(notificationEmitter.emitWithContext).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
         type: 'bell_object_message',
         objectId: 'obj-1',
         payload: expect.objectContaining({
-          encrypted: true,
+          encrypted: false,
         }),
       }),
     );

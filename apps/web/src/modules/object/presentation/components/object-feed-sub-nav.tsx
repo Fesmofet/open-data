@@ -9,6 +9,22 @@ import {
 
 import type { ObjectFeedSubTabView } from '../../domain/object-page.types';
 
+function resolveFeedSubTabLabel(
+  tab: ObjectFeedSubTabView,
+  t: (key: string) => string,
+): string {
+  switch (tab.segment) {
+    case 'posts':
+      return t('posts');
+    case 'threads':
+      return t('threads');
+    case 'activity':
+      return t('object_reviews_activity');
+    default:
+      return tab.label;
+  }
+}
+
 export type ObjectFeedSubNavProps = {
   tabs: ObjectFeedSubTabView[];
   activeSegment: string;
@@ -37,7 +53,7 @@ export function ObjectFeedSubNav({
               className={profileSectionTabClass(active, 'sub')}
               onClick={() => onSelect(tab.segment)}
             >
-              {tab.label}
+              {resolveFeedSubTabLabel(tab, t)}
             </button>
           );
         })}

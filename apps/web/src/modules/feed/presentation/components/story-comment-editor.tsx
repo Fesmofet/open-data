@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
 import { getHiveJsonMetadataDefaults } from '@/config/hive-json-metadata-public';
-import { LexicalPostEditor } from '@/modules/editor';
+import { CompactComposeEditor } from '@/modules/editor';
 import { buildCommentOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
@@ -21,26 +21,6 @@ export type StoryCommentEditorProps = {
   onSubmitted?: () => void;
   onBroadcastRevalidate?: () => Promise<void>;
 };
-
-/** Matches insert (+) control styling in `EditorInsertCaretOverlay` — soft circular control. */
-function IconSendChevron({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
-  );
-}
 
 export function StoryCommentEditor({
   story,
@@ -119,47 +99,34 @@ export function StoryCommentEditor({
   const canSubmit = bodyPlain.trim().length > 0 && !pending;
 
   return (
-    <div className="mt-4 border-t border-border pt-3">
-      <div className="relative">
-        <LexicalPostEditor
-          key={editorKey}
-          compact
-          compactBottomInset
-          bodyPlaceholder="Write your comment…"
-          onBodyChange={setBodyPlain}
-        />
-        <div className="pointer-events-none absolute end-2 top-1/2 z-[65] -translate-y-1/2">
-          <button
-            type="button"
-            onClick={() => void onSubmit()}
-            disabled={!canSubmit}
-            aria-label="Submit comment"
-            className={[
-              'pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
-              'bg-bg text-fg-secondary shadow-none',
-              'hover:bg-ghost-surface',
-              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-            ].join(' ')}
-          >
-            <IconSendChevron />
-          </button>
-        </div>
-      </div>
-      {confirming ? (
-        <p className="mt-2 flex items-center gap-2 text-body-sm text-fg-secondary">
-          <span
-            className="inline-block h-3 w-3 animate-spin rounded-circle border-2 border-current border-t-transparent"
-            aria-hidden
-          />
-          Waiting for confirmation…
-        </p>
-      ) : null}
-      {error ? (
-        <p className="mt-2 text-body-sm text-error" role="alert">
-          {error}
-        </p>
-      ) : null}
-    </div>
+    <CompactComposeEditor
+      className="mt-4 border-t border-border pt-3"
+      editorKey={editorKey}
+      bodyPlaceholder="Write your comment…"
+      onBodyChange={setBodyPlain}
+      onSend={onSubmit}
+      canSend={canSubmit}
+      sendAriaLabel="Submit comment"
+      sendVariant="neutral"
+      outputMode="plain"
+      footer={
+        <>
+          {confirming ? (
+            <p className="mt-2 flex items-center gap-2 text-body-sm text-fg-secondary">
+              <span
+                className="inline-block h-3 w-3 animate-spin rounded-circle border-2 border-current border-t-transparent"
+                aria-hidden
+              />
+              Waiting for confirmation…
+            </p>
+          ) : null}
+          {error ? (
+            <p className="mt-2 text-body-sm text-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </>
+      }
+    />
   );
 }

@@ -19,6 +19,7 @@ import {
   OBJECT_PAGE_VIEW_PATH_PARAM,
   OBJECT_PAGE_REVIEWS_SUB_PARAM,
   REVIEWS_FEED_PATH_SEGMENTS,
+  LEGACY_REVIEWS_MESSAGES_SEGMENT,
   isFieldReferenceFeedPathSegment,
   resolveCategoryNameFromObjectUrl,
   resolveCategoryNameForObjectPage,
@@ -99,14 +100,27 @@ export function parseReviewsFeedSubParam(
   sp: Record<string, string | string[] | undefined>,
 ): ReviewsFeedSubType {
   const v = firstSearchParam(sp, OBJECT_PAGE_REVIEWS_SUB_PARAM)?.trim();
+  if (v === LEGACY_REVIEWS_MESSAGES_SEGMENT) {
+    return 'activity';
+  }
   if (v && REVIEWS_FEED_SUB_VALUES.includes(v as ReviewsFeedSubType)) {
     return v as ReviewsFeedSubType;
   }
   const tab = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
-  if (tab === 'messages') {
-    return 'messages';
+  if (tab === LEGACY_REVIEWS_MESSAGES_SEGMENT) {
+    return 'activity';
   }
   return 'posts';
+}
+
+function normalizeLegacyReviewsFeedSub(segment: string): ReviewsFeedSubType | null {
+  if (segment === LEGACY_REVIEWS_MESSAGES_SEGMENT) {
+    return 'activity';
+  }
+  if (REVIEWS_FEED_SUB_VALUES.includes(segment as ReviewsFeedSubType)) {
+    return segment as ReviewsFeedSubType;
+  }
+  return null;
 }
 
 /** Resolves Reviews sub-tab from visible pathname (and proxy-injected `?reviews_sub=`). */
@@ -119,20 +133,28 @@ export function resolveReviewsFeedSubFromObjectUrl(
   const path = normalizePathname(pathname);
   const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const subMatch = path.match(
-    new RegExp(`^${escapedBase}/reviews/(${REVIEWS_FEED_PATH_SEGMENTS.join('|')})$`),
+    new RegExp(
+      `^${escapedBase}/reviews/(${[...REVIEWS_FEED_PATH_SEGMENTS, LEGACY_REVIEWS_MESSAGES_SEGMENT].join('|')})$`,
+    ),
   );
-  if (subMatch?.[1] && REVIEWS_FEED_SUB_VALUES.includes(subMatch[1] as ReviewsFeedSubType)) {
-    return subMatch[1] as ReviewsFeedSubType;
+  if (subMatch?.[1]) {
+    const normalized = normalizeLegacyReviewsFeedSub(subMatch[1]);
+    if (normalized) {
+      return normalized;
+    }
   }
   if (path === `${base}/messages`) {
-    return 'messages';
+    return 'activity';
   }
   const fromQuery = searchParams.get(OBJECT_PAGE_REVIEWS_SUB_PARAM)?.trim();
-  if (fromQuery && REVIEWS_FEED_SUB_VALUES.includes(fromQuery as ReviewsFeedSubType)) {
-    return fromQuery as ReviewsFeedSubType;
+  if (fromQuery) {
+    const normalized = normalizeLegacyReviewsFeedSub(fromQuery);
+    if (normalized) {
+      return normalized;
+    }
   }
-  if (searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim() === 'messages') {
-    return 'messages';
+  if (searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim() === LEGACY_REVIEWS_MESSAGES_SEGMENT) {
+    return 'activity';
   }
   return 'posts';
 }
@@ -207,7 +229,9 @@ export function resolvePrimarySegmentFromObjectUrl(
   const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (
     path === `${base}/reviews` ||
-    new RegExp(`^${escapedBase}/reviews/(${REVIEWS_FEED_PATH_SEGMENTS.join('|')})$`).test(path)
+    new RegExp(
+      `^${escapedBase}/reviews/(${[...REVIEWS_FEED_PATH_SEGMENTS, LEGACY_REVIEWS_MESSAGES_SEGMENT].join('|')})$`,
+    ).test(path)
   ) {
     return 'reviews';
   }
@@ -226,7 +250,7 @@ export function resolvePrimarySegmentFromObjectUrl(
   if (tab === 'authority') {
     return 'ownership';
   }
-  if (tab === 'messages') {
+  if (tab === LEGACY_REVIEWS_MESSAGES_SEGMENT) {
     return 'reviews';
   }
   return tab ?? '';

@@ -80,7 +80,7 @@ export type ObjectPageTabPaneProps = {
   updatesFeedSlot?: ReactNode;
   postsFeedSlot?: ReactNode;
   threadsFeedSlot?: ReactNode;
-  messagesFeedSlot?: ReactNode;
+  activityFeedSlot?: ReactNode;
 };
 
 export function ObjectPageTabPane({
@@ -108,7 +108,7 @@ export function ObjectPageTabPane({
   updatesFeedSlot = null,
   postsFeedSlot = null,
   threadsFeedSlot = null,
-  messagesFeedSlot = null,
+  activityFeedSlot = null,
 }: ObjectPageTabPaneProps) {
   const {
     activePrimarySegment,
@@ -436,7 +436,7 @@ export function ObjectPageTabPane({
       objectUpdatesFeed={updatesFeedSlot}
       objectPostsFeed={postsFeedSlot}
       objectThreadsFeed={threadsFeedSlot}
-      objectMessagesFeed={messagesFeedSlot}
+      objectActivityFeed={activityFeedSlot}
       objectFollowersFeed={objectFollowersFeed}
       objectExpertsFeed={objectExpertsFeed}
       objectOwnershipFeed={objectOwnershipFeed}

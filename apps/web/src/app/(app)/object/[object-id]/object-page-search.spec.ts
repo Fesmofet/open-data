@@ -469,20 +469,30 @@ describe('resolveReviewsFeedSubFromObjectUrl', () => {
     ).toBe('posts');
   });
 
-  it('returns messages from reviews sub-path', () => {
+  it('returns activity from reviews sub-path', () => {
+    expect(
+      resolveReviewsFeedSubFromObjectUrl(
+        objectId,
+        `${base}/reviews/activity`,
+        new URLSearchParams(),
+      ),
+    ).toBe('activity');
+  });
+
+  it('maps legacy /reviews/messages path to activity', () => {
     expect(
       resolveReviewsFeedSubFromObjectUrl(
         objectId,
         `${base}/reviews/messages`,
         new URLSearchParams(),
       ),
-    ).toBe('messages');
+    ).toBe('activity');
   });
 
-  it('returns messages from legacy /messages path', () => {
+  it('maps legacy /messages path to activity', () => {
     expect(
       resolveReviewsFeedSubFromObjectUrl(objectId, `${base}/messages`, new URLSearchParams()),
-    ).toBe('messages');
+    ).toBe('activity');
   });
 
   it('returns threads from proxy query param', () => {

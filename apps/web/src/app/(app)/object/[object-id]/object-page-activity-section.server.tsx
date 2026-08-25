@@ -1,22 +1,22 @@
 import {
   getObjectChannelMessagesQuery,
   getObjectChannelQuery,
-  ObjectChannelMessagesClient,
+  ObjectActivityFeedClient,
 } from '@/modules/messaging';
 
 import { resolveObjectMessagesSectionProps } from './object-page-messages-section.helpers';
 
-export type ObjectPageMessagesFeedSectionProps = {
+export type ObjectPageActivityFeedSectionProps = {
   objectId: string;
   objectName: string;
   viewerUsername: string | null;
 };
 
-export async function ObjectPageMessagesFeedSection({
+export async function ObjectPageActivityFeedSection({
   objectId,
   objectName,
   viewerUsername,
-}: ObjectPageMessagesFeedSectionProps) {
+}: ObjectPageActivityFeedSectionProps) {
   const channel = await getObjectChannelQuery(objectId, viewerUsername);
   const initialMessages = channel
     ? await getObjectChannelMessagesQuery(objectId, { limit: 50 }, viewerUsername)
@@ -31,7 +31,7 @@ export async function ObjectPageMessagesFeedSection({
   });
 
   return (
-    <ObjectChannelMessagesClient
+    <ObjectActivityFeedClient
       objectId={props.objectId}
       objectName={props.objectName}
       viewerUsername={props.viewerUsername}

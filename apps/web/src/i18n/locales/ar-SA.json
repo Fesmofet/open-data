@@ -2747,5 +2747,9 @@
   "messaging_encrypt_toggle_public": "Send public message",
   "messaging_encrypt_toggle_encrypted": "Send encrypted message",
   "messaging_encrypt_keychain_required_title": "Hive Keychain required",
-  "messaging_encrypt_keychain_required_body": "Install and log in with Hive Keychain to toggle encrypted messages. You can still send one-way encrypted messages from the send dialog."
+  "messaging_encrypt_keychain_required_body": "Install and log in with Hive Keychain to toggle encrypted messages. You can still send one-way encrypted messages from the send dialog.",
+  "object_reviews_activity": "نشاط",
+  "object_activity_compose_placeholder": "Share something about {name}…",
+  "object_activity_encrypted_unsupported": "Encrypted messages are not supported on object activity.",
+  "object_activity_empty": "No activity yet."
 }

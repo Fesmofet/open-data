@@ -74,7 +74,7 @@ const baseProps = {
   feedSubTabs: [
     { segment: 'posts', label: 'Posts' },
     { segment: 'threads', label: 'Threads' },
-    { segment: 'messages', label: 'Messages' },
+    { segment: 'activity', label: 'Activity' },
   ],
   title: 'Waivio',
   objectType: 'default' as const,
@@ -127,16 +127,16 @@ describe('ObjectPrimaryContent Reviews threads feed', () => {
   });
 });
 
-describe('ObjectPrimaryContent messages feed', () => {
-  it('renders injected object messages feed on Reviews > Messages', () => {
+describe('ObjectPrimaryContent activity feed', () => {
+  it('renders injected object activity feed on Reviews > Activity', () => {
     render(
       <ObjectPrimaryContent
         {...baseProps}
-        activeFeedSubSegment="messages"
-        objectMessagesFeed={<div data-testid="object-messages-feed">Messages</div>}
+        activeFeedSubSegment="activity"
+        objectActivityFeed={<div data-testid="object-activity-feed">Activity</div>}
       />,
     );
-    expect(screen.getByTestId('object-messages-feed')).toBeInTheDocument();
+    expect(screen.getByTestId('object-activity-feed')).toBeInTheDocument();
   });
 });
 

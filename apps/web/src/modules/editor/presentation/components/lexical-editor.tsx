@@ -16,7 +16,7 @@ import {
   $createTextNode,
   $getRoot,
 } from 'lexical';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { imageContentUrlForCid } from '@/config/ipfs-content-url';
@@ -76,16 +76,22 @@ function Placeholder({
   text,
   compact,
   pillChrome,
+  composeField,
 }: {
   text: string;
   compact?: boolean;
   pillChrome?: boolean;
+  composeField?: boolean;
 }) {
   return (
     <div
       className={[
         'pointer-events-none absolute text-body text-fg-tertiary select-none',
-        pillChrome ? 'start-10 top-1/2 -translate-y-1/2' : compact ? 'start-8 top-2' : 'start-8 top-3',
+        pillChrome
+          ? 'start-10 top-1/2 -translate-y-1/2'
+          : compact
+              ? 'start-8 top-2'
+              : 'start-8 top-3',
       ].join(' ')}
     >
       {text}
@@ -190,6 +196,7 @@ function EditorInner({
   composeTrailingInset,
   showFormatToolbar,
   enableImages,
+  composeField,
   onObjectLinkedFromEditor,
 }: {
   bodyPlaceholder: string;
@@ -201,6 +208,7 @@ function EditorInner({
   composeTrailingInset?: boolean;
   showFormatToolbar?: boolean;
   enableImages?: boolean;
+  composeField?: boolean;
   onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
 }) {
   const pillChrome = Boolean((compact || messagingCompact) && compactBottomInset);
@@ -242,6 +250,7 @@ function EditorInner({
             text={bodyPlaceholder}
             compact={compact || messagingCompact}
             pillChrome={pillChrome}
+            composeField={composeField}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
@@ -280,6 +289,15 @@ export type LexicalEditorProps = {
   messagingCompact?: boolean;
   /** Extra right padding for in-field lock + send controls (messaging compose bar). */
   composeTrailingInset?: boolean;
+  /**
+   * Feed compose (comments, object activity): pill field, (+) on the left edge,
+   * trailing send inside — same layout as story comments.
+   */
+  composeField?: boolean;
+  /** @deprecated Use {@link composeField} — ignored when composeField is set. */
+  insertFollowsCaret?: boolean;
+  /** Send control overlaid inside the field on the right when {@link composeField} is set. */
+  composeTrailingAction?: ReactNode;
 };
 
 export function LexicalPostEditor({
@@ -293,9 +311,21 @@ export function LexicalPostEditor({
   compactBottomInset,
   messagingCompact,
   composeTrailingInset,
+  composeField = false,
+  insertFollowsCaret: _insertFollowsCaret = false,
+  composeTrailingAction,
 }: LexicalEditorProps) {
-  const pillChrome = Boolean((compact || messagingCompact) && compactBottomInset);
-  const enableImages = !compact || Boolean(messagingCompact);
+  const resolvedCompact = composeField ? true : compact;
+  const resolvedCompactBottomInset = composeField ? true : compactBottomInset;
+  const resolvedComposeTrailingInset = composeField ? true : composeTrailingInset;
+  const resolvedMessagingCompact = messagingCompact;
+  const pillChrome = Boolean(
+    (resolvedCompact || resolvedMessagingCompact) && resolvedCompactBottomInset,
+  );
+  const pinInsertCenterVertical = pillChrome;
+  const enableImages = composeField
+    ? resolvedMessagingCompact
+    : !resolvedCompact || Boolean(resolvedMessagingCompact);
   const resolvedInitialBody = initialBody ?? initialPlainText;
   const resolvedOnBodyChange = onBodyChange ?? onPlainTextChange;
 
@@ -321,6 +351,23 @@ export function LexicalPostEditor({
     : compact || messagingCompact
       ? 'min-h-[2rem]'
       : 'min-h-[12rem]';
+
+  const editorInner = (
+    <EditorInner
+      bodyPlaceholder={bodyPlaceholder}
+      initialBody={resolvedInitialBody}
+      onBodyChange={resolvedOnBodyChange}
+      compact={resolvedCompact}
+      compactBottomInset={resolvedCompactBottomInset}
+      messagingCompact={resolvedMessagingCompact}
+      composeTrailingInset={resolvedComposeTrailingInset}
+      composeField={composeField}
+      showFormatToolbar={enableImages && !resolvedMessagingCompact}
+      enableImages={enableImages}
+      onObjectLinkedFromEditor={onObjectLinkedFromEditor}
+    />
+  );
+
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div
@@ -329,23 +376,17 @@ export function LexicalPostEditor({
           shellMinClass,
         ].join(' ')}
       >
-        <EditorInner
-          bodyPlaceholder={bodyPlaceholder}
-          initialBody={resolvedInitialBody}
-          onBodyChange={resolvedOnBodyChange}
-          compact={compact}
-          compactBottomInset={compactBottomInset}
-          messagingCompact={messagingCompact}
-          composeTrailingInset={composeTrailingInset}
-          showFormatToolbar={enableImages && !messagingCompact}
-          enableImages={enableImages}
-          onObjectLinkedFromEditor={onObjectLinkedFromEditor}
-        />
+        {editorInner}
         {enableImages ? <EditorImageDropOverlay /> : null}
         <EditorInsertCaretOverlay
-          pinInsertCenterVertical={pillChrome}
+          pinInsertCenterVertical={pinInsertCenterVertical}
           onObjectLinkedFromEditor={onObjectLinkedFromEditor}
         />
+        {composeTrailingAction ? (
+          <div className="pointer-events-none absolute inset-y-0 end-2 z-[70] flex items-center">
+            <div className="pointer-events-auto">{composeTrailingAction}</div>
+          </div>
+        ) : null}
       </div>
     </LexicalComposer>
   );

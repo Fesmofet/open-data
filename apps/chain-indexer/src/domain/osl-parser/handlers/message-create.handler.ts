@@ -101,6 +101,13 @@ export class MessageCreateHandler implements OdlActionHandler {
       return;
     }
 
+    if (channel.kind === CHANNEL_KINDS[2] && data.encrypted_body != null) {
+      this.logger.warn(
+        'message_create: encrypted messages are not allowed on object channels; skipping',
+      );
+      return;
+    }
+
     const existingMessage = await this.messagesRepository.findById(messageId);
     if (existingMessage) {
       return;

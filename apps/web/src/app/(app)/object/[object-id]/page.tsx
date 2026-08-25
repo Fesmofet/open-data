@@ -47,7 +47,7 @@ import { loadObjectPageModel } from './object-page-model.server';
 import { ObjectPageUpdatesFeedSection } from './object-page-updates-feed-section.server';
 import { ObjectPageUpdateDetailSection } from './object-page-update-detail-section.server';
 import { ObjectPagePostsFeedSection } from './object-page-posts-feed-section.server';
-import { ObjectPageMessagesFeedSection } from './object-page-messages-section.server';
+import { ObjectPageActivityFeedSection } from './object-page-activity-section.server';
 import { ObjectThreadsFeedList } from './object-threads-feed-list';
 import { FeedPostsLoadingSkeleton } from '@/modules/feed';
 import {
@@ -244,15 +244,19 @@ export async function generateMetadata({
     title = `${baseTitle} · ${galleryLabel}`;
   } else if (tab === 'reviews') {
     const reviewsSub = firstSearchParam(sp, OBJECT_PAGE_REVIEWS_SUB_PARAM)?.trim();
-    if (reviewsSub === 'messages') {
-      const messagesLabel =
-        typeof messages.messages === 'string' ? messages.messages : 'Messages';
-      title = `${baseTitle} · ${messagesLabel}`;
+    if (reviewsSub === 'activity') {
+      const activityLabel =
+        typeof messages.object_reviews_activity === 'string'
+          ? messages.object_reviews_activity
+          : 'Activity';
+      title = `${baseTitle} · ${activityLabel}`;
     }
   } else if (tab === 'messages') {
-    const messagesLabel =
-      typeof messages.messages === 'string' ? messages.messages : 'Messages';
-    title = `${baseTitle} · ${messagesLabel}`;
+    const activityLabel =
+      typeof messages.object_reviews_activity === 'string'
+        ? messages.object_reviews_activity
+        : 'Activity';
+    title = `${baseTitle} · ${activityLabel}`;
   } else if (tab === 'widget') {
     const widgetLabel =
       typeof messages.object_widget_tab === 'string'
@@ -544,10 +548,10 @@ export default async function ObjectDetailPage({
       />
     ) : null;
 
-  const messagesFeedSlot =
-    onReviewsTab && reviewsFeedSub === 'messages' ? (
-      <ObjectPageMessagesFeedSection
-        key="object-messages-feed"
+  const activityFeedSlot =
+    onReviewsTab && reviewsFeedSub === 'activity' ? (
+      <ObjectPageActivityFeedSection
+        key="object-activity-feed"
         objectId={objectId}
         objectName={model.title}
         viewerUsername={viewerUsername}
@@ -588,7 +592,7 @@ export default async function ObjectDetailPage({
         updatesFeedSlot={updatesFeedSlot}
         postsFeedSlot={postsFeedSlot}
         threadsFeedSlot={threadsFeedSlot}
-        messagesFeedSlot={messagesFeedSlot}
+        activityFeedSlot={activityFeedSlot}
       />
     </>
   );

@@ -18,19 +18,21 @@ related:
 | Surface | Route / tab | Data |
 |---------|-------------|------|
 | Profile inbox | `/@viewer/messages` (Posts submenu, after Threads) | Viewer DM + group channels |
-| Object channel | `/object/:id/messages` | Single object channel |
+| Object activity | `/object/:id/reviews/activity` (Reviews → Activity) | Single object channel (plain only) |
+
+Legacy `/object/:id/messages` and `/object/:id/reviews/messages` resolve to Activity.
 
 Other users' profiles hide the Messages tab. Direct URL to another user's messages redirects to the viewer's inbox.
 
 ## Layout
 
-Profile inbox uses three columns on desktop: channel list (left rail), chat (center), About (right rail). Object Messages uses center chat only at `/object/:id/messages`.
+Profile inbox uses three columns on desktop: channel list (left rail), chat (center), About (right rail). Object **Activity** is a feed column under Reviews (no chat card frame).
 
 | Shell | Class / variant | Notes |
 |-------|-----------------|-------|
-| Center chat | `MESSAGING_CENTER_VIEWPORT_SHELL_CLASS` | Sits below profile submenu chrome |
-| Left list + right About | `MessagingViewportShell` `variant="sideRail"` | Full grid-column height; top aligns with center column (submenu sits only in center) |
-| Object / standalone | `MessagingViewportShell` default | Full viewport minus header + rail chrome |
+| Center chat | `MESSAGING_CENTER_VIEWPORT_SHELL_CLASS` | Profile inbox only |
+| Left list + right About | `MessagingViewportShell` `variant="sideRail"` | Profile inbox |
+| Object activity | Plain `FeedColumn` section | Top `ObjectActivityComposeBar`; `ObjectActivityFeedList` + bottom infinite scroll |
 
 Left rail: **Messages** header, scrollable channel list, **New message** as a full-width accent footer button. Right About rail: centered **About** heading and avatar; members scroll; **Leave group** pinned to the column footer.
 
@@ -66,9 +68,9 @@ Two icon buttons in `MessagingComposeBar`:
 | Arrow | Plain send — `PlainSendDisclaimerModal` until user dismisses |
 | Lock | `EncryptedSendModal` — pick recipient, encrypt (Keychain memo or ephemeral fallback), send |
 
-Recipient selection: DM = peer; group = member dropdown; object = user search.
+Recipient selection: DM = peer; group = member dropdown. **Object activity has no encryption UI** (plain `message_create` only; indexer rejects encrypted object messages).
 
-Decrypt in `MessagingMessageList`: click encrypted bubble → Keychain `requestVerifyKey`; ephemeral outgoing bubbles are not clickable.
+Decrypt in `MessagingMessageList` (profile inbox only): click encrypted bubble → Keychain `requestVerifyKey`; ephemeral outgoing bubbles are not clickable.
 
 ## API mapping (encryption)
 
@@ -87,7 +89,7 @@ Optional group title is shown when two or more users are selected. `channel_id` 
 
 ## Object channel bootstrap
 
-Object Messages always renders the chat UI (compose + message list), even when query-api has no channel yet. Object channels do **not** show a member roster (no `{count} members` or Members list); chat participants are message authors only.
+Object **Activity** always renders compose + feed, even when query-api has no channel yet. Object channels do **not** show a member roster. **Encryption is not supported** on object channels (UI plain-only; indexer warn-skips encrypted `message_create`).
 
 Per [channels.md](../../../spec/osl/channels.md), object channels require explicit `channel_create` before `message_create`. The UI uses deterministic `buildObjectChannelId(objectId)` → `obj-ch-{objectId}` for the pending channel.
 

@@ -29,6 +29,8 @@ export {
 
 export { MessagingInboxClient } from './presentation/messaging-inbox-client';
 export { MessagingChannelListRail } from './presentation/messaging-channel-list-rail';
-export { ObjectChannelMessagesClient } from './presentation/object-channel-messages-client';
+export { ObjectActivityFeedClient } from './presentation/object-activity-feed-client';
+export { ObjectActivityComposeBar } from './presentation/object-activity-compose-bar';
+export { ObjectActivityFeedList } from './presentation/object-activity-feed-list';
 export { MessagingChannelList } from './presentation/messaging-channel-list';
 export { MessagingMessageList } from './presentation/messaging-message-list';

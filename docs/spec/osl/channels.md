@@ -40,6 +40,7 @@ No `kind=agent` — see [agents.md](agents.md).
 - **No membership roster:** `channel_create` does not insert `channel_members` rows; posting a message does not add the author as a member. Chat participants are message **authors** in `messages`, not `channel_members`.
 - **`channel_member_add`**, **`channel_member_remove`**, and **`channel_leave`** are not applicable (indexer warn-skip). Legacy rows in `channel_members` for object channels, if any, are ignored by query-api (`members: []`).
 - Indexer does **not** filter `banned`/`muted` on write for object channels; query-api applies mute filters on read.
+- **`message_create` with `encrypted_body` on object channels** is warn-skipped (plaintext only).
 
 ## Group membership limits and mute rules (v1)
 

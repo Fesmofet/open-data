@@ -158,8 +158,8 @@ export type ObjectPrimaryContentProps = {
   objectPostsFeed?: ReactNode;
   /** Injected threads feed when Reviews > Threads sub-tab is active. */
   objectThreadsFeed?: ReactNode;
-  /** Injected messages feed when Reviews > Messages sub-tab is active. */
-  objectMessagesFeed?: ReactNode;
+  /** Injected activity feed when Reviews > Activity sub-tab is active. */
+  objectActivityFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Experts tab is active. */
@@ -209,7 +209,7 @@ export function ObjectPrimaryContent({
   objectUpdatesFeed,
   objectPostsFeed,
   objectThreadsFeed,
-  objectMessagesFeed,
+  objectActivityFeed,
   objectFollowersFeed,
   objectExpertsFeed,
   objectOwnershipFeed,
@@ -756,7 +756,7 @@ export function ObjectPrimaryContent({
   const onReviewsCenter = isReviewsTab && nestedStack.length === 0;
   const onReviewsPostsTab = onReviewsCenter && activeFeedSubSegment === 'posts';
   const onReviewsThreadsTab = onReviewsCenter && activeFeedSubSegment === 'threads';
-  const onReviewsMessagesTab = onReviewsCenter && activeFeedSubSegment === 'messages';
+  const onReviewsActivityTab = onReviewsCenter && activeFeedSubSegment === 'activity';
 
   return (
     <FeedColumn>
@@ -793,8 +793,8 @@ export function ObjectPrimaryContent({
         <Fragment key="reviews-posts-feed">{objectPostsFeed}</Fragment>
       ) : onReviewsThreadsTab && objectThreadsFeed != null ? (
         <Fragment key="reviews-threads-feed">{objectThreadsFeed}</Fragment>
-      ) : onReviewsMessagesTab && objectMessagesFeed != null ? (
-        <Fragment key="reviews-messages-feed">{objectMessagesFeed}</Fragment>
+      ) : onReviewsActivityTab && objectActivityFeed != null ? (
+        <Fragment key="reviews-activity-feed">{objectActivityFeed}</Fragment>
       ) : (
         <Fragment key="center-type-content">{renderTypeContent()}</Fragment>
       )}

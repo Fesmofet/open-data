@@ -52,7 +52,7 @@ Invariants:
 ## UX rules (web)
 
 - **Plain send:** disclaimer modal on every send until user checks “don't show again”.
-- **Encrypted send:** recipient required (DM peer / group member / object user search); ephemeral fallback only after explicit consent when sender has no memo key in Keychain.
+- **Encrypted send:** recipient required (DM peer / group member); ephemeral fallback only after explicit consent when sender has no memo key in Keychain. **Not supported on object channels** (indexer warn-skip).
 - **Encrypted send (HiveSigner / HiveAuth):** one-way ephemeral only; never probe or call Keychain encode APIs.
 - **Decrypt:** Keychain login only. Recipient may decrypt when `encryption.to === viewer`. Memo-mode sender may also decrypt when `author === viewer`. Ephemeral sender never. Everyone else → “not for you” without calling Keychain. HiveSigner / HiveAuth → informative modal only (no Keychain popup). Keychain decode failure after a permitted attempt → generic decrypt error.
 - Decrypted plaintext lives in client session cache only.

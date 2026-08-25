@@ -56,6 +56,10 @@ See [encryption-future.md](./encryption-future.md) for UX and crypto semantics.
 - **Author-only** — tombstone + hard delete from `messages`.
 - No admin/creator/object-creator delete of others; use mute on read-path.
 
+## Object channel plaintext
+
+- **`message_create` on object channels:** plaintext (`body`) only; `encrypted_body` is warn-skipped by the indexer (see [channels.md](./channels.md)).
+
 ## `message_context_exclude`
 
 - Author excludes own message from AI context (`for_context` queries).

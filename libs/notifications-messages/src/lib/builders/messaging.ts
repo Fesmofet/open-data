@@ -1,6 +1,6 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import { type NotificationMessage, withParamHrefs } from '../message';
-import { objectPath, userProfilePath } from '../links';
+import { objectActivityPath, userProfilePath } from '../links';
 
 export function buildMessagingMessage(
   event: AnyNotificationEvent,
@@ -33,7 +33,7 @@ export function buildMessagingMessage(
     case 'bell_object_message': {
       const p = event.payload;
       const objectName = p.objectName?.trim() || event.objectId || p.channelId;
-      const objectHref = event.objectId ? objectPath(event.objectId) : null;
+      const objectHref = event.objectId ? objectActivityPath(event.objectId) : null;
       return withParamHrefs(
         {
           key: 'notification_bell_object_message',

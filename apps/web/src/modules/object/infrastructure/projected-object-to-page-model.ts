@@ -163,7 +163,7 @@ function buildPrimaryTabs(input: {
 const FEED_SUB_TABS: ObjectFeedSubTabView[] = [
   { segment: 'posts', label: 'Posts' },
   { segment: 'threads', label: 'Threads' },
-  { segment: 'messages', label: 'Messages' },
+  { segment: 'activity', label: 'Activity' },
 ];
 
 function coverImageUrl(fields: Record<string, unknown>): string | null {
