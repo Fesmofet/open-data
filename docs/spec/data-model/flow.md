@@ -322,7 +322,7 @@ See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) and [
 | -------------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
 | Tables/collections         | 6 (core, updates, validity_votes, rank_votes, projection, authority) | 6 (core, updates, validity_votes, rank_votes, authority, accounts_current; no projection) |
 | Projection                 | Separate document/table, must be kept in sync                  | None; query core tables directly                    |
-| Single-cardinality resolve | Manual cascade: delete votes, delete update, update projection | Read-time resolution via update registry; no DB-level enforcement |
+| Single-cardinality resolve | Manual cascade: delete votes, delete update, update projection | Read-time resolution via update registry; indexer append-only (no per-creator row replacement) |
 | Consistency                | seq + coreSeqAtBuild for drift detection                       | ACID; seq for change tracking only                  |
 | Text search                | Projection searchText or text index on projection              | tsvector + GIN on object_updates                    |
 | Geo search                 | Projection geoFields + 2dsphere                                | PostGIS geography + GiST on object_updates          |

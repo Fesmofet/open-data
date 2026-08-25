@@ -62,10 +62,10 @@ Canonical event order is determined by `event_seq` — a packed BIGINT encoding 
 - **Events**: `update_vote` on U from B.
 - **Expect**: Rejected with `UNAUTHORIZED_GOVERNANCE_OP`.
 
-### AC-I8: LWW for single field from same creator
+### AC-I8: Single field from same creator — append-only storage
 - **Setup**: Object O exists; field `name` is single-value semantics.
 - **Events**: Creator A publishes update U1 for `name`, then newer update U2 for `name`.
-- **Expect**: Current state keeps only U2 as A's active contribution for `name`; U1 is removed from current base view for that key scope.
+- **Expect**: Both U1 and U2 remain stored in `object_updates`. Resolved field winner for `name` is U2 (later `event_seq` when validity tiers tie). U1 stays in raw history and update feeds.
 
 ### AC-I9: Only main governance can create object_type
 - **Setup**: Main governance creator is A.

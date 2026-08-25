@@ -80,12 +80,10 @@ describe('UpdateCreateHandler object_ref', () => {
   };
 
   it('skips when referenced object_id does not exist in objects_core', async () => {
-    const createReplacingIfPresent = jest.fn();
+    const create = jest.fn();
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -121,17 +119,15 @@ describe('UpdateCreateHandler object_ref', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
     expect(existsByObjectAndValue).not.toHaveBeenCalled();
   });
 
   it('skips when referenced object_type is not in applies_to', async () => {
-    const createReplacingIfPresent = jest.fn();
+    const create = jest.fn();
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -170,17 +166,15 @@ describe('UpdateCreateHandler object_ref', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
     expect(existsByObjectAndValue).not.toHaveBeenCalled();
   });
 
   it('persists value_text and calls existsByObjectAndValue with object_ref when referenced object exists', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -225,8 +219,7 @@ describe('UpdateCreateHandler object_ref', () => {
       'object_ref',
       'ref-target',
     );
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      undefined,
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         value_text: 'ref-target',
         value_geo: null,

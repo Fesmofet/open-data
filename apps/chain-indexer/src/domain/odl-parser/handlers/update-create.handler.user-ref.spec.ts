@@ -63,12 +63,10 @@ describe('UpdateCreateHandler user_ref', () => {
   });
 
   it('skips when user not in DB and not found on Hive', async () => {
-    const createReplacingIfPresent = jest.fn();
+    const create = jest.fn();
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -113,17 +111,15 @@ describe('UpdateCreateHandler user_ref', () => {
     expect(findByName).toHaveBeenCalledWith('ghostuser');
     expect(getAccounts).toHaveBeenCalledWith(['ghostuser']);
     expect(enqueue).not.toHaveBeenCalled();
-    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
     expect(existsByObjectAndValue).not.toHaveBeenCalled();
   });
 
   it('persists and enqueues sync when user not in DB but found on Hive', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -173,8 +169,7 @@ describe('UpdateCreateHandler user_ref', () => {
       'user_ref',
       'alice',
     );
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      undefined,
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         value_text: 'alice',
         value_geo: null,
@@ -184,12 +179,10 @@ describe('UpdateCreateHandler user_ref', () => {
   });
 
   it('persists when user already in DB without calling Hive', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -234,8 +227,7 @@ describe('UpdateCreateHandler user_ref', () => {
     expect(findByName).toHaveBeenCalledWith('bob');
     expect(getAccounts).not.toHaveBeenCalled();
     expect(enqueue).not.toHaveBeenCalled();
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      undefined,
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ value_text: 'bob' }),
     );
   });

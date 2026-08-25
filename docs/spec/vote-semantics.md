@@ -195,15 +195,16 @@ The full validity resolution for a given update, in priority order:
 
 Tiers 1 and 2 produce a binary `VALID`/`REJECTED` and short-circuit — community weight is not evaluated. Tier 3 is evaluated only when no decisive admin/trusted vote exists.
 
-## D) LWW for single-value fields (same creator)
+## D) Single-value fields — append-only storage (same creator)
 
 For update types targeting a single-value field:
 
-- Key scope: `(object_id, field_key, creator)` for non-localizable types.
-- For **localizable** single-cardinality types, key scope is `(object_id, field_key, creator, locale)` — resubmitting the same field in a different locale inserts a new row without replacing other locales.
-- Newer `update_create` from same creator for same field **and locale** replaces previous current update in that scope.
+- Every accepted `update_create` inserts a **new** `object_updates` row. The indexer does **not** delete prior rows from the same creator.
+- Key scope `(object_id, field_key, creator)` for non-localizable types, or `(object_id, field_key, creator, locale)` for **localizable** types, describes the **candidate set** for read-time winner resolution — not a storage uniqueness constraint.
+- Resubmitting the same field in a different locale inserts a new row without affecting other locales.
+- Among **VALID** rows (including multiple from the same creator), the public field value is the winner per **§B — Tie-break for single-cardinality field winner** (`compareResolvedSingleCardinality`).
 
-Cross-creator “which update wins” for the public resolved field is defined in **§B — Tie-break for single-cardinality field winner**, not by §D alone.
+Cross-creator “which update wins” for the public resolved field is defined in **§B**, not by §D alone.
 
 ## Determinism
 

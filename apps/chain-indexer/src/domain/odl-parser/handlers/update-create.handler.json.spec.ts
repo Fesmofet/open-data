@@ -40,11 +40,9 @@ describe('UpdateCreateHandler json payloads', () => {
   });
 
   it('persists ingredients when value_json is newline-separated text', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -75,8 +73,7 @@ describe('UpdateCreateHandler json payloads', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      undefined,
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         update_type: 'ingredients',
         value_json: ['chicken', 'rice'],

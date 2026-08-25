@@ -58,9 +58,9 @@ describe('UpdateCreateHandler write guard', () => {
   });
 
   it('does not persist when governance guard rejects signer', async () => {
-    const createReplacingIfPresent = jest.fn();
+    const create = jest.fn();
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
+      create,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
       findByObjectId: jest.fn().mockResolvedValue(governanceCore),
@@ -91,16 +91,14 @@ describe('UpdateCreateHandler write guard', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
     expect(validityVotesDeps.validityVotesRepository.createIfAbsent).not.toHaveBeenCalled();
   });
 
   it('persists when signer matches governance object creator', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -134,8 +132,8 @@ describe('UpdateCreateHandler write guard', () => {
       ctx,
     );
 
-    expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(undefined, expect.any(Object));
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledWith(expect.any(Object));
     expect(validityVotesDeps.validityVotesRepository.createIfAbsent).toHaveBeenCalledWith(
       expect.objectContaining({
         object_id: 'gov1',
@@ -147,18 +145,11 @@ describe('UpdateCreateHandler write guard', () => {
     expect(eventEmitter.emit).toHaveBeenCalled();
   });
 
-  it('replaces existing single-cardinality row from same creator in one call', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
-    const findByObjectTypeCreatorAndLocale = jest.fn().mockResolvedValue({
-      update_id: 'old-update-id',
-      object_id: 'gov1',
-      update_type: 'name',
-      creator: 'owner',
-    });
+  it('appends new single-cardinality row from same creator without delete', async () => {
+    const create = jest.fn().mockResolvedValue(undefined);
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeCreatorAndLocale,
+      create,
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -193,21 +184,20 @@ describe('UpdateCreateHandler write guard', () => {
     );
 
     expect(existsByObjectAndValue).toHaveBeenCalled();
-    expect(findByObjectTypeCreatorAndLocale).toHaveBeenCalledWith(
-      'gov1',
-      'name',
-      'owner',
-      null,
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        object_id: 'gov1',
+        update_type: 'name',
+        creator: 'owner',
+        value_text: 'New title',
+      }),
     );
-    expect(createReplacingIfPresent).toHaveBeenCalledWith('old-update-id', expect.any(Object));
   });
 
   it('skips when duplicate value already exists on the object', async () => {
-    const createReplacingIfPresent = jest.fn();
+    const create = jest.fn();
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(true),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -241,17 +231,15 @@ describe('UpdateCreateHandler write guard', () => {
       ctx,
     );
 
-    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
     expect(validityVotesDeps.validityVotesRepository.createIfAbsent).not.toHaveBeenCalled();
     expect(eventEmitter.emit).not.toHaveBeenCalled();
   });
 
   it('still emits events when createIfAbsent throws', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -290,16 +278,14 @@ describe('UpdateCreateHandler write guard', () => {
       ),
     ).resolves.toBeUndefined();
 
-    expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalled();
   });
 
   it('emits OBJECT_STATUS_CREATED_EVENT after persisting a status update', async () => {
-      const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+      const create = jest.fn().mockResolvedValue(undefined);
       const objectUpdatesRepository = {
-        createReplacingIfPresent,
-        findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-        findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+        create,
         existsByObjectAndValue: jest.fn().mockResolvedValue(false),
       } as unknown as import('../../../repositories').ObjectUpdatesRepository;
       const objectsCoreRepository = {
@@ -336,7 +322,7 @@ describe('UpdateCreateHandler write guard', () => {
         ctx,
       );
 
-      expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+      expect(create).toHaveBeenCalledTimes(1);
       expect(eventEmitter.emit).toHaveBeenCalledWith(
         OBJECT_STATUS_CREATED_EVENT,
         expect.objectContaining({
@@ -364,11 +350,9 @@ describe('UpdateCreateHandler write guard', () => {
       status: 'active',
       seq: 0,
     });
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -400,7 +384,7 @@ describe('UpdateCreateHandler write guard', () => {
       { ...baseCtx, creator: 'alice' },
     );
 
-    expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
     expect(eventEmitter.emit).toHaveBeenCalledWith(
       TAG_CATEGORY_ITEM_MUTATED_EVENT,
       expect.objectContaining({ objectId: 'rest1' }),

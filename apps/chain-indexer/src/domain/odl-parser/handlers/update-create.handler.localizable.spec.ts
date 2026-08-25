@@ -68,11 +68,9 @@ describe('UpdateCreateHandler localizable', () => {
   });
 
   it('stores locale null when update type is not localizable but payload has locale', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -104,18 +102,15 @@ describe('UpdateCreateHandler localizable', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      undefined,
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({ locale: null }),
     );
   });
 
-  it('inserts localizable update in new locale without replacing other locales', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
-    const findByObjectTypeCreatorAndLocale = jest.fn().mockResolvedValue(undefined);
+  it('inserts localizable update in new locale as append-only row', async () => {
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeCreatorAndLocale,
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -147,27 +142,18 @@ describe('UpdateCreateHandler localizable', () => {
       baseCtx,
     );
 
-    expect(findByObjectTypeCreatorAndLocale).toHaveBeenCalledWith(
-      'gov1',
-      'name',
-      'owner',
-      'en-US',
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locale: 'en-US',
+        value_text: 'English title',
+      }),
     );
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(undefined, expect.any(Object));
   });
 
-  it('replaces localizable update when same creator resubmits same locale', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
-    const findByObjectTypeCreatorAndLocale = jest.fn().mockResolvedValue({
-      update_id: 'old-en-name',
-      object_id: 'gov1',
-      update_type: 'name',
-      creator: 'owner',
-      locale: 'en-US',
-    });
+  it('appends localizable update when same creator resubmits same locale', async () => {
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeCreatorAndLocale,
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -199,23 +185,18 @@ describe('UpdateCreateHandler localizable', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      'old-en-name',
-      expect.objectContaining({ locale: 'en-US' }),
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locale: 'en-US',
+        value_text: 'Revised English title',
+      }),
     );
   });
 
-  it('replaces non-localizable single update by type and creator only', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
-    const findByObjectTypeAndCreator = jest.fn().mockResolvedValue({
-      update_id: 'old-non-local',
-      object_id: 'gov1',
-      update_type: 'test_non_local',
-      creator: 'owner',
-    });
+  it('appends non-localizable single update without locale scoping', async () => {
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator,
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -247,14 +228,11 @@ describe('UpdateCreateHandler localizable', () => {
       baseCtx,
     );
 
-    expect(findByObjectTypeAndCreator).toHaveBeenCalledWith(
-      'gov1',
-      'test_non_local',
-      'owner',
-    );
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      'old-non-local',
-      expect.objectContaining({ locale: null }),
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locale: null,
+        value_text: 'revised',
+      }),
     );
   });
 });

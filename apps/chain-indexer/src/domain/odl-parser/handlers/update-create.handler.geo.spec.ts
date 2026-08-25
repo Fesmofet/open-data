@@ -39,11 +39,9 @@ describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
   });
 
   it('persists geo via ST_GeomFromGeoJSON geography binding', async () => {
-    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      findByObjectTypeCreatorAndLocale: jest.fn().mockResolvedValue(undefined),
+      create,
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -71,8 +69,7 @@ describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
       baseCtx,
     );
 
-    expect(createReplacingIfPresent).toHaveBeenCalledWith(
-      undefined,
+    expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         update_type: 'geo',
         value_geo: {
@@ -82,7 +79,7 @@ describe('UpdateCreateHandler geo (restaurant IPFS fixture)', () => {
       }),
     );
 
-    const inserted = createReplacingIfPresent.mock.calls[0]![1] as {
+    const inserted = create.mock.calls[0]![0] as {
       value_geo: { type: string; coordinates: number[] };
     };
     const sqlValues = objectUpdateInsertValues(inserted);

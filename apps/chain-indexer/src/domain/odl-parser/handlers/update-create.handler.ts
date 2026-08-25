@@ -209,25 +209,6 @@ export class UpdateCreateHandler implements OdlActionHandler {
       return;
     }
 
-    let replaceUpdateId: string | undefined;
-    if (definition.cardinality === 'single') {
-      const existing = definition.localizable
-        ? await this.objectUpdatesRepository.findByObjectTypeCreatorAndLocale(
-            object_id,
-            update_type,
-            creator,
-            effectiveLocale,
-          )
-        : await this.objectUpdatesRepository.findByObjectTypeAndCreator(
-            object_id,
-            update_type,
-            creator,
-          );
-      if (existing) {
-        replaceUpdateId = existing.update_id;
-      }
-    }
-
     if (update_type === UPDATE_TYPES.IDENTIFIER) {
       const parsed = valueResult.data as { value: string; type: string };
       const identifierExists =
@@ -243,7 +224,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       }
     }
 
-    await this.objectUpdatesRepository.createReplacingIfPresent(replaceUpdateId, row);
+    await this.objectUpdatesRepository.create(row);
     try {
       await this.validityVotesRepository.createIfAbsent({
         update_id,
