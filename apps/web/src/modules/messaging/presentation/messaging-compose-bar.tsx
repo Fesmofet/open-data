@@ -215,7 +215,7 @@ export function MessagingComposeBar({
             ))}
           </select>
         ) : null}
-        <div className="relative w-full min-w-0">
+        <div className="relative w-full min-w-0 pl-5">
           <LexicalPostEditor
             key={editorKey}
             messagingCompact
