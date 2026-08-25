@@ -69,7 +69,7 @@ export class OslMessagingService {
     }
 
     const op = buildOslChannelCreateOp({
-      id: this.config.get('odlCustomJsonId', { infer: true }),
+      id: this.config.get('oslCustomJsonId', { infer: true }),
       creator,
       payload,
     });
@@ -89,7 +89,7 @@ export class OslMessagingService {
       body: input.body,
     });
     const op = buildOslMessageCreateOp({
-      id: this.config.get('odlCustomJsonId', { infer: true }),
+      id: this.config.get('oslCustomJsonId', { infer: true }),
       creator,
       payload,
     });
@@ -120,7 +120,7 @@ export class OslMessagingService {
       to: normalizeAccount(input.recipient),
     });
     const op = buildOslMessageCreateOp({
-      id: this.config.get('odlCustomJsonId', { infer: true }),
+      id: this.config.get('oslCustomJsonId', { infer: true }),
       creator,
       payload,
     });

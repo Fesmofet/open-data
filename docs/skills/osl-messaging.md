@@ -131,7 +131,7 @@ Payload builders live in `@opden-data-layer/hive-broadcast` (`buildGroupChannelC
 | `HIVE_POSTING_KEY` | Local signing (local mode) |
 | `HIVE_MEMO_KEY` | Memo encrypt/decrypt (optional until encrypted messaging) |
 | `AGENT_WALLET_SIGNING_MODE` | `has` (plaintext) or `local` (plaintext + encrypted) |
-| `ODL_NETWORK` | `testnet` / `mainnet` → custom_json id |
+| `ODL_NETWORK` | `testnet` / `mainnet` → `osl-testnet` / `osl-mainnet` for OSL messaging ops |
 | `NOTIFICATIONS_WS_URL` | Override WS URL (default from `WAIVIO_API_ORIGIN`) |
 | `WAIVIO_API_ORIGIN` | Auth + default notifications WS host |
 

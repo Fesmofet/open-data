@@ -89,7 +89,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 |----------|---------|-------------|
 | `PORT` | `7500` | HTTP port |
 | `HOST` | `127.0.0.1` | Bind address |
-| `ODL_NETWORK` | `testnet` | `mainnet` \| `testnet` → `odl-mainnet` / `odl-testnet` |
+| `ODL_NETWORK` | `testnet` | `mainnet` \| `testnet` → `odl-mainnet` / `odl-testnet` for ODL ops; `osl-mainnet` / `osl-testnet` for OSL messaging tools |
 | `HAS_WS_URL` | `wss://hive-auth.arcange.eu` | HAS WebSocket server |
 | `HAS_APP_NAME` | `ODL Agent` | Shown in Keychain auth prompt |
 | `HAS_WEB_LINK_BASE` | `https://waiviodev.com` | Origin for clickable `webLink` (`/has#<compact fragment>`); empty disables |

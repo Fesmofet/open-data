@@ -12,8 +12,8 @@ describe('OslMessagingService', () => {
 
   const config = {
     get: jest.fn((key: string) => {
-      if (key === 'odlCustomJsonId') {
-        return 'odl-testnet';
+      if (key === 'oslCustomJsonId') {
+        return 'osl-testnet';
       }
       if (key === 'signingMode') {
         return 'local';
@@ -44,7 +44,7 @@ describe('OslMessagingService', () => {
     expect(result.opsCount).toBe(1);
     expect(result.bytes).toBeGreaterThan(0);
     const op = result.ops[0] as { id: string; json: string };
-    expect(op.id).toBe('odl-testnet');
+    expect(op.id).toBe('osl-testnet');
     const parsed = JSON.parse(op.json) as {
       events: { action: string; payload: Record<string, string> }[];
     };
@@ -58,8 +58,8 @@ describe('OslMessagingService', () => {
       if (key === 'signingMode') {
         return 'has';
       }
-      if (key === 'odlCustomJsonId') {
-        return 'odl-testnet';
+      if (key === 'oslCustomJsonId') {
+        return 'osl-testnet';
       }
       return undefined;
     });
@@ -75,8 +75,8 @@ describe('OslMessagingService', () => {
     ).rejects.toThrow('AGENT_WALLET_SIGNING_MODE=local');
 
     getMock.mockImplementation((key: string) => {
-      if (key === 'odlCustomJsonId') {
-        return 'odl-testnet';
+      if (key === 'oslCustomJsonId') {
+        return 'osl-testnet';
       }
       if (key === 'signingMode') {
         return 'local';
@@ -106,7 +106,18 @@ describe('OslMessagingService', () => {
     expect(service.memoDecrypt({ ciphertext: encrypted.ciphertext })).toBe('hello agent');
   });
 
-  it('buildEncryptedMessageCreate supports ephemeral without memo key', async () => {
+  it('buildChannelCreate uses osl custom_json id', () => {
+    const result = service.buildChannelCreate({
+      kind: 'group',
+      creator: 'alice',
+      channelId: 'grp-test',
+      members: ['bob'],
+    });
+    const op = result.ops[0] as { id: string };
+    expect(op.id).toBe('osl-testnet');
+  });
+
+  it('buildEncryptedMessageCreate uses osl custom_json id and supports ephemeral without memo key', async () => {
     localKeys.isMemoReady.mockReturnValue(false);
     localKeys.getRpcClient.mockReturnValue({
       database: {
@@ -123,7 +134,9 @@ describe('OslMessagingService', () => {
     });
 
     expect(result.opsCount).toBe(1);
-    const parsed = JSON.parse((result.ops[0] as { json: string }).json) as {
+    const op = result.ops[0] as { id: string; json: string };
+    expect(op.id).toBe('osl-testnet');
+    const parsed = JSON.parse(op.json) as {
       events: { payload: { encrypted_body?: string; encryption?: { mode: string } } }[];
     };
     expect(parsed.events[0]?.payload.encrypted_body?.startsWith('#')).toBe(true);
