@@ -76,12 +76,13 @@ Zod: `projectedObjectViewSchema.galleryAlbums` in `feed-story.dto.ts`; Related r
 ### On-chain album detail (`ObjectGalleryTabContent`, `activeAlbumName` set)
 
 - Toolbar: **Back to albums**, **Add new image**.
-- 2-column photo grid with per-image loading skeleton (`GalleryImage`).
+- 2-column photo grid with per-item loading skeleton (`GalleryImage`) or video poster (`VideoPreviewPlayer` when the item URL is YouTube, Vimeo, 3Speak, or DTube).
 - Empty / unknown album: `gallery_list_empty` + back link.
 
 ### Full-screen viewer (`ObjectGalleryViewer`)
 
 - Opened from photo grid on object page layer.
+- Video URLs: poster + inline iframe playback; zoom and **Set as avatar** are hidden for video items.
 - Related album: `isVirtualRelatedAlbum` — hides vote/add controls; shows post author link.
 - On-chain photos (non-avatar, with `update_id`): footer shows validity vote controls plus **Set gallery rank** button → **`GalleryRankModal`** (slider 0–10000, step **100**, default max; Confirm broadcasts `rank_vote`). Read-only **Current rank** shows decisive `rank_score` (winner semantics, not average). Guests are prompted to sign in on trigger click. While rank modal is open, gallery viewer ignores Escape. See [vote-semantics.md](../../../../../../spec/vote-semantics.md) §B.
 - **`imageGalleryItem` update cards** on the object Updates tab use the same **Set gallery rank** button + modal (including items without image preview URLs).

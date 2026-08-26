@@ -7,29 +7,11 @@ import { useEffect, useState } from 'react';
 import {
   getImagePathPost,
   shouldUnoptimizeRemoteImage,
+  VideoPreviewPlayer,
 } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import { useStoryPreviewMediaUrl } from '../hooks/use-story-preview-media-url';
-
-function IconPlaySmall({ className }: { className?: string }) {
-  return (
-    <span
-      className={className}
-      aria-hidden
-    >
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="drop-shadow-[0_1px_2px_var(--color-overlay)]"
-      >
-        <path d="M8 5v14l11-7L8 5z" />
-      </svg>
-    </span>
-  );
-}
 
 export type StoryPreviewTileProps = {
   story: FeedStoryView;
@@ -54,7 +36,6 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
   const previewMediaDisplayUrl = previewMediaUrl
     ? getImagePathPost(previewMediaUrl)
     : null;
-  const showVideoBadge = Boolean(story.videoEmbedUrl ?? story.videoThumbnailUrl);
   const label = tileLabel(story);
   const [previewFailed, setPreviewFailed] = useState(false);
 
@@ -62,7 +43,13 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
     setPreviewFailed(false);
   }, [previewMediaUrl]);
 
-  const inner = (
+  const inner = story.videoEmbedUrl ? (
+    <VideoPreviewPlayer
+      source={story.videoEmbedUrl}
+      staticThumbnailUrl={story.videoThumbnailUrl}
+      variant="tile"
+    />
+  ) : (
     <div className="relative aspect-square w-full overflow-hidden bg-surface-control">
       {previewMediaDisplayUrl && !previewFailed ? (
         <Image
@@ -89,11 +76,6 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
           <span className="max-w-[90%] truncate px-2 text-center">{label}</span>
         </div>
       )}
-      {showVideoBadge ? (
-        <div className="absolute right-1.5 top-1.5 text-accent-fg">
-          <IconPlaySmall className="inline-flex rounded-circle bg-overlay/80 p-1" />
-        </div>
-      ) : null}
     </div>
   );
 

@@ -7,29 +7,30 @@ import { I18nProvider } from '@/i18n/providers/i18n-provider';
 
 import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 
-jest.mock('./gallery-image', () => ({
-  GalleryImage: ({
+jest.mock('./gallery-media-item', () => ({
+  GalleryMediaItem: ({
     src,
-    className,
-    onLoad,
+    imageClassName,
+    onImageLoad,
   }: {
     src: string;
-    className?: string;
-    onLoad?: (event: { currentTarget: HTMLImageElement }) => void;
+    imageClassName?: string;
+    onImageLoad?: (event: { currentTarget: HTMLImageElement }) => void;
   }) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       data-testid="gallery-image"
       src={src}
-      className={className}
+      className={imageClassName}
       alt=""
       onLoad={(event) => {
         Object.defineProperty(event.currentTarget, 'naturalWidth', { value: 600 });
         Object.defineProperty(event.currentTarget, 'naturalHeight', { value: 900 });
-        onLoad?.(event);
+        onImageLoad?.(event);
       }}
     />
   ),
+  isGalleryVideoUrl: () => false,
 }));
 
 import { ObjectGalleryCarousel } from './object-gallery-carousel';

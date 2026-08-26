@@ -43,7 +43,7 @@ import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/
 import type {
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
-import { GalleryImage } from './gallery-image';
+import { GalleryMediaItem, isGalleryVideoUrl } from './gallery-media-item';
 import { GalleryRankTriggerButton } from './gallery-rank-trigger-button';
 
 const MIN_ZOOM = 0.5;
@@ -146,6 +146,7 @@ export function ObjectGalleryViewer({
   const [voteError, setVoteError] = useState<string | null>(null);
   const [addAlbumPending, setAddAlbumPending] = useState<string | null>(null);
   const [rankModalOpen, setRankModalOpen] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const [addAlbumError, setAddAlbumError] = useState<string | null>(null);
   const [optimisticAlbumAdds, setOptimisticAlbumAdds] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -179,6 +180,8 @@ export function ObjectGalleryViewer({
     [currentPhoto, optimisticAlbumAdds],
   );
   const isCurrentPhotoAvatar = currentPhoto?.isAvatar === true;
+  const isCurrentPhotoVideo = currentPhoto ? isGalleryVideoUrl(currentPhoto.url) : false;
+  const canSetAvatarForPhoto = canSetAvatar && !isCurrentPhotoVideo;
 
   const currentStat = currentPhoto
     ? resolveGalleryPhotoApprovalStat(currentPhoto, approvalStats)
@@ -196,7 +199,12 @@ export function ObjectGalleryViewer({
   useEffect(() => {
     setActiveIndex(initialIndex);
     setZoom(1);
+    setVideoPlaying(false);
   }, [initialIndex, album.name]);
+
+  useEffect(() => {
+    setVideoPlaying(false);
+  }, [activeIndex, currentPhoto?.url]);
 
   useEffect(() => {
     setOptimisticAlbumAdds(new Set());
@@ -255,6 +263,7 @@ export function ObjectGalleryViewer({
       return;
     }
     setZoom(1);
+    setVideoPlaying(false);
     setActiveIndex((i) => (i - 1 + count) % count);
   }, [count]);
 
@@ -263,6 +272,7 @@ export function ObjectGalleryViewer({
       return;
     }
     setZoom(1);
+    setVideoPlaying(false);
     setActiveIndex((i) => (i + 1) % count);
   }, [count]);
 
@@ -414,20 +424,24 @@ export function ObjectGalleryViewer({
           {activeIndex + 1} / {count}
         </span>
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
-            aria-label={t('object_gallery_zoom_out')}
-            onClick={zoomOut}
-            disabled={zoom <= MIN_ZOOM}
-          />
-          <button
-            type="button"
-            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
-            aria-label={t('object_gallery_zoom_in')}
-            onClick={zoomIn}
-            disabled={zoom >= MAX_ZOOM}
-          />
+          {!isCurrentPhotoVideo ? (
+            <>
+              <button
+                type="button"
+                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
+                aria-label={t('object_gallery_zoom_out')}
+                onClick={zoomOut}
+                disabled={zoom <= MIN_ZOOM}
+              />
+              <button
+                type="button"
+                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
+                aria-label={t('object_gallery_zoom_in')}
+                onClick={zoomIn}
+                disabled={zoom >= MAX_ZOOM}
+              />
+            </>
+          ) : null}
           <button
             type="button"
             className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
@@ -554,7 +568,7 @@ export function ObjectGalleryViewer({
                     </button>
                   );
                 })}
-                {canSetAvatar ? (
+                {canSetAvatarForPhoto ? (
                   <>
                     <div className="border-t border-border" role="separator" />
                     {isCurrentPhotoAvatar ? (
@@ -596,20 +610,24 @@ export function ObjectGalleryViewer({
           </div>
         </div>
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
-            aria-label={t('object_gallery_zoom_out')}
-            onClick={zoomOut}
-            disabled={zoom <= MIN_ZOOM}
-          />
-          <button
-            type="button"
-            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
-            aria-label={t('object_gallery_zoom_in')}
-            onClick={zoomIn}
-            disabled={zoom >= MAX_ZOOM}
-          />
+          {!isCurrentPhotoVideo ? (
+            <>
+              <button
+                type="button"
+                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
+                aria-label={t('object_gallery_zoom_out')}
+                onClick={zoomOut}
+                disabled={zoom <= MIN_ZOOM}
+              />
+              <button
+                type="button"
+                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
+                aria-label={t('object_gallery_zoom_in')}
+                onClick={zoomIn}
+                disabled={zoom >= MAX_ZOOM}
+              />
+            </>
+          ) : null}
           <button
             type="button"
             className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
@@ -635,16 +653,23 @@ export function ObjectGalleryViewer({
         <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
           <div
             className="relative size-full"
-            style={{
-              transform: `scale(${zoom})`,
-              transition: 'transform 0.15s ease',
-            }}
+            style={
+              isCurrentPhotoVideo
+                ? undefined
+                : {
+                    transform: `scale(${zoom})`,
+                    transition: 'transform 0.15s ease',
+                  }
+            }
           >
-            <GalleryImage
+            <GalleryMediaItem
               src={currentPhoto.url}
-              className="object-contain"
               sizes="100vw"
               priority
+              variant="viewer"
+              imageClassName="object-contain"
+              playing={videoPlaying}
+              onPlayingChange={setVideoPlaying}
             />
           </div>
         </div>

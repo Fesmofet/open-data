@@ -9,7 +9,7 @@ import {
   CONTENT_IMAGE_SKELETON_FRAME_ASPECT,
   resolveContentImageFrameAspect,
 } from '../../domain/resolve-gallery-carousel-aspect-ratio';
-import { GalleryImage } from './gallery-image';
+import { GalleryMediaItem, isGalleryVideoUrl } from './gallery-media-item';
 
 export type ObjectGalleryCarouselProps = {
   photos: ProjectedGalleryPhotoView[];
@@ -17,6 +17,8 @@ export type ObjectGalleryCarouselProps = {
   /** Temporary image override (e.g. option hover preview). Does not change carousel index. */
   previewImageUrl?: string | null;
 };
+
+const VIDEO_FRAME_ASPECT = 16 / 9;
 
 const CAROUSEL_CONTROL_CLASS =
   'inline-flex w-4 shrink-0 items-center justify-center self-center text-display leading-none text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
@@ -52,6 +54,11 @@ export function ObjectGalleryCarousel({
 
   useEffect(() => {
     if (isPreviewActive || !activeUrl) {
+      return;
+    }
+    if (isGalleryVideoUrl(activeUrl)) {
+      setFrameAspect(VIDEO_FRAME_ASPECT);
+      setIsAspectReady(true);
       return;
     }
     const cached = aspectByUrlRef.current.get(activeUrl);
@@ -115,24 +122,27 @@ export function ObjectGalleryCarousel({
     .filter(Boolean)
     .join(' ');
 
-  const imageClassName = [
-    'object-contain',
-    isPreviewActive || isAspectReady ? 'opacity-100' : 'opacity-0',
-  ].join(' ');
+  const isDisplayVideo = displayUrl ? isGalleryVideoUrl(displayUrl) : false;
+  const resolvedAspect = isDisplayVideo ? VIDEO_FRAME_ASPECT : frameAspect;
+  const showMediaReady = isPreviewActive || isAspectReady || isDisplayVideo;
 
   const photoFrame = (
     <div
       className="relative w-full"
-      style={{ aspectRatio: frameAspect }}
+      style={{ aspectRatio: resolvedAspect }}
       data-testid="gallery-carousel-frame"
     >
-      <GalleryImage
+      <GalleryMediaItem
         key={displayUrl}
         src={displayUrl}
-        className={imageClassName}
+        imageClassName={[
+          'object-contain',
+          showMediaReady ? 'opacity-100' : 'opacity-0',
+        ].join(' ')}
         sizes="(max-width: 768px) 100vw, 320px"
         priority={!isPreviewActive && activeIndex === 0}
-        onLoad={handleImageLoad(displayUrl, isPreviewActive)}
+        previewOnly
+        onImageLoad={handleImageLoad(displayUrl, isPreviewActive)}
       />
     </div>
   );

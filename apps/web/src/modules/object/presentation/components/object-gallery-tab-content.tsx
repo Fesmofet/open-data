@@ -19,7 +19,7 @@ import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 import type { RelatedAlbumPreviewView } from '../../domain/related-album.types';
 import { fetchObjectRelatedAlbumPreviewAction } from '../../infrastructure/object-related-album.actions';
 import { GalleryAlbumCardSkeleton } from './gallery-skeletons';
-import { GalleryImage } from './gallery-image';
+import { GalleryMediaItem } from './gallery-media-item';
 
 export type ObjectGalleryTabContentProps = {
   objectId: string;
@@ -198,9 +198,10 @@ export function ObjectGalleryTabContent({
                     className="relative aspect-square overflow-hidden rounded-btn border border-border bg-surface/60 hover:border-accent/40"
                     onClick={() => onOpenPhoto?.(album, index)}
                   >
-                    <GalleryImage
+                    <GalleryMediaItem
                       src={photo.url}
                       sizes="(max-width: 768px) 50vw, 320px"
+                      previewOnly
                     />
                   </button>
                 ))}
@@ -254,10 +255,11 @@ export function ObjectGalleryTabContent({
             >
               <div className="relative aspect-square w-full bg-surface">
                 {cover ? (
-                  <GalleryImage
+                  <GalleryMediaItem
                     src={cover}
                     sizes="(max-width: 768px) 50vw, 200px"
-                    className="object-cover transition group-hover:opacity-95"
+                    imageClassName="object-cover transition group-hover:opacity-95"
+                    previewOnly
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-caption text-muted">
@@ -280,9 +282,10 @@ export function ObjectGalleryTabContent({
           >
             <div className="relative aspect-square w-full bg-surface">
               {relatedCoverUrl ? (
-                <GalleryImage
+                <GalleryMediaItem
                   src={relatedCoverUrl}
                   sizes="(max-width: 768px) 50vw, 200px"
+                  previewOnly
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-caption text-muted">

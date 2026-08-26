@@ -68,6 +68,13 @@ export type { ProfileSectionTabSize } from './components/profile-section-tab-cla
 export { PlaceholderSlot } from './components/placeholder-slot';
 export { ShellModeSwitcher } from './components/shell-mode-switcher';
 export { ThemeSwitcher } from './components/theme-switcher';
+export {
+  VideoPreviewPlayer,
+  parseVideoUrl,
+  type ParsedVideoPreview,
+} from './components/video-preview-player';
+export type { VideoPreviewPlayerProps } from './components/video-preview-player';
+export { useVideoPreviewThumbnail } from './hooks/use-video-preview-thumbnail';
 
 export * from './navigation';
 export * from './layout';
