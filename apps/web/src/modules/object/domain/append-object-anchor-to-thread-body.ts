@@ -1,8 +1,30 @@
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
+/** Leo `extractHashtags` only captures `#([\w-]+)` — ids with `.` need `/object/` fallback. */
+const HASHTAG_SAFE_OBJECT_ID = /^[\w-]+$/;
+
+function buildObjectAnchorSuffix(objectId: string): string {
+  if (HASHTAG_SAFE_OBJECT_ID.test(objectId)) {
+    return `#${objectId}`;
+  }
+  return objectPagePath(objectId);
+}
+
+function bodyAlreadyAnchorsObject(body: string, objectId: string): boolean {
+  const lowerBody = body.toLowerCase();
+  const lowerId = objectId.toLowerCase();
+
+  return (
+    lowerBody.includes(`#${lowerId}`) ||
+    lowerBody.includes(objectPagePath(objectId).toLowerCase()) ||
+    lowerBody.includes(`/object/${lowerId}`)
+  );
+}
+
 /**
- * Appends the page object path so chain-indexer {@link extractHashtags} picks up the object id.
- * Skips when the body already references the object path or id token.
+ * Appends an object anchor so chain-indexer {@link extractHashtags} indexes the object id.
+ * Prefers `#object_id` for word-safe ids; falls back to `/object/{id}` when the id contains `.`.
+ * Skips when the body already references the object.
  */
 export function appendObjectAnchorToThreadBody(
   body: string,
@@ -14,18 +36,14 @@ export function appendObjectAnchorToThreadBody(
     return trimmed;
   }
 
-  const objectPath = objectPagePath(id);
-  const lowerBody = trimmed.toLowerCase();
-  const lowerPath = objectPath.toLowerCase();
-  const lowerId = id.toLowerCase();
-
-  if (lowerBody.includes(lowerPath) || lowerBody.includes(`/object/${lowerId}`)) {
+  if (bodyAlreadyAnchorsObject(trimmed, id)) {
     return trimmed;
   }
 
+  const anchor = buildObjectAnchorSuffix(id);
   if (trimmed === '') {
-    return objectPath;
+    return anchor;
   }
 
-  return `${trimmed}\n\n${objectPath}`;
+  return `${trimmed}\n\n${anchor}`;
 }

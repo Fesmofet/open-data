@@ -34,6 +34,7 @@ related:
 | Restaurant + full menu | [restaurant-menu-workflow.md](restaurant-menu-workflow.md) |
 | Post about a created object | [companion-post-workflow.md](companion-post-workflow.md) → [hive-post-create.md](hive-post-create.md) |
 | Publish Hive root post | [hive-post-create.md](hive-post-create.md) |
+| Write object thread (Reviews > Threads) | [hive-thread-create.md](hive-thread-create.md) |
 | Common dedupe, locales, images, broadcast | [object-content-standards.md](object-content-standards.md) |
 | Payload shape / Zod schema | `get_object_type` + `get_update_schema` |
 | Sign and broadcast | [hive-blockchain-broadcast.md](hive-blockchain-broadcast.md) |

@@ -39,6 +39,7 @@ Shared **HOW** rules for agent object creation. Type-specific playbooks live in 
 ## Hive posts
 
 - Root posts (articles, recipe walkthroughs, companion posts): [hive-post-create.md](hive-post-create.md) + agent-wallet `hive_build_post`.
+- Object Reviews threads (Leo): [hive-thread-create.md](hive-thread-create.md) — single `comment` op, body `#object_id` anchor, no `hive_build_post`.
 - Include at least one WAIV-eligible tag when WAIV potential matters; do not default beneficiaries.
 - Broadcast via `wallet_broadcast` / `has_broadcast` only after user approval.
 

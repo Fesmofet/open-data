@@ -42,7 +42,7 @@ Shell: [`ObjectPrimaryContent`](../../../../../apps/web/src/modules/object/prese
 - **UI:** [`ObjectThreadComposeBar`](../../../../../apps/web/src/modules/object/presentation/components/object-thread-compose-bar.tsx):
   - Non-removable **Posting in:** chip ([`ObjectThreadAnchorChip`](../../../../../apps/web/src/modules/object/presentation/components/object-thread-anchor-chip.tsx)) — discover-style pill + object name (no thumbnail).
   - Inline [`CompactComposeEditor`](../../../../../apps/web/src/modules/editor/presentation/components/compact-compose-editor.tsx) with placeholder `object_thread_compose_placeholder`.
-- **Anchor object:** Not shown inside the editor. On send, [`appendObjectAnchorToThreadBody`](../../../../../apps/web/src/modules/object/domain/append-object-anchor-to-thread-body.ts) appends `/object/{objectId}` to the broadcast body so chain-indexer `extractHashtags` indexes the object.
+- **Anchor object:** Not shown inside the editor. On send, [`appendObjectAnchorToThreadBody`](../../../../../apps/web/src/modules/object/domain/append-object-anchor-to-thread-body.ts) appends `#objectId` to the broadcast body (or `/object/{objectId}` when the id contains `.`) so chain-indexer `extractHashtags` indexes the object.
 - **Broadcast:** Hive `comment` with `parent_author = leothreads`; parent permlink from server action [`resolveLeoThreadParentAction`](../../../../../apps/web/src/modules/object/infrastructure/actions/resolve-leo-thread-parent.action.ts) (Hive `get_discussions_by_blog`). After broadcast: `awaitTrxConfirmation` → `revalidateObjectAfterBroadcast`.
 - **Empty feed:** No “Threads” heading — `empty_threads` message below compose.
 

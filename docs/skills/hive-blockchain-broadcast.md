@@ -236,6 +236,13 @@ For publishing a **root post** (`comment` + `comment_options` in one tx), use th
 
 Do **not** default beneficiaries (e.g. `waivio` 3%) — that is web UI behavior only.
 
+### Leo object threads (agents)
+
+For a **Leo thread** on an object (Reviews > Threads), use the dedicated playbook — single `comment` op, no `comment_options`, no `hive_build_post`:
+
+- Skill: [hive-thread-create.md](hive-thread-create.md) — resolve `leothreads` parent, append `#object_id` (or `/object/{id}` for dotted ids) to body
+- MCP: **`wallet_broadcast`** / **`has_broadcast`** only (agent-wallet has no thread builder and no Hive RPC)
+
 ### `object_create` (not a separate builder in hive-broadcast)
 
 New objects need **`object_create`** plus one or more **`update_create`** events:

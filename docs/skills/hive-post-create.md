@@ -9,6 +9,7 @@ related:
   - docs/skills/hive-blockchain-broadcast.md
   - docs/skills/hive-has-agent-wallet.md
   - docs/skills/companion-post-workflow.md
+  - docs/skills/hive-thread-create.md
   - docs/spec/data-model/post-json-metadata-objects.md
   - docs/apps/chain-indexer/spec/waiv-post-reward.md
 ---
@@ -27,6 +28,7 @@ Playbook for publishing a **root Hive post** (article, recipe walkthrough, revie
 
 - ODL object create/update — [hive-blockchain-broadcast.md](hive-blockchain-broadcast.md) + `odl_build_*`.
 - Reply to an existing post — different `parent_author` / `parent_permlink` (not covered by `hive_build_post`).
+- Leo thread on an object (Reviews > Threads) — [hive-thread-create.md](hive-thread-create.md) (single `comment` op, no `hive_build_post`).
 - Read-only post lookup — query-api MCP.
 
 ## Two ops in one transaction
