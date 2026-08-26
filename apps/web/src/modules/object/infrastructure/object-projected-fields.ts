@@ -336,6 +336,7 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
     typeof rawCount === 'number' && Number.isFinite(rawCount) ? rawCount : undefined;
   const weight = toFiniteNumber(row['weight']);
   const addedAtUnix = toFiniteNumber(row['addedAtUnix']);
+  const listItemUpdateId = readString(row['update_id']) ?? undefined;
   return {
     objectId: object_id,
     objectType: object_type,
@@ -343,6 +344,7 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
     imageUrl: imageFromFields ?? null,
     weight,
     ...(addedAtUnix !== null ? { addedAtUnix } : {}),
+    ...(listItemUpdateId ? { listItemUpdateId } : {}),
     ...(listItemsCount !== undefined ? { listItemsCount } : {}),
     ...(descriptionFromFields ? { description: descriptionFromFields } : {}),
     ...(priceFromFields ? { price: priceFromFields } : {}),
@@ -444,7 +446,7 @@ function compareListItemsByAddedAtDesc(a: ProjectedListItem, b: ProjectedListIte
   return a.name.localeCompare(b.name);
 }
 
-function sortListItemsByCatalogType(
+export function sortListItemsByCatalogType(
   items: ProjectedListItem[],
   sortType: CatalogListSortType,
 ): ProjectedListItem[] {
@@ -677,6 +679,9 @@ export function resolveMenuItemsForView(
   );
   if (fromMenuItem.length > 0) {
     return fromMenuItem;
+  }
+  if (viewLike.object_type === 'list') {
+    return [];
   }
   const listOrdered = applySortCustomToListItems(
     projectedListItems(viewLike),

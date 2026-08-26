@@ -17,6 +17,8 @@ export interface RefSummary {
   listItemsCount?: number;
   /** True when viewer has favorited this ref target. */
   isFavorited?: boolean;
+  /** Parent `listItem` update id — used for catalog reject votes. */
+  update_id?: string;
 }
 
 export interface ProjectedObjectSeo {

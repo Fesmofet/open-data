@@ -204,6 +204,46 @@ describe('projectObjectCore listItem', () => {
     const listItem = core.fields.listItem as RefSummary[];
     expect(listItem.map((s) => s.object_id)).toEqual(['child-a', 'child-b']);
     expect(listItem.map((s) => s.addedAtUnix)).toEqual([100, 200]);
+    expect(listItem.map((s) => s.update_id)).toEqual(['upd-1', 'upd-1']);
+  });
+
+  it('embeds update_id from listItem updates for catalog reject', () => {
+    const refMap = new Map<string, RefSummary>([
+      [
+        'child-a',
+        {
+          object_id: 'child-a',
+          object_type: 'page',
+          fields: { name: 'A' },
+          weight: 1,
+        },
+      ],
+    ]);
+
+    const view = baseView({
+      listItem: {
+        update_type: UPDATE_TYPES.LIST_ITEM,
+        cardinality: 'multi',
+        values: [
+          resolvedUpdate({
+            update_id: 'list-item-upd-42',
+            update_type: UPDATE_TYPES.LIST_ITEM,
+            value_text: 'child-a',
+            created_at_unix: 100,
+          }),
+        ],
+      },
+    });
+
+    const core = projectObjectCore({
+      view,
+      contentBaseUrl: 'https://example.com',
+      refSummariesById: refMap,
+      rankVoteProjection: emptyRankVoteProjection(),
+    });
+
+    const listItem = core.fields.listItem as RefSummary[];
+    expect(listItem[0]?.update_id).toBe('list-item-upd-42');
   });
 
   it('deduplicates multi listItem refs to the same target id (first wins)', () => {

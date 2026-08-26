@@ -22,9 +22,11 @@ import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 import { resolveNestedObjectContentAction } from '../../application/actions/resolve-nested-object-content.action';
 import { resolveNestedObjectPathAction } from '../../application/actions/resolve-nested-object-path.action';
 import {
+  buildObjectListPath,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from '../../domain/object-page-url.constants';
+import { LIST_PRIMARY_TAB_SEGMENT } from '../../domain/list.constants';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '../../domain/widget.constants';
 import { parseViewPathFromUrlSearchParams } from '../../domain/object-page-path';
 import {
@@ -192,6 +194,7 @@ export type ObjectPrimaryContentProps = {
   objectTypeKey?: string;
   relatedAlbumPreview?: RelatedAlbumPreviewView | null;
   relatedAlbumInitialPage?: RelatedAlbumListView | null;
+  isEditMode?: boolean;
 };
 
 export function ObjectPrimaryContent({
@@ -237,6 +240,7 @@ export function ObjectPrimaryContent({
   objectTypeKey = '',
   relatedAlbumPreview = null,
   relatedAlbumInitialPage = null,
+  isEditMode = false,
 }: ObjectPrimaryContentProps) {
   const { navigateInstant } = useInstantNavigation();
   const searchParams = useSearchParams();
@@ -257,6 +261,8 @@ export function ObjectPrimaryContent({
     setNestedStack(initialNestedStack.map(resolvedToEntry));
   }, [objectId, initialPathKey, initialNestedStack]);
 
+  const listHostCatalog = objectTypeKey === 'list';
+
   const syncPathToUrl = useCallback(
     (stack: ObjectNestedViewEntry[], mode: 'push' | 'replace' = 'push') => {
       skipUrlSyncRef.current = true;
@@ -267,11 +273,13 @@ export function ObjectPrimaryContent({
         u.set(OBJECT_PAGE_VIEW_PATH_PARAM, stack.map((e) => e.objectId).join(','));
       }
       const qs = u.toString();
-      const base = `/object/${encodeURIComponent(objectId)}`;
+      const base = listHostCatalog
+        ? buildObjectListPath(objectId)
+        : `/object/${encodeURIComponent(objectId)}`;
       const href = qs ? `${base}?${qs}` : base;
       navigateInstant({ href, method: mode, scroll: false });
     },
-    [navigateInstant, objectId, searchParams],
+    [listHostCatalog, navigateInstant, objectId, searchParams],
   );
 
   type NestedStackUrlMode = 'push' | 'replace';
@@ -468,6 +476,7 @@ export function ObjectPrimaryContent({
         return (
           <ObjectListContent
             items={[]}
+            catalogObjectId={currentView.viewKey}
             onNavigateInColumn={navigateInColumn}
             pending
             sortCustom={currentView.listItemsSortCustom}
@@ -475,6 +484,7 @@ export function ObjectPrimaryContent({
             onSortChange={setActiveSortType}
             viewerUsername={viewerUsername}
             onRequireLogin={onRequireLogin}
+            isEditMode={isEditMode}
           />
         );
       }
@@ -489,12 +499,14 @@ export function ObjectPrimaryContent({
       return (
         <ObjectListContent
           items={sortedListItems}
+          catalogObjectId={currentView.viewKey}
           onNavigateInColumn={navigateInColumn}
           sortCustom={currentView.listItemsSortCustom}
           activeSortType={activeSortType}
           onSortChange={setActiveSortType}
           viewerUsername={viewerUsername}
           onRequireLogin={onRequireLogin}
+          isEditMode={isEditMode}
         />
       );
     }
@@ -556,6 +568,7 @@ export function ObjectPrimaryContent({
     onRequireLogin,
     onOpenGalleryPhoto,
     activePrimarySegment,
+    isEditMode,
   ]);
 
   if (activePrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
@@ -585,6 +598,23 @@ export function ObjectPrimaryContent({
     return (
       <FeedColumn>
         <ObjectWidgetContent config={widgetConfig} />
+      </FeedColumn>
+    );
+  }
+
+  if (activePrimarySegment === LIST_PRIMARY_TAB_SEGMENT) {
+    return (
+      <FeedColumn>
+        {title ? (
+          <ObjectCenterBreadcrumbs
+            key="center-breadcrumbs"
+            rootObjectId={objectId}
+            rootName={title}
+            stack={nestedStack.map((e) => ({ objectId: e.objectId, name: e.name }))}
+            onNavigateTo={navigateToDepth}
+          />
+        ) : null}
+        {renderTypeContent()}
       </FeedColumn>
     );
   }

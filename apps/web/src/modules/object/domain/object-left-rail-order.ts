@@ -17,6 +17,12 @@ export type OptionsObjectType = (typeof OPTIONS_OBJECT_TYPES)[number];
 
 export const BOOK_OBJECT_TYPE = 'book' as const;
 
+export const LIST_OBJECT_TYPE = 'list' as const;
+
+export function isListObjectType(objectType: string): boolean {
+  return objectType.trim() === LIST_OBJECT_TYPE;
+}
+
 export function isOptionsObjectType(objectType: string): boolean {
   const normalized = objectType.trim();
   return (OPTIONS_OBJECT_TYPES as readonly string[]).includes(normalized);
@@ -120,8 +126,39 @@ export const EDIT_MODE_LEFT_RAIL_BLOCK_ORDER = [
   ...ABOUT_SECTION_BLOCK_ORDER,
 ] as const;
 
+/** List-type edit slots: sorting first, promotion in about cluster, pin/remove after gallery. */
+export const LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER = [
+  ...HEADER_BLOCK_ORDER,
+  'sortCustom',
+  'image',
+  'imageBackground',
+  'status',
+  'parent',
+  'description',
+  'promotion',
+  'tags',
+  'gallery',
+  'pin',
+  'remove',
+  'category',
+  'rating',
+  'workHours',
+  'address',
+  'geo',
+  'websites',
+  'link',
+  'phones',
+  'email',
+  'walletAddress',
+  'identifier',
+  'delegation',
+] as const;
+
+export type ListEditModeLeftRailBlockId = (typeof LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER)[number];
+
 export type EditModeLeftRailBlockId =
   | (typeof EDIT_MODE_LEFT_RAIL_BLOCK_ORDER)[number]
+  | ListEditModeLeftRailBlockId
   | BookAboutSectionBlockId
   | NavigateSectionBlockId
   | 'parent'
@@ -161,6 +198,10 @@ export function bookTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
 export function resolveEditModeLeftRailBlockOrder(
   objectType: string,
 ): readonly EditModeLeftRailBlockId[] {
+  if (isListObjectType(objectType)) {
+    return LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER;
+  }
+
   if (!isOptionsObjectType(objectType)) {
     return EDIT_MODE_LEFT_RAIL_BLOCK_ORDER;
   }

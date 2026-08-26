@@ -32,6 +32,7 @@ import {
   OBJECT_LEFT_RAIL_BLOCK_LABEL,
 } from '../domain/object-update-labels';
 import { shouldShowPermanentlyClosedLocationNotice } from '../domain/object-status-label';
+import { LIST_PRIMARY_TAB_SEGMENT } from '../domain/list.constants';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '../domain/widget.constants';
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
@@ -156,6 +157,10 @@ function buildPrimaryTabs(input: {
 
   if (input.objectTypeKey === 'widget') {
     return [{ segment: WIDGET_PRIMARY_TAB_SEGMENT, label: 'Widget' }, ...base];
+  }
+
+  if (input.objectTypeKey === 'list') {
+    return [{ segment: LIST_PRIMARY_TAB_SEGMENT, label: 'List' }, ...base];
   }
 
   return base;

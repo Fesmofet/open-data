@@ -28,6 +28,10 @@ import type {
   ObjectRefItem,
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
+import type {
+  ProjectedListItem,
+  ProjectedSortCustom,
+} from '../../domain/projected-list-item.types';
 import type { TagApprovalStatsIndex } from '../../domain/tag-approval-stats';
 
 import { ExternalLinkButton } from './external-link-modal';
@@ -63,6 +67,10 @@ export type ObjectLeftRailEditContext = {
   onChainGalleryAlbumNames: readonly string[];
   /** Per-type update row counts from object resolve. */
   updateTypeCounts: Record<string, number>;
+  /** List catalog rows for `sortCustom` editor on list hosts. */
+  listCatalogItems?: readonly ProjectedListItem[];
+  /** Existing `sortCustom` on the list host. */
+  listSortCustom?: ProjectedSortCustom | null;
   /** Opens the updates feed filtered to the given left-rail block. */
   onViewFieldUpdates?: (kind: ObjectLeftRailBlockKind) => void;
 };
@@ -446,6 +454,8 @@ export function ObjectLeftRailPanel({
           galleryAlbumNames={editContext.galleryAlbumNames}
           onChainGalleryAlbumNames={editContext.onChainGalleryAlbumNames}
           updateTypeCounts={editContext.updateTypeCounts}
+          listCatalogItems={editContext.listCatalogItems}
+          listSortCustom={editContext.listSortCustom}
         />
       ) : null}
       {displayBlocks.map((block, index) => {
@@ -994,6 +1004,16 @@ export function ObjectLeftRailPanel({
                     ) : undefined
                   }
                 />
+              </div>
+            );
+          case 'sortCustom':
+          case 'promotion':
+          case 'pin':
+          case 'remove':
+          case 'delegation':
+            return (
+              <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
               </div>
             );
           default: {

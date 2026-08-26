@@ -149,6 +149,8 @@ export type ObjectCardProps = {
   hideAdministrativeHeart?: boolean;
   /** Post editor: toggle + slider column on the right. */
   trailing?: ReactNode;
+  /** Rendered inline after the title (e.g. catalog reject in edit mode). */
+  titleSuffix?: ReactNode;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   /** Fired after administrative heart toggle succeeds (e.g. profile map refetch). */
@@ -170,6 +172,7 @@ export function ObjectCard({
   layout = 'default',
   hideAdministrativeHeart = false,
   trailing,
+  titleSuffix,
   onMouseEnter,
   onMouseLeave,
   onAdministrativeAuthorityChange,
@@ -312,24 +315,27 @@ export function ObjectCard({
           {brandOrParentLabel ? (
             <p className="text-caption text-fg-secondary">{brandOrParentLabel}</p>
           ) : null}
-          <CardNavTarget
-            href={href}
-            linkReplace={linkReplace}
-            onNavigate={onNavigate}
-            onPendingChange={onNavPendingChange}
-            className={[
-              'max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-              stackedMobile
-                ? 'line-clamp-2 sm:line-clamp-none'
-                : catalog
-                  ? 'line-clamp-2'
-                  : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            {titleLabel}
-          </CardNavTarget>
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1">
+            <CardNavTarget
+              href={href}
+              linkReplace={linkReplace}
+              onNavigate={onNavigate}
+              onPendingChange={onNavPendingChange}
+              className={[
+                'max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                stackedMobile
+                  ? 'line-clamp-2 sm:line-clamp-none'
+                  : catalog
+                    ? 'line-clamp-2'
+                    : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {titleLabel}
+            </CardNavTarget>
+            {titleSuffix}
+          </div>
           {subtitle ? (
             <p
               className={[

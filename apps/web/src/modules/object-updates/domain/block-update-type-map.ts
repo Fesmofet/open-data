@@ -51,6 +51,11 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   walletAddress: [UPDATE_TYPES.WALLET_ADDRESS],
   identifier: [UPDATE_TYPES.IDENTIFIER],
   link: [UPDATE_TYPES.LINK],
+  sortCustom: [UPDATE_TYPES.SORT_CUSTOM],
+  promotion: [UPDATE_TYPES.PROMOTION],
+  pin: [UPDATE_TYPES.PIN],
+  remove: [UPDATE_TYPES.REMOVE],
+  delegation: [UPDATE_TYPES.DELEGATION],
 };
 
 export function getUpdateTypesForBlockKind(

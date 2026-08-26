@@ -118,6 +118,7 @@ export function ObjectPageTabPane({
     onOpenGalleryAlbum,
     onBackToGalleryAlbums,
     onOpenGalleryPhoto,
+    isEditMode,
   } = useObjectPageShell();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -407,7 +408,8 @@ export function ObjectPageTabPane({
     viewerUsername,
   ]);
 
-  const menuRootName = defaultNestedContent?.name ?? null;
+  const menuRootName =
+    model.objectTypeKey === 'list' ? model.title : (defaultNestedContent?.name ?? null);
 
   const hostPageContent = useMemo(
     () => resolveHostPageContent(model),
@@ -463,6 +465,7 @@ export function ObjectPageTabPane({
       objectTypeKey={model.objectTypeKey}
       relatedAlbumPreview={relatedAlbumPreview}
       relatedAlbumInitialPage={relatedAlbumInitialPage}
+      isEditMode={isEditMode}
     />
   );
 }

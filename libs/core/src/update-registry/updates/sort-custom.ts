@@ -12,5 +12,8 @@ export const UPDATE_SORT_CUSTOM: UpdateDefinition = {
   schema: z.object({
     include: z.array(z.string()),
     exclude: z.array(z.string()),
+    sortType: z
+      .enum(['custom', 'recency', 'reverse_recency', 'by-name-asc', 'by-name-desc'])
+      .optional(),
   }),
 };

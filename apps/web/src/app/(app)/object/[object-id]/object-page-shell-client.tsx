@@ -489,6 +489,8 @@ export function ObjectPageShellClient({
           galleryAlbumNames: galleryAlbumPickerNames(model.onChainGalleryAlbumNames),
           onChainGalleryAlbumNames: model.onChainGalleryAlbumNames,
           updateTypeCounts: model.updateTypeCounts,
+          listCatalogItems: model.listItems,
+          listSortCustom: model.listItemsSortCustom,
           onViewFieldUpdates,
         }
       : undefined;
@@ -547,6 +549,7 @@ export function ObjectPageShellClient({
       activePrimarySegment,
       activeGalleryAlbum,
       activeCategoryName,
+      isEditMode,
       onOwnershipSubSelect,
       onFollowersSubSelect,
       onOpenGalleryAlbum,
@@ -558,6 +561,7 @@ export function ObjectPageShellClient({
       activeCategoryName,
       activeGalleryAlbum,
       activePrimarySegment,
+      isEditMode,
       isNavigating,
       onOwnershipSubSelect,
       onFollowersSubSelect,

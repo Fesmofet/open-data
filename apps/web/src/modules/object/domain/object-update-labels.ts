@@ -53,7 +53,11 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
   walletAddress: 'Wallet',
   identifier: 'Identifier',
   menuItem: 'Menu',
-  sortCustom: 'Sort',
+  sortCustom: 'List sorting',
+  promotion: 'Promotion',
+  pin: 'Pin',
+  remove: 'Remove',
+  delegation: 'Delegation',
   pageContent: 'Page content',
   legalText: 'Legal text',
 };
@@ -102,6 +106,11 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   email: 'Email',
   walletAddress: 'Wallet',
   identifier: 'Identifier',
+  sortCustom: 'List sorting',
+  promotion: 'Promotion',
+  pin: 'Pin',
+  remove: 'Remove',
+  delegation: 'Delegation',
 };
 
 export function labelForUpdateType(updateType: string): string {

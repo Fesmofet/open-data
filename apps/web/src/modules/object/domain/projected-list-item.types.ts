@@ -24,6 +24,8 @@ export type ProjectedListItem = {
   brandRef?: ProjectedListItemRef | null;
   /** Compact parent ref from projected `parent` update. */
   parentRef?: ProjectedListItemRef | null;
+  /** Parent `listItem` update id — used for catalog reject votes. */
+  listItemUpdateId?: string;
 };
 
 /** Nested object_ref row on a list-item ref summary. */

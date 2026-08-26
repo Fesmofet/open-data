@@ -28,9 +28,10 @@ Covers all navigation behaviour on the object detail page (`/object/[object-id]`
 
 | Visible URL | Meaning | Active tab |
 |---|---|---|
-| `/object/:id` | Default landing (see §4) — host content, SSR nested menu, or Reviews | none, or Reviews when `primaryTab: reviews`; **Widget** when `object_type: widget` |
+| `/object/:id` | Default landing (see §4) — host content, SSR nested menu, or Reviews | none, or Reviews when `primaryTab: reviews`; **Widget** when `object_type: widget`; **List** when `object_type: list` |
 | `/object/:id?path=a,b` | User navigated nested stack `[a, b]` (not default SSR nested) | none |
 | `/object/:id/widget` | Widget embed (widget host objects) | Widget |
+| `/object/:id/list` | List catalog (list host objects) | List |
 | `/object/:id/reviews` | Reviews tab | Reviews |
 | `/object/:id/updates` | Updates feed | Updates |
 | `/object/:id/followers` | Followers list | Followers |
@@ -82,6 +83,7 @@ Implemented in `onPrimarySelect` in `apps/web/src/app/(app)/object/[object-id]/o
 | `gallery` | `replace` | `/object/:id/gallery` | `?tab=`, `?sub=`, `sort`, `update_type`, `locale` |
 | `experts` | `replace` | `/object/:id/experts` | `?tab=`, `?sub=`, `sort`, `update_type`, `locale` |
 | `widget` | `replace` | `/object/:id/widget` | `?tab=`, `?sub=`, `?path=`, `sort`, `update_type`, `locale` |
+| `list` | `replace` | `/object/:id/list` | `?tab=`, `?sub=`, `?path=`, `sort`, `update_type`, `locale` |
 | Other | `replace` | `/object/:id?tab=<seg>` | `?tab=`, `?sub=`, `sort`, `update_type`, `locale` |
 
 **History note:** `reviews` uses `router.push` so the menu landing remains reachable via browser back. All other tabs use `router.replace` (they do not add a history entry).
@@ -98,6 +100,7 @@ activePrimarySegment === ''   → Menu landing: shows defaultNestedContent or ro
 activePrimarySegment === 'reviews' → Reviews column (Write-review prompt + sub-nav for `default` type)
                                      No defaultNestedContent injected
 activePrimarySegment === 'widget'  → Widget embed (`ObjectWidgetContent`) for widget host objects
+activePrimarySegment === 'list'      → List catalog (`ObjectListContent`) with breadcrumbs + nested drill
 activePrimarySegment === 'updates|followers|ownership|…' → Respective feed/list injected
 ```
 
@@ -263,7 +266,7 @@ Menu order follows `sortCustom.include`, then remaining `menuItem` rows (`sortLi
 | Business landing with nested menu | Processor URL `/menu#target`; UI sometimes showed Reviews on bare URL | `nestedInHost` + clean URL + menu landing tab state |
 | Business landing with no menu | Reviews tab + posts feed | `primaryTab: reviews` on clean URL |
 | Nested menu in host | `#hash` on `/menu`, `/page`, … | `?path=` stack when user navigates; default nested uses SSR only (clean URL) |
-| List host landing tab | List tab active | No type-specific tab yet (center shows list items) |
+| List host landing tab | List tab active | **List** tab prepended before Reviews; default landing `primaryTab: list`; center catalog only (no left-rail listItem menu fallback) |
 | Widget host landing tab | Widget tab active | **Widget** tab prepended before Reviews; default landing `primaryTab: widget` |
 | `blog` / `newsFilter` default | Dedicated routes | `routeStub` → reviews fallback until routes exist |
 

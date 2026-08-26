@@ -99,6 +99,8 @@ export function ObjectCenterBreadcrumbs({
       {/* External link icon — points to deepest item, or root when stack is empty */}
       <Link
         href={iconTargetHref}
+        target="_blank"
+        rel="noopener noreferrer"
         className="ml-1 inline-flex size-6 shrink-0 items-center justify-center rounded-btn border border-border text-fg-tertiary hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         title={iconTargetName}
         aria-label={`${t('object_detail_view')} ${iconTargetName}`}

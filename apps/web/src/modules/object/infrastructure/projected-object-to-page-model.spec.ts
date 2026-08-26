@@ -700,6 +700,23 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     expect(model.primaryTabs.some((tab) => tab.segment === 'widget')).toBe(false);
     expect(model.widgetConfig).toBeNull();
   });
+
+  it('prepends List tab for list object type', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'list-1',
+      object_type: 'list',
+      semantic_type: null,
+      weight: 1,
+      fields: { name: 'My List' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.primaryTabs[0]).toEqual({ segment: 'list', label: 'List' });
+    expect(model.primaryTabs[1]?.segment).toBe('reviews');
+  });
 });
 
 describe('projectedObjectWithCountsToPageModel closed venue status block', () => {

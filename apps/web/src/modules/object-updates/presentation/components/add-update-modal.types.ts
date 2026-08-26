@@ -1,3 +1,8 @@
+import type {
+  ProjectedListItem,
+  ProjectedSortCustom,
+} from '@/modules/object/domain/projected-list-item.types';
+
 /** How the add-update modal was opened (controls chrome and type picker). */
 export type AddUpdateModalMode = 'leftRail' | 'generic' | 'feedAdd';
 
@@ -13,6 +18,10 @@ export type AddUpdateModalBaseProps = {
   onChainGalleryAlbumNames?: readonly string[];
   /** Per-type update row counts from object resolve (for type picker labels). */
   updateTypeCounts?: Record<string, number>;
+  /** List catalog rows for `sortCustom` editor on list hosts. */
+  listCatalogItems?: readonly ProjectedListItem[];
+  /** Existing `sortCustom` on the list host. */
+  listSortCustom?: ProjectedSortCustom | null;
 };
 
 /** Opened from a left-rail block `+` — read-only “I suggest adding field” shows the update type. */

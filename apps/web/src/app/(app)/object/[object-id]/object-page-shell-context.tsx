@@ -12,6 +12,7 @@ export type ObjectPageShellContextValue = {
   activePrimarySegment: string;
   activeGalleryAlbum: string | null;
   activeCategoryName: string | null;
+  isEditMode: boolean;
   onOwnershipSubSelect: (sub: OwnershipSubType) => void;
   onFollowersSubSelect: (sub: FollowersSubType) => void;
   onOpenGalleryAlbum: (albumName: string) => void;

@@ -39,6 +39,8 @@ import { TelephoneForm } from './telephone-form';
 import { ProductWeightForm } from './product-weight-form';
 import { ProductSizeForm } from './product-size-form';
 import { WalletAddressForm } from './wallet-address-form';
+import { ListSortCustomForm } from './list-sort-custom-form';
+import type { ProjectedListItem } from '@/modules/object/domain/projected-list-item.types';
 
 export type UpdateValueFormProps = {
   updateType: string;
@@ -57,6 +59,8 @@ export type UpdateValueFormProps = {
   autoFocusTagValue?: boolean;
   /** Other rows' ref values to exclude from user/object search (same update type). */
   excludedRefValues?: readonly string[];
+  /** List catalog rows for `sortCustom` editor on list hosts. */
+  listCatalogItems?: readonly ProjectedListItem[];
 };
 
 export function UpdateValueForm({
@@ -70,6 +74,7 @@ export function UpdateValueForm({
   hideUpdateTypeHeading = false,
   autoFocusTagValue = false,
   excludedRefValues = [],
+  listCatalogItems = [],
 }: UpdateValueFormProps) {
   const definition = UPDATE_REGISTRY[updateType];
 
@@ -100,6 +105,7 @@ export function UpdateValueForm({
       hideUpdateTypeHeading={hideUpdateTypeHeading}
       autoFocusTagValue={autoFocusTagValue}
       excludedRefValues={excludedRefValues}
+      listCatalogItems={listCatalogItems}
     />
   );
 }
@@ -115,6 +121,7 @@ type UpdateValueFieldsProps = {
   hideUpdateTypeHeading: boolean;
   autoFocusTagValue: boolean;
   excludedRefValues: readonly string[];
+  listCatalogItems: readonly ProjectedListItem[];
 };
 
 function UpdateValueFields({
@@ -128,6 +135,7 @@ function UpdateValueFields({
   hideUpdateTypeHeading,
   autoFocusTagValue,
   excludedRefValues,
+  listCatalogItems,
 }: UpdateValueFieldsProps) {
   const { t } = useI18n();
   const label = hideUpdateTypeHeading ? undefined : labelForUpdateType(updateType);
@@ -268,6 +276,17 @@ function UpdateValueFields({
         <StatusUpdateForm
           value={value}
           onChange={onChange}
+          hideLegend={hideUpdateTypeHeading}
+          label={label}
+        />
+      );
+    }
+    if (updateType === UPDATE_TYPES.SORT_CUSTOM && listCatalogItems.length > 0) {
+      return (
+        <ListSortCustomForm
+          value={value}
+          onChange={onChange}
+          listItems={listCatalogItems}
           hideLegend={hideUpdateTypeHeading}
           label={label}
         />

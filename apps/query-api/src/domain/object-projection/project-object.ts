@@ -118,7 +118,7 @@ function projectObjectRefField(
     if (!s) {
       return null;
     }
-    return u ? { ...s, addedAtUnix: u.created_at_unix } : s;
+    return u ? { ...s, addedAtUnix: u.created_at_unix, update_id: u.update_id } : s;
   }
   const summaries: RefSummary[] = [];
   const seenIds = new Set<string>();
@@ -133,6 +133,7 @@ function projectObjectRefField(
       summaries.push({
         ...s,
         addedAtUnix: u.created_at_unix,
+        update_id: u.update_id,
       });
     }
   }

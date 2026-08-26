@@ -118,6 +118,16 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'typicalAgeRange', headingLabel, text: '' };
     case 'printLength':
       return { kind: 'printLength', headingLabel, text: '' };
+    case 'sortCustom':
+      return { kind: 'sortCustom', headingLabel };
+    case 'promotion':
+      return { kind: 'promotion', headingLabel };
+    case 'pin':
+      return { kind: 'pin', headingLabel };
+    case 'remove':
+      return { kind: 'remove', headingLabel };
+    case 'delegation':
+      return { kind: 'delegation', headingLabel };
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;

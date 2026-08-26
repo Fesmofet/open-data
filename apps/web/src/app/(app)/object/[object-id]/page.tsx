@@ -263,6 +263,12 @@ export async function generateMetadata({
         ? messages.object_widget_tab
         : 'Widget';
     title = `${baseTitle} · ${widgetLabel}`;
+  } else if (tab === 'list') {
+    const listLabel =
+      typeof messages.object_list_tab === 'string'
+        ? messages.object_list_tab
+        : 'List';
+    title = `${baseTitle} · ${listLabel}`;
   } else if (tab === 'experts') {
     const expertsLabel =
       typeof messages.experts === 'string' ? messages.experts : 'Experts';

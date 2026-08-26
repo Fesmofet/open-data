@@ -3,6 +3,7 @@ import {
   buildObjectGalleryPath,
   buildObjectRelatedPath,
   buildObjectSimilarPath,
+  buildObjectListPath,
   buildObjectWidgetPath,
   buildObjectReviewsSubPath,
 } from '@/modules/object/domain/object-page-url.constants';
@@ -14,6 +15,7 @@ import {
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from './object-page-search';
 import type { ReviewsFeedSubType } from '@/modules/object/domain/object-page.types';
+import { LIST_PRIMARY_TAB_SEGMENT } from '@/modules/object/domain/list.constants';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '@/modules/object/domain/widget.constants';
 
 export type ObjectPrimaryTabNavigation = {
@@ -103,6 +105,22 @@ export function buildObjectPrimaryTabNavigation(
       href: qs
         ? `${buildObjectWidgetPath(objectId)}?${qs}`
         : buildObjectWidgetPath(objectId),
+      method: 'replace',
+    };
+  }
+
+  if (segment === LIST_PRIMARY_TAB_SEGMENT) {
+    u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
+    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+    u.delete('sort');
+    u.delete('update_type');
+    u.delete('locale');
+    const qs = u.toString();
+    return {
+      href: qs
+        ? `${buildObjectListPath(objectId)}?${qs}`
+        : buildObjectListPath(objectId),
       method: 'replace',
     };
   }

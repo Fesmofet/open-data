@@ -50,4 +50,14 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(dateIdx).toBe(languageIdx + 1);
     expect(lengthIdx).toBe(dateIdx + 1);
   });
+
+  it('uses list-specific edit order for list object type', () => {
+    const order = resolveEditModeLeftRailBlockOrder('list');
+    expect(order.indexOf('sortCustom')).toBeLessThan(order.indexOf('gallery'));
+    expect(order.indexOf('promotion')).toBeGreaterThan(order.indexOf('description'));
+    expect(order.indexOf('pin')).toBeGreaterThan(order.indexOf('gallery'));
+    expect(order.indexOf('remove')).toBeGreaterThan(order.indexOf('pin'));
+    expect(order.indexOf('delegation')).toBeGreaterThan(order.indexOf('link'));
+    expect(order.includes('menuItems')).toBe(false);
+  });
 });

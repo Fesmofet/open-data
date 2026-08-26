@@ -32,14 +32,14 @@ function view(
 }
 
 describe('resolveObjectDefaultLanding', () => {
-  it('returns hostContent for list host', () => {
+  it('returns primaryTab list for list host', () => {
     const landing = resolveObjectDefaultLanding(
       view('list', { listItem: [] }),
       'list',
       'list',
       DEPS,
     );
-    expect(landing).toEqual({ kind: 'hostContent' });
+    expect(landing).toEqual({ kind: 'primaryTab', segment: 'list' });
   });
 
   it('returns hostContent for page host', () => {
@@ -133,7 +133,7 @@ describe('resolveObjectDefaultLanding', () => {
     expect(landing).toEqual({ kind: 'nestedInHost', targetObjectId: 'list-b' });
   });
 
-  it('returns hostContent for list host even when sortCustom is set', () => {
+  it('returns primaryTab list for list host even when sortCustom is set', () => {
     const landing = resolveObjectDefaultLanding(
       view('list', {
         listItem: [{ object_id: 'child', object_type: 'page', fields: { name: 'P' } }],
@@ -143,7 +143,7 @@ describe('resolveObjectDefaultLanding', () => {
       'list',
       DEPS,
     );
-    expect(landing).toEqual({ kind: 'hostContent' });
+    expect(landing).toEqual({ kind: 'primaryTab', segment: 'list' });
   });
 
   it('returns nestedInHost from legacy listItem when menuItem is absent', () => {

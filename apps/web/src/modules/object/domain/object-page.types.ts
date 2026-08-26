@@ -309,7 +309,12 @@ export type ObjectLeftRailBlock =
   | { kind: 'datePublished'; headingLabel: string; text: string }
   | { kind: 'inLanguage'; headingLabel: string; text: string }
   | { kind: 'typicalAgeRange'; headingLabel: string; text: string }
-  | { kind: 'printLength'; headingLabel: string; text: string };
+  | { kind: 'printLength'; headingLabel: string; text: string }
+  | { kind: 'sortCustom'; headingLabel: string }
+  | { kind: 'promotion'; headingLabel: string }
+  | { kind: 'pin'; headingLabel: string }
+  | { kind: 'remove'; headingLabel: string }
+  | { kind: 'delegation'; headingLabel: string };
 
 export type ObjectPageSeoView = {
   title: string | null;

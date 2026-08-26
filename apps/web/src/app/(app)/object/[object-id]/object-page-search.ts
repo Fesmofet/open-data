@@ -380,7 +380,7 @@ export function resolvePrimarySegmentForObjectPage(
     return fromUrl;
   }
   if (searchParams.has(OBJECT_PAGE_VIEW_PATH_PARAM)) {
-    return '';
+    return defaultSegmentWhenClean !== '' ? defaultSegmentWhenClean : '';
   }
   return defaultSegmentWhenClean;
 }

@@ -24,6 +24,7 @@ import {
   defaultUpdateTypeForCandidates,
   initialFormValueForUpdateTypeWithContext,
 } from '../../application/tag-category-item-form-value';
+import { initialListSortCustomFormValue } from '../../application/list-sort-custom-form-value';
 import { buildGalleryItemBroadcastOp } from '../../application/build-gallery-item-broadcast-op';
 import { galleryAlbumPickerNames } from '../../application/gallery-form-value';
 import { validateUpdateValue } from '../../application/update-value-form.utils';
@@ -39,6 +40,7 @@ import { UpdateValueForm } from './update-value-form';
 
 /** Stable default — do not use `= []` in props/deps (new reference every render). */
 const EMPTY_STRING_ARRAY: readonly string[] = [];
+const EMPTY_LIST_CATALOG_ITEMS: readonly import('@/modules/object/domain/projected-list-item.types').ProjectedListItem[] = [];
 
 function buildTypeSelectOptions(types: readonly string[]): UpdateTypeOption[] {
   return types.map((value) => ({
@@ -89,6 +91,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     tagCategoryNames = EMPTY_STRING_ARRAY,
     galleryAlbumNames: galleryAlbumNamesProp = EMPTY_STRING_ARRAY,
     onChainGalleryAlbumNames: onChainGalleryAlbumNamesProp = EMPTY_STRING_ARRAY,
+    listCatalogItems = EMPTY_LIST_CATALOG_ITEMS,
+    listSortCustom = null,
   } = props;
 
   const odlCustomJsonId = useOdlCustomJsonId();
@@ -128,6 +132,9 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const resolveFormValue = (type: string): unknown => {
     if (props.mode === 'generic' && genericInitialValue !== undefined) {
       return genericInitialValue;
+    }
+    if (type === UPDATE_TYPES.SORT_CUSTOM && listCatalogItems.length > 0) {
+      return initialListSortCustomFormValue(listCatalogItems, listSortCustom);
     }
     if (type && UPDATE_REGISTRY[type]) {
       const presetAlbum =
@@ -189,6 +196,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     galleryAlbumNames,
     pickerInitialType,
     feedInitialLocale,
+    listCatalogItems,
+    listSortCustom,
   ]);
 
   const onTypeChange = useCallback(
@@ -196,6 +205,10 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
       setSelectedType(nextType);
       setError(null);
       setLocale(DEFAULT_LOCALE);
+      if (nextType === UPDATE_TYPES.SORT_CUSTOM && listCatalogItems.length > 0) {
+        setValue(initialListSortCustomFormValue(listCatalogItems, listSortCustom));
+        return;
+      }
       if (nextType && UPDATE_REGISTRY[nextType]) {
         setValue(
           initialFormValueForUpdateTypeWithContext(nextType, tagCategoryNames),
@@ -204,7 +217,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
         setValue(null);
       }
     },
-    [tagCategoryNames],
+    [listCatalogItems, listSortCustom, tagCategoryNames],
   );
 
   const handleSubmit = useCallback(async () => {
@@ -353,6 +366,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
               galleryAlbumNames={galleryAlbumPickerNames(onChainGalleryAlbumNames)}
               lockGalleryAlbum={lockGalleryAlbum}
               hideUpdateTypeHeading={hideUpdateTypeHeading}
+              listCatalogItems={listCatalogItems}
             />
             {definition.localizable ? (
               <label className="mt-4 block text-body-sm">

@@ -9,7 +9,7 @@ import { isMenuInHostTargetType } from './object-menu.constants';
 export type ObjectDefaultLanding =
   | { kind: 'hostContent' }
   | { kind: 'nestedInHost'; targetObjectId: string }
-  | { kind: 'primaryTab'; segment: 'reviews' | 'newsfeed' | 'description' | 'widget' }
+  | { kind: 'primaryTab'; segment: 'reviews' | 'newsfeed' | 'description' | 'widget' | 'list' }
   | { kind: 'routeStub'; segment: 'blog' | 'newsFilter'; ref: string };
 
 const HOST_SWITCHER_KINDS = new Set<ObjectSwitcherKind>([
@@ -151,7 +151,7 @@ function resolveCustomSortLanding(
   deps: ResolveObjectDefaultLandingDeps,
 ): ObjectDefaultLanding | null {
   if (objectTypeKey === 'list') {
-    return { kind: 'hostContent' };
+    return { kind: 'primaryTab', segment: 'list' };
   }
 
   const firstKey = sortCustom.include[0];
@@ -234,6 +234,9 @@ function resolveHostTypeLanding(
   }
   if (objectTypeKey === 'widget') {
     return { kind: 'primaryTab', segment: 'widget' };
+  }
+  if (objectTypeKey === 'list') {
+    return { kind: 'primaryTab', segment: 'list' };
   }
   if (HOST_SWITCHER_KINDS.has(switcherKind)) {
     return { kind: 'hostContent' };

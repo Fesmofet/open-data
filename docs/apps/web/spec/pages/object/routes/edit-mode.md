@@ -45,7 +45,16 @@ Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from serv
 ### Left-rail slot order
 
 - **Generic types:** `EDIT_MODE_LEFT_RAIL_BLOCK_ORDER` — Name, Title, Menu, … about stack (`left-rail-edit-blocks.ts`).
+- **`list`:** `LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER` — sortCustom first, promotion in about cluster, pin/remove after gallery, delegation near settings fields; no menu cluster (`resolveEditModeLeftRailBlockOrder`).
 - **`product` / `book` / `service`:** legacy navigate cluster **before** menu — gallery → compareAtPrice → price → saleEvent → **options**, then menu (`resolveEditModeLeftRailBlockOrder` in `object-left-rail-order.ts`). See [options.md](options.md).
+
+### List host edit extras
+
+| Surface | Behavior |
+|---------|----------|
+| Center catalog (List tab) | Edit mode: object search to add `listItem`; `(reject)` votes against parent `listItem` update when `update_id` is projected |
+| `sortCustom` left-rail `+` | **Mode** Auto or Custom. Auto: Sort by Newest/Oldest/A..Z/Z..A (no Rank) + visibility checkboxes. Custom: drag-reorder rows + checkboxes. Payload: Auto → empty `include`, `exclude` unchecked ids, `sortType` auto value; Custom → ordered `include`, `exclude` unchecked, `sortType: custom`. |
+| `promotion`, `pin`, `remove`, `delegation` | Standard `+` → `AddUpdateModal` (delegation uses `UserRefSearchField`) |
 
 ## Broadcast contract
 

@@ -174,6 +174,11 @@ function appendLeftRailBlock(
     case 'inLanguage':
     case 'typicalAgeRange':
     case 'printLength':
+    case 'sortCustom':
+    case 'promotion':
+    case 'pin':
+    case 'remove':
+    case 'delegation':
       break;
     default: {
       const _exhaustive: never = block;
