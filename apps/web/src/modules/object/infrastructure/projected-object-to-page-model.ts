@@ -10,9 +10,11 @@ import {
   HEADER_BLOCK_ORDER,
   isBookObjectType,
   isOptionsObjectType,
+  isRecipeObjectType,
   MENU_BLOCK_ID,
   NAVIGATE_SECTION_BLOCK_ORDER,
   optionsTypeAboutRemainderOrder,
+  resolveAboutSectionBlockOrder,
   type AboutSectionBlockId,
 } from '../domain/object-left-rail-order';
 import {
@@ -61,6 +63,12 @@ import {
   projectedParentRow,
   resolveMenuItemsForView,
   projectedPrice,
+  projectedCalories,
+  projectedBudget,
+  projectedCookTime,
+  projectedNutrition,
+  projectedIngredients,
+  orderRecipeTagCategorySections,
   projectedSortCustom,
   projectedTagCategoryNames,
   projectedCategoryNames,
@@ -292,12 +300,63 @@ function appendAboutSectionBlock(
     case 'status':
     case 'compareAtPrice':
     case 'saleEvent':
-    case 'calories':
-    case 'cookTime':
-    case 'ingredients':
-    case 'nutrition':
       // Edit-mode only — shown via mergeLeftRailBlocksForEditMode, skip in view mode.
       break;
+    case 'calories': {
+      const text = projectedCalories(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'calories',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.calories,
+          text,
+        });
+      }
+      break;
+    }
+    case 'budget': {
+      const text = projectedBudget(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'budget',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.budget,
+          text,
+        });
+      }
+      break;
+    }
+    case 'cookTime': {
+      const text = projectedCookTime(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'cookTime',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.cookTime,
+          text,
+        });
+      }
+      break;
+    }
+    case 'nutrition': {
+      const text = projectedNutrition(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'nutrition',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.nutrition,
+          text,
+        });
+      }
+      break;
+    }
+    case 'ingredients': {
+      const items = projectedIngredients(viewLike);
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'ingredients',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.ingredients,
+          items,
+        });
+      }
+      break;
+    }
     case 'datePublished': {
       if (!isBookObjectType(viewLike.object_type ?? '')) {
         break;
@@ -466,7 +525,10 @@ function appendAboutSectionBlock(
       break;
     }
     case 'tags': {
-      const sections = projectedTagCategorySections(viewLike);
+      let sections = projectedTagCategorySections(viewLike);
+      if (isRecipeObjectType(viewLike.object_type ?? '')) {
+        sections = orderRecipeTagCategorySections(sections);
+      }
       if (sections.length > 0) {
         blocks.push({
           kind: 'tags',
@@ -705,7 +767,12 @@ function buildLeftRailBlocks(
 
   appendMenuClusterBlocks(blocks, viewLike);
   appendHeaderBlocks(blocks, viewLike);
-  appendAboutSectionBlocks(blocks, ABOUT_SECTION_BLOCK_ORDER, viewLike, optionsApi);
+  appendAboutSectionBlocks(
+    blocks,
+    resolveAboutSectionBlockOrder(viewLike.object_type ?? ''),
+    viewLike,
+    optionsApi,
+  );
   prependClosedVenueStatusBlock(blocks, viewLike);
 
   return blocks;

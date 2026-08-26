@@ -17,6 +17,8 @@ export type OptionsObjectType = (typeof OPTIONS_OBJECT_TYPES)[number];
 
 export const BOOK_OBJECT_TYPE = 'book' as const;
 
+export const RECIPE_OBJECT_TYPE = 'recipe' as const;
+
 export const LIST_OBJECT_TYPE = 'list' as const;
 
 export function isListObjectType(objectType: string): boolean {
@@ -30,6 +32,10 @@ export function isOptionsObjectType(objectType: string): boolean {
 
 export function isBookObjectType(objectType: string): boolean {
   return objectType.trim() === BOOK_OBJECT_TYPE;
+}
+
+export function isRecipeObjectType(objectType: string): boolean {
+  return objectType.trim() === RECIPE_OBJECT_TYPE;
 }
 
 /**
@@ -71,6 +77,7 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'compareAtPrice',
   'saleEvent',
   'calories',
+  'budget',
   'cookTime',
   'ingredients',
   'nutrition',
@@ -91,6 +98,31 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'identifier',
 ] as const;
 
+/**
+ * Recipe view/edit about stack: practical facts → explanation → classification →
+ * community signal → detailed recipe data.
+ */
+export const RECIPE_ABOUT_SECTION_BLOCK_ORDER = [
+  'image',
+  'imageBackground',
+  'status',
+  'parent',
+  'cookTime',
+  'budget',
+  'calories',
+  'nutrition',
+  'description',
+  'tags',
+  'category',
+  'rating',
+  'ingredients',
+  'gallery',
+  'featureList',
+  'identifier',
+] as const;
+
+export type RecipeAboutSectionBlockId = (typeof RECIPE_ABOUT_SECTION_BLOCK_ORDER)[number];
+
 /** Book-only about fields (not in generic about stack). */
 export const BOOK_ABOUT_SECTION_BLOCK_ORDER = [
   'typicalAgeRange',
@@ -106,7 +138,8 @@ export const BOOK_HOISTED_AUTHOR_BLOCK_ORDER = ['author'] as const;
 
 export type AboutSectionBlockId =
   | (typeof ABOUT_SECTION_BLOCK_ORDER)[number]
-  | BookAboutSectionBlockId;
+  | BookAboutSectionBlockId
+  | RecipeAboutSectionBlockId;
 
 /**
  * Menu / custom-sort cluster is rendered before the about stack (legacy `menuSection`).
@@ -195,11 +228,30 @@ export function bookTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
 }
 
 /** Edit-mode slot order; product-like types match legacy navigate-before-menu layout. */
+export function resolveAboutSectionBlockOrder(
+  objectType: string,
+): readonly AboutSectionBlockId[] {
+  if (isRecipeObjectType(objectType)) {
+    return RECIPE_ABOUT_SECTION_BLOCK_ORDER;
+  }
+  return ABOUT_SECTION_BLOCK_ORDER;
+}
+
+/** Edit-mode slot order; product-like types match legacy navigate-before-menu layout. */
 export function resolveEditModeLeftRailBlockOrder(
   objectType: string,
 ): readonly EditModeLeftRailBlockId[] {
   if (isListObjectType(objectType)) {
     return LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER;
+  }
+
+  if (isRecipeObjectType(objectType)) {
+    return [
+      ...HEADER_BLOCK_ORDER,
+      MENU_BLOCK_ID,
+      ...MENU_CLUSTER_BLOCK_ORDER,
+      ...RECIPE_ABOUT_SECTION_BLOCK_ORDER,
+    ];
   }
 
   if (!isOptionsObjectType(objectType)) {

@@ -787,4 +787,90 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
     const model = projectedObjectWithCountsToPageModel(api);
     expect(model.leftRailBlocks.some((b) => b.kind === 'status')).toBe(false);
   });
+
+  it('maps recipe fields in legacy order with populated payloads', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'recipe-1',
+      object_type: 'recipe',
+      semantic_type: 'schema:Recipe',
+      weight: 1,
+      fields: {
+        name: 'Kimchi',
+        cookTime: '20–40 minutes',
+        budget: '$',
+        calories: 'Approx. 50 per serving',
+        nutrition: '2g protein, 0g fat, 9g carbohydrates',
+        description: 'Fresh kimchi side dish.',
+        tagCategory: ['Cuisine', 'Pros'],
+        tagCategoryItem: [
+          { category: 'Cuisine', value: 'Korean' },
+          { category: 'Cuisine', value: 'Asian' },
+          { category: 'Pros', value: 'No-cook' },
+        ],
+        category: ['Korean Cuisine', 'Side Dishes'],
+        aggregateRating: [
+          {
+            update_id: 'rating-1',
+            dimension: 'Rating',
+            averageRating: 0,
+            totalVoters: 0,
+          },
+        ],
+        ingredients: ['Napa Cabbage — 8 lbs 8 oz', 'Sea Salt', 'Water'],
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+
+    expect(kinds.indexOf('cookTime')).toBeLessThan(kinds.indexOf('budget'));
+    expect(kinds.indexOf('budget')).toBeLessThan(kinds.indexOf('calories'));
+    expect(kinds.indexOf('nutrition')).toBeLessThan(kinds.indexOf('description'));
+    expect(kinds.indexOf('description')).toBeLessThan(kinds.indexOf('tags'));
+    expect(kinds.indexOf('tags')).toBeLessThan(kinds.indexOf('category'));
+    expect(kinds.indexOf('category')).toBeLessThan(kinds.indexOf('rating'));
+    expect(kinds.indexOf('rating')).toBeLessThan(kinds.indexOf('ingredients'));
+
+    const cookTime = model.leftRailBlocks.find((b) => b.kind === 'cookTime');
+    expect(cookTime?.kind).toBe('cookTime');
+    if (cookTime?.kind === 'cookTime') {
+      expect(cookTime.text).toBe('20–40 minutes');
+    }
+
+    const ingredients = model.leftRailBlocks.find((b) => b.kind === 'ingredients');
+    expect(ingredients?.kind).toBe('ingredients');
+    if (ingredients?.kind === 'ingredients') {
+      expect(ingredients.items).toHaveLength(3);
+    }
+
+    const tags = model.leftRailBlocks.find((b) => b.kind === 'tags');
+    expect(tags?.kind).toBe('tags');
+    if (tags?.kind === 'tags') {
+      expect(tags.sections[0]?.categoryTitle).toBe('Cuisine');
+      expect(tags.sections[1]?.categoryTitle).toBe('Pros');
+    }
+  });
+
+  it('omits empty recipe nutrition block in view mode', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'recipe-2',
+      object_type: 'recipe',
+      semantic_type: 'schema:Recipe',
+      weight: 1,
+      fields: {
+        name: 'Simple',
+        cookTime: '10 minutes',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.leftRailBlocks.some((b) => b.kind === 'nutrition')).toBe(false);
+    expect(model.leftRailBlocks.some((b) => b.kind === 'cookTime')).toBe(true);
+  });
 });

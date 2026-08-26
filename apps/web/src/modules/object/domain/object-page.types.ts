@@ -292,10 +292,11 @@ export type ObjectLeftRailBlock =
       items: FeatureListItem[];
     }
   | { kind: 'category'; headingLabel: string; names: string[] }
-  | { kind: 'calories'; headingLabel: string }
-  | { kind: 'cookTime'; headingLabel: string }
-  | { kind: 'ingredients'; headingLabel: string }
-  | { kind: 'nutrition'; headingLabel: string }
+  | { kind: 'calories'; headingLabel: string; text: string }
+  | { kind: 'budget'; headingLabel: string; text: string }
+  | { kind: 'cookTime'; headingLabel: string; text: string }
+  | { kind: 'ingredients'; headingLabel: string; items: string[] }
+  | { kind: 'nutrition'; headingLabel: string; text: string }
   | {
       kind: 'author';
       headingLabel: string;

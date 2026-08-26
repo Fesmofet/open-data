@@ -97,7 +97,7 @@ export function ObjectCategoryLeftRailSection({
               className="mt-1 text-body-sm text-accent hover:underline"
               onClick={() => setExpanded((prev) => !prev)}
             >
-              {expanded ? t('object_updates_show_less') : t('show_more')}
+              {expanded ? t('object_updates_show_less') : t('show_all_categories')}
             </button>
           ) : null}
         </>

@@ -34,7 +34,7 @@ Example: `Clothing, Shoes & Jewelry` → `/object/:id/category/Clothing,%20Shoes
 ## Left rail
 
 - Block: `category` (`UPDATE_TYPES.CATEGORY`) on types that support it (`book`, `product`, `service`, `recipe`).
-- View: vertical list under heading `Categories:`; first **2** names visible, text **Show more** / **Show less** (no button chrome).
+- View: vertical list under heading `Categories:`; first **2** names visible, text **Show all categories** / **Show less** (no button chrome).
 - Edit: values + standard `LeftRailEditToolbar` / `AddUpdateModal` (plain multi text).
 
 ## Center column

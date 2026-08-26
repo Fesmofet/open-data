@@ -42,10 +42,12 @@ import { LeftRailInLanguageIcon } from './left-rail-in-language-icon';
 import { LeftRailPrintLengthIcon } from './left-rail-print-length-icon';
 import { LeftRailReadingAgeIcon } from './left-rail-reading-age-icon';
 import { LeftRailWeightScaleIcon } from './left-rail-weight-scale-icon';
+import { LeftRailScalarFieldSection } from './left-rail-scalar-field-section';
 import { ObjectAuthorsLeftRailSection } from './object-authors-left-rail-section';
 import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
 import { ObjectFeatureListLeftRailSection } from './object-feature-list-left-rail-section';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
+import { ObjectIngredientsLeftRailSection } from './object-ingredients-left-rail-section';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectTagsLeftRailSection } from './object-tags-left-rail-section';
@@ -929,13 +931,41 @@ export function ObjectLeftRailPanel({
             );
           case 'compareAtPrice':
           case 'saleEvent':
-          case 'calories':
-          case 'cookTime':
-          case 'ingredients':
-          case 'nutrition':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
+              </div>
+            );
+          case 'calories':
+          case 'budget':
+          case 'cookTime':
+          case 'nutrition':
+            return (
+              <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailScalarFieldSection
+                  headingLabel={block.headingLabel}
+                  text={block.text}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
+          case 'ingredients':
+            return (
+              <div key={`ingredients-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectIngredientsLeftRailSection
+                  headingLabel={block.headingLabel}
+                  items={block.items}
+                  objectTypeKey={objectTypeKey}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps('ingredients', block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
               </div>
             );
           case 'datePublished':

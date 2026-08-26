@@ -2901,6 +2901,8 @@
   "shares": "Podíly",
   "shop": "Obchod",
   "show all": "Zobrazit vše",
+  "show_all_categories": "Zobrazit více",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "Zobrazit všechny dostupné páry",
   "show_author_curator": "Zobrazit odměny autora a kurátorů",
   "show_eligible_users": "Zobrazit oprávněné uživatele",

@@ -1,6 +1,8 @@
 import {
   NAVIGATE_SECTION_BLOCK_ORDER,
+  RECIPE_ABOUT_SECTION_BLOCK_ORDER,
   bookTypeAboutRemainderOrder,
+  resolveAboutSectionBlockOrder,
   resolveEditModeLeftRailBlockOrder,
 } from './object-left-rail-order';
 
@@ -59,5 +61,32 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('remove')).toBeGreaterThan(order.indexOf('pin'));
     expect(order.indexOf('delegation')).toBeGreaterThan(order.indexOf('link'));
     expect(order.includes('menuItems')).toBe(false);
+  });
+
+  it('uses recipe-specific about order for recipe view blocks', () => {
+    const order = resolveAboutSectionBlockOrder('recipe');
+    expect(order).toEqual(RECIPE_ABOUT_SECTION_BLOCK_ORDER);
+    expect(order.indexOf('cookTime')).toBeLessThan(order.indexOf('budget'));
+    expect(order.indexOf('budget')).toBeLessThan(order.indexOf('calories'));
+    expect(order.indexOf('nutrition')).toBeLessThan(order.indexOf('description'));
+    expect(order.indexOf('description')).toBeLessThan(order.indexOf('tags'));
+    expect(order.indexOf('tags')).toBeLessThan(order.indexOf('category'));
+    expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
+    expect(order.indexOf('rating')).toBeLessThan(order.indexOf('ingredients'));
+  });
+
+  it('uses recipe-specific edit order with budget before description', () => {
+    const order = resolveEditModeLeftRailBlockOrder('recipe');
+    expect(order.indexOf('name')).toBeLessThan(order.indexOf('cookTime'));
+    expect(order.indexOf('cookTime')).toBeLessThan(order.indexOf('budget'));
+    expect(order.indexOf('nutrition')).toBeLessThan(order.indexOf('description'));
+    expect(order.indexOf('ingredients')).toBeGreaterThan(order.indexOf('rating'));
+    expect(order.includes('budget')).toBe(true);
+  });
+
+  it('keeps generic about order for restaurant', () => {
+    const order = resolveAboutSectionBlockOrder('restaurant');
+    expect(order.indexOf('description')).toBeLessThan(order.indexOf('category'));
+    expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
   });
 });

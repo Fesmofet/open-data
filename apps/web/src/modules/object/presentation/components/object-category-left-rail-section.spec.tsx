@@ -33,7 +33,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 const messages: Record<string, string> = {
-  show_more: 'Show more',
+  show_all_categories: 'Show all categories',
   object_updates_show_less: 'Show less',
 };
 
@@ -58,14 +58,14 @@ describe('ObjectCategoryLeftRailSection', () => {
     }
   });
 
-  it('shows first two names and expands on Show more', () => {
+  it('shows first two names and expands on Show all categories', () => {
     renderSection(['A', 'B', 'C', 'D']);
 
     expect(screen.getByText('A')).toBeInTheDocument();
     expect(screen.getByText('B')).toBeInTheDocument();
     expect(screen.queryByText('C')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show more' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show all categories' }));
 
     expect(screen.getByText('C')).toBeInTheDocument();
     expect(screen.getByText('D')).toBeInTheDocument();

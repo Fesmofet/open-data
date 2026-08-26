@@ -3076,6 +3076,8 @@
   "show": "(показать)",
   "show all": "Показать все",
   "show_all": "Показать все",
+  "show_all_categories": "Показать больше",
+  "show_all_ingredients": "Показать все {count}",
   "show_all_pairs": "Показать все доступные пары",
   "show_author_curator": "Показать авторские и кураторские награды",
   "show_eligible_users": "Показать подходящих пользователей",

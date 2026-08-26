@@ -2901,6 +2901,8 @@
   "shares": "Actions",
   "shop": "Boutique",
   "show all": "Afficher tout",
+  "show_all_categories": "En savoir plus",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "Afficher toutes les paires disponibles",
   "show_author_curator": "Afficher les récompenses des auteurs et des conservateurs",
   "show_eligible_users": "Afficher les utilisateurs éligibles",

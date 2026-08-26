@@ -2901,6 +2901,8 @@
   "shares": "シェア",
   "shop": "ショップ",
   "show all": "すべて表示",
+  "show_all_categories": "もっと表示",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "利用可能なすべてのペアを表示",
   "show_author_curator": "投稿者とキュレーターの報酬を表示",
   "show_eligible_users": "対象ユーザーを表示",

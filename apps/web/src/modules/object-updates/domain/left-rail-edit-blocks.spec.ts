@@ -71,4 +71,28 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     expect(optionsIdx).toBeGreaterThan(galleryIdx);
     expect(menuIdx).toBeGreaterThan(optionsIdx);
   });
+
+  it('includes budget and recipe field order for recipe type', () => {
+    const recipeSupported = [
+      UPDATE_TYPES.NAME,
+      UPDATE_TYPES.DESCRIPTION,
+      UPDATE_TYPES.CALORIES,
+      UPDATE_TYPES.BUDGET,
+      UPDATE_TYPES.COOK_TIME,
+      UPDATE_TYPES.NUTRITION,
+      UPDATE_TYPES.INGREDIENTS,
+      UPDATE_TYPES.CATEGORY,
+      UPDATE_TYPES.AGGREGATE_RATING,
+      UPDATE_TYPES.TAG_CATEGORY,
+      UPDATE_TYPES.TAG_CATEGORY_ITEM,
+    ];
+
+    const merged = mergeLeftRailBlocksForEditMode([], recipeSupported, 'recipe');
+    const kinds = merged.map((b) => b.kind);
+
+    expect(kinds.indexOf('cookTime')).toBeLessThan(kinds.indexOf('budget'));
+    expect(kinds.indexOf('nutrition')).toBeLessThan(kinds.indexOf('description'));
+    expect(kinds.indexOf('rating')).toBeLessThan(kinds.indexOf('ingredients'));
+    expect(kinds).toContain('budget');
+  });
 });

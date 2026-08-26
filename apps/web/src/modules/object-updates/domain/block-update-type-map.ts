@@ -23,6 +23,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   featureList: [UPDATE_TYPES.FEATURE_LIST],
   category: [UPDATE_TYPES.CATEGORY],
   calories: [UPDATE_TYPES.CALORIES],
+  budget: [UPDATE_TYPES.BUDGET],
   cookTime: [UPDATE_TYPES.COOK_TIME],
   ingredients: [UPDATE_TYPES.INGREDIENTS],
   nutrition: [UPDATE_TYPES.NUTRITION],

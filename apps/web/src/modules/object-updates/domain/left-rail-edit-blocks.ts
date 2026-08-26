@@ -99,13 +99,15 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
     case 'category':
       return { kind: 'category', headingLabel, names: [] };
     case 'calories':
-      return { kind: 'calories', headingLabel };
+      return { kind: 'calories', headingLabel, text: '' };
+    case 'budget':
+      return { kind: 'budget', headingLabel, text: '' };
     case 'cookTime':
-      return { kind: 'cookTime', headingLabel };
+      return { kind: 'cookTime', headingLabel, text: '' };
     case 'ingredients':
-      return { kind: 'ingredients', headingLabel };
+      return { kind: 'ingredients', headingLabel, items: [] };
     case 'nutrition':
-      return { kind: 'nutrition', headingLabel };
+      return { kind: 'nutrition', headingLabel, text: '' };
     case 'author':
       return { kind: 'author', headingLabel, items: [] };
     case 'publisher':

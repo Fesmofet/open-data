@@ -2901,6 +2901,8 @@
   "shares": "शेयर्स",
   "shop": "दुकान",
   "show all": "सभी दिखाएँ",
+  "show_all_categories": "और दिखाएँ",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "सभी उपलब्ध पैर दिखाएं",
   "show_author_curator": "लेखक और संरक्षक इनाम दिखाएं",
   "show_eligible_users": "योग्य उपयोगकर्ताओं को दिखाएं",

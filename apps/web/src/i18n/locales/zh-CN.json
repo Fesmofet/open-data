@@ -2885,6 +2885,8 @@
   "shares": "份额",
   "shop": "商店",
   "show all": "显示全部",
+  "show_all_categories": "显示更多",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "显示所有可用的交易对",
   "show_author_curator": "显示作者和策展人奖励",
   "show_eligible_users": "显示符合条件的用户",

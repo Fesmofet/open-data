@@ -2985,6 +2985,8 @@
   "show": "(mostrar)",
   "show all": "Mostrar todo",
   "show_all": "Mostrar todo",
+  "show_all_categories": "Mostrar más",
+  "show_all_ingredients": "Mostrar todo {count}",
   "show_all_pairs": "Mostrar todos los pares disponibles",
   "show_author_curator": "Mostrar recompensas del autor y curadores",
   "show_eligible_users": "Mostrar usuarios elegibles",

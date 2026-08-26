@@ -2902,6 +2902,8 @@
   "shares": "Anteile",
   "shop": "Geschäft",
   "show all": "Alle anzeigen",
+  "show_all_categories": "Mehr anzeigen",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "Alle verfügbaren Paare anzeigen",
   "show_author_curator": "Autor und Kuratoren Belohnungen anzeigen",
   "show_eligible_users": "Berechtigte Benutzer anzeigen",

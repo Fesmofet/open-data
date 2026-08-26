@@ -166,10 +166,32 @@ function appendLeftRailBlock(
     case 'saleEvent':
     case 'featureList':
     case 'category':
+      break;
     case 'calories':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.CALORIES, block.text);
+      }
+      break;
+    case 'budget':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.BUDGET, block.text);
+      }
+      break;
     case 'cookTime':
-    case 'ingredients':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.COOK_TIME, block.text);
+      }
+      break;
     case 'nutrition':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.NUTRITION, block.text);
+      }
+      break;
+    case 'ingredients':
+      if (block.items.length > 0) {
+        pushEntry(fields, counters, UPDATE_TYPES.INGREDIENTS, block.items);
+      }
+      break;
     case 'datePublished':
     case 'inLanguage':
     case 'typicalAgeRange':

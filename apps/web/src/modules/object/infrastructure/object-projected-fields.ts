@@ -900,6 +900,60 @@ export function projectedPrice(o: ProjectedObjectView): string | null {
   return readString(o.fields.price) ?? null;
 }
 
+export function projectedCalories(o: ProjectedObjectView): string | null {
+  return readString(o.fields.calories) ?? null;
+}
+
+export function projectedBudget(o: ProjectedObjectView): string | null {
+  return readString(o.fields.budget) ?? null;
+}
+
+export function projectedCookTime(o: ProjectedObjectView): string | null {
+  return readString(o.fields.cookTime) ?? null;
+}
+
+export function projectedNutrition(o: ProjectedObjectView): string | null {
+  return readString(o.fields.nutrition) ?? null;
+}
+
+export function projectedIngredients(o: ProjectedObjectView): string[] {
+  const raw = o.fields.ingredients;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const out: string[] = [];
+  for (const item of raw) {
+    const text = readString(item);
+    if (text) {
+      out.push(text);
+    }
+  }
+  return out;
+}
+
+/** Recipe left rail: Cuisine and Pros first, then remaining tag categories. */
+export function orderRecipeTagCategorySections(
+  sections: TagCategorySectionView[],
+): TagCategorySectionView[] {
+  const priority = ['Cuisine', 'Pros'];
+  const byTitle = new Map(sections.map((section) => [section.categoryTitle, section]));
+  const ordered: TagCategorySectionView[] = [];
+  for (const title of priority) {
+    const section = byTitle.get(title);
+    if (section) {
+      ordered.push(section);
+      byTitle.delete(title);
+    }
+  }
+  for (const section of sections) {
+    if (byTitle.has(section.categoryTitle)) {
+      ordered.push(section);
+      byTitle.delete(section.categoryTitle);
+    }
+  }
+  return ordered;
+}
+
 /** Website entries from projected `website` (single JSON object today). */
 export function projectedWebsiteEntries(
   o: ProjectedObjectView,

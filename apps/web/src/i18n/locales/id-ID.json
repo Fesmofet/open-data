@@ -2901,6 +2901,8 @@
   "shares": "Bagikan",
   "shop": "Toko",
   "show all": "Tampilkan semua",
+  "show_all_categories": "Tampilkan lebih banyak",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "Tampilkan semua pasangan yang tersedia",
   "show_author_curator": "Tampilkan imbalan penulis dan kurator",
   "show_eligible_users": "Tampilkan pengguna yang memenuhi syarat",

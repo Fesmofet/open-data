@@ -2901,6 +2901,8 @@
   "shares": "Долі",
   "shop": "Магазин",
   "show all": "Показати всі",
+  "show_all_categories": "Показати більше",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "Показати всі доступні пари",
   "show_author_curator": "Показати винагороди автора та кураторів",
   "show_eligible_users": "Показати користувачів, які мають право",

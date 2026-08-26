@@ -2901,6 +2901,8 @@
   "shares": "Azioni",
   "shop": "Negozio",
   "show all": "Mostra tutto",
+  "show_all_categories": "Mostra di più",
+  "show_all_ingredients": "Show all {count}",
   "show_all_pairs": "Mostra tutte le coppie disponibili",
   "show_author_curator": "Mostra ricompense autore e curatori",
   "show_eligible_users": "Mostra utenti idonei",
