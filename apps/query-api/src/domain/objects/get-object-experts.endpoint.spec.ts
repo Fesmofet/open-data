@@ -8,6 +8,8 @@ describe('GetObjectExpertsEndpoint', () => {
     total?: number;
     rows?: Array<{
       name: string;
+      posting_json_metadata: string | null;
+      json_metadata: string | null;
       profile_image: string | null;
       users_following_count: number;
       weight: number;
@@ -25,6 +27,8 @@ describe('GetObjectExpertsEndpoint', () => {
         overrides?.rows ?? [
           {
             name: 'alice',
+            posting_json_metadata: null,
+            json_metadata: null,
             profile_image: null,
             users_following_count: 42,
             weight: 3.5,
@@ -72,5 +76,26 @@ describe('GetObjectExpertsEndpoint', () => {
     const result = await endpoint.execute(objectId, { skip: 0, limit: 1 }, undefined);
     expect(result?.hasMore).toBe(true);
     expect(result?.items).toHaveLength(1);
+  });
+
+  it('resolves avatarUrl from posting_json_metadata before json_metadata and profile_image', async () => {
+    const { endpoint } = makeEndpoint({
+      rows: [
+        {
+          name: 'alice',
+          posting_json_metadata: JSON.stringify({
+            profile: { profile_image: 'https://posting.test/a.jpg' },
+          }),
+          json_metadata: JSON.stringify({
+            profile: { profile_image: 'https://json.test/b.jpg' },
+          }),
+          profile_image: 'https://column.test/c.jpg',
+          users_following_count: 42,
+          weight: 3.5,
+        },
+      ],
+    });
+    const result = await endpoint.execute(objectId, { skip: 0, limit: 20 }, undefined);
+    expect(result?.items[0]?.avatarUrl).toBe('https://posting.test/a.jpg');
   });
 });

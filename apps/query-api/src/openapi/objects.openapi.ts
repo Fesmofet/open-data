@@ -42,7 +42,10 @@ const objectExpertListItemSchema = registry.register(
   'ObjectExpertListItem',
   z.object({
     name: z.string().openapi({ description: '`accounts_current.name`' }),
-    avatarUrl: z.string().nullable().openapi({ description: '`accounts_current.profile_image`.' }),
+    avatarUrl: z.string().nullable().openapi({
+      description:
+        'Profile avatar from `posting_json_metadata.profile.profile_image`, falling back to `json_metadata.profile.profile_image`, then `accounts_current.profile_image`.',
+    }),
     objectExpertiseWeight: z
       .number()
       .openapi({ description: '`user_object_expertise.weight` for this object (not global wobjects_weight).' }),

@@ -13,6 +13,8 @@ export type UserExpertiseRow = {
 
 export type ObjectExpertiseAccountRow = {
   name: string;
+  posting_json_metadata: string | null;
+  json_metadata: string | null;
   profile_image: string | null;
   users_following_count: number;
   weight: number;
@@ -106,6 +108,8 @@ export class UserObjectExpertiseRepository {
         .where('uoe.weight', '>', 0)
         .select([
           sql<string>`ac.name`.as('name'),
+          sql<string | null>`ac.posting_json_metadata`.as('posting_json_metadata'),
+          sql<string | null>`ac.json_metadata`.as('json_metadata'),
           sql<string | null>`ac.profile_image`.as('profile_image'),
           sql<number>`ac.users_following_count`.as('users_following_count'),
           sql<number>`uoe.weight`.as('weight'),

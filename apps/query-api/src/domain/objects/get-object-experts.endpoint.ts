@@ -4,6 +4,7 @@ import {
   UserObjectExpertiseRepository,
   UserSubscriptionsRepository,
 } from '../../repositories';
+import { avatarUrlFromJoinedAccountRow } from '../users/resolve-avatar-url-from-hive-metadata';
 import type { ObjectExpertListQuery } from './object-expert-list.schema';
 import type { ObjectExpertListItem, PaginatedObjectExpertList } from './object-expert-list.types';
 
@@ -44,7 +45,7 @@ export class GetObjectExpertsEndpoint {
 
     const items: ObjectExpertListItem[] = rows.map((r) => ({
       name: r.name,
-      avatarUrl: r.profile_image,
+      avatarUrl: avatarUrlFromJoinedAccountRow(r),
       objectExpertiseWeight: r.weight,
       usersFollowingCount: r.users_following_count,
       isCurrentFollowing: followedByViewer.has(r.name),

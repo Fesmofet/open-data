@@ -6,6 +6,7 @@ import type { SupportedCurrency } from '@opden-data-layer/core';
 import { AccountsCurrentRepository, PostsRepository } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { parsePostingMetadata } from '../users/parse-posting-metadata';
+import { resolveAvatarUrlFromHiveMetadata } from '../users/resolve-avatar-url-from-hive-metadata';
 import type {
   DiscussionCommentDto,
   FeedStoryItemDto,
@@ -92,8 +93,10 @@ export class GetPostDiscussionEndpoint {
         const meta = parsePostingMetadata(ha.posting_json_metadata);
         const metaName = meta?.profile.name?.trim() ?? '';
         const displayName = metaName !== '' ? metaName : ha.name;
-        const avatarFromMeta = meta?.profile.profile_image?.trim() ?? '';
-        const avatarUrl = avatarFromMeta !== '' ? avatarFromMeta : null;
+        const avatarUrl = resolveAvatarUrlFromHiveMetadata({
+          postingJsonMetadata: ha.posting_json_metadata,
+          jsonMetadata: ha.json_metadata,
+        });
         profileByName.set(
           ha.name,
           toFeedAuthorProfileFallback(ha.name, {
