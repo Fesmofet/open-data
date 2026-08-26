@@ -27,11 +27,15 @@ jest.mock('../../application/actions/resolve-nested-object-path.action', () => (
 }));
 
 jest.mock('./object-write-review-prompt', () => ({
-  ObjectWriteReviewPrompt: () => null,
+  ObjectWriteReviewPrompt: () => <div data-testid="write-review-prompt" />,
+}));
+
+jest.mock('./object-thread-compose-bar', () => ({
+  ObjectThreadComposeBar: () => <div data-testid="thread-compose-bar" />,
 }));
 
 jest.mock('./object-feed-sub-nav', () => ({
-  ObjectFeedSubNav: () => null,
+  ObjectFeedSubNav: () => <div data-testid="feed-sub-nav" />,
 }));
 
 jest.mock('./object-gallery-tab-content', () => ({
@@ -82,6 +86,31 @@ const baseProps = {
   initialNestedStack: EMPTY_NESTED_STACK,
   onFeedSubSelect: jest.fn(),
 };
+
+describe('ObjectPrimaryContent Reviews compose chrome', () => {
+  it('renders write-review prompt only on Reviews > Posts', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        objectPostsFeed={<div data-testid="object-posts-feed">Feed</div>}
+      />,
+    );
+    expect(screen.getByTestId('write-review-prompt')).toBeInTheDocument();
+    expect(screen.queryByTestId('thread-compose-bar')).not.toBeInTheDocument();
+  });
+
+  it('renders thread compose bar only on Reviews > Threads', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        activeFeedSubSegment="threads"
+        objectThreadsFeed={<div data-testid="object-threads-feed">Threads</div>}
+      />,
+    );
+    expect(screen.getByTestId('thread-compose-bar')).toBeInTheDocument();
+    expect(screen.queryByTestId('write-review-prompt')).not.toBeInTheDocument();
+  });
+});
 
 describe('ObjectPrimaryContent Reviews posts feed', () => {
   it('renders injected object posts feed on Reviews > Posts', () => {

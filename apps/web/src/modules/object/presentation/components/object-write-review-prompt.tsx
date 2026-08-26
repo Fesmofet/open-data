@@ -14,10 +14,10 @@ export type ObjectWriteReviewPromptProps = {
 const promptClassName =
   'mb-2 flex w-full items-center gap-3 rounded-card border border-border bg-surface/60 p-card-padding text-left transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
-const plusIconClassName =
+const penIconClassName =
   'inline-flex size-10 shrink-0 items-center justify-center rounded-pill border border-accent text-accent';
 
-function WriteReviewPlusIcon() {
+function WriteReviewPenIcon() {
   return (
     <svg
       className="size-5"
@@ -26,10 +26,11 @@ function WriteReviewPlusIcon() {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden
     >
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </svg>
   );
 }
@@ -45,10 +46,10 @@ export function ObjectWriteReviewPrompt({
 
   const label = (
     <>
-      <span className={plusIconClassName} aria-hidden>
-        <WriteReviewPlusIcon />
+      <span className={penIconClassName} aria-hidden>
+        <WriteReviewPenIcon />
       </span>
-      <span className="text-body-sm font-weight-label text-fg">{t('write_new_review')}</span>
+      <span className="text-body-sm font-weight-label text-fg">{t('write_review')}</span>
     </>
   );
 
@@ -61,7 +62,7 @@ export function ObjectWriteReviewPrompt({
   }
 
   return (
-    <Link href={href} className={promptClassName}>
+    <Link href={href} className={promptClassName} suppressHydrationWarning>
       {label}
     </Link>
   );

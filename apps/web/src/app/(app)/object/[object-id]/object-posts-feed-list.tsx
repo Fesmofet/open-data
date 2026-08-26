@@ -2,6 +2,7 @@
 
 import { useCallback, useTransition } from 'react';
 
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { UserBlogFeedPage } from '@/modules/feed/application/dto/user-blog-feed-page.dto';
 import { FeedList, FeedPostGrid } from '@/modules/feed/presentation';
 import { useInfiniteScroll, useSyncedPaginatedList } from '@/shared/presentation';
@@ -22,6 +23,7 @@ export function ObjectPostsFeedList({
   initialPage,
   currentUsername,
 }: ObjectPostsFeedListProps) {
+  const { t } = useI18n();
   const onBroadcastRevalidate = useCallback(
     () => revalidateObjectAfterBroadcast(objectId),
     [objectId],
@@ -52,17 +54,8 @@ export function ObjectPostsFeedList({
 
   if (items.length === 0) {
     return (
-      <section
-        className="rounded-card border border-border bg-surface/80 p-card-padding"
-        aria-labelledby="object-feed-empty-title"
-      >
-        <h2
-          id="object-feed-empty-title"
-          className="text-body-lg font-weight-strong font-display text-fg"
-        >
-          Reviews
-        </h2>
-        <p className="mt-2 text-body-sm text-muted">No posts to show yet.</p>
+      <section className="rounded-card border border-border bg-surface/80 p-card-padding">
+        <p className="text-body-sm text-muted">{t('object_reviews_empty_posts')}</p>
       </section>
     );
   }

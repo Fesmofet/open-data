@@ -42,6 +42,7 @@ import { ObjectListContent } from './object-list-content';
 import { ObjectDescriptionBody } from './object-description-body';
 import { ObjectPageContentBody } from './object-page-content-body';
 import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
+import { ObjectThreadComposeBar } from './object-thread-compose-bar';
 import { ObjectWidgetContent } from './object-widget-content';
 
 const REVIEWS_SEGMENT = 'reviews';
@@ -769,14 +770,6 @@ export function ObjectPrimaryContent({
           onNavigateTo={navigateToDepth}
         />
       ) : null}
-      {onReviewsCenter && currentView.objectType === 'default' ? (
-        <ObjectWriteReviewPrompt
-          key="write-review-prompt"
-          objectId={objectId}
-          viewerUsername={viewerUsername}
-          onRequireLogin={onRequireLogin}
-        />
-      ) : null}
       {onReviewsCenter && feedSubTabs.length > 0 ? (
         <div
           key="feed-sub-nav"
@@ -788,6 +781,23 @@ export function ObjectPrimaryContent({
             onSelect={onFeedSubSelect}
           />
         </div>
+      ) : null}
+      {onReviewsPostsTab && currentView.objectType === 'default' ? (
+        <ObjectWriteReviewPrompt
+          key="write-review-prompt"
+          objectId={objectId}
+          viewerUsername={viewerUsername}
+          onRequireLogin={onRequireLogin}
+        />
+      ) : null}
+      {onReviewsThreadsTab && currentView.objectType === 'default' ? (
+        <ObjectThreadComposeBar
+          key="thread-compose-bar"
+          objectId={objectId}
+          objectName={title}
+          viewerUsername={viewerUsername ?? null}
+          onRequireLogin={onRequireLogin}
+        />
       ) : null}
       {onReviewsPostsTab && objectPostsFeed != null ? (
         <Fragment key="reviews-posts-feed">{objectPostsFeed}</Fragment>

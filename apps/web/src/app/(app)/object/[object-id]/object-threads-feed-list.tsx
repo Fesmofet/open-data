@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { UserBlogFeedPage } from '@/modules/feed/application/dto/user-blog-feed-page.dto';
 import { FeedList, FeedPostsLoadingSkeleton } from '@/modules/feed/presentation';
 import { useInfiniteScroll } from '@/shared/presentation';
@@ -20,6 +21,7 @@ export function ObjectThreadsFeedList({
   objectId,
   currentUsername,
 }: ObjectThreadsFeedListProps) {
+  const { t } = useI18n();
   const onBroadcastRevalidate = useCallback(
     () => revalidateObjectAfterBroadcast(objectId),
     [objectId],
@@ -70,17 +72,8 @@ export function ObjectThreadsFeedList({
 
   if (items.length === 0) {
     return (
-      <section
-        className="rounded-card border border-border bg-surface/80 p-card-padding"
-        aria-labelledby="object-threads-empty-title"
-      >
-        <h2
-          id="object-threads-empty-title"
-          className="text-body-lg font-weight-strong font-display text-fg"
-        >
-          Threads
-        </h2>
-        <p className="mt-2 text-body-sm text-muted">No threads to show yet.</p>
+      <section className="rounded-card border border-border bg-surface/80 p-card-padding">
+        <p className="text-body-sm text-muted">{t('empty_threads')}</p>
       </section>
     );
   }
