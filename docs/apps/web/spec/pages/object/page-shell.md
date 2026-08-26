@@ -38,8 +38,8 @@ Single App Router entry: [`page.tsx`](../../../../../apps/web/src/app/(app)/obje
 
 | Region | Component | Notes |
 |--------|-----------|--------|
-| Hero | `ObjectHero` | Follow/bell — [object-follow.md](../../object-follow.md); edit toggle |
-| Left rail | `ObjectLeftRail` | Menu blocks, product **options** (variant selectors) — [routes/options.md](routes/options.md), edit `+` — [routes/edit-mode.md](routes/edit-mode.md) |
+| Hero | `ObjectHero` | Follow/bell — [object-follow.md](../../object-follow.md); edit toggle; lifecycle status label on type row when not `active`; closed venues link to Updates (`update_type=status`) |
+| Left rail | `ObjectLeftRail` | Menu blocks, product **options** (variant selectors) — [routes/options.md](routes/options.md), edit `+` — [routes/edit-mode.md](routes/edit-mode.md); closed venue notice with “Suggest a correction” |
 | Center | `ObjectPrimaryContent` | Tab content, nested stack, description |
 | Right rail | `ObjectRightSidebar` / `ObjectEditRightRail` | [routes/right-rail.md](routes/right-rail.md) |
 

@@ -701,3 +701,73 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     expect(model.widgetConfig).toBeNull();
   });
 });
+
+describe('projectedObjectWithCountsToPageModel closed venue status block', () => {
+  const baseCounts = {
+    followers_count: 0,
+    posts_count: 0,
+    updates_count: 0,
+    favorited_by_count: 0,
+    supervised_count: 0,
+    exclusive_count: 0,
+    is_following: false,
+    viewer_bell: false,
+    update_type_counts: {},
+  };
+
+  it('emits status block for closed restaurant', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'rest-1',
+      object_type: 'restaurant',
+      semantic_type: null,
+      status: 'closed',
+      weight: 1,
+      fields: { name: 'Good Co.' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.leftRailBlocks[0]).toEqual({
+      kind: 'status',
+      headingLabel: 'Status',
+      status: 'closed',
+    });
+    expect(model.lifecycleStatus).toBe('closed');
+  });
+
+  it('omits status block for active restaurant', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'rest-1',
+      object_type: 'restaurant',
+      semantic_type: null,
+      status: 'active',
+      weight: 1,
+      fields: { name: 'Good Co.' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.leftRailBlocks.some((b) => b.kind === 'status')).toBe(false);
+  });
+
+  it('omits status block for closed product', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      status: 'closed',
+      weight: 1,
+      fields: { name: 'Widget' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.leftRailBlocks.some((b) => b.kind === 'status')).toBe(false);
+  });
+});

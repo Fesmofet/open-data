@@ -15,7 +15,9 @@ import { resolveGalleryPhotosAlbum } from '@/modules/object/domain/resolve-galle
 import {
   objectStatusLabelKey,
   shouldShowObjectStatusBadge,
+  shouldShowPermanentlyClosedLocationNotice,
 } from '@/modules/object/domain/object-status-label';
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { RELATED_ALBUM_NAME } from '@opden-data-layer/core/post-related-images';
 import { isPageContentVirtualGalleryAlbum } from '@/modules/object/domain/build-page-content-gallery-album';
 import { galleryAlbumPickerNames } from '@/modules/object-updates/application/gallery-form-value';
@@ -238,6 +240,31 @@ export function ObjectPageShellClient({
       OBJECT_TYPE_REGISTRY[model.objectTypeKey as keyof typeof OBJECT_TYPE_REGISTRY];
     return registryEntry?.supported_updates ?? [];
   }, [model.objectTypeKey]);
+
+  const statusUpdatesHref = useMemo(() => {
+    if (
+      !shouldShowPermanentlyClosedLocationNotice(
+        model.lifecycleStatus,
+        model.objectTypeKey,
+      )
+    ) {
+      return null;
+    }
+    if (!supportedUpdateTypes.includes(UPDATE_TYPES.STATUS)) {
+      return null;
+    }
+    return buildObjectUpdatesFieldHref(
+      model.objectId,
+      new URLSearchParams(searchParams.toString()),
+      UPDATE_TYPES.STATUS,
+    );
+  }, [
+    model.lifecycleStatus,
+    model.objectId,
+    model.objectTypeKey,
+    searchParams,
+    supportedUpdateTypes,
+  ]);
 
   const onViewFieldUpdates = useCallback(
     (kind: ObjectLeftRailBlockKind) => {
@@ -499,6 +526,7 @@ export function ObjectPageShellClient({
         viewerUsername={viewerUsername}
         onRequireLogin={openLogin}
         tagApprovalStats={tagApprovalStats}
+        statusUpdatesHref={statusUpdatesHref}
       />
     </LeftObjectProfileSidebar>
   );
@@ -552,6 +580,7 @@ export function ObjectPageShellClient({
             displayWeightLabel={model.displayWeightLabel}
             kindLabel={model.kindLabel}
             statusBadgeLabel={statusBadgeLabel}
+            statusUpdatesHref={statusUpdatesHref}
             isEditMode={isEditMode}
             isFollowing={isFollowing}
             isBell={viewerBell}

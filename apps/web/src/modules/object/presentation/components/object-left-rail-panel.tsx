@@ -14,7 +14,13 @@ import {
   type ObjectLeftRailBlockKind,
 } from '@/modules/object-updates/domain/block-update-type-map';
 import { mergeLeftRailBlocksForEditMode } from '@/modules/object-updates/domain/left-rail-edit-blocks';
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { shouldUnoptimizeRemoteImage, OptimisticNavLink } from '@/shared/presentation';
+
+import {
+  objectStatusClosedLocationBodyKey,
+  objectStatusLabelKey,
+  shouldShowPermanentlyClosedLocationNotice,
+} from '../../domain/object-status-label';
 
 import type {
   ObjectLeftRailBlock,
@@ -90,6 +96,8 @@ export type ObjectLeftRailPanelProps = {
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
   tagApprovalStats?: TagApprovalStatsIndex;
+  /** Updates tab URL filtered to status rows (venue closed notice link). */
+  statusUpdatesHref?: string | null;
 };
 
 /** Max characters for description preview card (matches legacy sidebar truncation). */
@@ -351,6 +359,7 @@ export function ObjectLeftRailPanel({
   viewerUsername,
   onRequireLogin,
   tagApprovalStats,
+  statusUpdatesHref = null,
 }: ObjectLeftRailPanelProps) {
   const { t, locale } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
@@ -887,6 +896,25 @@ export function ObjectLeftRailPanel({
             return (
               <div key={`status-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('status', block.headingLabel)} />
+                {shouldShowPermanentlyClosedLocationNotice(block.status, objectTypeKey) ? (
+                  <div className="space-y-1 text-body-sm">
+                    <p className="font-weight-strong text-fg">
+                      {t(objectStatusLabelKey('closed', objectTypeKey))}
+                    </p>
+                    <p className="text-muted">
+                      {t(objectStatusClosedLocationBodyKey())}
+                    </p>
+                    {statusUpdatesHref ? (
+                      <OptimisticNavLink
+                        href={statusUpdatesHref}
+                        method="replace"
+                        className="text-link hover:underline"
+                      >
+                        {t('object_status_suggest_correction')}
+                      </OptimisticNavLink>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             );
           case 'compareAtPrice':

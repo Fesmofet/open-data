@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
-import { ObjectThumbnail } from '@/shared/presentation';
+import { ObjectThumbnail, OptimisticNavLink } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
 
@@ -27,6 +27,8 @@ export type ObjectHeroProps = {
   kindLabel: string;
   /** Translated lifecycle status badge when not `active`. */
   statusBadgeLabel: string | null;
+  /** When set, hero status label links to status updates feed. */
+  statusUpdatesHref?: string | null;
   isEditMode: boolean;
   isFollowing: boolean;
   isBell: boolean;
@@ -85,6 +87,7 @@ export function ObjectHero({
   displayWeightLabel,
   kindLabel,
   statusBadgeLabel,
+  statusUpdatesHref = null,
   isEditMode,
   isFollowing,
   isBell,
@@ -210,7 +213,7 @@ export function ObjectHero({
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span
                   className={[
-                    'rounded-btn px-2 py-0.5 text-caption font-weight-label',
+                    'inline-flex items-center rounded-btn px-2 py-0.5 text-caption font-weight-label leading-none',
                     hasCoverPhoto
                       ? 'hero-on-photo-chip'
                       : 'bg-ghost-surface text-nav-fg',
@@ -218,10 +221,33 @@ export function ObjectHero({
                 >
                   {kindLabel}
                 </span>
+                {statusBadgeLabel ? (
+                  statusUpdatesHref ? (
+                    <OptimisticNavLink
+                      href={statusUpdatesHref}
+                      method="replace"
+                      className={[
+                        'inline-flex items-center text-caption font-weight-strong leading-none',
+                        hasCoverPhoto ? 'hero-on-photo-muted hover:underline' : 'text-fg hover:underline',
+                      ].join(' ')}
+                    >
+                      {statusBadgeLabel}
+                    </OptimisticNavLink>
+                  ) : (
+                    <span
+                      className={[
+                        'inline-flex items-center text-caption font-weight-strong leading-none',
+                        hasCoverPhoto ? 'hero-on-photo-muted' : 'text-fg',
+                      ].join(' ')}
+                    >
+                      {statusBadgeLabel}
+                    </span>
+                  )
+                ) : null}
                 {displayWeightLabel ? (
                   <span
                     className={[
-                      'rounded-btn px-2 py-0.5 text-caption font-weight-label tabular-nums',
+                      'inline-flex items-center rounded-btn px-2 py-0.5 text-caption font-weight-label tabular-nums leading-none',
                       hasCoverPhoto
                         ? 'hero-on-photo-chip'
                         : 'bg-ghost-surface text-nav-fg',
@@ -231,16 +257,6 @@ export function ObjectHero({
                   </span>
                 ) : null}
               </div>
-              {statusBadgeLabel ? (
-                <p
-                  className={[
-                    'mt-1 text-caption font-weight-label uppercase tracking-caption text-error',
-                    hasCoverPhoto ? 'hero-on-photo-status' : '',
-                  ].join(' ')}
-                >
-                  {statusBadgeLabel}
-                </p>
-              ) : null}
               {subtitleTitle != null || canEditTitle ? (
                 canEditTitle ? (
                   <button

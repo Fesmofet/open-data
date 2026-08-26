@@ -31,6 +31,7 @@ import type {
 import {
   OBJECT_LEFT_RAIL_BLOCK_LABEL,
 } from '../domain/object-update-labels';
+import { shouldShowPermanentlyClosedLocationNotice } from '../domain/object-status-label';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '../domain/widget.constants';
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
@@ -648,6 +649,29 @@ function appendAboutSectionBlocks(
   }
 }
 
+function prependClosedVenueStatusBlock(
+  blocks: ObjectLeftRailBlock[],
+  viewLike: ProjectedObjectView,
+): void {
+  const coreStatus =
+    typeof viewLike.status === 'string' && viewLike.status.trim().length > 0
+      ? viewLike.status.trim()
+      : 'active';
+  if (
+    !shouldShowPermanentlyClosedLocationNotice(
+      coreStatus,
+      viewLike.object_type ?? '',
+    )
+  ) {
+    return;
+  }
+  blocks.unshift({
+    kind: 'status',
+    headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.status,
+    status: 'closed',
+  });
+}
+
 function buildLeftRailBlocks(
   viewLike: ProjectedObjectView,
   optionsApi?: ObjectOptionsApiResponse | null,
@@ -670,12 +694,14 @@ function buildLeftRailBlocks(
       viewLike,
       optionsApi,
     );
+    prependClosedVenueStatusBlock(blocks, viewLike);
     return blocks;
   }
 
   appendMenuClusterBlocks(blocks, viewLike);
   appendHeaderBlocks(blocks, viewLike);
   appendAboutSectionBlocks(blocks, ABOUT_SECTION_BLOCK_ORDER, viewLike, optionsApi);
+  prependClosedVenueStatusBlock(blocks, viewLike);
 
   return blocks;
 }
@@ -733,6 +759,10 @@ export function projectedObjectWithCountsToPageModel(
     object_id: api.object_id,
     object_type: api.object_type,
     semantic_type: api.semantic_type,
+    status:
+      typeof api.status === 'string' && api.status.trim().length > 0
+        ? api.status.trim()
+        : undefined,
     weight: api.weight ?? null,
     fields,
     isFavorited: readIsFavorited(api),

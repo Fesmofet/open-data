@@ -38,7 +38,7 @@ Wrapped in **`react.cache()`** — shared by metadata and page body.
 
 ### Query API visibility
 
-Object page resolve (`POST /query/v1/objects/resolve`) loads **any** `objects_core.status`. Search, discover, favorites, and nested/ref cards of other objects still restrict to `status = 'active'`. Non-active objects show a lifecycle badge in the hero when `status !== 'active'`.
+Object page resolve (`POST /query/v1/objects/resolve`) loads **any** `objects_core.status`. Search, discover, favorites, and nested/ref cards of other objects still restrict to `status = 'active'`. Non-active objects show a lifecycle badge in the hero when `status !== 'active'`. For **`closed`** venue types (`business`, `restaurant`, `place`, `shop`), the hero label and left-rail notice (“Permanently closed”, body copy, “Suggest a correction”) link to `/object/:id/updates?update_type=status`.
 
 ## Fallback
 

@@ -1,6 +1,8 @@
 import {
+  objectStatusClosedLocationBodyKey,
   objectStatusLabelKey,
   shouldShowObjectStatusBadge,
+  shouldShowPermanentlyClosedLocationNotice,
 } from './object-status-label';
 
 describe('objectStatusLabelKey', () => {
@@ -35,5 +37,31 @@ describe('shouldShowObjectStatusBadge', () => {
     expect(shouldShowObjectStatusBadge('active')).toBe(false);
     expect(shouldShowObjectStatusBadge('closed')).toBe(true);
     expect(shouldShowObjectStatusBadge(null)).toBe(false);
+  });
+});
+
+describe('shouldShowPermanentlyClosedLocationNotice', () => {
+  it('shows for closed venue types only', () => {
+    expect(shouldShowPermanentlyClosedLocationNotice('closed', 'restaurant')).toBe(
+      true,
+    );
+    expect(shouldShowPermanentlyClosedLocationNotice('closed', 'business')).toBe(true);
+    expect(shouldShowPermanentlyClosedLocationNotice('closed', 'place')).toBe(true);
+    expect(shouldShowPermanentlyClosedLocationNotice('closed', 'shop')).toBe(true);
+  });
+
+  it('hides for active, other statuses, and product-like closed', () => {
+    expect(shouldShowPermanentlyClosedLocationNotice('active', 'restaurant')).toBe(
+      false,
+    );
+    expect(shouldShowPermanentlyClosedLocationNotice('unavailable', 'restaurant')).toBe(
+      false,
+    );
+    expect(shouldShowPermanentlyClosedLocationNotice('closed', 'product')).toBe(false);
+    expect(shouldShowPermanentlyClosedLocationNotice('closed', null)).toBe(false);
+  });
+
+  it('returns stable body i18n key', () => {
+    expect(objectStatusClosedLocationBodyKey()).toBe('object_status_closed_location_body');
   });
 });

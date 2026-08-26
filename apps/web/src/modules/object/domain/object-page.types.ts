@@ -263,7 +263,7 @@ export type ObjectLeftRailBlock =
       /** Current background/cover URL, or null when not set. */
       url: string | null;
     }
-  | { kind: 'status'; headingLabel: string }
+  | { kind: 'status'; headingLabel: string; status?: string }
   | { kind: 'compareAtPrice'; headingLabel: string }
   | { kind: 'saleEvent'; headingLabel: string }
   | {
