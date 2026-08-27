@@ -89,4 +89,20 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('description')).toBeLessThan(order.indexOf('category'));
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
   });
+
+  it('includes governance fields in edit order for governance type', () => {
+    const order = resolveEditModeLeftRailBlockOrder('governance');
+    expect(order).toContain('objectControl');
+    expect(order).toContain('admins');
+    expect(order).toContain('moderators');
+    expect(order).toContain('trusted');
+    expect(order).toContain('authorities');
+    expect(order).toContain('whitelist');
+    expect(order).toContain('restricted');
+    expect(order).toContain('banned');
+    expect(order).toContain('inheritsFrom');
+    expect(order).toContain('validityCutoff');
+    expect(order.indexOf('objectControl')).toBeLessThan(order.indexOf('admins'));
+    expect(order.indexOf('admins')).toBeLessThan(order.indexOf('inheritsFrom'));
+  });
 });

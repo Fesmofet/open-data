@@ -49,6 +49,7 @@ import { ObjectCategoryLeftRailSection } from './object-category-left-rail-secti
 import { ObjectFeatureListLeftRailSection } from './object-feature-list-left-rail-section';
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
 import { ObjectIngredientsLeftRailSection } from './object-ingredients-left-rail-section';
+import { ObjectUserRefListLeftRailSection } from './object-user-ref-list-left-rail-section';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectTagsLeftRailSection } from './object-tags-left-rail-section';
@@ -1036,6 +1037,113 @@ export function ObjectLeftRailPanel({
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
+              </div>
+            );
+          case 'objectControl':
+            return (
+              <div key={`objectControl-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailScalarFieldSection
+                  headingLabel={block.headingLabel}
+                  text={block.text}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar
+                        {...editToolbarProps('objectControl', block.headingLabel)}
+                      />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
+          case 'admins':
+          case 'moderators':
+          case 'trusted':
+          case 'authorities':
+          case 'whitelist':
+          case 'restricted':
+          case 'banned':
+            return (
+              <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectUserRefListLeftRailSection
+                  headingLabel={block.headingLabel}
+                  accounts={block.accounts}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar
+                        {...editToolbarProps(block.kind, block.headingLabel)}
+                      />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
+          case 'inheritsFrom':
+            return (
+              <div key={`inheritsFrom-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                {editContext ? (
+                  <LeftRailEditToolbar
+                    {...editToolbarProps('inheritsFrom', block.headingLabel)}
+                  />
+                ) : null}
+                {block.entries.length > 0 ? (
+                  <>
+                    <p className="text-body-sm font-weight-body text-fg">
+                      {block.headingLabel}:
+                    </p>
+                    <ul className="mt-1 list-none space-y-2 p-0">
+                      {block.entries.map((entry) => (
+                        <li key={entry.objectId} className="text-body-sm">
+                          <Link
+                            href={`/object/${encodeURIComponent(entry.objectId)}`}
+                            prefetch={false}
+                            suppressHydrationWarning
+                            className="text-accent hover:underline"
+                          >
+                            {entry.objectId}
+                          </Link>
+                          {entry.scope.length > 0 ? (
+                            <p className="mt-0.5 text-muted">{entry.scope.join(', ')}</p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+              </div>
+            );
+          case 'validityCutoff':
+            return (
+              <div key={`validityCutoff-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                {editContext ? (
+                  <LeftRailEditToolbar
+                    {...editToolbarProps('validityCutoff', block.headingLabel)}
+                  />
+                ) : null}
+                {block.entries.length > 0 ? (
+                  <>
+                    <p className="text-body-sm font-weight-body text-fg">
+                      {block.headingLabel}:
+                    </p>
+                    <ul className="mt-1 list-none space-y-1 p-0">
+                      {block.entries.map((entry) => (
+                        <li key={`${entry.account}-${entry.timestamp}`} className="text-body-sm">
+                          <Link
+                            href={`/@${encodeURIComponent(entry.account)}`}
+                            prefetch={false}
+                            suppressHydrationWarning
+                            className="text-accent hover:underline"
+                          >
+                            @{entry.account}
+                          </Link>
+                          <span className="text-muted">
+                            {' '}
+                            · {new Date(entry.timestamp * 1000).toISOString().slice(0, 10)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
               </div>
             );
           default: {

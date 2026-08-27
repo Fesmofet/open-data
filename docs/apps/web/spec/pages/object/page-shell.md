@@ -39,7 +39,7 @@ Single App Router entry: [`page.tsx`](../../../../../apps/web/src/app/(app)/obje
 | Region | Component | Notes |
 |--------|-----------|--------|
 | Hero | `ObjectHero` | Follow/bell — [object-follow.md](../../object-follow.md); edit toggle; lifecycle status label on type row when not `active`; closed venues link to Updates (`update_type=status`) |
-| Left rail | `ObjectLeftRail` | Menu blocks, product **options** (variant selectors) — [routes/options.md](routes/options.md), edit `+` — [routes/edit-mode.md](routes/edit-mode.md); closed venue notice with “Suggest a correction” |
+| Left rail | `ObjectLeftRail` | Menu blocks, product **options** (variant selectors) — [routes/options.md](routes/options.md), **governance** account lists — [routes/governance-left-rail.md](routes/governance-left-rail.md), edit `+` — [routes/edit-mode.md](routes/edit-mode.md); closed venue notice with “Suggest a correction” |
 | Center | `ObjectPrimaryContent` | Tab content, nested stack, description |
 | Right rail | `ObjectRightSidebar` / `ObjectEditRightRail` | [routes/right-rail.md](routes/right-rail.md) |
 
@@ -77,6 +77,7 @@ Gated by hero Edit toggle + `viewerUsername` from server.
 | Related / Similar / Add-On feeds | [routes/ref-feeds.md](routes/ref-feeds.md) |
 | Category objects feed | [routes/category-feed.md](routes/category-feed.md) |
 | Recipe left rail | [routes/recipe-left-rail.md](routes/recipe-left-rail.md) |
+| Governance left rail | [routes/governance-left-rail.md](routes/governance-left-rail.md) |
 | Edit mode | [routes/edit-mode.md](routes/edit-mode.md) |
 | Right rail | [routes/right-rail.md](routes/right-rail.md) |
 

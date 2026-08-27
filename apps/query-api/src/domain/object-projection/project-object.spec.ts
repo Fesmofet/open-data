@@ -380,3 +380,45 @@ describe('projectObjectCore avatar fallback', () => {
     expect(core.fields.image).toBe('https://cdn.example/own.png');
   });
 });
+
+describe('projectObjectCore governance fields', () => {
+  it('projects governance user_ref and objectControl on governance objects', () => {
+    const view = baseView({
+      admins: {
+        update_type: UPDATE_TYPES.ADMINS,
+        cardinality: 'multi',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.ADMINS,
+            value_text: 'alice',
+          }),
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.ADMINS,
+            value_text: 'bob',
+          }),
+        ],
+      },
+      objectControl: {
+        update_type: UPDATE_TYPES.OBJECT_CONTROL,
+        cardinality: 'single',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.OBJECT_CONTROL,
+            value_text: 'full',
+          }),
+        ],
+      },
+    });
+    view.object_type = 'governance';
+
+    const core = projectObjectCore({
+      view,
+      contentBaseUrl: undefined,
+      refSummariesById: new Map(),
+      rankVoteProjection: emptyRankVoteProjection(),
+    });
+
+    expect(core.fields.admins).toEqual(['alice', 'bob']);
+    expect(core.fields.objectControl).toBe('full');
+  });
+});

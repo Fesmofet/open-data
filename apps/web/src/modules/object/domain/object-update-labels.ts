@@ -113,6 +113,16 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   pin: 'Pin',
   remove: 'Remove',
   delegation: 'Delegation',
+  objectControl: 'Object Control',
+  admins: 'Administrators',
+  moderators: 'Moderators',
+  trusted: 'Trusted accounts',
+  authorities: 'Authorities',
+  whitelist: 'Whitelist',
+  restricted: 'Restricted',
+  banned: 'Banned',
+  inheritsFrom: 'Inherits From',
+  validityCutoff: 'Validity Cutoff',
 };
 
 export function labelForUpdateType(updateType: string): string {

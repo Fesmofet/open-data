@@ -931,6 +931,99 @@ export function projectedIngredients(o: ProjectedObjectView): string[] {
   return out;
 }
 
+/** Hive account names from a projected `user_ref` field (multi or single). */
+export function projectedUserRefAccounts(
+  o: ProjectedObjectView,
+  fieldKey: string,
+): string[] {
+  const raw = o.fields[fieldKey];
+  if (Array.isArray(raw)) {
+    const out: string[] = [];
+    for (const item of raw) {
+      const text = readString(item);
+      if (text) {
+        out.push(text);
+      }
+    }
+    return out;
+  }
+  const single = readString(raw);
+  return single ? [single] : [];
+}
+
+export function projectedObjectControl(o: ProjectedObjectView): string | null {
+  return readString(o.fields.objectControl) ?? null;
+}
+
+export type ProjectedInheritsFromEntry = {
+  objectId: string;
+  scope: string[];
+};
+
+export function projectedInheritsFromEntries(
+  o: ProjectedObjectView,
+): ProjectedInheritsFromEntry[] {
+  const raw = o.fields.inheritsFrom;
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  const out: ProjectedInheritsFromEntry[] = [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const objectId = readString(row.object_id);
+    if (!objectId) {
+      continue;
+    }
+    const scopeRaw = row.scope;
+    const scope: string[] = [];
+    if (Array.isArray(scopeRaw)) {
+      for (const item of scopeRaw) {
+        const text = readString(item);
+        if (text) {
+          scope.push(text);
+        }
+      }
+    }
+    out.push({ objectId, scope });
+  }
+  return out;
+}
+
+export type ProjectedValidityCutoffEntry = {
+  account: string;
+  timestamp: number;
+};
+
+function toFiniteTimestamp(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const n = Number(value.trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+export function projectedValidityCutoffEntries(
+  o: ProjectedObjectView,
+): ProjectedValidityCutoffEntry[] {
+  const raw = o.fields.validityCutoff;
+  const rows: unknown[] = Array.isArray(raw) ? raw : raw != null ? [raw] : [];
+  const out: ProjectedValidityCutoffEntry[] = [];
+  for (const row of rows) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const account = readString(row.account);
+    const timestamp = toFiniteTimestamp(row.timestamp);
+    if (account && timestamp != null) {
+      out.push({ account, timestamp });
+    }
+  }
+  return out;
+}
+
 /** Recipe left rail: Cuisine and Pros first, then remaining tag categories. */
 export function orderRecipeTagCategorySections(
   sections: TagCategorySectionView[],

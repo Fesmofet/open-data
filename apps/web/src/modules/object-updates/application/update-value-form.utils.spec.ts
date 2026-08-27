@@ -7,6 +7,7 @@ import {
   UPDATE_INGREDIENTS,
   UPDATE_MENU_ITEM,
   UPDATE_NAME,
+  UPDATE_OBJECT_CONTROL,
   UPDATE_PARENT,
   UPDATE_TAG_CATEGORY_ITEM,
   UPDATE_TELEPHONE,
@@ -26,6 +27,7 @@ import { orderJsonFieldDescriptors } from './address-json-field-labels';
 import {
   coerceFormValueForValidation,
   getJsonFieldDescriptors,
+  getTextEnumValues,
   initialValueForDefinition,
   validateUpdateValue,
 } from './update-value-form.utils';
@@ -33,6 +35,19 @@ import {
 describe('update-value-form.utils', () => {
   it('initialValueForDefinition returns empty string for text updates', () => {
     expect(initialValueForDefinition(UPDATE_NAME)).toBe('');
+  });
+
+  it('initialValueForDefinition returns first enum option for text z.enum updates', () => {
+    expect(initialValueForDefinition(UPDATE_OBJECT_CONTROL)).toBe('full');
+    expect(getTextEnumValues(UPDATE_OBJECT_CONTROL.schema)).toEqual(['full']);
+  });
+
+  it('validateUpdateValue accepts objectControl enum value', () => {
+    const result = validateUpdateValue(UPDATE_OBJECT_CONTROL, 'full');
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value).toBe('full');
+    }
   });
 
   it('initialValueForDefinition returns empty string for user_ref updates', () => {

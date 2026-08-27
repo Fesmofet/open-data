@@ -315,7 +315,25 @@ export type ObjectLeftRailBlock =
   | { kind: 'promotion'; headingLabel: string }
   | { kind: 'pin'; headingLabel: string }
   | { kind: 'remove'; headingLabel: string }
-  | { kind: 'delegation'; headingLabel: string };
+  | { kind: 'delegation'; headingLabel: string }
+  | { kind: 'objectControl'; headingLabel: string; text: string }
+  | { kind: 'admins'; headingLabel: string; accounts: string[] }
+  | { kind: 'moderators'; headingLabel: string; accounts: string[] }
+  | { kind: 'trusted'; headingLabel: string; accounts: string[] }
+  | { kind: 'authorities'; headingLabel: string; accounts: string[] }
+  | { kind: 'whitelist'; headingLabel: string; accounts: string[] }
+  | { kind: 'restricted'; headingLabel: string; accounts: string[] }
+  | { kind: 'banned'; headingLabel: string; accounts: string[] }
+  | {
+      kind: 'inheritsFrom';
+      headingLabel: string;
+      entries: { objectId: string; scope: string[] }[];
+    }
+  | {
+      kind: 'validityCutoff';
+      headingLabel: string;
+      entries: { account: string; timestamp: number }[];
+    };
 
 export type ObjectPageSeoView = {
   title: string | null;

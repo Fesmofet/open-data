@@ -83,6 +83,10 @@ import {
   projectedProductSize,
   projectedWalletAddressRows,
   projectedWorkHours,
+  projectedUserRefAccounts,
+  projectedObjectControl,
+  projectedInheritsFromEntries,
+  projectedValidityCutoffEntries,
 } from './object-projected-fields';
 
 /** Thousandths precision for hero weight badge (matches Waivio-style display). */
@@ -694,6 +698,56 @@ function appendAboutSectionBlock(
           kind: 'identifier',
           headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.identifier,
           rows: identifiers,
+        });
+      }
+      break;
+    }
+    case 'objectControl': {
+      const text = projectedObjectControl(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'objectControl',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.objectControl,
+          text,
+        });
+      }
+      break;
+    }
+    case 'admins':
+    case 'moderators':
+    case 'trusted':
+    case 'authorities':
+    case 'whitelist':
+    case 'restricted':
+    case 'banned': {
+      const accounts = projectedUserRefAccounts(viewLike, step);
+      if (accounts.length > 0) {
+        blocks.push({
+          kind: step,
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL[step],
+          accounts,
+        });
+      }
+      break;
+    }
+    case 'inheritsFrom': {
+      const entries = projectedInheritsFromEntries(viewLike);
+      if (entries.length > 0) {
+        blocks.push({
+          kind: 'inheritsFrom',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.inheritsFrom,
+          entries,
+        });
+      }
+      break;
+    }
+    case 'validityCutoff': {
+      const entries = projectedValidityCutoffEntries(viewLike);
+      if (entries.length > 0) {
+        blocks.push({
+          kind: 'validityCutoff',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.validityCutoff,
+          entries,
         });
       }
       break;

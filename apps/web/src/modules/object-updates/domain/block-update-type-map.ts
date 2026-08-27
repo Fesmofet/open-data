@@ -57,6 +57,16 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   pin: [UPDATE_TYPES.PIN],
   remove: [UPDATE_TYPES.REMOVE],
   delegation: [UPDATE_TYPES.DELEGATION],
+  objectControl: [UPDATE_TYPES.OBJECT_CONTROL],
+  admins: [UPDATE_TYPES.ADMINS],
+  moderators: [UPDATE_TYPES.MODERATORS],
+  trusted: [UPDATE_TYPES.TRUSTED],
+  authorities: [UPDATE_TYPES.AUTHORITIES],
+  whitelist: [UPDATE_TYPES.WHITELIST],
+  restricted: [UPDATE_TYPES.RESTRICTED],
+  banned: [UPDATE_TYPES.BANNED],
+  inheritsFrom: [UPDATE_TYPES.INHERITS_FROM],
+  validityCutoff: [UPDATE_TYPES.VALIDITY_CUTOFF],
 };
 
 export function getUpdateTypesForBlockKind(

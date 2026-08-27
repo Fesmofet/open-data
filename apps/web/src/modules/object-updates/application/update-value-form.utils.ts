@@ -56,9 +56,30 @@ export function unwrapRootStringArraySchema(
   return null;
 }
 
+/** Enum options for `value_kind: 'text'` updates whose schema is `z.enum([...])`. */
+export function getTextEnumValues(schema: z.ZodType): readonly string[] | null {
+  let inner: z.ZodType = schema;
+  if (inner instanceof z.ZodOptional) {
+    inner = inner.unwrap() as z.ZodType;
+  }
+  if (inner instanceof z.ZodDefault) {
+    inner = inner.removeDefault() as z.ZodType;
+  }
+  if (inner instanceof z.ZodEnum) {
+    return inner.options as readonly string[];
+  }
+  return null;
+}
+
 export function initialValueForDefinition(definition: UpdateDefinition): unknown {
   switch (definition.value_kind) {
-    case 'text':
+    case 'text': {
+      const enumValues = getTextEnumValues(definition.schema);
+      if (enumValues?.[0]) {
+        return enumValues[0];
+      }
+      return '';
+    }
     case 'object_ref':
     case 'user_ref':
       return '';

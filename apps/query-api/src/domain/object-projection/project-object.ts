@@ -1,7 +1,6 @@
 import type { UpdateDefinition } from '@opden-data-layer/core';
 import { UPDATE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedField, ResolvedObjectView } from '@opden-data-layer/objects-domain';
-import { GOVERNANCE_UPDATE_TYPES } from '../governance/governance.constants';
 import { buildGalleryAlbums, pickAvatarUrlFromProjectedImage } from './build-gallery-albums';
 import { projectFieldValue } from './project-field';
 import type { ProjectObjectInput, ProjectedObject, RefSummary } from './projected-object.types';
@@ -14,8 +13,6 @@ export type ProjectedObjectCore = Omit<
   | 'hasExclusiveOwnership'
   | 'hasOwnershipAuthority'
 >;
-
-const GOVERNANCE_SKIP = new Set(GOVERNANCE_UPDATE_TYPES);
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
@@ -72,9 +69,6 @@ export function collectObjectRefIdsFromView(view: ResolvedObjectView): string[] 
   };
 
   for (const [updateType, field] of Object.entries(view.fields)) {
-    if (GOVERNANCE_SKIP.has(updateType)) {
-      continue;
-    }
     const def = UPDATE_REGISTRY[updateType];
 
     if (updateType === UPDATE_TYPES.MENU_ITEM) {
@@ -148,9 +142,6 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
   const fields: Record<string, unknown> = {};
 
   for (const [updateType, field] of Object.entries(view.fields)) {
-    if (GOVERNANCE_SKIP.has(updateType)) {
-      continue;
-    }
     const def = UPDATE_REGISTRY[updateType];
     if (!def) {
       continue;

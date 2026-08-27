@@ -16,6 +16,19 @@ related:
 
 # Objects resolve (`POST /query/v1/objects/resolve`)
 
+## Governance object fields
+
+When resolving a `governance` object, governance update types are projected into `fields`:
+
+| `update_type` | Projected shape |
+|---------------|-----------------|
+| `admins`, `trusted`, `moderators`, `authorities`, `whitelist`, `restricted`, `banned` | `string[]` — Hive account names from VALID rows |
+| `objectControl` | `string \| null` — e.g. `"full"` |
+| `inheritsFrom` | `object[]` — `{ object_id, scope }` per VALID row |
+| `validityCutoff` | `object[]` — `{ account, timestamp }` per VALID row |
+
+These are **this object's own VALID updates**, not the merged governance snapshot used internally for vote validity and masking. See [governance-resolution.md](../../../spec/governance-resolution.md).
+
 ## `fields.aggregateRating`
 
 When the `aggregateRating` update type is included in the resolve request, `fields.aggregateRating` is **always an array** (possibly empty) of aspect rows:

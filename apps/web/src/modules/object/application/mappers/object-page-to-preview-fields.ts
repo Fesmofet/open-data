@@ -202,6 +202,41 @@ function appendLeftRailBlock(
     case 'remove':
     case 'delegation':
       break;
+    case 'objectControl':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.OBJECT_CONTROL, block.text);
+      }
+      break;
+    case 'admins':
+    case 'moderators':
+    case 'trusted':
+    case 'authorities':
+    case 'whitelist':
+    case 'restricted':
+    case 'banned':
+      for (const account of block.accounts) {
+        const trimmed = account.trim();
+        if (trimmed.length > 0) {
+          pushEntry(fields, counters, block.kind, trimmed);
+        }
+      }
+      break;
+    case 'inheritsFrom':
+      for (const entry of block.entries) {
+        pushEntry(fields, counters, UPDATE_TYPES.INHERITS_FROM, {
+          object_id: entry.objectId,
+          scope: entry.scope,
+        });
+      }
+      break;
+    case 'validityCutoff':
+      for (const entry of block.entries) {
+        pushEntry(fields, counters, UPDATE_TYPES.VALIDITY_CUTOFF, {
+          account: entry.account,
+          timestamp: entry.timestamp,
+        });
+      }
+      break;
     default: {
       const _exhaustive: never = block;
       return _exhaustive;

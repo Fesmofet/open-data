@@ -873,4 +873,40 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
     expect(model.leftRailBlocks.some((b) => b.kind === 'nutrition')).toBe(false);
     expect(model.leftRailBlocks.some((b) => b.kind === 'cookTime')).toBe(true);
   });
+
+  it('maps governance user_ref fields to left-rail blocks', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'gov-1',
+      object_type: 'governance',
+      semantic_type: null,
+      weight: 1,
+      fields: {
+        name: 'Site governance',
+        admins: ['alice', 'bob'],
+        moderators: ['mod1'],
+        objectControl: 'full',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+
+    expect(kinds).toContain('objectControl');
+    expect(kinds).toContain('admins');
+    expect(kinds).toContain('moderators');
+
+    const adminsBlock = model.leftRailBlocks.find((b) => b.kind === 'admins');
+    expect(adminsBlock && adminsBlock.kind === 'admins' ? adminsBlock.accounts : []).toEqual([
+      'alice',
+      'bob',
+    ]);
+
+    const controlBlock = model.leftRailBlocks.find((b) => b.kind === 'objectControl');
+    expect(
+      controlBlock && controlBlock.kind === 'objectControl' ? controlBlock.text : null,
+    ).toBe('full');
+  });
 });

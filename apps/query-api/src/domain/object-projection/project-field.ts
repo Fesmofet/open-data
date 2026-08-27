@@ -259,7 +259,8 @@ export function projectFieldValue(
   const valid = field.values.filter((u) => u.validity_status === 'VALID');
 
   switch (def.value_kind) {
-    case 'text': {
+    case 'text':
+    case 'user_ref': {
       if (def.cardinality === 'single') {
         return valid[0]?.value_text ?? null;
       }

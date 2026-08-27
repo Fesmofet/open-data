@@ -19,6 +19,7 @@ import {
   coerceFormValueForValidation,
   geoFormValueFromRaw,
   getJsonFieldDescriptors,
+  getTextEnumValues,
   initialValueForDefinition,
   unwrapRootStringArraySchema,
   validateUpdateValue,
@@ -172,6 +173,27 @@ function UpdateValueFields({
 
   if (definition.value_kind === 'text') {
     const text = typeof value === 'string' ? value : '';
+    const textEnumValues = getTextEnumValues(definition.schema);
+
+    if (textEnumValues) {
+      return (
+        <label className="block text-body-sm">
+          {label ? <span className="font-weight-label text-fg">{label}</span> : null}
+          <select
+            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg"
+            value={text || textEnumValues[0] || ''}
+            onChange={(e) => onChange(e.target.value)}
+          >
+            {textEnumValues.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </label>
+      );
+    }
+
     const inputType =
       updateType === 'email' ? 'email' : updateType === 'url' ? 'url' : 'text';
     const placeholder =

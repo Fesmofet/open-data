@@ -98,6 +98,16 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'email',
   'walletAddress',
   'identifier',
+  'objectControl',
+  'admins',
+  'moderators',
+  'trusted',
+  'authorities',
+  'whitelist',
+  'restricted',
+  'banned',
+  'inheritsFrom',
+  'validityCutoff',
 ] as const;
 
 /**

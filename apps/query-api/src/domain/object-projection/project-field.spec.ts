@@ -238,6 +238,85 @@ describe('projectFieldValue tagCategoryItem', () => {
   });
 });
 
+describe('projectFieldValue user_ref', () => {
+  it('projects multi-cardinality user_ref as string array', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.ADMINS,
+      cardinality: 'multi',
+      values: [
+        {
+          update_id: 'a1',
+          update_type: UPDATE_TYPES.ADMINS,
+          creator: 'creator',
+          locale: null,
+          created_at_unix: 0,
+          event_seq: BigInt(0),
+          value_text: 'alice',
+          value_geo: null,
+          value_json: null,
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: null,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+        {
+          update_id: 'a2',
+          update_type: UPDATE_TYPES.ADMINS,
+          creator: 'creator',
+          locale: null,
+          created_at_unix: 1,
+          event_seq: BigInt(1),
+          value_text: 'bob',
+          value_geo: null,
+          value_json: null,
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: null,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    expect(projectFieldValue(field, UPDATE_TYPES.ADMINS, undefined)).toEqual(['alice', 'bob']);
+  });
+
+  it('projects single-cardinality user_ref as string', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.DELEGATION,
+      cardinality: 'single',
+      values: [
+        {
+          update_id: 'd1',
+          update_type: UPDATE_TYPES.DELEGATION,
+          creator: 'creator',
+          locale: null,
+          created_at_unix: 0,
+          event_seq: BigInt(0),
+          value_text: 'alice',
+          value_geo: null,
+          value_json: null,
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: null,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    expect(projectFieldValue(field, UPDATE_TYPES.DELEGATION, undefined)).toBe('alice');
+  });
+});
+
 describe('geoJsonPointToLatLon', () => {
   const expected = { latitude: 49.187253, longitude: -123.131515 };
 

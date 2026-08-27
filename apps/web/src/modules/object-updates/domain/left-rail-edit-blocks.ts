@@ -132,6 +132,26 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'remove', headingLabel };
     case 'delegation':
       return { kind: 'delegation', headingLabel };
+    case 'objectControl':
+      return { kind: 'objectControl', headingLabel, text: '' };
+    case 'admins':
+      return { kind: 'admins', headingLabel, accounts: [] };
+    case 'moderators':
+      return { kind: 'moderators', headingLabel, accounts: [] };
+    case 'trusted':
+      return { kind: 'trusted', headingLabel, accounts: [] };
+    case 'authorities':
+      return { kind: 'authorities', headingLabel, accounts: [] };
+    case 'whitelist':
+      return { kind: 'whitelist', headingLabel, accounts: [] };
+    case 'restricted':
+      return { kind: 'restricted', headingLabel, accounts: [] };
+    case 'banned':
+      return { kind: 'banned', headingLabel, accounts: [] };
+    case 'inheritsFrom':
+      return { kind: 'inheritsFrom', headingLabel, entries: [] };
+    case 'validityCutoff':
+      return { kind: 'validityCutoff', headingLabel, entries: [] };
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;
