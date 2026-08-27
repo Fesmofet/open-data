@@ -6,6 +6,7 @@ import {
   buildNotificationMessage,
   renderTelegramBody,
   resolveNotificationAbsoluteUrl,
+  resolveNotificationContextHref,
 } from '@opden-data-layer/notifications-messages';
 import {
   TELEGRAM_RECIPIENT_PARAM,
@@ -57,7 +58,15 @@ export class TelegramNotificationService {
         const text = renderTelegramBody(message, EN_NOTIFICATION_DICTIONARY, {
           extraParams: { [TELEGRAM_RECIPIENT_PARAM]: account },
         });
-        const websiteUrl = resolveNotificationAbsoluteUrl(message, baseUrl);
+        const contextHref = resolveNotificationContextHref(
+          request.event,
+          message,
+          account,
+        );
+        const websiteUrl = resolveNotificationAbsoluteUrl(
+          { ...message, href: contextHref },
+          baseUrl,
+        );
         pipe.xAdd(TELEGRAM_STREAM_KEY, {
           [TELEGRAM_STREAM_DATA_FIELD]: JSON.stringify({
             chatIds: request.chatIds,

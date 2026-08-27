@@ -28,3 +28,7 @@ export function walletTransfersPath(
   }
   return `${base}?type=${encodeURIComponent(type)}`;
 }
+
+export function inboxPath(username: string, channelId: string): string {
+  return `/@${encodeURIComponent(username)}/messages?channel=${encodeURIComponent(channelId)}`;
+}

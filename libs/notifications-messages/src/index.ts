@@ -7,12 +7,14 @@ export {
   type NotificationMessage,
 } from './lib/message';
 export {
+  inboxPath,
   objectPath,
   objectUpdatePath,
   postPath,
   userProfilePath,
   walletTransfersPath,
 } from './lib/links';
+export { resolveNotificationContextHref } from './lib/resolve-notification-context-href';
 export {
   applyMessageParams,
   renderPlainText,

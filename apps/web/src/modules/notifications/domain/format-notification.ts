@@ -1,5 +1,6 @@
 import {
   buildNotificationMessage,
+  resolveNotificationContextHref,
   type NotificationIcon,
 } from '@opden-data-layer/notifications-messages';
 import type { NotificationEventType } from '@opden-data-layer/notifications-contract';
@@ -44,19 +45,26 @@ export function resolveNotificationHref(
   formatted: FormattedNotification,
   viewerUsername?: string,
 ): string | null {
-  if (viewerUsername && (item.type === 'message_direct' || item.type === 'message_group')) {
-    const channelId =
-      typeof item.payload === 'object' &&
-      item.payload !== null &&
-      'channelId' in item.payload &&
-      typeof (item.payload as { channelId?: string }).channelId === 'string'
-        ? (item.payload as { channelId: string }).channelId
-        : null;
-    if (channelId) {
-      return `/@${encodeURIComponent(viewerUsername)}/messages?channel=${encodeURIComponent(channelId)}`;
-    }
-  }
-  return formatted.href;
+  return resolveNotificationContextHref(
+    {
+      type: item.type as NotificationEventType,
+      occurredAt: item.occurredAt,
+      blockNum: item.blockNum,
+      trxId: item.trxId,
+      objectId: item.objectId,
+      actor: item.actor,
+      payload: item.payload,
+    } as Parameters<typeof buildNotificationMessage>[0],
+    {
+      key: formatted.key,
+      params: formatted.params ?? {},
+      href: formatted.href,
+      icon: 'generic',
+      actor: formatted.actor,
+      paramHrefs: formatted.paramHrefs,
+    },
+    viewerUsername,
+  );
 }
 
 export function notificationIconType(item: UserNotificationItem): NotificationIconType {

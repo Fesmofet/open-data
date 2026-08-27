@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import type { RedisClientInterface } from '@opden-data-layer/clients';
+import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import { TelegramNotificationService } from './telegram-notification.service';
 import {
   TELEGRAM_STREAM_DATA_FIELD,
@@ -174,5 +175,132 @@ describe('TelegramNotificationService', () => {
     expect(payload.websiteUrl).toBe(
       'https://waiviodev.com/object/obj-1/updates/upd-1',
     );
+  });
+
+  it('queues message_direct with inbox websiteUrl', async () => {
+    await service.enqueueMany([
+      {
+        account: 'flowmaster',
+        chatIds: ['42'],
+        itemId: 'item-dm',
+        event: {
+          type: 'message_direct',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't',
+          objectId: null,
+          actor: 'bob',
+          payload: {
+            channelId: 'dm-1',
+            messageId: 'msg-1',
+            author: 'bob',
+            encrypted: false,
+          },
+        },
+      },
+    ]);
+
+    const payload = JSON.parse(
+      xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(payload.websiteUrl).toBe(
+      'https://waiviodev.com/@flowmaster/messages?channel=dm-1',
+    );
+    expect(payload.text).not.toContain('https://');
+  });
+
+  it('queues message_group with inbox websiteUrl', async () => {
+    await service.enqueueMany([
+      {
+        account: 'flowmaster',
+        chatIds: ['42'],
+        itemId: 'item-grp',
+        event: {
+          type: 'message_group',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't',
+          objectId: null,
+          actor: 'alice',
+          payload: {
+            channelId: 'grp-1',
+            messageId: 'msg-2',
+            author: 'alice',
+            channelTitle: 'Team chat',
+            encrypted: false,
+          },
+        },
+      },
+    ]);
+
+    const payload = JSON.parse(
+      xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(payload.websiteUrl).toBe(
+      'https://waiviodev.com/@flowmaster/messages?channel=grp-1',
+    );
+    expect(payload.text).not.toContain('https://');
+  });
+
+  it('reply websiteUrl stays the comment permalink', async () => {
+    await service.enqueueMany([
+      {
+        account: 'flowmaster',
+        chatIds: ['42'],
+        itemId: 'item-reply',
+        event: {
+          type: 'reply',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't',
+          objectId: null,
+          actor: 'w7ngc',
+          payload: {
+            author: 'w7ngc',
+            permlink: 'c1',
+            parentAuthor: 'flowmaster',
+            parentPermlink: 'p1',
+            isRootPost: false,
+            isReplyToComment: true,
+          },
+        },
+      },
+    ]);
+
+    const payload = JSON.parse(
+      xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(payload.websiteUrl).toBe('https://waiviodev.com/@w7ngc/c1');
+    expect(payload.text).not.toContain('https://');
+  });
+
+  it('message_direct without channelId omits websiteUrl but still queues text', async () => {
+    await service.enqueueMany([
+      {
+        account: 'flowmaster',
+        chatIds: ['42'],
+        itemId: 'item-dm-no-channel',
+        event: {
+          type: 'message_direct',
+          occurredAt: '2026-07-30T12:00:00Z',
+          blockNum: 1,
+          trxId: 't',
+          objectId: null,
+          actor: 'bob',
+          payload: {
+            messageId: 'msg-1',
+            author: 'bob',
+            encrypted: false,
+          },
+        } as AnyNotificationEvent,
+      },
+    ]);
+
+    const payload = JSON.parse(
+      xAdd.mock.calls[0][1][TELEGRAM_STREAM_DATA_FIELD],
+    );
+    expect(payload.websiteUrl).toBeUndefined();
+    expect(payload.text).toBe('bob sent a new message to flowmaster');
+    expect(payload.text).not.toContain('https://');
   });
 });

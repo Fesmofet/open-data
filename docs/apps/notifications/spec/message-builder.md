@@ -27,17 +27,17 @@ buildNotificationMessage(event: AnyNotificationEvent): NotificationMessage
 |-------|---------|
 | `key` | i18n key in `apps/web/src/i18n/locales/*.json` |
 | `params` | Placeholders `{username}`, `{amount}`, … |
-| `href` | Relative path for Next.js `Link` |
+| `href` | Primary **context** destination: web row overlay + Telegram `Go to website` button |
 | `icon` | `follow` \| `vote` \| `reply` \| `wallet` \| `object` \| `bell` \| `generic` |
 | `actor` | Avatar / display account |
-| `paramHrefs` | Optional map of placeholder name → relative `href` for inline accent links on web |
+| `paramHrefs` | Optional map of placeholder name → relative `href` for secondary inline accent links on web (profile, post title, object name) |
 
 Pure functions only — no Nest, React, or i18n runtime.
 
 ## Channels
 
-- **Web**: `format-notification.ts` calls `buildNotificationMessage`, then `NotificationMessageText` renders i18n templates with `paramHrefs` as accent `Link` segments.
-- **Telegram**: `renderTelegramBody(message, dict)` for the message body; `resolveNotificationAbsoluteUrl(message, baseUrl)` for the website button URL. `renderPlainText` remains for plain-text consumers that append the URL as a second line.
+- **Web**: `format-notification.ts` calls `buildNotificationMessage`, then `resolveNotificationContextHref(event, message, viewerUsername)` for the row overlay. `NotificationMessageText` renders i18n templates with `paramHrefs` as secondary accent `Link` segments; avatar links to the actor profile.
+- **Telegram**: `renderTelegramBody(message, dict)` for the message body; `resolveNotificationContextHref(event, message, recipientAccount)` then `resolveNotificationAbsoluteUrl` for the website button URL. Messaging types (`message_direct`, `message_group`) resolve to `/@{recipient}/messages?channel={channelId}` when both recipient and `channelId` are present. `renderPlainText` remains for plain-text consumers that append the URL as a second line.
 
 **Dictionary sync:** every i18n key emitted by `buildNotificationMessage` must exist in [`apps/notifications/src/telegram/en-dictionary.ts`](../../../../apps/notifications/src/telegram/en-dictionary.ts) with the same placeholder names as [`apps/web/src/i18n/locales/en-US.json`](../../../../apps/web/src/i18n/locales/en-US.json). `en-dictionary.spec.ts` asserts full coverage and no unfilled `{placeholder}` tokens in rendered Telegram bodies.
 

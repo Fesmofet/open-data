@@ -27,7 +27,7 @@ MVP delivery channel inside `apps/notifications`. English copy only (`en-diction
 
 - **Body:** English template from `renderTelegramBody` + `en-dictionary.ts` — **no** raw URL appended to the text. `TelegramNotificationService` injects `{recipient}` (the subscribed Hive account) at render time.
 - **Inline keyboard:**
-  - `Go to website` — URL button when `message.href` resolves to an absolute link via `WEB_PUBLIC_ORIGIN`
+  - `Go to website` — URL button when the **context** href resolves to an absolute link via `WEB_PUBLIC_ORIGIN` (including inbox for `message_direct` / `message_group` when `channelId` is present)
   - `Unsubscribe {account}` — `callback_data: unsubscribe:{account}`; handled by the poller (`answerCallbackQuery` + DB unsubscribe)
 - Text commands `/stop` remain supported as a fallback.
 

@@ -24,7 +24,7 @@ function renderSegment(
       <Link
         key={`${key}-${index}`}
         href={href}
-        className="text-accent hover:underline"
+        className="pointer-events-auto relative z-10 text-accent hover:underline"
       >
         {value}
       </Link>

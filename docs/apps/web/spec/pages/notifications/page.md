@@ -78,15 +78,20 @@ If both WS env vars are empty, the client does not open a WebSocket (bell shows 
 - **Bell:** calls `markRead()` when the dropdown opens.
 - **`/notifications` page:** calls `markRead()` on mount.
 
+## Row interaction
+
+Each feed row ([`NotificationRow`](../../../apps/web/src/modules/notifications/presentation/components/notification-row.tsx)) has:
+
+- **Primary click (overlay):** navigates to the notification **context** — comment/post permalink, wallet transfers tab, object page, inbox for messages, etc. Resolved by `resolveNotificationContextHref` in `@opden-data-layer/notifications-messages`.
+- **Secondary clicks:** avatar and inline `{username}` / `{objectName}` placeholders link to profile or object URLs via `paramHrefs`.
+
+Bell dropdown rows call `onNavigate` on overlay click (closes panel; skipped on ctrl/meta for new-tab).
+
+Copy and per-type destinations: [notifications message builder](../../notifications/spec/message-builder.md).
+
 ## i18n
 
-Message text comes from locale JSON via [`format-notification.ts`](../../../apps/web/src/modules/notifications/domain/format-notification.ts):
-
-| `type` | Message key |
-|--------|-------------|
-| `follow` | `notification_following_username` (`{username}` = actor) |
-| `update_vote_cast` | `notification_update_vote_cast` |
-| other | `notification_generic_default_message` |
+Message text comes from locale JSON via [`format-notification.ts`](../../../apps/web/src/modules/notifications/domain/format-notification.ts) and `@opden-data-layer/notifications-messages` builders.
 
 UI chrome: `notifications`, `notifications_empty_message`, `see_all`, `notify_list_message`, `notify_list_message_telegram_before`, `notify_list_message_telegram_after`, `settings_notify`.
 

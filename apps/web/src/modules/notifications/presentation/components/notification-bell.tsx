@@ -115,7 +115,12 @@ export function NotificationBell({ username, triggerClassName }: NotificationBel
               <p className="px-3 py-4 text-body-sm text-fg-muted">…</p>
             ) : preview.length > 0 ? (
               preview.map((item) => (
-                <NotificationRow key={item.id} item={item} viewerUsername={username} />
+                <NotificationRow
+                  key={item.id}
+                  item={item}
+                  viewerUsername={username}
+                  onNavigate={() => setOpen(false)}
+                />
               ))
             ) : (
               <p className="px-3 py-4 text-body-sm text-fg-muted">
