@@ -13,7 +13,8 @@ import {
   resolveUpdateCountForBlockKind,
   type ObjectLeftRailBlockKind,
 } from '@/modules/object-updates/domain/block-update-type-map';
-import { mergeLeftRailBlocksForEditMode } from '@/modules/object-updates/domain/left-rail-edit-blocks';
+import { mergeLeftRailBlocksForEditMode, groupEditModeBlocks } from '@/modules/object-updates/domain/left-rail-edit-blocks';
+import { EDIT_FIELD_GROUP_I18N_KEY } from '@opden-data-layer/core/update-registry';
 import { shouldUnoptimizeRemoteImage, OptimisticNavLink } from '@/shared/presentation';
 
 import {
@@ -187,6 +188,9 @@ function LeftRailAddUpdateButton({
     </button>
   );
 }
+
+const LEFT_RAIL_EDIT_GROUP_HEADING_CLASS =
+  'sticky top-0 z-[1] bg-bg py-2 text-caption font-label tracking-caption text-muted';
 
 const LEFT_RAIL_SECTION_CLASS =
   'flex min-w-0 flex-col gap-2 py-card-padding first:pt-0 text-body-sm text-muted';
@@ -386,6 +390,13 @@ export function ObjectLeftRailPanel({
     );
   }, [blocks, editContext, objectTypeKey]);
 
+  const editBlockGroups = useMemo(() => {
+    if (!editContext) {
+      return null;
+    }
+    return groupEditModeBlocks(displayBlocks, objectTypeKey);
+  }, [displayBlocks, editContext, objectTypeKey]);
+
   const addLabel = t('object_edit_add_update');
 
   function openAddModal(kind: ObjectLeftRailBlockKind) {
@@ -441,27 +452,8 @@ export function ObjectLeftRailPanel({
     };
   }
 
-  return (
-    <div className="flex min-w-0 flex-col divide-y divide-border">
-      {editContext && addModal ? (
-        <AddUpdateModal
-          open
-          mode="leftRail"
-          onClose={() => setAddModal(null)}
-          objectId={editContext.objectId}
-          viewerUsername={editContext.viewerUsername}
-          candidateUpdateTypes={addModal.candidateUpdateTypes}
-          initialUpdateType={addModal.initialUpdateType}
-          tagCategoryNames={editContext.tagCategoryNames}
-          galleryAlbumNames={editContext.galleryAlbumNames}
-          onChainGalleryAlbumNames={editContext.onChainGalleryAlbumNames}
-          updateTypeCounts={editContext.updateTypeCounts}
-          listCatalogItems={editContext.listCatalogItems}
-          listSortCustom={editContext.listSortCustom}
-        />
-      ) : null}
-      {displayBlocks.map((block, index) => {
-        switch (block.kind) {
+  function renderLeftRailBlock(block: ObjectLeftRailBlock, index: number) {
+    switch (block.kind) {
           case 'menuItems':
             return (
               <div key={`menu-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
@@ -1050,8 +1042,51 @@ export function ObjectLeftRailPanel({
             const _never: never = block;
             return _never;
           }
-        }
-      })}
+    }
+  }
+
+  return (
+    <div
+      className={
+        editBlockGroups
+          ? 'flex min-w-0 flex-col gap-4'
+          : 'flex min-w-0 flex-col divide-y divide-border'
+      }
+    >
+      {editContext && addModal ? (
+        <AddUpdateModal
+          open
+          mode="leftRail"
+          onClose={() => setAddModal(null)}
+          objectId={editContext.objectId}
+          viewerUsername={editContext.viewerUsername}
+          candidateUpdateTypes={addModal.candidateUpdateTypes}
+          initialUpdateType={addModal.initialUpdateType}
+          tagCategoryNames={editContext.tagCategoryNames}
+          galleryAlbumNames={editContext.galleryAlbumNames}
+          onChainGalleryAlbumNames={editContext.onChainGalleryAlbumNames}
+          updateTypeCounts={editContext.updateTypeCounts}
+          listCatalogItems={editContext.listCatalogItems}
+          listSortCustom={editContext.listSortCustom}
+        />
+      ) : null}
+      {editBlockGroups
+        ? editBlockGroups.map((group) => (
+            <section
+              key={group.groupId}
+              aria-labelledby={`object-edit-group-${group.groupId}`}
+              className="flex min-w-0 flex-col divide-y divide-border"
+            >
+              <h3
+                id={`object-edit-group-${group.groupId}`}
+                className={LEFT_RAIL_EDIT_GROUP_HEADING_CLASS}
+              >
+                {t(EDIT_FIELD_GROUP_I18N_KEY[group.groupId])}
+              </h3>
+              {group.blocks.map((block, index) => renderLeftRailBlock(block, index))}
+            </section>
+          ))
+        : displayBlocks.map((block, index) => renderLeftRailBlock(block, index))}
     </div>
   );
 }

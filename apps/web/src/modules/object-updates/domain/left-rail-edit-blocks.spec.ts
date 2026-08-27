@@ -60,7 +60,7 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     expect(merged.find((b) => b.kind === 'name')).toEqual(viewBlocks[0]);
   });
 
-  it('places options before menu for product type', () => {
+  it('places gallery before commerce options for product type', () => {
     const merged = mergeLeftRailBlocksForEditMode([], productSupported, 'product');
     const kinds = merged.map((b) => b.kind);
     const optionsIdx = kinds.indexOf('options');
@@ -68,11 +68,11 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     const galleryIdx = kinds.indexOf('gallery');
 
     expect(galleryIdx).toBeGreaterThanOrEqual(0);
+    expect(menuIdx).toBeLessThan(galleryIdx);
     expect(optionsIdx).toBeGreaterThan(galleryIdx);
-    expect(menuIdx).toBeGreaterThan(optionsIdx);
   });
 
-  it('includes budget and recipe field order for recipe type', () => {
+  it('uses grouped recipe field order for recipe type', () => {
     const recipeSupported = [
       UPDATE_TYPES.NAME,
       UPDATE_TYPES.DESCRIPTION,
@@ -90,8 +90,8 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     const merged = mergeLeftRailBlocksForEditMode([], recipeSupported, 'recipe');
     const kinds = merged.map((b) => b.kind);
 
-    expect(kinds.indexOf('cookTime')).toBeLessThan(kinds.indexOf('budget'));
-    expect(kinds.indexOf('nutrition')).toBeLessThan(kinds.indexOf('description'));
+    expect(kinds.indexOf('budget')).toBeLessThan(kinds.indexOf('cookTime'));
+    expect(kinds.indexOf('description')).toBeLessThan(kinds.indexOf('nutrition'));
     expect(kinds.indexOf('rating')).toBeLessThan(kinds.indexOf('ingredients'));
     expect(kinds).toContain('budget');
   });

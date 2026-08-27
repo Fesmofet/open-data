@@ -26,7 +26,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | View mode | Left rail read-only (existing blocks) |
 | Edit mode | `+` next to each block heading (menu, description, phones, …) |
 | `+` click | Modal: optional update-type select (multi-type blocks), schema-driven value form, optional locale when `UPDATE_REGISTRY[type].localizable` |
-| Edit left rail | All supported slots show heading + `+` even when empty; order: **Name**, **Title**, then type-specific slots (see below) |
+| Edit left rail | All supported slots show heading + `+` even when empty; **grouped sections** with sticky headings (HEADER, DETAILS, …); order from core edit-field-groups catalog — see below |
 | Update count | Muted line under each field heading (e.g. `2 updates`); **click** navigates to the **Updates** tab and sets the feed `update_type` filter for that field |
 | Submit | `buildOdlUpdateCreateOp` → wallet broadcast → `awaitTrxConfirmation` → `router.refresh()` |
 | Creator vote | Indexer auto-inserts validity vote `for` from `creator` on every successful `update_create` (no client `update_vote` in create trx) |
@@ -44,10 +44,30 @@ Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from serv
 
 ### Left-rail slot order
 
-- **Generic types:** `EDIT_MODE_LEFT_RAIL_BLOCK_ORDER` — Name, Title, Menu, … about stack (`left-rail-edit-blocks.ts`).
-- **`recipe`:** `RECIPE_ABOUT_SECTION_BLOCK_ORDER` — cookTime → budget → calories → nutrition → description → tags → category → rating → ingredients → … See [recipe-left-rail.md](recipe-left-rail.md).
-- **`list`:** `LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER` — sortCustom first, promotion in about cluster, pin/remove after gallery, delegation near settings fields; no menu cluster (`resolveEditModeLeftRailBlockOrder`).
-- **`product` / `book` / `service`:** legacy navigate cluster **before** menu — gallery → compareAtPrice → price → saleEvent → **options**, then menu (`resolveEditModeLeftRailBlockOrder` in `object-left-rail-order.ts`). See [options.md](options.md).
+**View mode** left-rail block order is unchanged (legacy Waivio layout in `object-left-rail-order.ts` + `buildLeftRailBlocks`).
+
+**Edit mode** order and section groupings come from `@opden-data-layer/core/update-registry` **`edit-field-groups.ts`**:
+
+- Every `update_type` maps to one edit group (`header`, `details`, `community`, `gallery`, `visit`, `commerce`, …).
+- Web maps update types → left-rail block kinds (`edit-mode-block-order.ts`); empty groups are omitted at render time.
+- **Restaurant / place / business:** `price` is grouped under **VISIT** (before hours/address/map), not commerce.
+
+Example restaurant edit groups (supported slots only):
+
+| Group | Fields |
+|-------|--------|
+| HEADER | Name, Title, Avatar, Background |
+| DETAILS | Parent, Menu, Buttons, Description |
+| COMMUNITY | Ratings, Tags |
+| GALLERY | Gallery |
+| VISIT | Price, Hours, Address, Map |
+| CONTACT | Website, Social links, Phone, Email |
+| PAYMENTS | Wallet |
+| OBJECT | Identifier, Status |
+
+Other types use the same taxonomy; type-specific blocks appear only when supported (e.g. **product** → commerce cluster after gallery; **list** → catalog ops after gallery; **recipe** → recipe group after commerce). View-mode stacks (`RECIPE_ABOUT_SECTION_BLOCK_ORDER`, product navigate cluster, etc.) are **not** used for edit ordering.
+
+i18n: `object_edit_group_*` keys in locale catalogs.
 
 ### List host edit extras
 
@@ -91,6 +111,8 @@ Built by `@opden-data-layer/hive-broadcast` **`buildOdlUpdateCreateOp`** (single
 |------|------|
 | ODL op builder | `libs/hive-broadcast/src/odl-operations.ts` |
 | Block mapping | `apps/web/src/modules/object-updates/domain/block-update-type-map.ts` |
+| Edit groups (core) | `libs/core/src/update-registry/edit-field-groups.ts` |
+| Edit block order (web) | `apps/web/src/modules/object-updates/domain/edit-mode-block-order.ts` |
 | Form utils | `apps/web/src/modules/object-updates/application/update-value-form.utils.ts` |
 | Modal | `apps/web/src/modules/object-updates/presentation/components/add-update-modal.tsx` |
 | Left rail | `apps/web/src/modules/object/presentation/components/object-left-rail-panel.tsx` |

@@ -10,6 +10,8 @@
  * (`galleryPriceOptionsSection` before `menuSection`; gallery/price omitted from `aboutSection`.)
  */
 
+import { resolveEditModeBlockKinds } from '@/modules/object-updates/domain/edit-mode-block-order';
+
 /** Object types that use the legacy “navigate” cluster (gallery / price / options) before menu. */
 export const OPTIONS_OBJECT_TYPES = ['book', 'product', 'service'] as const;
 
@@ -237,49 +239,11 @@ export function resolveAboutSectionBlockOrder(
   return ABOUT_SECTION_BLOCK_ORDER;
 }
 
-/** Edit-mode slot order; product-like types match legacy navigate-before-menu layout. */
+/** Edit-mode slot order from core edit-field-groups catalog (view order unchanged). */
 export function resolveEditModeLeftRailBlockOrder(
   objectType: string,
 ): readonly EditModeLeftRailBlockId[] {
-  if (isListObjectType(objectType)) {
-    return LIST_EDIT_MODE_LEFT_RAIL_BLOCK_ORDER;
-  }
-
-  if (isRecipeObjectType(objectType)) {
-    return [
-      ...HEADER_BLOCK_ORDER,
-      MENU_BLOCK_ID,
-      ...MENU_CLUSTER_BLOCK_ORDER,
-      ...RECIPE_ABOUT_SECTION_BLOCK_ORDER,
-    ];
-  }
-
-  if (!isOptionsObjectType(objectType)) {
-    return EDIT_MODE_LEFT_RAIL_BLOCK_ORDER;
-  }
-
-  if (isBookObjectType(objectType)) {
-    return [
-      ...HEADER_BLOCK_ORDER,
-      ...BOOK_HOISTED_AUTHOR_BLOCK_ORDER,
-      'parent',
-      'publisher',
-      ...NAVIGATE_SECTION_BLOCK_ORDER,
-      MENU_BLOCK_ID,
-      ...MENU_CLUSTER_BLOCK_ORDER,
-      ...bookTypeAboutRemainderOrder(),
-    ];
-  }
-
-  return [
-    ...HEADER_BLOCK_ORDER,
-    'parent',
-    'publisher',
-    ...NAVIGATE_SECTION_BLOCK_ORDER,
-    MENU_BLOCK_ID,
-    ...MENU_CLUSTER_BLOCK_ORDER,
-    ...optionsTypeAboutRemainderOrder(),
-  ];
+  return resolveEditModeBlockKinds(objectType);
 }
 
 function isNavigateBlockId(id: AboutSectionBlockId): id is NavigateSectionBlockId {

@@ -1,40 +1,41 @@
 import {
-  NAVIGATE_SECTION_BLOCK_ORDER,
+  resolveEditModeLeftRailBlockOrder,
+  resolveAboutSectionBlockOrder,
   RECIPE_ABOUT_SECTION_BLOCK_ORDER,
   bookTypeAboutRemainderOrder,
-  resolveAboutSectionBlockOrder,
-  resolveEditModeLeftRailBlockOrder,
 } from './object-left-rail-order';
 
 describe('resolveEditModeLeftRailBlockOrder', () => {
-  it('places navigate cluster before menu for product', () => {
+  it('places gallery before commerce options for product', () => {
     const order = resolveEditModeLeftRailBlockOrder('product');
     const galleryIdx = order.indexOf('gallery');
     const optionsIdx = order.indexOf('options');
     const menuIdx = order.indexOf('menuItems');
 
     expect(galleryIdx).toBeGreaterThanOrEqual(0);
+    expect(menuIdx).toBeLessThan(galleryIdx);
     expect(optionsIdx).toBeGreaterThan(galleryIdx);
-    expect(menuIdx).toBeGreaterThan(optionsIdx);
-    expect([...NAVIGATE_SECTION_BLOCK_ORDER].every((id) => order.includes(id))).toBe(true);
   });
 
-  it('keeps generic order for non-product types', () => {
+  it('uses grouped restaurant edit order', () => {
     const order = resolveEditModeLeftRailBlockOrder('restaurant');
-    expect(order.indexOf('menuItems')).toBeLessThan(order.indexOf('description'));
-    expect(order.indexOf('gallery')).toBeLessThan(order.indexOf('options'));
+    expect(order.indexOf('name')).toBeLessThan(order.indexOf('image'));
+    expect(order.indexOf('imageBackground')).toBeLessThan(order.indexOf('parent'));
+    expect(order.indexOf('description')).toBeLessThan(order.indexOf('rating'));
+    expect(order.indexOf('gallery')).toBeLessThan(order.indexOf('price'));
+    expect(order.indexOf('price')).toBeLessThan(order.indexOf('workHours'));
+    expect(order.indexOf('geo')).toBeLessThan(order.indexOf('websites'));
+    expect(order.indexOf('walletAddress')).toBeLessThan(order.indexOf('identifier'));
   });
 
-  it('places author before parent and menu in book edit order', () => {
+  it('places author in publication group for book edit order', () => {
     const order = resolveEditModeLeftRailBlockOrder('book');
     const authorIdx = order.indexOf('author');
+    const titleIdx = order.indexOf('title');
     const parentIdx = order.indexOf('parent');
-    const menuIdx = order.indexOf('menuItems');
 
-    expect(authorIdx).toBeGreaterThan(order.indexOf('title'));
+    expect(authorIdx).toBeGreaterThan(titleIdx);
     expect(authorIdx).toBeLessThan(parentIdx);
-    expect(authorIdx).toBeLessThan(menuIdx);
-    expect(order.lastIndexOf('author')).toBe(authorIdx);
   });
 
   it('places book reading metadata after websites in book about remainder', () => {
@@ -53,14 +54,13 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(lengthIdx).toBe(dateIdx + 1);
   });
 
-  it('uses list-specific edit order for list object type', () => {
+  it('places catalog ops after gallery for list edit order', () => {
     const order = resolveEditModeLeftRailBlockOrder('list');
-    expect(order.indexOf('sortCustom')).toBeLessThan(order.indexOf('gallery'));
+    expect(order.indexOf('gallery')).toBeLessThan(order.indexOf('sortCustom'));
     expect(order.indexOf('promotion')).toBeGreaterThan(order.indexOf('description'));
     expect(order.indexOf('pin')).toBeGreaterThan(order.indexOf('gallery'));
     expect(order.indexOf('remove')).toBeGreaterThan(order.indexOf('pin'));
     expect(order.indexOf('delegation')).toBeGreaterThan(order.indexOf('link'));
-    expect(order.includes('menuItems')).toBe(false);
   });
 
   it('uses recipe-specific about order for recipe view blocks', () => {
@@ -75,16 +75,16 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('rating')).toBeLessThan(order.indexOf('ingredients'));
   });
 
-  it('uses recipe-specific edit order with budget before description', () => {
+  it('uses grouped recipe edit order with commerce before recipe fields', () => {
     const order = resolveEditModeLeftRailBlockOrder('recipe');
     expect(order.indexOf('name')).toBeLessThan(order.indexOf('cookTime'));
-    expect(order.indexOf('cookTime')).toBeLessThan(order.indexOf('budget'));
-    expect(order.indexOf('nutrition')).toBeLessThan(order.indexOf('description'));
+    expect(order.indexOf('budget')).toBeLessThan(order.indexOf('cookTime'));
+    expect(order.indexOf('description')).toBeLessThan(order.indexOf('nutrition'));
     expect(order.indexOf('ingredients')).toBeGreaterThan(order.indexOf('rating'));
     expect(order.includes('budget')).toBe(true);
   });
 
-  it('keeps generic about order for restaurant', () => {
+  it('keeps generic about order for restaurant view mode', () => {
     const order = resolveAboutSectionBlockOrder('restaurant');
     expect(order.indexOf('description')).toBeLessThan(order.indexOf('category'));
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));

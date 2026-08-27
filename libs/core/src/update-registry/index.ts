@@ -137,7 +137,22 @@ export {
   type ImageCidOrUrlJson,
 } from './schemas/image-cid-or-url-json';
 
-export {
-  POST_LINKED_OBJECT_UPDATE_TYPES,
+export { POST_LINKED_OBJECT_UPDATE_TYPES,
   type PostLinkedObjectUpdateType,
 } from './post-linked-object-update-types';
+
+export {
+  assertEditFieldGroupCatalogComplete,
+  EDIT_FIELD_GROUP_I18N_KEY,
+  EDIT_FIELD_GROUP_IDS,
+  EDIT_FIELD_GROUP_ORDER,
+  EDIT_GROUP_FIELD_ORDER,
+  EDIT_MODE_UPDATE_TYPE_ORDER,
+  isVisitPriceObjectType,
+  resolveEditGroup,
+  resolveEditModeUpdateTypes,
+  UPDATE_TYPE_TO_EDIT_GROUP,
+  VISIT_PRICE_OBJECT_TYPES,
+  type EditFieldGroupId,
+  type VisitPriceObjectType,
+} from './edit-field-groups';

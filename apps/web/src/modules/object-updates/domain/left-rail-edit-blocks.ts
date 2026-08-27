@@ -4,11 +4,13 @@ import {
 } from '@/modules/object/domain/object-left-rail-order';
 import { OBJECT_LEFT_RAIL_BLOCK_LABEL } from '@/modules/object/domain/object-update-labels';
 import type { ObjectLeftRailBlock } from '@/modules/object/domain/object-page.types';
+import type { EditFieldGroupId } from '@opden-data-layer/core/update-registry';
 
 import {
   BLOCK_KIND_TO_UPDATE_TYPES,
   type ObjectLeftRailBlockKind,
 } from './block-update-type-map';
+import { resolveEditGroupForBlockKind } from './edit-mode-block-order';
 
 function isEditableKind(
   kind: EditModeLeftRailBlockId,
@@ -166,4 +168,32 @@ export function mergeLeftRailBlocksForEditMode(
   }
 
   return merged;
+}
+
+export interface EditModeBlockGroup {
+  groupId: EditFieldGroupId;
+  blocks: ObjectLeftRailBlock[];
+}
+
+/** Groups consecutive edit-mode blocks by catalog section (empty groups omitted upstream). */
+export function groupEditModeBlocks(
+  blocks: readonly ObjectLeftRailBlock[],
+  objectType = '',
+): EditModeBlockGroup[] {
+  const groups: EditModeBlockGroup[] = [];
+
+  for (const block of blocks) {
+    const groupId = resolveEditGroupForBlockKind(block.kind, objectType);
+    if (!groupId) {
+      continue;
+    }
+    const last = groups[groups.length - 1];
+    if (last?.groupId === groupId) {
+      last.blocks.push(block);
+    } else {
+      groups.push({ groupId, blocks: [block] });
+    }
+  }
+
+  return groups;
 }

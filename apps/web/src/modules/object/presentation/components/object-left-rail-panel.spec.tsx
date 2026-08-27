@@ -11,6 +11,10 @@ jest.mock('@/i18n/providers/i18n-provider', () => ({
         object_status_closed_location_body: 'This location is no longer operating.',
         object_status_suggest_correction: 'Suggest a correction',
         object_edit_add_update: 'Add update',
+        object_edit_group_header: 'HEADER',
+        object_edit_group_details: 'DETAILS',
+        object_edit_group_community: 'COMMUNITY',
+        object_edit_group_contact: 'CONTACT',
       })[key] ?? key,
     locale: 'en-US',
   }),
@@ -118,5 +122,46 @@ describe('ObjectLeftRailPanel closed venue status', () => {
     );
 
     expect(screen.queryByText('Permanently closed')).toBeNull();
+  });
+});
+
+describe('ObjectLeftRailPanel edit mode group headings', () => {
+  it('renders section headings in edit mode only', () => {
+    const { rerender } = render(
+      <ObjectLeftRailPanel
+        blocks={[
+          { kind: 'name', headingLabel: 'Name', text: 'Cafe' },
+          { kind: 'description', headingLabel: 'Description', text: 'Nice place' },
+        ]}
+        objectTypeKey="restaurant"
+        objectId="rest-1"
+        editContext={{
+          objectId: 'rest-1',
+          viewerUsername: 'alice',
+          supportedUpdateTypes: ['name', 'description'],
+          tagCategoryNames: [],
+          galleryAlbumNames: [],
+          onChainGalleryAlbumNames: [],
+          updateTypeCounts: {},
+        }}
+      />,
+    );
+
+    expect(screen.getByText('HEADER')).toBeTruthy();
+    expect(screen.getByText('DETAILS')).toBeTruthy();
+
+    rerender(
+      <ObjectLeftRailPanel
+        blocks={[
+          { kind: 'name', headingLabel: 'Name', text: 'Cafe' },
+          { kind: 'description', headingLabel: 'Description', text: 'Nice place' },
+        ]}
+        objectTypeKey="restaurant"
+        objectId="rest-1"
+      />,
+    );
+
+    expect(screen.queryByText('HEADER')).toBeNull();
+    expect(screen.queryByText('DETAILS')).toBeNull();
   });
 });
