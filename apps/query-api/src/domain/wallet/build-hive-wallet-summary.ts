@@ -67,15 +67,28 @@ const ZERO_REWARD_HIVE = '0.000 HIVE';
 const ZERO_REWARD_HBD = '0.000 HBD';
 const ZERO_REWARD_VESTS = '0.000000 VESTS';
 
-export function mapPendingRewards(account: HiveWalletAccountInput): HivePendingRewards {
+export type HivePendingRewardsChainContext = {
+  totalVestingShares: string;
+  totalVestingFundSteem: string;
+};
+
+export function mapPendingRewards(
+  account: HiveWalletAccountInput,
+  chain: HivePendingRewardsChainContext,
+): HivePendingRewards {
   const hiveRaw = account.reward_hive_balance?.trim() || ZERO_REWARD_HIVE;
   const hbdRaw = account.reward_hbd_balance?.trim() || ZERO_REWARD_HBD;
   const vestingRaw = account.reward_vesting_balance?.trim() || ZERO_REWARD_VESTS;
   const hiveAmount = parseAssetNumber(hiveRaw);
   const hbdAmount = parseAssetNumber(hbdRaw);
-  const hpAmount = parseAssetNumber(account.reward_vesting_hive);
   const vestingAmount = parseAssetNumber(vestingRaw);
-  const hasRewards = hiveAmount > 0 || hbdAmount > 0 || hpAmount > 0 || vestingAmount > 0;
+  const hpAmount = vestToHp(
+    vestingRaw,
+    chain.totalVestingShares,
+    chain.totalVestingFundSteem,
+  );
+  const hasRewards =
+    hiveAmount > 0 || hbdAmount > 0 || vestingAmount > 0 || hpAmount > 0;
 
   return {
     hive: hiveRaw,

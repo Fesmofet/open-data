@@ -100,7 +100,10 @@ export class GetUserHiveWalletEndpoint {
           ),
           nextVestingWithdrawal: hiveAccount.next_vesting_withdrawal ?? null,
           pendingSavingsWithdrawals,
-          pendingRewards: mapPendingRewards(hiveAccount),
+          pendingRewards: mapPendingRewards(hiveAccount, {
+            totalVestingShares: chainContext.totalVestingShares,
+            totalVestingFundSteem: chainContext.totalVestingFundSteem,
+          }),
           rc: rcSnapshot,
           toWithdrawVests: hiveAccount.to_withdraw,
           vestingWithdrawRateVests: hiveAccount.vesting_withdraw_rate,
