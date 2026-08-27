@@ -58,6 +58,8 @@ CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update
 CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, value_text_normalized) WHERE value_text_normalized IS NOT NULL;
 -- Trigram index for predictive-search name/title starts-with boost (LIKE 'query%'), incl. stopwords the english FTS strips.
 CREATE INDEX idx_object_updates_name_title_value_norm_trgm ON object_updates USING GIN (value_text_normalized gin_trgm_ops) WHERE update_type IN ('name', 'title') AND value_text_normalized IS NOT NULL;
+CREATE INDEX idx_object_updates_identifier_value_lower ON object_updates (lower(value_json->>'value') text_pattern_ops) WHERE update_type = 'identifier' AND value_json->>'value' IS NOT NULL;
+CREATE INDEX idx_object_updates_address_locality_lower ON object_updates (lower(value_json->>'locality') text_pattern_ops) WHERE update_type = 'address' AND value_json->>'locality' IS NOT NULL;
 CREATE INDEX idx_object_updates_object_rank_score ON object_updates (object_id, rank_score);
 
 -- Trigger: keep search_vector in sync with value_text

@@ -31,4 +31,12 @@ describe('buildAutocompleteTsQuery', () => {
     expect(buildAutocompleteTsQuery('')).toBeNull();
     expect(buildAutocompleteTsQuery('   ')).toBeNull();
   });
+
+  it('splits hyphens so a trailing kebab dash is a valid tsquery', () => {
+    expect(buildAutocompleteTsQuery('kvu-')).toBe('kvu:*');
+  });
+
+  it('treats hyphenated id fragments as separate FTS tokens', () => {
+    expect(buildAutocompleteTsQuery('kvu-k')).toBe('kvu:* & k:*');
+  });
 });

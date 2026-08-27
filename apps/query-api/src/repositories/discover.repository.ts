@@ -17,7 +17,7 @@ import {
 } from '../domain/discover/discover-cursor';
 import type { DiscoverSort } from '../domain/discover/discover-query.schema';
 import { buildAutocompleteTsQuery } from './search-fts.utils';
-import { prefixUpperBound, shouldSearchObjectIdSubstring } from './search-prefix.utils';
+import { prefixUpperBound, shouldSearchObjectIdSubstring, shouldSearchPrefix } from './search-prefix.utils';
 
 const FTS_TEXT_UPDATE_TYPES = [
   UPDATE_TYPES.NAME,
@@ -77,6 +77,59 @@ function escapeIlikePattern(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
 }
 
+function canDiscoverObjectTextSearch(qTrimmed: string): boolean {
+  if (qTrimmed.length === 0) {
+    return true;
+  }
+  const tsQueryCheck = buildAutocompleteTsQuery(qTrimmed);
+  return (
+    tsQueryCheck !== null ||
+    shouldSearchObjectIdSubstring(qTrimmed) ||
+    shouldSearchPrefix(qTrimmed)
+  );
+}
+
+function buildDiscoverObjectTextMatchFilter(params: {
+  qTrimmed: string;
+  tsQuery: string | null;
+  includeIdSubstring: boolean;
+  idSubstringPattern: string | null;
+}) {
+  const { qTrimmed, tsQuery, includeIdSubstring, idSubstringPattern } = params;
+  if (qTrimmed.length === 0) {
+    return sql``;
+  }
+
+  const parts: ReturnType<typeof sql>[] = [];
+
+  if (shouldSearchPrefix(qTrimmed)) {
+    const prefixLower = qTrimmed.toLowerCase();
+    const prefixUpper = prefixUpperBound(prefixLower);
+    parts.push(
+      sql`(oc.object_id COLLATE "C" >= ${prefixLower} AND oc.object_id COLLATE "C" < ${prefixUpper})`,
+    );
+  }
+
+  if (includeIdSubstring && idSubstringPattern) {
+    parts.push(sql`oc.object_id ILIKE ${idSubstringPattern} ESCAPE '\\'`);
+  }
+
+  if (tsQuery != null) {
+    parts.push(sql`EXISTS (
+      SELECT 1 FROM object_updates ou_fts
+      WHERE ou_fts.object_id = oc.object_id
+        AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+        AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
+    )`);
+  }
+
+  if (parts.length === 0) {
+    return sql`AND false`;
+  }
+
+  return sql`AND (${sql.join(parts, sql` OR `)})`;
+}
+
 @Injectable()
 export class DiscoverRepository {
   private readonly logger = new Logger(DiscoverRepository.name);
@@ -91,11 +144,8 @@ export class DiscoverRepository {
     const fetchLimit = limit + 1;
     const cursor = params.cursor ? decodeDiscoverObjectCursor(params.cursor) : null;
     const qTrimmed = params.q?.trim() ?? '';
-    if (qTrimmed.length > 0) {
-      const tsQueryCheck = buildAutocompleteTsQuery(qTrimmed);
-      if (tsQueryCheck === null && !shouldSearchObjectIdSubstring(qTrimmed)) {
-        return { rows: [], hasMore: false };
-      }
+    if (qTrimmed.length > 0 && !canDiscoverObjectTextSearch(qTrimmed)) {
+      return { rows: [], hasMore: false };
     }
     const tsQuery = qTrimmed.length > 0 ? buildAutocompleteTsQuery(qTrimmed) : null;
     const includeIdSubstring =
@@ -143,28 +193,12 @@ export class DiscoverRepository {
             ? sql`ORDER BY oc.weight DESC NULLS LAST, oc.object_id ASC`
             : sql`ORDER BY oc.created_at DESC, oc.object_id ASC`;
 
-      const ftsFilter =
-        tsQuery != null
-          ? sql`AND EXISTS (
-              SELECT 1 FROM object_updates ou_fts
-              WHERE ou_fts.object_id = oc.object_id
-                AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
-            )`
-          : sql``;
-
-      const idFilter =
-        includeIdSubstring && idSubstringPattern
-          ? sql`AND (
-              oc.object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
-              OR EXISTS (
-                SELECT 1 FROM object_updates ou_fts
-                WHERE ou_fts.object_id = oc.object_id
-                  AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                  AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
-              )
-            )`
-          : ftsFilter;
+      const textMatchFilter = buildDiscoverObjectTextMatchFilter({
+        qTrimmed,
+        tsQuery,
+        includeIdSubstring,
+        idSubstringPattern,
+      });
 
       const objectTypeFilter = params.objectType
         ? sql`AND oc.object_type = ${params.objectType}`
@@ -180,7 +214,7 @@ export class DiscoverRepository {
         FROM objects_core oc
         WHERE oc.status = 'active'
           ${objectTypeFilter}
-          ${idFilter}
+          ${textMatchFilter}
           ${tagFilter}
           ${cursorFilter}
         ${orderClause}
@@ -317,11 +351,11 @@ export class DiscoverRepository {
     qTrimmed: string,
   ): Promise<DiscoverTagCategoryRow[]> {
     const tsQueryCheck = buildAutocompleteTsQuery(qTrimmed);
-    if (tsQueryCheck === null && !shouldSearchObjectIdSubstring(qTrimmed)) {
+    if (!canDiscoverObjectTextSearch(qTrimmed)) {
       return [];
     }
 
-    const tsQuery = buildAutocompleteTsQuery(qTrimmed);
+    const tsQuery = tsQueryCheck;
     const includeIdSubstring = shouldSearchObjectIdSubstring(qTrimmed);
     const idSubstringPattern = `%${escapeIlikePattern(qTrimmed)}%`;
 
@@ -335,28 +369,12 @@ export class DiscoverRepository {
       )`,
     );
 
-    const ftsFilter =
-      tsQuery != null
-        ? sql`AND EXISTS (
-            SELECT 1 FROM object_updates ou_fts
-            WHERE ou_fts.object_id = oc.object_id
-              AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-              AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
-          )`
-        : sql``;
-
-    const textFilter =
-      includeIdSubstring && idSubstringPattern
-        ? sql`AND (
-            oc.object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
-            OR EXISTS (
-              SELECT 1 FROM object_updates ou_fts
-              WHERE ou_fts.object_id = oc.object_id
-                AND ou_fts.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou_fts.search_vector @@ to_tsquery('english', ${tsQuery})
-            )
-          )`
-        : ftsFilter;
+    const textFilter = buildDiscoverObjectTextMatchFilter({
+      qTrimmed,
+      tsQuery,
+      includeIdSubstring,
+      idSubstringPattern,
+    });
 
     const tagFilter =
       tagExistsFragments.length > 0

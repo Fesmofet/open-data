@@ -56,6 +56,7 @@ import * as m00055 from './00055_osl_messages_encryption';
 import * as m00056 from './00056_user_notification_settings_messages';
 import * as m00057 from './00057_object_favorite_ownership';
 import * as m00058 from './00058_profile_feed_read_and_replies';
+import * as m00059 from './00059_object_updates_search_json_prefix';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/odl-db-types OdlDatabase and docs/spec/data-model/schema.sql */
@@ -127,4 +128,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00056_user_notification_settings_messages': { up: m00056.up, down: m00056.down },
   '00057_object_favorite_ownership': { up: m00057.up, down: m00057.down },
   '00058_profile_feed_read_and_replies': { up: m00058.up, down: m00058.down },
+  '00059_object_updates_search_json_prefix': { up: m00059.up, down: m00059.down },
 };

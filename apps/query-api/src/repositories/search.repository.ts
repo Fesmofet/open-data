@@ -5,7 +5,11 @@ import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import { buildAutocompleteTsQuery } from './search-fts.utils';
-import { prefixUpperBound, shouldSearchObjectIdSubstring } from './search-prefix.utils';
+import {
+  prefixUpperBound,
+  shouldSearchObjectIdSubstring,
+  shouldSearchPrefix,
+} from './search-prefix.utils';
 
 export interface SearchObjectCandidateRow {
   object_id: string;
@@ -40,13 +44,31 @@ const FTS_TEXT_UPDATE_TYPES = [
 const SEARCH_TIER_FTS = 0;
 /** Sort tier: exact `value_text_normalized` match (multi-word queries only). */
 const SEARCH_TIER_EXACT_TEXT = 1;
-/** Sort tier: `object_id` substring (id-shaped queries). */
+/** Sort tier: `object_id` prefix or substring (id-shaped queries). */
 const SEARCH_TIER_ID_SUBSTRING = 2;
 /** Sort tier: exact `objects_core.object_id` (draft / linked-object hydration). */
 const SEARCH_TIER_EXACT_OBJECT_ID = 3;
 
-/** Min query length for the trigram-backed name/title prefix boost (shorter degrades to seq scan). */
-const NAME_PREFIX_MIN_LENGTH = 3;
+interface ObjectSearchPrefixContext {
+  includePrefix: boolean;
+  prefixLower: string;
+  prefixUpper: string;
+  namePrefixPattern: string;
+  jsonPrefixPattern: string;
+}
+
+function buildObjectSearchPrefixContext(trimmed: string): ObjectSearchPrefixContext {
+  const normalized = trimmed.toLowerCase();
+  const includePrefix = shouldSearchPrefix(trimmed);
+  const prefixLower = normalized;
+  return {
+    includePrefix,
+    prefixLower,
+    prefixUpper: prefixUpperBound(prefixLower),
+    namePrefixPattern: `${escapeIlikePattern(normalized)}%`,
+    jsonPrefixPattern: `${escapeIlikePattern(normalized)}%`,
+  };
+}
 
 @Injectable()
 export class SearchRepository {
@@ -55,10 +77,10 @@ export class SearchRepository {
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
   /**
-   * Object hits: FTS on `name` / `title` / `description`, optional id substring and
-   * exact name boost (multi-word only). No `ts_rank` over the full hit set — keeps GIN path fast.
-   * Ranking priority: name/title starts-with the full query (trigram index, includes stopwords the
-   * `english` FTS strips) > sort tier > `objects_core.weight` (earned payouts).
+   * Object hits: FTS on `name` / `title` / `description`, optional id prefix/substring,
+   * identifier value and address locality prefix, exact name boost (multi-word only).
+   * No `ts_rank` over the full hit set — keeps GIN path fast.
+   * Ranking: name/title prefix > id prefix > identifier/locality prefix > sort tier > weight.
    */
   async searchObjects(
     queryText: string,
@@ -70,18 +92,17 @@ export class SearchRepository {
     }
 
     const tsQuery = buildAutocompleteTsQuery(trimmed);
-    if (tsQuery === null) {
+    const prefixCtx = buildObjectSearchPrefixContext(trimmed);
+    const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
+    if (tsQuery === null && !prefixCtx.includePrefix && !includeIdSubstring) {
       return [];
     }
 
-    const normalized = trimmed.toLowerCase();
     const isMultiWord = /\s/.test(trimmed);
-    const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
     const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
     const useFastFtsPath = !isMultiWord && !includeIdSubstring;
-    // Name/title starts-with boost (trigram index). Needs >= 3 chars so pg_trgm avoids a seq scan.
-    const includeNamePrefix = normalized.length >= NAME_PREFIX_MIN_LENGTH;
-    const namePrefixPattern = `${escapeIlikePattern(normalized)}%`;
+    const { includePrefix, prefixLower, prefixUpper, namePrefixPattern, jsonPrefixPattern } =
+      prefixCtx;
 
     try {
       const result = useFastFtsPath
@@ -94,15 +115,38 @@ export class SearchRepository {
             fts_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
-              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
+              WHERE ${tsQuery !== null}
+                AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+                AND ou.search_vector @@ to_tsquery('english', ${tsQuery ?? ''})
             ),
             name_prefix_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
-              WHERE ${includeNamePrefix}
+              WHERE ${includePrefix}
                 AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]})
                 AND ou.value_text_normalized LIKE ${namePrefixPattern} ESCAPE '\\'
+            ),
+            id_prefix_ids AS (
+              SELECT object_id
+              FROM objects_core
+              WHERE status = 'active'
+                AND ${includePrefix}
+                AND object_id COLLATE "C" >= ${prefixLower}
+                AND object_id COLLATE "C" < ${prefixUpper}
+            ),
+            identifier_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ${includePrefix}
+                AND ou.update_type = ${UPDATE_TYPES.IDENTIFIER}
+                AND lower(ou.value_json->>'value') LIKE ${jsonPrefixPattern} ESCAPE '\\'
+            ),
+            locality_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ${includePrefix}
+                AND ou.update_type = ${UPDATE_TYPES.ADDRESS}
+                AND lower(ou.value_json->>'locality') LIKE ${jsonPrefixPattern} ESCAPE '\\'
             ),
             candidate_ids AS (
               SELECT object_id FROM exact_object_id
@@ -110,6 +154,12 @@ export class SearchRepository {
               SELECT object_id FROM fts_ids
               UNION
               SELECT object_id FROM name_prefix_ids
+              UNION
+              SELECT object_id FROM id_prefix_ids
+              UNION
+              SELECT object_id FROM identifier_ids
+              UNION
+              SELECT object_id FROM locality_ids
             ),
             collapsed AS (
               SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
@@ -117,16 +167,25 @@ export class SearchRepository {
                 oc.object_type AS object_type,
                 oc.meta_group_id AS meta_group_id,
                 oc.weight AS weight,
-                (np.object_id IS NOT NULL) AS is_name_prefix
+                (np.object_id IS NOT NULL) AS is_name_prefix,
+                (ip.object_id IS NOT NULL) AS is_id_prefix,
+                (idn.object_id IS NOT NULL OR loc.object_id IS NOT NULL) AS is_field_prefix
               FROM objects_core oc
               INNER JOIN candidate_ids c ON c.object_id = oc.object_id
               LEFT JOIN name_prefix_ids np ON np.object_id = oc.object_id
+              LEFT JOIN id_prefix_ids ip ON ip.object_id = oc.object_id
+              LEFT JOIN identifier_ids idn ON idn.object_id = oc.object_id
+              LEFT JOIN locality_ids loc ON loc.object_id = oc.object_id
               WHERE oc.status = 'active'
               ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
             )
             SELECT object_id, object_type, meta_group_id, weight
             FROM collapsed
-            ORDER BY is_name_prefix DESC, weight DESC NULLS LAST, object_id
+            ORDER BY is_name_prefix DESC,
+              is_id_prefix DESC,
+              is_field_prefix DESC,
+              weight DESC NULLS LAST,
+              object_id
             LIMIT ${limit}
           `.execute(this.db)
         : await sql<SearchObjectCandidateRow>`
@@ -138,22 +197,45 @@ export class SearchRepository {
             fts_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
-              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
+              WHERE ${tsQuery !== null}
+                AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+                AND ou.search_vector @@ to_tsquery('english', ${tsQuery ?? ''})
             ),
             exact_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
               WHERE ${isMultiWord}
                 AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.value_text_normalized = ${normalized}
+                AND ou.value_text_normalized = ${prefixLower}
             ),
             name_prefix_ids AS (
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
-              WHERE ${includeNamePrefix}
+              WHERE ${includePrefix}
                 AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]})
                 AND ou.value_text_normalized LIKE ${namePrefixPattern} ESCAPE '\\'
+            ),
+            id_prefix_ids AS (
+              SELECT object_id
+              FROM objects_core
+              WHERE status = 'active'
+                AND ${includePrefix}
+                AND object_id COLLATE "C" >= ${prefixLower}
+                AND object_id COLLATE "C" < ${prefixUpper}
+            ),
+            identifier_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ${includePrefix}
+                AND ou.update_type = ${UPDATE_TYPES.IDENTIFIER}
+                AND lower(ou.value_json->>'value') LIKE ${jsonPrefixPattern} ESCAPE '\\'
+            ),
+            locality_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ${includePrefix}
+                AND ou.update_type = ${UPDATE_TYPES.ADDRESS}
+                AND lower(ou.value_json->>'locality') LIKE ${jsonPrefixPattern} ESCAPE '\\'
             ),
             id_hits AS (
               SELECT object_id
@@ -167,11 +249,17 @@ export class SearchRepository {
               UNION ALL
               SELECT object_id, ${SEARCH_TIER_ID_SUBSTRING}::int AS sort_tier FROM id_hits
               UNION ALL
+              SELECT object_id, ${SEARCH_TIER_ID_SUBSTRING}::int AS sort_tier FROM id_prefix_ids
+              UNION ALL
               SELECT object_id, ${SEARCH_TIER_EXACT_TEXT}::int FROM exact_ids
               UNION ALL
               SELECT object_id, ${SEARCH_TIER_FTS}::int FROM fts_ids
               UNION ALL
               SELECT object_id, ${SEARCH_TIER_FTS}::int FROM name_prefix_ids
+              UNION ALL
+              SELECT object_id, ${SEARCH_TIER_FTS}::int FROM identifier_ids
+              UNION ALL
+              SELECT object_id, ${SEARCH_TIER_FTS}::int FROM locality_ids
             ),
             best AS (
               SELECT object_id, MAX(sort_tier) AS sort_tier
@@ -185,16 +273,27 @@ export class SearchRepository {
                 oc.meta_group_id AS meta_group_id,
                 oc.weight AS weight,
                 b.sort_tier AS sort_tier,
-                (np.object_id IS NOT NULL) AS is_name_prefix
+                (np.object_id IS NOT NULL) AS is_name_prefix,
+                (ip.object_id IS NOT NULL OR ih.object_id IS NOT NULL) AS is_id_prefix,
+                (idn.object_id IS NOT NULL OR loc.object_id IS NOT NULL) AS is_field_prefix
               FROM objects_core oc
               INNER JOIN best b ON b.object_id = oc.object_id
               LEFT JOIN name_prefix_ids np ON np.object_id = oc.object_id
+              LEFT JOIN id_prefix_ids ip ON ip.object_id = oc.object_id
+              LEFT JOIN id_hits ih ON ih.object_id = oc.object_id
+              LEFT JOIN identifier_ids idn ON idn.object_id = oc.object_id
+              LEFT JOIN locality_ids loc ON loc.object_id = oc.object_id
               WHERE oc.status = 'active'
               ORDER BY COALESCE(oc.meta_group_id, oc.object_id), b.sort_tier DESC, oc.weight DESC NULLS LAST
             )
             SELECT object_id, object_type, meta_group_id, weight
             FROM collapsed
-            ORDER BY is_name_prefix DESC, sort_tier DESC, weight DESC NULLS LAST, object_id
+            ORDER BY is_name_prefix DESC,
+              sort_tier DESC,
+              is_id_prefix DESC,
+              is_field_prefix DESC,
+              weight DESC NULLS LAST,
+              object_id
             LIMIT ${limit}
           `.execute(this.db);
 
@@ -276,54 +375,71 @@ export class SearchRepository {
     }
 
     const tsQuery = buildAutocompleteTsQuery(trimmed);
-    if (tsQuery === null) {
-      return {};
-    }
-
+    const { includePrefix, prefixLower, prefixUpper, jsonPrefixPattern } =
+      buildObjectSearchPrefixContext(trimmed);
     const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
     const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
 
+    if (tsQuery === null && !includePrefix && !includeIdSubstring) {
+      return {};
+    }
+
     try {
-      const result = includeIdSubstring
-        ? await sql<{ object_type: string; cnt: number | string }>`
-            WITH fts_ids AS (
-              SELECT DISTINCT ou.object_id
-              FROM object_updates ou
-              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
-            ),
-            id_hits AS (
-              SELECT object_id
-              FROM objects_core
-              WHERE status = 'active'
-                AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
-            ),
-            candidate_ids AS (
-              SELECT object_id FROM fts_ids
-              UNION
-              SELECT object_id FROM id_hits
-            )
-            SELECT oc.object_type AS object_type,
-              COUNT(DISTINCT COALESCE(oc.meta_group_id, oc.object_id))::int AS cnt
-            FROM objects_core oc
-            INNER JOIN candidate_ids c ON c.object_id = oc.object_id
-            WHERE oc.status = 'active'
-            GROUP BY oc.object_type
-          `.execute(this.db)
-        : await sql<{ object_type: string; cnt: number | string }>`
-            WITH fts_ids AS (
-              SELECT DISTINCT ou.object_id
-              FROM object_updates ou
-              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
-            )
-            SELECT oc.object_type AS object_type,
-              COUNT(DISTINCT COALESCE(oc.meta_group_id, oc.object_id))::int AS cnt
-            FROM objects_core oc
-            INNER JOIN fts_ids c ON c.object_id = oc.object_id
-            WHERE oc.status = 'active'
-            GROUP BY oc.object_type
-          `.execute(this.db);
+      const result = await sql<{ object_type: string; cnt: number | string }>`
+        WITH fts_ids AS (
+          SELECT DISTINCT ou.object_id
+          FROM object_updates ou
+          WHERE ${tsQuery !== null}
+            AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+            AND ou.search_vector @@ to_tsquery('english', ${tsQuery ?? ''})
+        ),
+        id_prefix_ids AS (
+          SELECT object_id
+          FROM objects_core
+          WHERE status = 'active'
+            AND ${includePrefix}
+            AND object_id COLLATE "C" >= ${prefixLower}
+            AND object_id COLLATE "C" < ${prefixUpper}
+        ),
+        identifier_ids AS (
+          SELECT DISTINCT ou.object_id
+          FROM object_updates ou
+          WHERE ${includePrefix}
+            AND ou.update_type = ${UPDATE_TYPES.IDENTIFIER}
+            AND lower(ou.value_json->>'value') LIKE ${jsonPrefixPattern} ESCAPE '\\'
+        ),
+        locality_ids AS (
+          SELECT DISTINCT ou.object_id
+          FROM object_updates ou
+          WHERE ${includePrefix}
+            AND ou.update_type = ${UPDATE_TYPES.ADDRESS}
+            AND lower(ou.value_json->>'locality') LIKE ${jsonPrefixPattern} ESCAPE '\\'
+        ),
+        id_hits AS (
+          SELECT object_id
+          FROM objects_core
+          WHERE status = 'active'
+            AND ${includeIdSubstring}
+            AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
+        ),
+        candidate_ids AS (
+          SELECT object_id FROM fts_ids
+          UNION
+          SELECT object_id FROM id_prefix_ids
+          UNION
+          SELECT object_id FROM identifier_ids
+          UNION
+          SELECT object_id FROM locality_ids
+          UNION
+          SELECT object_id FROM id_hits
+        )
+        SELECT oc.object_type AS object_type,
+          COUNT(DISTINCT COALESCE(oc.meta_group_id, oc.object_id))::int AS cnt
+        FROM objects_core oc
+        INNER JOIN candidate_ids c ON c.object_id = oc.object_id
+        WHERE oc.status = 'active'
+        GROUP BY oc.object_type
+      `.execute(this.db);
 
       const out: Record<string, number> = {};
       for (const row of result.rows) {

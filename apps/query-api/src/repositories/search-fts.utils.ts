@@ -5,7 +5,7 @@
 export function buildAutocompleteTsQuery(queryText: string): string | null {
   const words = queryText
     .trim()
-    .split(/\s+/)
+    .split(/[\s-]+/)
     .filter((w) => w.length > 0);
   if (words.length === 0) {
     return null;

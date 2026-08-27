@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, search]
-updated_at: 2026-07-03
+updated_at: 2026-08-27
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/README.md
@@ -84,10 +84,12 @@ No `type_counts` or `total_users` — use `/search/counts` for tab badges.
 
 1. **FTS-first (autocomplete):** `object_updates` rows with `update_type` in (`name`, `title`, `description`) and `search_vector @@ to_tsquery('english', :ts_query)` (GIN on `search_vector`). `:ts_query` is built from `:q` so every token is required (`&`) and **each** token is a prefix (`:*`), e.g. `about waiv` → `about:* & waiv:*` (note: `english` stopwords like `about` are stripped, so this reduces to `waiv:*`). → distinct `object_id` candidates.
 2. **Name/title prefix (relevance boost):** `object_updates` rows with `update_type` in (`name`, `title`) where `value_text_normalized LIKE lower(trim(:q)) || '%'` (trigram GIN `idx_object_updates_name_title_value_norm_trgm`, only when `trim(q)` length ≥ 3). Unlike FTS this keeps stopwords, so `about wai` matches the object literally named "About Waivio".
-3. **Optional id substring** (only when `trim(q)` has length ≥ 8 and contains `-`): `objects_core` with `status = 'active'` and `object_id ILIKE '%' || escape(:q) || '%' ESCAPE '\'`. Omitted for short text queries (e.g. `grampo`) to avoid a full-table scan.
-4. Union FTS + name/title-prefix (and optional id) candidate ids; **join** `objects_core` on PK (`status = 'active'`).
-5. **`/search`:** Collapse variants with `DISTINCT ON (COALESCE(meta_group_id, object_id))`, keeping the highest-`weight` representative per group. Final order: **name/title prefix match** first, then sort tier (multi-word / id-shaped queries only: exact object id > id substring > exact normalized text > FTS), then `objects_core.weight DESC NULLS LAST` (earned payouts), then `object_id` for deterministic paging. Ranking is viewer-independent. Single-token text queries use the fast FTS path (no sort tiers). No `ts_rank_cd` over the full GIN hit set. Then load aggregates, resolve, project.
-6. **`/search/counts`:** `GROUP BY object_type` with `COUNT(DISTINCT COALESCE(meta_group_id, object_id))` over the FTS (+ optional id) candidate set only; the name/title-prefix boost in step 2 affects `/search` ordering, not counts.
+3. **Object id prefix** (when `trim(q)` length ≥ 3): `objects_core` with `status = 'active'` and `object_id COLLATE "C" >= lower(trim(:q)) AND object_id COLLATE "C" < upperBound(lower(trim(:q)))` (same `prefixUpperBound` as user search; `"C"` so kebab ids like `kvu-` are not an empty range under locale collation). Hyphens in `q` are also split before FTS (`kvu-` → `kvu:*`).
+4. **Identifier / address locality prefix** (when `trim(q)` length ≥ 3): `object_updates` with `update_type = 'identifier'` and `lower(value_json->>'value') LIKE lower(trim(:q)) || '%'`, or `update_type = 'address'` and `lower(value_json->>'locality') LIKE lower(trim(:q)) || '%'` (partial btree indexes `idx_object_updates_identifier_value_lower`, `idx_object_updates_address_locality_lower`).
+5. **Optional id substring** (only when `trim(q)` has length ≥ 8 and contains `-`): `objects_core` with `status = 'active'` and `object_id ILIKE '%' || escape(:q) || '%' ESCAPE '\'`. Omitted for short text queries (e.g. `grampo`, `kvu`) to avoid a full-table scan.
+6. Union FTS + name/title-prefix + id prefix + identifier/locality + optional id substring candidate ids; **join** `objects_core` on PK (`status = 'active'`).
+7. **`/search`:** Collapse variants with `DISTINCT ON (COALESCE(meta_group_id, object_id))`, keeping the highest-`weight` representative per group. Final order: **name/title prefix match** first, then **object_id prefix**, then **identifier/locality prefix**, then sort tier (multi-word / id-shaped queries only: exact object id > id prefix/substring > exact normalized text > FTS), then `objects_core.weight DESC NULLS LAST` (earned payouts), then `object_id` for deterministic paging. Ranking is viewer-independent. Single-token text queries use the fast FTS path (prefix flags, no sort tiers). No `ts_rank_cd` over the full GIN hit set. Then load aggregates, resolve, project.
+8. **`/search/counts`:** `GROUP BY object_type` with `COUNT(DISTINCT COALESCE(meta_group_id, object_id))` over FTS + id prefix + identifier + locality (+ optional id substring) candidates; the name/title-prefix boost in step 2 affects `/search` ordering, not counts.
 
 Object SQL and user SQL for `/search` run **in parallel** in `GetSearchEndpoint`. `/search/counts` runs `countObjectsByType` and `countUsers` in parallel in `GetSearchCountsEndpoint`.
 
