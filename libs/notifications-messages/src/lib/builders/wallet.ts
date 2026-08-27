@@ -1,20 +1,26 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
 import { type NotificationMessage, withParamHrefs } from '../message';
-import { userProfilePath, walletTransfersPath } from '../links';
+import {
+  userProfilePath,
+  walletTabFromAmount,
+  walletTabFromSymbol,
+  walletTransfersPath,
+  type WalletTabType,
+} from '../links';
 
 function walletMessage(
   key: string,
   params: Record<string, string>,
   username: string,
   actor: string | null,
-  walletType: string | undefined,
+  walletTab: WalletTabType,
   paramHrefs: Readonly<Record<string, string>>,
 ): NotificationMessage {
   return withParamHrefs(
     {
       key,
       params,
-      href: walletTransfersPath(username, walletType),
+      href: walletTransfersPath(username, walletTab),
       icon: 'wallet',
       actor,
     },
@@ -40,7 +46,7 @@ export function buildWalletMessage(
             amount: `${p.amount} ${p.symbol}`,
             to: p.to,
           },
-          href: walletTransfersPath(p.to, 'transfer'),
+          href: walletTransfersPath(p.to, walletTabFromSymbol(p.symbol)),
           icon: 'wallet',
           actor: p.from,
         },
@@ -57,7 +63,7 @@ export function buildWalletMessage(
         { amount: `${p.amount} ${p.symbol}`, to: p.to },
         p.from,
         p.from,
-        'transfer',
+        walletTabFromSymbol(p.symbol),
         { to: profileHref(p.to) },
       );
     }
@@ -68,7 +74,7 @@ export function buildWalletMessage(
         { amount: `${p.amount} ${p.symbol}` },
         p.from,
         p.from,
-        'transfer',
+        walletTabFromSymbol(p.symbol),
         {},
       );
     }
@@ -79,7 +85,7 @@ export function buildWalletMessage(
         { from: p.from, amount: p.amount, to: p.to },
         p.from,
         p.from,
-        'power_up',
+        'HIVE',
         {
           from: profileHref(p.from),
           to: profileHref(p.to),
@@ -92,7 +98,7 @@ export function buildWalletMessage(
         {
           key: 'power_down_notification',
           params: { username: p.account, amount: p.amount },
-          href: walletTransfersPath(p.account, 'power_down'),
+          href: walletTransfersPath(p.account, walletTabFromAmount(p.amount)),
           icon: 'wallet',
           actor: p.account,
         },
@@ -110,7 +116,7 @@ export function buildWalletMessage(
             rewardHBD: p.rewardHbd,
             rewardHP: p.rewardHp,
           },
-          href: walletTransfersPath(account, 'claim_reward_balance'),
+          href: walletTransfersPath(account, 'HIVE'),
           icon: 'wallet',
           actor: event.actor,
         },
@@ -144,7 +150,7 @@ export function buildWalletMessage(
             open_pays: p.openPays,
             exchanger: p.exchanger,
           },
-          href: walletTransfersPath(account, 'fill_order'),
+          href: walletTransfersPath(account, 'HIVE'),
           icon: 'wallet',
           actor: event.actor,
         },
@@ -160,7 +166,7 @@ export function buildWalletMessage(
             from_account: p.fromAccount,
             to_account: p.toAccount,
           },
-          href: walletTransfersPath(p.fromAccount, 'set_withdraw_vesting_route'),
+          href: walletTransfersPath(p.fromAccount, 'HIVE'),
           icon: 'wallet',
           actor: p.fromAccount,
         },
@@ -215,7 +221,10 @@ export function buildWalletMessage(
             delegatee: p.delegatee,
             amount: p.amount,
           },
-          href: walletTransfersPath(p.delegator, 'delegate_vesting_shares'),
+          href: walletTransfersPath(
+            p.delegator,
+            walletTabFromAmount(p.amount),
+          ),
           icon: 'wallet',
           actor: p.delegator,
         },
@@ -235,7 +244,7 @@ export function buildWalletMessage(
             amount: `${p.amount} ${p.symbol}`,
             to: p.to,
           },
-          href: walletTransfersPath(p.to, 'transfer'),
+          href: walletTransfersPath(p.to, walletTabFromSymbol(p.symbol)),
           icon: 'wallet',
           actor: p.from,
         },
@@ -256,7 +265,7 @@ export function buildWalletMessage(
         },
         p.from,
         p.from,
-        'tokens',
+        walletTabFromSymbol(p.symbol),
         {
           from: profileHref(p.from),
           to: profileHref(p.to),
@@ -274,7 +283,7 @@ export function buildWalletMessage(
         },
         p.from,
         p.from,
-        'tokens',
+        walletTabFromSymbol(p.symbol),
         {
           from: profileHref(p.from),
           to: profileHref(p.to),
@@ -292,7 +301,7 @@ export function buildWalletMessage(
         },
         p.from,
         p.from,
-        'tokens',
+        walletTabFromSymbol(p.symbol),
         {
           from: profileHref(p.from),
           to: profileHref(p.to),
@@ -310,7 +319,7 @@ export function buildWalletMessage(
         },
         p.account,
         p.account,
-        'tokens',
+        walletTabFromSymbol(p.symbol),
         { from: profileHref(p.account) },
       );
     }

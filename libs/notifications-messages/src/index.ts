@@ -12,7 +12,10 @@ export {
   objectUpdatePath,
   postPath,
   userProfilePath,
+  walletTabFromAmount,
+  walletTabFromSymbol,
   walletTransfersPath,
+  type WalletTabType,
 } from './lib/links';
 export { resolveNotificationContextHref } from './lib/resolve-notification-context-href';
 export {

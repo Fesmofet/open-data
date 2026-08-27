@@ -43,6 +43,39 @@ describe('buildWalletMessage', () => {
       amount: '0.001 WAIV',
       to: 'flowmaster',
     });
+    expect(msg?.href).toBe('/@flowmaster/transfers?type=WAIV');
+  });
+
+  it('maps HIVE transfer_in to HIVE wallet tab', () => {
+    const msg = buildWalletMessage({
+      ...baseEnvelope,
+      type: 'transfer_in',
+      actor: 'wiv01',
+      payload: {
+        from: 'wiv01',
+        to: 'flowmaster',
+        amount: '0.001',
+        symbol: 'HIVE',
+        memo: null,
+      },
+    });
+    expect(msg?.href).toBe('/@flowmaster/transfers?type=HIVE');
+  });
+
+  it('maps engine_transfer with non-WAIV symbol to ENGINE tab', () => {
+    const msg = buildWalletMessage({
+      ...baseEnvelope,
+      type: 'engine_transfer',
+      actor: 'wiv01',
+      payload: {
+        from: 'wiv01',
+        to: 'flowmaster',
+        amount: '1',
+        symbol: 'BEE',
+        memo: null,
+      },
+    });
+    expect(msg?.href).toBe('/@flowmaster/transfers?type=ENGINE');
   });
 
   it('maps hive power_up to actor-initiated copy', () => {

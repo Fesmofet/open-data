@@ -43,6 +43,8 @@ Pure functions only — no Nest, React, or i18n runtime.
 
 `update_vote_cast` uses `notification_update_vote_cast` and `objectUpdatePath(objectId, updateId)` → `/object/:objectId/updates/:updateId` (see [object update detail](../../../web/spec/object-update-detail.md)).
 
+Wallet notifications use `walletTransfersPath(username, tab)` with `?type=WAIV`, `?type=HIVE`, or `?type=ENGINE` (web wallet tab), resolved from payload symbol/amount via `walletTabFromSymbol` / `walletTabFromAmount` — not legacy operation names like `transfer` or `tokens`.
+
 ## Adding a type
 
 1. Extend `NotificationPayloadMap` + `notificationEventSchema` in `notifications-contract`.

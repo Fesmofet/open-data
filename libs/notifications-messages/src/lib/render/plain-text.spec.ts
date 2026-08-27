@@ -13,7 +13,7 @@ const dictionary = {
 const message: NotificationMessage = {
   key: 'notification_transfer_username_amount',
   params: { username: 'wiv01', amount: '0.001 HIVE', to: 'flowmaster' },
-  href: '/@flowmaster/transfers?type=transfer',
+  href: '/@flowmaster/transfers?type=HIVE',
   icon: 'wallet',
   actor: 'wiv01',
 };
@@ -28,7 +28,7 @@ describe('plain-text render', () => {
   it('resolveNotificationAbsoluteUrl builds absolute link', () => {
     expect(
       resolveNotificationAbsoluteUrl(message, 'https://waiviodev.com/'),
-    ).toBe('https://waiviodev.com/@flowmaster/transfers?type=transfer');
+    ).toBe('https://waiviodev.com/@flowmaster/transfers?type=HIVE');
   });
 
   it('renderPlainText appends URL for legacy plain-text consumers', () => {
@@ -37,7 +37,7 @@ describe('plain-text render', () => {
         baseUrl: 'https://waiviodev.com',
       }),
     ).toBe(
-      'wiv01 transferred 0.001 HIVE to flowmaster\nhttps://waiviodev.com/@flowmaster/transfers?type=transfer',
+      'wiv01 transferred 0.001 HIVE to flowmaster\nhttps://waiviodev.com/@flowmaster/transfers?type=HIVE',
     );
   });
 });

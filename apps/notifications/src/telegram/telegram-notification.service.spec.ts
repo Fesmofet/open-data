@@ -80,7 +80,7 @@ describe('TelegramNotificationService', () => {
     expect(payload.text).toBe('wiv01 transferred 0.001 HIVE to flowmaster');
     expect(payload.text).not.toContain('https://');
     expect(payload.websiteUrl).toBe(
-      'https://waiviodev.com/@flowmaster/transfers?type=transfer',
+      'https://waiviodev.com/@flowmaster/transfers?type=HIVE',
     );
   });
 

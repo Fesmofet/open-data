@@ -100,7 +100,7 @@ describe('NotificationRow', () => {
     );
 
     const overlay = findOverlayLink(container);
-    expect(overlay).toHaveAttribute('href', '/@alice/transfers?type=transfer');
+    expect(overlay).toHaveAttribute('href', '/@alice/transfers?type=HIVE');
 
     const avatarLink = screen.getByTestId('avatar-wiv01').closest('a');
     expect(avatarLink).toHaveAttribute('href', '/@wiv01');

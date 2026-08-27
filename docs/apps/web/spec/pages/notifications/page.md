@@ -82,7 +82,7 @@ If both WS env vars are empty, the client does not open a WebSocket (bell shows 
 
 Each feed row ([`NotificationRow`](../../../apps/web/src/modules/notifications/presentation/components/notification-row.tsx)) has:
 
-- **Primary click (overlay):** navigates to the notification **context** — comment/post permalink, wallet transfers tab, object page, inbox for messages, etc. Resolved by `resolveNotificationContextHref` in `@opden-data-layer/notifications-messages`.
+- **Primary click (overlay):** navigates to the notification **context** — comment/post permalink, wallet tab (`?type=WAIV|HIVE|ENGINE`), object page, inbox for messages, etc. Resolved by `resolveNotificationContextHref` in `@opden-data-layer/notifications-messages`.
 - **Secondary clicks:** avatar and inline `{username}` / `{objectName}` placeholders link to profile or object URLs via `paramHrefs`.
 
 Bell dropdown rows call `onNavigate` on overlay click (closes panel; skipped on ctrl/meta for new-tab).

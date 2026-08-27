@@ -9,7 +9,7 @@ describe('telegram-inline-keyboard', () => {
     expect(
       buildNotificationInlineKeyboard(
         'flowmaster',
-        'https://waiviodev.com/@flowmaster/transfers?type=transfer',
+        'https://waiviodev.com/@flowmaster/transfers?type=HIVE',
       ),
     ).toEqual({
       inline_keyboard: [
