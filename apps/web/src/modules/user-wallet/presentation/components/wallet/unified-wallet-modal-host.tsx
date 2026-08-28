@@ -5,6 +5,8 @@ import { HiveDelegateRcModal } from '../hive-wallet/hive-delegate-rc-modal';
 import { HiveManageRcDelegationsModal } from '../hive-wallet/hive-manage-rc-delegations-modal';
 import { WalletCancelPowerDownModal } from './wallet-cancel-power-down-modal';
 import { WalletClaimRewardsModal } from './wallet-claim-rewards-modal';
+import { WalletConvertHbdModal } from './wallet-convert-hbd-modal';
+import { WalletHiveChangellyWithdrawModal } from './wallet-hive-changelly-withdraw-modal';
 import { WalletDelegateModal } from './wallet-delegate-modal';
 import { WalletDepositModal } from './wallet-deposit-modal';
 import { WalletManageDelegationsModal } from './wallet-manage-delegations-modal';
@@ -91,6 +93,19 @@ function WalletModals({
     case 'claimRewards':
       return (
         <WalletClaimRewardsModal
+          open
+          onClose={closeModal}
+          account={account}
+          state={modal}
+        />
+      );
+    case 'convertHbd':
+      return (
+        <WalletConvertHbdModal open onClose={closeModal} account={account} state={modal} />
+      );
+    case 'hiveChangellyWithdraw':
+      return (
+        <WalletHiveChangellyWithdrawModal
           open
           onClose={closeModal}
           account={account}

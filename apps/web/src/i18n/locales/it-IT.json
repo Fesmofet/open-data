@@ -3522,5 +3522,20 @@
   "your_vote": "Il tuo voto",
   "your_vote_placeholder": "Il tuo voto (opzionale)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Azioni della comunità"
+  "СЃommunity_actions": "Azioni della comunità",
+  "wallet_convert_hbd_title": "Convert to HBD",
+  "wallet_convert_hbd_notice": "The conversion works like this: Each HBD is exchanged for $1 USD worth of HIVE, based on the 3.5-day median price from Hive witnesses. After 3.5 days, the newly created HIVE is delivered. Since this isn't a market trade, there are no limits on volume or price impact on HIVE or HBD.",
+  "wallet_convert_hbd_immediate": "Estimated HBD to be paid immediately: {amount} HBD",
+  "wallet_convert_swap_hive": "Convert to SWAP.HIVE",
+  "wallet_changelly_withdraw_title": "Changelly exchange",
+  "wallet_withdraw_to_btc": "Withdraw to BTC",
+  "wallet_withdraw_to_ltc": "Withdraw to LTC",
+  "wallet_withdraw_to_eth": "Withdraw to ETH",
+  "wallet_changelly_usd_cap": "Maximum withdrawal value is  USD",
+  "wallet_changelly_min_amount": "Minimum amount is {min} HIVE",
+  "wallet_changelly_tracking_reserve": "Requires {amount} HIVE extra for the tracking transfer",
+  "wallet_changelly_receive": "You receive",
+  "wallet_changelly_destination": "Destination address",
+  "wallet_changelly_unavailable": "Changelly exchange is temporarily unavailable",
+  "wallet_convert_hbd_modal_title": "Convert HIVE to HBD"
 }

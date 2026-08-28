@@ -90,6 +90,15 @@ export type WalletClaimRewardsModalState = {
   pendingRewards: HivePendingRewardsView;
 };
 
+export type WalletConvertHbdModalState = {
+  kind: 'convertHbd';
+};
+
+export type WalletHiveChangellyWithdrawModalState = {
+  kind: 'hiveChangellyWithdraw';
+  outputCoinType: 'btc' | 'ltc' | 'eth';
+};
+
 export type WalletModalState =
   | WalletTransferModalState
   | WalletPowerModalState
@@ -103,4 +112,6 @@ export type WalletModalState =
   | WalletDepositModalState
   | WalletWithdrawModalState
   | WalletClaimRewardsModalState
+  | WalletConvertHbdModalState
+  | WalletHiveChangellyWithdrawModalState
   | null;

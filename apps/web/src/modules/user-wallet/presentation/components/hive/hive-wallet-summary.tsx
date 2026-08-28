@@ -87,6 +87,14 @@ export function HiveWalletSummary({
           openModal({ kind: 'transfer', asset: 'HIVE' }),
         openTransferHiveToSavings: () =>
           openModal({ kind: 'transfer', asset: 'HIVE', toSavings: true }),
+        openConvertHbd: () => openModal({ kind: 'convertHbd' }),
+        openConvertSwapHive: () => openModal({ kind: 'deposit' }),
+        openWithdrawToBtc: () =>
+          openModal({ kind: 'hiveChangellyWithdraw', outputCoinType: 'btc' }),
+        openWithdrawToLtc: () =>
+          openModal({ kind: 'hiveChangellyWithdraw', outputCoinType: 'ltc' }),
+        openWithdrawToEth: () =>
+          openModal({ kind: 'hiveChangellyWithdraw', outputCoinType: 'eth' }),
         openDelegate: () =>
           openModal({ kind: 'delegate', asset: defaultAsset }),
         openPowerDown: () =>
@@ -147,6 +155,31 @@ export function HiveWalletSummary({
                     id: 'transfer',
                     label: t('transfer'),
                     onSelect: actions.openTransferHive,
+                  },
+                  {
+                    id: 'convert-hbd',
+                    label: t('wallet_convert_hbd_title'),
+                    onSelect: actions.openConvertHbd,
+                  },
+                  {
+                    id: 'convert-swap-hive',
+                    label: t('wallet_convert_swap_hive'),
+                    onSelect: actions.openConvertSwapHive,
+                  },
+                  {
+                    id: 'withdraw-ltc',
+                    label: t('wallet_withdraw_to_ltc'),
+                    onSelect: actions.openWithdrawToLtc,
+                  },
+                  {
+                    id: 'withdraw-btc',
+                    label: t('wallet_withdraw_to_btc'),
+                    onSelect: actions.openWithdrawToBtc,
+                  },
+                  {
+                    id: 'withdraw-eth',
+                    label: t('wallet_withdraw_to_eth'),
+                    onSelect: actions.openWithdrawToEth,
                   },
                   {
                     id: 'to-savings',

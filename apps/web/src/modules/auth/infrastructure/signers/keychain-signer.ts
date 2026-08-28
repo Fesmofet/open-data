@@ -40,6 +40,9 @@ function resolveSigningAccount(operations: HiveOperationPayload['operations']): 
               : op.from,
         );
         break;
+      case 'collateralized_convert':
+        accounts.add(op.owner);
+        break;
       case 'custom_json': {
         const posting = op.required_posting_auths[0];
         const active = op.required_auths[0];

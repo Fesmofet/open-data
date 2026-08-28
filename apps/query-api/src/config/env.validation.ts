@@ -77,6 +77,14 @@ export const queryApiConfigSchema = z.object({
     .default('https://converter-api.hive-engine.com/api/convert/'),
   TRIBALDEX_BASE_URL: z.url().optional().default('https://api.tribaldex.com'),
   ETH_GATEWAY_BASE_URL: z.url().optional().default('https://ethgw.hive-engine.com'),
+  CHANGELLY_PRIVATE_KEY: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  CHANGELLY_BASE_URL: z
+    .url()
+    .optional()
+    .default('https://api.changelly.com/v2'),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

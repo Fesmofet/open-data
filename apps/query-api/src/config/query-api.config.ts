@@ -73,5 +73,10 @@ export default () => {
         requestTimeoutMs: externalTimeoutMs,
       },
     },
+    changelly: {
+      privateKeyHex: env.CHANGELLY_PRIVATE_KEY,
+      baseUrl: env.CHANGELLY_BASE_URL,
+      requestTimeoutMs: externalTimeoutMs,
+    },
   };
 };

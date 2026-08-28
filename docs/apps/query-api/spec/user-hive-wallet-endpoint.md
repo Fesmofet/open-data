@@ -26,6 +26,9 @@ Returns a live Hive L1 wallet summary for the profile account: liquid HIVE, Hive
 |------|---------|
 | `GET .../wallet/hive/delegations` | HP delegations: incoming/outgoing from `user_delegations` (indexed), expirations from chain RPC |
 | `GET .../wallet/hive/rc-delegations` | RC delegations: incoming from `user_rc_delegations`, outgoing from `rc_api` |
+| `GET .../wallet/hive/withdraw/range` | Changelly min/max/rate for liquid HIVE → BTC/LTC/ETH — see [user-hive-changelly-withdraw.md](user-hive-changelly-withdraw.md) |
+| `POST .../wallet/hive/withdraw/estimate` | Changelly output estimate for a HIVE amount |
+| `POST .../wallet/hive/withdraw/create` | Create Changelly pay-in routing (client broadcasts L1 transfers) |
 
 ## Data sources
 

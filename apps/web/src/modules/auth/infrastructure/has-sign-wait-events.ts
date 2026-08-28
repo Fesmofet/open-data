@@ -24,6 +24,7 @@ const TRANSACTION_OPERATION_TYPES = new Set<HiveOperation['type']>([
   'transfer_from_savings',
   'cancel_transfer_from_savings',
   'claim_reward_balance',
+  'collateralized_convert',
 ]);
 
 function operationKind(op: HiveOperation): HasSignWaitKind {

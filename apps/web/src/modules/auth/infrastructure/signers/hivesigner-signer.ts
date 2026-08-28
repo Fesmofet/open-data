@@ -134,6 +134,15 @@ function toWireOperation(op: HiveOperation): WireOperation {
           reward_vests: op.reward_vests,
         },
       ];
+    case 'collateralized_convert':
+      return [
+        'collateralized_convert',
+        {
+          owner: op.owner,
+          requestid: op.requestid,
+          amount: op.amount,
+        },
+      ];
   }
   return assertNeverForHiveOp(op);
 }

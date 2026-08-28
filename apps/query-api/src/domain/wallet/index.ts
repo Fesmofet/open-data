@@ -9,6 +9,16 @@ export { GetUserEngineDepositListEndpoint } from './get-user-engine-deposit-list
 export { GetUserEngineDepositAddressEndpoint } from './get-user-engine-deposit-address.endpoint';
 export { GetUserEngineWithdrawListEndpoint } from './get-user-engine-withdraw-list.endpoint';
 export { PostUserEngineWithdrawQuoteEndpoint } from './post-user-engine-withdraw-quote.endpoint';
+export { HiveChangellyWithdrawService } from './hive-changelly-withdraw.service';
+export { GetUserHiveWithdrawRangeEndpoint } from './get-user-hive-withdraw-range.endpoint';
+export { PostUserHiveWithdrawEstimateEndpoint } from './post-user-hive-withdraw-estimate.endpoint';
+export { PostUserHiveWithdrawCreateEndpoint } from './post-user-hive-withdraw-create.endpoint';
+export {
+  HIVE_CHANGELLY_OUTPUT_COINS,
+  HIVE_CHANGELLY_TRACKING_HIVE_RESERVE,
+  HIVE_CHANGELLY_WITHDRAW_USD_CAP,
+  normalizeHiveChangellyOutputCoin,
+} from './hive-changelly-withdraw.constants';
 export { GetUserEngineTokenDelegationsEndpoint } from './get-user-engine-token-delegations.endpoint';
 export { GetUserHiveWalletEndpoint } from './get-user-hive-wallet.endpoint';
 export { GetUserHiveHpDelegationsEndpoint } from './get-user-hive-hp-delegations.endpoint';
@@ -53,6 +63,20 @@ export {
   type EngineWithdrawQuoteBody,
   type EngineWithdrawQuoteResponse,
 } from './schemas/engine-swap.schema';
+export {
+  hiveChangellyWithdrawRangeQuerySchema,
+  hiveChangellyWithdrawRangeResponseSchema,
+  hiveChangellyWithdrawEstimateBodySchema,
+  hiveChangellyWithdrawEstimateResponseSchema,
+  hiveChangellyWithdrawCreateBodySchema,
+  hiveChangellyWithdrawCreateResponseSchema,
+  type HiveChangellyWithdrawRangeQuery,
+  type HiveChangellyWithdrawRangeResponse,
+  type HiveChangellyWithdrawEstimateBody,
+  type HiveChangellyWithdrawEstimateResponse,
+  type HiveChangellyWithdrawCreateBody,
+  type HiveChangellyWithdrawCreateResponse,
+} from './schemas/hive-changelly-withdraw.schema';
 export {
   engineTokenDelegationsResponseSchema,
   type EngineTokenDelegationsResponse,

@@ -11,6 +11,7 @@ const ACTIVE_KEY_OPERATION_TYPES = new Set([
   'account_update',
   'account_update2',
   'convert',
+  'collateralized_convert',
   'limit_order_create',
   'limit_order_cancel',
 ]);

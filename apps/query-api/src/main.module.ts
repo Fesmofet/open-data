@@ -9,6 +9,7 @@ import {
   HiveEngineConvertClientModule,
   HiveEngineHistoryClientModule,
   TribaldexClientModule,
+  ChangellyClientModule,
   type HiveEngineClientModuleOptions,
   HIVE_RPC_NODES,
   RedisClientModule,
@@ -96,6 +97,12 @@ import { RepositoriesModule } from './repositories';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) =>
         config.getOrThrow('hiveEngine.ethGatewayClient'),
+      inject: [ConfigService],
+    }),
+    ChangellyClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) =>
+        config.getOrThrow('changelly'),
       inject: [ConfigService],
     }),
     RepositoriesModule,

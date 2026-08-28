@@ -101,6 +101,13 @@ export type ClaimRewardBalanceOp = {
   readonly reward_vests: string;
 };
 
+export type CollateralizedConvertOp = {
+  readonly type: 'collateralized_convert';
+  readonly owner: string;
+  readonly requestid: number;
+  readonly amount: string;
+};
+
 export type HiveOperation =
   | VoteOp
   | CommentOp
@@ -113,7 +120,8 @@ export type HiveOperation =
   | TransferToSavingsOp
   | TransferFromSavingsOp
   | CancelTransferFromSavingsOp
-  | ClaimRewardBalanceOp;
+  | ClaimRewardBalanceOp
+  | CollateralizedConvertOp;
 
 export type HiveOperationPayload = {
   readonly operations: readonly HiveOperation[];

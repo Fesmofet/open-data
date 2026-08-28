@@ -28,8 +28,10 @@ export {
   buildCancelTransferFromSavingsOp,
   buildClaimHbdInterestOps,
   buildClaimRewardBalanceOp,
+  buildCollateralizedConvertOp,
   buildDelegateRcOp,
   formatHiveAssetAmount,
+  toHiveUint32RequestId,
   type HiveTransferAsset,
 } from './hive-l1-wallet-operations';
 export {

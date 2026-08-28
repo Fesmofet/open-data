@@ -42,4 +42,15 @@ describe('hive-operation-signing', () => {
     expect(hiveOperationRequiresActiveKey(op)).toBe(false);
     expect(resolveKeychainBroadcastKey([op])).toBe('Posting');
   });
+
+  it('requires active key for collateralized_convert', () => {
+    const op: HiveOperation = {
+      type: 'collateralized_convert',
+      owner: 'alice',
+      requestid: 1_700_000_000,
+      amount: '1.200 HIVE',
+    };
+    expect(hiveOperationRequiresActiveKey(op)).toBe(true);
+    expect(resolveKeychainBroadcastKey([op])).toBe('Active');
+  });
 });

@@ -86,6 +86,8 @@ import type {
   PostUserEngineSwapQuoteEndpoint,
   GetUserEngineDepositAddressEndpoint,
   PostUserEngineWithdrawQuoteEndpoint,
+  GetUserHiveWithdrawRangeEndpoint,
+  PostUserHiveWithdrawEstimateEndpoint,
   GetHiveAdvancedReportEndpoint,
   UpsertHiveWalletExemptionEndpoint,
 } from '../domain/wallet';
@@ -135,6 +137,8 @@ export interface McpToolDeps {
   getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint;
   getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint;
   getUserHiveWallet: GetUserHiveWalletEndpoint;
+  getUserHiveWithdrawRange: GetUserHiveWithdrawRangeEndpoint;
+  postUserHiveWithdrawEstimate: PostUserHiveWithdrawEstimateEndpoint;
   getHiveAdvancedReport: GetHiveAdvancedReportEndpoint;
   upsertHiveWalletExemption: UpsertHiveWalletExemptionEndpoint;
   getUserFollowers: GetUserFollowersEndpoint;

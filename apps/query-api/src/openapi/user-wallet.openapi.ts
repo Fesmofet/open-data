@@ -25,6 +25,14 @@ import {
   hiveRcDelegationsResponseSchema,
   hiveWalletResponseSchema,
 } from '../domain/wallet/schemas/hive-wallet.schema';
+import {
+  hiveChangellyWithdrawCreateBodySchema,
+  hiveChangellyWithdrawCreateResponseSchema,
+  hiveChangellyWithdrawEstimateBodySchema,
+  hiveChangellyWithdrawEstimateResponseSchema,
+  hiveChangellyWithdrawRangeQuerySchema,
+  hiveChangellyWithdrawRangeResponseSchema,
+} from '../domain/wallet/schemas/hive-changelly-withdraw.schema';
 import { registry } from './registry';
 import { queryApiOpenApiTags } from './tags';
 
@@ -579,6 +587,133 @@ registry.registerPath({
           schema: serviceUnavailableSchema,
         },
       },
+    },
+  },
+});
+
+const hiveChangellyWithdrawRangeQueryOpenApi = registry.register(
+  'HiveChangellyWithdrawRangeQuery',
+  hiveChangellyWithdrawRangeQuerySchema,
+);
+const hiveChangellyWithdrawRangeResponseOpenApi = registry.register(
+  'HiveChangellyWithdrawRangeResponse',
+  hiveChangellyWithdrawRangeResponseSchema,
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/wallet/hive/withdraw/range',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Changelly HIVE withdraw pair limits and rate',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    query: hiveChangellyWithdrawRangeQueryOpenApi,
+  },
+  responses: {
+    200: {
+      description: 'Min/max HIVE amount and 1 HIVE → output coin rate.',
+      content: {
+        'application/json': { schema: hiveChangellyWithdrawRangeResponseOpenApi },
+      },
+    },
+    400: {
+      description: 'Unsupported output coin.',
+      content: { 'application/json': { schema: badRequestSchema } },
+    },
+    404: {
+      description: 'Unknown account.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+    503: {
+      description: 'Changelly unavailable.',
+      content: { 'application/json': { schema: serviceUnavailableSchema } },
+    },
+  },
+});
+
+const hiveChangellyWithdrawEstimateBodyOpenApi = registry.register(
+  'HiveChangellyWithdrawEstimateBody',
+  hiveChangellyWithdrawEstimateBodySchema,
+);
+const hiveChangellyWithdrawEstimateResponseOpenApi = registry.register(
+  'HiveChangellyWithdrawEstimateResponse',
+  hiveChangellyWithdrawEstimateResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/wallet/hive/withdraw/estimate',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Changelly HIVE withdraw output estimate',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: {
+      content: { 'application/json': { schema: hiveChangellyWithdrawEstimateBodyOpenApi } },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Predicted receive amount in output coin.',
+      content: {
+        'application/json': { schema: hiveChangellyWithdrawEstimateResponseOpenApi },
+      },
+    },
+    400: {
+      description: 'Unsupported output coin.',
+      content: { 'application/json': { schema: badRequestSchema } },
+    },
+    404: {
+      description: 'Unknown account.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+    503: {
+      description: 'Changelly unavailable.',
+      content: { 'application/json': { schema: serviceUnavailableSchema } },
+    },
+  },
+});
+
+const hiveChangellyWithdrawCreateBodyOpenApi = registry.register(
+  'HiveChangellyWithdrawCreateBody',
+  hiveChangellyWithdrawCreateBodySchema,
+);
+const hiveChangellyWithdrawCreateResponseOpenApi = registry.register(
+  'HiveChangellyWithdrawCreateResponse',
+  hiveChangellyWithdrawCreateResponseSchema,
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/wallet/hive/withdraw/create',
+  tags: [queryApiOpenApiTags.userWallet],
+  summary: 'Create Changelly HIVE withdraw transaction',
+  description:
+    'Returns Changelly pay-in routing (receiver + memo) for client-side L1 transfer broadcast. Web signs two transfers: pay-in amount + 0.001 HIVE self-memo with track URL.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: {
+      content: { 'application/json': { schema: hiveChangellyWithdrawCreateBodyOpenApi } },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Changelly pay-in instructions and tracking metadata.',
+      content: {
+        'application/json': { schema: hiveChangellyWithdrawCreateResponseOpenApi },
+      },
+    },
+    400: {
+      description:
+        'Insufficient balance, USD cap exceeded, amount outside pair limits, or unsupported coin.',
+      content: { 'application/json': { schema: badRequestSchema } },
+    },
+    404: {
+      description: 'Unknown account.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+    503: {
+      description: 'Changelly or Hive node unavailable.',
+      content: { 'application/json': { schema: serviceUnavailableSchema } },
     },
   },
 });

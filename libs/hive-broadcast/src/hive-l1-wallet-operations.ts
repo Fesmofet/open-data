@@ -1,6 +1,7 @@
 import type {
   CancelTransferFromSavingsOp,
   ClaimRewardBalanceOp,
+  CollateralizedConvertOp,
   CustomJsonOp,
   DelegateVestingSharesOp,
   TransferFromSavingsOp,
@@ -18,6 +19,11 @@ export type HiveTransferAsset = 'HIVE' | 'HBD';
 export function formatHiveAssetAmount(amount: number, asset: HiveTransferAsset): string {
   const precision = asset === 'HBD' ? 3 : 3;
   return `${amount.toFixed(precision)} ${asset}`;
+}
+
+/** Hive `requestid` fields are uint32; wrap like legacy hive-js. */
+export function toHiveUint32RequestId(value = Date.now()): number {
+  return value >>> 0;
 }
 
 export function buildTransferOp(input: {
@@ -152,6 +158,19 @@ export function buildClaimRewardBalanceOp(input: {
     reward_hive: input.rewardHive,
     reward_hbd: input.rewardHbd,
     reward_vests: input.rewardVests,
+  };
+}
+
+export function buildCollateralizedConvertOp(input: {
+  owner: string;
+  requestid: number;
+  amount: number;
+}): CollateralizedConvertOp {
+  return {
+    type: 'collateralized_convert',
+    owner: input.owner,
+    requestid: input.requestid,
+    amount: formatHiveAssetAmount(input.amount, 'HIVE'),
   };
 }
 

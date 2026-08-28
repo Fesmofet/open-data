@@ -9,3 +9,4 @@ export * from './eth-gateway-client';
 export * from './ipfs-client';
 export * from './coingecko-client';
 export * from './exchange-rate-client';
+export * from './changelly-client';

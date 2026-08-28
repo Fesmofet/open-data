@@ -16,6 +16,10 @@ import { GetUserEngineDepositAddressEndpoint } from './get-user-engine-deposit-a
 import { GetUserEngineDepositListEndpoint } from './get-user-engine-deposit-list.endpoint';
 import { GetUserEngineWithdrawListEndpoint } from './get-user-engine-withdraw-list.endpoint';
 import { PostUserEngineWithdrawQuoteEndpoint } from './post-user-engine-withdraw-quote.endpoint';
+import { HiveChangellyWithdrawService } from './hive-changelly-withdraw.service';
+import { GetUserHiveWithdrawRangeEndpoint } from './get-user-hive-withdraw-range.endpoint';
+import { PostUserHiveWithdrawEstimateEndpoint } from './post-user-hive-withdraw-estimate.endpoint';
+import { PostUserHiveWithdrawCreateEndpoint } from './post-user-hive-withdraw-create.endpoint';
 import { EngineWithdrawQuoteService } from './engine-swap/engine-withdraw-quote.service';
 import { GetHiveAdvancedReportEndpoint } from './get-hive-advanced-report.endpoint';
 import { GetWaivAdvancedReportEndpoint } from './get-waiv-advanced-report.endpoint';
@@ -44,6 +48,10 @@ import { EngineWalletHistoryPagerService } from './engine-wallet-history-pager.s
     GetUserEngineDepositAddressEndpoint,
     GetUserEngineWithdrawListEndpoint,
     PostUserEngineWithdrawQuoteEndpoint,
+    HiveChangellyWithdrawService,
+    GetUserHiveWithdrawRangeEndpoint,
+    PostUserHiveWithdrawEstimateEndpoint,
+    PostUserHiveWithdrawCreateEndpoint,
     EngineWithdrawQuoteService,
     WaivWalletHistoryPagerService,
     EngineWalletHistoryPagerService,
@@ -74,7 +82,10 @@ import { EngineWalletHistoryPagerService } from './engine-wallet-history-pager.s
     GetUserEngineDepositAddressEndpoint,
     GetUserEngineWithdrawListEndpoint,
     PostUserEngineWithdrawQuoteEndpoint,
-    EngineWithdrawQuoteService,
+    HiveChangellyWithdrawService,
+    GetUserHiveWithdrawRangeEndpoint,
+    PostUserHiveWithdrawEstimateEndpoint,
+    PostUserHiveWithdrawCreateEndpoint,
     GetUserEngineTokenDelegationsEndpoint,
     GetUserHiveWalletEndpoint,
     GetUserHiveHpDelegationsEndpoint,

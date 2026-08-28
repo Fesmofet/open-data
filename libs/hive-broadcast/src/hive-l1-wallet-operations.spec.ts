@@ -1,9 +1,12 @@
 import {
   buildClaimRewardBalanceOp,
+  buildCollateralizedConvertOp,
   buildDelegateRcOp,
   buildTransferOp,
   formatHiveAssetAmount,
+  toHiveUint32RequestId,
 } from './hive-l1-wallet-operations';
+import { toHiveWireOperation } from './hive-operation-wire';
 
 describe('hive-l1-wallet-operations', () => {
   it('formats hive asset amounts', () => {
@@ -26,6 +29,34 @@ describe('hive-l1-wallet-operations', () => {
       amount: '1.000 HIVE',
       memo: 'hi',
     });
+  });
+
+  it('wraps requestid to uint32', () => {
+    expect(toHiveUint32RequestId(4_294_967_296)).toBe(0);
+    expect(toHiveUint32RequestId(1_787_916_172_475)).toBe(1_209_777_339);
+  });
+
+  it('builds collateralized convert op with 3-decimal HIVE amount', () => {
+    const requestid = 1_700_000_000;
+    const op = buildCollateralizedConvertOp({
+      owner: 'alice',
+      requestid,
+      amount: 1.2,
+    });
+    expect(op).toEqual({
+      type: 'collateralized_convert',
+      owner: 'alice',
+      requestid,
+      amount: '1.200 HIVE',
+    });
+    expect(toHiveWireOperation(op)).toEqual([
+      'collateralized_convert',
+      {
+        owner: 'alice',
+        requestid,
+        amount: '1.200 HIVE',
+      },
+    ]);
   });
 
   it('builds claim reward balance op', () => {

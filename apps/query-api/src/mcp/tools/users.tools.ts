@@ -498,6 +498,48 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_hive_withdraw_range',
+    {
+      description: catalogDescription('get_user_hive_withdraw_range'),
+      inputSchema: z.object({
+        ...accountField,
+        outputCoinType: z.enum(['btc', 'ltc', 'eth']),
+      }),
+    },
+    async (args) => {
+      const result = await deps.getUserHiveWithdrawRange.execute(args.account, {
+        outputCoinType: args.outputCoinType,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'post_user_hive_withdraw_estimate',
+    {
+      description: catalogDescription('post_user_hive_withdraw_estimate'),
+      inputSchema: z.object({
+        ...accountField,
+        amount: z.coerce.number().positive(),
+        outputCoinType: z.enum(['btc', 'ltc', 'eth']),
+      }),
+    },
+    async (args) => {
+      const result = await deps.postUserHiveWithdrawEstimate.execute(args.account, {
+        amount: args.amount,
+        outputCoinType: args.outputCoinType,
+      });
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'post_hive_advanced_report',
     {
       description: catalogDescription('post_hive_advanced_report'),

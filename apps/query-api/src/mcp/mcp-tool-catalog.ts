@@ -294,6 +294,19 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-hive-wallet-endpoint.md',
   },
   {
+    name: 'get_user_hive_withdraw_range',
+    description: 'Changelly min/max/rate for liquid HIVE withdraw to BTC, LTC, or ETH.',
+    httpEquivalent:
+      'GET /query/v1/users/:name/wallet/hive/withdraw/range?outputCoinType=btc|ltc|eth',
+    specPath: 'docs/apps/query-api/spec/user-hive-changelly-withdraw.md',
+  },
+  {
+    name: 'post_user_hive_withdraw_estimate',
+    description: 'Changelly output estimate for a liquid HIVE withdraw amount.',
+    httpEquivalent: 'POST /query/v1/users/:name/wallet/hive/withdraw/estimate',
+    specPath: 'docs/apps/query-api/spec/user-hive-changelly-withdraw.md',
+  },
+  {
     name: 'post_hive_advanced_report',
     description:
       'Multi-account Hive L1 advanced wallet report with date range, mutual-transaction filter, and historical fiat.',

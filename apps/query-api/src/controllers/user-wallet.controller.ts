@@ -22,6 +22,9 @@ import {
   GetUserEngineDepositAddressEndpoint,
   GetUserEngineWithdrawListEndpoint,
   PostUserEngineWithdrawQuoteEndpoint,
+  GetUserHiveWithdrawRangeEndpoint,
+  PostUserHiveWithdrawEstimateEndpoint,
+  PostUserHiveWithdrawCreateEndpoint,
   type EngineTokenDelegationsResponse,
   type EngineWalletResponse,
   type EngineWalletHistoryResponse,
@@ -39,6 +42,15 @@ import {
   type EngineWithdrawQuoteBody,
   type EngineWithdrawQuoteResponse,
   engineWithdrawQuoteBodySchema,
+  hiveChangellyWithdrawRangeQuerySchema,
+  hiveChangellyWithdrawEstimateBodySchema,
+  hiveChangellyWithdrawCreateBodySchema,
+  type HiveChangellyWithdrawRangeQuery,
+  type HiveChangellyWithdrawRangeResponse,
+  type HiveChangellyWithdrawEstimateBody,
+  type HiveChangellyWithdrawEstimateResponse,
+  type HiveChangellyWithdrawCreateBody,
+  type HiveChangellyWithdrawCreateResponse,
   type HiveHpDelegationsResponse,
   type HiveRcDelegationsResponse,
   type HiveWalletResponse,
@@ -63,6 +75,9 @@ export class UserWalletController {
     private readonly getUserEngineDepositAddress: GetUserEngineDepositAddressEndpoint,
     private readonly getUserEngineWithdrawList: GetUserEngineWithdrawListEndpoint,
     private readonly postUserEngineWithdrawQuote: PostUserEngineWithdrawQuoteEndpoint,
+    private readonly getUserHiveWithdrawRange: GetUserHiveWithdrawRangeEndpoint,
+    private readonly postUserHiveWithdrawEstimate: PostUserHiveWithdrawEstimateEndpoint,
+    private readonly postUserHiveWithdrawCreate: PostUserHiveWithdrawCreateEndpoint,
     private readonly getUserHiveWallet: GetUserHiveWalletEndpoint,
     private readonly getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint,
     private readonly getUserHiveRcDelegations: GetUserHiveRcDelegationsEndpoint,
@@ -225,6 +240,45 @@ export class UserWalletController {
     body: EngineWithdrawQuoteBody,
   ): Promise<EngineWithdrawQuoteResponse> {
     const result = await this.postUserEngineWithdrawQuote.execute(name, body);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/wallet/hive/withdraw/range')
+  async getHiveWithdrawRange(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(hiveChangellyWithdrawRangeQuerySchema))
+    query: HiveChangellyWithdrawRangeQuery,
+  ): Promise<HiveChangellyWithdrawRangeResponse> {
+    const result = await this.getUserHiveWithdrawRange.execute(name, query);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/wallet/hive/withdraw/estimate')
+  async postHiveWithdrawEstimate(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(hiveChangellyWithdrawEstimateBodySchema))
+    body: HiveChangellyWithdrawEstimateBody,
+  ): Promise<HiveChangellyWithdrawEstimateResponse> {
+    const result = await this.postUserHiveWithdrawEstimate.execute(name, body);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/wallet/hive/withdraw/create')
+  async postHiveWithdrawCreate(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(hiveChangellyWithdrawCreateBodySchema))
+    body: HiveChangellyWithdrawCreateBody,
+  ): Promise<HiveChangellyWithdrawCreateResponse> {
+    const result = await this.postUserHiveWithdrawCreate.execute(name, body);
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);
     }

@@ -10,7 +10,7 @@ export type WalletModalBalanceLineProps = {
   onSelect: () => void;
   /** When set, shown instead of formatting `amount` (e.g. RC billions). */
   displayAmount?: string;
-  labelKey?: 'balance_amount' | 'available' | 'current_balance';
+  labelKey?: 'balance_amount' | 'available' | 'current_balance' | 'your_balance';
   /** When false, balance is plain text (receive/quote rows). Default true. */
   interactive?: boolean;
 };
