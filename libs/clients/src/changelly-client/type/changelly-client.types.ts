@@ -10,13 +10,15 @@ export type ChangellyPairParams = {
   to: string;
   minAmountFloat: string;
   maxAmountFloat: string;
+  minAmountFixed?: string;
 };
 
 export type ChangellyExchangeAmount = {
-  from: string;
-  to: string;
-  amountFrom: string;
+  from?: string;
+  to?: string;
+  amountFrom?: string;
   amountTo: string;
+  rate?: string;
 };
 
 export type ChangellyTransactionResult = {

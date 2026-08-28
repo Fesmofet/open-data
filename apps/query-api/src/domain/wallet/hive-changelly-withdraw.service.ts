@@ -93,18 +93,21 @@ export class HiveChangellyWithdrawService {
       return null;
     }
     const coin = this.assertOutputCoin(outputCoinType);
-    const pair = await this.getPairLimits(coin);
-    const { result, error } = await this.changellyClient.getExchangeAmount({
+    const { result, error } = await this.changellyClient.getPairsParams({
       to: coin,
-      amountFrom: 1,
     });
     if (error || !result) {
       throw new ServiceUnavailableException('Changelly unavailable');
     }
+    const minFixed = Number.parseFloat(result.minAmountFixed ?? result.minAmountFloat);
+    const { result: amount } = await this.changellyClient.getExchangeAmount({
+      to: coin,
+      amountFrom: Number.isFinite(minFixed) && minFixed > 0 ? minFixed : 1,
+    });
     return {
-      min: String(pair.min),
-      max: String(pair.max),
-      rate: result.amountTo,
+      min: result.minAmountFloat,
+      max: result.maxAmountFloat,
+      rate: amount?.rate ?? amount?.amountTo ?? '0',
     };
   }
 

@@ -3536,5 +3536,9 @@
   "wallet_changelly_receive": "You receive",
   "wallet_changelly_destination": "Destination address",
   "wallet_changelly_unavailable": "Changelly exchange is temporarily unavailable",
-  "wallet_convert_hbd_modal_title": "Convert HIVE to HBD"
+  "wallet_convert_hbd_modal_title": "Convert HIVE to HBD",
+  "wallet_changelly_notice": "All crypto withdraws are processed by",
+  "wallet_changelly_coin_btc": "Bitcoin",
+  "wallet_changelly_coin_ltc": "Litecoin",
+  "wallet_changelly_coin_eth": "Ethereum"
 }

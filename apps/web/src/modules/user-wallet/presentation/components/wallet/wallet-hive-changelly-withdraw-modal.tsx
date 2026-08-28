@@ -13,10 +13,7 @@ import {
   HIVE_CHANGELLY_WITHDRAW_USD_CAP,
   type HiveChangellyOutputCoin,
 } from '../../../domain/hive-changelly-withdraw.constants';
-import {
-  hiveWalletFormValidationMessageKey,
-  validateHiveWalletAmount,
-} from '../../../domain/hive-wallet-form-validation';
+import { validateHiveWalletAmount } from '../../../domain/hive-wallet-form-validation';
 import { parseHiveAmount } from '../../../domain/hive-wallet-amount';
 import { parsePaymentQrUri } from '../../../domain/payment-qr-uri';
 import { isValidChangellyWithdrawAddress } from '../../../domain/validate-changelly-address';
@@ -30,7 +27,6 @@ import { useHiveBroadcast } from '../../hooks/use-hive-broadcast';
 import { WalletModalBalanceLine } from '../shared/wallet-modal-balance-line';
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
 import { useWalletBalances } from './wallet-balances-context';
-import { WalletAssetAmountField } from './wallet-asset-amount-field';
 import { WalletQrScannerModal } from './wallet-qr-scanner-modal';
 
 export type WalletHiveChangellyWithdrawModalProps = {
@@ -40,8 +36,25 @@ export type WalletHiveChangellyWithdrawModalProps = {
   state: WalletHiveChangellyWithdrawModalState;
 };
 
-function coinLabel(coin: HiveChangellyOutputCoin): string {
-  return coin.toUpperCase();
+const CHANGELLY_COIN_LABEL_KEYS: Record<HiveChangellyOutputCoin, string> = {
+  btc: 'wallet_changelly_coin_btc',
+  ltc: 'wallet_changelly_coin_ltc',
+  eth: 'wallet_changelly_coin_eth',
+};
+
+function QrScannerIcon() {
+  return (
+    <svg
+      aria-hidden
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm15 0h3v3h-3v-3zm-3 3h3v3h-3v-3zM15 15h3v3h-3v-3z" />
+    </svg>
+  );
 }
 
 export function WalletHiveChangellyWithdrawModal({
@@ -72,10 +85,6 @@ export function WalletHiveChangellyWithdrawModal({
   const [submitting, setSubmitting] = useState(false);
 
   const maxHive = hiveSummary?.balance.liquidHive ?? '0';
-  const hiveAssetOptions = useMemo(
-    () => [{ value: 'HIVE' as const, label: 'HIVE', balance: maxHive }],
-    [maxHive],
-  );
   const liquidHive = parseHiveAmount(maxHive) ?? 0;
   const hiveUsd = hiveSummary?.rates.hiveUsd ?? 0;
 
@@ -247,6 +256,8 @@ export function WalletHiveChangellyWithdrawModal({
   };
 
   const pending = submitting || hiveBroadcast.pending;
+  const receiveDisplay = estimateLoading ? null : cryptoAmount || '0';
+  const usdDisplay = usdEstimate > 0 ? usdEstimate.toFixed(2) : '0.00';
 
   return (
     <>
@@ -258,79 +269,136 @@ export function WalletHiveChangellyWithdrawModal({
             </h2>
             <AppModalCloseButton onClose={onClose} />
           </div>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {HIVE_CHANGELLY_OUTPUT_COINS.map((coin) => (
-              <button
-                key={coin}
-                type="button"
-                className={[
-                  'rounded-btn border px-3 py-1.5 text-body-sm font-weight-strong',
-                  coin === outputCoinType
-                    ? 'border-accent bg-accent text-accent-fg'
-                    : 'border-border bg-surface-control text-fg',
-                ].join(' ')}
-                onClick={() => setOutputCoinType(coin)}
-                disabled={pending}
-              >
-                {coinLabel(coin)}
-              </button>
-            ))}
-          </div>
-          <WalletModalBalanceLine
-            amount={maxHive}
-            symbol="HIVE"
-            onSelect={() => setHiveAmount(maxHive)}
-            labelKey="available"
-          />
-          <WalletAssetAmountField
-            label={t('amount')}
-            asset="HIVE"
-            value={hiveAmount}
-            onChange={setHiveAmount}
-            onAssetChange={() => undefined}
-            options={hiveAssetOptions}
-            assetDisabled
-            maxAmount={maxHive}
-          />
-          <div className="mt-4">
-            <WalletModalFieldLabel>{t('wallet_changelly_receive')}</WalletModalFieldLabel>
-            <div className="mt-1 flex min-h-[2.5rem] items-center rounded-btn border border-border bg-surface-control px-3 text-body text-fg">
-              {estimateLoading ? <AppLoader size="sm" /> : cryptoAmount || '—'}{' '}
-              {coinLabel(outputCoinType)}
-            </div>
-          </div>
-          <div className="mt-4">
-            <WalletModalFieldLabel>{t('wallet_changelly_destination')}</WalletModalFieldLabel>
-            <div className="mt-1 flex gap-2">
-              <input
-                id={addressId}
-                type="text"
-                value={address}
-                onChange={(event) => setAddress(event.target.value)}
-                className="min-w-0 flex-1 rounded-btn border border-border bg-surface-control px-3 py-2 text-body text-fg"
-                disabled={pending}
+
+          <div className="space-y-4">
+            <div>
+              <WalletModalFieldLabel>{t('send')}</WalletModalFieldLabel>
+              <div className="mt-1 flex items-stretch overflow-hidden rounded-btn border border-border bg-bg">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={hiveAmount}
+                  onChange={(event) => setHiveAmount(event.target.value)}
+                  placeholder="0"
+                  disabled={pending}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-body text-fg outline-none focus:ring-0"
+                />
+                <div className="flex shrink-0 items-center border border-accent px-3 py-2 text-body-sm font-weight-strong text-accent">
+                  HIVE
+                </div>
+              </div>
+              {!rangeLoading && minAmount > 0 ? (
+                <p
+                  className={[
+                    'mt-2 text-body-sm',
+                    hiveAmount.trim() !== '' && belowMin ? 'text-error' : 'text-muted',
+                  ].join(' ')}
+                  role={hiveAmount.trim() !== '' && belowMin ? 'alert' : undefined}
+                >
+                  {interpolateMessage(t('wallet_changelly_min_amount'), {
+                    min: String(minAmount),
+                  })}
+                </p>
+              ) : null}
+              <WalletModalBalanceLine
+                amount={maxHive}
+                symbol="HIVE"
+                onSelect={() => setHiveAmount(maxHive)}
+                labelKey="your_balance"
               />
-              <button
-                type="button"
-                className="rounded-btn border border-border bg-surface-control px-3 py-2 text-body-sm font-weight-strong text-fg"
-                onClick={() => setQrOpen(true)}
-                disabled={pending}
-              >
-                {t('qr_scanner')}
-              </button>
             </div>
-            {address ? (
+
+            <div>
+              <WalletModalFieldLabel>{t('receive')}</WalletModalFieldLabel>
+              <div className="mt-1 flex flex-wrap items-stretch gap-0 overflow-hidden rounded-btn border border-border bg-surface-control">
+                <div className="flex min-w-[5rem] flex-1 items-center px-3 py-2 text-body text-muted">
+                  {estimateLoading ? (
+                    <AppLoader size="sm" />
+                  ) : (
+                    receiveDisplay
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-1 border-l border-border p-1">
+                  {HIVE_CHANGELLY_OUTPUT_COINS.map((coin) => (
+                    <button
+                      key={coin}
+                      type="button"
+                      className={[
+                        'rounded-btn border px-2 py-1.5 text-body-sm font-weight-strong transition-colors',
+                        coin === outputCoinType
+                          ? 'border-accent text-accent'
+                          : 'border-transparent text-fg hover:text-accent',
+                      ].join(' ')}
+                      onClick={() => setOutputCoinType(coin)}
+                      disabled={pending}
+                    >
+                      {t(CHANGELLY_COIN_LABEL_KEYS[coin])}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <p
                 className={[
-                  'mt-1 text-body-sm',
-                  addressValid ? 'text-muted' : 'text-error',
+                  'mt-2 text-body-sm',
+                  exceedsUsdCap ? 'text-error' : 'text-muted',
                 ].join(' ')}
-                role={addressValid ? undefined : 'alert'}
+                role={exceedsUsdCap ? 'alert' : undefined}
               >
-                {addressValid ? t('address_valid') : t('address_not_valid')}
+                {interpolateMessage(t('est_account_value_withdraw'), {
+                  amount: usdDisplay,
+                })}
               </p>
-            ) : null}
+            </div>
+
+            <div>
+              <WalletModalFieldLabel>{t('destination_address')}</WalletModalFieldLabel>
+              <div className="mt-1 flex gap-2">
+                <input
+                  id={addressId}
+                  type="text"
+                  value={address}
+                  onChange={(event) => setAddress(event.target.value)}
+                  placeholder={t('enter_address')}
+                  className="min-w-0 flex-1 rounded-btn border border-border bg-bg px-3 py-2 text-body text-fg"
+                  disabled={pending}
+                />
+                <button
+                  type="button"
+                  className="flex shrink-0 items-center gap-1.5 rounded-btn border border-border bg-surface-control px-3 py-2 text-body-sm font-weight-strong text-fg"
+                  onClick={() => setQrOpen(true)}
+                  disabled={pending}
+                >
+                  <QrScannerIcon />
+                  {t('qr_scanner')}
+                </button>
+              </div>
+              {address ? (
+                <p
+                  className={[
+                    'mt-1 text-body-sm',
+                    addressValid ? 'text-muted' : 'text-error',
+                  ].join(' ')}
+                  role={addressValid ? undefined : 'alert'}
+                >
+                  {addressValid ? t('address_valid') : t('address_not_valid')}
+                </p>
+              ) : null}
+            </div>
           </div>
+
+          <p className="mt-4 text-body-sm text-fg">
+            <span className="font-weight-strong">{t('notice')}:</span>{' '}
+            {t('wallet_changelly_notice')}{' '}
+            <a
+              href="https://changelly.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-accent"
+            >
+              Changelly.
+            </a>
+          </p>
+
           {rangeLoading ? (
             <div className="mt-3">
               <AppLoader size="sm" />
@@ -339,18 +407,6 @@ export function WalletHiveChangellyWithdrawModal({
           {rangeError ? (
             <p className="mt-3 text-body-sm text-error" role="alert">
               {rangeError}
-            </p>
-          ) : null}
-          {!rangeLoading && minAmount > 0 ? (
-            <p className="mt-3 text-body-sm text-muted">
-              {interpolateMessage(t('wallet_changelly_min_amount'), {
-                min: String(minAmount),
-              })}
-            </p>
-          ) : null}
-          {exceedsUsdCap ? (
-            <p className="mt-2 text-body-sm text-error" role="alert">
-              {t('wallet_changelly_usd_cap')}
             </p>
           ) : null}
           {needsTrackingReserve ? (
@@ -370,6 +426,7 @@ export function WalletHiveChangellyWithdrawModal({
               {t(hiveBroadcast.error)}
             </p>
           ) : null}
+
           <div className="mt-6 flex justify-end gap-2">
             <button
               type="button"
@@ -385,7 +442,7 @@ export function WalletHiveChangellyWithdrawModal({
               disabled={!canSubmit || pending}
               onClick={() => void onSubmit()}
             >
-              {t('confirm')}
+              {t('withdraw')}
             </button>
           </div>
         </div>

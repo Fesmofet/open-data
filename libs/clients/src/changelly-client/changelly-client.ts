@@ -30,39 +30,40 @@ const DEFAULT_TIMEOUT_MS = 12_000;
 
 type ChangellyCredentials = {
   privateKey: KeyObject;
-  apiKey: string;
+  publicKey: Buffer;
 };
 
 function parseChangellyCredentials(
   privateKeyHex: string | undefined,
 ): ChangellyCredentials | null {
-  if (!privateKeyHex?.trim()) {
+  const privateKeyString = privateKeyHex ?? '';
+  if (!privateKeyString) {
     return null;
   }
   try {
     const privateKey = createPrivateKey({
-      key: Buffer.from(privateKeyHex.trim(), 'hex'),
+      key: privateKeyString,
       format: 'der',
       type: 'pkcs8',
+      encoding: 'hex',
     });
-    const publicKeyDer = createPublicKey(privateKey).export({
+    const publicKey = createPublicKey(privateKey).export({
       type: 'pkcs1',
       format: 'der',
     });
-    const apiKey = createHash('sha256').update(publicKeyDer).digest('base64');
-    return { privateKey, apiKey };
+    return { privateKey, publicKey: publicKey as Buffer };
   } catch {
     return null;
   }
 }
 
-function formSignedRequest(
+/** Legacy `formRequest` from waivio-api changellyAPI. */
+function formRequest(
   credentials: ChangellyCredentials,
   message: ChangellyJsonRpcRequest,
   url: string,
 ): { method: 'POST'; url: string; headers: Record<string, string>; body: string } {
-  const body = JSON.stringify(message);
-  const signature = sign('sha256', Buffer.from(body), {
+  const signature = sign('sha256', Buffer.from(JSON.stringify(message)), {
     key: credentials.privateKey,
     type: 'pkcs8',
     format: 'der',
@@ -72,10 +73,10 @@ function formSignedRequest(
     url,
     headers: {
       'Content-Type': 'application/json',
-      'X-Api-Key': credentials.apiKey,
+      'X-Api-Key': createHash('sha256').update(credentials.publicKey).digest('base64'),
       'X-Api-Signature': signature.toString('base64'),
     },
-    body,
+    body: JSON.stringify(message),
   };
 }
 
@@ -108,19 +109,16 @@ export class ChangellyClient implements ChangellyClientInterface {
     return this.options.requestTimeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
-  private unavailableError(): { error: { message: string } } {
-    return { error: { message: 'Changelly unavailable' } };
-  }
-
-  private async fetchRpc<T>(
+  /** Legacy `fetchData`. */
+  private async fetchData<T>(
     message: ChangellyJsonRpcRequest,
   ): Promise<ChangellyClientResult<T>> {
     const credentials = this.resolveCredentials();
     if (!credentials) {
-      return this.unavailableError();
+      return { error: { message: 'Changelly unavailable' } };
     }
 
-    const request = formSignedRequest(credentials, message, this.baseUrl());
+    const request = formRequest(credentials, message, this.baseUrl());
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), this.timeoutMs());
@@ -136,16 +134,14 @@ export class ChangellyClient implements ChangellyClientInterface {
         result?: T;
         error?: { message?: string };
       };
-      if (data.error?.message) {
-        return { error: { message: data.error.message } };
+      if (data.error) {
+        this.logger.warn(data.error.message ?? 'Changelly error');
+        return { error: { message: data.error.message ?? 'Changelly error' } };
       }
-      if (data.result === undefined) {
-        return { error: { message: 'Changelly empty response' } };
-      }
-      return { result: data.result };
-    } catch (e) {
-      this.logger.error((e as Error).message);
-      return this.unavailableError();
+      return { result: data.result as T };
+    } catch (error) {
+      this.logger.error((error as Error).message);
+      return { error: { message: 'Changelly unavailable' } };
     }
   }
 
@@ -153,34 +149,25 @@ export class ChangellyClient implements ChangellyClientInterface {
     from?: string;
     to: string;
   }): Promise<ChangellyClientResult<ChangellyPairParams>> {
-    const from = (input.from ?? 'hive').toLowerCase();
-    const to = input.to.toLowerCase();
-    const rpc = await this.fetchRpc<Array<{
-      from: string;
-      to: string;
-      minAmountFloat: string;
-      maxAmountFloat: string;
-    }>>({
+    const from = input.from ?? 'hive';
+    const to = input.to;
+    const { result, error } = await this.fetchData<ChangellyPairParams[]>({
       jsonrpc: '2.0',
-      id: 'odl',
+      id: 'test',
       method: 'getPairsParams',
-      params: { from, to },
+      params: {
+        from,
+        to,
+      },
     });
-    if (rpc.error) {
-      return rpc;
+    if (error) {
+      return { error };
     }
-    const row = rpc.result[0];
+    const row = result?.[0];
     if (!row) {
       return { error: { message: 'Changelly pair not found' } };
     }
-    return {
-      result: {
-        from: row.from,
-        to: row.to,
-        minAmountFloat: row.minAmountFloat,
-        maxAmountFloat: row.maxAmountFloat,
-      },
-    };
+    return { result: row };
   }
 
   async getExchangeAmount(input: {
@@ -188,11 +175,11 @@ export class ChangellyClient implements ChangellyClientInterface {
     to: string;
     amountFrom: number;
   }): Promise<ChangellyClientResult<ChangellyExchangeAmount>> {
-    const from = (input.from ?? 'hive').toLowerCase();
-    const to = input.to.toLowerCase();
-    const rpc = await this.fetchRpc<ChangellyExchangeAmount[]>({
+    const from = input.from ?? 'hive';
+    const to = input.to;
+    const { result, error } = await this.fetchData<ChangellyExchangeAmount[]>({
       jsonrpc: '2.0',
-      id: 'odl',
+      id: 'test',
       method: 'getExchangeAmount',
       params: {
         from,
@@ -200,10 +187,10 @@ export class ChangellyClient implements ChangellyClientInterface {
         amountFrom: input.amountFrom,
       },
     });
-    if (rpc.error) {
-      return rpc;
+    if (error) {
+      return { error };
     }
-    const row = rpc.result[0];
+    const row = result?.[0];
     if (!row) {
       return { error: { message: 'Changelly exchange amount unavailable' } };
     }
@@ -217,11 +204,11 @@ export class ChangellyClient implements ChangellyClientInterface {
     address: string;
     refundAddress: string;
   }): Promise<ChangellyClientResult<ChangellyPayinExchange>> {
-    const from = (input.from ?? 'hive').toLowerCase();
-    const to = input.to.toLowerCase();
-    const rpc = await this.fetchRpc<ChangellyTransactionResult>({
+    const from = input.from ?? 'hive';
+    const to = input.to;
+    const { result, error } = await this.fetchData<ChangellyTransactionResult>({
       jsonrpc: '2.0',
-      id: 'odl',
+      id: 'test',
       method: 'createTransaction',
       params: {
         from,
@@ -231,9 +218,12 @@ export class ChangellyClient implements ChangellyClientInterface {
         refundAddress: input.refundAddress,
       },
     });
-    if (rpc.error) {
-      return rpc;
+    if (error) {
+      return { error };
     }
-    return { result: mapChangellyTransactionResult(rpc.result) };
+    if (!result) {
+      return { error: { message: 'Changelly unavailable' } };
+    }
+    return { result: mapChangellyTransactionResult(result) };
   }
 }

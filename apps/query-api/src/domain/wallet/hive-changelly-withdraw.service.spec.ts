@@ -99,4 +99,25 @@ describe('HiveChangellyWithdrawService', () => {
     });
     expect(changellyClient.createTransaction).toHaveBeenCalledTimes(1);
   });
+
+  it('returns range min/max even when the rate quote fails', async () => {
+    changellyClient.getPairsParams.mockResolvedValue({
+      result: {
+        minAmountFloat: '5',
+        maxAmountFloat: '20',
+        minAmountFixed: '8',
+      },
+    });
+    changellyClient.getExchangeAmount.mockResolvedValue({
+      error: { message: 'Invalid amount' },
+    });
+
+    const result = await service.getRange('alice', 'btc');
+
+    expect(result).toEqual({ min: '5', max: '20', rate: '0' });
+    expect(changellyClient.getExchangeAmount).toHaveBeenCalledWith({
+      to: 'btc',
+      amountFrom: 8,
+    });
+  });
 });
