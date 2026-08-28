@@ -1,6 +1,7 @@
 /**
  * Stream MongoDB wobject JSON array export into ODL Postgres tables.
  * Usage: pnpm migrate:mongo-objects <path-to.json> [--skip-indexes]
+ *        pnpm migrate:mongo-objects --recreate-indexes
  * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
  *
  * --skip-indexes  Drop secondary indexes (and object_updates FTS trigger) on
@@ -8,6 +9,8 @@
  *                 object_favorite, object_ownership before bulk insert; recreate after.
  *                 Keep in sync with libs/migrations/src/postgres/odl indexes on
  *                 those tables (through 00059_object_updates_search_json_prefix).
+ * --recreate-indexes  Only run index recreate (resume after a failed --skip-indexes
+ *                 recreate; CREATE INDEX IF NOT EXISTS). No JSON file required.
  *
  * Re-runs: inserts use ON CONFLICT DO NOTHING for child tables; objects_core
  * updates `created_at` when the export includes `createdAt` (COALESCE keeps
@@ -857,6 +860,123 @@ class MongoToPgMigrator {
   }
 }
 
+function isPgToastCorruption(err: unknown): boolean {
+  let current: unknown = err;
+  for (let depth = 0; depth < 4 && current != null; depth++) {
+    if (typeof current === 'object' && 'code' in current) {
+      if ((current as { code?: string }).code === 'XX001') {
+        return true;
+      }
+    }
+    const msg = current instanceof Error ? current.message : String(current);
+    if (msg.includes('pg_toast') || msg.includes('missing chunk number')) {
+      return true;
+    }
+    current = current instanceof Error ? current.cause : undefined;
+  }
+  return false;
+}
+
+async function runIndexStep(
+  label: string,
+  errors: Error[],
+  fn: () => Promise<unknown>,
+): Promise<void> {
+  try {
+    await fn();
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error(`Index step failed (${label}):`, err.message);
+    errors.push(err);
+  }
+}
+
+async function rebuildSearchVectorSkippingCorrupt(
+  db: Kysely<OdlDatabase>,
+): Promise<void> {
+  try {
+    await sql`
+      UPDATE object_updates
+      SET search_vector = to_tsvector('english', value_text)
+      WHERE value_text IS NOT NULL
+        AND update_type IN ('name', 'title', 'description')
+        AND search_vector IS NULL
+    `.execute(db);
+    return;
+  } catch (e) {
+    if (!isPgToastCorruption(e)) {
+      throw e;
+    }
+    console.error(
+      'Bulk search_vector rebuild hit TOAST corruption (XX001); retrying per row...',
+    );
+  }
+
+  await sql`
+    DO $rebuild$
+    DECLARE
+      rec RECORD;
+      skipped int := 0;
+      rebuilt int := 0;
+    BEGIN
+      FOR rec IN
+        SELECT update_id
+        FROM object_updates
+        WHERE value_text IS NOT NULL
+          AND update_type IN ('name', 'title', 'description')
+          AND search_vector IS NULL
+      LOOP
+        BEGIN
+          UPDATE object_updates
+          SET search_vector = to_tsvector('english', value_text)
+          WHERE update_id = rec.update_id;
+          rebuilt := rebuilt + 1;
+        EXCEPTION
+          WHEN data_corrupted THEN
+            skipped := skipped + 1;
+            RAISE WARNING 'search_vector skip update_id=%', rec.update_id;
+        END;
+      END LOOP;
+      RAISE NOTICE 'search_vector rebuilt=% skipped_corrupt=%', rebuilt, skipped;
+    END
+    $rebuild$;
+  `.execute(db);
+}
+
+async function clearUnreadableSearchVectors(
+  db: Kysely<OdlDatabase>,
+): Promise<void> {
+  await sql`
+    DO $sanitize$
+    DECLARE
+      rec RECORD;
+      skipped int := 0;
+    BEGIN
+      FOR rec IN
+        SELECT update_id FROM object_updates WHERE search_vector IS NOT NULL
+      LOOP
+        BEGIN
+          PERFORM search_vector FROM object_updates WHERE update_id = rec.update_id;
+        EXCEPTION
+          WHEN data_corrupted THEN
+            skipped := skipped + 1;
+            BEGIN
+              UPDATE object_updates
+              SET search_vector = NULL
+              WHERE update_id = rec.update_id;
+            EXCEPTION
+              WHEN OTHERS THEN
+                DELETE FROM object_updates WHERE update_id = rec.update_id;
+            END;
+            RAISE WARNING 'cleared corrupt search_vector update_id=%', rec.update_id;
+        END;
+      END LOOP;
+      RAISE NOTICE 'corrupt search_vector cleared=%', skipped;
+    END
+    $sanitize$;
+  `.execute(db);
+}
+
 async function dropObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> {
   console.log('Dropping object migration indexes and object_updates trigger...');
   await sql`ALTER TABLE object_updates DISABLE TRIGGER tr_object_updates_search_vector`.execute(db);
@@ -890,89 +1010,160 @@ async function dropObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> 
 
 async function recreateObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> {
   console.log('Recreating object migration indexes...');
-  await sql`CREATE INDEX idx_objects_core_object_type_weight ON objects_core (object_type, weight DESC NULLS LAST)`.execute(db);
-  await sql`CREATE INDEX idx_objects_core_creator ON objects_core (creator)`.execute(db);
-  await sql`
-    CREATE INDEX idx_objects_core_canonical
-    ON objects_core (canonical)
-    WHERE canonical IS NOT NULL
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_objects_core_canonical_creator
-    ON objects_core (canonical_creator)
-    WHERE canonical_creator IS NOT NULL
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_objects_core_status
-    ON objects_core (status)
-    WHERE status <> 'active'
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_objects_core_type_seq
-    ON objects_core (object_type, seq DESC)
-    WHERE status = 'active'
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_objects_core_type_created_at
-    ON objects_core (object_type, created_at DESC)
-    WHERE status = 'active'
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_objects_core_meta_group_id_active
-    ON objects_core (meta_group_id)
-    WHERE status = 'active' AND meta_group_id IS NOT NULL
-  `.execute(db);
+  const errors: Error[] = [];
+
+  await runIndexStep('objects_core.object_type_weight', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_objects_core_object_type_weight ON objects_core (object_type, weight DESC NULLS LAST)`.execute(db),
+  );
+  await runIndexStep('objects_core.creator', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_objects_core_creator ON objects_core (creator)`.execute(db),
+  );
+  await runIndexStep('objects_core.canonical', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_objects_core_canonical
+      ON objects_core (canonical)
+      WHERE canonical IS NOT NULL
+    `.execute(db),
+  );
+  await runIndexStep('objects_core.canonical_creator', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_objects_core_canonical_creator
+      ON objects_core (canonical_creator)
+      WHERE canonical_creator IS NOT NULL
+    `.execute(db),
+  );
+  await runIndexStep('objects_core.status', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_objects_core_status
+      ON objects_core (status)
+      WHERE status <> 'active'
+    `.execute(db),
+  );
+  await runIndexStep('objects_core.type_seq', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_objects_core_type_seq
+      ON objects_core (object_type, seq DESC)
+      WHERE status = 'active'
+    `.execute(db),
+  );
+  await runIndexStep('objects_core.type_created_at', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_objects_core_type_created_at
+      ON objects_core (object_type, created_at DESC)
+      WHERE status = 'active'
+    `.execute(db),
+  );
+  await runIndexStep('objects_core.meta_group_id_active', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_objects_core_meta_group_id_active
+      ON objects_core (meta_group_id)
+      WHERE status = 'active' AND meta_group_id IS NOT NULL
+    `.execute(db),
+  );
   console.log('  objects_core secondary indexes done');
-  await sql`CREATE INDEX idx_validity_votes_object_id ON validity_votes (object_id)`.execute(db);
-  await sql`CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id)`.execute(db);
-  await sql`CREATE INDEX idx_object_favorite_account ON object_favorite (account)`.execute(db);
-  await sql`CREATE INDEX idx_object_favorite_object_id ON object_favorite (object_id)`.execute(db);
-  await sql`
-    CREATE INDEX idx_object_ownership_object_id_type
-    ON object_ownership (object_id, ownership_type)
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_object_ownership_object_id_type_created_at
-    ON object_ownership (object_id, ownership_type, created_at DESC)
-  `.execute(db);
-  await sql`CREATE INDEX idx_object_ownership_account ON object_ownership (account)`.execute(db);
+  await runIndexStep('validity_votes.object_id', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_validity_votes_object_id ON validity_votes (object_id)`.execute(db),
+  );
+  await runIndexStep('rank_votes.object_id', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_rank_votes_object_id ON rank_votes (object_id)`.execute(db),
+  );
+  await runIndexStep('object_favorite.account', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_favorite_account ON object_favorite (account)`.execute(db),
+  );
+  await runIndexStep('object_favorite.object_id', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_favorite_object_id ON object_favorite (object_id)`.execute(db),
+  );
+  await runIndexStep('object_ownership.object_id_type', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_object_ownership_object_id_type
+      ON object_ownership (object_id, ownership_type)
+    `.execute(db),
+  );
+  await runIndexStep('object_ownership.object_id_type_created_at', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_object_ownership_object_id_type_created_at
+      ON object_ownership (object_id, ownership_type, created_at DESC)
+    `.execute(db),
+  );
+  await runIndexStep('object_ownership.account', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_ownership_account ON object_ownership (account)`.execute(db),
+  );
   console.log('  validity_votes / rank_votes / object_favorite / object_ownership indexes done');
-  await sql`CREATE INDEX idx_object_updates_object_id_update_type ON object_updates (object_id, update_type)`.execute(db);
-  await sql`CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_geo)`.execute(db);
-  await sql`CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, LEFT(value_text, 2048)) WHERE value_text IS NOT NULL`.execute(db);
-  await sql`CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, LEFT(value_text_normalized, 2048)) WHERE value_text_normalized IS NOT NULL`.execute(db);
-  await sql`CREATE INDEX idx_object_updates_object_rank_score ON object_updates (object_id, rank_score)`.execute(db);
-  await sql`
-    CREATE INDEX idx_object_updates_tagitem_value
-    ON object_updates ((value_json->>'value'), (value_json->>'category'))
-    WHERE update_type = 'tagCategoryItem'
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_object_updates_identifier_value_lower
-    ON object_updates (lower(value_json->>'value') text_pattern_ops)
-    WHERE update_type = 'identifier' AND value_json->>'value' IS NOT NULL
-  `.execute(db);
-  await sql`
-    CREATE INDEX idx_object_updates_address_locality_lower
-    ON object_updates (lower(value_json->>'locality') text_pattern_ops)
-    WHERE update_type = 'address' AND value_json->>'locality' IS NOT NULL
-  `.execute(db);
+  await runIndexStep('object_updates.object_id_update_type', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_updates_object_id_update_type ON object_updates (object_id, update_type)`.execute(db),
+  );
+  await runIndexStep('object_updates.value_geo', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_updates_value_geo ON object_updates USING GIST (value_geo)`.execute(db),
+  );
+  await runIndexStep('object_updates.update_type_value_text', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_updates_update_type_value_text ON object_updates (update_type, LEFT(value_text, 2048)) WHERE value_text IS NOT NULL`.execute(db),
+  );
+  await runIndexStep('object_updates.update_type_value_text_normalized', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, LEFT(value_text_normalized, 2048)) WHERE value_text_normalized IS NOT NULL`.execute(db),
+  );
+  await runIndexStep('object_updates.object_rank_score', errors, () =>
+    sql`CREATE INDEX IF NOT EXISTS idx_object_updates_object_rank_score ON object_updates (object_id, rank_score)`.execute(db),
+  );
+  await runIndexStep('object_updates.tagitem_value', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_object_updates_tagitem_value
+      ON object_updates ((value_json->>'value'), (value_json->>'category'))
+      WHERE update_type = 'tagCategoryItem'
+    `.execute(db),
+  );
+  await runIndexStep('object_updates.identifier_value_lower', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_object_updates_identifier_value_lower
+      ON object_updates (lower(value_json->>'value') text_pattern_ops)
+      WHERE update_type = 'identifier' AND value_json->>'value' IS NOT NULL
+    `.execute(db),
+  );
+  await runIndexStep('object_updates.address_locality_lower', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_object_updates_address_locality_lower
+      ON object_updates (lower(value_json->>'locality') text_pattern_ops)
+      WHERE update_type = 'address' AND value_json->>'locality' IS NOT NULL
+    `.execute(db),
+  );
   console.log('  object_updates btree/geo/rank indexes done');
-  await sql`ALTER TABLE object_updates ENABLE TRIGGER tr_object_updates_search_vector`.execute(db);
-  await sql`
-    UPDATE object_updates
-    SET search_vector = to_tsvector('english', value_text)
-    WHERE value_text IS NOT NULL
-  `.execute(db);
-  await sql`CREATE INDEX idx_object_updates_search_vector ON object_updates USING GIN (search_vector)`.execute(db);
+  await runIndexStep('object_updates.enable_search_vector_trigger', errors, () =>
+    sql`ALTER TABLE object_updates ENABLE TRIGGER tr_object_updates_search_vector`.execute(db),
+  );
+  await runIndexStep('object_updates.rebuild_search_vector', errors, () =>
+    rebuildSearchVectorSkippingCorrupt(db),
+  );
+  await runIndexStep('object_updates.search_vector_gin', errors, async () => {
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_object_updates_search_vector ON object_updates USING GIN (search_vector)`.execute(db);
+    } catch (e) {
+      if (!isPgToastCorruption(e)) {
+        throw e;
+      }
+      console.error(
+        'GIN search_vector index hit TOAST corruption; clearing unreadable search_vector rows and retrying...',
+      );
+      await clearUnreadableSearchVectors(db);
+      await sql`CREATE INDEX IF NOT EXISTS idx_object_updates_search_vector ON object_updates USING GIN (search_vector)`.execute(db);
+    }
+  });
   console.log('  object_updates search_vector GIN done');
-  await sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`.execute(db);
-  await sql`
-    CREATE INDEX idx_object_updates_name_title_value_norm_trgm
-    ON object_updates USING GIN (value_text_normalized gin_trgm_ops)
-    WHERE update_type IN ('name', 'title') AND value_text_normalized IS NOT NULL
-  `.execute(db);
+  await runIndexStep('pg_trgm', errors, () =>
+    sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`.execute(db),
+  );
+  await runIndexStep('object_updates.name_title_trgm', errors, () =>
+    sql`
+      CREATE INDEX IF NOT EXISTS idx_object_updates_name_title_value_norm_trgm
+      ON object_updates USING GIN (value_text_normalized gin_trgm_ops)
+      WHERE update_type IN ('name', 'title') AND value_text_normalized IS NOT NULL
+    `.execute(db),
+  );
   console.log('  object_updates name/title trigram GIN done');
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Index recreation finished with ${errors.length} failed step(s): ${errors.map((e) => e.message).join(' | ')}`,
+    );
+  }
   console.log('Indexes recreated.');
 }
 
@@ -1048,14 +1239,34 @@ async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void
   console.log('Migration finished. Stats:', migrator.stats);
 }
 
+async function recreateIndexesStandalone(): Promise<void> {
+  const databaseUrl = resolveConnectionString();
+  const migrator = new MongoToPgMigrator(databaseUrl);
+  try {
+    await recreateObjectUpdatesIndexes(migrator.db);
+  } finally {
+    await migrator.destroy();
+  }
+}
+
 function main(): void {
   const args = process.argv.slice(2);
+  const recreateIndexesOnly = args.includes('--recreate-indexes');
   const fileArg = args.find((a) => !a.startsWith('--'));
   const skipIndexes = args.includes('--skip-indexes');
 
+  if (recreateIndexesOnly) {
+    recreateIndexesStandalone().catch((err: unknown) => {
+      console.error(err);
+      process.exit(1);
+    });
+    return;
+  }
+
   if (!fileArg?.trim()) {
     fail(
-      'Usage: tsx scripts/migrate-mongo-to-pg/objects/index.ts <path-to-wobjects.json> [--skip-indexes]',
+      'Usage: tsx scripts/migrate-mongo-to-pg/objects/index.ts <path-to-wobjects.json> [--skip-indexes]\n' +
+        '       tsx scripts/migrate-mongo-to-pg/objects/index.ts --recreate-indexes',
     );
   }
 

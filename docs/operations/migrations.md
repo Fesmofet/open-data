@@ -269,6 +269,11 @@ docker compose -p apps --env-file .env -f docker-compose.production.apps.yml --p
   migrator \
   pnpm migrate:mongo-objects /data/wobjects.json --skip-indexes
 
+# Resume index recreate only (after XX001 / TOAST failure mid-recreate)
+docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml --profile tools run --rm \
+  migrator \
+  pnpm migrate:mongo-objects --recreate-indexes
+
 # Staging image / stack
 docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml --profile tools run --rm \
   -v /path/to/wobjects.json:/data/wobjects.json \
