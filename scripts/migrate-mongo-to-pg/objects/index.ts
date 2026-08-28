@@ -7,7 +7,7 @@
  *                 objects_core, object_updates, validity_votes, rank_votes,
  *                 object_favorite, object_ownership before bulk insert; recreate after.
  *                 Keep in sync with libs/migrations/src/postgres/odl indexes on
- *                 those tables (through 00036_objects_core_meta_group_id_index).
+ *                 those tables (through 00059_object_updates_search_json_prefix).
  *
  * Re-runs: inserts use ON CONFLICT DO NOTHING for child tables; objects_core
  * updates `created_at` when the export includes `createdAt` (COALESCE keeps
@@ -868,6 +868,8 @@ async function dropObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> 
   await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text_normalized`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_object_id_update_type`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_address_locality_lower`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_identifier_value_lower`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_favorite_object_id`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_favorite_account`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_ownership_object_id_type`.execute(db);
@@ -944,6 +946,16 @@ async function recreateObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<vo
     CREATE INDEX idx_object_updates_tagitem_value
     ON object_updates ((value_json->>'value'), (value_json->>'category'))
     WHERE update_type = 'tagCategoryItem'
+  `.execute(db);
+  await sql`
+    CREATE INDEX idx_object_updates_identifier_value_lower
+    ON object_updates (lower(value_json->>'value') text_pattern_ops)
+    WHERE update_type = 'identifier' AND value_json->>'value' IS NOT NULL
+  `.execute(db);
+  await sql`
+    CREATE INDEX idx_object_updates_address_locality_lower
+    ON object_updates (lower(value_json->>'locality') text_pattern_ops)
+    WHERE update_type = 'address' AND value_json->>'locality' IS NOT NULL
   `.execute(db);
   console.log('  object_updates btree/geo/rank indexes done');
   await sql`ALTER TABLE object_updates ENABLE TRIGGER tr_object_updates_search_vector`.execute(db);

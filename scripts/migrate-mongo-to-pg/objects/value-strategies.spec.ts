@@ -220,4 +220,85 @@ describe('addressStrategy', () => {
       },
     });
   });
+
+  it('keeps city and country when postalCode is missing (hsr-supermarket-leo dump)', () => {
+    const result = addressStrategy.transform(
+      JSON.stringify({
+        address: 'On Ruta del Spondylus',
+        city: 'Manglaralto',
+        state: 'Santa Elena',
+        country: 'Ecuador',
+      }),
+      'address',
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        street: 'On Ruta del Spondylus',
+        locality: 'Manglaralto',
+        state: 'Santa Elena',
+        country: 'Ecuador',
+        postal_code: '0',
+      },
+    });
+  });
+
+  it('keeps city when country and postal are missing (kri-not-bad-advice dump)', () => {
+    const result = addressStrategy.transform(
+      JSON.stringify({
+        address: 'Donets-Zakharzhevsky 5',
+        street: '',
+        city: 'Kharkiv',
+      }),
+      'address',
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        street: 'Donets-Zakharzhevsky 5',
+        locality: 'Kharkiv',
+        country: 'Unknown',
+        postal_code: '0',
+      },
+    });
+  });
+
+  it('maps street and city without postal or country', () => {
+    const result = addressStrategy.transform(
+      JSON.stringify({
+        street: 'Main Street 1',
+        city: 'Boston',
+      }),
+      'address',
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        street: 'Main Street 1',
+        locality: 'Boston',
+        country: 'Unknown',
+        postal_code: '0',
+      },
+    });
+  });
+
+  it('falls back to packed-line parser for a lone address string', () => {
+    const result = addressStrategy.transform(
+      JSON.stringify({ address: '123 Main St' }),
+      'address',
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        street: '123 Main St',
+        locality: '123 Main St',
+        country: 'Unknown',
+        postal_code: '0',
+      },
+    });
+  });
 });

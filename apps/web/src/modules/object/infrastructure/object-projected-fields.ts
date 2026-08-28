@@ -129,12 +129,33 @@ export function projectedGeoLatLon(
   return null;
 }
 
+/** Migration / schema placeholders — omit from left-rail display. */
+const ADDRESS_DISPLAY_PLACEHOLDER_LOCALITY = 'unknown';
+const ADDRESS_DISPLAY_PLACEHOLDER_POSTAL = '0';
+
+function isAddressDisplayPlaceholderLocality(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === ADDRESS_DISPLAY_PLACEHOLDER_LOCALITY;
+}
+
+function isAddressDisplayPlaceholderPostal(value: string | undefined): boolean {
+  return value?.trim() === ADDRESS_DISPLAY_PLACEHOLDER_POSTAL;
+}
+
 /** Builds one display line from structured address fields. */
 export function formatProjectedAddress(a: ProjectedAddress): string {
+  const locality = isAddressDisplayPlaceholderLocality(a.locality)
+    ? undefined
+    : a.locality;
+  const postalCode = isAddressDisplayPlaceholderPostal(a.postal_code)
+    ? undefined
+    : a.postal_code;
+  const country = isAddressDisplayPlaceholderLocality(a.country)
+    ? undefined
+    : a.country;
   const parts = [
     a.suite ? `${a.suite}, ${a.street}` : a.street,
-    [a.locality, a.state].filter(Boolean).join(', '),
-    [a.postal_code, a.country].filter(Boolean).join(' '),
+    [locality, a.state].filter(Boolean).join(', '),
+    [postalCode, country].filter(Boolean).join(' '),
   ].filter((p) => p.length > 0);
   return parts.join('\n');
 }

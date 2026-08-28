@@ -216,20 +216,25 @@ function legacyAddressToPayload(o: Record<string, unknown>): AddressPayload | nu
   const state = trimStr(o.state);
   const postalCode = trimStr(o.postalCode);
   const country = trimStr(o.country);
+  const streetField = trimStr(o.street);
 
-  const structured =
-    city.length > 0 && postalCode.length > 0 && country.length > 0;
+  const hasStructuredFields =
+    city.length > 0 ||
+    state.length > 0 ||
+    postalCode.length > 0 ||
+    country.length > 0 ||
+    streetField.length > 0;
 
-  if (structured) {
+  if (hasStructuredFields) {
     const street = buildStreetFromLegacy(o);
     if (!street.length) {
       return null;
     }
     const out: AddressPayload = {
       street,
-      locality: city,
-      postal_code: postalCode,
-      country,
+      locality: city.length > 0 ? city : PLACEHOLDER_COUNTRY,
+      postal_code: postalCode.length > 0 ? postalCode : PLACEHOLDER_POSTAL,
+      country: country.length > 0 ? country : PLACEHOLDER_COUNTRY,
     };
     if (state.length > 0) {
       out.state = state;
