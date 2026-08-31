@@ -36,6 +36,7 @@ import {
   SidebarMailIcon,
   SidebarThumbsDownIcon,
   SidebarThumbsUpIcon,
+  SidebarBrandIcon,
 } from './profile-account-sidebar-icons';
 
 type ProfileAccountSidebarProps = {
@@ -87,6 +88,9 @@ function SidebarMetricRow({
   );
 }
 
+const SIDEBAR_ACCENT_ROW_CLASS =
+  'flex w-full items-start gap-2 rounded-btn text-left text-body-sm text-accent transition-opacity hover:opacity-80 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+
 function SidebarBrandButton({
   iconSrc,
   label,
@@ -100,15 +104,10 @@ function SidebarBrandButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-btn text-left text-body-sm text-accent transition-opacity hover:opacity-80 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className={SIDEBAR_ACCENT_ROW_CLASS}
     >
-      <img
-        src={iconSrc}
-        alt=""
-        className="h-[1em] w-[1em] shrink-0 object-contain"
-        aria-hidden
-      />
-      <span className="font-weight-label">{label}</span>
+      <SidebarBrandIcon src={iconSrc} />
+      <span className="min-w-0 flex-1 font-weight-label">{label}</span>
     </button>
   );
 }
@@ -212,15 +211,10 @@ export function ProfileAccountSidebar({
                 <ExternalLinkButton
                   key={`${row.label}-${row.href}`}
                   href={row.href}
-                  className="flex w-full items-center gap-2 rounded-btn text-left text-body-sm text-accent transition-opacity hover:opacity-80 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className={SIDEBAR_ACCENT_ROW_CLASS}
                 >
-                  <img
-                    src={row.iconSrc}
-                    alt=""
-                    className="h-[1em] w-[1em] shrink-0 object-contain"
-                    aria-hidden
-                  />
-                  <span className="font-weight-label">{row.label}</span>
+                  <SidebarBrandIcon src={row.iconSrc} />
+                  <span className="min-w-0 flex-1 font-weight-label">{row.label}</span>
                 </ExternalLinkButton>
               ))}
               {PROFILE_SIDEBAR_TRANSFER_WALLETS.map((wallet) => (

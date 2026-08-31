@@ -26,6 +26,14 @@ function SidebarIconShell({ children }: { children: ReactNode }) {
   );
 }
 
+export function SidebarBrandIcon({ src }: { src: string }) {
+  return (
+    <SidebarIconShell>
+      <img src={src} alt="" className="size-4 object-contain" />
+    </SidebarIconShell>
+  );
+}
+
 export function SidebarLocationIcon() {
   return (
     <SidebarIconShell>

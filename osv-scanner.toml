@@ -15,19 +15,19 @@
 [[IgnoredVulns]]
 id = "GHSA-848j-6mx2-7j84"
 reason = "Transitive via @hiveio/dhive -> secp256k1 for Hive ECDSA. No patched elliptic release on npm (latest 6.6.1)."
-ignoreUntil = 2026-08-31
+ignoreUntil = 2027-02-28
 
 [[IgnoredVulns]]
 id = "GHSA-w5hq-g745-h8pq"
 reason = "Dev-only via webpack-dev-server -> sockjs; not shipped in production Docker bundles. Fix requires uuid v11+ incompatible with sockjs ^8.3.2."
-ignoreUntil = 2026-08-31
+ignoreUntil = 2027-02-28
 
 [[IgnoredVulns]]
 id = "GHSA-5p2g-fcmc-qvqq"
 reason = "Transitive optional dep via less (vite/webpack dev toolchain). image-size repo archived; npm latest 2.0.2 still affected. Dev/build-only; not shipped in production Docker bundles."
-ignoreUntil = 2026-08-31
+ignoreUntil = 2027-02-28
 
 [[IgnoredVulns]]
 id = "GHSA-w3rx-r6r6-pgpr"
 reason = "Transitive optional dep via less (vite/webpack dev toolchain). image-size repo archived; npm latest 2.0.2 still affected. Dev/build-only; not shipped in production Docker bundles."
-ignoreUntil = 2026-08-31
+ignoreUntil = 2027-02-28
