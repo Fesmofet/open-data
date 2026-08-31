@@ -25,6 +25,9 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 |-------|----------|
 | View mode | Left rail read-only (existing blocks) |
 | Edit mode | `+` next to each block heading (menu, description, phones, …) |
+| Mobile view (standard object, Details landing) | Left-rail Details only in the mobile stack — see [page-shell.md](../page-shell.md) § Mobile stacking |
+| Mobile edit (standard object, Details landing) | Left-rail Details only; center and social previews hidden below `lg` |
+| Mobile edit (special host: list / page / widget) | Center host content first (list catalog with edit tools when on List tab), then left-rail Details below `lg` |
 | `+` click | Modal: optional update-type select (multi-type blocks), schema-driven value form, optional locale when `UPDATE_REGISTRY[type].localizable` |
 | Edit left rail | All supported slots show heading + `+` even when empty; **grouped sections** with sticky headings (HEADER, DETAILS, …); order from core edit-field-groups catalog — see below |
 | Update count | Muted line under each field heading (e.g. `2 updates`); **click** navigates to the **Updates** tab and sets the feed `update_type` filter for that field |

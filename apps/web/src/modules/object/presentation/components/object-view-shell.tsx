@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import type { ObjectMobileCenterLayout } from '../../domain/object-mobile-layout';
 import {
   FixedRegion,
   StickyRegion,
@@ -11,7 +12,19 @@ export type ObjectViewShellProps = {
   leftRail: ReactNode;
   center: ReactNode;
   rightRail: ReactNode;
+  /** Mobile stacking mode below `lg`; desktop layout is unchanged. */
+  mobileLayout?: ObjectMobileCenterLayout;
+  /** Reviews / followers / experts previews for standard-object mobile Details landing. */
+  mobileSocialSlot?: ReactNode;
 };
+
+function MobileLeftRailCopy({ leftRail }: { leftRail: ReactNode }) {
+  return (
+    <div className="shell-hide-instagram lg:hidden" data-testid="object-mobile-left-rail">
+      {leftRail}
+    </div>
+  );
+}
 
 /**
  * Profile-parity shell: `shell-profile-grid`, Instagram rail hide, Twitter sticky vs fixed rail swap.
@@ -23,7 +36,17 @@ export function ObjectViewShell({
   leftRail,
   center,
   rightRail,
+  mobileLayout = 'centerOnly',
+  mobileSocialSlot,
 }: ObjectViewShellProps) {
+  const hideCenterOnMobile =
+    mobileLayout === 'standardView' || mobileLayout === 'standardEdit';
+  const showMobileDetailsBeforeCenter =
+    mobileLayout === 'standardView' || mobileLayout === 'standardEdit';
+  const showMobileSocial =
+    mobileLayout === 'standardView' && mobileSocialSlot != null;
+  const showMobileDetailsAfterCenter = mobileLayout === 'specialEdit';
+
   return (
     <div className="flex min-w-0 flex-col gap-card-padding">
       {hero}
@@ -44,7 +67,28 @@ export function ObjectViewShell({
           </div>
         </div>
 
-        <main className="min-h-[12rem] min-w-0">{center}</main>
+        <main className="flex min-h-[12rem] min-w-0 flex-col gap-card-padding">
+          {showMobileDetailsBeforeCenter ? (
+            <MobileLeftRailCopy leftRail={leftRail} />
+          ) : null}
+
+          {showMobileSocial ? (
+            <div className="lg:hidden" data-testid="object-mobile-social">
+              {mobileSocialSlot}
+            </div>
+          ) : null}
+
+          <div
+            className={hideCenterOnMobile ? 'hidden lg:block' : undefined}
+            data-testid="object-center-column"
+          >
+            {center}
+          </div>
+
+          {showMobileDetailsAfterCenter ? (
+            <MobileLeftRailCopy leftRail={leftRail} />
+          ) : null}
+        </main>
 
         <div className="hidden min-w-0 lg:block">
           <div className="shell-hide-instagram lg:contents">{rightRail}</div>

@@ -42,8 +42,10 @@ import {
 import {
   buildObjectGalleryAlbumPath,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
+  OBJECT_PAGE_VIEW_PATH_PARAM,
   resolveCategoryNameForObjectPage,
 } from '@/modules/object/domain/object-page-url.constants';
+import { resolveObjectMobileCenterLayout } from '@/modules/object/domain/object-mobile-layout';
 import { ObjectPageCenterSkeleton } from '@/modules/object/presentation/components/object-page-loading-skeleton';
 import { useEffectiveNav, useInstantNavigation } from '@/shared/presentation';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -88,6 +90,7 @@ export type ObjectPageShellClientProps = {
   model: ObjectPageViewModel;
   viewerUsername: string | null;
   rightRailSlot: ReactNode;
+  mobileSocialSlot?: ReactNode;
   children: ReactNode;
 };
 
@@ -95,6 +98,7 @@ export function ObjectPageShellClient({
   model,
   viewerUsername,
   rightRailSlot,
+  mobileSocialSlot,
   children,
 }: ObjectPageShellClientProps) {
   const pathname = usePathname();
@@ -571,6 +575,26 @@ export function ObjectPageShellClient({
     ],
   );
 
+  const hasNestedPath = Boolean(
+    searchParams.get(OBJECT_PAGE_VIEW_PATH_PARAM)?.trim(),
+  );
+
+  const mobileLayout = useMemo(
+    () =>
+      resolveObjectMobileCenterLayout({
+        objectTypeKey: model.objectTypeKey,
+        activePrimarySegment,
+        hasPath: hasNestedPath,
+        isEditMode,
+      }),
+    [
+      activePrimarySegment,
+      hasNestedPath,
+      isEditMode,
+      model.objectTypeKey,
+    ],
+  );
+
   return (
     <ObjectPageShellProvider value={shellContextValue}>
       <ObjectViewShell
@@ -606,6 +630,8 @@ export function ObjectPageShellClient({
           />
         }
         leftRail={leftRail}
+        mobileLayout={mobileLayout}
+        mobileSocialSlot={mobileSocialSlot}
         center={
           <div className="relative min-h-[12rem]">
             <div

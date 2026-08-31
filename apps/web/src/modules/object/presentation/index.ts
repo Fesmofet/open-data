@@ -51,5 +51,7 @@ export { ObjectRightFollowersSection } from './components/object-right-followers
 export type { ObjectRightFollowersSectionProps } from './components/object-right-followers-section';
 export { ObjectRightExpertsSection } from './components/object-right-experts-section';
 export type { ObjectRightExpertsSectionProps } from './components/object-right-experts-section';
+export { ObjectRightReviewsSection } from './components/object-right-reviews-section';
+export type { ObjectRightReviewsSectionProps } from './components/object-right-reviews-section';
 export { ObjectRefCard, ObjectRefListFeed } from './components/object-ref-list-feed';
 export type { ObjectRefCardProps, ObjectRefListFeedProps } from './components/object-ref-list-feed';

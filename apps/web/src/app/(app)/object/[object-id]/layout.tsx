@@ -6,10 +6,12 @@ import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
 import { JsonLdScript } from '@/seo';
 import { ObjectPageRightRailSkeleton } from '@/modules/object/presentation/components/object-page-loading-skeleton';
+import { objectTypeHasDetailsTab } from '@/modules/object/domain/object-page-url.constants';
 
 import { loadObjectPageModel } from './object-page-model.server';
 import { ObjectPageShellClient } from './object-page-shell-client';
 import { ObjectPageRightRailSection } from './object-page-right-rail-section.server';
+import { ObjectPageMobileSocialSection } from './object-page-mobile-social-section.server';
 
 export default async function ObjectDetailLayout({
   children,
@@ -47,6 +49,18 @@ export default async function ObjectDetailLayout({
     </Suspense>
   );
 
+  const mobileSocialSlot = objectTypeHasDetailsTab(model.objectTypeKey) ? (
+    <Suspense fallback={null}>
+      <ObjectPageMobileSocialSection
+        objectId={objectId}
+        locale={locale}
+        viewerUsername={viewerUsername}
+        followersTabCount={followersTabCount}
+        expertsTabCount={expertsTabCount}
+      />
+    </Suspense>
+  ) : undefined;
+
   return (
     <OptimisticNavProvider>
       <JsonLdScript data={model.seo?.json_ld} />
@@ -57,6 +71,7 @@ export default async function ObjectDetailLayout({
         model={model}
         viewerUsername={viewerUsername}
         rightRailSlot={rightRailSlot}
+        mobileSocialSlot={mobileSocialSlot}
       >
         {children}
       </ObjectPageShellClient>

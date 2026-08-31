@@ -45,6 +45,20 @@ Single App Router entry: [`page.tsx`](../../../../../apps/web/src/app/(app)/obje
 
 Shell grid: [`ObjectViewShell`](../../../../../apps/web/src/modules/object/presentation/components/object-view-shell.tsx) — `shell-object-page-grid` at `lg+`.
 
+## Mobile stacking (below `lg`)
+
+Desktop keeps the three-column grid. On mobile the center column composes a vertical stack based on object type, active tab, edit mode, and `?path=` — see [`object-mobile-layout.ts`](../../../../../apps/web/src/modules/object/domain/object-mobile-layout.ts).
+
+| Condition | Mobile stack |
+|-----------|--------------|
+| Standard object (`objectTypeHasDetailsTab`) + **Details** landing (clean `/object/:id`, no `?path=`) + **view** | Left-rail **Details** blocks, then up to 5 reviews / 5 followers / 5 experts (each with Show more). Nested menu/description in center is **hidden** on mobile (shown at `lg+` only). |
+| Same + **edit** | Left-rail **Details** only (edit `+` / grouped sections). No social previews; center hidden on mobile. |
+| Standard + other primary tab or `?path=` drill-down | Center tab content only (unchanged). |
+| Special host (`list`, `widget`, `page`, …) + **view** | Center host content only (list / page / widget). |
+| Special host + **edit** + host landing tab | Center host content (with list edit tools when applicable), then left-rail **Details** below. |
+
+Related / Similar / Add-On right-rail blocks remain desktop-only.
+
 ## Browse vs edit mode
 
 | Mode | Right rail | Left rail |

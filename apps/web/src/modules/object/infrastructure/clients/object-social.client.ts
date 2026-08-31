@@ -15,6 +15,9 @@ export const RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT = 6;
 /** Right-rail experts preview fetch size — one extra row to detect `hasMore` when count > 5. */
 export const RIGHT_RAIL_EXPERTS_FETCH_LIMIT = 6;
 
+/** Mobile Details landing reviews preview — one extra post to detect `hasMore` when count > 5. */
+export const MOBILE_REVIEWS_PREVIEW_FETCH_LIMIT = 6;
+
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const u = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
