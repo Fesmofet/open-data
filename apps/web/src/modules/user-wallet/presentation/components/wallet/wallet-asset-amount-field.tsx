@@ -5,7 +5,7 @@ import { useId } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
-import { WalletSelectChevron } from '../shared/wallet-select-chevron';
+import { ChevronDownIcon } from '@/icons';
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
 import { WalletSearchableAssetSelect } from './wallet-searchable-asset-select';
 
@@ -130,7 +130,7 @@ export function WalletAssetAmountField<T extends string>({
                 ))
               )}
             </select>
-            <WalletSelectChevron className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" />
+            <ChevronDownIcon size={14} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted" />
           </div>
           )}
         </div>

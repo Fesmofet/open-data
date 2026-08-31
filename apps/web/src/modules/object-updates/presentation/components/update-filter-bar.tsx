@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
+import { PlusIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
 import {
@@ -46,26 +47,6 @@ function mergeLocaleOptions(
     merged.sort((a, b) => a.localeCompare(b));
   }
   return merged;
-}
-
-function IconAddUpdate() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 14 14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M7 2.5v9M2.5 7h9"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
 }
 
 export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
@@ -198,7 +179,7 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
             className="inline-flex shrink-0 items-center gap-2 px-1 text-body-sm text-link hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:ms-auto"
           >
             <span className="inline-flex size-7 items-center justify-center rounded-pill bg-accent text-accent-fg">
-              <IconAddUpdate />
+              <PlusIcon size="xs" strokeWidth={1.75} />
             </span>
             <span className="font-weight-label">{t('object_updates_add')}</span>
           </button>

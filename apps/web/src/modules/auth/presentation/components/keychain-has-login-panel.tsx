@@ -10,10 +10,10 @@ import { AppLoader } from '@/shared/presentation/components/app-loader';
 import { isMobileBrowser } from '../../domain/device/is-mobile-browser';
 import {
   ExternalLinkIcon,
-  InfoCircleIcon,
-  QrScanIcon,
+  InfoIcon,
+  QrCodeIcon,
   SmartphoneIcon,
-} from './auth-login-icons';
+} from '@/icons';
 
 export type KeychainHasLoginPanelProps = {
   deepLink: string;
@@ -31,7 +31,7 @@ function InstructionCallout() {
       className="flex gap-2.5 rounded-card border border-border bg-surface-control px-3 py-2.5"
       role="note"
     >
-      <InfoCircleIcon className="mt-0.5 shrink-0 text-fg-secondary" />
+      <InfoIcon size={20} className="mt-0.5 shrink-0 text-fg-secondary" />
       <p className="text-body-sm text-fg-secondary">
         {t('auth_keychain_has_instruction_prefix')}{' '}
         <span className="font-label font-weight-strong text-fg">
@@ -150,7 +150,7 @@ export function KeychainHasLoginPanel({
             restKey="auth_keychain_has_step_open_rest"
           />
         </StepRow>
-        <StepRow step={2} icon={<QrScanIcon className="block" />}>
+        <StepRow step={2} icon={<QrCodeIcon size={20} className="block" />}>
           <StepText emphasisKey={stepTwoEmphasisKey} restKey={stepTwoRestKey} />
         </StepRow>
       </ol>

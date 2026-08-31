@@ -12,6 +12,7 @@ import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/co
 
 import { BlogFeedPostsList } from './blog-feed-posts-list';
 import { ActivityFeedClient } from './activity-feed-client';
+import { getMockFeedItems } from './mock-feed';
 
 type FeedProfileContentProps = {
   accountName: string;
@@ -31,11 +32,17 @@ export async function FeedProfileContent({
   const currentUsername = currentUser?.username ?? null;
 
   if (feedTab === 'posts') {
-    const page = await getUserBlogFeedPageQuery(
+    let page = await getUserBlogFeedPageQuery(
       accountName,
       { objectIds: postFilterObjectIds },
       currentUsername,
     );
+    if (page.items.length === 0 && postFilterObjectIds.length === 0) {
+      const mockItems = getMockFeedItems(accountName, feedTab);
+      if (mockItems.length > 0) {
+        page = { items: mockItems, cursor: null, hasMore: false };
+      }
+    }
     return (
       <>
         <ProfilePostFilterChips

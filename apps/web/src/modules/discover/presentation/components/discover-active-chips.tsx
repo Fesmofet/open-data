@@ -6,7 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildDiscoverHref, decodeTagFilter } from '../../domain/discover-url';
-import { ChipRemoveIcon } from './discover-chip-icons';
+import { CloseIcon } from '@/icons';
 
 /** Pill style for active search / tag filters in the feed column (matches header search chips, denser padding). */
 export const DISCOVER_ACTIVE_CHIP_CLASS =
@@ -95,7 +95,7 @@ export function DiscoverActiveChips({
               className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
               onClick={removeQuery}
             >
-              <ChipRemoveIcon />
+              <CloseIcon size={16} />
             </button>
           </span>
         ) : null}
@@ -110,7 +110,7 @@ export function DiscoverActiveChips({
                 className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
                 onClick={() => removeTag(tag)}
               >
-                <ChipRemoveIcon />
+                <CloseIcon size={16} />
               </button>
             </span>
           );

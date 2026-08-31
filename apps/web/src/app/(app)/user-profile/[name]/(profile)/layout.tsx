@@ -18,6 +18,8 @@ import { getUserFollowingObjectsPageQuery } from '@/modules/user-social';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 
+import { getMockProfileShellUser } from '../mock-profile';
+
 export default async function ProfileGroupLayout({
   children,
   params,
@@ -32,7 +34,7 @@ export default async function ProfileGroupLayout({
   const viewer = viewerUser?.username ?? null;
   const locale = await getRequestLocale();
 
-  const [profile, sidebar, objectsHead, expertiseCounts, feedUnreadCounts] = await Promise.all([
+  const [profileResult, sidebar, objectsHead, expertiseCounts, feedUnreadCounts] = await Promise.all([
     getUserProfileQuery(decoded, viewer, locale),
     getUserAccountSidebarQuery(decoded),
     getUserFollowingObjectsPageQuery(
@@ -44,6 +46,7 @@ export default async function ProfileGroupLayout({
     fetchExpertiseCountsForProfile(decoded),
     getUserFeedUnreadCountsQuery(decoded, viewer),
   ]);
+  const profile = profileResult ?? getMockProfileShellUser(decoded);
   if (!profile) {
     notFound();
   }

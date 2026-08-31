@@ -17,13 +17,12 @@ import {
   formatWaivAmountViewLabel,
 } from '../../hive/history/wallet-history-row-shell';
 import {
-  ConvertIcon,
-  SuccessIcon,
-  SwapIcon,
+  ArrowLeftRightIcon,
+  CheckCircleIcon,
+  CloseIcon,
   WalletIcon,
-  XIcon,
-} from '../../hive/history/wallet-history-icons';
-import { WalletPowerLightningIcon } from '../../shared/wallet-row-icons';
+  WalletPowerLightningIcon,
+} from '@/icons';
 
 type ProfileLinkProps = { name: string; children: React.ReactNode };
 
@@ -234,7 +233,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
         <WalletHistoryRowShell
           timestamp={row.timestamp}
           timestampExtra={row.priceLabel}
-          icon={<SwapIcon />}
+          icon={<ArrowLeftRightIcon size={20} />}
           amount={
             row.isLimitOrder && row.otherAmountLabel ? (
               <span className="text-fg">
@@ -252,7 +251,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<XIcon />}
+          icon={<CloseIcon size={20} />}
           amount={row.amount ? <span className="text-fg">{row.amount}</span> : undefined}
         >
           {row.orderType === 'buy'
@@ -264,7 +263,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<XIcon />}
+          icon={<CloseIcon size={20} />}
           amount={row.amount ? <span className="text-fg">{row.amount}</span> : undefined}
         >
           {row.orderType === 'buy'
@@ -276,7 +275,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<XIcon />}
+          icon={<CloseIcon size={20} />}
         >
           {row.orderType === 'buy'
             ? t('market_close_to_buy')
@@ -287,7 +286,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('waiv_mining_lottery')}
@@ -297,7 +296,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('mining_rewards')}
@@ -307,7 +306,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<ConvertIcon />}
+          icon={<ArrowLeftRightIcon size={20} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('waiv_pegged_deposit')}
@@ -317,7 +316,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<ConvertIcon />}
+          icon={<ArrowLeftRightIcon size={20} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('waiv_pegged_withdraw')}
@@ -328,7 +327,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('author_rewards')}{' '}
@@ -347,7 +346,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('curator_rewards')}{' '}
@@ -367,7 +366,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('curator_rewards')}{' '}
@@ -386,7 +385,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
         <WalletHistoryRowShell
           timestamp={row.timestamp}
           timestampExtra={row.rateLabel}
-          icon={<SwapIcon />}
+          icon={<ArrowLeftRightIcon size={20} />}
           amount={
             <WalletDualAmount
               transfer={`${row.quantityIn} ${row.symbolIn}`}
@@ -401,7 +400,7 @@ export function WaivWalletHistoryRow({ row }: { row: WaivWalletHistoryRowView })
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={<WaivWalletAmount view={row.amountView} />}
         >
           {t('waiv_airdrop')}

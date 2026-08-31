@@ -3,15 +3,14 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
+import {
+  UserIcon,
+  WALLET_ROW_TOKEN_ICON_PX,
+  WalletPowerLightningIcon,
+} from '@/icons';
+
 import { WalletActionSplit, type WalletActionSplitItem } from '../shared/wallet-action-split';
 import { WalletBalanceAmount } from '../shared/wallet-balance-amount';
-import {
-  WALLET_ROW_TOKEN_ICON_PX,
-  WALLET_SAVINGS_SHIELD_HEIGHT,
-  WALLET_SAVINGS_SHIELD_PATH,
-  WALLET_SAVINGS_SHIELD_WIDTH,
-  WalletPowerLightningIcon,
-} from '../shared/wallet-row-icons';
 
 export const HIVE_TOKEN_ICON_SRC = '/images/icons/cryptocurrencies/hive.png';
 export const HBD_TOKEN_ICON_SRC = '/images/icons/cryptocurrencies/hbd-icon.svg';
@@ -141,42 +140,12 @@ export function HbdTokenIcon() {
   );
 }
 
-export function HiveSavingsShieldIcon() {
-  return (
-    <svg
-      width={WALLET_SAVINGS_SHIELD_WIDTH}
-      height={WALLET_SAVINGS_SHIELD_HEIGHT}
-      viewBox="0 0 19 22"
-      fill="none"
-      aria-hidden
-    >
-      <path d={WALLET_SAVINGS_SHIELD_PATH} fill="#E31337" />
-    </svg>
-  );
-}
-
-export function HbdSavingsShieldIcon() {
-  return (
-    <svg
-      width={WALLET_SAVINGS_SHIELD_WIDTH}
-      height={WALLET_SAVINGS_SHIELD_HEIGHT}
-      viewBox="0 0 19 22"
-      fill="none"
-      aria-hidden
-    >
-      <path d={WALLET_SAVINGS_SHIELD_PATH} fill="#01960E" />
-    </svg>
-  );
-}
+export { HiveSavingsShieldIcon, HbdSavingsShieldIcon } from '@/icons';
 
 export function HivePowerIcon() {
   return <WalletPowerLightningIcon />;
 }
 
 export function PersonIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-    </svg>
-  );
+  return <UserIcon size={20} />;
 }

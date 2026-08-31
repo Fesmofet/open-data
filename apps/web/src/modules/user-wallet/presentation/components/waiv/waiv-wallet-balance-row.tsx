@@ -3,12 +3,14 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
-import { WalletActionSplit, type WalletActionSplitItem } from '../shared/wallet-action-split';
-import { WalletBalanceAmount } from '../shared/wallet-balance-amount';
 import {
+  UserIcon,
   WALLET_ROW_TOKEN_ICON_PX,
   WalletPowerLightningIcon,
-} from '../shared/wallet-row-icons';
+} from '@/icons';
+
+import { WalletActionSplit, type WalletActionSplitItem } from '../shared/wallet-action-split';
+import { WalletBalanceAmount } from '../shared/wallet-balance-amount';
 
 /** Waivio wallet tab parity — {@link walletSymbolIconSrc} in object module uses the same file. */
 export const WAIV_TOKEN_ICON_SRC = '/images/icons/cryptocurrencies/waiv.png';
@@ -130,11 +132,7 @@ function PowerIcon() {
 }
 
 function PersonIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-    </svg>
-  );
+  return <UserIcon size={20} />;
 }
 
 export { WaivTokenIcon, PowerIcon, PersonIcon };

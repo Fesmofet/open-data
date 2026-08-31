@@ -13,6 +13,7 @@ import {
 
 import { fetchTagApprovalStatsAction } from '@/app/(app)/object/[object-id]/tag-approval.actions';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
+import { PlusIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { buildDiscoverHref, encodeTagFilter } from '@/modules/discover/domain/discover-url';
@@ -27,26 +28,6 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
-
-function IconAddUpdate({ className }: { className?: string }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      aria-hidden
-      className={className}
-    >
-      <path
-        d="M7 2.5v9M2.5 7h9"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 function tagOptimisticKey(category: string, value: string): string {
   return `${category}\0${value}`;
@@ -381,7 +362,7 @@ export function ObjectTagsLeftRailSection({
             aria-label={t('object_tags_add_category')}
             title={t('object_tags_add_category')}
           >
-            <IconAddUpdate className="block shrink-0" />
+            <PlusIcon size="sm" className="block shrink-0" />
           </button>
         )}
         <div className="min-w-0 flex-1">

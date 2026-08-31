@@ -21,6 +21,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import { BoldIcon, ItalicIcon, LinkIcon, MoreHorizontalIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
@@ -87,41 +88,6 @@ function selectionIsLink(): boolean {
     }
   }
   return false;
-}
-
-function IconBold({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M8 11h4.5a2.5 2.5 0 0 0 0-5H8v5zm0 2v5h5.5a3.5 3.5 0 0 0 0-7H8z" />
-    </svg>
-  );
-}
-
-function IconItalic({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M10 4h8v2h-3.2l-2.8 12H16v2H8v-2h3.2l2.8-12H10V4z" />
-    </svg>
-  );
-}
-
-function IconLink({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
-  );
-}
-
-function IconMore({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <circle cx="5" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="19" cy="12" r="2" />
-    </svg>
-  );
 }
 
 function toolbarBtnClass(active: boolean): string {
@@ -384,7 +350,7 @@ export function EditorFormatToolbar() {
             aria-pressed={isBold}
             onClick={() => runAction('bold')}
           >
-            <IconBold className="h-[18px] w-[18px]" />
+            <BoldIcon size={18} />
           </button>
           <button
             type="button"
@@ -393,7 +359,7 @@ export function EditorFormatToolbar() {
             aria-pressed={isItalic}
             onClick={() => runAction('italic')}
           >
-            <IconItalic className="h-[18px] w-[18px]" />
+            <ItalicIcon size={18} />
           </button>
           <button
             type="button"
@@ -402,7 +368,7 @@ export function EditorFormatToolbar() {
             aria-pressed={isLink}
             onClick={openLinkMode}
           >
-            <IconLink className="h-[18px] w-[18px]" />
+            <LinkIcon size={18} />
           </button>
           <div className="relative">
             <button
@@ -413,7 +379,7 @@ export function EditorFormatToolbar() {
               aria-controls={moreMenuId}
               onClick={() => setMoreOpen((open) => !open)}
             >
-              <IconMore className="h-[18px] w-[18px]" />
+              <MoreHorizontalIcon size={18} />
             </button>
             {moreOpen ? (
               <div

@@ -1,30 +1,13 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { BellIcon } from '@/icons';
 import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { UserAccountSidebarView } from '../../domain/types/user-account-sidebar-view';
 import type { UserProfileShellUser } from './types';
 import { UserProfileMobileHeroDetails } from './user-profile-mobile-hero-details';
 import { UserProfileMobileHeroMeta } from './user-profile-mobile-hero-meta';
-
-function IconBell({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="2"
-      className={filled ? 'text-accent' : 'text-current'}
-      aria-hidden
-    >
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  );
-}
 
 export type UserHeaderProps = {
   user: UserProfileShellUser;
@@ -168,7 +151,10 @@ export function UserHeader({
                 title={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
                 aria-label={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
               >
-                <IconBell filled={isBell} />
+                <BellIcon
+                  size={22}
+                  className={isBell ? 'fill-accent text-accent' : 'text-current'}
+                />
               </button>
             ) : null}
           </>

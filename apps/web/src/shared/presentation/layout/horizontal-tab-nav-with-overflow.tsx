@@ -3,6 +3,8 @@
 import type { ReactNode } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 
+import { ChevronDownIcon } from '@/icons';
+
 import { profileSectionTabClass } from '../components/profile-section-tab-classes';
 import {
   HORIZONTAL_TAB_NAV_CLIP_ROW_CLASS,
@@ -26,21 +28,6 @@ export type HorizontalTabNavWithOverflowProps = {
   bleed?: 'gutter' | 'card' | 'none';
   rowClassName?: string;
 };
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M12 15.5 4 8h16l-8 7.5z" />
-    </svg>
-  );
-}
 
 export function HorizontalTabNavWithOverflow({
   items,
@@ -162,7 +149,7 @@ export function HorizontalTabNavWithOverflow({
               }}
             >
               <span>{moreLabel}</span>
-              <ChevronDownIcon />
+              <ChevronDownIcon size={14} />
             </button>
 
             {menuOpen && hasOverflow ? (

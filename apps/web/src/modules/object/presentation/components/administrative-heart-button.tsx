@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { buildOdlObjectFavoriteOp } from '@opden-data-layer/hive-broadcast';
 
+import { HeartIcon } from '@/icons';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
@@ -14,23 +15,6 @@ import {
   revalidateObjectAfterBroadcast,
   revalidateUserSocialAfterBroadcast,
 } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
-
-function IconHeartAdministrative({ active }: { active: boolean }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill={active ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="2"
-      className={active ? 'text-accent' : 'text-fg-tertiary'}
-      aria-hidden
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  );
-}
 
 export type AdministrativeHeartButtonProps = {
   objectId: string;
@@ -107,7 +91,10 @@ export function AdministrativeHeartButton({
         title={initialActive ? t('feed_linked_object_admin_hint') : undefined}
         aria-label={initialActive ? t('feed_linked_object_admin_hint') : undefined}
       >
-        <IconHeartAdministrative active={initialActive} />
+        <HeartIcon
+          size={22}
+          className={initialActive ? 'text-accent fill-current' : 'text-fg-tertiary'}
+        />
       </span>
     );
   }
@@ -122,7 +109,10 @@ export function AdministrativeHeartButton({
       aria-label={hint}
       onClick={() => void onToggle()}
     >
-      <IconHeartAdministrative active={active} />
+      <HeartIcon
+        size={22}
+        className={active ? 'text-accent fill-current' : 'text-fg-tertiary'}
+      />
     </button>
   );
 }

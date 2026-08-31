@@ -1,6 +1,8 @@
 'use client';
 
 import { isOblUsdAmount, parseOblUsdAmount } from '@opden-data-layer/core/utils/obl-usd-amount';
+
+import { ArrowUpDownIcon } from '@/icons';
 export function RelationshipReadonlyField({
   label,
   value,
@@ -33,21 +35,7 @@ export function AccountPairSwapButton({
       onClick={onClick}
       className="flex size-9 shrink-0 items-center justify-center rounded-btn text-fg-secondary transition-colors hover:bg-surface-alt hover:text-fg disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="rotate-90"
-        aria-hidden
-      >
-        <path d="M7 16V4M7 4L3 8M7 4L11 8" />
-        <path d="M17 8V20M17 20L21 16M17 20L13 16" />
-      </svg>
+      <ArrowUpDownIcon size={18} className="rotate-90" />
     </button>
   );
 }

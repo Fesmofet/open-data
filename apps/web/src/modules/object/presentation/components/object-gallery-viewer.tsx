@@ -7,7 +7,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type SVGProps,
 } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -16,6 +15,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { ChevronLeftIcon, ChevronRightIcon } from '@/icons';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
@@ -52,44 +52,6 @@ const ZOOM_STEP = 0.25;
 
 const hiveAvatarUrl = (creator: string): string =>
   `https://images.hive.blog/u/${encodeURIComponent(creator)}/avatar`;
-
-function IconChevronLeft(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      width="30"
-      height="48"
-      viewBox="0 0 20 32"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <polyline points="14 4 6 16 14 28" />
-    </svg>
-  );
-}
-
-function IconChevronRight(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      width="30"
-      height="48"
-      viewBox="0 0 20 32"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <polyline points="6 4 14 16 6 28" />
-    </svg>
-  );
-}
 
 export type ObjectGalleryViewerProps = {
   objectId: string;
@@ -647,7 +609,7 @@ export function ObjectGalleryViewer({
             aria-label={t('object_detail_gallery_prev')}
             onClick={goPrev}
           >
-            <IconChevronLeft />
+            <ChevronLeftIcon size={30} strokeWidth={1.5} />
           </button>
         ) : null}
         <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
@@ -680,7 +642,7 @@ export function ObjectGalleryViewer({
             aria-label={t('object_detail_gallery_next')}
             onClick={goNext}
           >
-            <IconChevronRight />
+            <ChevronRightIcon size={30} strokeWidth={1.5} />
           </button>
         ) : null}
       </div>

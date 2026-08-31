@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { MinusIcon, PlusIcon } from '@/icons';
 import { OptimisticNavLink } from '@/shared/presentation';
 
 import { resolveToolsNavId, type ToolsNavId } from '../domain/tools-paths';
@@ -27,26 +28,7 @@ const NAV_ITEMS: { id: ToolsNavId; href: string; labelKey: string }[] = [
 ];
 
 function SectionToggleIcon({ expanded }: { expanded: boolean }) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden
-    >
-      {expanded ? (
-        <path d="M3 8h10" strokeLinecap="round" />
-      ) : (
-        <>
-          <path d="M8 3v10" strokeLinecap="round" />
-          <path d="M3 8h10" strokeLinecap="round" />
-        </>
-      )}
-    </svg>
-  );
+  return expanded ? <MinusIcon size="md" /> : <PlusIcon size="md" />;
 }
 
 export function ToolsLayoutNav() {

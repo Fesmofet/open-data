@@ -3,6 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { ChevronDownIcon } from '@/icons';
+
 import { WalletHoverTooltip } from './wallet-hover-tooltip';
 
 /** Above wallet summary cards (`overflow-hidden`) and page chrome; below app modals (~110). */
@@ -161,15 +163,7 @@ export function WalletActionSplit({
             disabled={disabled}
           >
             <span className="sr-only">{primaryLabel} menu</span>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              aria-hidden
-              className="mt-0.5"
-            >
-              <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
+            <ChevronDownIcon size={12} className="mt-0.5" />
           </button>
         ) : null}
       </div>

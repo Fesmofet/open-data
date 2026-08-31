@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { ChevronDownIcon, PenLineIcon } from '@/icons';
 import { businessRoutes } from '@/modules/business';
 import { NotificationBell } from '@/modules/notifications';
 import { isToolsHubPath } from '@/modules/tools';
@@ -18,40 +19,11 @@ import { UserAvatar } from '@/shared/presentation';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
 
-function WritePostIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-    </svg>
-  );
-}
+/** 32×32 hit target — matches `UserAvatar` size={32} and unread notification badge. */
+const HEADER_ICON_BTN_CLASS =
+  'inline-flex size-8 shrink-0 items-center justify-center rounded-btn p-0 leading-none text-nav-fg hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus [&_svg]:block';
 
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M12 15.5 4 8h16l-8 7.5z" />
-    </svg>
-  );
-}
+const HEADER_ICON_SIZE = 20;
 
 export type LoggedInHeaderActionsProps = {
   user: AppHeaderUser;
@@ -135,15 +107,16 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
         href="/editor"
         title={t('write_post')}
         aria-label={t('write_post')}
-        className="rounded-btn p-2 text-nav-fg hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        className={HEADER_ICON_BTN_CLASS}
         suppressHydrationWarning
       >
-        <WritePostIcon />
+        <PenLineIcon size={HEADER_ICON_SIZE} />
       </Link>
 
       <NotificationBell
         username={user.username}
-        triggerClassName="relative rounded-btn p-2 text-nav-fg hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        triggerClassName={HEADER_ICON_BTN_CLASS}
+        iconSize={HEADER_ICON_SIZE}
       />
 
       <div className="relative flex items-center gap-0.5">
@@ -165,12 +138,9 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
           aria-controls={menuOpen ? `${menuId}-menu` : undefined}
           aria-label={t('app_header_account_menu_aria')}
           onClick={() => setMenuOpen((o) => !o)}
-          className={[
-            'inline-flex shrink-0 rounded-btn p-1 text-nav-fg',
-            'hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-          ].join(' ')}
+          className={HEADER_ICON_BTN_CLASS}
         >
-          <ChevronDownIcon />
+          <ChevronDownIcon size={HEADER_ICON_SIZE} />
         </button>
 
         {menuOpen ? (

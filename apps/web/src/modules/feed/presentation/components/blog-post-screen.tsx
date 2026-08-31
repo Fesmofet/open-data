@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { CommentIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
@@ -27,47 +28,6 @@ type BlogPostScreenProps = {
   bodyHtmlSafe: string;
   currentUsername: string | null;
 };
-
-function IconComment({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
-function IconReblog({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M17 1l4 4-4 4" />
-      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-      <path d="M7 23l-4-4 4-4" />
-      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-    </svg>
-  );
-}
 
 function viewerIsAuthor(viewer: string | null, author: string): boolean {
   if (viewer == null || viewer === '') {
@@ -227,7 +187,7 @@ export function BlogPostScreen({
             currentUsername={currentUsername}
           />
           <StoryStatButton
-            icon={<IconComment />}
+            icon={<CommentIcon size={20} />}
             count={
               (story.children ?? 0) > 0 ? story.children : undefined
             }

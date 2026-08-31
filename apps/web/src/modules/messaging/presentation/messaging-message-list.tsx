@@ -15,7 +15,7 @@ import {
   resolveMessagePresentation,
 } from '../domain/messaging.helpers';
 import type { MessageItem } from '../domain/messaging.types';
-import { LockClosedIcon } from './messaging-icons';
+import { LockIcon } from '@/icons';
 
 export type MessagingMessageListProps = {
   messages: MessageItem[];
@@ -139,7 +139,7 @@ export function MessagingMessageList({
                 } else if (presentation.kind === 'one-way') {
                   bodyNode = (
                     <p className="flex items-center gap-2 text-body-sm text-muted">
-                      <LockClosedIcon className="size-4 shrink-0" />
+                      <LockIcon className="size-4 shrink-0" />
                       {t('messaging_message_one_way').replace('{to}', presentation.to)}
                     </p>
                   );
@@ -151,7 +151,7 @@ export function MessagingMessageList({
                       onClick={() => void handleEncryptedClick(message)}
                       className="flex w-full items-center gap-2 text-left text-body-sm text-muted hover:text-fg disabled:opacity-50"
                     >
-                      <LockClosedIcon className="size-4 shrink-0" />
+                      <LockIcon className="size-4 shrink-0" />
                       {t('messaging_message_encrypted')}
                     </button>
                   );

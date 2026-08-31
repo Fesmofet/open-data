@@ -14,7 +14,7 @@ import {
 import type { WalletDepositModalState } from '../../../domain/wallet-modal-types';
 import { isHiveL1TransferAsset } from '../../../domain/wallet-modal-types';
 import { WalletModalFieldLabel } from '../shared/wallet-modal-field-label';
-import { WalletSelectChevron } from '../shared/wallet-select-chevron';
+import { ChevronDownIcon } from '@/icons';
 import { useWalletModal } from './wallet-modal-context';
 import { useDepositInstructionBroadcast } from '../../hooks/use-deposit-instruction-broadcast';
 
@@ -287,7 +287,7 @@ export function WalletDepositModal({
                   </option>
                 ))}
               </select>
-              <WalletSelectChevron className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+              <ChevronDownIcon size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
             </div>
           </div>
 

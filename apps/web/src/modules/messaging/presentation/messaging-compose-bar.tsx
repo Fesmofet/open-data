@@ -13,7 +13,7 @@ import type { SendEncryptedMessageInput } from '../domain/messaging.types';
 import { canSendMessageBody, shouldShowPlainSendDisclaimer } from '../domain/messaging.helpers';
 import { MESSAGING_COLUMN_FOOTER_SHELL_CLASS } from './messaging-layout.constants';
 import { EncryptedSendModal } from './encrypted-send-modal';
-import { LockClosedIcon, LockOpenIcon, SendArrowIcon } from './messaging-icons';
+import { LockIcon, LockOpenIcon, SendHorizontalIcon } from '@/icons';
 import {
   PlainSendDisclaimerModal,
 } from './plain-send-disclaimer-modal';
@@ -252,7 +252,7 @@ export function MessagingComposeBar({
               ].join(' ')}
             >
               {encryptEnabled ? (
-                <LockClosedIcon className="size-7" />
+                <LockIcon className="size-7" />
               ) : (
                 <LockOpenIcon className="size-7" />
               )}
@@ -264,12 +264,13 @@ export function MessagingComposeBar({
               disabled={!canSend}
               onClick={requestSend}
               className={[
-                'pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-circle bg-accent text-accent-fg',
+                'pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-circle bg-accent leading-none text-accent-fg',
+                '[&_svg]:block',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               ].join(' ')}
             >
-              <SendArrowIcon className="size-5" />
+              <SendHorizontalIcon size={20} />
             </button>
           </div>
         </div>

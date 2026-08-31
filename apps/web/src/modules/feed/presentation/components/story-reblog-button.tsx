@@ -3,34 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { ReblogIcon } from '@/icons';
 import { buildReblogOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateHomeFeedAfterBroadcast, revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { StoryStatButton } from './story-stat-button';
-
-function IconReblog({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M17 1l4 4-4 4" />
-      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-      <path d="M7 23l-4-4 4-4" />
-      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-    </svg>
-  );
-}
 
 export type StoryReblogButtonProps = {
   authorName: string;
@@ -95,7 +74,7 @@ export function StoryReblogButton({
   return (
     <div className="inline-flex flex-col items-start">
       <StoryStatButton
-        icon={<IconReblog />}
+        icon={<ReblogIcon size={20} />}
         label={optimisticReblogged ? 'Reblogged' : 'Reblog'}
         title={optimisticReblogged ? 'You already reblogged this post' : 'Reblog'}
         iconActive={optimisticReblogged}

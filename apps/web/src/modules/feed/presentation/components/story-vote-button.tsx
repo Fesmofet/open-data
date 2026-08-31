@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { ThumbUpIcon } from '@/icons';
 import { buildVoteOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
@@ -16,40 +17,6 @@ import {
 
 import { formatVoteSummary } from './story-utils';
 import { StoryVoteModal } from './story-vote-modal';
-
-function IconThumbUp({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-}
-
-function IconThumbUpFilled({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-}
 
 export type StoryVoteButtonProps = {
   authorName: string;
@@ -181,7 +148,11 @@ export function StoryVoteButton({
             onClick={() => void onVoteClick()}
           >
             <span className={iconToneClass}>
-              {optimisticVoted ? <IconThumbUpFilled /> : <IconThumbUp />}
+              {optimisticVoted ? (
+                <ThumbUpIcon size={20} className="fill-current" />
+              ) : (
+                <ThumbUpIcon size={20} />
+              )}
             </span>
           </button>
           {confirming ? (

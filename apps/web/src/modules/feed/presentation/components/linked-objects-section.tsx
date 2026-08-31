@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronRightIcon } from '@/icons';
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -18,9 +19,7 @@ function SummaryChevron() {
       className="inline-flex shrink-0 text-fg-tertiary transition-transform duration-200 group-open:rotate-90"
       aria-hidden
     >
-      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
+      <ChevronRightIcon size={16} className="size-4" />
     </span>
   );
 }

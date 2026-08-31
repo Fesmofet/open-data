@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { ChevronDownIcon } from '@/icons';
 import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildDiscoverHref, encodeTagFilter } from '../../domain/discover-url';
@@ -56,25 +57,6 @@ function buildDefaultCollapsed(
     }
   }
   return collapsed;
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2 4l4 4 4-4" />
-    </svg>
-  );
 }
 
 export type DiscoverFiltersProps = {
@@ -214,7 +196,8 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
                     aria-expanded={!collapsed}
                   >
                     <span>{section.category}</span>
-                    <ChevronIcon
+                    <ChevronDownIcon
+                      size={12}
                       className={`shrink-0 text-fg-secondary transition-transform duration-150 ${
                         collapsed ? '' : 'rotate-180'
                       }`}

@@ -13,15 +13,12 @@ import {
   WalletHistoryRowShell,
 } from './wallet-history-row-shell';
 import {
-  ConvertIcon,
-  SuccessIcon,
-  SwapIcon,
-  XIcon,
-} from './wallet-history-icons';
-import {
+  ArrowLeftRightIcon,
+  CheckCircleIcon,
+  CloseIcon,
   WalletPowerLightningIcon,
   WalletSavingsShieldIcon,
-} from '../../shared/wallet-row-icons';
+} from '@/icons';
 
 type ProfileLinkProps = { name: string; children: React.ReactNode };
 
@@ -140,7 +137,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={
             parts.length > 0 ? (
               <WalletAmount value={parts.join(', ')} tone="positive" />
@@ -265,7 +262,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<ConvertIcon />}
+          icon={<ArrowLeftRightIcon size={20} />}
           amount={
             amountLabel ? (
               <WalletAmount value={amountLabel} tone={isRequest ? 'negative' : 'positive'} />
@@ -311,7 +308,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SwapIcon />}
+          icon={<ArrowLeftRightIcon size={20} />}
           amount={
             <span className="text-fg">
               {row.amountToSell} → {row.minToReceive}
@@ -325,7 +322,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<XIcon />}
+          icon={<CloseIcon size={20} />}
           amount={
             row.currentPays ? (
               <span className="text-fg">{row.currentPays}</span>
@@ -343,7 +340,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
       return (
         <WalletHistoryRowShell
           timestamp={row.timestamp}
-          icon={<SuccessIcon />}
+          icon={<CheckCircleIcon size={22} />}
           amount={
             row.amount ? (
               <WalletAmount

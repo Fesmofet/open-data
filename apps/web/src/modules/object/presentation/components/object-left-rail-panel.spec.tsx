@@ -122,6 +122,42 @@ describe('ObjectLeftRailPanel closed venue status', () => {
     );
 
     expect(screen.queryByText('Permanently closed')).toBeNull();
+    expect(screen.getByText('123 Main St')).toBeTruthy();
+  });
+});
+
+describe('ObjectLeftRailPanel contact and detail icons', () => {
+  it('renders lucide-backed rows for price, hours, address, website, and email', () => {
+    const { container } = render(
+      <ObjectLeftRailPanel
+        blocks={[
+          { kind: 'price', headingLabel: 'Price', text: '$12.50' },
+          {
+            kind: 'workHours',
+            headingLabel: 'Hours',
+            lines: ['Mon–Fri 9am–5pm', 'Sat 10am–2pm'],
+          },
+          { kind: 'address', headingLabel: 'Address', text: '456 Oak Ave' },
+          {
+            kind: 'websites',
+            headingLabel: 'Website',
+            entries: [{ title: 'example.com', link: 'https://example.com' }],
+          },
+          { kind: 'email', headingLabel: 'Email', address: 'hello@example.com' },
+        ]}
+        objectTypeKey="restaurant"
+        objectId="rest-1"
+      />,
+    );
+
+    expect(screen.getByText('$12.50')).toBeTruthy();
+    expect(container.textContent).not.toMatch(/\$\s*\$12\.50/);
+    expect(screen.getByText('Mon–Fri 9am–5pm')).toBeTruthy();
+    expect(screen.getByText('Sat 10am–2pm')).toBeTruthy();
+    expect(screen.getByText('456 Oak Ave')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'example.com' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'hello@example.com' })).toBeTruthy();
+    expect(screen.queryByRole('img')).toBeNull();
   });
 });
 

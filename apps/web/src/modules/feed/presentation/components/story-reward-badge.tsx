@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
+import { RewardFlashlightIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { PostRewardView } from '../../application/dto/post-reward.dto';
@@ -15,26 +16,6 @@ type StoryRewardBadgeProps = {
   waivRewardEligible: boolean;
   postAuthor: string;
 };
-
-function IconFlashlight({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M18 6h-6l-2-4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z" />
-      <path d="M10 16l2-4 2 4" />
-    </svg>
-  );
-}
 
 function WaivEligibleBadge() {
   const { t } = useI18n();
@@ -69,7 +50,7 @@ function RewardPowerOnlyHint() {
       title={t('reward_option_100')}
       aria-label={t('reward_option_100')}
     >
-      <IconFlashlight />
+      <RewardFlashlightIcon size={14} />
     </span>
   );
 }

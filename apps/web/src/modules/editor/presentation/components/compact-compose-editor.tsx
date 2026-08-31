@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { ChevronRightIcon, SendHorizontalIcon } from '@/icons';
 import { LexicalPostEditor } from './lexical-editor';
 
 export type CompactComposeEditorProps = {
@@ -18,43 +19,6 @@ export type CompactComposeEditorProps = {
   className?: string;
   footer?: ReactNode;
 };
-
-function IconSendChevron({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
-  );
-}
-
-function IconSendArrow({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M5 12h14" />
-      <path d="m13 6 6 6-6 6" />
-    </svg>
-  );
-}
 
 /**
  * Shared feed compose — same shell as {@link StoryCommentEditor}:
@@ -93,7 +57,8 @@ export function CompactComposeEditor({
             disabled={!canSend}
             aria-label={sendAriaLabel}
             className={[
-              'pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-circle',
+              'pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-circle leading-none',
+              '[&_svg]:block',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
               'disabled:cursor-not-allowed disabled:opacity-50',
               accentSend
@@ -101,7 +66,11 @@ export function CompactComposeEditor({
                 : 'border border-border bg-bg text-fg-secondary shadow-none hover:bg-ghost-surface',
             ].join(' ')}
           >
-            {accentSend ? <IconSendArrow className="size-5" /> : <IconSendChevron />}
+            {accentSend ? (
+              <SendHorizontalIcon size={20} />
+            ) : (
+              <ChevronRightIcon size={20} className="block shrink-0" />
+            )}
           </button>
         </div>
       </div>

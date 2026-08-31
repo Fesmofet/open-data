@@ -30,7 +30,7 @@ import {
   SidebarClockIcon,
   SidebarDollarIcon,
   SidebarFlashIcon,
-  SidebarHashtagIcon,
+  SidebarCircleStarIcon,
   SidebarLinkIcon,
   SidebarLocationIcon,
   SidebarMailIcon,
@@ -184,13 +184,13 @@ export function ProfileAccountSidebar({
             </SidebarRow>
           )}
 
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2">
             {joinedDate && (
               <SidebarRow icon={<SidebarCalendarIcon />}>
                 {t('joined_date').replace('{date}', joinedDate)}
               </SidebarRow>
             )}
-            <SidebarRow icon={<SidebarHashtagIcon />}>
+            <SidebarRow icon={<SidebarCircleStarIcon />}>
               {t('expertise')}: {model.expertiseWeight.toFixed(2)}
             </SidebarRow>
             {model.lastActivityAt && (
@@ -207,7 +207,7 @@ export function ProfileAccountSidebar({
           {(socialRows.length > 0 ||
             PROFILE_SIDEBAR_TRANSFER_WALLETS.length > 0 ||
             model.cryptoWallets.length > 0) && (
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2">
               {socialRows.map((row) => (
                 <ExternalLinkButton
                   key={`${row.label}-${row.href}`}
@@ -273,7 +273,7 @@ export function ProfileAccountSidebar({
             <h4 className="font-weight-strong text-body text-fg">{t('hive_token')}</h4>
             <div className="mt-2 space-y-2">
               <SidebarMetricRow
-                icon={<SidebarHashtagIcon />}
+                icon={<SidebarCircleStarIcon />}
                 label={t('steem_reputation')}
                 value={model.hive.reputation.toFixed(2)}
               />

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { PencilIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { appendAttachObjectToEditorPath } from '@/modules/editor/domain/post-editor-object-create-return';
 
@@ -17,24 +18,6 @@ const promptClassName =
 const penIconClassName =
   'inline-flex size-10 shrink-0 items-center justify-center rounded-pill border border-accent text-accent';
 
-function WriteReviewPenIcon() {
-  return (
-    <svg
-      className="size-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-    </svg>
-  );
-}
-
 export function ObjectWriteReviewPrompt({
   objectId,
   viewerUsername = null,
@@ -47,7 +30,7 @@ export function ObjectWriteReviewPrompt({
   const label = (
     <>
       <span className={penIconClassName} aria-hidden>
-        <WriteReviewPenIcon />
+        <PencilIcon size={20} />
       </span>
       <span className="text-body-sm font-weight-label text-fg">{t('write_review')}</span>
     </>

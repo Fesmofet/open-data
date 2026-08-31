@@ -15,10 +15,22 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type ComponentType,
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import {
+  CloseIcon,
+  CodeIcon,
+  EmojiIcon,
+  ImageIcon,
+  LayoutGridIcon,
+  MinusIcon,
+  PlusIcon,
+  SearchIcon,
+  TableIcon,
+  VideoIcon,
+} from '@/icons';
+import type { IconProps } from '@/icons';
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -41,114 +53,17 @@ type InsertLabelKey =
 
 const INSERT_ITEMS: {
   labelKey: InsertLabelKey;
-  Icon: ComponentType<{ className?: string }>;
+  Icon: (props: IconProps) => React.JSX.Element | null;
 }[] = [
-  { labelKey: 'editor_insert_photo', Icon: IconPhoto },
-  { labelKey: 'editor_insert_video', Icon: IconVideo },
-  { labelKey: 'editor_insert_object', Icon: IconObject },
-  { labelKey: 'editor_insert_line', Icon: IconLine },
-  { labelKey: 'editor_insert_code', Icon: IconCode },
-  { labelKey: 'editor_insert_table', Icon: IconTable },
-  { labelKey: 'editor_insert_emoji', Icon: IconEmoji },
-  { labelKey: 'editor_insert_nearby', Icon: IconNearby },
+  { labelKey: 'editor_insert_photo', Icon: ImageIcon },
+  { labelKey: 'editor_insert_video', Icon: VideoIcon },
+  { labelKey: 'editor_insert_object', Icon: LayoutGridIcon },
+  { labelKey: 'editor_insert_line', Icon: MinusIcon },
+  { labelKey: 'editor_insert_code', Icon: CodeIcon },
+  { labelKey: 'editor_insert_table', Icon: TableIcon },
+  { labelKey: 'editor_insert_emoji', Icon: EmojiIcon },
+  { labelKey: 'editor_insert_nearby', Icon: SearchIcon },
 ];
-
-function IconPhoto({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-      <circle cx="12" cy="13" r="4" />
-    </svg>
-  );
-}
-
-function IconVideo({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function IconObject({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
-      <line x1="4" y1="9" x2="20" y2="9" />
-      <line x1="4" y1="15" x2="20" y2="15" />
-      <line x1="10" y1="3" x2="8" y2="21" />
-      <line x1="16" y1="3" x2="14" y2="21" />
-    </svg>
-  );
-}
-
-function IconLine({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <line x1="4" y1="12" x2="20" y2="12" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconCode({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  );
-}
-
-function IconTable({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <line x1="3" y1="9" x2="21" y2="9" />
-      <line x1="3" y1="15" x2="21" y2="15" />
-      <line x1="9" y1="3" x2="9" y2="21" />
-      <line x1="15" y1="3" x2="15" y2="21" />
-    </svg>
-  );
-}
-
-function IconEmoji({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-      <line x1="9" y1="9" x2="9.01" y2="9" strokeLinecap="round" />
-      <line x1="15" y1="9" x2="15.01" y2="9" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconNearby({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      <path d="M11 8v6l3 1.5" />
-    </svg>
-  );
-}
-
-function IconPlus({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function IconClose({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  );
-}
 
 function getRangeForCaret(editorRoot: HTMLElement): Range | null {
   const sel = window.getSelection();
@@ -579,7 +494,7 @@ export function EditorInsertCaretOverlay({
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
             ].join(' ')}
           >
-            <IconClose />
+            <CloseIcon size={18} />
           </button>
         ) : (
           <button
@@ -605,7 +520,7 @@ export function EditorInsertCaretOverlay({
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
             ].join(' ')}
           >
-            <IconPlus />
+            <PlusIcon size={20} />
           </button>
         )}
       </div>
@@ -692,7 +607,7 @@ export function EditorInsertCaretOverlay({
                             : undefined
                       }
                     >
-                      <Icon className="text-fg-secondary" />
+                      <Icon className="text-fg-secondary" size={22} />
                       <span className="text-center leading-compressed">
                         {t(labelKey)}
                       </span>

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { ClockIcon } from '@/icons';
 import { formatEngineTokenAmountDisplay } from '../../../domain/engine-token-amount';
 import { getWalletDelegateAmountAssetLabel } from '../../../domain/wallet-power-labels';
 import type { WalletMainAsset } from '../../../domain/wallet-modal-types';
@@ -40,21 +41,6 @@ function formatDelegationQuantity(
   });
 }
 
-function DelegationExpiringClockIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-      className="shrink-0"
-    >
-      <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 11h-4V7h2v4h2Z" />
-    </svg>
-  );
-}
-
 export function EngineTokenDelegationUserCard({
   username,
   quantity,
@@ -74,7 +60,7 @@ export function EngineTokenDelegationUserCard({
       <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
         {pending ? (
           <span className="flex items-center gap-1.5 text-body-sm text-muted">
-            <DelegationExpiringClockIcon />
+            <ClockIcon size="md" className="shrink-0" />
             {t('wallet_delegation_expiring')}
           </span>
         ) : (

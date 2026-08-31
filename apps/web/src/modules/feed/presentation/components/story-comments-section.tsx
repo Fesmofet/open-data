@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { ChevronDownIcon } from '@/icons';
 import { loadPostDiscussionAction } from '@/app/(app)/user-profile/[name]/post-discussion.actions';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -46,22 +47,10 @@ function ShowMoreCommentsButton({
       onClick={onClick}
     >
       <span>{label}</span>
-      <svg
-        aria-hidden="true"
-        width="12"
-        height="12"
-        viewBox="0 0 12 12"
-        fill="none"
+      <ChevronDownIcon
+        size={12}
         className={chevronUp ? 'shrink-0' : 'shrink-0 rotate-180'}
-      >
-        <path
-          d="M2 4l4 4 4-4"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      />
     </button>
   );
 }

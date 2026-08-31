@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { TrendingUpIcon } from '@/icons';
 
 import type { CurrencyMarketPanelData } from '../../domain/currency-market.types';
 import { fetchCurrencyMarketPanelClient } from '../../infrastructure/clients/currency-market.browser.client';
@@ -96,16 +97,7 @@ export function CryptoMarketPanel({ initialData = null }: CryptoMarketPanelProps
     <div className={MARKET_PANEL_CARD_CLASS}>
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-section font-weight-strong text-fg">
-          <svg
-            viewBox="0 0 24 24"
-            className="h-5 w-5 shrink-0 text-muted"
-            aria-hidden
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M4 18h16M6 14l3-4 3 3 5-7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <TrendingUpIcon size="lg" className="shrink-0 text-muted" />
           {t('market')}
         </h2>
         <button

@@ -14,7 +14,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { APP_MODAL_Z_INDEX } from '@/shared/presentation';
 
 import { formatWalletModalBalanceDisplay } from '../../../domain/wallet-modal-format';
-import { WalletSelectChevron } from '../shared/wallet-select-chevron';
+import { ChevronDownIcon } from '@/icons';
 import type { WalletAssetAmountOption } from './wallet-asset-amount-field';
 
 const DROPDOWN_GAP_PX = 4;
@@ -222,7 +222,7 @@ export function WalletSearchableAssetSelect<T extends string>({
             ? (selected?.label ?? value) || '…'
             : (selected?.value ?? value) || '…'}
         </span>
-        <WalletSelectChevron className="shrink-0 text-muted" />
+        <ChevronDownIcon size={14} className="shrink-0 text-muted" />
       </button>
       {menu}
     </>

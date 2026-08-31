@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import { ChevronDownIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 
@@ -38,22 +39,11 @@ export function filterUpdateTypeOptionsByQuery(
 
 export function FilterSelectChevron({ open }: { open: boolean }) {
   return (
-    <svg
-      aria-hidden="true"
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
+    <ChevronDownIcon
+      size={12}
+      strokeWidth={1.5}
       className={`shrink-0 text-fg-secondary transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
-    >
-      <path
-        d="M2 4l4 4 4-4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    />
   );
 }
 

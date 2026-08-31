@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type MouseEvent } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { PlayIcon } from '@/icons';
 import { getImagePathPost } from '@/shared/infrastructure/image/get-proxy-image-url';
 import {
   buildVideoEmbedUrl,
@@ -11,41 +12,6 @@ import {
 } from '@/shared/infrastructure/video-preview';
 
 import { useVideoPreviewThumbnail } from '../hooks/use-video-preview-thumbnail';
-
-function IconPlay({ size = 28 }: { size?: number }) {
-  return (
-    <span
-      className="inline-flex items-center justify-center rounded-circle bg-overlay/80 p-3 shadow-card"
-      aria-hidden
-    >
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="ml-0.5 text-accent-fg"
-      >
-        <path d="M8 5v14l11-7L8 5z" />
-      </svg>
-    </span>
-  );
-}
-
-function IconPlaySmall({ className }: { className?: string }) {
-  return (
-    <span className={className} aria-hidden>
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="drop-shadow-[0_1px_2px_var(--color-overlay)]"
-      >
-        <path d="M8 5v14l11-7L8 5z" />
-      </svg>
-    </span>
-  );
-}
 
 export type VideoPreviewPlayerProps = {
   /** Raw video URL or pre-parsed preview metadata. */
@@ -173,7 +139,15 @@ export function VideoPreviewPlayer({
           <div className="flex size-full items-center justify-center bg-surface-control" aria-hidden />
         )}
         <div className="absolute right-1.5 top-1.5 text-accent-fg">
-          <IconPlaySmall className="inline-flex rounded-circle bg-overlay/80 p-1" />
+          <span
+            className="inline-flex rounded-circle bg-overlay/80 p-1"
+            aria-hidden
+          >
+            <PlayIcon
+              size={20}
+              className="drop-shadow-[0_1px_2px_var(--color-overlay)]"
+            />
+          </span>
         </div>
       </div>
     );
@@ -235,7 +209,15 @@ export function VideoPreviewPlayer({
               onClick={handlePlay}
               aria-label={t('play_video')}
             >
-              <IconPlay size={variant === 'viewer' ? 32 : 28} />
+              <span
+                className="inline-flex items-center justify-center rounded-circle bg-overlay/80 p-3 shadow-card"
+                aria-hidden
+              >
+                <PlayIcon
+                  size={variant === 'viewer' ? 32 : 28}
+                  className="ml-0.5 text-accent-fg"
+                />
+              </span>
             </button>
           ) : null}
         </div>
@@ -249,7 +231,15 @@ export function VideoPreviewPlayer({
             onClick={handlePlay}
             aria-label={t('play_video')}
           >
-            <IconPlay size={variant === 'viewer' ? 32 : 28} />
+            <span
+              className="inline-flex items-center justify-center rounded-circle bg-overlay/80 p-3 shadow-card"
+              aria-hidden
+            >
+              <PlayIcon
+                size={variant === 'viewer' ? 32 : 28}
+                className="ml-0.5 text-accent-fg"
+              />
+            </span>
           </button>
         </div>
       ) : (

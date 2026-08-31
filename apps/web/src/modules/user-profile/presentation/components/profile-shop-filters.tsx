@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { encodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { ChevronDownIcon, FilterIcon } from '@/icons';
 import { useInstantNavigation } from '@/shared/presentation';
 import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
@@ -74,48 +75,6 @@ function buildDefaultCollapsed(
     }
   }
   return collapsed;
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2 4l4 4 4-4" />
-    </svg>
-  );
-}
-
-function FilterShopIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.3-4.3" />
-      <path d="M8 11h6" />
-      <path d="M8 8h3" />
-      <path d="M8 14h4" />
-    </svg>
-  );
 }
 
 export type ProfileShopFiltersProps = {
@@ -302,7 +261,7 @@ export function ProfileShopFilters({
       aria-busy={loading}
     >
       <h2 className="mb-3 flex items-center gap-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
-        <FilterShopIcon className="shrink-0 text-fg-secondary" />
+        <FilterIcon size="md" className="shrink-0 text-fg-secondary" />
         <span>{t('discover_filters_title')}</span>
       </h2>
 
@@ -405,7 +364,8 @@ export function ProfileShopFilters({
                       aria-expanded={!collapsed}
                     >
                       <span>{section.category}:</span>
-                      <ChevronIcon
+                      <ChevronDownIcon
+                        size={12}
                         className={`shrink-0 text-fg-secondary transition-transform duration-150 ${
                           collapsed ? '' : 'rotate-180'
                         }`}

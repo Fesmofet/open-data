@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { DISCOVER_ACTIVE_CHIP_CLASS } from '@/modules/discover/presentation/components/discover-active-chips';
-import { ChipRemoveIcon } from '@/modules/discover/presentation/components/discover-chip-icons';
+import { CloseIcon } from '@/icons';
 import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildProfilePostsHref } from '../../domain/profile-post-filters-url';
@@ -96,7 +96,7 @@ export function ProfilePostFilterChips({ accountName, objectIds }: ProfilePostFi
               onClick={() => removeObject(id)}
               aria-label={t('discover_remove_filter')}
             >
-              <ChipRemoveIcon />
+              <CloseIcon size={16} />
             </button>
           </span>
         ))}

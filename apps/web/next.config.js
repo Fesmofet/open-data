@@ -9,6 +9,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '50mb',
     },
+    optimizePackageImports: ['lucide-react'],
   },
   /**
    * `/@account/…` → `/user-profile/account/…` is handled in `src/proxy.ts` (Next.js 16 proxy).

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { ChevronDownIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
@@ -55,22 +56,10 @@ export function DiscussionCommentSortDropdown({
       >
         <span>{t('sort_by')}&nbsp;</span>
         <span className="font-weight-label">{currentLabel}</span>
-        <svg
-          aria-hidden="true"
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
+        <ChevronDownIcon
+          size={12}
           className={`ml-1 shrink-0 ${open ? 'rotate-180' : ''}`}
-        >
-          <path
-            d="M2 4l4 4 4-4"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        />
       </button>
 
       {open ? (

@@ -182,10 +182,17 @@ Use **`header`** / **`footer`** slots on `ModalShell` for chrome that must stay 
 | Floating toolbars / insert menus | **`editor-format-toolbar.tsx`**, **`editor-insert-menu.tsx`** |
 | Notification / header dropdowns | **`notification-bell.tsx`**, **`logged-in-header-actions.tsx`** |
 
+## Icons
+
+- **Single source:** [`@/icons`](src/icons/) — named components (`CloseIcon`, …) or `<Icon name="…" />`.
+- **Do not** import `lucide-react` in feature code; **do not** add inline `<svg>` in `src/modules/**` or `src/shared/**` (ESLint + tests enforce). Spec: [`docs/apps/web/spec/icons.md`](../../docs/apps/web/spec/icons.md).
+- Color via **`currentColor`** + semantic `text-*` classes on the icon or parent. Exceptions: documented brand shields in custom pack.
+- Decorative by default (`aria-hidden`); use `title` on `<Icon>` only when the glyph itself must be announced.
+
 ## Images
 
 - **`next/image`** for user-facing raster (avatars, feed thumbnails, covers).
-- Inline SVG or **`<img>`** for icons and decorative graphics.
+- **UI glyphs** → `@/icons`. **`<img>`** for static brand/crypto assets and decorative graphics not in the registry.
 - Markdown/HTML body images may use **`<img loading="lazy">`**.
 - **IPFS CID previews:** **`useIpfsContentBaseUrl()`** — see [Environment variables (runtime, not build)](#environment-variables-runtime-not-build) and [`images.md`](../../docs/apps/web/spec/images.md#ipfs-object-images-cid).
 

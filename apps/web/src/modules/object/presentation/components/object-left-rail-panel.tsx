@@ -1,10 +1,25 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
 
+import {
+  BookIcon,
+  BookOpenIcon,
+  CalendarIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  DollarIcon,
+  GlobeIcon,
+  LinkIcon,
+  MailIcon,
+  MapPinIcon,
+  PlusIcon,
+  RulerDimensionLineIcon,
+  WeightIcon,
+} from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import {
@@ -37,12 +52,6 @@ import type { TagApprovalStatsIndex } from '../../domain/tag-approval-stats';
 
 import { ExternalLinkButton } from './external-link-modal';
 import { formatProductSizeDisplay, formatProductWeightDisplay, formatDatePublishedDisplay } from '../../infrastructure/object-projected-fields';
-import { LeftRailDatePublishedIcon } from './left-rail-date-published-icon';
-import { LeftRailDimensionsIcon } from './left-rail-dimensions-icon';
-import { LeftRailInLanguageIcon } from './left-rail-in-language-icon';
-import { LeftRailPrintLengthIcon } from './left-rail-print-length-icon';
-import { LeftRailReadingAgeIcon } from './left-rail-reading-age-icon';
-import { LeftRailWeightScaleIcon } from './left-rail-weight-scale-icon';
 import { LeftRailScalarFieldSection } from './left-rail-scalar-field-section';
 import { ObjectAuthorsLeftRailSection } from './object-authors-left-rail-section';
 import { ObjectCategoryLeftRailSection } from './object-category-left-rail-section';
@@ -58,6 +67,21 @@ import { ObjectMenuItemsStatic } from './object-menu-items-static';
 import { ObjectOptionsSection } from './object-options-section';
 import { optionPreviewImageSrc } from './object-options-section.utils';
 import { StarRating } from './star-rating';
+
+function LeftRailIconShell({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className="inline-flex h-[1lh] w-5 shrink-0 items-center justify-center text-fg-tertiary [&_svg]:block"
+      aria-hidden
+    >
+      {children}
+    </span>
+  );
+}
 
 export type ObjectLeftRailEditContext = {
   objectId: string;
@@ -129,47 +153,6 @@ function truncateIntroForPreview(text: string): { display: string; isTruncated: 
   return { display: `${clipped}...`, isTruncated: true };
 }
 
-function ChevronAccordion({ expanded }: { expanded: boolean }) {
-  return (
-    <svg
-      width={14}
-      height={14}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      className={`shrink-0 text-muted transition-transform duration-200 ease-out motion-reduce:transition-none ${expanded ? 'rotate-180' : 'rotate-0'}`}
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function IconAddUpdate({ className }: { className?: string }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 14 14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <path
-        d="M7 2.5v9M2.5 7h9"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function LeftRailAddUpdateButton({
   onClick,
   addLabel,
@@ -185,7 +168,7 @@ function LeftRailAddUpdateButton({
       aria-label={addLabel}
       title={addLabel}
     >
-      <IconAddUpdate className="block shrink-0" />
+      <PlusIcon size="sm" className="block shrink-0" />
     </button>
   );
 }
@@ -266,7 +249,10 @@ function LeftRailIdentifierSection({
                 onClick={() => setOpen((v) => !v)}
               >
                 <span className="min-w-0 truncate text-fg">{headingLabel}</span>
-                <ChevronAccordion expanded={open} />
+                <ChevronDownIcon
+                  size={14}
+                  className={`shrink-0 text-muted transition-transform duration-200 ease-out motion-reduce:transition-none ${open ? 'rotate-180' : 'rotate-0'}`}
+                />
               </button>
             ) : (
               <p className="font-weight-label text-fg">{headingLabel}</p>
@@ -640,10 +626,10 @@ export function ObjectLeftRailPanel({
             return (
               <div key={`price-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('price', block.headingLabel)} />
-                <div className="flex items-center gap-1">
-                  <span className="text-muted" aria-hidden>
-                    $
-                  </span>
+                <div className="flex items-start gap-2">
+                  <LeftRailIconShell>
+                    <DollarIcon size="md" />
+                  </LeftRailIconShell>
                   <span className="font-weight-strong tabular-nums text-fg">
                     {hoveredOption?.price?.trim() || block.text}
                   </span>
@@ -671,18 +657,30 @@ export function ObjectLeftRailPanel({
             return (
               <div key={`hours-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('workHours', block.headingLabel)} />
-                <ul className="space-y-1">
-                  {block.lines.map((line, lineIndex) => (
-                    <li key={`${index}-${lineIndex}`}>{line}</li>
-                  ))}
-                </ul>
+                <div className="flex items-start gap-2">
+                  <LeftRailIconShell>
+                    <ClockIcon size="md" />
+                  </LeftRailIconShell>
+                  <ul className="min-w-0 flex-1 space-y-1">
+                    {block.lines.map((line, lineIndex) => (
+                      <li key={`${index}-${lineIndex}`}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             );
           case 'address':
             return (
               <div key={`addr-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('address', block.headingLabel)} />
-                <p className="whitespace-pre-line leading-editorial">{block.text}</p>
+                <div className="flex items-start gap-2">
+                  <LeftRailIconShell>
+                    <MapPinIcon size="md" />
+                  </LeftRailIconShell>
+                  <p className="min-w-0 flex-1 whitespace-pre-line leading-editorial">
+                    {block.text}
+                  </p>
+                </div>
               </div>
             );
           case 'geo': {
@@ -718,13 +716,9 @@ export function ObjectLeftRailPanel({
                         href={entry.link}
                         className="flex w-full items-start gap-2 rounded-btn text-left transition-opacity hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                       >
-                        <img
-                          src="/images/icons/link-icon.svg"
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="mt-0.5 shrink-0 opacity-80"
-                        />
+                        <LeftRailIconShell>
+                          <LinkIcon size="md" />
+                        </LeftRailIconShell>
                         <span className="break-all text-accent">{entry.title}</span>
                       </ExternalLinkButton>
                     </li>
@@ -739,8 +733,10 @@ export function ObjectLeftRailPanel({
                   {...editToolbarProps('productWeight', block.headingLabel)}
                 />
                 {block.unit ? (
-                  <div className="flex items-center gap-2 text-body-sm text-fg">
-                    <LeftRailWeightScaleIcon />
+                  <div className="flex items-start gap-2 text-body-sm text-fg">
+                    <LeftRailIconShell>
+                      <WeightIcon size="md" />
+                    </LeftRailIconShell>
                     <span className="tabular-nums">
                       {formatProductWeightDisplay({
                         value: block.value,
@@ -756,8 +752,10 @@ export function ObjectLeftRailPanel({
               <div key={`size-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('size', block.headingLabel)} />
                 {block.unit ? (
-                  <div className="flex items-center gap-2 text-body-sm text-fg">
-                    <LeftRailDimensionsIcon />
+                  <div className="flex items-start gap-2 text-body-sm text-fg">
+                    <LeftRailIconShell>
+                      <RulerDimensionLineIcon size="md" />
+                    </LeftRailIconShell>
                     <span className="tabular-nums">
                       {formatProductSizeDisplay({
                         length: block.length,
@@ -781,12 +779,17 @@ export function ObjectLeftRailPanel({
             return (
               <div key={`email-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('email', block.headingLabel)} />
-                <a
-                  href={`mailto:${block.address}`}
-                  className="block break-all text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                >
-                  {block.address}
-                </a>
+                <div className="flex items-start gap-2">
+                  <LeftRailIconShell>
+                    <MailIcon size="md" />
+                  </LeftRailIconShell>
+                  <a
+                    href={`mailto:${block.address}`}
+                    className="min-w-0 flex-1 break-all text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    {block.address}
+                  </a>
+                </div>
               </div>
             );
           case 'walletAddress':
@@ -966,8 +969,10 @@ export function ObjectLeftRailPanel({
               <div key={`date-published-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('datePublished', block.headingLabel)} />
                 {block.text.trim() ? (
-                  <div className="flex items-center gap-2 text-body-sm text-fg">
-                    <LeftRailDatePublishedIcon />
+                  <div className="flex items-start gap-2 text-body-sm text-fg">
+                    <LeftRailIconShell>
+                      <CalendarIcon size="md" />
+                    </LeftRailIconShell>
                     <span>{formatDatePublishedDisplay(block.text, locale)}</span>
                   </div>
                 ) : null}
@@ -978,8 +983,10 @@ export function ObjectLeftRailPanel({
               <div key={`print-length-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('printLength', block.headingLabel)} />
                 {block.text.trim() ? (
-                  <div className="flex items-center gap-2 text-body-sm text-fg">
-                    <LeftRailPrintLengthIcon />
+                  <div className="flex items-start gap-2 text-body-sm text-fg">
+                    <LeftRailIconShell>
+                      <BookIcon size="md" />
+                    </LeftRailIconShell>
                     <span className="tabular-nums">
                       {block.text} {t('lowercase_pages')}
                     </span>
@@ -992,8 +999,10 @@ export function ObjectLeftRailPanel({
               <div key={`in-language-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps('inLanguage', block.headingLabel)} />
                 {block.text.trim() ? (
-                  <div className="flex items-center gap-2 text-body-sm text-fg">
-                    <LeftRailInLanguageIcon />
+                  <div className="flex items-start gap-2 text-body-sm text-fg">
+                    <LeftRailIconShell>
+                      <GlobeIcon size="md" />
+                    </LeftRailIconShell>
                     <span>{block.text}</span>
                   </div>
                 ) : null}
@@ -1006,8 +1015,10 @@ export function ObjectLeftRailPanel({
                   {...editToolbarProps('typicalAgeRange', block.headingLabel)}
                 />
                 {block.text.trim() ? (
-                  <div className="flex items-center gap-2 text-body-sm text-fg">
-                    <LeftRailReadingAgeIcon />
+                  <div className="flex items-start gap-2 text-body-sm text-fg">
+                    <LeftRailIconShell>
+                      <BookOpenIcon size="md" />
+                    </LeftRailIconShell>
                     <span className="tabular-nums">{block.text}</span>
                   </div>
                 ) : null}

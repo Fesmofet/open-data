@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { FilterIcon } from '@/icons';
 import { useInstantNavigation } from '@/shared/presentation';
 
 import {
@@ -17,29 +18,6 @@ import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 
 const FILTER_DEBOUNCE_MS = 300;
 const INITIAL_VISIBLE_COUNT = 10;
-
-function FilterPostsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.3-4.3" />
-      <path d="M8 11h6" />
-      <path d="M8 8h3" />
-      <path d="M8 14h4" />
-    </svg>
-  );
-}
 
 export type ProfilePostFiltersProps = {
   accountName: string;
@@ -115,7 +93,7 @@ export function ProfilePostFilters({ accountName, objectIds }: ProfilePostFilter
       aria-busy={loading}
     >
       <h2 className="flex items-center gap-2 font-weight-label text-fg">
-        <FilterPostsIcon className="shrink-0 text-fg-secondary" />
+        <FilterIcon size="md" className="shrink-0 text-fg-secondary" />
         <span>{t('profile_filter_posts')}</span>
       </h2>
 

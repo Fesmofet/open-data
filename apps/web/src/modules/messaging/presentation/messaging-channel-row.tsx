@@ -9,7 +9,7 @@ import {
   resolveChannelImageUrl,
 } from '../domain/messaging.helpers';
 import type { ChannelListItem } from '../domain/messaging.types';
-import { LockClosedIcon } from './messaging-icons';
+import { LockIcon } from '@/icons';
 
 export type MessagingChannelRowProps = {
   channel: ChannelListItem;
@@ -90,7 +90,7 @@ export function MessagingChannelRow({
           <p className="mt-0.5 truncate text-body-sm text-muted">{preview}</p>
         ) : encryptedPreview ? (
           <p className="mt-0.5 flex items-center gap-1 truncate text-body-sm text-muted">
-            <LockClosedIcon className="size-3.5 shrink-0" />
+            <LockIcon className="size-3.5 shrink-0" />
             {t('messaging_message_encrypted')}
           </p>
         ) : null}

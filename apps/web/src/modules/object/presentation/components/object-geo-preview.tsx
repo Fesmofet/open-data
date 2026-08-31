@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useId, useMemo, useState, type SVGProps } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 
+import { LocateIcon, MaximizeIcon, MinimizeIcon } from '@/icons';
 import {
   AppMap,
   AppMarker,
@@ -35,73 +36,6 @@ const OBJECT_GEO_ZOOM_UI = {
 
 const MAP_OVERLAY_BUTTON_CLASS =
   'pointer-events-auto flex size-9 cursor-pointer items-center justify-center rounded-btn border border-border bg-surface text-fg shadow-card hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60';
-
-function IconExpandLarge(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="21" y1="3" x2="14" y2="10" />
-      <polyline points="9 21 3 21 3 15" />
-      <line x1="3" y1="21" x2="10" y2="14" />
-    </svg>
-  );
-}
-
-function IconMinimize(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <polyline points="4 14 10 14 10 20" />
-      <line x1="10" y1="14" x2="3" y2="21" />
-      <polyline points="20 10 14 10 14 4" />
-      <line x1="14" y1="10" x2="21" y2="3" />
-    </svg>
-  );
-}
-
-function IconMyLocation(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <circle cx="12" cy="12" r="3" />
-      <line x1="12" y1="2" x2="12" y2="6" />
-      <line x1="12" y1="18" x2="12" y2="22" />
-      <line x1="2" y1="12" x2="6" y2="12" />
-      <line x1="18" y1="12" x2="22" y2="12" />
-    </svg>
-  );
-}
 
 function OsmCreditLine(props: { className?: string }) {
   const { className } = props;
@@ -144,7 +78,7 @@ function MapOverlayControls({
           disabled={locating}
           className={MAP_OVERLAY_BUTTON_CLASS}
         >
-          <IconMyLocation className="text-fg-secondary" />
+          <LocateIcon size={18} className="text-fg-secondary" />
         </button>
       </div>
 
@@ -156,7 +90,7 @@ function MapOverlayControls({
             onClick={onExpand}
             className={MAP_OVERLAY_BUTTON_CLASS}
           >
-            <IconExpandLarge className="text-fg-secondary" />
+            <MaximizeIcon size={18} className="text-fg-secondary" />
           </button>
         </div>
       ) : null}
@@ -169,7 +103,7 @@ function MapOverlayControls({
             onClick={onMinimize}
             className={MAP_OVERLAY_BUTTON_CLASS}
           >
-            <IconMinimize className="text-fg-secondary" />
+            <MinimizeIcon size={18} className="text-fg-secondary" />
           </button>
         </div>
       ) : null}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { QrCodeIcon } from '@/icons';
 import { interpolateMessage } from '@/modules/user-activity/presentation/utils/interpolate-message';
 import { AppModal, AppModalCloseButton, AppLoader } from '@/shared/presentation';
 
@@ -41,21 +42,6 @@ const CHANGELLY_COIN_LABEL_KEYS: Record<HiveChangellyOutputCoin, string> = {
   ltc: 'wallet_changelly_coin_ltc',
   eth: 'wallet_changelly_coin_eth',
 };
-
-function QrScannerIcon() {
-  return (
-    <svg
-      aria-hidden
-      className="h-4 w-4 shrink-0"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm15 0h3v3h-3v-3zm-3 3h3v3h-3v-3zM15 15h3v3h-3v-3z" />
-    </svg>
-  );
-}
 
 export function WalletHiveChangellyWithdrawModal({
   open,
@@ -368,7 +354,7 @@ export function WalletHiveChangellyWithdrawModal({
                   onClick={() => setQrOpen(true)}
                   disabled={pending}
                 >
-                  <QrScannerIcon />
+                  <QrCodeIcon size="md" className="shrink-0" />
                   {t('qr_scanner')}
                 </button>
               </div>

@@ -5,7 +5,7 @@ import { useCallback, useMemo } from 'react';
 
 import { decodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { DISCOVER_ACTIVE_CHIP_CLASS } from '@/modules/discover/presentation/components/discover-active-chips';
-import { ChipRemoveIcon } from '@/modules/discover/presentation/components/discover-chip-icons';
+import { CloseIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
 
@@ -86,7 +86,7 @@ export function ProfileShopFilterChips({ filters }: ProfileShopFilterChipsProps)
               className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
               onClick={removeRating}
             >
-              <ChipRemoveIcon />
+              <CloseIcon size={16} />
             </button>
           </span>
         ) : null}
@@ -102,7 +102,7 @@ export function ProfileShopFilterChips({ filters }: ProfileShopFilterChipsProps)
                 className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
                 onClick={() => removeTag(tag)}
               >
-                <ChipRemoveIcon />
+                <CloseIcon size={16} />
               </button>
             </span>
           );

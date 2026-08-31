@@ -13,6 +13,7 @@ import {
 } from 'react';
 
 import { APP_HEADER_BRAND_LOGO } from '@/config/app-brand';
+import { CloseIcon, SearchIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
@@ -27,46 +28,6 @@ const SEARCH_DEBOUNCE_MS = 300;
 export type TopNavProps = {
   user: AppHeaderUser | null;
 };
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
-  );
-}
-
-function CloseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
-}
 
 export function TopNav({ user: _user }: TopNavProps) {
   const { t } = useI18n();
@@ -355,7 +316,7 @@ export function TopNav({ user: _user }: TopNavProps) {
         ].join(' ')}
       >
         <div className="relative flex w-full items-center gap-2 rounded-btn border border-border bg-white px-3 py-1.5">
-          <SearchIcon className="shrink-0 text-fg-secondary" />
+          <SearchIcon size={20} className="shrink-0 text-fg-secondary" />
           <input
             ref={inputRef}
             id={`${listId}-input`}
@@ -436,7 +397,7 @@ export function TopNav({ user: _user }: TopNavProps) {
               : t('app_header_open_search_aria')
           }
         >
-          {searchBarActive ? <CloseIcon /> : <SearchIcon />}
+          {searchBarActive ? <CloseIcon size={20} /> : <SearchIcon size={20} />}
         </button>
         {!hideActionsWhileMobileSearch ? (
           <HeaderActions user={_user} />

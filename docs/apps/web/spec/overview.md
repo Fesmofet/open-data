@@ -60,6 +60,7 @@ Do **not** duplicate page-route detail in this file — link the site map or the
 | [shell-mode.md](shell-mode.md) | Shell mode preference, `data-shell-mode`, structural token overrides |
 | [maps.md](maps.md) | Provider-agnostic maps (`AppMap` / Leaflet; MapLibre port stub) |
 | [images.md](images.md) | `next/image` usage, `remotePatterns`, `sizes`, `priority`, UGC |
+| [icons.md](icons.md) | `@/icons` adapter (lucide-react), registry, custom pack, ESLint guards |
 | [auth.md](auth.md) | Auth BFF, httpOnly cookies, `modules/auth`, wallet facade |
 | [bff-api.md](bff-api.md) | `src/app/api/**/route.ts` → upstream services |
 | [app-header.md](app-header.md) | Global header, search, notifications bell, account menu |

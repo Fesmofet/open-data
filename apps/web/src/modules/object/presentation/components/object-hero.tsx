@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
+import { BellIcon, HeartIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { ObjectThumbnail, OptimisticNavLink } from '@/shared/presentation';
@@ -40,41 +41,6 @@ export type ObjectHeroProps = {
   primaryNav: ReactNode;
   editContext?: ObjectHeroEditContext;
 };
-
-function IconBell({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="2"
-      className={filled ? 'text-accent' : 'text-current'}
-      aria-hidden
-    >
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  );
-}
-
-function IconHeartFavorite({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill={filled ? 'currentColor' : 'none'}
-      stroke="currentColor"
-      strokeWidth="2"
-      className={filled ? 'text-accent' : 'text-current'}
-      aria-hidden
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  );
-}
 
 type HeroModalTarget = 'avatar-background' | 'name' | 'title';
 
@@ -363,7 +329,10 @@ export function ObjectHero({
                   title={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
                   aria-label={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
                 >
-                  <IconBell filled={isBell} />
+                  <BellIcon
+                    size={22}
+                    className={isBell ? 'text-accent fill-current' : 'text-current'}
+                  />
                 </button>
               ) : null}
               <button
@@ -399,7 +368,10 @@ export function ObjectHero({
                     : t('object_detail_favorites_add')
                 }
               >
-                <IconHeartFavorite filled={isFavorite} />
+                <HeartIcon
+                  size={22}
+                  className={isFavorite ? 'text-accent fill-current' : 'text-current'}
+                />
               </button>
               </div>
             </div>

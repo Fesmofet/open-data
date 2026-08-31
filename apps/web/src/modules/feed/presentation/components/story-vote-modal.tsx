@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { ThumbUpIcon } from '@/icons';
 import { loadPostVotersAction } from '@/modules/feed/infrastructure/actions/load-post-voters.action';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AppModal, AppModalCloseButton, UserAvatar } from '@/shared/presentation';
@@ -21,25 +22,6 @@ type StoryVoteModalProps = {
   initialDownvoteCount: number;
   onClose: () => void;
 };
-
-function IconThumbUp({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-}
 
 function VoterRow({ row }: { row: PostVoterRowView }) {
   const displayName = row.profile.displayName?.trim() || row.voter;
@@ -203,7 +185,7 @@ export function StoryVoteModal({
                   : 'border-transparent text-muted hover:text-fg-secondary',
               ].join(' ')}
             >
-              <IconThumbUp className={upActive ? 'text-accent' : undefined} />
+              <ThumbUpIcon size={16} className={upActive ? 'text-accent' : undefined} />
               <span className="tabular-nums">{upvoteCount}</span>
             </button>
           ) : null}
@@ -218,7 +200,7 @@ export function StoryVoteModal({
                   : 'border-transparent text-muted hover:text-fg-secondary',
               ].join(' ')}
             >
-              <IconThumbUp className="rotate-180" />
+              <ThumbUpIcon size={16} className="rotate-180" />
               <span className="tabular-nums">{downvoteCount}</span>
             </button>
           ) : null}

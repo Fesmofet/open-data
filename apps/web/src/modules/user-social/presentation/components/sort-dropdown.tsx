@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { ChevronDownIcon } from '@/icons';
 
 export type SortOption<T extends string> = {
   value: T;
@@ -44,22 +45,10 @@ export function SortDropdown<T extends string>({ value, options, onChange }: Sor
       >
         <span className="hidden sm:inline">{t('social_sort_by')}&nbsp;</span>
         <span className="font-weight-label text-fg">{currentLabel}</span>
-        <svg
-          aria-hidden="true"
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
+        <ChevronDownIcon
+          size={12}
           className={`ml-0.5 shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
-        >
-          <path
-            d="M2 4l4 4 4-4"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        />
       </button>
 
       {open && (

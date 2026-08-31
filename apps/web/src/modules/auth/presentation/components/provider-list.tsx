@@ -6,7 +6,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AppLoader, UserAvatar } from '@/shared/presentation';
 
-import { ChevronDownIcon } from './auth-login-icons';
+import { ChevronDownIcon } from '@/icons';
 
 import {
   clearAccountHistory,

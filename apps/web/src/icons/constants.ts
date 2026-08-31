@@ -1,41 +1,34 @@
-/** Token / shield row icons — keep HIVE and WAIV wallet tabs visually aligned. */
-export const WALLET_ROW_TOKEN_ICON_PX = 22;
+export const ICON_SIZE = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 20,
+  xl: 24,
+} as const;
 
-/** Power lightning — slightly larger than token and savings shield icons. */
-export const WALLET_ROW_POWER_ICON_WIDTH = 24;
-export const WALLET_ROW_POWER_ICON_HEIGHT = 26;
+export type IconSize = keyof typeof ICON_SIZE;
 
+export function resolveIconSize(size?: IconSize | number): number {
+  if (size === undefined) {
+    return ICON_SIZE.md;
+  }
+  if (typeof size === 'number') {
+    if (size <= 0) {
+      return ICON_SIZE.md;
+    }
+    return size;
+  }
+  return ICON_SIZE[size];
+}
+
+/** Hive / HBD savings shield geometry — shared with wallet rows. */
 export const WALLET_SAVINGS_SHIELD_WIDTH = 19;
 export const WALLET_SAVINGS_SHIELD_HEIGHT = 22;
 
 export const WALLET_SAVINGS_SHIELD_PATH =
   'M17.4652 2.02483L9.79808 0.0119167C9.71335 -0.00397225 9.62653 -0.00397225 9.5418 0.0119167C9.47101 0.00091029 9.39902 0.00091029 9.32823 0.0119167L1.61842 2.02483C1.12958 2.15053 0.699618 2.45022 0.40455 2.8709C0.109482 3.29159 -0.0316929 3.80619 0.00598155 4.32374L0.454475 10.3845C0.634096 12.7887 1.44965 15.0963 2.81259 17.0567C4.17554 19.0172 6.0338 20.5556 8.18564 21.505L9.12534 21.923C9.24377 21.9738 9.37079 22 9.49909 22C9.62738 22 9.75441 21.9738 9.87283 21.923L10.8125 21.505C12.9644 20.5556 14.8226 19.0172 16.1856 17.0567C17.5485 15.0963 18.3641 12.7887 18.5437 10.3845L18.9922 4.32374C19.0343 3.8179 18.9052 3.31263 18.6269 2.89363C18.3486 2.47462 17.9381 2.16767 17.4652 2.02483ZM13.5035 8.49256L9.23213 12.8924C9.13286 12.9955 9.01475 13.0773 8.88463 13.1331C8.7545 13.189 8.61493 13.2177 8.47396 13.2177C8.33299 13.2177 8.19342 13.189 8.06329 13.1331C7.93317 13.0773 7.81506 12.9955 7.71579 12.8924L5.58011 10.6925C5.37903 10.4853 5.26607 10.2044 5.26607 9.9115C5.26607 9.61858 5.37903 9.33766 5.58011 9.13054C5.78119 8.92341 6.05391 8.80705 6.33828 8.80705C6.62265 8.80705 6.89537 8.92341 7.09645 9.13054L8.47396 10.5605L11.9872 6.93063C12.1882 6.7235 12.461 6.60714 12.7453 6.60714C13.0297 6.60714 13.3024 6.7235 13.5035 6.93063C13.7046 7.13775 13.8175 7.41868 13.8175 7.7116C13.8175 8.00452 13.7046 8.28544 13.5035 8.49256Z';
 
-export function WalletPowerLightningIcon() {
-  return (
-    <svg
-      width={WALLET_ROW_POWER_ICON_WIDTH}
-      height={WALLET_ROW_POWER_ICON_HEIGHT}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
-    </svg>
-  );
-}
+export const WALLET_ROW_TOKEN_ICON_PX = 22;
 
-/** HIVE Savings shield — inherits color from parent (e.g. `text-muted` in history rows). */
-export function WalletSavingsShieldIcon() {
-  return (
-    <svg
-      width={WALLET_SAVINGS_SHIELD_WIDTH}
-      height={WALLET_SAVINGS_SHIELD_HEIGHT}
-      viewBox="0 0 19 22"
-      fill="none"
-      aria-hidden
-    >
-      <path d={WALLET_SAVINGS_SHIELD_PATH} fill="currentColor" />
-    </svg>
-  );
-}
+export const WALLET_ROW_POWER_ICON_WIDTH = 24;
+export const WALLET_ROW_POWER_ICON_HEIGHT = 26;
