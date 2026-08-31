@@ -499,6 +499,11 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /** Single-line tab row: wrapped tabs on line 2+ are clipped. */
+  .horizontal-tab-clip-row {
+    max-height: calc(var(--font-size-body) * var(--leading-body) + 1.25rem + 3px);
+  }
 }
 
 html {

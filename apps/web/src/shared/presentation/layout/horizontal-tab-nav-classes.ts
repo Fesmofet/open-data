@@ -20,6 +20,10 @@ export const HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS = HORIZONTAL_TAB_NAV_ROW_CLASS
 /** Sub nav row with underline separator. */
 export const HORIZONTAL_TAB_NAV_SUB_ROW_CLASS = `${HORIZONTAL_TAB_NAV_ROW_CLASS} border-b border-border`;
 
+/** Clip row: flex-wrap + max-height hides overflow tabs on line 2+. */
+export const HORIZONTAL_TAB_NAV_CLIP_ROW_CLASS =
+  'horizontal-tab-clip-row flex flex-wrap items-end overflow-hidden';
+
 export function horizontalTabNavScrollShellClass(
   bleed: 'gutter' | 'card' | 'none' = 'gutter',
 ): string {
@@ -31,4 +35,18 @@ export function horizontalTabNavScrollShellClass(
         : '';
 
   return [HORIZONTAL_TAB_NAV_SCROLL_CLASS, bleedClass].filter(Boolean).join(' ');
+}
+
+/** Gutter/card bleed without horizontal scroll — for overflow-measured tab rows. */
+export function horizontalTabNavOverflowShellClass(
+  bleed: 'gutter' | 'card' | 'none' = 'gutter',
+): string {
+  const bleedClass =
+    bleed === 'gutter'
+      ? HORIZONTAL_TAB_NAV_GUTTER_BLEED_CLASS
+      : bleed === 'card'
+        ? HORIZONTAL_TAB_NAV_CARD_BLEED_CLASS
+        : '';
+
+  return ['min-w-0', bleedClass].filter(Boolean).join(' ');
 }

@@ -40,8 +40,21 @@ export {
   HORIZONTAL_TAB_NAV_CARD_BLEED_CLASS,
   HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
   HORIZONTAL_TAB_NAV_SUB_ROW_CLASS,
+  HORIZONTAL_TAB_NAV_CLIP_ROW_CLASS,
   horizontalTabNavScrollShellClass,
+  horizontalTabNavOverflowShellClass,
 } from './horizontal-tab-nav-classes';
+
+export { useHorizontalTabOverflow } from './use-horizontal-tab-overflow';
+export type {
+  UseHorizontalTabOverflowOptions,
+  UseHorizontalTabOverflowResult,
+} from './use-horizontal-tab-overflow';
+export { HorizontalTabNavWithOverflow } from './horizontal-tab-nav-with-overflow';
+export type {
+  HorizontalTabNavItem,
+  HorizontalTabNavWithOverflowProps,
+} from './horizontal-tab-nav-with-overflow';
 
 export { LayoutProvider, useLayoutContext } from './context/layout-context';
 export type { LayoutContextValue, ContentArrangement } from './context/layout-context';

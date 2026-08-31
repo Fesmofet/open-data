@@ -67,6 +67,12 @@ jest.mock('./object-widget-content', () => ({
     ),
 }));
 
+jest.mock('./object-description-body', () => ({
+  ObjectDescriptionBody: ({ descriptionContent }: { descriptionContent: string | null }) => (
+    <div data-testid="description-body">{descriptionContent ?? 'empty'}</div>
+  ),
+}));
+
 import { ObjectPrimaryContent } from './object-primary-content';
 
 const EMPTY_NESTED_STACK: never[] = [];
@@ -166,6 +172,23 @@ describe('ObjectPrimaryContent activity feed', () => {
       />,
     );
     expect(screen.getByTestId('object-activity-feed')).toBeInTheDocument();
+  });
+});
+
+describe('ObjectPrimaryContent details tab', () => {
+  it('renders description body on Details tab without nested content', () => {
+    render(
+      <ObjectPrimaryContent
+        {...baseProps}
+        activePrimarySegment="details"
+        descriptionContent="Catch Kitchen serves modern cuisine."
+      />,
+    );
+    expect(screen.getByTestId('description-body')).toHaveTextContent(
+      'Catch Kitchen serves modern cuisine.',
+    );
+    expect(screen.queryByTestId('feed-sub-nav')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('write-review-prompt')).not.toBeInTheDocument();
   });
 });
 

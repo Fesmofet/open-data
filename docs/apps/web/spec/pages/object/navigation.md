@@ -28,15 +28,15 @@ Covers all navigation behaviour on the object detail page (`/object/[object-id]`
 
 | Visible URL | Meaning | Active tab |
 |---|---|---|
-| `/object/:id` | Default landing (see §4) — host content, SSR nested menu, or Reviews | none, or Reviews when `primaryTab: reviews`; **Widget** when `object_type: widget`; **List** when `object_type: list` |
-| `/object/:id?path=a,b` | User navigated nested stack `[a, b]` (not default SSR nested) | none |
+| `/object/:id` | Default landing (see §4) — description, SSR nested menu, or host content | **Details** on standard objects; **Widget** when `object_type: widget`; **List** when `object_type: list`; none on other host types (`page`, `html`, …) |
+| `/object/:id?path=a,b` | User navigated nested stack `[a, b]` (not default SSR nested) | **Details** when Details tab exists; otherwise none |
 | `/object/:id/widget` | Widget embed (widget host objects) | Widget |
 | `/object/:id/list` | List catalog (list host objects) | List |
 | `/object/:id/reviews` | Reviews tab | Reviews |
 | `/object/:id/updates` | Updates feed | Updates |
 | `/object/:id/followers` | Followers list | Followers |
 | `/object/:id/ownership` | Ownership list | Ownership |
-| `/object/:id/description` | Full description + gallery interleave | none |
+| `/object/:id/description` | Full description + gallery interleave (left-rail link) | Description (no primary tab highlight when Details tab exists) |
 | `/object/:id/gallery` | Gallery tab — albums grid | Gallery |
 | `/object/:id/gallery/album/:name` | Gallery tab — album photo grid | Gallery |
 | `/object/:id/experts` | Experts tab | Experts |
@@ -63,10 +63,10 @@ On every URL change (including browser back/forward), `ObjectPageClient` calls `
 
 1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|ownership|description|gallery|gallery/album/:name|category/:name|experts|related|similar|add-on`, then legacy `?tab=`.
 2. If that returns a segment, use it (explicit tab in URL).
-3. If `?path=` is present, use `''` (menu landing with user-driven nested stack).
-4. Otherwise keep the SSR default tab from default landing (`initialPrimarySegment`) — e.g. Reviews on clean `/object/:id` without requiring `/reviews` in the path.
+3. If `?path=` is present, use SSR default tab (`Details` when the object has a Details tab).
+4. Otherwise keep the SSR default tab from default landing (`initialPrimarySegment`) — e.g. **Details** on clean `/object/:id` for standard objects without requiring a path segment.
 
-This preserves clean URLs for both default nested menu (`nestedInHost`) and default Reviews (`primaryTab: reviews`) on first load and back/forward to `/object/:id`.
+This preserves clean URLs for default nested menu (`nestedInHost`), default Details landing, and legacy host types on first load and back/forward to `/object/:id`.
 
 ---
 
@@ -76,6 +76,7 @@ Implemented in `onPrimarySelect` in `apps/web/src/app/(app)/object/[object-id]/o
 
 | Tab | Router method | Target URL | Params cleared |
 |---|---|---|---|
+| `details` | `replace` | `/object/:id` | `?tab=`, `?sub=`, `?path=`, `sort`, `update_type`, `locale` |
 | `reviews` | `push` | `/object/:id/reviews` | `?path=`, `?sub=` |
 | `updates` | `replace` | `/object/:id/updates` | `?tab=`, `?sub=` |
 | `followers` | `replace` | `/object/:id/followers` | `?tab=`, `?sub=` |
@@ -95,8 +96,9 @@ Implemented in `onPrimarySelect` in `apps/web/src/app/(app)/object/[object-id]/o
 Managed in `apps/web/src/modules/object/presentation/components/object-primary-content.tsx`:
 
 ```
-activePrimarySegment === ''   → Menu landing: shows defaultNestedContent or root listItems / page body
-                                Breadcrumbs visible when nestedStack.length > 0
+activePrimarySegment === ''   → Menu landing (host types without Details tab): defaultNestedContent or root listItems / page body
+activePrimarySegment === 'details' → Details tab: nested menu catalog when present, else description + preview gallery
+                                Breadcrumbs visible when nestedStack.length > 0 or defaultNestedContent exists
 activePrimarySegment === 'reviews' → Reviews column (Write-review prompt + sub-nav for `default` type)
                                      No defaultNestedContent injected
 activePrimarySegment === 'widget'  → Widget embed (`ObjectWidgetContent`) for widget host objects
@@ -110,11 +112,11 @@ When the URL has **no** `?tab=` and **no** `?path=`, SSR derives tab + center co
 
 | `defaultLanding.kind` | Active tab (SSR) | Center column | URL |
 |---|---|---|---|
-| `hostContent` | none | Host `listItems` / `pageContent` / type stub | clean `/object/:id` |
-| `nestedInHost` | none | SSR `defaultNestedContent` for `targetObjectId` | clean (no `?path=`) |
-| `primaryTab` (`reviews`) | Reviews | Reviews UI | clean `/object/:id` |
-| `primaryTab` (`description`) | Description | Description + gallery interleave | clean `/object/:id` |
-| `routeStub` (`blog`, `newsFilter`) | Reviews (v1 fallback) | Reviews UI | clean — full routes **TODO** |
+| `hostContent` | none (host types) or **Details** (when tab exists) | Host `listItems` / `pageContent` / type stub | clean `/object/:id` |
+| `nestedInHost` | **Details** (standard objects) or none (host types) | SSR `defaultNestedContent` for `targetObjectId` | clean (no `?path=`) |
+| `primaryTab` (`reviews`) | **Details** (standard objects) or Reviews (legacy) | Description body or nested menu; Reviews at `/reviews` | clean `/object/:id` |
+| `primaryTab` (`description`) | **Details** (standard objects) or Description | Description + gallery interleave | clean `/object/:id` |
+| `routeStub` (`blog`, `newsFilter`) | **Details** (standard objects) or Reviews (v1 fallback) | Nested menu or description; Reviews at `/reviews` | clean — full routes **TODO** |
 
 Priority (matches processor):
 
@@ -126,7 +128,7 @@ Priority (matches processor):
 
 Explicit `?tab=` or `?path=` in the URL **overrides** default landing.
 
-`defaultNestedContent` is resolved only when `defaultLanding.kind === 'nestedInHost'` and `activePrimarySegment === ''`.
+`defaultNestedContent` is resolved only when `defaultLanding.kind === 'nestedInHost'` and active segment is Details (`details`) or legacy menu landing (`''`).
 
 ### Description page (`/object/:id/description`)
 

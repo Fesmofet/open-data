@@ -415,9 +415,7 @@ export function ObjectHero({
               'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
             ].join(' ')}
           >
-            <div className="shell-hide-instagram hidden lg:block" aria-hidden />
-            <div className="min-w-0">{primaryNav}</div>
-            <div className="shell-hide-instagram hidden lg:block" aria-hidden />
+            <div className="min-w-0 lg:col-span-3">{primaryNav}</div>
           </div>
         </ShellInset>
       </ShellFullBleedBand>

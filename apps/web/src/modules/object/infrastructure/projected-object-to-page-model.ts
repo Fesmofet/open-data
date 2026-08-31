@@ -35,6 +35,10 @@ import {
 } from '../domain/object-update-labels';
 import { shouldShowPermanentlyClosedLocationNotice } from '../domain/object-status-label';
 import { LIST_PRIMARY_TAB_SEGMENT } from '../domain/list.constants';
+import {
+  DETAILS_PRIMARY_TAB_SEGMENT,
+  objectTypeHasDetailsTab,
+} from '../domain/object-page-url.constants';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '../domain/widget.constants';
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
@@ -173,6 +177,10 @@ function buildPrimaryTabs(input: {
 
   if (input.objectTypeKey === 'list') {
     return [{ segment: LIST_PRIMARY_TAB_SEGMENT, label: 'List' }, ...base];
+  }
+
+  if (objectTypeHasDetailsTab(input.objectTypeKey)) {
+    return [{ segment: DETAILS_PRIMARY_TAB_SEGMENT, label: 'Details' }, ...base];
   }
 
   return base;

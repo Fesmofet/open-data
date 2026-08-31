@@ -7,6 +7,7 @@ import {
   type ReviewsFeedSubType,
 } from '@/modules/object/domain/object-page.types';
 import {
+  DETAILS_PRIMARY_TAB_SEGMENT,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
@@ -345,20 +346,30 @@ export function resolveDefaultPrimarySegmentFromLanding(
   primaryTabSegments: readonly string[],
 ): string {
   const allowed = new Set(primaryTabSegments);
+  const hasDetailsTab = allowed.has(DETAILS_PRIMARY_TAB_SEGMENT);
+
   switch (landing.kind) {
     case 'primaryTab':
       if (landing.segment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
-        return OBJECT_PAGE_DESCRIPTION_SEGMENT;
+        return hasDetailsTab
+          ? DETAILS_PRIMARY_TAB_SEGMENT
+          : OBJECT_PAGE_DESCRIPTION_SEGMENT;
+      }
+      if (landing.segment === 'reviews' && hasDetailsTab) {
+        return DETAILS_PRIMARY_TAB_SEGMENT;
       }
       if (allowed.has(landing.segment)) {
         return landing.segment;
       }
       return '';
     case 'routeStub':
+      if (hasDetailsTab) {
+        return DETAILS_PRIMARY_TAB_SEGMENT;
+      }
       return allowed.has('reviews') ? 'reviews' : '';
     case 'nestedInHost':
     case 'hostContent':
-      return '';
+      return hasDetailsTab ? DETAILS_PRIMARY_TAB_SEGMENT : '';
     default:
       return '';
   }
@@ -366,8 +377,8 @@ export function resolveDefaultPrimarySegmentFromLanding(
 
 /**
  * Resolves active primary tab from URL, falling back to SSR default landing when the URL is
- * clean (`/object/:id` with no `?tab=` or path segment) so default `reviews` can show without
- * `/reviews` in the path.
+ * clean (`/object/:id` with no `?tab=` or path segment) so default Details/Reviews can show without
+ * an extra path segment.
  */
 export function resolvePrimarySegmentForObjectPage(
   objectId: string,

@@ -1,4 +1,5 @@
 import {
+  DETAILS_PRIMARY_TAB_SEGMENT,
   OBJECT_PAGE_CATEGORY_NAME_PARAM,
   OBJECT_PAGE_CATEGORY_PATH_SEGMENT,
   OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM,
@@ -112,10 +113,18 @@ describe('resolvePrimarySegmentForObjectPage', () => {
     expect(resolvePrimarySegmentForObjectPage(objectId, base, sp, 'reviews')).toBe('updates');
   });
 
-  it('returns empty segment when ?path= is present on clean pathname', () => {
+  it('returns default segment when ?path= is present on clean pathname', () => {
     const sp = new URLSearchParams();
     sp.set(OBJECT_PAGE_VIEW_PATH_PARAM, 'nested-list');
-    expect(resolvePrimarySegmentForObjectPage(objectId, base, sp, 'reviews')).toBe('');
+    expect(resolvePrimarySegmentForObjectPage(objectId, base, sp, 'reviews')).toBe('reviews');
+  });
+
+  it('returns details segment when ?path= is present and Details is default', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_VIEW_PATH_PARAM, 'nested-list');
+    expect(
+      resolvePrimarySegmentForObjectPage(objectId, base, sp, DETAILS_PRIMARY_TAB_SEGMENT),
+    ).toBe(DETAILS_PRIMARY_TAB_SEGMENT);
   });
 
   it('falls back to default landing segment on clean URL', () => {
@@ -133,11 +142,21 @@ describe('resolvePrimarySegmentForObjectPage', () => {
 
 describe('resolveDefaultPrimarySegmentFromLanding', () => {
   const tabs = ['reviews', 'updates', 'gallery'] as const;
+  const tabsWithDetails = ['details', 'reviews', 'updates', 'gallery'] as const;
 
   it('maps primaryTab reviews', () => {
     expect(
       resolveDefaultPrimarySegmentFromLanding({ kind: 'primaryTab', segment: 'reviews' }, tabs),
     ).toBe('reviews');
+  });
+
+  it('maps primaryTab reviews to details when Details tab exists', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'primaryTab', segment: 'reviews' },
+        tabsWithDetails,
+      ),
+    ).toBe(DETAILS_PRIMARY_TAB_SEGMENT);
   });
 
   it('maps primaryTab description', () => {
@@ -147,6 +166,30 @@ describe('resolveDefaultPrimarySegmentFromLanding', () => {
         tabs,
       ),
     ).toBe(OBJECT_PAGE_DESCRIPTION_SEGMENT);
+  });
+
+  it('maps primaryTab description to details when Details tab exists', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'primaryTab', segment: 'description' },
+        tabsWithDetails,
+      ),
+    ).toBe(DETAILS_PRIMARY_TAB_SEGMENT);
+  });
+
+  it('maps nestedInHost to details when Details tab exists', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'nestedInHost', targetObjectId: 'menu-list-1' },
+        tabsWithDetails,
+      ),
+    ).toBe(DETAILS_PRIMARY_TAB_SEGMENT);
+  });
+
+  it('maps hostContent to details when Details tab exists', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding({ kind: 'hostContent' }, tabsWithDetails),
+    ).toBe(DETAILS_PRIMARY_TAB_SEGMENT);
   });
 
   it('maps primaryTab widget when tab exists', () => {
@@ -175,6 +218,15 @@ describe('resolveDefaultPrimarySegmentFromLanding', () => {
         tabs,
       ),
     ).toBe('reviews');
+  });
+
+  it('maps routeStub to details when Details tab exists', () => {
+    expect(
+      resolveDefaultPrimarySegmentFromLanding(
+        { kind: 'routeStub', segment: 'blog', ref: 'alice' },
+        tabsWithDetails,
+      ),
+    ).toBe(DETAILS_PRIMARY_TAB_SEGMENT);
   });
 
   it('returns empty for hostContent', () => {
@@ -418,6 +470,32 @@ describe('sanitizeNestedStack', () => {
       },
     ];
     expect(sanitizeNestedStack(['a'], stack)).toEqual([]);
+  });
+});
+
+describe('buildObjectPrimaryTabNavigation details', () => {
+  const objectId = 'rest-1';
+  const base = `/object/${encodeURIComponent(objectId)}`;
+
+  it('navigates to clean object path with replace and clears path param', () => {
+    const sp = new URLSearchParams();
+    sp.set(OBJECT_PAGE_VIEW_PATH_PARAM, 'nested');
+    sp.set('sub', 'administrative');
+    const nav = buildObjectPrimaryTabNavigation(objectId, DETAILS_PRIMARY_TAB_SEGMENT, sp);
+    expect(nav).toEqual({
+      href: base,
+      method: 'replace',
+    });
+    expect(nav.href).not.toContain('/details');
+    expect(nav.href).not.toContain('path=');
+    expect(nav.href).not.toContain('sub=');
+  });
+
+  it('clears locale filter param on details navigation', () => {
+    const sp = new URLSearchParams();
+    sp.set('locale', 'fr-FR');
+    const nav = buildObjectPrimaryTabNavigation(objectId, DETAILS_PRIMARY_TAB_SEGMENT, sp);
+    expect(nav.href).toBe(base);
   });
 });
 

@@ -12,6 +12,30 @@ export const OBJECT_PAGE_VIEW_PATH_PARAM = 'path';
 export const OBJECT_PAGE_DESCRIPTION_SEGMENT = 'description';
 
 /**
+ * Primary tab segment for the default object landing at clean `/object/:id`.
+ * Not in {@link OBJECT_PAGE_PATH_TAB_SEGMENTS} — no `/details` public path.
+ */
+export const DETAILS_PRIMARY_TAB_SEGMENT = 'details';
+
+/** Host types that use a type-specific leading tab/content instead of Details. */
+export const OBJECT_TYPES_WITHOUT_DETAILS_TAB = new Set([
+  'list',
+  'widget',
+  'page',
+  'html',
+  'legal_document',
+  'newsfeed',
+  'webpage',
+  'map',
+  'shop',
+  'group',
+]);
+
+export function objectTypeHasDetailsTab(objectTypeKey: string): boolean {
+  return !OBJECT_TYPES_WITHOUT_DETAILS_TAB.has(objectTypeKey);
+}
+
+/**
  * Primary tabs exposed as `/object/:id/<segment>` (proxy rewrites to `?tab=` internally).
  * Gallery and experts were previously `?tab=` only; all listed segments use clean paths.
  */

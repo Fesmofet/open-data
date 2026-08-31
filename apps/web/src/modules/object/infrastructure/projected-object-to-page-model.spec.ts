@@ -696,9 +696,44 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     };
 
     const model = projectedObjectWithCountsToPageModel(api);
-    expect(model.primaryTabs[0]?.segment).toBe('reviews');
+    expect(model.primaryTabs[0]).toEqual({ segment: 'details', label: 'Details' });
+    expect(model.primaryTabs[1]?.segment).toBe('reviews');
     expect(model.primaryTabs.some((tab) => tab.segment === 'widget')).toBe(false);
     expect(model.widgetConfig).toBeNull();
+  });
+
+  it('prepends Details tab for restaurant object type', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'rest-1',
+      object_type: 'restaurant',
+      semantic_type: null,
+      weight: 1,
+      fields: { name: 'Catch Kitchen + Bar' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.primaryTabs[0]).toEqual({ segment: 'details', label: 'Details' });
+    expect(model.primaryTabs[1]?.segment).toBe('reviews');
+  });
+
+  it('does not prepend Details tab for page host type', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'page-1',
+      object_type: 'page',
+      semantic_type: null,
+      weight: 1,
+      fields: { name: 'About Us', pageContent: '<p>Hello</p>' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    expect(model.primaryTabs[0]?.segment).toBe('reviews');
+    expect(model.primaryTabs.some((tab) => tab.segment === 'details')).toBe(false);
   });
 
   it('prepends List tab for list object type', () => {

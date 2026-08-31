@@ -23,6 +23,7 @@ import { resolveNestedObjectContentAction } from '../../application/actions/reso
 import { resolveNestedObjectPathAction } from '../../application/actions/resolve-nested-object-path.action';
 import {
   buildObjectListPath,
+  DETAILS_PRIMARY_TAB_SEGMENT,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from '../../domain/object-page-url.constants';
@@ -421,7 +422,11 @@ export function ObjectPrimaryContent({
         viewKey: top.objectId,
       };
     }
-    if (activePrimarySegment === MENU_LANDING_SEGMENT && defaultNestedContent) {
+    if (
+      (activePrimarySegment === MENU_LANDING_SEGMENT ||
+        activePrimarySegment === DETAILS_PRIMARY_TAB_SEGMENT) &&
+      defaultNestedContent
+    ) {
       return {
         objectType: defaultNestedContent.objectType,
         listItems: defaultNestedContent.listItems,
@@ -619,7 +624,11 @@ export function ObjectPrimaryContent({
     );
   }
 
-  if (activePrimarySegment !== MENU_LANDING_SEGMENT && activePrimarySegment !== REVIEWS_SEGMENT) {
+  if (
+    activePrimarySegment !== MENU_LANDING_SEGMENT &&
+    activePrimarySegment !== REVIEWS_SEGMENT &&
+    activePrimarySegment !== DETAILS_PRIMARY_TAB_SEGMENT
+  ) {
     if (activePrimarySegment === 'ownership' && objectOwnershipFeed != null) {
       return (
         <FeedColumn>
@@ -782,7 +791,39 @@ export function ObjectPrimaryContent({
     );
   }
 
+  if (activePrimarySegment === DETAILS_PRIMARY_TAB_SEGMENT) {
+    const hasNestedOrHost =
+      nestedStack.length > 0 ||
+      defaultNestedContent != null ||
+      Boolean(hostPageContent?.trim()) ||
+      (currentView.objectType === 'list' && currentView.listItems.length > 0) ||
+      Boolean(currentView.pageContentHtml?.trim());
+
+    if (!hasNestedOrHost) {
+      const hasDescription =
+        Boolean(descriptionContent?.trim()) || previewGallery.length > 0;
+      return (
+        <FeedColumn>
+          {hasDescription ? (
+            <ObjectDescriptionBody
+              descriptionContent={descriptionContent}
+              galleryPhotos={previewGallery}
+              galleryPhotosAlbum={galleryPhotosAlbum}
+              onOpenGalleryPhoto={onOpenGalleryPhoto}
+            />
+          ) : (
+            <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+              <p className="text-fg">This object has no description yet.</p>
+            </div>
+          )}
+        </FeedColumn>
+      );
+    }
+  }
+
   const isMenuLanding = activePrimarySegment === MENU_LANDING_SEGMENT;
+  const isDetailsTab = activePrimarySegment === DETAILS_PRIMARY_TAB_SEGMENT;
+  const isDetailsOrMenuLanding = isMenuLanding || isDetailsTab;
   const isReviewsTab = activePrimarySegment === REVIEWS_SEGMENT;
   const onReviewsCenter = isReviewsTab && nestedStack.length === 0;
   const onReviewsPostsTab = onReviewsCenter && activeFeedSubSegment === 'posts';
@@ -791,7 +832,7 @@ export function ObjectPrimaryContent({
 
   return (
     <FeedColumn>
-      {isMenuLanding && menuRootName && defaultNestedContent ? (
+      {isDetailsOrMenuLanding && menuRootName && defaultNestedContent ? (
         <ObjectCenterBreadcrumbs
           key="center-breadcrumbs"
           rootObjectId={defaultNestedContent.objectId}

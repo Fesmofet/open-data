@@ -1,13 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { profileSectionTabClass, StatHoverTooltip } from '@/shared/presentation';
-import {
-  HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
-  horizontalTabNavScrollShellClass,
-} from '@/shared/presentation/layout';
+import { StatHoverTooltip } from '@/shared/presentation';
+import { HorizontalTabNavWithOverflow } from '@/shared/presentation/layout/horizontal-tab-nav-with-overflow';
 
 import type { ObjectPrimaryTabView } from '../../domain/object-page.types';
 
@@ -53,31 +51,38 @@ export function ObjectPrimaryNav({
 }: ObjectPrimaryNavProps) {
   const { t } = useI18n();
 
-  return (
-    <div className={horizontalTabNavScrollShellClass('gutter')}>
-      <nav
-        aria-label={t('object_detail_primary_nav_aria')}
-        className={`${HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS} gap-x-1 border-b border-border`}
-      >
-        {tabs.map((tab) => {
-          const active = activeSegment === tab.segment;
-          const count = renderTabCount(tab, t);
+  const activeIndex = useMemo(
+    () => Math.max(0, tabs.findIndex((tab) => tab.segment === activeSegment)),
+    [activeSegment, tabs],
+  );
 
-          return (
-            <button
-              key={tab.segment}
-              type="button"
-              className={profileSectionTabClass(active, 'primary')}
-              onClick={() => onSelect(tab.segment)}
-            >
-              <span className="inline-flex items-center gap-1">
-                <span>{tab.label}</span>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
+  const items = useMemo(
+    () =>
+      tabs.map((tab) => ({
+        id: tab.segment,
+        active: activeSegment === tab.segment,
+        label: (
+          <span className="inline-flex items-center gap-1">
+            <span>{tab.label}</span>
+            {renderTabCount(tab, t)}
+          </span>
+        ),
+        onSelect: () => {
+          onSelect(tab.segment);
+        },
+      })),
+    [activeSegment, onSelect, t, tabs],
+  );
+
+  return (
+    <HorizontalTabNavWithOverflow
+      items={items}
+      activeIndex={activeIndex}
+      ariaLabel={t('object_detail_primary_nav_aria')}
+      moreLabel={t('object_detail_nav_more')}
+      moreMenuAriaLabel={t('object_detail_nav_more')}
+      bleed="gutter"
+      rowClassName="justify-center gap-x-1"
+    />
   );
 }

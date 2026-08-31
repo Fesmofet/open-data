@@ -16,6 +16,9 @@ import {
 } from './object-page-search';
 import type { ReviewsFeedSubType } from '@/modules/object/domain/object-page.types';
 import { LIST_PRIMARY_TAB_SEGMENT } from '@/modules/object/domain/list.constants';
+import {
+  DETAILS_PRIMARY_TAB_SEGMENT,
+} from '@/modules/object/domain/object-page-url.constants';
 import { WIDGET_PRIMARY_TAB_SEGMENT } from '@/modules/object/domain/widget.constants';
 
 export type ObjectPrimaryTabNavigation = {
@@ -121,6 +124,21 @@ export function buildObjectPrimaryTabNavigation(
       href: qs
         ? `${buildObjectListPath(objectId)}?${qs}`
         : buildObjectListPath(objectId),
+      method: 'replace',
+    };
+  }
+
+  if (segment === DETAILS_PRIMARY_TAB_SEGMENT) {
+    u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+    u.delete(OBJECT_PAGE_OWNERSHIP_SUB_PARAM);
+    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+    u.delete(OBJECT_PAGE_REVIEWS_SUB_PARAM);
+    u.delete('sort');
+    u.delete('update_type');
+    u.delete('locale');
+    const qs = u.toString();
+    return {
+      href: qs ? `${base}?${qs}` : base,
       method: 'replace',
     };
   }
