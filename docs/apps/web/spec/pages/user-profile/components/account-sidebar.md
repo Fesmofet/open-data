@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, sidebar]
-updated_at: 2026-07-09
+updated_at: 2026-09-01
 related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/user-profile/data-loading.md
@@ -50,3 +50,5 @@ Cache tag: `query-api:user:{name}:account-sidebar` (invalidated on social + wall
 - Crypto deposit addresses (BTC, LTC, ETH, Lightning) when set on profile — opens `ProfileCryptoWalletModal` (legacy `WalletAddressModal` parity; QR scheme `lightning bitcoin:...` for Lightning)
 - WAIV token block: up/down mana, WAIV vote USD
 - HIVE token block: Hive reputation, up/down mana, RC %, HIVE vote USD
+
+Mana / vote metric rows **wrap** inside the 14rem rail. They must not use `whitespace-nowrap` — at 1360px Windows viewports the classic scrollbar gutter makes those strings overflow and shows a horizontal bar (Chrome device mode overlay scrollbars hide it).

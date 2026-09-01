@@ -13,7 +13,7 @@ export function FixedRegion({ children, className = '' }: FixedRegionProps) {
   return (
     <div
       className={[
-        'sticky top-0 h-[100dvh] max-h-screen self-start overflow-y-auto',
+        'sticky top-0 h-[100dvh] max-h-screen self-start overflow-x-hidden overflow-y-auto',
         className,
       ].join(' ')}
     >

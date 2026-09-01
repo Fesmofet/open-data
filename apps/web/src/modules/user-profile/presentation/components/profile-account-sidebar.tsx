@@ -48,23 +48,14 @@ type ProfileAccountSidebarProps = {
 function SidebarRow({
   icon,
   children,
-  nowrap = false,
 }: {
   icon: ReactNode;
   children: ReactNode;
-  nowrap?: boolean;
 }) {
   return (
-    <div className="flex items-start gap-2 text-body-sm text-fg">
+    <div className="flex min-w-0 items-start gap-2 text-body-sm text-fg">
       {icon}
-      <div
-        className={[
-          'min-w-0 flex-1',
-          nowrap ? 'whitespace-nowrap' : '',
-        ].join(' ')}
-      >
-        {children}
-      </div>
+      <div className="min-w-0 flex-1 break-words">{children}</div>
     </div>
   );
 }
@@ -79,10 +70,9 @@ function SidebarMetricRow({
   value: ReactNode;
 }) {
   return (
-    <SidebarRow icon={icon} nowrap>
+    <SidebarRow icon={icon}>
       <span className="text-fg">
-        {label}:{'\u00a0'}
-        {value}
+        {label}: {value}
       </span>
     </SidebarRow>
   );
@@ -155,7 +145,7 @@ export function ProfileAccountSidebar({
       ].join(' ')}
       aria-label={t('user_profile_account_sidebar_aria')}
     >
-      <div className="break-words">
+      <div className="min-w-0 break-words">
         {model.about.trim().length > 0 && (
           <p className="text-body text-fg">{model.about}</p>
         )}

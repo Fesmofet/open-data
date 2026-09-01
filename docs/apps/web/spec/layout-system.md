@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, layout]
-updated_at: 2026-06-10
+updated_at: 2026-09-01
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/shell-mode.md
@@ -60,6 +60,7 @@ Override grid with `gridTemplateClassName` on `AppShell` when a route needs a no
 | Component | Behavior |
 | --------- | -------- |
 | `StickyRegion` | `position: sticky` with configurable `offset` (CSS length). |
+| `FixedRegion` | Sticky + `h-[100dvh]` + `overflow-y-auto overflow-x-hidden` (twitter-mode left rail). |
 | `CollapsibleRegion` | Client: toggle on small screens; always visible on `lg+`. Optional `localStorage` via `storageKey`. |
 | `DrawerRegion` | Client: fixed overlay + panel; backdrop and `Escape` close. |
 | `ShellInset` | Constrained app column (`max-w-container-page` + `px-gutter`). Use for chrome and hero content that must align with the main grid. |
@@ -112,6 +113,7 @@ Throws if used outside `LayoutProvider`.
 
 - Prefer **CSS** (Tailwind responsive variants on the element itself: `hidden lg:block`, `lg:hidden`) for responsive visibility — no wrapper component.
 - **Profile** default shell uses three columns at `lg+`; **about** uses two (main + right); **map** and **waiv-table** use a single column.
+- **Profile rails** (`PROFILE_RAIL_STICKY_CLASS`) are sticky below the header, cap height to `100dvh` minus header, scroll **vertically** only (`overflow-x-hidden`). Do not omit the X clip — Windows classic scrollbars plus `overflow-y-auto` otherwise paint a horizontal bar that Chrome device mode (overlay scrollbars) does not show.
 - **Layout tokens** (`--shell-header-height`, `--shell-left-width`, `--shell-right-width`, `--shell-bottom-height`) are defined per theme in `theme.css` and mapped in `tailwind.config.js` — see [theme.md](theme.md).
 - **Horizontal tab menus** (profile primary/sub nav, object section tabs, hub `AppSectionNav`) use shared classes from `horizontal-tab-nav-classes.ts`: single row (`flex-nowrap`), `overflow-x-auto`, optional gutter/card bleed. Tab links use `shrink-0 whitespace-nowrap` via `profileSectionTabClass`. Scrollbar hidden on touch (`scrollbar-hide`).
 

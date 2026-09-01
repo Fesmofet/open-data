@@ -112,7 +112,7 @@ export function ProfilePostFilters({ accountName, objectIds }: ProfilePostFilter
               const checked = objectIds.includes(item.object_id);
               return (
                 <li key={item.object_id}>
-                  <label className="flex cursor-pointer items-center gap-2 text-fg-secondary hover:text-fg">
+                  <label className="flex min-w-0 cursor-pointer items-center gap-2 text-fg-secondary hover:text-fg">
                     <input
                       type="checkbox"
                       className="size-4 shrink-0 rounded border-border accent-accent"
