@@ -75,7 +75,7 @@ export function UserSocialObjectRow({
           className="inline-flex rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           aria-label={`View object: ${name}`}
         >
-          <span className="flex size-11 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface ring-1 ring-border/60">
+          <span className="flex size-11 items-center justify-center overflow-hidden rounded-card border border-border bg-surface ring-1 ring-border/60">
             <ObjectThumbnail
               src={img}
               size={THUMB}

@@ -24,7 +24,7 @@ function AuthorRefRow({ item }: { item: ObjectRefItem }) {
       className="-mx-1 -my-0.5 flex min-w-0 flex-1 items-center gap-2 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       {item.imageUrl ? (
-        <div className="relative size-8 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+        <div className="relative size-8 shrink-0 overflow-hidden rounded-card border border-border bg-surface">
           <Image
             src={item.imageUrl}
             alt=""

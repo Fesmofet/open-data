@@ -17,7 +17,7 @@ related:
 
 ## Route context
 
-Object detail hero (`ObjectHero` on `/object/[object-id]`) exposes **Follow**, **Following** (hover → **Unfollow**), and a **Bell** control when the viewer is following.
+Object detail hero (`ObjectHero` on `/object/[object-id]`) exposes **Follow**, **Following** (hover → **Unfollow**), and a **Bell** control when the viewer is following. Text actions use stadium/pill radius (`rounded-pill`); bell and heart use circular icon buttons (`rounded-circle`) so they pair cleanly on the action row.
 
 ## Follow / Unfollow
 

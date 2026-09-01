@@ -47,7 +47,7 @@ export function DrawerRegion({
       : 'right-0 border-l border-border';
 
   return (
-    <div className="fixed inset-0 z-40 lg:hidden" role="presentation">
+    <div className="fixed inset-0 z-[80] lg:hidden" role="presentation">
       <button
         type="button"
         className="absolute inset-0 bg-overlay"

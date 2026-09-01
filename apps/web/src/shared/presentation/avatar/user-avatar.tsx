@@ -51,7 +51,7 @@ export function UserAvatar({
 
   const showFallback = imageFailed || !src;
 
-  const shapeClass = isSquare ? 'rounded-btn' : 'rounded-circle';
+  const shapeClass = isSquare ? 'rounded-card' : 'rounded-circle';
 
   const frameClass = isSquare
     ? 'self-start shrink-0 bg-surface-alt object-cover shadow-card'

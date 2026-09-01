@@ -46,7 +46,7 @@ export function MapObjectPopupCard({ object: o }: MapObjectPopupCardProps) {
       className="flex gap-3 bg-surface p-3 hover:bg-surface-control/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
       <span
-        className="flex shrink-0 items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt"
+        className="flex shrink-0 items-center justify-center overflow-hidden rounded-card border-[0.5px] border-border bg-surface-alt"
         style={{ width: POPUP_THUMB_SIZE, height: POPUP_THUMB_SIZE }}
       >
         <ObjectThumbnail

@@ -23,7 +23,7 @@ export type ObjectRefCardProps = {
 export function ObjectRefCard({ item, href }: ObjectRefCardProps) {
   const card = (
     <div className="flex w-full min-w-0 gap-2 rounded-btn border border-border bg-bg p-2 transition-colors hover:bg-surface">
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-btn border border-border">
+      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-card border border-border">
         <ObjectThumbnail
           src={item.imageSrc}
           fill

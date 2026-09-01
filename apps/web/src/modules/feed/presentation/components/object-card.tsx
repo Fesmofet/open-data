@@ -283,7 +283,7 @@ export function ObjectCard({
         >
           <span
             className={[
-              'flex items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt',
+              'flex items-center justify-center overflow-hidden rounded-card border-[0.5px] border-border bg-surface-alt',
               stackedMobile ? 'aspect-[4/3] w-full sm:aspect-auto sm:size-[120px]' : '',
             ]
               .filter(Boolean)

@@ -30,7 +30,11 @@ import {
 } from '@/modules/object-updates/domain/block-update-type-map';
 import { mergeLeftRailBlocksForEditMode, groupEditModeBlocks } from '@/modules/object-updates/domain/left-rail-edit-blocks';
 import { EDIT_FIELD_GROUP_I18N_KEY } from '@opden-data-layer/core/update-registry';
-import { shouldUnoptimizeRemoteImage, OptimisticNavLink } from '@/shared/presentation';
+import {
+  HydrationSafeAnchor,
+  shouldUnoptimizeRemoteImage,
+  OptimisticNavLink,
+} from '@/shared/presentation';
 
 import {
   objectStatusClosedLocationBodyKey,
@@ -299,7 +303,7 @@ function LeftRailObjectRefLink({
       suppressHydrationWarning
       className="-mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
     >
-      <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+      <div className="relative size-10 shrink-0 overflow-hidden rounded-card border border-border bg-surface">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -514,7 +518,7 @@ export function ObjectLeftRailPanel({
                 {showDescriptionBtn ? (
                   <Link
                     href={`/object/${encodeURIComponent(objectId)}/description`}
-                    className="inline-block rounded-btn border border-border px-3 py-2 text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    className="block w-full rounded-btn border border-border px-3 py-2 text-center text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     suppressHydrationWarning
                   >
                     {t('object_detail_description_button')}
@@ -783,12 +787,12 @@ export function ObjectLeftRailPanel({
                   <LeftRailIconShell>
                     <MailIcon size="md" />
                   </LeftRailIconShell>
-                  <a
+                  <HydrationSafeAnchor
                     href={`mailto:${block.address}`}
                     className="min-w-0 flex-1 break-all text-accent hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
                     {block.address}
-                  </a>
+                  </HydrationSafeAnchor>
                 </div>
               </div>
             );

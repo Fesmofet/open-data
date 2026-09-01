@@ -49,6 +49,7 @@ const baseProps = {
   tagline: null,
   displayWeightLabel: '2.421',
   kindLabel: 'restaurant',
+  statusBadgeLabel: null,
   isEditMode: false,
   isFollowing: false,
   isBell: false,
@@ -86,5 +87,33 @@ describe('ObjectHero status badge', () => {
 
     expect(screen.getByText('Discontinued')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Discontinued' })).toBeNull();
+  });
+});
+
+describe('ObjectHero layout and styling', () => {
+  it('renders title with display typography', () => {
+    render(<ObjectHero {...baseProps} />);
+
+    const heading = screen.getByRole('heading', { level: 1, name: 'Good Co.' });
+    expect(heading.className).toContain('text-display');
+    expect(heading.className).toContain('tracking-display');
+  });
+
+  it('uses pill radius on Follow and Edit actions', () => {
+    render(<ObjectHero {...baseProps} />);
+
+    const followBtn = screen.getByRole('button', { name: 'object_detail_follow' });
+    const editBtn = screen.getByRole('button', { name: 'object_detail_edit' });
+    expect(followBtn.className).toContain('rounded-pill');
+    expect(editBtn.className).toContain('rounded-pill');
+  });
+
+  it('uses circular radius on favorite icon action', () => {
+    render(<ObjectHero {...baseProps} />);
+
+    const favoriteBtn = screen.getByRole('button', {
+      name: 'object_detail_favorites_add',
+    });
+    expect(favoriteBtn.className).toContain('rounded-circle');
   });
 });

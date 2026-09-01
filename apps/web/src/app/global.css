@@ -150,7 +150,7 @@
 
   .hero-on-photo-chip {
     color: var(--color-nav-fg);
-    border-radius: var(--radius-btn);
+    border-radius: var(--radius-pill);
     background-color: var(--color-ghost-surface);
     backdrop-filter: blur(4px);
   }
@@ -165,7 +165,7 @@
   }
 
   .hero-on-photo-btn {
-    @apply rounded-btn border border-ghost-border bg-ghost-surface text-nav-fg backdrop-blur-sm;
+    @apply border border-ghost-border bg-ghost-surface text-nav-fg backdrop-blur-sm;
   }
 
   .hero-on-photo-btn:hover {

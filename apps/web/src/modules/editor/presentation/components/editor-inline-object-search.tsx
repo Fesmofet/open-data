@@ -159,7 +159,7 @@ export function EditorInlineObjectSearch({
                       setDropdownRect(null);
                     }}
                   >
-                    <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn bg-surface-control">
+                    <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-card bg-surface-control">
                       {img ? (
                         <img
                           src={img}

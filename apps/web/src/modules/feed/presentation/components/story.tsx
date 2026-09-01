@@ -164,7 +164,7 @@ export function Story({
                     ariaLabel={`View object: ${chipLabel}`}
                     className="inline-flex rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
-                    <span className="flex size-8 items-center justify-center overflow-hidden rounded-btn border border-border bg-surface-control sm:size-10">
+                    <span className="flex size-8 items-center justify-center overflow-hidden rounded-card border border-border bg-surface-control sm:size-10">
                       <ObjectThumbnail
                         src={chipImage}
                         size={40}

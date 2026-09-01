@@ -44,6 +44,144 @@ export type ObjectHeroProps = {
 
 type HeroModalTarget = 'avatar-background' | 'name' | 'title';
 
+const TITLE_CLASS =
+  'break-words text-display leading-compressed tracking-display font-weight-strong font-display';
+
+const ICON_BTN_CLASS =
+  'inline-flex size-9 shrink-0 items-center justify-center sm:size-10';
+
+type ObjectHeroActionBarProps = {
+  hasCoverPhoto: boolean;
+  canEditBackground: boolean;
+  isFollowing: boolean;
+  isBell: boolean;
+  isEditMode: boolean;
+  isFavorite: boolean;
+  onEditBackground: () => void;
+  onFollowToggle: () => void;
+  onBellToggle: () => void;
+  onToggleEdit: () => void;
+  onFavoriteToggle: () => void;
+};
+
+function ObjectHeroActionBar({
+  hasCoverPhoto,
+  canEditBackground,
+  isFollowing,
+  isBell,
+  isEditMode,
+  isFavorite,
+  onEditBackground,
+  onFollowToggle,
+  onBellToggle,
+  onToggleEdit,
+  onFavoriteToggle,
+}: ObjectHeroActionBarProps) {
+  const { t } = useI18n();
+
+  const ghostBtnClass = hasCoverPhoto
+    ? 'hero-on-photo-btn'
+    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent';
+
+  const pillBtnClass = `rounded-pill px-3 py-1.5 text-body-sm font-weight-label sm:px-4 sm:py-2`;
+
+  const iconBtnClass = [
+    ICON_BTN_CLASS,
+    'rounded-circle',
+    hasCoverPhoto ? 'hero-on-photo-btn' : ghostBtnClass,
+  ].join(' ');
+
+  return (
+    <div className="flex min-w-0 flex-col items-end gap-2 self-start sm:self-end sm:pb-1">
+      {canEditBackground ? (
+        <button
+          type="button"
+          onClick={onEditBackground}
+          className={[
+            'flex items-center gap-1 rounded-pill px-3 py-1.5 text-caption font-weight-label transition-colors',
+            hasCoverPhoto
+              ? 'border border-white/30 bg-black/30 text-white/90 backdrop-blur-sm hover:border-white/60 hover:bg-black/50 hover:text-white'
+              : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
+          ].join(' ')}
+          aria-label={t('object_detail_edit_background')}
+        >
+          <span className="text-base leading-none">+</span>
+          {t('object_detail_edit_background')}
+        </button>
+      ) : null}
+      <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+        <button
+          type="button"
+          onClick={onFollowToggle}
+          className={[
+            'group',
+            pillBtnClass,
+            isFollowing
+              ? hasCoverPhoto
+                ? 'hero-on-photo-btn hero-on-photo-btn-destructive rounded-pill'
+                : 'hero-follow-active rounded-pill'
+              : 'rounded-pill bg-accent text-accent-fg hover:opacity-90',
+          ].join(' ')}
+        >
+          <span className={isFollowing ? 'group-hover:hidden' : ''}>
+            {isFollowing ? t('object_detail_following') : t('object_detail_follow')}
+          </span>
+          {isFollowing ? (
+            <span className="hidden group-hover:inline">
+              {t('object_detail_unfollow')}
+            </span>
+          ) : null}
+        </button>
+        {isFollowing ? (
+          <button
+            type="button"
+            onClick={onBellToggle}
+            className={iconBtnClass}
+            aria-pressed={isBell}
+            title={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
+            aria-label={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
+          >
+            <BellIcon
+              size={22}
+              className={isBell ? 'text-accent fill-current' : 'text-current'}
+            />
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onToggleEdit}
+          className={[pillBtnClass, 'rounded-pill', hasCoverPhoto ? 'hero-on-photo-btn' : ghostBtnClass].join(
+            ' ',
+          )}
+        >
+          {isEditMode ? t('object_detail_view') : t('object_detail_edit')}
+        </button>
+        <button
+          type="button"
+          onClick={onFavoriteToggle}
+          className={iconBtnClass}
+          aria-pressed={isFavorite}
+          title={
+            isFavorite
+              ? t('object_detail_favorites_remove')
+              : t('object_detail_favorites_add')
+          }
+          aria-label={
+            isFavorite
+              ? t('object_detail_favorites_remove')
+              : t('object_detail_favorites_add')
+          }
+        >
+          <HeartIcon
+            size={22}
+            className={isFavorite ? 'text-accent fill-current' : 'text-current'}
+          />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ObjectHero({
   title,
   subtitleTitle,
@@ -110,8 +248,14 @@ export function ObjectHero({
             hasCoverPhoto ? 'gallery-chrome-text' : 'text-nav-fg',
           ].join(' ')}
         >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="relative shrink-0 self-start sm:self-end">
+          <div
+            className={[
+              'grid gap-x-3 gap-y-3',
+              'grid-cols-[auto_minmax(0,1fr)] grid-rows-[auto_auto]',
+              'sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:grid-rows-[auto] sm:items-end sm:gap-x-4 sm:gap-y-0',
+            ].join(' ')}
+          >
+            <div className="relative shrink-0 self-start sm:col-start-1 sm:row-start-1 sm:self-end">
               <ObjectThumbnail
                 src={avatarUrl}
                 alt={title}
@@ -119,7 +263,7 @@ export function ObjectHero({
                 avatarSize="large"
                 priority
                 className={[
-                  'rounded-btn bg-surface-alt object-cover shadow-card',
+                  'rounded-card bg-surface-alt object-cover shadow-card',
                   hasCoverPhoto ? 'hero-on-photo-avatar' : '',
                 ]
                   .filter(Boolean)
@@ -137,7 +281,7 @@ export function ObjectHero({
               ) : null}
             </div>
 
-            <div className="min-w-0 flex-1 pb-1">
+            <div className="col-span-2 min-w-0 pb-1 sm:col-span-1 sm:col-start-2 sm:row-start-1">
               {canEditName ? (
                 <button
                   type="button"
@@ -149,10 +293,7 @@ export function ObjectHero({
                   aria-label={t('object_detail_edit_name')}
                 >
                   <h1
-                    className={[
-                      'break-words text-section font-weight-strong font-display',
-                      hasCoverPhoto ? 'hero-on-photo-title' : '',
-                    ].join(' ')}
+                    className={[TITLE_CLASS, hasCoverPhoto ? 'hero-on-photo-title' : ''].join(' ')}
                   >
                     {title}
                   </h1>
@@ -168,10 +309,7 @@ export function ObjectHero({
                 </button>
               ) : (
                 <h1
-                  className={[
-                    'break-words text-section font-weight-strong font-display',
-                    hasCoverPhoto ? 'hero-on-photo-title' : '',
-                  ].join(' ')}
+                  className={[TITLE_CLASS, hasCoverPhoto ? 'hero-on-photo-title' : ''].join(' ')}
                 >
                   {title}
                 </h1>
@@ -179,7 +317,7 @@ export function ObjectHero({
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <span
                   className={[
-                    'inline-flex items-center rounded-btn px-2 py-0.5 text-caption font-weight-label leading-none',
+                    'inline-flex items-center rounded-pill px-2 py-0.5 text-caption font-weight-label leading-none',
                     hasCoverPhoto
                       ? 'hero-on-photo-chip'
                       : 'bg-ghost-surface text-nav-fg',
@@ -213,7 +351,7 @@ export function ObjectHero({
                 {displayWeightLabel ? (
                   <span
                     className={[
-                      'inline-flex items-center rounded-btn px-2 py-0.5 text-caption font-weight-label tabular-nums leading-none',
+                      'inline-flex items-center rounded-pill px-2 py-0.5 text-caption font-weight-label tabular-nums leading-none',
                       hasCoverPhoto
                         ? 'hero-on-photo-chip'
                         : 'bg-ghost-surface text-nav-fg',
@@ -276,104 +414,20 @@ export function ObjectHero({
               ) : null}
             </div>
 
-            <div className="flex shrink-0 flex-col items-end gap-2 self-end sm:pb-1">
-              {canEditBackground ? (
-                <button
-                  type="button"
-                  onClick={() => setModalTarget('avatar-background')}
-                  className={[
-                    'flex items-center gap-1 rounded-btn px-3 py-1.5 text-caption font-weight-label transition-colors',
-                    hasCoverPhoto
-                      ? 'border border-white/30 bg-black/30 text-white/90 backdrop-blur-sm hover:border-white/60 hover:bg-black/50 hover:text-white'
-                      : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
-                  ].join(' ')}
-                  aria-label={t('object_detail_edit_background')}
-                >
-                  <span className="text-base leading-none">+</span>
-                  {t('object_detail_edit_background')}
-                </button>
-              ) : null}
-              <div className="flex flex-wrap items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={onFollowToggle}
-                className={[
-                  'group rounded-btn px-4 py-2 text-body-sm font-weight-label',
-                  isFollowing
-                    ? hasCoverPhoto
-                      ? 'hero-on-photo-btn hero-on-photo-btn-destructive'
-                      : 'hero-follow-active'
-                    : 'bg-accent text-accent-fg hover:opacity-90',
-                ].join(' ')}
-              >
-                <span className={isFollowing ? 'group-hover:hidden' : ''}>
-                  {isFollowing ? t('object_detail_following') : t('object_detail_follow')}
-                </span>
-                {isFollowing ? (
-                  <span className="hidden group-hover:inline">
-                    {t('object_detail_unfollow')}
-                  </span>
-                ) : null}
-              </button>
-              {isFollowing ? (
-                <button
-                  type="button"
-                  onClick={onBellToggle}
-                  className={[
-                    'rounded-btn p-2',
-                    hasCoverPhoto
-                      ? 'hero-on-photo-btn'
-                      : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
-                  ].join(' ')}
-                  aria-pressed={isBell}
-                  title={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
-                  aria-label={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
-                >
-                  <BellIcon
-                    size={22}
-                    className={isBell ? 'text-accent fill-current' : 'text-current'}
-                  />
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={onToggleEdit}
-                className={[
-                  'rounded-btn px-4 py-2 text-body-sm font-weight-label',
-                  hasCoverPhoto
-                    ? 'hero-on-photo-btn'
-                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
-                ].join(' ')}
-              >
-                {isEditMode ? t('object_detail_view') : t('object_detail_edit')}
-              </button>
-              <button
-                type="button"
-                onClick={onFavoriteToggle}
-                className={[
-                  'rounded-btn p-2',
-                  hasCoverPhoto
-                    ? 'hero-on-photo-btn'
-                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:border-accent hover:text-accent',
-                ].join(' ')}
-                aria-pressed={isFavorite}
-                title={
-                  isFavorite
-                    ? t('object_detail_favorites_remove')
-                    : t('object_detail_favorites_add')
-                }
-                aria-label={
-                  isFavorite
-                    ? t('object_detail_favorites_remove')
-                    : t('object_detail_favorites_add')
-                }
-              >
-                <HeartIcon
-                  size={22}
-                  className={isFavorite ? 'text-accent fill-current' : 'text-current'}
-                />
-              </button>
-              </div>
+            <div className="col-start-2 row-start-1 justify-self-end sm:col-start-3 sm:row-start-1">
+              <ObjectHeroActionBar
+                hasCoverPhoto={hasCoverPhoto}
+                canEditBackground={Boolean(canEditBackground)}
+                isFollowing={isFollowing}
+                isBell={isBell}
+                isEditMode={isEditMode}
+                isFavorite={isFavorite}
+                onEditBackground={() => setModalTarget('avatar-background')}
+                onFollowToggle={onFollowToggle}
+                onBellToggle={onBellToggle}
+                onToggleEdit={onToggleEdit}
+                onFavoriteToggle={onFavoriteToggle}
+              />
             </div>
           </div>
         </ShellInset>

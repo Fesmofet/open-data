@@ -335,13 +335,18 @@ export function TopNav({ user: _user }: TopNavProps) {
           !searchBarActive ? 'hidden lg:block' : 'block',
         ].join(' ')}
       >
-        <div className="relative flex w-full items-center gap-2 rounded-btn border border-border bg-white px-3 py-1.5">
+        <div
+          className="relative flex w-full items-center gap-2 rounded-btn border border-border bg-surface px-3 py-1.5"
+          // Password managers and extensions often mutate search fields before hydration.
+          suppressHydrationWarning
+        >
           <SearchIcon size={20} className="shrink-0 text-fg-secondary" />
           <input
             ref={inputRef}
             id={`${listId}-input`}
             type="search"
             autoComplete="off"
+            suppressHydrationWarning
             value={searchBarValue}
             onChange={(e) => onInputChange(e.target.value)}
             onFocus={() => setDropdownOpen(true)}

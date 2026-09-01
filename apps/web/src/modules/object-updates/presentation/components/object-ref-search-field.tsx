@@ -115,7 +115,7 @@ function ObjectRefSearchResultsList({
                 isDuplicate ? onSelectDuplicate(result) : onSelect(result)
               }
             >
-              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn bg-surface-control">
+              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-card bg-surface-control">
                 {img ? (
                   <img
                     src={img}
@@ -394,7 +394,7 @@ export function ObjectRefSearchField({
       {label ? <span className="font-weight-label text-fg">{label}</span> : null}
       {selectedObject && objectId ? (
         <div className="relative mt-2 flex items-start gap-2 rounded-btn border border-border bg-bg p-2">
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-card border border-border bg-surface">
             {resolvingObject ? (
               <span className="flex h-full w-full animate-pulse items-center justify-center bg-surface-control text-caption text-muted">
                 …

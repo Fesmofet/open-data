@@ -48,7 +48,7 @@ No image proxy or guest-specific URL branches in this slice; see `tmp/avatar.md`
 | `size` | Pixel width/height. |
 | `displayName` | Optional; initials and `alt` text. |
 | `className` | Extra classes (e.g. `text-lg font-semibold` on profile). |
-| `isSquare` | Square vs circular (`rounded-btn` vs `rounded-circle`). |
+| `isSquare` | Square vs circular (`rounded-card` vs `rounded-circle`). |
 
 Renders with **`next/image`** (`width` / `height` / `sizes`); see [images](../images.md). On load failure, falls back to the placeholder image.
 

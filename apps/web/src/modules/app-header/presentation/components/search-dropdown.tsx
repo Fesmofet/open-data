@@ -188,7 +188,7 @@ export function SearchDropdown({
                       role="option"
                       aria-selected={active}
                       className={[
-                        'flex w-full items-center gap-2 px-2 py-2 text-start',
+                        'flex w-full items-center gap-2 bg-surface px-2 py-2 text-start',
                         active ? 'bg-ghost-surface' : 'hover:bg-ghost-surface',
                       ].join(' ')}
                       onMouseDown={(e) => e.preventDefault()}
@@ -204,7 +204,7 @@ export function SearchDropdown({
                         }
                       }}
                     >
-                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn bg-surface-control">
+                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-card bg-surface-control">
                         {obj.image_url ? (
                           <img
                             src={obj.image_url}
@@ -253,7 +253,7 @@ export function SearchDropdown({
                       role="option"
                       aria-selected={active}
                       className={[
-                        'flex w-full items-center gap-2 px-2 py-2 text-start',
+                        'flex w-full items-center gap-2 bg-surface px-2 py-2 text-start',
                         active ? 'bg-ghost-surface' : 'hover:bg-ghost-surface',
                       ].join(' ')}
                       onMouseDown={(e) => e.preventDefault()}
