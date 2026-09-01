@@ -8,7 +8,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-06-10
+updated_at: 2026-09-01
 ---
 
 # Discover page (`/discover`)
@@ -21,9 +21,23 @@ Hub chrome: under `(app)/(hub)` with FEED / DISCOVER / MARKET section nav (`AppS
 
 | URL | Mode |
 |-----|------|
+| `/discover` (no `type`, no `users`) | Unselected — mobile opens type picker; desktop shows prompt in feed column |
 | `/discover?type={object_type}` | Object feed for one registry type |
+| `/discover?type=all` | Mixed object-type feed (no `object_type` sent to query-api) |
 | `/discover?users=1` | User list (optional `q` prefix search) |
 | `q`, `tags`, `sort` | Shared query params |
+
+There is **no implicit default** object type (previously `product`). Bare `/discover` means nothing selected until the user picks a type or has a remembered type cookie.
+
+### Remembered object type
+
+Cookie `discover_object_type` stores the last picked registry object type (client write on type selection; server read on page load). Returning visitors with a valid cookie are replace-navigated to `/discover?type={remembered}`. The cookie is never set for `users` mode or `type=all`.
+
+## Mobile layout (< `lg`)
+
+- **Type button** — large accent label in feed header; opens bottom sheet (`ModalShell variant="sheet"`) with searchable object-type list + All users.
+- **Filters** — `+ Add` opens filter bottom sheet (tag categories only; same data as desktop right column). Active chips shown inline; toggles apply immediately via URL replace.
+- Desktop three-column layout (sidebar / feed / filters) unchanged at `lg+`; sidebar and desktop filter column hidden on mobile.
 
 ## API (via BFF)
 
@@ -58,7 +72,9 @@ Migration `00013_discover_indexes`: expression index on tag item `(value, catego
 
 ## Search integration
 
-Header search dropdown tabs (per `object_type` and Users) link to `/discover` with `q` and `type` / `users=1`. The **All** tab was removed.
+Header search dropdown chips (per `object_type` and Users) link to `/discover` with `q` and `type` / `users=1`. The **All** chip links to `/discover?type=all&q=…`.
+
+**Enter key** (when no highlighted result): navigate to discover with selected type (URL or remembered cookie), exact username profile match, or mixed results (`type=all`).
 
 ## Object page tags
 
@@ -69,4 +85,5 @@ On `/object/:object_id`, tag chips in the left rail **Tags** block link to `/dis
 ```bash
 pnpm nx test query-api --testPathPattern=discover
 pnpm nx test web --testPathPattern=discover
+pnpm check:web-i18n-utf8
 ```

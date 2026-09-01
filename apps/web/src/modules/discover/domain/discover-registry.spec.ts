@@ -25,6 +25,16 @@ describe('discover-registry', () => {
     expect(objectTypeHasTagCategoryFilters('hashtag')).toBe(false);
   });
 
+  it('returns false for null, all, and unknown types', () => {
+    expect(objectTypeHasTagCategoryFilters(null)).toBe(false);
+    expect(objectTypeHasTagCategoryFilters('all')).toBe(false);
+    expect(objectTypeHasTagCategoryFilters('not-a-type')).toBe(false);
+  });
+
+  it('restaurant has tag category filters', () => {
+    expect(objectTypeHasTagCategoryFilters('restaurant')).toBe(true);
+  });
+
   it('product has rating dimensions from supposed_updates', () => {
     expect(getRatingDimensionNamesForObjectType('product')).toEqual(['Quality', 'Value']);
   });

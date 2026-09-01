@@ -3,6 +3,7 @@
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { DiscoverActiveChips } from './discover-active-chips';
+import { DiscoverMobileHeader } from './discover-mobile-header';
 import { DiscoverObjectFeed } from './discover-object-feed';
 import { DiscoverSortSelect } from './discover-sort-select';
 import { DiscoverUserFeed } from './discover-user-feed';
@@ -15,6 +16,10 @@ export type DiscoverFeedProps = {
   sort: 'newest' | 'oldest' | 'rank';
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  showFilters: boolean;
+  showChooseTypePrompt: boolean;
+  onOpenTypeSheet: () => void;
+  onOpenFilterSheet: () => void;
 };
 
 export function DiscoverFeed({
@@ -25,12 +30,27 @@ export function DiscoverFeed({
   sort,
   viewerUsername,
   onRequireLogin,
+  showFilters,
+  showChooseTypePrompt,
+  onOpenTypeSheet,
+  onOpenFilterSheet,
 }: DiscoverFeedProps) {
   const { t } = useI18n();
 
   return (
     <main className="min-w-0">
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <DiscoverMobileHeader
+        usersMode={usersMode}
+        objectType={objectType}
+        q={q}
+        tags={tags}
+        sort={sort}
+        showFilters={showFilters}
+        onOpenTypeSheet={onOpenTypeSheet}
+        onOpenFilterSheet={onOpenFilterSheet}
+      />
+
+      <div className="mb-4 hidden items-center justify-between gap-3 lg:flex">
         <h1 className="text-heading font-weight-label text-fg">{t('discover_page_title')}</h1>
         {!usersMode ? (
           <DiscoverSortSelect
@@ -42,13 +62,23 @@ export function DiscoverFeed({
           />
         ) : null}
       </div>
-      <DiscoverActiveChips
-        usersMode={usersMode}
-        objectType={objectType}
-        q={q}
-        tags={tags}
-        sort={sort}
-      />
+
+      <div className="hidden lg:block">
+        <DiscoverActiveChips
+          usersMode={usersMode}
+          objectType={objectType}
+          q={q}
+          tags={tags}
+          sort={sort}
+        />
+      </div>
+
+      {showChooseTypePrompt ? (
+        <p className="hidden py-8 text-body text-fg-secondary lg:block">
+          {t('discover_choose_type_prompt')}
+        </p>
+      ) : null}
+
       {usersMode ? (
         <DiscoverUserFeed q={q} />
       ) : objectType ? (

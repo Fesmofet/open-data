@@ -14,7 +14,8 @@ export type DiscoverPageState = {
   sort: 'newest' | 'oldest' | 'rank';
 };
 
-export const DEFAULT_DISCOVER_OBJECT_TYPE = 'product';
+/** URL value for mixed object-type discover results. */
+export const DISCOVER_ALL_OBJECT_TYPES = 'all';
 
 type DiscoverSearchParamsSource =
   | Record<string, string | string[] | undefined>
@@ -45,9 +46,8 @@ function readSearchParamAll(source: DiscoverSearchParamsSource, key: string): st
 /** Parse `/discover` query state from RSC `searchParams` or client `URLSearchParams`. */
 export function parseDiscoverPageState(source: DiscoverSearchParamsSource): DiscoverPageState {
   const usersMode = readSearchParam(source, 'users') === '1';
-  const objectType = usersMode
-    ? null
-    : (readSearchParam(source, 'type')?.trim() || DEFAULT_DISCOVER_OBJECT_TYPE);
+  const typeRaw = readSearchParam(source, 'type')?.trim();
+  const objectType = usersMode ? null : (typeRaw && typeRaw.length > 0 ? typeRaw : null);
   const q = readSearchParam(source, 'q')?.trim() ?? '';
   const tagsRaw = readSearchParamAll(source, 'tags');
   const tags = parseDiscoverTagsParam(

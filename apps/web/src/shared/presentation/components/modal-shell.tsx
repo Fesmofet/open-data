@@ -13,7 +13,7 @@ import { CloseIcon } from '@/icons';
 import { useModalScrollLock } from '../hooks/use-modal-scroll-lock';
 import { MODAL_Z_INDEX_DEFAULT } from './modal-shell.constants';
 
-export type ModalShellVariant = 'dialog' | 'fullscreen';
+export type ModalShellVariant = 'dialog' | 'fullscreen' | 'sheet';
 
 export type ModalShellProps = {
   open: boolean;
@@ -98,6 +98,7 @@ export function ModalShell({
 }: ModalShellProps) {
   const [mounted, setMounted] = useState(false);
   const isFullscreen = variant === 'fullscreen';
+  const isSheet = variant === 'sheet';
   const bodyScrolls = scrollBody ?? !isFullscreen;
 
   useModalScrollLock(open);
@@ -134,10 +135,12 @@ export function ModalShell({
 
   const panelBase = isFullscreen
     ? 'h-dvh max-h-dvh w-full flex flex-col overflow-hidden overscroll-none'
-    : [
-        'w-full flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card-float',
-        maxWidthClass,
-      ].join(' ');
+    : isSheet
+      ? 'mt-auto flex w-full max-h-[92dvh] flex-col overflow-hidden rounded-t-card border border-border bg-surface shadow-card-float'
+      : [
+          'w-full flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-card border border-border bg-surface shadow-card-float',
+          maxWidthClass,
+        ].join(' ');
 
   const bodyClass = bodyScrolls
     ? 'min-h-0 flex-1 overflow-y-auto overscroll-contain'
@@ -154,7 +157,11 @@ export function ModalShell({
       <div
         className={[
           'pointer-events-none fixed inset-0 overflow-hidden',
-          isFullscreen ? 'flex flex-col' : `flex p-4 ${shellAlign}`,
+          isFullscreen
+            ? 'flex flex-col'
+            : isSheet
+              ? 'flex flex-col justify-end'
+              : `flex p-4 ${shellAlign}`,
         ].join(' ')}
         style={{ zIndex }}
         role="presentation"
@@ -164,9 +171,11 @@ export function ModalShell({
             'pointer-events-auto min-w-0',
             isFullscreen
               ? 'flex h-full min-h-0 flex-1 flex-col'
-              : aside
-                ? 'flex w-full max-w-container-post items-start gap-3'
-                : `flex w-full justify-center`,
+              : isSheet
+                ? 'flex w-full flex-col'
+                : aside
+                  ? 'flex w-full max-w-container-post items-start gap-3'
+                  : `flex w-full justify-center`,
           ].join(' ')}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}

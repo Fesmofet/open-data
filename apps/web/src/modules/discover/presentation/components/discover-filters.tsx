@@ -1,63 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { ChevronDownIcon } from '@/icons';
 import { useInstantNavigation } from '@/shared/presentation';
 
-import { buildDiscoverHref, encodeTagFilter } from '../../domain/discover-url';
-import { getTagCategoryNamesForObjectType } from '../../domain/discover-registry';
-import { fetchDiscoverTagCategories } from '../../infrastructure/discover.client';
-import type { DiscoverTagCategoriesResponse } from '../../domain/discover-response.schema';
+import { buildDiscoverHref } from '../../domain/discover-url';
+import { useDiscoverTagCategories } from '../hooks/use-discover-tag-categories';
+import { DiscoverFilterSections } from './discover-filter-sections';
+
 const FILTER_DEBOUNCE_MS = 300;
-const DEFAULT_OPEN_CATEGORIES = 2;
-/** Max height for scrollable item list inside an expanded category (~14 rows). */
-const CATEGORY_LIST_MAX_HEIGHT = 'max-h-72';
-
-type TagCategorySection = {
-  category: string;
-  items: { value: string; count: number }[];
-};
-
-function orderTagSections(
-  categories: DiscoverTagCategoriesResponse['categories'] | undefined,
-  registryOrder: string[],
-): TagCategorySection[] {
-  const sections: TagCategorySection[] =
-    categories ??
-    registryOrder.map((category) => ({
-      category,
-      items: [] as { value: string; count: number }[],
-    }));
-
-  if (registryOrder.length === 0) {
-    return sections;
-  }
-  return [
-    ...registryOrder
-      .map((name) => sections.find((s) => s.category === name))
-      .filter((s): s is TagCategorySection => s != null),
-    ...sections.filter((s) => !registryOrder.includes(s.category)),
-  ];
-}
-
-function buildDefaultCollapsed(
-  sections: TagCategorySection[],
-  selectedTags: string[],
-): Set<string> {
-  const collapsed = new Set<string>();
-  for (let i = 0; i < sections.length; i++) {
-    const section = sections[i];
-    const hasSelected = section.items.some((item) =>
-      selectedTags.includes(encodeTagFilter(section.category, item.value)),
-    );
-    if (i >= DEFAULT_OPEN_CATEGORIES && !hasSelected) {
-      collapsed.add(section.category);
-    }
-  }
-  return collapsed;
-}
 
 export type DiscoverFiltersProps = {
   objectType: string;
@@ -69,66 +21,9 @@ export type DiscoverFiltersProps = {
 export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
-  const [data, setData] = useState<DiscoverTagCategoriesResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => new Set());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const registryOrder = useMemo(
-    () => getTagCategoryNamesForObjectType(objectType),
-    [objectType],
-  );
-
-  const orderedSections = useMemo(
-    () => orderTagSections(data?.categories, registryOrder),
-    [data?.categories, registryOrder],
-  );
-
-  useEffect(() => {
-    setCollapsedCategories(new Set());
-  }, [objectType, registryOrder]);
-
-  useEffect(() => {
-    const ac = new AbortController();
-    setLoading(true);
-    void (async () => {
-      const res = await fetchDiscoverTagCategories(objectType, {
-        tags,
-        q: q.trim() || undefined,
-        signal: ac.signal,
-      });
-      if (!ac.signal.aborted) {
-        setData(res);
-        if (res && tags.length === 0) {
-          setCollapsedCategories(
-            buildDefaultCollapsed(orderTagSections(res.categories, registryOrder), tags),
-          );
-        }
-        setLoading(false);
-      }
-    })();
-    return () => ac.abort();
-  }, [objectType, tags, q, registryOrder]);
-
-  useEffect(() => {
-    if (tags.length === 0 || !data?.categories) {
-      return;
-    }
-    const sections = orderTagSections(data.categories, registryOrder);
-    setCollapsedCategories((prev) => {
-      const next = new Set(prev);
-      let changed = false;
-      for (const section of sections) {
-        const hasSelected = section.items.some((item) =>
-          tags.includes(encodeTagFilter(section.category, item.value)),
-        );
-        if (hasSelected && next.has(section.category)) {
-          next.delete(section.category);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [tags, data, registryOrder]);
+  const { loading, orderedSections, collapsedCategories, toggleCollapse } =
+    useDiscoverTagCategories({ objectType, q, tags });
 
   const pushTags = useCallback(
     (nextTags: string[]) => {
@@ -152,21 +47,9 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
     [tags, pushTags],
   );
 
-  const toggleCollapse = useCallback((category: string) => {
-    setCollapsedCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(category)) {
-        next.delete(category);
-      } else {
-        next.add(category);
-      }
-      return next;
-    });
-  }, []);
-
   return (
     <aside
-      className="relative z-0 min-w-0 w-full self-start overflow-hidden lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto"
+      className="relative z-0 hidden min-w-0 w-full self-start overflow-hidden lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:block lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto"
       aria-busy={loading}
     >
       <h2 className="mb-3 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
@@ -179,61 +62,13 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
           ))}
         </div>
       ) : (
-        <>
-          <div className="space-y-1">
-            {orderedSections.map((section) => {
-              const collapsed = collapsedCategories.has(section.category);
-
-              return (
-                <section
-                  key={section.category}
-                  className="border-b border-border pb-2 last:border-b-0"
-                >
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between py-1.5 text-start text-body-sm font-weight-label text-fg"
-                    onClick={() => toggleCollapse(section.category)}
-                    aria-expanded={!collapsed}
-                  >
-                    <span>{section.category}</span>
-                    <ChevronDownIcon
-                      size={12}
-                      className={`shrink-0 text-fg-secondary transition-transform duration-150 ${
-                        collapsed ? '' : 'rotate-180'
-                      }`}
-                    />
-                  </button>
-                  {!collapsed ? (
-                    <div
-                      className={`${CATEGORY_LIST_MAX_HEIGHT} scrollbar-minimal overflow-y-auto pe-0.5`}
-                    >
-                      <ul className="flex flex-col gap-1 pb-1">
-                        {section.items.map((item) => {
-                          const encoded = encodeTagFilter(section.category, item.value);
-                          const checked = tags.includes(encoded);
-                          return (
-                            <li key={`${section.category}-${item.value}`}>
-                              <label className="flex cursor-pointer items-center gap-2 text-body-sm text-fg-secondary hover:text-fg">
-                                <input
-                                  type="checkbox"
-                                  className="rounded border-border"
-                                  checked={checked}
-                                  onChange={(e) => onToggleTag(encoded, e.target.checked)}
-                                />
-                                <span className="min-w-0 flex-1 truncate">{item.value}</span>
-                                <span className="tabular-nums text-caption">({item.count})</span>
-                              </label>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ) : null}
-                </section>
-              );
-            })}
-          </div>
-        </>
+        <DiscoverFilterSections
+          sections={orderedSections}
+          tags={tags}
+          collapsedCategories={collapsedCategories}
+          onToggleCollapse={toggleCollapse}
+          onToggleTag={onToggleTag}
+        />
       )}
     </aside>
   );

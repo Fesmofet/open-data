@@ -18,8 +18,11 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
 import { buildSearchFlatList } from '../../domain/search-nav-list';
+import { resolveSearchEnterTarget } from '../../domain/resolve-search-enter-target';
 import { fetchSearchCounts, fetchSearchResults } from '../../infrastructure/search.client';
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
+import { readDiscoverObjectTypeCookie } from '@/modules/discover/domain/discover-type-cookie';
+import { resolveDiscoverSearchType } from '@/modules/discover/domain/resolve-discover-search-type';
 import { HeaderActions } from './header-actions';
 import { EMPTY_RESULTS, SearchDropdown } from './search-dropdown';
 
@@ -50,6 +53,7 @@ export function TopNav({ user: _user }: TopNavProps) {
   const [searchCounts, setSearchCounts] = useState<SearchCountsResponse | null>(null);
   const [searchCountsLoading, setSearchCountsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [highlightTouched, setHighlightTouched] = useState(false);
 
   const clearDebounce = useCallback(() => {
     if (debounceRef.current) {
@@ -77,6 +81,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchCounts(null);
     setSearchCountsLoading(false);
     setActiveIndex(0);
+    setHighlightTouched(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -124,6 +129,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchCounts(null);
     setSearchCountsLoading(true);
     setActiveIndex(0);
+    setHighlightTouched(false);
 
     void (async () => {
       try {
@@ -221,16 +227,27 @@ export function TopNav({ user: _user }: TopNavProps) {
   }
 
   function activateHighlighted() {
-    const entry = flatList[activeIndex];
-    if (!entry) {
+    const selectedType = resolveDiscoverSearchType({
+      pathname,
+      search: typeof window !== 'undefined' ? window.location.search : '',
+      rememberedCookie: readDiscoverObjectTypeCookie(),
+    });
+
+    const target = resolveSearchEnterTarget({
+      highlightTouched,
+      highlighted: flatList[activeIndex] ?? null,
+      selectedType,
+      query: activeQuery,
+      users: searchResults?.users.map((u) => u.name) ?? [],
+      resultsLoading: panelResultsLoading,
+    });
+
+    if (!target) {
       return;
     }
+
     closeDropdown();
-    if (entry.kind === 'object') {
-      router.push(`/object/${encodeURIComponent(entry.item.object_id)}`);
-    } else {
-      router.push(`/@${encodeURIComponent(entry.item.name)}`);
-    }
+    router.push(target.href);
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -239,6 +256,12 @@ export function TopNav({ user: _user }: TopNavProps) {
       if (searchBarActive) {
         setSearchBarActive(false);
       }
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      activateHighlighted();
       return;
     }
 
@@ -251,6 +274,7 @@ export function TopNav({ user: _user }: TopNavProps) {
       if (flatList.length === 0) {
         return;
       }
+      setHighlightTouched(true);
       setActiveIndex((i) => (i + 1) % flatList.length);
       return;
     }
@@ -260,13 +284,9 @@ export function TopNav({ user: _user }: TopNavProps) {
       if (flatList.length === 0) {
         return;
       }
+      setHighlightTouched(true);
       setActiveIndex((i) => (i - 1 + flatList.length) % flatList.length);
       return;
-    }
-
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      activateHighlighted();
     }
   }
 
@@ -364,7 +384,10 @@ export function TopNav({ user: _user }: TopNavProps) {
                 countsLoading={panelCountsLoading}
                 activeIndex={activeIndex}
                 flatList={flatList}
-                onHighlightIndex={setActiveIndex}
+                onHighlightIndex={(index) => {
+                  setHighlightTouched(true);
+                  setActiveIndex(index);
+                }}
                 listId={listId}
                 searchQuery={activeQuery}
                 onClose={closeDropdown}

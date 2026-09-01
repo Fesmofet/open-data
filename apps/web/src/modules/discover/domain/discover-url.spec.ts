@@ -2,7 +2,7 @@ import {
   buildDiscoverHref,
   decodeTagFilter,
   encodeTagFilter,
-  DEFAULT_DISCOVER_OBJECT_TYPE,
+  DISCOVER_ALL_OBJECT_TYPES,
   parseDiscoverPageState,
   parseDiscoverTagsParam,
 } from './discover-url';
@@ -52,9 +52,15 @@ describe('buildDiscoverHref', () => {
     expect(href).toBe('/discover?type=product');
   });
 
-  it('builds users mode URL', () => {
-    expect(buildDiscoverHref({ users: true, q: 'alice' })).toBe(
-      '/discover?users=1&q=alice',
+  it('builds users mode URL without type', () => {
+    expect(buildDiscoverHref({ users: true, type: 'book', q: 'x' })).toBe(
+      '/discover?users=1&q=x',
+    );
+  });
+
+  it('builds mixed-results URL with type=all', () => {
+    expect(buildDiscoverHref({ type: DISCOVER_ALL_OBJECT_TYPES, q: 'sushi' })).toBe(
+      '/discover?type=all&q=sushi',
     );
   });
 });
@@ -63,13 +69,47 @@ describe('parseDiscoverTagsParam', () => {
   it('parses array and dedupes empty', () => {
     expect(parseDiscoverTagsParam(['a', '', 'b'])).toEqual(['a', 'b']);
   });
+
+  it('drops blank tag entries', () => {
+    expect(parseDiscoverTagsParam(['', ' ', 'Cuisine:Sushi'])).toEqual(['Cuisine:Sushi']);
+  });
 });
 
 describe('parseDiscoverPageState', () => {
-  it('defaults object type when type param is missing', () => {
+  it('treats bare discover URL as no object type selected', () => {
     expect(parseDiscoverPageState({})).toEqual({
       usersMode: false,
-      objectType: DEFAULT_DISCOVER_OBJECT_TYPE,
+      objectType: null,
+      q: '',
+      tags: [],
+      sort: 'rank',
+    });
+  });
+
+  it('forces null object type in users mode', () => {
+    expect(parseDiscoverPageState({ users: '1', type: 'restaurant' })).toEqual({
+      usersMode: true,
+      objectType: null,
+      q: '',
+      tags: [],
+      sort: 'rank',
+    });
+  });
+
+  it('parses mixed-results type=all', () => {
+    expect(parseDiscoverPageState({ type: 'all' })).toEqual({
+      usersMode: false,
+      objectType: 'all',
+      q: '',
+      tags: [],
+      sort: 'rank',
+    });
+  });
+
+  it('treats whitespace-only type as no selection', () => {
+    expect(parseDiscoverPageState({ type: '  ' })).toEqual({
+      usersMode: false,
+      objectType: null,
       q: '',
       tags: [],
       sort: 'rank',
@@ -101,6 +141,23 @@ describe('parseDiscoverPageState', () => {
       q: 'alice',
       tags: [],
       sort: 'oldest',
+    });
+  });
+
+  it('round-trips type, query, tags and sort through the URL', () => {
+    const href = buildDiscoverHref({
+      type: 'restaurant',
+      q: 'sushi',
+      tags: ['Cuisine:Sushi', 'Features:WiFi'],
+      sort: 'newest',
+    });
+    const parsed = parseDiscoverPageState(new URL(href, 'http://local').searchParams);
+    expect(parsed).toEqual({
+      usersMode: false,
+      objectType: 'restaurant',
+      q: 'sushi',
+      tags: ['Cuisine:Sushi', 'Features:WiFi'],
+      sort: 'newest',
     });
   });
 });

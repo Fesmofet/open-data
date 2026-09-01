@@ -45,7 +45,7 @@ export function DiscoverSidebar(_props: DiscoverSidebarProps) {
     hiddenCount > 0 && !showAllTypes && !activeBeyondInitial;
 
   return (
-    <aside className="min-w-0 self-start space-y-6 lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto">
+    <aside className="hidden min-w-0 self-start space-y-6 lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:block lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto">
       <section>
         <h2 className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
           {t('discover_objects_menu')}

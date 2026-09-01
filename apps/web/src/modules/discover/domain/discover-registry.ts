@@ -7,7 +7,10 @@ export function listDiscoverObjectTypes(): string[] {
 }
 
 /** Whether object type has TAG_CATEGORY in supposed_updates (right filter column). */
-export function objectTypeHasTagCategoryFilters(objectType: string): boolean {
+export function objectTypeHasTagCategoryFilters(objectType: string | null | undefined): boolean {
+  if (!objectType || objectType === 'all') {
+    return false;
+  }
   const def = OBJECT_TYPE_REGISTRY[objectType];
   if (!def) {
     return false;

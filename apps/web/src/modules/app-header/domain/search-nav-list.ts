@@ -16,7 +16,9 @@ export function buildDiscoverHrefFromSearch(
   }
   if (chip === 'users') {
     sp.set('users', '1');
-  } else if (chip !== HEADER_SEARCH_ALL_CHIP) {
+  } else if (chip === HEADER_SEARCH_ALL_CHIP) {
+    sp.set('type', 'all');
+  } else {
     sp.set('type', chip);
   }
   const qs = sp.toString();

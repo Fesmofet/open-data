@@ -18,6 +18,7 @@ export const BookOpenIcon = createNamedIcon('book-open');
 export const BrandFacebookIcon = createNamedIcon('brand-facebook');
 export const BrandXIcon = createNamedIcon('brand-x');
 export const CalendarIcon = createNamedIcon('calendar');
+export const CheckIcon = createNamedIcon('check');
 export const CheckCircleIcon = createNamedIcon('check-circle');
 export const CircleStarIcon = createNamedIcon('circle-star');
 export const ChevronDownIcon = createNamedIcon('chevron-down');
@@ -100,6 +101,7 @@ export const NAMED_ICON_BY_NAME = {
   'brand-facebook': BrandFacebookIcon,
   'brand-x': BrandXIcon,
   calendar: CalendarIcon,
+  check: CheckIcon,
   'check-circle': CheckCircleIcon,
   'circle-star': CircleStarIcon,
   'chevron-down': ChevronDownIcon,

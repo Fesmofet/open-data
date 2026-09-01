@@ -1,4 +1,45 @@
-import { buildDiscoverTagCategoriesSearchParams } from './discover.client';
+import { buildDiscoverTagCategoriesSearchParams, fetchDiscoverObjects } from './discover.client';
+
+describe('fetchDiscoverObjects', () => {
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
+  });
+
+  it('omits object_type when mixed selection is active', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ items: [], cursor: null, hasMore: false }),
+    }) as typeof fetch;
+
+    await fetchDiscoverObjects({ objectType: 'all', q: 'x' });
+
+    const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
+    expect(url).toContain('/api/discover/objects?');
+    expect(url).toContain('q=x');
+    expect(url).not.toContain('object_type');
+  });
+
+  it('scopes request to chosen object type', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ items: [], cursor: null, hasMore: false }),
+    }) as typeof fetch;
+
+    await fetchDiscoverObjects({
+      objectType: 'restaurant',
+      tags: ['Cuisine:Sushi'],
+      sort: 'newest',
+    });
+
+    const url = (global.fetch as jest.Mock).mock.calls[0][0] as string;
+    expect(url).toContain('object_type=restaurant');
+    expect(url).toContain('tags=Cuisine%3ASushi');
+    expect(url).toContain('sort=newest');
+  });
+});
 
 describe('buildDiscoverTagCategoriesSearchParams', () => {
   it('includes object_type and tags', () => {

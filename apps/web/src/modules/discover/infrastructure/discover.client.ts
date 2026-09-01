@@ -7,6 +7,13 @@ import {
   type DiscoverUsersPage,
 } from '../domain/discover-response.schema';
 
+import { DISCOVER_ALL_OBJECT_TYPES } from '../domain/discover-url';
+
+function shouldSendObjectTypeToApi(objectType: string | undefined): boolean {
+  const trimmed = objectType?.trim();
+  return Boolean(trimmed && trimmed !== DISCOVER_ALL_OBJECT_TYPES);
+}
+
 export type FetchDiscoverObjectsParams = {
   objectType?: string;
   q?: string;
@@ -21,8 +28,8 @@ export async function fetchDiscoverObjects(
   params: FetchDiscoverObjectsParams,
 ): Promise<DiscoverObjectsPage | null> {
   const sp = new URLSearchParams();
-  if (params.objectType?.trim()) {
-    sp.set('object_type', params.objectType.trim());
+  if (shouldSendObjectTypeToApi(params.objectType)) {
+    sp.set('object_type', params.objectType!.trim());
   }
   if (params.q?.trim()) {
     sp.set('q', params.q.trim());

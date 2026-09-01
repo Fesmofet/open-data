@@ -6,6 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { ObjectCard } from '@/modules/feed/presentation/components/object-card';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import type { SocialProjectedObjectView } from '@/modules/user-social/application/dto/user-social.dto';
+import { FeedColumn } from '@/shared/presentation/layout';
 import { useInfiniteScroll } from '@/shared/presentation';
 
 import { fetchDiscoverObjects } from '../../infrastructure/discover.client';
@@ -95,10 +96,10 @@ export function DiscoverObjectFeed({
     onLoadMore,
   });
 
-  return (
-    <section>
-      {loading ? (
-        <ul className="space-y-3">
+  if (loading) {
+    return (
+      <FeedColumn>
+        <ul className="flex flex-col gap-card-padding">
           {Array.from({ length: 4 }).map((_, i) => (
             <li
               key={i}
@@ -107,40 +108,44 @@ export function DiscoverObjectFeed({
             />
           ))}
         </ul>
-      ) : items.length === 0 ? (
-        <p className="text-body-sm text-fg-secondary">{t('discover_no_results')}</p>
-      ) : (
-        <>
-          <ul className="divide-y divide-border rounded-card border border-border bg-surface">
-            {items.map((o) => (
-              <ObjectCard
-                key={o.object_id}
-                object={o as unknown as ProjectedObjectView}
-                viewerUsername={viewerUsername}
-                onRequireLogin={onRequireLogin}
-              />
-            ))}
-          </ul>
-          {hasMore ? (
-            <div className="mt-4 flex flex-col items-center gap-2">
-              <div ref={sentinelRef} aria-hidden className="h-px w-full" />
-              <button
-                type="button"
-                className="sr-only"
-                disabled={pending}
-                onClick={onLoadMore}
-              >
-                {t('discover_show_more')}
-              </button>
-              {pending ? (
-                <p className="text-body-sm text-muted" aria-live="polite">
-                  {t('discover_loading')}
-                </p>
-              ) : null}
-            </div>
+      </FeedColumn>
+    );
+  }
+
+  if (items.length === 0) {
+    return <p className="text-body-sm text-fg-secondary">{t('discover_no_results')}</p>;
+  }
+
+  return (
+    <FeedColumn>
+      <ul className="flex flex-col gap-card-padding">
+        {items.map((o) => (
+          <ObjectCard
+            key={o.object_id}
+            object={o as unknown as ProjectedObjectView}
+            viewerUsername={viewerUsername}
+            onRequireLogin={onRequireLogin}
+          />
+        ))}
+      </ul>
+      {hasMore ? (
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <div ref={sentinelRef} aria-hidden className="h-px w-full" />
+          <button
+            type="button"
+            className="sr-only"
+            disabled={pending}
+            onClick={onLoadMore}
+          >
+            {t('discover_show_more')}
+          </button>
+          {pending ? (
+            <p className="text-body-sm text-muted" aria-live="polite">
+              {t('discover_loading')}
+            </p>
           ) : null}
-        </>
-      )}
-    </section>
+        </div>
+      ) : null}
+    </FeedColumn>
   );
 }

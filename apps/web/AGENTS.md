@@ -165,6 +165,7 @@ Use **`header`** / **`footer`** slots on `ModalShell` for chrome that must stay 
 |-----------|------|
 | `dialog` (default) | Centered card; optional `aside` (e.g. post modal action pills) |
 | `fullscreen` | Gallery viewer, expanded geo map — set `scrollBody={false}` when layout is flex/media, not a scrolling list |
+| `sheet` | Mobile bottom sheet (e.g. discover type picker, filter panel) — slides up from bottom, `max-h-[92dvh]` |
 
 ### Forbidden in modals
 

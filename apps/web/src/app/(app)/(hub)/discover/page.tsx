@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { DiscoverPageClient } from '@/modules/discover/presentation/components/discover-page-client';
+import { getCookieDiscoverObjectType } from '@/modules/discover/domain/discover-type-cookie.server';
 import { buildDiscoverMetadata } from '@/seo';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
@@ -17,11 +18,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function DiscoverPage() {
   const auth = createCookieAuthContextProvider();
-  const user = await auth.getUser();
+  const [user, rememberedObjectType] = await Promise.all([
+    auth.getUser(),
+    getCookieDiscoverObjectType(),
+  ]);
   const viewerUsername = user?.username ?? null;
   return (
     <Suspense fallback={null}>
-      <DiscoverPageClient viewerUsername={viewerUsername} />
+      <DiscoverPageClient
+        viewerUsername={viewerUsername}
+        rememberedObjectType={rememberedObjectType}
+      />
     </Suspense>
   );
 }
