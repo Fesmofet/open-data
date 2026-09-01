@@ -6,6 +6,18 @@ export function listDiscoverObjectTypes(): string[] {
   return Object.keys(OBJECT_TYPE_REGISTRY).sort((a, b) => a.localeCompare(b));
 }
 
+/** Whether object type supports geo/map search (registry declares UPDATE_TYPES.GEO). */
+export function objectTypeSupportsGeo(objectType: string | null | undefined): boolean {
+  if (!objectType || objectType === 'all') {
+    return false;
+  }
+  const def = OBJECT_TYPE_REGISTRY[objectType];
+  if (!def) {
+    return false;
+  }
+  return def.supported_updates.includes(UPDATE_TYPES.GEO);
+}
+
 /** Whether object type has TAG_CATEGORY in supposed_updates (right filter column). */
 export function objectTypeHasTagCategoryFilters(objectType: string | null | undefined): boolean {
   if (!objectType || objectType === 'all') {

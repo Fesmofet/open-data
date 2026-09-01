@@ -4,10 +4,10 @@ import { useCallback } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
-import { ChevronDownIcon, CloseIcon, PlusIcon } from '@/icons';
+import { ChevronDownIcon, CloseIcon, MapPinIcon, PlusIcon } from '@/icons';
 import { useInstantNavigation } from '@/shared/presentation';
 
-import { buildDiscoverHref, decodeTagFilter } from '../../domain/discover-url';
+import { buildDiscoverHref, decodeTagFilter, type DiscoverBox, type DiscoverMapView } from '../../domain/discover-url';
 import { DISCOVER_ACTIVE_CHIP_CLASS } from './discover-active-chips';
 import { DiscoverSortSelect } from './discover-sort-select';
 
@@ -17,9 +17,13 @@ export type DiscoverMobileHeaderProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  box: DiscoverBox | null;
+  map: DiscoverMapView | null;
   showFilters: boolean;
+  showMap: boolean;
   onOpenTypeSheet: () => void;
   onOpenFilterSheet: () => void;
+  onOpenMapSheet: () => void;
 };
 
 export function DiscoverMobileHeader({
@@ -28,9 +32,13 @@ export function DiscoverMobileHeader({
   q,
   tags,
   sort,
+  box,
+  map,
   showFilters,
+  showMap,
   onOpenTypeSheet,
   onOpenFilterSheet,
+  onOpenMapSheet,
 }: DiscoverMobileHeaderProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
@@ -45,17 +53,19 @@ export function DiscoverMobileHeader({
         : t('discover_select_type');
 
   const pushHref = useCallback(
-    (nextTags: string[], nextQ = q) => {
+    (nextTags: string[], nextQ = q, nextBox: DiscoverBox | null = box) => {
       const href = buildDiscoverHref({
         users: usersMode,
         type: objectType ?? undefined,
         q: nextQ,
         tags: nextTags,
         sort,
+        box: nextBox,
+        map: map ?? undefined,
       });
       navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [navigateInstant, usersMode, objectType, q, sort],
+    [navigateInstant, usersMode, objectType, q, sort, box, map],
   );
 
   const removeQuery = () => {
@@ -65,6 +75,12 @@ export function DiscoverMobileHeader({
   const removeTag = (tag: string) => {
     pushHref(tags.filter((item) => item !== tag));
   };
+
+  const removeMapArea = () => {
+    pushHref(tags, q, null);
+  };
+
+  const showFilterRow = showFilters || showMap || box != null;
 
   return (
     <div className="mb-4 space-y-3 lg:hidden">
@@ -80,7 +96,7 @@ export function DiscoverMobileHeader({
         </button>
       </div>
 
-      {showFilters ? (
+      {showFilterRow ? (
         <div>
           <p className="mb-1.5 text-caption font-weight-label text-fg-tertiary">
             {t('discover_filters_title')}
@@ -115,14 +131,39 @@ export function DiscoverMobileHeader({
                 </span>
               );
             })}
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-pill border border-accent px-2 py-0.5 text-caption font-weight-label text-accent"
-              onClick={onOpenFilterSheet}
-            >
-              <PlusIcon size={14} />
-              {t('discover_add_filter')}
-            </button>
+            {box ? (
+              <span className={DISCOVER_ACTIVE_CHIP_CLASS}>
+                <span className="truncate font-weight-label">{t('discover_map_area_filter')}</span>
+                <button
+                  type="button"
+                  aria-label={t('discover_remove_map_area')}
+                  className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+                  onClick={removeMapArea}
+                >
+                  <CloseIcon size={16} />
+                </button>
+              </span>
+            ) : null}
+            {showFilters ? (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 rounded-pill border border-accent px-2 py-0.5 text-caption font-weight-label text-accent"
+                onClick={onOpenFilterSheet}
+              >
+                <PlusIcon size={14} />
+                {t('discover_add_filter')}
+              </button>
+            ) : null}
+            {showMap ? (
+              <button
+                type="button"
+                className="ms-auto inline-flex items-center gap-1 text-caption font-weight-label text-accent"
+                onClick={onOpenMapSheet}
+              >
+                <MapPinIcon size={14} />
+                {t('discover_map')}
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -135,6 +176,8 @@ export function DiscoverMobileHeader({
             q={q}
             tags={tags}
             sort={sort}
+            box={box}
+            map={map}
           />
         </div>
       ) : null}

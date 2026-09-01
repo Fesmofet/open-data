@@ -7,7 +7,7 @@ import {
   type DiscoverUsersPage,
 } from '../domain/discover-response.schema';
 
-import { DISCOVER_ALL_OBJECT_TYPES } from '../domain/discover-url';
+import { DISCOVER_ALL_OBJECT_TYPES, formatDiscoverBoxParam, type DiscoverBox } from '../domain/discover-url';
 
 function shouldSendObjectTypeToApi(objectType: string | undefined): boolean {
   const trimmed = objectType?.trim();
@@ -19,6 +19,7 @@ export type FetchDiscoverObjectsParams = {
   q?: string;
   tags?: string[];
   sort?: 'newest' | 'oldest' | 'rank';
+  box?: DiscoverBox;
   cursor?: string | null;
   limit?: number;
   signal?: AbortSignal;
@@ -41,6 +42,9 @@ export async function fetchDiscoverObjects(
     }
   }
   sp.set('sort', params.sort ?? 'rank');
+  if (params.box) {
+    sp.set('box', formatDiscoverBoxParam(params.box));
+  }
   if (params.cursor?.trim()) {
     sp.set('cursor', params.cursor.trim());
   }
@@ -109,6 +113,7 @@ export function buildDiscoverTagCategoriesSearchParams(
   objectType: string,
   tags: readonly string[] = [],
   q?: string,
+  box?: DiscoverBox,
 ): URLSearchParams {
   const sp = new URLSearchParams({ object_type: objectType.trim() });
   const qTrimmed = q?.trim();
@@ -121,17 +126,21 @@ export function buildDiscoverTagCategoriesSearchParams(
       sp.append('tags', trimmed);
     }
   }
+  if (box) {
+    sp.set('box', formatDiscoverBoxParam(box));
+  }
   return sp;
 }
 
 export async function fetchDiscoverTagCategories(
   objectType: string,
-  init?: { tags?: readonly string[]; q?: string; signal?: AbortSignal },
+  init?: { tags?: readonly string[]; q?: string; box?: DiscoverBox; signal?: AbortSignal },
 ): Promise<DiscoverTagCategoriesResponse | null> {
   const sp = buildDiscoverTagCategoriesSearchParams(
     objectType,
     init?.tags ?? [],
     init?.q,
+    init?.box,
   );
   try {
     const res = await fetch(`/api/discover/tag-categories?${sp.toString()}`, {

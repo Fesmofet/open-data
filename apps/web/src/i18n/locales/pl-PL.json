@@ -2825,5 +2825,11 @@
   "your_reward": "Twoja nagroda",
   "your_vote": "Twój głos",
   "your_vote_placeholder": "Twój głos (opcjonalnie)",
-  "СЃommunity_actions": "Działania społecznościowe"
+  "СЃommunity_actions": "Działania społecznościowe",
+  "discover_map": "Map",
+  "discover_search_area": "Search area",
+  "discover_map_area_filter": "Map area",
+  "discover_remove_map_area": "Remove map area",
+  "discover_map_expand": "Expand map",
+  "discover_map_no_results": "No objects with a location in this area"
 }

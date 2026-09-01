@@ -33,6 +33,7 @@ export function LeafletAppMap({
   tileNoWrap = true,
   onMapClick,
   onViewportChange,
+  onViewChange,
 }: AppMapProps) {
   const attributionForLayer =
     showBuiltInAttribution === false ? '' : tileAttribution;
@@ -71,9 +72,12 @@ export function LeafletAppMap({
         maxZoom={maxZoom}
       />
       {customZoom ? <ZoomControl position={zoomUi.position} /> : null}
-      <LeafletMapCenterSync center={center} />
-      {onViewportChange ? (
-        <LeafletMapViewportHandler onViewportChange={onViewportChange} />
+      <LeafletMapCenterSync center={center} zoom={zoom} />
+      {onViewportChange || onViewChange ? (
+        <LeafletMapViewportHandler
+          onViewportChange={onViewportChange}
+          onViewChange={onViewChange}
+        />
       ) : null}
       {onMapClick ? <LeafletMapClickHandler onMapClick={onMapClick} /> : null}
       {children}

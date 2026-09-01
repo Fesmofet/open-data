@@ -3549,5 +3549,11 @@
   "your_vote": "Suara Anda",
   "your_vote_placeholder": "Suara Anda (opsional)",
   "zoom": "Perbesar",
-  "СЃommunity_actions": "Tindakan Komunitas"
+  "СЃommunity_actions": "Tindakan Komunitas",
+  "discover_map": "Map",
+  "discover_search_area": "Search area",
+  "discover_map_area_filter": "Map area",
+  "discover_remove_map_area": "Remove map area",
+  "discover_map_expand": "Expand map",
+  "discover_map_no_results": "No objects with a location in this area"
 }

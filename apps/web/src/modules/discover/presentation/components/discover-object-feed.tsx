@@ -9,6 +9,7 @@ import type { SocialProjectedObjectView } from '@/modules/user-social/applicatio
 import { FeedColumn } from '@/shared/presentation/layout';
 import { useInfiniteScroll } from '@/shared/presentation';
 
+import type { DiscoverBox } from '../../domain/discover-url';
 import { fetchDiscoverObjects } from '../../infrastructure/discover.client';
 
 const PAGE_LIMIT = 20;
@@ -18,6 +19,7 @@ export type DiscoverObjectFeedProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  box: DiscoverBox | null;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
 };
@@ -27,6 +29,7 @@ export function DiscoverObjectFeed({
   q,
   tags,
   sort,
+  box,
   viewerUsername,
   onRequireLogin,
 }: DiscoverObjectFeedProps) {
@@ -45,6 +48,7 @@ export function DiscoverObjectFeed({
         q: q || undefined,
         tags,
         sort,
+        box: box ?? undefined,
         cursor: nextCursor,
         limit: PAGE_LIMIT,
         signal,
@@ -56,7 +60,7 @@ export function DiscoverObjectFeed({
       setCursor(page.cursor);
       setHasMore(page.hasMore);
     },
-    [objectType, q, tags, sort],
+    [objectType, q, tags, sort, box],
   );
 
   useEffect(() => {
@@ -78,7 +82,7 @@ export function DiscoverObjectFeed({
     return () => {
       ac.abort();
     };
-  }, [loadPage, objectType, q, tags, sort]);
+  }, [loadPage, objectType, q, tags, sort, box]);
 
   const onLoadMore = useCallback(() => {
     if (!hasMore || pending || loading) {

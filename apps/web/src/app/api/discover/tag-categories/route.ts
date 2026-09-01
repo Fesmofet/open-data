@@ -23,6 +23,10 @@ export async function GET(request: NextRequest) {
       url.searchParams.append('tags', trimmed);
     }
   }
+  const box = request.nextUrl.searchParams.get('box')?.trim();
+  if (box) {
+    url.searchParams.set('box', box);
+  }
 
   const upstream = await fetch(url.toString(), {
     method: 'GET',

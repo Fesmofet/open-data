@@ -6,7 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { SearchIcon } from '@/icons';
 import { ModalShell, useInstantNavigation } from '@/shared/presentation';
 
-import { buildDiscoverHref } from '../../domain/discover-url';
+import { buildDiscoverHref, type DiscoverBox, type DiscoverMapView } from '../../domain/discover-url';
 import { useDiscoverTagCategories } from '../hooks/use-discover-tag-categories';
 import { DiscoverFilterSections } from './discover-filter-sections';
 
@@ -19,6 +19,8 @@ export type DiscoverFilterSheetProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  box: DiscoverBox | null;
+  map: DiscoverMapView | null;
 };
 
 export function DiscoverFilterSheet({
@@ -28,13 +30,15 @@ export function DiscoverFilterSheet({
   q,
   tags,
   sort,
+  box,
+  map,
 }: DiscoverFilterSheetProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
   const [filterSearch, setFilterSearch] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { loading, orderedSections, collapsedCategories, toggleCollapse } =
-    useDiscoverTagCategories({ objectType, q, tags });
+    useDiscoverTagCategories({ objectType, q, tags, box });
 
   useEffect(() => {
     if (!open) {
@@ -44,10 +48,17 @@ export function DiscoverFilterSheet({
 
   const pushTags = useCallback(
     (nextTags: string[], nextQ = q) => {
-      const href = buildDiscoverHref({ type: objectType, q: nextQ, tags: nextTags, sort });
+      const href = buildDiscoverHref({
+        type: objectType,
+        q: nextQ,
+        tags: nextTags,
+        sort,
+        box,
+        map: map ?? undefined,
+      });
       navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [navigateInstant, objectType, q, sort],
+    [navigateInstant, objectType, q, sort, box, map],
   );
 
   const onToggleTag = useCallback(

@@ -5,6 +5,9 @@ import { AggregatedObjectRepository, DiscoverRepository } from '../../repositori
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
 import { SHOP_CARD_UPDATE_TYPES } from '../shop/shop.constants';
+
+/** Shop card fields plus geo for discover map markers. */
+const DISCOVER_OBJECT_UPDATE_TYPES = [...SHOP_CARD_UPDATE_TYPES, 'geo'] as const;
 import type { DiscoverObjectsQuery } from './discover-query.schema';
 import type { DiscoverObjectsResponseDto } from './discover.types';
 
@@ -62,6 +65,7 @@ export class GetDiscoverObjectsEndpoint {
       cursor: input.query.cursor,
       limit: input.query.limit,
       viewerAccount: input.viewerAccount,
+      box: input.query.box,
     });
 
     if (rows.length === 0) {
@@ -80,7 +84,7 @@ export class GetDiscoverObjectsEndpoint {
     );
 
     const views = this.objectViewService.resolve(ordered, voterWaivPowers, {
-      update_types: [...SHOP_CARD_UPDATE_TYPES],
+      update_types: [...DISCOVER_OBJECT_UPDATE_TYPES],
       locale: input.locale,
       include_rejected: false,
       governance,

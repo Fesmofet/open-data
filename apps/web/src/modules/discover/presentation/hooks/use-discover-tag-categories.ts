@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchDiscoverTagCategories } from '../../infrastructure/discover.client';
 import type { DiscoverTagCategoriesResponse } from '../../domain/discover-response.schema';
 import { getTagCategoryNamesForObjectType } from '../../domain/discover-registry';
+import type { DiscoverBox } from '../../domain/discover-url';
 import { encodeTagFilter } from '../../domain/discover-url';
 
 const DEFAULT_OPEN_CATEGORIES = 2;
@@ -57,12 +58,14 @@ export type UseDiscoverTagCategoriesParams = {
   objectType: string;
   q: string;
   tags: string[];
+  box: DiscoverBox | null;
 };
 
 export function useDiscoverTagCategories({
   objectType,
   q,
   tags,
+  box,
 }: UseDiscoverTagCategoriesParams) {
   const [data, setData] = useState<DiscoverTagCategoriesResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,6 +92,7 @@ export function useDiscoverTagCategories({
       const res = await fetchDiscoverTagCategories(objectType, {
         tags,
         q: q.trim() || undefined,
+        box: box ?? undefined,
         signal: ac.signal,
       });
       if (!ac.signal.aborted) {
@@ -102,7 +106,7 @@ export function useDiscoverTagCategories({
       }
     })();
     return () => ac.abort();
-  }, [objectType, tags, q, registryOrder]);
+  }, [objectType, tags, q, box, registryOrder]);
 
   useEffect(() => {
     if (tags.length === 0 || !data?.categories) {

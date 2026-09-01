@@ -5,7 +5,7 @@ import { useCallback, useRef } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
 
-import { buildDiscoverHref } from '../../domain/discover-url';
+import { buildDiscoverHref, type DiscoverBox, type DiscoverMapView } from '../../domain/discover-url';
 import { useDiscoverTagCategories } from '../hooks/use-discover-tag-categories';
 import { DiscoverFilterSections } from './discover-filter-sections';
 
@@ -16,21 +16,23 @@ export type DiscoverFiltersProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  box: DiscoverBox | null;
+  map: DiscoverMapView | null;
 };
 
-export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersProps) {
+export function DiscoverFilters({ objectType, q, tags, sort, box, map }: DiscoverFiltersProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { loading, orderedSections, collapsedCategories, toggleCollapse } =
-    useDiscoverTagCategories({ objectType, q, tags });
+    useDiscoverTagCategories({ objectType, q, tags, box });
 
   const pushTags = useCallback(
     (nextTags: string[]) => {
-      const href = buildDiscoverHref({ type: objectType, q, tags: nextTags, sort });
+      const href = buildDiscoverHref({ type: objectType, q, tags: nextTags, sort, box, map: map ?? undefined });
       navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [navigateInstant, objectType, q, sort],
+    [navigateInstant, objectType, q, sort, box, map],
   );
 
   const onToggleTag = useCallback(
@@ -38,7 +40,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-      const next = checked ? [...tags, value] : tags.filter((t) => t !== value);
+      const next = checked ? [...tags, value] : tags.filter((tag) => tag !== value);
       debounceRef.current = setTimeout(() => {
         pushTags(next);
         debounceRef.current = null;
@@ -48,10 +50,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
   );
 
   return (
-    <aside
-      className="relative z-0 hidden min-w-0 w-full self-start overflow-hidden lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:block lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto"
-      aria-busy={loading}
-    >
+    <section className="min-w-0" aria-busy={loading}>
       <h2 className="mb-3 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
         {t('discover_filters_title')}
       </h2>
@@ -70,6 +69,6 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
           onToggleTag={onToggleTag}
         />
       )}
-    </aside>
+    </section>
   );
 }

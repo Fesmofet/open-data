@@ -1,18 +1,28 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { OptimisticNavSync, useInstantNavigation } from '@/shared/presentation';
 import { useMediaQuery } from '@/shared/presentation/layout';
 import { useLoginModal } from '@/modules/auth';
 
-import { parseDiscoverPageState, buildDiscoverHref } from '../../domain/discover-url';
-import { objectTypeHasTagCategoryFilters } from '../../domain/discover-registry';
+import {
+  parseDiscoverPageState,
+  buildDiscoverHref,
+  type DiscoverBox,
+  type DiscoverMapView,
+} from '../../domain/discover-url';
+import {
+  objectTypeHasTagCategoryFilters,
+  objectTypeSupportsGeo,
+} from '../../domain/discover-registry';
 import { resolveInitialDiscoverType } from '../../domain/resolve-initial-discover-type';
 import { DiscoverFeed } from './discover-feed';
 import { DiscoverFilters } from './discover-filters';
 import { DiscoverFilterSheet } from './discover-filter-sheet';
+import { DiscoverMapModal } from './discover-map-modal';
+import { DiscoverMapRail } from './discover-map-rail';
 import { DiscoverSidebar } from './discover-sidebar';
 import { DiscoverTypeSheet } from './discover-type-sheet';
 import { ObjectPageCenterSkeleton } from '@/modules/object/presentation/components/object-page-loading-skeleton';
@@ -29,14 +39,24 @@ function DiscoverPageContent({
   const searchParams = useSearchParams();
   const { isNavigating, navigateInstant } = useInstantNavigation();
   const isDesktop = useMediaQuery('(min-width: 1024px)');
-  const { usersMode, objectType, q, tags, sort } = useMemo(
+  const { usersMode, objectType, q, tags, sort, box, map: mapFromUrl } = useMemo(
     () => parseDiscoverPageState(searchParams),
     [searchParams],
   );
   const { openLogin } = useLoginModal();
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [lastMapView, setLastMapView] = useState<DiscoverMapView | null>(null);
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (mapFromUrl) {
+      setLastMapView(mapFromUrl);
+    }
+  }, [mapFromUrl]);
+
+  const effectiveMapView = mapFromUrl ?? lastMapView;
 
   useEffect(() => {
     setMounted(true);
@@ -44,6 +64,8 @@ function DiscoverPageContent({
 
   const showFilters =
     !usersMode && objectType != null && objectTypeHasTagCategoryFilters(objectType);
+
+  const showMap = !usersMode && objectTypeSupportsGeo(objectType);
 
   const showChooseTypePrompt =
     !usersMode && objectType == null && isDesktop;
@@ -88,6 +110,48 @@ function DiscoverPageContent({
   const filterObjectType =
     objectType && objectType !== 'all' ? objectType : null;
 
+  const mapObjectType = showMap && objectType ? objectType : null;
+
+  const applyMapArea = useCallback(
+    (nextBox: DiscoverBox) => {
+      if (!objectType) {
+        return;
+      }
+      const href = buildDiscoverHref({
+        type: objectType,
+        q,
+        tags,
+        sort,
+        box: nextBox,
+        map: effectiveMapView ?? undefined,
+      });
+      navigateInstant({ href, method: 'replace', scroll: false });
+    },
+    [navigateInstant, objectType, q, tags, sort, effectiveMapView],
+  );
+
+  const handleMapViewChange = useCallback((view: DiscoverMapView) => {
+    setLastMapView(view);
+  }, []);
+
+  const openMapModal = useCallback(() => {
+    if (objectType && effectiveMapView) {
+      navigateInstant({
+        href: buildDiscoverHref({
+          type: objectType,
+          q,
+          tags,
+          sort,
+          box,
+          map: effectiveMapView,
+        }),
+        method: 'replace',
+        scroll: false,
+      });
+    }
+    setMapModalOpen(true);
+  }, [navigateInstant, objectType, q, tags, sort, box, effectiveMapView]);
+
   return (
     <div className="mx-auto w-full max-w-container-page px-gutter pt-section-y-sm sm:px-gutter-sm">
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
@@ -104,21 +168,44 @@ function DiscoverPageContent({
             q={q}
             tags={tags}
             sort={sort}
+            box={box}
+            map={mapFromUrl}
             viewerUsername={viewerUsername}
             onRequireLogin={openLogin}
             showFilters={showFilters}
+            showMap={showMap}
             showChooseTypePrompt={showChooseTypePrompt}
             onOpenTypeSheet={() => setTypeSheetOpen(true)}
             onOpenFilterSheet={() => setFilterSheetOpen(true)}
+            onOpenMapSheet={openMapModal}
           />
         </div>
-        {showFilters && filterObjectType ? (
-          <DiscoverFilters
-            objectType={filterObjectType}
-            q={q}
-            tags={tags}
-            sort={sort}
-          />
+        {showMap || showFilters ? (
+          <aside className="relative z-0 hidden min-w-0 self-start lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:block lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto">
+            {mapObjectType ? (
+              <DiscoverMapRail
+                objectType={mapObjectType}
+                q={q}
+                tags={tags}
+                sort={sort}
+                box={box}
+                mapView={effectiveMapView}
+                onApplyArea={applyMapArea}
+                onViewChange={mapModalOpen ? undefined : handleMapViewChange}
+                onExpand={openMapModal}
+              />
+            ) : null}
+            {showFilters && filterObjectType ? (
+              <DiscoverFilters
+                objectType={filterObjectType}
+                q={q}
+                tags={tags}
+                sort={sort}
+                box={box}
+                map={mapFromUrl}
+              />
+            ) : null}
+          </aside>
         ) : (
           <div className="hidden min-w-0 self-start lg:block" aria-hidden />
         )}
@@ -141,6 +228,23 @@ function DiscoverPageContent({
           q={q}
           tags={tags}
           sort={sort}
+          box={box}
+          map={mapFromUrl}
+        />
+      ) : null}
+
+      {mapObjectType ? (
+        <DiscoverMapModal
+          open={mapModalOpen}
+          onClose={() => setMapModalOpen(false)}
+          objectType={mapObjectType}
+          q={q}
+          tags={tags}
+          sort={sort}
+          box={box}
+          mapView={effectiveMapView}
+          onApplyArea={applyMapArea}
+          onViewChange={handleMapViewChange}
         />
       ) : null}
     </div>

@@ -25,9 +25,29 @@ Hub chrome: under `(app)/(hub)` with FEED / DISCOVER / MARKET section nav (`AppS
 | `/discover?type={object_type}` | Object feed for one registry type |
 | `/discover?type=all` | Mixed object-type feed (no `object_type` sent to query-api) |
 | `/discover?users=1` | User list (optional `q` prefix search) |
-| `q`, `tags`, `sort` | Shared query params |
+| `q`, `tags`, `sort`, `box`, `map` | Shared query params |
 
 There is **no implicit default** object type (previously `product`). Bare `/discover` means nothing selected until the user picks a type or has a remembered type cookie.
+
+### Map area (`box`)
+
+Geo-capable registry types (`restaurant`, `place`, `business`, `person`, `service`) show a map on desktop (right rail above filters) and a **Map** entry on mobile (fullscreen modal). The URL param is:
+
+`box=swLng,swLat,neLng,neLat` (WGS84; same order as query-api `ST_MakeEnvelope`).
+
+- Applying **Search area** replace-navigates with `box` set; other params (`type`, `q`, `tags`, `sort`) are preserved.
+- A removable **Map area** chip clears `box` without opening the map.
+- No map on `type=all`, users mode, or non-geo types.
+- Object feed and tag-category facets both respect `box` when present.
+
+### Map camera (`map`)
+
+`map=lat,lng,zoom` stores the **map camera only** (WGS84 latitude/longitude plus integer zoom `0–19`). It is **not** sent to query-api — only `box` filters results.
+
+- Written to the URL when opening the fullscreen map or applying **Search area** (replace navigation, `scroll: false`).
+- Not updated on every pan/zoom (avoids feed skeleton flicker during navigation).
+- Preserved alongside `box`, `tags`, and `sort` when those params change.
+- Initial map view order: URL `map` → fit applied `box` → default world view.
 
 ### Remembered object type
 
@@ -37,7 +57,8 @@ Cookie `discover_object_type` stores the last picked registry object type (clien
 
 - **Type button** — large accent label in feed header; opens bottom sheet (`ModalShell variant="sheet"`) with searchable object-type list + All users.
 - **Filters** — `+ Add` opens filter bottom sheet (tag categories only; same data as desktop right column). Active chips shown inline; toggles apply immediately via URL replace.
-- Desktop three-column layout (sidebar / feed / filters) unchanged at `lg+`; sidebar and desktop filter column hidden on mobile.
+- **Map** — `Map` button (geo types only) opens fullscreen map modal; **Search area** writes `box` to the URL. Expanding the map writes `map=lat,lng,zoom` so reload/share keep the camera.
+- Desktop three-column layout (sidebar / feed / filters) unchanged at `lg+`; sidebar and desktop filter column hidden on mobile. Map rail stacks above the filters column when the type supports geo.
 
 ## API (via BFF)
 
@@ -49,10 +70,10 @@ Cookie `discover_object_type` stores the last picked registry object type (clien
 
 ### Object feed
 
-- Filters: `object_type`, optional FTS `q`, `tags[]` (each tag = `category:value` encoding, e.g. `Cuisine:asian`; AND across all selected tags; both `value_json.category` and `value_json.value` must match).
+- Filters: `object_type`, optional FTS `q`, `tags[]` (each tag = `category:value` encoding, e.g. `Cuisine:asian`; AND across all selected tags; both `value_json.category` and `value_json.value` must match), optional `box` (map bounding box: `swLng,swLat,neLng,neLat`).
 - Sort: `rank` (default, `objects_core.weight DESC`), `newest` (`created_at DESC`), `oldest`.
 - Cursor: opaque base64 JSON (`created_at`, `weight`, `object_id`, `sort`).
-- Cards: projected with shop card update types (`name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`).
+- Cards: projected with shop card update types (`name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`) plus `geo` for map markers.
 
 ### User feed (`?users=1`)
 
@@ -63,7 +84,8 @@ Cookie `discover_object_type` stores the last picked registry object type (clien
 ### Tag categories sidebar
 
 - Aggregated from `object_updates` where `update_type = tagCategoryItem`, grouped by `value_json.category` / `value_json.value`.
-- Redis cache: `query-api:cache:tag-categories:{objectType}` (TTL 300s).
+- Optional `q` and `box` narrow facet counts (same geographic predicate as the object feed when `box` is set).
+- Redis cache: `query-api:cache:tag-categories:{objectType}` (TTL 300s). Skipped when `q`, active `tags`, or `box` is present.
 - Section order follows `supposed_updates` TAG_CATEGORY values in `@opden-data-layer/core` object-type registry.
 
 ### Indexes
@@ -86,4 +108,5 @@ On `/object/:object_id`, tag chips in the left rail **Tags** block link to `/dis
 pnpm nx test query-api --testPathPattern=discover
 pnpm nx test web --testPathPattern=discover
 pnpm check:web-i18n-utf8
+pnpm exec playwright test src/discover-map.spec.ts
 ```

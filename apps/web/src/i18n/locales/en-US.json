@@ -3983,5 +3983,11 @@
   "your_vote": "Your vote",
   "your_vote_placeholder": "Your vote(optional)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Community actions"
+  "СЃommunity_actions": "Community actions",
+  "discover_map": "Map",
+  "discover_search_area": "Search area",
+  "discover_map_area_filter": "Map area",
+  "discover_remove_map_area": "Remove map area",
+  "discover_map_expand": "Expand map",
+  "discover_map_no_results": "No objects with a location in this area"
 }

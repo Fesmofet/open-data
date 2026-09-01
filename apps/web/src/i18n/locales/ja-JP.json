@@ -3549,5 +3549,11 @@
   "your_vote": "あなたの投票",
   "your_vote_placeholder": "あなたの投票（オプション）",
   "zoom": "ズーム",
-  "СЃommunity_actions": "コミュニティのアクション"
+  "СЃommunity_actions": "コミュニティのアクション",
+  "discover_map": "Map",
+  "discover_search_area": "Search area",
+  "discover_map_area_filter": "Map area",
+  "discover_remove_map_area": "Remove map area",
+  "discover_map_expand": "Expand map",
+  "discover_map_no_results": "No objects with a location in this area"
 }

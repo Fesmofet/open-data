@@ -112,4 +112,107 @@ describe('DiscoverRepository', () => {
     expect(compiled.sql).toMatch(/::float8/);
     expect(compiled.sql).toContain('ORDER BY oc.weight DESC NULLS LAST, oc.object_id ASC');
   });
+
+  const SAMPLE_BOX = { swLng: -123.2, swLat: 49.1, neLng: -123.0, neLat: 49.3 };
+
+  it('listObjects binds ST_MakeEnvelope when box is applied', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.listObjects({
+      tags: [],
+      sort: 'rank',
+      limit: 20,
+      box: SAMPLE_BOX,
+    });
+
+    expect(executeQuery).toHaveBeenCalledTimes(1);
+    const compiled = executeQuery.mock.calls[0][0] as { sql: string; parameters: unknown[] };
+    expect(compiled.sql).toContain('ST_Intersects');
+    expect(compiled.sql).toContain('ST_MakeEnvelope');
+    expect(compiled.parameters).toEqual(
+      expect.arrayContaining([-123.2, 49.1, -123.0, 49.3]),
+    );
+    expect(compiled.sql).toContain('4326');
+  });
+
+  it('listObjects omits geographic predicate when no box is applied', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.listObjects({ tags: [], sort: 'rank', limit: 20 });
+
+    const compiled = executeQuery.mock.calls[0][0] as { sql: string };
+    expect(compiled.sql).not.toContain('ST_Intersects');
+    expect(compiled.sql).not.toContain('ST_MakeEnvelope');
+  });
+
+  it('listObjects combines box with object type, text query and tag filters', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.listObjects({
+      objectType: 'restaurant',
+      q: 'sushi',
+      tags: [{ category: 'Cuisine', value: 'Japanese' }],
+      sort: 'rank',
+      limit: 20,
+      box: SAMPLE_BOX,
+    });
+
+    const compiled = executeQuery.mock.calls[0][0] as { sql: string };
+    expect(compiled.sql).toContain('oc.object_type =');
+    expect(compiled.sql).toContain('object_tag_category_items');
+    expect(compiled.sql).toContain('search_vector');
+    expect(compiled.sql).toContain('to_tsquery');
+    expect(compiled.sql).toContain('ST_MakeEnvelope');
+  });
+
+  it('listObjects returns empty result when boxed query fails', async () => {
+    const executeQuery = jest.fn().mockRejectedValue(new Error('db down'));
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    const result = await repo.listObjects({
+      tags: [],
+      sort: 'rank',
+      limit: 20,
+      box: SAMPLE_BOX,
+    });
+
+    expect(result).toEqual({ rows: [], hasMore: false });
+  });
+
+  it('getTagCategories with box skips redis cache', async () => {
+    const redisGet = jest.fn();
+    const redisSet = jest.fn();
+    const redisFactory = {
+      getClient: () => ({ get: redisGet, set: redisSet }),
+    } as unknown as RedisClientFactory;
+
+    const execute = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createMockDb(execute);
+    const repo = new DiscoverRepository(db as never, redisFactory);
+
+    await repo.getTagCategories('restaurant', [], undefined, SAMPLE_BOX);
+
+    expect(redisGet).not.toHaveBeenCalled();
+    expect(redisSet).not.toHaveBeenCalled();
+  });
+
+  it('getTagCategories with box applies geographic predicate', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.getTagCategories('restaurant', [], undefined, SAMPLE_BOX);
+
+    expect(executeQuery).toHaveBeenCalledTimes(1);
+    const compiled = executeQuery.mock.calls[0][0] as { sql: string };
+    expect(compiled.sql).toContain('ST_MakeEnvelope');
+    expect(compiled.sql).toContain('objects_core');
+  });
 });

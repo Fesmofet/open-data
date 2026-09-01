@@ -54,7 +54,15 @@ export interface AppMapProps {
   onMapClick?: (position: MapPosition) => void;
   /** Fires on initial mount and after pan/zoom (Leaflet). */
   onViewportChange?: (box: MapBoundingBox) => void;
+  /** Fires on initial mount and after pan/zoom with center, zoom, and bbox (Leaflet). */
+  onViewChange?: (view: MapViewChange) => void;
 }
+
+export type MapViewChange = {
+  center: MapPosition;
+  zoom: number;
+  box: MapBoundingBox;
+};
 
 /** `default` — standard pin; `user-location` — round dot for the viewer's position. */
 export type AppMarkerVariant = 'default' | 'user-location';

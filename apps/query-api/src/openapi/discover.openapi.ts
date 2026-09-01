@@ -35,6 +35,7 @@ registry.registerPath({
       object_type: z.string().min(1),
       q: z.string().max(100).optional(),
       tags: z.union([z.string(), z.array(z.string())]).optional(),
+      box: z.string().optional().describe('Map bounding box as swLng,swLat,neLng,neLat'),
     }),
   },
   responses: {

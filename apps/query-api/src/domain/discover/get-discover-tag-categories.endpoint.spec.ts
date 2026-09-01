@@ -31,6 +31,7 @@ describe('GetDiscoverTagCategoriesEndpoint', () => {
       'restaurant',
       [{ category: 'Cuisine', value: 'Asian' }],
       undefined,
+      undefined,
     );
   });
 
@@ -43,6 +44,6 @@ describe('GetDiscoverTagCategoriesEndpoint', () => {
       query: { object_type: 'product', tags: [], q: '  burger  ' },
     });
 
-    expect(getTagCategories).toHaveBeenCalledWith('product', [], 'burger');
+    expect(getTagCategories).toHaveBeenCalledWith('product', [], 'burger', undefined);
   });
 });

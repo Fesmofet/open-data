@@ -73,6 +73,8 @@ function renderFilterSheet(
         q=""
         tags={[]}
         sort="rank"
+        box={null}
+        map={null}
         {...props}
       />
     </I18nProvider>,

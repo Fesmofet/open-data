@@ -26,7 +26,7 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   {
     name: 'discover_objects',
     description:
-      'Browse objects by type, tags (AND), sort, and optional text query. Use for catalog/discover pages, not quick search.',
+      'Browse objects by type, tags (AND), sort, optional text query, and optional map bounding box (swLng,swLat,neLng,neLat). Use for catalog/discover pages, not quick search.',
     httpEquivalent: 'GET /query/v1/discover/objects',
     specPath: 'docs/apps/query-api/spec/search.md',
   },

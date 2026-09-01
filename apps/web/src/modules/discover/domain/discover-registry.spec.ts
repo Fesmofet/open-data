@@ -3,6 +3,7 @@ import {
   getTagCategoryNamesForObjectType,
   listDiscoverObjectTypes,
   objectTypeHasTagCategoryFilters,
+  objectTypeSupportsGeo,
 } from './discover-registry';
 
 describe('discover-registry', () => {
@@ -45,5 +46,17 @@ describe('discover-registry', () => {
 
   it('hashtag has no rating dimensions in supposed_updates', () => {
     expect(getRatingDimensionNamesForObjectType('hashtag')).toEqual([]);
+  });
+
+  it('reports geo support for registry types with geo update', () => {
+    for (const type of ['restaurant', 'place', 'business', 'person', 'service'] as const) {
+      expect(objectTypeSupportsGeo(type)).toBe(true);
+    }
+  });
+
+  it('withholds geo support from non-geo types, all, and null', () => {
+    expect(objectTypeSupportsGeo('book')).toBe(false);
+    expect(objectTypeSupportsGeo('all')).toBe(false);
+    expect(objectTypeSupportsGeo(null)).toBe(false);
   });
 });

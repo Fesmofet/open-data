@@ -15,7 +15,7 @@ import {
   encodeDiscoverObjectCursor,
   encodeDiscoverUserCursor,
 } from '../domain/discover/discover-cursor';
-import type { DiscoverSort } from '../domain/discover/discover-query.schema';
+import type { DiscoverSort, DiscoverBox } from '../domain/discover/discover-query.schema';
 import { buildAutocompleteTsQuery } from './search-fts.utils';
 import { prefixUpperBound, shouldSearchObjectIdSubstring, shouldSearchPrefix } from './search-prefix.utils';
 
@@ -66,6 +66,7 @@ export interface ListDiscoverObjectsParams {
   cursor?: string;
   limit: number;
   viewerAccount?: string;
+  box?: DiscoverBox;
 }
 
 export interface ListDiscoverObjectsResult {
@@ -128,6 +129,27 @@ function buildDiscoverObjectTextMatchFilter(params: {
   }
 
   return sql`AND (${sql.join(parts, sql` OR `)})`;
+}
+
+function buildDiscoverGeoBoxFilter(box: DiscoverBox | undefined) {
+  if (!box) {
+    return sql``;
+  }
+  return sql`AND EXISTS (
+    SELECT 1 FROM (
+      SELECT ou_geo.value_geo
+      FROM object_updates ou_geo
+      WHERE ou_geo.object_id = oc.object_id
+        AND ou_geo.update_type = 'geo'
+        AND ou_geo.value_geo IS NOT NULL
+      ORDER BY ou_geo.rank_score DESC NULLS LAST, ou_geo.created_at_unix DESC
+      LIMIT 1
+    ) geo
+    WHERE ST_Intersects(
+      geo.value_geo::geometry,
+      ST_MakeEnvelope(${box.swLng}, ${box.swLat}, ${box.neLng}, ${box.neLat}, 4326)
+    )
+  )`;
 }
 
 @Injectable()
@@ -209,6 +231,8 @@ export class DiscoverRepository {
           ? sql`AND ${sql.join(tagExistsFragments, sql` AND `)}`
           : sql``;
 
+      const geoBoxFilter = buildDiscoverGeoBoxFilter(params.box);
+
       const result = await sql<DiscoverObjectCandidateRow>`
         SELECT oc.object_id AS object_id, oc.created_at AS created_at, oc.weight AS weight
         FROM objects_core oc
@@ -216,6 +240,7 @@ export class DiscoverRepository {
           ${objectTypeFilter}
           ${textMatchFilter}
           ${tagFilter}
+          ${geoBoxFilter}
           ${cursorFilter}
         ${orderClause}
         LIMIT ${fetchLimit}
@@ -245,6 +270,7 @@ export class DiscoverRepository {
     objectType: string,
     activeTags: DiscoverTagFilter[] = [],
     q?: string,
+    box?: DiscoverBox,
   ): Promise<DiscoverTagCategoryRow[]> {
     const trimmed = objectType.trim();
     if (!trimmed) {
@@ -252,11 +278,11 @@ export class DiscoverRepository {
     }
 
     const qTrimmed = q?.trim() ?? '';
-    if (qTrimmed.length > 0) {
-      return this.getTagCategoriesWithTextQuery(trimmed, activeTags, qTrimmed);
+    if (qTrimmed.length > 0 || box) {
+      return this.getTagCategoriesFiltered(trimmed, activeTags, qTrimmed, box);
     }
 
-    const useCache = activeTags.length === 0;
+    const useCache = activeTags.length === 0 && !box;
     const redis = this.redisFactory.getClient(0);
     const key = redisKey.discoverTagCategories(trimmed);
     if (useCache) {
@@ -345,19 +371,21 @@ export class DiscoverRepository {
     }
   }
 
-  private async getTagCategoriesWithTextQuery(
+  private async getTagCategoriesFiltered(
     objectType: string,
     activeTags: DiscoverTagFilter[],
     qTrimmed: string,
+    box?: DiscoverBox,
   ): Promise<DiscoverTagCategoryRow[]> {
-    const tsQueryCheck = buildAutocompleteTsQuery(qTrimmed);
-    if (!canDiscoverObjectTextSearch(qTrimmed)) {
+    if (qTrimmed.length > 0 && !canDiscoverObjectTextSearch(qTrimmed)) {
       return [];
     }
 
-    const tsQuery = tsQueryCheck;
-    const includeIdSubstring = shouldSearchObjectIdSubstring(qTrimmed);
-    const idSubstringPattern = `%${escapeIlikePattern(qTrimmed)}%`;
+    const tsQuery = qTrimmed.length > 0 ? buildAutocompleteTsQuery(qTrimmed) : null;
+    const includeIdSubstring =
+      qTrimmed.length > 0 ? shouldSearchObjectIdSubstring(qTrimmed) : false;
+    const idSubstringPattern =
+      qTrimmed.length > 0 ? `%${escapeIlikePattern(qTrimmed)}%` : null;
 
     const tagExistsFragments = activeTags.map(
       ({ category, value }) => sql`EXISTS (
@@ -381,6 +409,8 @@ export class DiscoverRepository {
         ? sql`AND ${sql.join(tagExistsFragments, sql` AND `)}`
         : sql``;
 
+    const geoBoxFilter = buildDiscoverGeoBoxFilter(box);
+
     try {
       const result = await sql<{
         category: string;
@@ -400,6 +430,7 @@ export class DiscoverRepository {
               AND oc.object_type = ${objectType}
               ${textFilter}
               ${tagFilter}
+              ${geoBoxFilter}
           )
         GROUP BY 1, 2
         ORDER BY 1 ASC, 3 DESC, 2 ASC
@@ -415,7 +446,7 @@ export class DiscoverRepository {
       }));
     } catch (error) {
       this.logger.error(
-        `getTagCategoriesWithTextQuery failed: ${error instanceof Error ? error.message : String(error)}`,
+        `getTagCategoriesFiltered failed: ${error instanceof Error ? error.message : String(error)}`,
       );
       return [];
     }

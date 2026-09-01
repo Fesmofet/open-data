@@ -28,6 +28,7 @@ export function registerDiscoverTools(server: McpServer, deps: McpToolDeps): voi
           q: args.q,
           tags: args.tags,
           sort: args.sort,
+          box: args.box,
           cursor: args.cursor,
           limit: args.limit,
         },

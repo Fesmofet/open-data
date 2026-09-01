@@ -4,9 +4,9 @@ import { useCallback, useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
-
-import { buildDiscoverHref, decodeTagFilter } from '../../domain/discover-url';
 import { CloseIcon } from '@/icons';
+
+import { buildDiscoverHref, decodeTagFilter, type DiscoverBox, type DiscoverMapView } from '../../domain/discover-url';
 
 /** Pill style for active search / tag filters in the feed column (matches header search chips, denser padding). */
 export const DISCOVER_ACTIVE_CHIP_CLASS =
@@ -18,6 +18,8 @@ export type DiscoverActiveChipsProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  box: DiscoverBox | null;
+  map: DiscoverMapView | null;
 };
 
 export function DiscoverActiveChips({
@@ -26,28 +28,32 @@ export function DiscoverActiveChips({
   q,
   tags,
   sort,
+  box,
+  map,
 }: DiscoverActiveChipsProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
   const trimmedQ = q.trim();
 
   const activeCount = useMemo(
-    () => (trimmedQ.length > 0 ? 1 : 0) + tags.length,
-    [trimmedQ, tags],
+    () => (trimmedQ.length > 0 ? 1 : 0) + tags.length + (box ? 1 : 0),
+    [trimmedQ, tags, box],
   );
 
   const pushHref = useCallback(
-    (nextTags: string[], nextQ = q) => {
+    (nextTags: string[], nextQ = q, nextBox: DiscoverBox | null = box) => {
       const href = buildDiscoverHref({
         users: usersMode,
         type: objectType ?? undefined,
         q: nextQ,
         tags: nextTags,
         sort,
+        box: nextBox,
+        map: map ?? undefined,
       });
       navigateInstant({ href, method: 'replace', scroll: false });
     },
-    [navigateInstant, usersMode, objectType, q, sort],
+    [navigateInstant, usersMode, objectType, q, sort, box, map],
   );
 
   const removeQuery = useCallback(() => {
@@ -56,14 +62,18 @@ export function DiscoverActiveChips({
 
   const removeTag = useCallback(
     (tag: string) => {
-      pushHref(tags.filter((t) => t !== tag));
+      pushHref(tags.filter((item) => item !== tag));
     },
     [pushHref, tags],
   );
 
   const clearAll = useCallback(() => {
-    pushHref([], '');
+    pushHref([], '', null);
   }, [pushHref]);
+
+  const removeMapArea = useCallback(() => {
+    pushHref(tags, q, null);
+  }, [pushHref, tags, q]);
 
   if (activeCount === 0) {
     return null;
@@ -115,6 +125,19 @@ export function DiscoverActiveChips({
             </span>
           );
         })}
+        {box ? (
+          <span className={DISCOVER_ACTIVE_CHIP_CLASS}>
+            <span className="truncate font-weight-label">{t('discover_map_area_filter')}</span>
+            <button
+              type="button"
+              aria-label={t('discover_remove_map_area')}
+              className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+              onClick={removeMapArea}
+            >
+              <CloseIcon size={16} />
+            </button>
+          </span>
+        ) : null}
       </div>
     </div>
   );

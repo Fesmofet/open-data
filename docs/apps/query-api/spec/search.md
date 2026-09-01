@@ -108,3 +108,36 @@ Object SQL and user SQL for `/search` run **in parallel** in `GetSearchEndpoint`
 ## Errors
 
 Validation failures on query params return **400** (Zod pipe). Infrastructure failures in repositories log and return empty slices / zero counts where documented.
+
+## Discover endpoints
+
+Used by the web `/discover` page (BFF proxies under `/api/discover/*`).
+
+| Method | Path | Auth |
+|--------|------|------|
+| `GET` | `/query/v1/discover/objects` | Optional `X-Viewer` |
+| `GET` | `/query/v1/discover/users` | Optional `X-Viewer` |
+| `GET` | `/query/v1/discover/tag-categories` | None |
+
+### Query parameters — `GET /discover/objects`
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `object_type` | string | no | Registry object type filter |
+| `q` | string | no | Optional FTS within discover scope (max 100 chars) |
+| `tags` | string[] | no | Tag filters (`category:value`), AND semantics |
+| `sort` | `rank` \| `newest` \| `oldest` | no | Default `rank` |
+| `box` | string | no | Map bounding box: `swLng,swLat,neLng,neLat` (WGS84). Objects must have a latest `geo` update intersecting `ST_MakeEnvelope(..., 4326)`. |
+| `cursor` | string | no | Opaque pagination cursor |
+| `limit` | integer | no | Default 20, max 50 |
+
+### Query parameters — `GET /discover/tag-categories`
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `object_type` | string | yes | Object type for facet listing |
+| `q` | string | no | Optional text filter (same FTS rules as objects) |
+| `tags` | string[] | no | Selected tags (AND) to narrow facets |
+| `box` | string | no | Same bounding box as objects; facet counts respect the geographic predicate |
+
+When `q`, any `tags`, or `box` is present, facet results are computed live and **not** read from or written to the per-`object_type` Redis cache key.

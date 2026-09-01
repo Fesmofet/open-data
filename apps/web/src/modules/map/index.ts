@@ -7,6 +7,7 @@ export type {
   MapBoundingBox,
   MapPosition,
   MapProviderPort,
+  MapViewChange,
 } from './types';
 
 export { MapProvider, useMapProvider } from './providers/map-provider.context';

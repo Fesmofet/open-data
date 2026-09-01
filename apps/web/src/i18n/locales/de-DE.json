@@ -3549,5 +3549,11 @@
   "your_reward_new": "deine Belohnung",
   "your_vote": "Ihr Vote",
   "your_vote_placeholder": "Ihr Vote (optional)",
-  "zoom": "Zoom"
+  "zoom": "Zoom",
+  "discover_map": "Map",
+  "discover_search_area": "Search area",
+  "discover_map_area_filter": "Map area",
+  "discover_remove_map_area": "Remove map area",
+  "discover_map_expand": "Expand map",
+  "discover_map_no_results": "No objects with a location in this area"
 }

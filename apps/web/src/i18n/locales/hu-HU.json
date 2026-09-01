@@ -2827,5 +2827,11 @@
   "your_reward": "Jutalmad",
   "your_vote": "A szavazatod",
   "your_vote_placeholder": "Az Ön szavazata (nem kötelező)",
-  "СЃommunity_actions": "Közösségi fellépések"
+  "СЃommunity_actions": "Közösségi fellépések",
+  "discover_map": "Map",
+  "discover_search_area": "Search area",
+  "discover_map_area_filter": "Map area",
+  "discover_remove_map_area": "Remove map area",
+  "discover_map_expand": "Expand map",
+  "discover_map_no_results": "No objects with a location in this area"
 }

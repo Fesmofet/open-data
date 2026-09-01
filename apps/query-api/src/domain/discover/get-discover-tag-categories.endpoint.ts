@@ -18,7 +18,7 @@ export class GetDiscoverTagCategoriesEndpoint {
     const objectType = input.query.object_type.trim();
     const activeTags = parseTagFilters(input.query.tags ?? []);
     const q = input.query.q?.trim() || undefined;
-    const rows = await this.discoverRepo.getTagCategories(objectType, activeTags, q);
+    const rows = await this.discoverRepo.getTagCategories(objectType, activeTags, q, input.query.box);
     const order = getTagCategoryOrderForObjectType(objectType);
     return groupDiscoverTagCategories(rows, order);
   }

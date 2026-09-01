@@ -6,7 +6,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useInstantNavigation } from '@/shared/presentation';
 import { SortDropdown } from '@/modules/user-social/presentation/components/sort-dropdown';
 
-import { buildDiscoverHref } from '../../domain/discover-url';
+import { buildDiscoverHref, type DiscoverBox, type DiscoverMapView } from '../../domain/discover-url';
 
 export type DiscoverSort = 'newest' | 'oldest' | 'rank';
 
@@ -16,6 +16,8 @@ export type DiscoverSortSelectProps = {
   q: string;
   tags: string[];
   sort: DiscoverSort;
+  box: DiscoverBox | null;
+  map: DiscoverMapView | null;
 };
 
 export function DiscoverSortSelect({
@@ -24,6 +26,8 @@ export function DiscoverSortSelect({
   q,
   tags,
   sort,
+  box,
+  map,
 }: DiscoverSortSelectProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
@@ -48,6 +52,8 @@ export function DiscoverSortSelect({
           q,
           tags,
           sort: next,
+          box,
+          map: map ?? undefined,
         });
         navigateInstant({ href, method: 'replace', scroll: false });
       }}

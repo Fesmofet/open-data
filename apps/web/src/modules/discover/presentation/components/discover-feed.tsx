@@ -2,6 +2,7 @@
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import type { DiscoverBox, DiscoverMapView } from '../../domain/discover-url';
 import { DiscoverActiveChips } from './discover-active-chips';
 import { DiscoverMobileHeader } from './discover-mobile-header';
 import { DiscoverObjectFeed } from './discover-object-feed';
@@ -14,12 +15,16 @@ export type DiscoverFeedProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  box: DiscoverBox | null;
+  map: DiscoverMapView | null;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
   showFilters: boolean;
+  showMap: boolean;
   showChooseTypePrompt: boolean;
   onOpenTypeSheet: () => void;
   onOpenFilterSheet: () => void;
+  onOpenMapSheet: () => void;
 };
 
 export function DiscoverFeed({
@@ -28,12 +33,16 @@ export function DiscoverFeed({
   q,
   tags,
   sort,
+  box,
+  map,
   viewerUsername,
   onRequireLogin,
   showFilters,
+  showMap,
   showChooseTypePrompt,
   onOpenTypeSheet,
   onOpenFilterSheet,
+  onOpenMapSheet,
 }: DiscoverFeedProps) {
   const { t } = useI18n();
 
@@ -45,9 +54,13 @@ export function DiscoverFeed({
         q={q}
         tags={tags}
         sort={sort}
+        box={box}
+        map={map}
         showFilters={showFilters}
+        showMap={showMap}
         onOpenTypeSheet={onOpenTypeSheet}
         onOpenFilterSheet={onOpenFilterSheet}
+        onOpenMapSheet={onOpenMapSheet}
       />
 
       <div className="mb-4 hidden items-center justify-between gap-3 lg:flex">
@@ -59,6 +72,8 @@ export function DiscoverFeed({
             q={q}
             tags={tags}
             sort={sort}
+            box={box}
+            map={map}
           />
         ) : null}
       </div>
@@ -70,6 +85,8 @@ export function DiscoverFeed({
           q={q}
           tags={tags}
           sort={sort}
+          box={box}
+          map={map}
         />
       </div>
 
@@ -87,6 +104,7 @@ export function DiscoverFeed({
           q={q}
           tags={tags}
           sort={sort}
+          box={box}
           viewerUsername={viewerUsername}
           onRequireLogin={onRequireLogin}
         />
