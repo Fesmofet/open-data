@@ -3,7 +3,10 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { buildOslMessageCreateOp } from '@opden-data-layer/hive-broadcast';
+import {
+  buildMessageUpdatePayload,
+  buildOslMessageUpdateOp,
+} from '@opden-data-layer/hive-broadcast';
 
 import { useOslCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
@@ -11,50 +14,41 @@ import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
-import { buildMessageCreatePayload } from '../domain/messaging.helpers';
-import type { SendMessageTarget } from '../domain/messaging.types';
-import { markChannelReadAction } from '../infrastructure/messaging.actions';
-
-export function useSendMessage(options: {
+export function useUpdateMessage(options: {
   viewerUsername: string | null;
   onRequireLogin?: () => void;
-  onSent?: () => void;
-  markReadChannelId?: string | null;
   revalidateAccountName?: string | null;
+  revalidateAfterBroadcast?: () => Promise<void>;
+  onUpdated?: (input: {
+    messageId: string;
+    body: string;
+    updatedAtUnix: number;
+  }) => void;
 }) {
   useHydrateWalletProvider();
   const oslCustomJsonId = useOslCustomJsonId();
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
-  const sendMessage = useCallback(
-    async (
-      target: SendMessageTarget,
-      body: string,
-      reply?: { replyTo: string; quoteJson: { author: string; body: string } },
-    ) => {
+  const updateMessage = useCallback(
+    async (input: { channelId: string; messageId: string; body: string }) => {
       const account = options.viewerUsername?.trim();
       if (!account) {
         options.onRequireLogin?.();
         return false;
       }
-      const trimmed = body.trim();
-      if (trimmed.length === 0) {
-        return false;
-      }
-      if (pending) {
+      const trimmed = input.body.trim();
+      if (trimmed.length === 0 || pending) {
         return false;
       }
       setPending(true);
       try {
-        const payload = buildMessageCreatePayload({
-          channelId: 'channelId' in target ? target.channelId : undefined,
-          peer: 'peer' in target ? target.peer : undefined,
+        const payload = buildMessageUpdatePayload({
+          channelId: input.channelId,
+          messageId: input.messageId,
           body: trimmed,
-          replyTo: reply?.replyTo,
-          quoteJson: reply?.quoteJson,
         });
-        const op = buildOslMessageCreateOp({
+        const op = buildOslMessageUpdateOp({
           id: oslCustomJsonId,
           creator: account,
           payload,
@@ -63,18 +57,20 @@ export function useSendMessage(options: {
           operations: [op],
         });
         await awaitTrxConfirmation(transactionId);
-        const channelId = 'channelId' in target ? target.channelId : options.markReadChannelId;
-        if (channelId) {
-          const nowUnix = Math.floor(Date.now() / 1000);
-          await markChannelReadAction(channelId, nowUnix);
-        }
+        const updatedAtUnix = Math.floor(Date.now() / 1000);
+        options.onUpdated?.({
+          messageId: input.messageId,
+          body: trimmed,
+          updatedAtUnix,
+        });
         const revalidateName = options.revalidateAccountName?.trim();
         await refreshAfterBroadcast(router, () =>
-          revalidateName
-            ? revalidateUserFeedAfterBroadcast(revalidateName)
-            : Promise.resolve(),
+          options.revalidateAfterBroadcast
+            ? options.revalidateAfterBroadcast()
+            : revalidateName
+              ? revalidateUserFeedAfterBroadcast(revalidateName)
+              : Promise.resolve(),
         );
-        options.onSent?.();
         return true;
       } catch {
         return false;
@@ -82,13 +78,8 @@ export function useSendMessage(options: {
         setPending(false);
       }
     },
-    [
-      oslCustomJsonId,
-      options,
-      pending,
-      router,
-    ],
+    [oslCustomJsonId, options, pending, router],
   );
 
-  return { sendMessage, pending };
+  return { updateMessage, pending };
 }

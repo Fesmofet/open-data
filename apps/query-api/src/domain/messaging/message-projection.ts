@@ -20,6 +20,7 @@ export type MessageDto = {
   mentions: string[];
   created_at_unix: number;
   original_created_at_unix: number | null;
+  updated_at_unix: number | null;
 };
 
 export function mapMessageToDto(row: Message): MessageDto {
@@ -49,6 +50,7 @@ export function mapMessageToDto(row: Message): MessageDto {
     mentions: row.mentions,
     created_at_unix: row.created_at_unix,
     original_created_at_unix: row.original_created_at_unix,
+    updated_at_unix: row.updated_at_unix,
   };
 }
 

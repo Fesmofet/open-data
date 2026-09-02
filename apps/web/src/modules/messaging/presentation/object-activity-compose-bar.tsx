@@ -8,14 +8,24 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import { buildMessagingMarkdownFromLexical } from '../application/build-messaging-markdown';
 import { canSendMessageBody, formatOriginalCreatedAtLabel } from '../domain/messaging.helpers';
+import type { MessagingComposeIntent } from '../domain/messaging.types';
 import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { ActivityOriginalDatePicker } from './activity-original-date-picker';
+import { MessagingComposeIntentStrip } from './messaging-compose-intent-strip';
 
 export type ObjectActivityComposeBarProps = {
   objectName: string;
   viewerUsername: string | null;
   pending?: boolean;
-  onSend: (body: string, originalCreatedAtUnix: number | null) => void | Promise<void>;
+  editorKey?: number;
+  composeIntent?: MessagingComposeIntent;
+  onDismissComposeIntent?: () => void;
+  initialBody?: string;
+  sendAriaLabel?: string;
+  onSend: (
+    body: string,
+    originalCreatedAtUnix: number | null,
+  ) => boolean | void | Promise<boolean | void>;
   onRequireLogin?: () => void;
 };
 
@@ -23,13 +33,17 @@ export function ObjectActivityComposeBar({
   objectName,
   viewerUsername,
   pending = false,
+  editorKey = 0,
+  composeIntent = null,
+  onDismissComposeIntent,
+  initialBody,
+  sendAriaLabel,
   onSend,
   onRequireLogin,
 }: ObjectActivityComposeBarProps) {
   const { t, locale } = useI18n();
   const contentBaseUrl = useIpfsContentBaseUrl();
   const [bodyLexicalJson, setBodyLexicalJson] = useState('');
-  const [editorKey, setEditorKey] = useState(0);
   const [originalCreatedAtUnix, setOriginalCreatedAtUnix] = useState<number | null>(null);
   const originalCreatedAtUnixRef = useRef(originalCreatedAtUnix);
   originalCreatedAtUnixRef.current = originalCreatedAtUnix;
@@ -50,12 +64,14 @@ export function ObjectActivityComposeBar({
       return;
     }
     const value = markdownBody;
-    const stamp = originalCreatedAtUnix;
-    setBodyLexicalJson('');
-    setOriginalCreatedAtUnix(null);
-    setEditorKey((key) => key + 1);
-    await onSend(value, stamp);
+    const stamp = composeIntent ? null : originalCreatedAtUnix;
+    const ok = await onSend(value, stamp);
+    if (ok !== false) {
+      setBodyLexicalJson('');
+      setOriginalCreatedAtUnix(null);
+    }
   }, [
+    composeIntent,
     markdownBody,
     onRequireLogin,
     onSend,
@@ -85,17 +101,25 @@ export function ObjectActivityComposeBar({
   );
 
   return (
-    <CompactComposeEditor
-      className="mb-4"
-      editorKey={editorKey}
-      bodyPlaceholder={placeholder}
-      onBodyChange={setBodyLexicalJson}
-      onSend={handleSubmit}
-      canSend={canSubmit}
-      sendAriaLabel={t('messaging_send')}
-      sendVariant="accent"
-      outputMode="lexical"
-      enableOriginalCreatedAt
+    <div className="mb-4">
+      {composeIntent ? (
+        <MessagingComposeIntentStrip
+          intent={composeIntent}
+          onDismiss={() => onDismissComposeIntent?.()}
+        />
+      ) : null}
+      <CompactComposeEditor
+        className=""
+        editorKey={editorKey}
+        initialBody={initialBody}
+        bodyPlaceholder={placeholder}
+        onBodyChange={setBodyLexicalJson}
+        onSend={handleSubmit}
+        canSend={canSubmit}
+        sendAriaLabel={sendAriaLabel ?? t('messaging_send')}
+        sendVariant="accent"
+        outputMode="lexical"
+        enableOriginalCreatedAt={composeIntent == null}
       insertPanelPreferBelow
       renderOriginalDatePicker={renderOriginalDatePicker}
       onOriginalCreatedAtSelected={setOriginalCreatedAtUnix}
@@ -117,5 +141,6 @@ export function ObjectActivityComposeBar({
         ) : null
       }
     />
+    </div>
   );
 }

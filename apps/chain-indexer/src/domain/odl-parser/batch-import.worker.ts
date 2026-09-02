@@ -34,6 +34,7 @@ import { ChannelMemberRemoveHandler } from '../osl-parser/handlers/channel-membe
 import { ChannelLeaveHandler } from '../osl-parser/handlers/channel-leave.handler';
 import { ChannelUpdateHandler } from '../osl-parser/handlers/channel-update.handler';
 import { MessageCreateHandler } from '../osl-parser/handlers/message-create.handler';
+import { MessageUpdateHandler } from '../osl-parser/handlers/message-update.handler';
 import { MessageDeleteHandler } from '../osl-parser/handlers/message-delete.handler';
 import { MessageContextExcludeHandler } from '../osl-parser/handlers/message-context-exclude.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
@@ -63,6 +64,7 @@ export class BatchImportWorker {
     private readonly channelLeaveHandler: ChannelLeaveHandler,
     private readonly channelUpdateHandler: ChannelUpdateHandler,
     private readonly messageCreateHandler: MessageCreateHandler,
+    private readonly messageUpdateHandler: MessageUpdateHandler,
     private readonly messageDeleteHandler: MessageDeleteHandler,
     private readonly messageContextExcludeHandler: MessageContextExcludeHandler,
     private readonly shopDeselectHandler: ShopDeselectHandler,
@@ -82,6 +84,7 @@ export class BatchImportWorker {
       [this.channelLeaveHandler.action]: this.channelLeaveHandler,
       [this.channelUpdateHandler.action]: this.channelUpdateHandler,
       [this.messageCreateHandler.action]: this.messageCreateHandler,
+      [this.messageUpdateHandler.action]: this.messageUpdateHandler,
       [this.messageDeleteHandler.action]: this.messageDeleteHandler,
       [this.messageContextExcludeHandler.action]: this.messageContextExcludeHandler,
       [this.shopDeselectHandler.action]: this.shopDeselectHandler,

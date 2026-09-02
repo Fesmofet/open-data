@@ -12,6 +12,7 @@ type OslEnvelopeAction =
   | 'channel_leave'
   | 'channel_update'
   | 'message_create'
+  | 'message_update'
   | 'message_delete'
   | 'message_context_exclude';
 
@@ -165,6 +166,36 @@ export function buildOslMessageCreateOp(input: BuildOslMessageCreateOpInput): Cu
   return buildOslEnvelopeOp({
     id: input.id,
     action: 'message_create',
+    payload: input.payload,
+    required_posting_auths: [input.creator],
+  });
+}
+
+export type BuildOslMessageUpdateOpInput = {
+  readonly id: string;
+  readonly creator: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslMessageUpdateOp(input: BuildOslMessageUpdateOpInput): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'message_update',
+    payload: input.payload,
+    required_posting_auths: [input.creator],
+  });
+}
+
+export type BuildOslMessageDeleteOpInput = {
+  readonly id: string;
+  readonly creator: string;
+  readonly payload: Record<string, unknown>;
+};
+
+export function buildOslMessageDeleteOp(input: BuildOslMessageDeleteOpInput): CustomJsonOp {
+  return buildOslEnvelopeOp({
+    id: input.id,
+    action: 'message_delete',
     payload: input.payload,
     required_posting_auths: [input.creator],
   });

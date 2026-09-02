@@ -16,6 +16,7 @@ import {
 } from '../domain/messaging.helpers';
 import type { MessageItem } from '../domain/messaging.types';
 import { LockIcon } from '@/icons';
+import { MessageRow } from './message-row';
 
 export type MessagingMessageListProps = {
   messages: MessageItem[];
@@ -23,14 +24,10 @@ export type MessagingMessageListProps = {
   showAuthorNames?: boolean;
   topSentinelRef?: React.RefObject<HTMLDivElement | null>;
   loadingOlder?: boolean;
+  onReply?: (message: MessageItem) => void;
+  onEdit?: (message: MessageItem) => void;
+  onDelete?: (message: MessageItem) => void | Promise<void>;
 };
-
-function formatTime(unix: number): string {
-  return new Date(unix * 1000).toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 export function MessagingMessageList({
   messages,
@@ -38,6 +35,9 @@ export function MessagingMessageList({
   showAuthorNames = false,
   topSentinelRef,
   loadingOlder = false,
+  onReply,
+  onEdit,
+  onDelete,
 }: MessagingMessageListProps) {
   const { t, locale } = useI18n();
   useHydrateWalletProvider();
@@ -63,6 +63,11 @@ export function MessagingMessageList({
         }),
       ),
     [chronological, locale],
+  );
+
+  const messagesById = useMemo(
+    () => new Map(chronological.map((message) => [message.message_id, message])),
+    [chronological],
   );
 
   const handleEncryptedClick = useCallback(
@@ -119,12 +124,6 @@ export function MessagingMessageList({
                   viewerUsername,
                   decryptedText,
                 );
-                const bubbleClass = [
-                  'max-w-[min(100%,28rem)] rounded-card px-3 py-2',
-                  outgoing
-                    ? 'bg-accent-soft text-fg'
-                    : 'border border-border bg-surface text-fg',
-                ].join(' ');
 
                 let bodyNode: React.ReactNode;
                 if (presentation.kind === 'plain' || presentation.kind === 'decrypted') {
@@ -158,12 +157,14 @@ export function MessagingMessageList({
                 }
 
                 return (
-                  <div
+                  <MessageRow
                     key={message.message_id}
-                    className={outgoing ? 'flex justify-end' : 'flex justify-start'}
-                  >
-                    <div className={bubbleClass}>
-                      {!outgoing && showAuthorNames ? (
+                    message={message}
+                    viewerUsername={viewerUsername}
+                    messagesById={messagesById}
+                    bodyNode={bodyNode}
+                    authorNode={
+                      !outgoing && showAuthorNames ? (
                         <p className="mb-1 text-caption font-weight-label">
                           <OptimisticNavLink
                             href={`/@${encodeURIComponent(message.author)}`}
@@ -172,13 +173,12 @@ export function MessagingMessageList({
                             {message.author}
                           </OptimisticNavLink>
                         </p>
-                      ) : null}
-                      {bodyNode}
-                      <p className="mt-1 text-caption text-muted">
-                        {formatTime(message.created_at_unix)}
-                      </p>
-                    </div>
-                  </div>
+                      ) : undefined
+                    }
+                    onReply={onReply}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
                 );
               })}
             </div>

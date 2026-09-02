@@ -97,13 +97,22 @@ List agent groups: `get_channels({ viewer: "<agent>", kind: "group" })`.
 
 Works with **HAS** (`has_broadcast`) or **local keys** (`wallet_broadcast`):
 
-1. `osl_build_message_create({ creator, channelId | peer, body, originalCreatedAtUnix? })` → `{ ops, opsCount, bytes }`
+1. `osl_build_message_create({ creator, channelId | peer, body, originalCreatedAtUnix?, replyTo?, quoteJson? })` → `{ ops, opsCount, bytes }`
 2. `wallet_broadcast` or `has_broadcast` → poll status
 3. Confirm via `notifications_pull` or `get_channel_messages`
 
 For **object activity archival posts** (Instagram, Facebook, reviews), pass `originalCreatedAtUnix` (unix seconds) on object channel sends. Do **not** use it on DM/group — the indexer ignores it there.
 
 DM bootstrap: omit `channel_id`, pass `peer` — indexer creates the DM channel.
+
+**Reply:** pass `replyTo` (parent `message_id`) and optional `quoteJson: { author, body }` snapshot. Indexer skips the create when `reply_to` parent is missing, tombstoned, or in another channel.
+
+### Edit / delete (author only, plaintext)
+
+1. `osl_build_message_update({ creator, channelId, messageId, body })` — full body replace; sets `updated_at_unix` on index
+2. `osl_build_message_delete({ creator, channelId, messageId })` — tombstone + row delete
+
+Encrypted messages cannot be edited. Delete is author-only for any message type.
 
 ### Encrypted (local memo only)
 
@@ -164,7 +173,7 @@ Details: [encryption-future.md](../spec/osl/encryption-future.md).
 2. `notifications_pull({ waitMs: 30000 })` when waiting for inbound
 3. `get_channel_messages` / `get_object_channel_messages` for bodies
 4. `osl_memo_decrypt` when `encrypted_body` present and viewer may decrypt
-5. `osl_build_message_create` or `osl_build_encrypted_message_create`
+5. `osl_build_message_create`, `osl_build_message_update`, `osl_build_message_delete`, or `osl_build_encrypted_message_create`
 6. `wallet_broadcast` / `has_broadcast` after user/policy approval
 7. Poll broadcast status; optionally `notifications_pull` for delivery hint
 
@@ -183,6 +192,8 @@ mcp_servers:
         - notifications_pull
         - notifications_status
         - osl_build_message_create
+        - osl_build_message_update
+        - osl_build_message_delete
         - osl_build_encrypted_message_create
         - osl_memo_decrypt
         - wallet_broadcast

@@ -28,7 +28,7 @@ describe('message-projection', () => {
     expect(dto.encrypted_body).toBe('#Ab3xYz');
     expect(dto.body).toBeNull();
     expect(dto.original_created_at_unix).toBe(1_262_304_000);
-    expect(dto).not.toHaveProperty('updated_at_unix');
+    expect(dto.updated_at_unix).toBeNull();
   });
 
   it('resolveLastMessagePreview returns encrypted flag without ciphertext', () => {
@@ -49,5 +49,31 @@ describe('message-projection', () => {
         encryption_mode: null,
       }),
     ).toEqual({ preview: 'hello', encrypted: false });
+  });
+
+  it('maps updated_at_unix on DTO', () => {
+    const dto = mapMessageToDto({
+      message_id: 'm1',
+      channel_id: 'c1',
+      author: 'alice',
+      body: 'hello',
+      encrypted_body: null,
+      encryption_mode: null,
+      encrypted_to: null,
+      encryption_v: null,
+      encryption_meta: null,
+      overflow_ref: null,
+      reply_to: null,
+      quote_json: null,
+      attachments: null,
+      mentions: [],
+      original_created_at_unix: null,
+      updated_at_unix: 1_700_000_100,
+      created_at_unix: 100,
+      event_seq: BigInt(1),
+      transaction_id: 'tx1',
+      search_vector: null,
+    });
+    expect(dto.updated_at_unix).toBe(1_700_000_100);
   });
 });

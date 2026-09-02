@@ -382,15 +382,112 @@ export function formatActivityMessageTime(
 }
 
 export function formatActivityMessageCaption(
-  message: Pick<MessageItem, 'created_at_unix' | 'original_created_at_unix'>,
+  message: Pick<
+    MessageItem,
+    'created_at_unix' | 'original_created_at_unix' | 'updated_at_unix'
+  >,
   locale: string,
   originallyLabel: string,
+  editedLabel?: string,
 ): string {
+  let base: string;
   if (message.original_created_at_unix != null) {
     const datetime = formatOriginalCreatedAtLabel(message.original_created_at_unix, locale);
-    return originallyLabel.replace('{datetime}', datetime);
+    base = originallyLabel.replace('{datetime}', datetime);
+  } else {
+    base = formatActivityMessageTime(message, locale);
   }
-  return formatActivityMessageTime(message, locale);
+  if (message.updated_at_unix != null && editedLabel) {
+    return `${base} ${editedLabel}`;
+  }
+  return base;
+}
+
+export const MESSAGE_QUOTE_BODY_MAX = 200;
+
+export function truncateQuoteBody(body: string): string {
+  const trimmed = body.trim();
+  if (trimmed.length <= MESSAGE_QUOTE_BODY_MAX) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, MESSAGE_QUOTE_BODY_MAX)}…`;
+}
+
+export type MessageQuotePreview = {
+  author: string;
+  body: string;
+  deleted: boolean;
+};
+
+function parseQuoteJson(value: unknown): { author: string; body: string } | null {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const record = value as Record<string, unknown>;
+  const author = record['author'];
+  const body = record['body'];
+  if (typeof author !== 'string' || typeof body !== 'string') {
+    return null;
+  }
+  return { author, body };
+}
+
+export function resolveMessageQuotePreview(
+  message: Pick<MessageItem, 'reply_to' | 'quote_json'>,
+  messagesById: ReadonlyMap<string, MessageItem>,
+): MessageQuotePreview | null {
+  if (!message.reply_to) {
+    return null;
+  }
+  const parent = messagesById.get(message.reply_to);
+  if (parent) {
+    return {
+      author: parent.author,
+      body: truncateQuoteBody(messageDisplayBody(parent)),
+      deleted: false,
+    };
+  }
+  const quote = parseQuoteJson(message.quote_json);
+  if (quote) {
+    return {
+      author: quote.author,
+      body: truncateQuoteBody(quote.body),
+      deleted: false,
+    };
+  }
+  return { author: '', body: '', deleted: true };
+}
+
+export function buildReplyQuoteJson(
+  message: Pick<MessageItem, 'author' | 'body' | 'overflow_ref'>,
+): { author: string; body: string } {
+  return {
+    author: message.author,
+    body: truncateQuoteBody(messageDisplayBody(message)),
+  };
+}
+
+export function messageCopyText(
+  message: Pick<MessageItem, 'body' | 'overflow_ref'>,
+): string | null {
+  const text = messageDisplayBody(message).trim();
+  return text.length > 0 ? text : null;
+}
+
+export function formatMessageTimeCaption(
+  createdAtUnix: number,
+  locale: string,
+  updatedAtUnix: number | null,
+  editedLabel?: string,
+): string {
+  const time = new Date(createdAtUnix * 1000).toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  if (updatedAtUnix != null && editedLabel) {
+    return `${time} ${editedLabel}`;
+  }
+  return time;
 }
 
 export type MessageDayGroup = {

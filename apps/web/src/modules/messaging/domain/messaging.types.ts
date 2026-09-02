@@ -65,6 +65,7 @@ export type MessageItem = {
   mentions: string[];
   created_at_unix: number;
   original_created_at_unix: number | null;
+  updated_at_unix: number | null;
 };
 
 export type MessageHistoryPage = {
@@ -93,3 +94,18 @@ export const EMPTY_LEAVE_POLICY: ChannelLeavePolicy = {
   requires_successor: false,
   eligible_successors: [],
 };
+
+export type MessagingComposeReplyIntent = {
+  mode: 'reply';
+  message: MessageItem;
+};
+
+export type MessagingComposeEditIntent = {
+  mode: 'edit';
+  message: MessageItem;
+};
+
+export type MessagingComposeIntent =
+  | MessagingComposeReplyIntent
+  | MessagingComposeEditIntent
+  | null;

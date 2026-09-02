@@ -8,6 +8,8 @@ import { useLoginModal } from '@/modules/auth';
 
 import { useSendMessage } from '../application/use-send-message';
 import { useSendEncryptedMessage } from '../application/use-send-encrypted-message';
+import { useUpdateMessage } from '../application/use-update-message';
+import { useDeleteMessage } from '../application/use-delete-message';
 import { useViewerFollowingSet } from '../application/use-viewer-following-set';
 import { useCreateGroupChannel } from '../application/use-create-group-channel';
 import { useLeaveGroupChannel } from '../application/use-leave-group-channel';
@@ -17,6 +19,7 @@ import {
   buildOptimisticGroupChannelDetail,
   buildOptimisticGroupChannelListItem,
   mergeChannelListItems,
+  buildReplyQuoteJson,
 } from '../domain/messaging.helpers';
 import {
   buildGroupChannelHref,
@@ -27,6 +30,7 @@ import type {
   ChannelListPage,
   MessageHistoryPage,
   MessageItem,
+  MessagingComposeIntent,
   SendEncryptedMessageInput,
 } from '../domain/messaging.types';
 import { EMPTY_LEAVE_POLICY } from '../domain/messaging.types';
@@ -99,6 +103,8 @@ export function MessagingInboxClient({
   const [editOpen, setEditOpen] = useState(false);
   const [pendingPeer, setPendingPeer] = useState<string | null>(initialPeer);
   const [loadingOlder, startOlderTransition] = useTransition();
+  const [composeIntent, setComposeIntent] = useState<MessagingComposeIntent>(null);
+  const [composeEditorKey, setComposeEditorKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
 
@@ -119,6 +125,30 @@ export function MessagingInboxClient({
     revalidateAccountName: viewerUsername,
     markReadChannelId: activeChannelId,
     onSent: refreshAfterSend,
+  });
+
+  const { updateMessage, pending: messageUpdatePending } = useUpdateMessage({
+    viewerUsername,
+    onRequireLogin: openLogin,
+    revalidateAccountName: viewerUsername,
+    onUpdated: ({ messageId, body, updatedAtUnix }) => {
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.message_id === messageId
+            ? { ...message, body, updated_at_unix: updatedAtUnix }
+            : message,
+        ),
+      );
+    },
+  });
+
+  const { deleteMessage } = useDeleteMessage({
+    viewerUsername,
+    onRequireLogin: openLogin,
+    revalidateAccountName: viewerUsername,
+    onDeleted: (messageId) => {
+      setMessages((prev) => prev.filter((message) => message.message_id !== messageId));
+    },
   });
 
   const { createGroupChannel, pending: groupCreatePending } = useCreateGroupChannel({
@@ -381,20 +411,80 @@ export function MessagingInboxClient({
     t('messaging_select_chat');
 
   const onSendPlain = useCallback(
-    async (body: string) => {
+    async (body: string): Promise<boolean> => {
+      if (composeIntent?.mode === 'edit') {
+        if (!activeChannelId) {
+          return false;
+        }
+        const ok = await updateMessage({
+          channelId: activeChannelId,
+          messageId: composeIntent.message.message_id,
+          body,
+        });
+        if (ok) {
+          setComposeIntent(null);
+          setComposeEditorKey((key) => key + 1);
+        }
+        return ok;
+      }
+
+      const reply =
+        composeIntent?.mode === 'reply'
+          ? {
+              replyTo: composeIntent.message.message_id,
+              quoteJson: buildReplyQuoteJson(composeIntent.message),
+            }
+          : undefined;
+
       if (pendingPeer) {
-        const ok = await sendMessage({ peer: pendingPeer }, body);
+        const ok = await sendMessage({ peer: pendingPeer }, body, reply);
         if (ok) {
           setPendingPeer(null);
+          setComposeIntent(null);
+          setComposeEditorKey((key) => key + 1);
         }
-        return;
+        return ok;
       }
+      if (!activeChannelId) {
+        return false;
+      }
+      const ok = await sendMessage({ channelId: activeChannelId }, body, reply);
+      if (ok) {
+        setComposeIntent(null);
+        setComposeEditorKey((key) => key + 1);
+      }
+      return ok;
+    },
+    [
+      activeChannelId,
+      composeIntent,
+      pendingPeer,
+      sendMessage,
+      updateMessage,
+    ],
+  );
+
+  const handleReply = useCallback((message: MessageItem) => {
+    setComposeIntent({ mode: 'reply', message });
+    setComposeEditorKey((key) => key + 1);
+  }, []);
+
+  const handleEdit = useCallback((message: MessageItem) => {
+    setComposeIntent({ mode: 'edit', message });
+    setComposeEditorKey((key) => key + 1);
+  }, []);
+
+  const handleDelete = useCallback(
+    async (message: MessageItem) => {
       if (!activeChannelId) {
         return;
       }
-      await sendMessage({ channelId: activeChannelId }, body);
+      await deleteMessage({
+        channelId: activeChannelId,
+        messageId: message.message_id,
+      });
     },
-    [activeChannelId, pendingPeer, sendMessage],
+    [activeChannelId, deleteMessage],
   );
 
   const onSendEncrypted = useCallback(
@@ -453,16 +543,35 @@ export function MessagingInboxClient({
                 showAuthorNames={showAuthorNames}
                 topSentinelRef={topSentinelRef}
                 loadingOlder={loadingOlder}
+                onReply={handleReply}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
               <div ref={bottomRef} aria-hidden className="h-px" />
               <MessagingComposeBar
+                editorKey={composeEditorKey}
                 channelKind={composeChannelKind}
                 peer={composePeer}
                 members={composeMembers}
                 viewerUsername={viewerUsername}
                 hasPriorMessages={hasPriorMessages}
-                pending={pending}
+                pending={pending || messageUpdatePending}
                 pendingEncrypted={pendingEncrypted}
+                composeIntent={composeIntent}
+                onDismissComposeIntent={() => {
+                  setComposeIntent(null);
+                  setComposeEditorKey((key) => key + 1);
+                }}
+                initialBody={
+                  composeIntent?.mode === 'edit'
+                    ? composeIntent.message.body ?? undefined
+                    : undefined
+                }
+                sendAriaLabel={
+                  composeIntent?.mode === 'edit'
+                    ? t('messaging_edit_save')
+                    : undefined
+                }
                 onSendPlain={onSendPlain}
                 onSendEncrypted={onSendEncrypted}
                 onRequireLogin={openLogin}

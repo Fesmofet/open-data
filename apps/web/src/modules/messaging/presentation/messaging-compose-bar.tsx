@@ -18,6 +18,9 @@ import {
   PlainSendDisclaimerModal,
 } from './plain-send-disclaimer-modal';
 
+import type { MessagingComposeIntent } from '../domain/messaging.types';
+import { MessagingComposeIntentStrip } from './messaging-compose-intent-strip';
+
 export type MessagingComposeBarProps = {
   channelKind: 'direct' | 'group' | 'object';
   peer?: string | null;
@@ -27,7 +30,12 @@ export type MessagingComposeBarProps = {
   disabled?: boolean;
   pending?: boolean;
   pendingEncrypted?: boolean;
-  onSendPlain: (body: string) => void | Promise<void>;
+  composeIntent?: MessagingComposeIntent;
+  onDismissComposeIntent?: () => void;
+  initialBody?: string;
+  sendAriaLabel?: string;
+  editorKey?: number;
+  onSendPlain: (body: string) => boolean | void | Promise<boolean | void>;
   onSendEncrypted: (input: SendEncryptedMessageInput) => boolean | void | Promise<boolean | void>;
   onRequireLogin?: () => void;
 };
@@ -41,6 +49,11 @@ export function MessagingComposeBar({
   disabled = false,
   pending = false,
   pendingEncrypted = false,
+  composeIntent = null,
+  onDismissComposeIntent,
+  initialBody,
+  sendAriaLabel: sendAriaLabelOverride,
+  editorKey: editorKeyProp,
   onSendPlain,
   onSendEncrypted,
   onRequireLogin,
@@ -48,7 +61,8 @@ export function MessagingComposeBar({
   const { t } = useI18n();
   const contentBaseUrl = useIpfsContentBaseUrl();
   const [bodyLexicalJson, setBodyLexicalJson] = useState('');
-  const [editorKey, setEditorKey] = useState(0);
+  const [internalEditorKey, setInternalEditorKey] = useState(0);
+  const editorKey = editorKeyProp ?? internalEditorKey;
   const [encryptEnabled, setEncryptEnabled] = useState(false);
   const [plainDisclaimerOpen, setPlainDisclaimerOpen] = useState(false);
   const [encryptModalOpen, setEncryptModalOpen] = useState(false);
@@ -85,11 +99,15 @@ export function MessagingComposeBar({
   const busy = pending || pendingEncrypted;
   const canSend = canSendMessageBody(markdownBody) && !busy;
   const lockDisabled = busy || probePending || disabled;
+  const hideEncryptToggle = composeIntent?.mode === 'reply' || composeIntent?.mode === 'edit';
+  const sendAriaLabel = sendAriaLabelOverride ?? t('messaging_send');
 
   const resetEditor = useCallback(() => {
     setBodyLexicalJson('');
-    setEditorKey((key) => key + 1);
-  }, []);
+    if (editorKeyProp == null) {
+      setInternalEditorKey((key) => key + 1);
+    }
+  }, [editorKeyProp]);
 
   const sendPlain = useCallback(
     async (value: string) => {
@@ -101,8 +119,10 @@ export function MessagingComposeBar({
         onRequireLogin?.();
         return;
       }
-      resetEditor();
-      await onSendPlain(trimmed);
+      const ok = await onSendPlain(trimmed);
+      if (ok !== false) {
+        resetEditor();
+      }
     },
     [disabled, onRequireLogin, onSendPlain, resetEditor],
   );
@@ -139,7 +159,7 @@ export function MessagingComposeBar({
       return;
     }
 
-    if (encryptEnabled) {
+    if (encryptEnabled && !hideEncryptToggle) {
       const recipient = resolvedEncryptRecipient;
       if (!recipient) {
         setEncryptModalOpen(true);
@@ -178,6 +198,7 @@ export function MessagingComposeBar({
     resolvedEncryptRecipient,
     sendEncryptedInline,
     sendPlain,
+    hideEncryptToggle,
   ]);
 
   const handleEncryptToggle = useCallback(() => {
@@ -201,7 +222,13 @@ export function MessagingComposeBar({
   return (
     <>
       <div className={MESSAGING_COLUMN_FOOTER_SHELL_CLASS}>
-        {encryptEnabled && channelKind === 'group' ? (
+        {composeIntent ? (
+          <MessagingComposeIntentStrip
+            intent={composeIntent}
+            onDismiss={() => onDismissComposeIntent?.()}
+          />
+        ) : null}
+        {encryptEnabled && channelKind === 'group' && !hideEncryptToggle ? (
           <select
             value={encryptRecipient}
             onChange={(event) => setEncryptRecipient(event.target.value)}
@@ -221,46 +248,49 @@ export function MessagingComposeBar({
             messagingCompact
             compactBottomInset
             composeTrailingInset
+            initialBody={initialBody}
             bodyPlaceholder={t('messaging_write_message')}
             onBodyChange={setBodyLexicalJson}
           />
           <div className="pointer-events-none absolute end-1.5 top-1/2 z-[65] flex -translate-y-1/2 items-center gap-0.5">
+            {!hideEncryptToggle ? (
+              <button
+                type="button"
+                title={
+                  encryptEnabled
+                    ? t('messaging_encrypt_toggle_encrypted')
+                    : t('messaging_encrypt_toggle_public')
+                }
+                aria-label={
+                  encryptEnabled
+                    ? t('messaging_encrypt_toggle_encrypted')
+                    : t('messaging_encrypt_toggle_public')
+                }
+                aria-pressed={encryptEnabled}
+                disabled={lockDisabled}
+                onClick={handleEncryptToggle}
+                className={[
+                  'pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-circle',
+                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+                  'disabled:cursor-not-allowed',
+                  encryptEnabled
+                    ? lockDisabled
+                      ? 'text-accent/40'
+                      : 'text-accent'
+                    : 'text-fg-tertiary hover:text-fg-secondary',
+                ].join(' ')}
+              >
+                {encryptEnabled ? (
+                  <LockIcon className="size-7" />
+                ) : (
+                  <LockOpenIcon className="size-7" />
+                )}
+              </button>
+            ) : null}
             <button
               type="button"
-              title={
-                encryptEnabled
-                  ? t('messaging_encrypt_toggle_encrypted')
-                  : t('messaging_encrypt_toggle_public')
-              }
-              aria-label={
-                encryptEnabled
-                  ? t('messaging_encrypt_toggle_encrypted')
-                  : t('messaging_encrypt_toggle_public')
-              }
-              aria-pressed={encryptEnabled}
-              disabled={lockDisabled}
-              onClick={handleEncryptToggle}
-              className={[
-                'pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-circle',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-                'disabled:cursor-not-allowed',
-                encryptEnabled
-                  ? lockDisabled
-                    ? 'text-accent/40'
-                    : 'text-accent'
-                  : 'text-fg-tertiary hover:text-fg-secondary',
-              ].join(' ')}
-            >
-              {encryptEnabled ? (
-                <LockIcon className="size-7" />
-              ) : (
-                <LockOpenIcon className="size-7" />
-              )}
-            </button>
-            <button
-              type="button"
-              title={t('messaging_send')}
-              aria-label={t('messaging_send')}
+              title={sendAriaLabel}
+              aria-label={sendAriaLabel}
               disabled={!canSend}
               onClick={requestSend}
               className={[

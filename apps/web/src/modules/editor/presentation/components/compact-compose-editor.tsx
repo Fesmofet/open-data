@@ -18,6 +18,7 @@ export type CompactComposeEditorProps = {
   outputMode?: 'plain' | 'lexical';
   className?: string;
   footer?: ReactNode;
+  initialBody?: string;
   enableOriginalCreatedAt?: boolean;
   insertPanelPreferBelow?: boolean;
   renderOriginalDatePicker?: (props: { onSelect: (unix: number) => void }) => ReactNode;
@@ -40,6 +41,7 @@ export function CompactComposeEditor({
   outputMode = 'plain',
   className = '',
   footer,
+  initialBody,
   enableOriginalCreatedAt,
   insertPanelPreferBelow,
   renderOriginalDatePicker,
@@ -55,6 +57,7 @@ export function CompactComposeEditor({
           compact
           compactBottomInset
           messagingCompact={outputMode === 'lexical'}
+          initialBody={initialBody}
           bodyPlaceholder={bodyPlaceholder}
           onBodyChange={onBodyChange}
           enableOriginalCreatedAt={enableOriginalCreatedAt}

@@ -4,9 +4,13 @@ import {
   buildEncryptedMessageCreatePayload,
   buildGroupChannelCreatePayload,
   buildMessageCreatePayload,
+  buildMessageDeletePayload,
+  buildMessageUpdatePayload,
   buildObjectChannelCreatePayload,
   buildOslChannelCreateOp,
   buildOslMessageCreateOp,
+  buildOslMessageDeleteOp,
+  buildOslMessageUpdateOp,
   generateGroupChannelId,
 } from '@opden-data-layer/hive-broadcast';
 import {
@@ -82,6 +86,8 @@ export class OslMessagingService {
     peer?: string;
     body: string;
     originalCreatedAtUnix?: number | null;
+    replyTo?: string;
+    quoteJson?: { author: string; body: string };
   }): BuildResult {
     const creator = normalizeAccount(input.creator);
     const payload = buildMessageCreatePayload({
@@ -89,8 +95,48 @@ export class OslMessagingService {
       peer: input.peer,
       body: input.body,
       originalCreatedAtUnix: input.originalCreatedAtUnix,
+      replyTo: input.replyTo,
+      quoteJson: input.quoteJson,
     });
     const op = buildOslMessageCreateOp({
+      id: this.config.get('oslCustomJsonId', { infer: true }),
+      creator,
+      payload,
+    });
+    return this.singleOpBuildResult(op);
+  }
+
+  buildMessageUpdate(input: {
+    creator: string;
+    channelId: string;
+    messageId: string;
+    body: string;
+  }): BuildResult {
+    const creator = normalizeAccount(input.creator);
+    const payload = buildMessageUpdatePayload({
+      channelId: input.channelId,
+      messageId: input.messageId,
+      body: input.body,
+    });
+    const op = buildOslMessageUpdateOp({
+      id: this.config.get('oslCustomJsonId', { infer: true }),
+      creator,
+      payload,
+    });
+    return this.singleOpBuildResult(op);
+  }
+
+  buildMessageDelete(input: {
+    creator: string;
+    channelId: string;
+    messageId: string;
+  }): BuildResult {
+    const creator = normalizeAccount(input.creator);
+    const payload = buildMessageDeletePayload({
+      channelId: input.channelId,
+      messageId: input.messageId,
+    });
+    const op = buildOslMessageDeleteOp({
       id: this.config.get('oslCustomJsonId', { infer: true }),
       creator,
       payload,

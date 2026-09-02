@@ -10,31 +10,35 @@ import {
   groupMessagesByDay,
   isOutgoingMessage,
   resolveMessagePresentation,
-  formatActivityMessageCaption,
 } from '../domain/messaging.helpers';
 import type { MessageItem } from '../domain/messaging.types';
+import { MessageRow } from './message-row';
 
 export type ObjectActivityFeedListProps = {
   messages: MessageItem[];
   viewerUsername: string | null;
   loadingMore?: boolean;
   sentinelRef?: React.RefObject<HTMLDivElement | null>;
+  onReply?: (message: MessageItem) => void;
+  onEdit?: (message: MessageItem) => void;
+  onDelete?: (message: MessageItem) => void | Promise<void>;
 };
-
-function formatTime(unix: number, locale: string): string {
-  return new Date(unix * 1000).toLocaleTimeString(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 export function ObjectActivityFeedList({
   messages,
   viewerUsername,
   loadingMore = false,
   sentinelRef,
+  onReply,
+  onEdit,
+  onDelete,
 }: ObjectActivityFeedListProps) {
   const { t, locale } = useI18n();
+
+  const messagesById = useMemo(
+    () => new Map(messages.map((message) => [message.message_id, message])),
+    [messages],
+  );
 
   const groups = useMemo(
     () =>
@@ -45,7 +49,7 @@ export function ObjectActivityFeedList({
           day: 'numeric',
         }),
       ),
-    [locale, messages],
+    [messages, locale],
   );
 
   if (messages.length === 0) {
@@ -69,24 +73,9 @@ export function ObjectActivityFeedList({
             {group.messages.map((message) => {
               const outgoing = isOutgoingMessage(message, viewerUsername);
               const presentation = resolveMessagePresentation(message, viewerUsername);
-              const bubbleClass = [
-                'max-w-[min(100%,28rem)] rounded-card px-3 py-2',
-                outgoing
-                  ? 'bg-accent-soft text-fg'
-                  : 'border border-border bg-surface text-fg',
-              ].join(' ');
 
               let bodyNode: React.ReactNode;
-              if (presentation.kind === 'plain') {
-                bodyNode = (
-                  <div
-                    className="blog-post-body break-words text-body-sm [&_a]:text-link [&_a]:underline"
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizePostBodyHtml(presentation.text),
-                    }}
-                  />
-                );
-              } else if (presentation.kind === 'decrypted') {
+              if (presentation.kind === 'plain' || presentation.kind === 'decrypted') {
                 bodyNode = (
                   <div
                     className="blog-post-body break-words text-body-sm [&_a]:text-link [&_a]:underline"
@@ -104,12 +93,15 @@ export function ObjectActivityFeedList({
               }
 
               return (
-                <div
+                <MessageRow
                   key={message.message_id}
-                  className={outgoing ? 'flex justify-end' : 'flex justify-start'}
-                >
-                  <div className={bubbleClass}>
-                    {!outgoing ? (
+                  message={message}
+                  viewerUsername={viewerUsername}
+                  messagesById={messagesById}
+                  bodyNode={bodyNode}
+                  activityCaption
+                  authorNode={
+                    !outgoing ? (
                       <p className="mb-1 text-caption font-weight-label">
                         <OptimisticNavLink
                           href={`/@${encodeURIComponent(message.author)}`}
@@ -118,19 +110,12 @@ export function ObjectActivityFeedList({
                           {message.author}
                         </OptimisticNavLink>
                       </p>
-                    ) : null}
-                    {bodyNode}
-                    <p className="mt-1 text-caption text-muted">
-                      {message.original_created_at_unix != null
-                        ? formatActivityMessageCaption(
-                            message,
-                            locale,
-                            t('object_activity_original_date_caption'),
-                          )
-                        : formatTime(message.created_at_unix, locale)}
-                    </p>
-                  </div>
-                </div>
+                    ) : undefined
+                  }
+                  onReply={onReply}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
               );
             })}
           </div>

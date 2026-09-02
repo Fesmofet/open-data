@@ -2,6 +2,7 @@ import {
   channelLeavePayloadSchema,
   channelCreatePayloadSchema,
   messageCreatePayloadSchema,
+  messageUpdatePayloadSchema,
 } from './osl-envelope.schema';
 
 describe('messageCreatePayloadSchema', () => {
@@ -122,6 +123,61 @@ describe('channelCreatePayloadSchema group members cap', () => {
       kind: 'group',
       channel_id: 'grp-1',
       members,
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('messageUpdatePayloadSchema', () => {
+  it('accepts plaintext body update', () => {
+    const result = messageUpdatePayloadSchema.safeParse({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+      body: 'edited',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects update without body', () => {
+    expect(
+      messageUpdatePayloadSchema.safeParse({
+        channel_id: 'ch-1',
+        message_id: 'tx-0-0-0',
+      }).success,
+    ).toBe(false);
+    expect(
+      messageUpdatePayloadSchema.safeParse({
+        channel_id: 'ch-1',
+        message_id: 'tx-0-0-0',
+        body: '',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('accepts body length 65535', () => {
+    const result = messageUpdatePayloadSchema.safeParse({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+      body: 'x'.repeat(65535),
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects encrypted_body on update', () => {
+    const result = messageUpdatePayloadSchema.safeParse({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+      body: 'edited',
+      encrypted_body: '#cipher',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects body longer than 65535', () => {
+    const result = messageUpdatePayloadSchema.safeParse({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+      body: 'x'.repeat(65536),
     });
     expect(result.success).toBe(false);
   });

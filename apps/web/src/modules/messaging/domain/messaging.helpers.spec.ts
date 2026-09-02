@@ -1,8 +1,12 @@
 import {
   canViewerAttemptDecryptMessage,
+  buildReplyQuoteJson,
   formatActivityMessageCaption,
   formatActivityMessageTime,
+  formatMessageTimeCaption,
+  messageCopyText,
   resolveMessagePresentation,
+  resolveMessageQuotePreview,
 } from './messaging.helpers';
 import type { MessageItem } from './messaging.types';
 
@@ -139,5 +143,106 @@ describe('formatActivityMessageCaption', () => {
     );
     expect(caption).toContain('Originally');
     expect(caption).toContain('2010');
+  });
+
+  it('shows original caption and edited label when both stamps are set', () => {
+    const caption = formatActivityMessageCaption(
+      {
+        created_at_unix: 1_700_000_000,
+        original_created_at_unix: 1_262_304_000,
+        updated_at_unix: 1_700_000_100,
+      },
+      'en-US',
+      'Originally {datetime}',
+      'edited',
+    );
+    expect(caption).toContain('Originally');
+    expect(caption).toContain('2010');
+    expect(caption).toContain('edited');
+  });
+});
+
+describe('formatMessageTimeCaption', () => {
+  it('shows edited label only when updated_at_unix is set', () => {
+    const createdAtUnix = 1_700_000_000;
+    const withoutEdit = formatMessageTimeCaption(createdAtUnix, 'en-US', null, 'edited');
+    const withEdit = formatMessageTimeCaption(
+      createdAtUnix,
+      'en-US',
+      1_700_000_100,
+      'edited',
+    );
+
+    expect(withoutEdit).not.toContain('edited');
+    expect(withEdit).toContain('edited');
+    expect(withEdit.startsWith(withoutEdit)).toBe(true);
+  });
+});
+
+describe('resolveMessageQuotePreview', () => {
+  const parent: MessageItem = {
+    message_id: 'parent-0-0-0',
+    channel_id: 'ch-1',
+    author: 'bob',
+    body: 'hello',
+    encrypted_body: null,
+    encryption: null,
+    overflow_ref: null,
+    reply_to: null,
+    quote_json: null,
+    attachments: null,
+    mentions: [],
+    created_at_unix: 1_700_000_000,
+    original_created_at_unix: null,
+    updated_at_unix: null,
+  };
+
+  it('prefers live parent in page', () => {
+    const messagesById = new Map([[parent.message_id, parent]]);
+    expect(
+      resolveMessageQuotePreview(
+        { reply_to: 'parent-0-0-0', quote_json: null },
+        messagesById,
+      ),
+    ).toEqual({ author: 'bob', body: 'hello', deleted: false });
+  });
+
+  it('falls back to quote_json when parent is not loaded', () => {
+    expect(
+      resolveMessageQuotePreview(
+        {
+          reply_to: 'parent-0-0-0',
+          quote_json: { author: 'bob', body: 'hello' },
+        },
+        new Map(),
+      ),
+    ).toEqual({ author: 'bob', body: 'hello', deleted: false });
+  });
+
+  it('returns deleted placeholder when parent and quote_json are gone', () => {
+    expect(
+      resolveMessageQuotePreview(
+        { reply_to: 'parent-0-0-0', quote_json: null },
+        new Map(),
+      ),
+    ).toEqual({ author: '', body: '', deleted: true });
+  });
+});
+
+describe('messageCopyText', () => {
+  it('returns plaintext body for copy', () => {
+    expect(messageCopyText({ body: 'hello', overflow_ref: null })).toBe('hello');
+  });
+
+  it('returns null when body is empty', () => {
+    expect(messageCopyText({ body: null, overflow_ref: null })).toBeNull();
+  });
+});
+
+describe('buildReplyQuoteJson', () => {
+  it('captures author and full body for reply snapshot', () => {
+    expect(
+      buildReplyQuoteJson({ author: 'bob', body: 'hello', overflow_ref: null }),
+    ).toEqual({ author: 'bob', body: 'hello' });
   });
 });

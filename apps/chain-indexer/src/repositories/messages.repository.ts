@@ -35,6 +35,20 @@ export class MessagesRepository {
     await this.executor(trx).insertInto('messages').values(row).execute();
   }
 
+  async updateBody(
+    input: { message_id: string; body: string; updated_at_unix: number },
+    trx?: DbExecutor,
+  ): Promise<void> {
+    await this.executor(trx)
+      .updateTable('messages')
+      .set({
+        body: input.body,
+        updated_at_unix: input.updated_at_unix,
+      })
+      .where('message_id', '=', input.message_id)
+      .execute();
+  }
+
   async deleteAndTombstone(
     tombstone: NewMessageTombstone,
     trx?: DbExecutor,

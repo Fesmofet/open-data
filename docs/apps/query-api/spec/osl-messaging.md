@@ -31,6 +31,7 @@ tags: [query-api, messaging]
 |-------|-------------|
 | `encrypted_body` | Ciphertext or `null` for plaintext |
 | `encryption` | `{ v, mode, to }` or `null` |
+| `updated_at_unix` | Unix seconds when author last edited plaintext body, or `null` |
 
 Server **never** decrypts. Channel list preview: encrypted last message → `last_message_preview: null`, `last_message_encrypted: true` (ciphertext never in preview).
 

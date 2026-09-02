@@ -114,6 +114,16 @@ export class MessageCreateHandler implements OdlActionHandler {
       return;
     }
 
+    if (data.reply_to != null) {
+      const parentValid = await this.isValidReplyParent(data.reply_to, channelId);
+      if (!parentValid) {
+        this.logger.warn(
+          `message_create: invalid reply_to '${data.reply_to}' for channel '${channelId}'; skipping`,
+        );
+        return;
+      }
+    }
+
     const mentions = data.mentions ?? [];
     const nowUnix = Math.trunc(Date.now() / 1000);
     const originalCreatedAtUnix = resolveOriginalCreatedAtUnix({
@@ -210,6 +220,20 @@ export class MessageCreateHandler implements OdlActionHandler {
         },
       });
     }
+  }
+
+  private async isValidReplyParent(
+    replyTo: string,
+    channelId: string,
+  ): Promise<boolean> {
+    if (await this.messagesRepository.tombstoneExists(replyTo)) {
+      return false;
+    }
+    const parent = await this.messagesRepository.findById(replyTo);
+    if (!parent || parent.channel_id !== channelId) {
+      return false;
+    }
+    return true;
   }
 
   private resolveDmMembers(

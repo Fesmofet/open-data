@@ -248,6 +248,16 @@ export const messageDeletePayloadSchema = z
   })
   .strict();
 
+export const messageUpdatePayloadSchema = z
+  .object({
+    channel_id: z.string().min(1).max(256),
+    message_id: z.string().min(1).max(256),
+    body: z.string().min(1).max(65535),
+  })
+  .strict();
+
+export type MessageUpdatePayload = z.infer<typeof messageUpdatePayloadSchema>;
+
 export const messageContextExcludePayloadSchema = z
   .object({
     message_id: z.string().min(1).max(256),
@@ -262,6 +272,7 @@ const oslMessagingActions = [
   'channel_leave',
   'channel_update',
   'message_create',
+  'message_update',
   'message_delete',
   'message_context_exclude',
 ] as const;

@@ -28,6 +28,7 @@ export const ClockIcon = createNamedIcon('clock');
 export const CloseIcon = createNamedIcon('close');
 export const CodeIcon = createNamedIcon('code');
 export const CommentIcon = createNamedIcon('comment');
+export const CopyIcon = createNamedIcon('copy');
 export const DimensionsIcon = createNamedIcon('dimensions');
 export const DollarIcon = createNamedIcon('dollar');
 export const EmojiIcon = createNamedIcon('emoji');
@@ -64,6 +65,7 @@ export const PlayIcon = createNamedIcon('play');
 export const PlusIcon = createNamedIcon('plus');
 export const QrCodeIcon = createNamedIcon('qr-code');
 export const ReblogIcon = createNamedIcon('reblog');
+export const ReplyIcon = createNamedIcon('reply');
 export const RewardFlashlightIcon = createNamedIcon('reward-flashlight');
 export const RulerDimensionLineIcon = createNamedIcon('ruler-dimension-line');
 export const SearchIcon = createNamedIcon('search');
@@ -76,6 +78,7 @@ export const StarIcon = createNamedIcon('star');
 export const TableIcon = createNamedIcon('table');
 export const ThumbDownIcon = createNamedIcon('thumb-down');
 export const ThumbUpIcon = createNamedIcon('thumb-up');
+export const TrashIcon = createNamedIcon('trash');
 export const TrendingUpIcon = createNamedIcon('trending-up');
 export const UserIcon = createNamedIcon('user');
 export const UserMinusIcon = createNamedIcon('user-minus');
@@ -111,6 +114,7 @@ export const NAMED_ICON_BY_NAME = {
   close: CloseIcon,
   code: CodeIcon,
   comment: CommentIcon,
+  copy: CopyIcon,
   dimensions: DimensionsIcon,
   dollar: DollarIcon,
   emoji: EmojiIcon,
@@ -147,6 +151,7 @@ export const NAMED_ICON_BY_NAME = {
   plus: PlusIcon,
   'qr-code': QrCodeIcon,
   reblog: ReblogIcon,
+  reply: ReplyIcon,
   'reward-flashlight': RewardFlashlightIcon,
   'ruler-dimension-line': RulerDimensionLineIcon,
   search: SearchIcon,
@@ -159,6 +164,7 @@ export const NAMED_ICON_BY_NAME = {
   table: TableIcon,
   'thumb-down': ThumbDownIcon,
   'thumb-up': ThumbUpIcon,
+  trash: TrashIcon,
   'trending-up': TrendingUpIcon,
   user: UserIcon,
   'user-minus': UserMinusIcon,

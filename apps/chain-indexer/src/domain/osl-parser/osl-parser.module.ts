@@ -13,6 +13,7 @@ import { ChannelMemberRemoveHandler } from './handlers/channel-member-remove.han
 import { ChannelLeaveHandler } from './handlers/channel-leave.handler';
 import { ChannelUpdateHandler } from './handlers/channel-update.handler';
 import { MessageCreateHandler } from './handlers/message-create.handler';
+import { MessageUpdateHandler } from './handlers/message-update.handler';
 import { MessageDeleteHandler } from './handlers/message-delete.handler';
 import { MessageContextExcludeHandler } from './handlers/message-context-exclude.handler';
 
@@ -24,6 +25,7 @@ const messagingHandlers = [
   ChannelLeaveHandler,
   ChannelUpdateHandler,
   MessageCreateHandler,
+  MessageUpdateHandler,
   MessageDeleteHandler,
   MessageContextExcludeHandler,
 ];

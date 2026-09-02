@@ -52,6 +52,75 @@ describe('OslMessagingService', () => {
     expect(parsed.events[0]?.payload).toEqual({ peer: 'bob', body: 'hello' });
   });
 
+  it('buildMessageCreate omits reply_to when unset', () => {
+    const result = service.buildMessageCreate({
+      creator: 'alice',
+      channelId: 'ch-1',
+      body: 'hello',
+    });
+    const op = result.ops[0] as { json: string };
+    const parsed = JSON.parse(op.json) as {
+      events: { payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events[0]?.payload).toEqual({ channel_id: 'ch-1', body: 'hello' });
+    expect(parsed.events[0]?.payload).not.toHaveProperty('reply_to');
+  });
+
+  it('buildMessageCreate includes reply_to when set', () => {
+    const result = service.buildMessageCreate({
+      creator: 'alice',
+      channelId: 'ch-1',
+      body: 're',
+      replyTo: 'parent-0-0-0',
+    });
+    const op = result.ops[0] as { json: string };
+    const parsed = JSON.parse(op.json) as {
+      events: { payload: Record<string, string> }[];
+    };
+    expect(parsed.events[0]?.payload).toEqual({
+      channel_id: 'ch-1',
+      body: 're',
+      reply_to: 'parent-0-0-0',
+    });
+  });
+
+  it('buildMessageUpdate returns message_update op', () => {
+    const result = service.buildMessageUpdate({
+      creator: 'alice',
+      channelId: 'ch-1',
+      messageId: 'tx-0-0-0',
+      body: 'hello edited',
+    });
+    const op = result.ops[0] as { json: string };
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, string> }[];
+    };
+    expect(parsed.events[0]?.action).toBe('message_update');
+    expect(parsed.events[0]?.payload).toEqual({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+      body: 'hello edited',
+    });
+    expect(parsed.events[0]?.payload).not.toHaveProperty('encrypted_body');
+  });
+
+  it('buildMessageDelete returns message_delete op', () => {
+    const result = service.buildMessageDelete({
+      creator: 'alice',
+      channelId: 'ch-1',
+      messageId: 'tx-0-0-0',
+    });
+    const op = result.ops[0] as { json: string };
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, string> }[];
+    };
+    expect(parsed.events[0]?.action).toBe('message_delete');
+    expect(parsed.events[0]?.payload).toEqual({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+    });
+  });
+
   it('rejects encrypted build when signing mode is not local', async () => {
     const getMock = config.get as jest.Mock;
     getMock.mockImplementation((key: string) => {

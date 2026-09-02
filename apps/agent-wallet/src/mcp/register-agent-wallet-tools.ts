@@ -402,11 +402,60 @@ export function registerAgentWalletTools(
         peer: z.string().optional(),
         body: z.string().min(1),
         originalCreatedAtUnix: z.number().int().optional(),
+        replyTo: z.string().optional(),
+        quoteJson: z
+          .object({
+            author: z.string().min(1),
+            body: z.string(),
+          })
+          .optional(),
       }),
     },
     async (args) => {
       try {
         const result = deps.oslMessaging.buildMessageCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_build_message_update',
+    {
+      description:
+        'Build OSL message_update custom_json op (author-only full body replace).',
+      inputSchema: z.object({
+        creator: z.string().min(1),
+        channelId: z.string().min(1),
+        messageId: z.string().min(1),
+        body: z.string().min(1).max(65535),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.oslMessaging.buildMessageUpdate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_build_message_delete',
+    {
+      description: 'Build OSL message_delete custom_json op (author-only).',
+      inputSchema: z.object({
+        creator: z.string().min(1),
+        channelId: z.string().min(1),
+        messageId: z.string().min(1),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.oslMessaging.buildMessageDelete(args);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);

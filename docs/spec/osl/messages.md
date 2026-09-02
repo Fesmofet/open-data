@@ -66,6 +66,19 @@ See [encryption-future.md](./encryption-future.md) for UX and crypto semantics.
 - **Author-only** — tombstone + hard delete from `messages`.
 - No admin/creator/object-creator delete of others; use mute on read-path.
 
+## `message_update` (v1)
+
+- **Author-only** full body replace on **plaintext** messages (`body` set, `encrypted_body` null).
+- Payload: `{ channel_id, message_id, body }` — `body` length 1–65535; no `encrypted_body`.
+- Sets `updated_at_unix` from block timestamp; does not change `created_at_unix`, `reply_to`, or `original_created_at_unix`.
+- Warn-skipped when: tombstoned, missing, wrong channel, non-author, or encrypted row.
+
+## Reply validation (`message_create`)
+
+When `reply_to` is present, the indexer requires the parent message to exist in the **same channel** and not be tombstoned. Invalid `reply_to` → **entire create skipped** (no insert).
+
+Optional `quote_json` snapshot (`{ author, body }`) is stored as-is for display when the parent is not loaded.
+
 ## Object channel plaintext
 
 - **`message_create` on object channels:** plaintext (`body`) only; `encrypted_body` is warn-skipped by the indexer (see [channels.md](./channels.md)).

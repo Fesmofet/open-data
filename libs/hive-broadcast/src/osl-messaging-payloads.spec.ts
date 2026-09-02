@@ -2,9 +2,15 @@ import {
   buildEncryptedMessageCreatePayload,
   buildGroupChannelCreatePayload,
   buildMessageCreatePayload,
+  buildMessageDeletePayload,
+  buildMessageUpdatePayload,
   buildObjectChannelCreatePayload,
   generateGroupChannelId,
 } from './osl-messaging-payloads';
+import {
+  buildOslMessageDeleteOp,
+  buildOslMessageUpdateOp,
+} from './osl-operations';
 
 describe('osl-messaging-payloads', () => {
   it('generateGroupChannelId returns grp- prefixed uuid', () => {
@@ -95,5 +101,101 @@ describe('osl-messaging-payloads', () => {
       encrypted_body: '#AbC',
       encryption: { v: 1, mode: 'memo', to: 'bob' },
     });
+  });
+
+  it('includes reply_to and quote_json when set', () => {
+    expect(
+      buildMessageCreatePayload({
+        channelId: 'ch-1',
+        body: 're',
+        replyTo: 'parent-0-0-0',
+        quoteJson: { author: 'bob', body: 'hello' },
+      }),
+    ).toEqual({
+      channel_id: 'ch-1',
+      body: 're',
+      reply_to: 'parent-0-0-0',
+      quote_json: { author: 'bob', body: 'hello' },
+    });
+  });
+
+  it('omits reply fields when unset', () => {
+    const payload = buildMessageCreatePayload({ channelId: 'ch-1', body: 'hello' });
+    expect(payload).not.toHaveProperty('reply_to');
+    expect(payload).not.toHaveProperty('quote_json');
+  });
+
+  it('buildMessageUpdatePayload trims body and never emits encrypted_body', () => {
+    const payload = buildMessageUpdatePayload({
+      channelId: 'ch-1',
+      messageId: 'tx-0-0-0',
+      body: ' edited ',
+    });
+    expect(payload).toEqual({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+      body: 'edited',
+    });
+    expect(payload).not.toHaveProperty('encrypted_body');
+  });
+
+  it('buildMessageDeletePayload includes channel and message ids', () => {
+    expect(
+      buildMessageDeletePayload({ channelId: 'ch-1', messageId: 'tx-0-0-0' }),
+    ).toEqual({
+      channel_id: 'ch-1',
+      message_id: 'tx-0-0-0',
+    });
+  });
+
+  it('update and delete ops wrap v1 envelopes', () => {
+    const updatePayload = buildMessageUpdatePayload({
+      channelId: 'ch-1',
+      messageId: 'tx-0-0-0',
+      body: 'edited',
+    });
+    const deletePayload = buildMessageDeletePayload({
+      channelId: 'ch-1',
+      messageId: 'tx-0-0-0',
+    });
+
+    const updateOp = buildOslMessageUpdateOp({
+      id: 'odl',
+      creator: 'alice',
+      payload: updatePayload,
+    });
+    const deleteOp = buildOslMessageDeleteOp({
+      id: 'odl',
+      creator: 'alice',
+      payload: deletePayload,
+    });
+
+    expect(JSON.parse(updateOp.json)).toEqual({
+      events: [
+        {
+          action: 'message_update',
+          v: 1,
+          payload: {
+            channel_id: 'ch-1',
+            message_id: 'tx-0-0-0',
+            body: 'edited',
+          },
+        },
+      ],
+    });
+    expect(JSON.parse(deleteOp.json)).toEqual({
+      events: [
+        {
+          action: 'message_delete',
+          v: 1,
+          payload: {
+            channel_id: 'ch-1',
+            message_id: 'tx-0-0-0',
+          },
+        },
+      ],
+    });
+    expect(updateOp.required_posting_auths).toEqual(['alice']);
+    expect(deleteOp.required_posting_auths).toEqual(['alice']);
   });
 });

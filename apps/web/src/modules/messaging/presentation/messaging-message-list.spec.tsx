@@ -30,6 +30,12 @@ jest.mock('@/shared/presentation', () => ({
       Close
     </button>
   ),
+  ModalShell: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
+    open ? <div>{children}</div> : null,
+}));
+
+jest.mock('@/shared/presentation/layout/hooks/use-breakpoint', () => ({
+  useMediaQuery: () => false,
 }));
 
 jest.mock('@/modules/auth', () => ({
@@ -66,6 +72,7 @@ describe('MessagingMessageList', () => {
         mentions: [],
         created_at_unix: 1_694_000_000,
         original_created_at_unix: null,
+        updated_at_unix: null,
       },
     ];
 
@@ -96,6 +103,7 @@ describe('MessagingMessageList', () => {
         mentions: [],
         created_at_unix: 1_694_000_000,
         original_created_at_unix: null,
+        updated_at_unix: null,
       },
     ];
 
@@ -126,6 +134,7 @@ describe('MessagingMessageList', () => {
         mentions: [],
         created_at_unix: 1_694_000_000,
         original_created_at_unix: null,
+        updated_at_unix: null,
       },
     ];
 
@@ -159,6 +168,7 @@ describe('MessagingMessageList', () => {
         mentions: [],
         created_at_unix: 1_694_000_000,
         original_created_at_unix: null,
+        updated_at_unix: null,
       },
     ];
 

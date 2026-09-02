@@ -59,27 +59,54 @@ export function buildMessageCreatePayload(input: {
   peer?: string;
   body: string;
   originalCreatedAtUnix?: number | null;
-}): Record<string, string | number> {
+  replyTo?: string;
+  quoteJson?: { author: string; body: string };
+}): Record<string, string | number | Record<string, unknown>> {
   const body = input.body.trim();
   const stamp =
     input.originalCreatedAtUnix != null && input.originalCreatedAtUnix > 0
       ? Math.trunc(input.originalCreatedAtUnix)
       : null;
+  const base: Record<string, string | number | Record<string, unknown>> = { body };
   if (input.channelId) {
-    const payload: Record<string, string | number> = { channel_id: input.channelId, body };
-    if (stamp != null) {
-      payload['original_created_at_unix'] = stamp;
-    }
-    return payload;
+    base['channel_id'] = input.channelId;
+  } else if (input.peer) {
+    base['peer'] = input.peer;
+  } else {
+    throw new Error('channelId or peer is required');
   }
-  if (input.peer) {
-    const payload: Record<string, string | number> = { peer: input.peer, body };
-    if (stamp != null) {
-      payload['original_created_at_unix'] = stamp;
-    }
-    return payload;
+  if (stamp != null) {
+    base['original_created_at_unix'] = stamp;
   }
-  throw new Error('channelId or peer is required');
+  if (input.replyTo?.trim()) {
+    base['reply_to'] = input.replyTo.trim();
+  }
+  if (input.quoteJson) {
+    base['quote_json'] = input.quoteJson;
+  }
+  return base;
+}
+
+export function buildMessageUpdatePayload(input: {
+  channelId: string;
+  messageId: string;
+  body: string;
+}): Record<string, string> {
+  return {
+    channel_id: input.channelId,
+    message_id: input.messageId,
+    body: input.body.trim(),
+  };
+}
+
+export function buildMessageDeletePayload(input: {
+  channelId: string;
+  messageId: string;
+}): Record<string, string> {
+  return {
+    channel_id: input.channelId,
+    message_id: input.messageId,
+  };
 }
 
 export function buildEncryptedMessageCreatePayload(input: {

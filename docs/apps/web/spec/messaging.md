@@ -132,10 +132,27 @@ Photo upload uses IPFS pipeline (`IpfsImageDropZone` + `useIpfsImageUpload`). `r
 
 New group create (`New message`, 2+ users): preflight via `validate-invitees` before `channel_create`.
 
+## Message actions (edit, delete, reply, copy)
+
+Shared `MessageRow` in inbox and object Activity.
+
+| Action | Who | On-chain | Notes |
+|--------|-----|----------|-------|
+| **Edit** | Author, plaintext only | `message_update { channel_id, message_id, body }` | Compose bar enters edit mode; send label **Save** |
+| **Delete** | Author only | `message_delete { channel_id, message_id }` | Confirm modal before broadcast |
+| **Reply** | Any viewer on plaintext messages | `message_create` with `reply_to` + optional `quote_json` | Compose strip shows parent author |
+| **Copy** | Any viewer on plaintext messages | — | Clipboard = on-chain `body` (not decrypted cache) |
+
+**Encrypted messages (own):** delete only — no edit, copy, or reply (even after in-UI decrypt). **Others' encrypted:** no actions.
+
+**UI:** Desktop — hover shows reply (left) and `…` menu (right). Mobile — long-press opens bottom sheet.
+
+Action visibility uses on-chain `body` / encryption fields, not decrypted UI cache.
+
 ## Out of scope (v1)
 
 - WebSocket / live updates
-- Attachments, emoji, delete UI
+- Attachments, emoji
 - Pinned messages (empty About section)
 - Global nav unread badge
 - HiveSigner / HiveAuth decrypt

@@ -85,6 +85,27 @@ describe('MessageCreateHandler notifications', () => {
     );
   });
 
+  it('inserts create without reply_to with reply_to null', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'dm-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+    });
+
+    await handler.handle({ channel_id: 'dm-1', body: 'hello' }, baseCtx);
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ reply_to: null }),
+      expect.anything(),
+    );
+  });
+
   it('emits message_group with channel title after commit', async () => {
     const { handler, notificationEmitter } = makeHandler({
       channels: {
@@ -302,5 +323,118 @@ describe('MessageCreateHandler notifications', () => {
       expect.anything(),
     );
     nowSpy.mockRestore();
+  });
+
+  it('stores valid same-channel reply_to', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'ch-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+      messages: {
+        tombstoneExists: jest.fn().mockResolvedValue(false),
+        findById: jest.fn().mockImplementation(async (id: string) =>
+          id === 'parent-0-0-0'
+            ? { message_id: 'parent-0-0-0', channel_id: 'ch-1' }
+            : null,
+        ),
+      },
+    });
+
+    await handler.handle(
+      { channel_id: 'ch-1', body: 're', reply_to: 'parent-0-0-0' },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ reply_to: 'parent-0-0-0' }),
+      expect.anything(),
+    );
+  });
+
+  it('skips create when reply_to parent is missing', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'ch-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+      messages: {
+        findById: jest.fn().mockResolvedValue(null),
+      },
+    });
+
+    await handler.handle(
+      { channel_id: 'ch-1', body: 're', reply_to: 'parent-0-0-0' },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).not.toHaveBeenCalled();
+  });
+
+  it('skips create when reply_to parent is in another channel', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'ch-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+      messages: {
+        findById: jest.fn().mockImplementation(async (id: string) =>
+          id === 'parent-0-0-0'
+            ? { message_id: 'parent-0-0-0', channel_id: 'ch-2' }
+            : null,
+        ),
+      },
+    });
+
+    await handler.handle(
+      { channel_id: 'ch-1', body: 're', reply_to: 'parent-0-0-0' },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).not.toHaveBeenCalled();
+  });
+
+  it('skips create when reply_to parent is tombstoned', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'ch-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+      messages: {
+        tombstoneExists: jest.fn().mockImplementation(async (id: string) => id === 'parent-0-0-0'),
+        findById: jest.fn().mockImplementation(async (id: string) =>
+          id === 'parent-0-0-0'
+            ? { message_id: 'parent-0-0-0', channel_id: 'ch-1' }
+            : null,
+        ),
+      },
+    });
+
+    await handler.handle(
+      { channel_id: 'ch-1', body: 're', reply_to: 'parent-0-0-0' },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).not.toHaveBeenCalled();
   });
 });
