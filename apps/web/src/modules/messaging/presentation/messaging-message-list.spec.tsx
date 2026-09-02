@@ -74,7 +74,7 @@ describe('MessagingMessageList', () => {
       </I18nProvider>,
     );
 
-    const bubble = screen.getByText('hello').closest('div');
+    const bubble = screen.getByText('hello').closest('.rounded-card');
     expect(bubble?.className).toContain('bg-accent-soft');
     expect(bubble?.className).not.toContain('bg-accent text-accent-fg');
   });
@@ -103,7 +103,7 @@ describe('MessagingMessageList', () => {
       </I18nProvider>,
     );
 
-    const bubble = screen.getByText('hello').closest('div');
+    const bubble = screen.getByText('hello').closest('.rounded-card');
     expect(bubble?.className).toContain('border-border');
     expect(bubble?.className).toContain('bg-surface');
   });
