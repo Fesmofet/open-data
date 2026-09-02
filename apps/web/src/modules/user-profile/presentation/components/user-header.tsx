@@ -105,9 +105,6 @@ export function UserHeader({
             ) : isHeroLoading ? (
               <UserProfileMobileHeroMeta sidebar={LOADING_SIDEBAR_PLACEHOLDER} isLoading />
             ) : null}
-            <p className="mt-1 hidden line-clamp-2 text-body-sm text-muted lg:block">
-              {user.bio}
-            </p>
             <p className="mt-2 hidden text-caption text-muted lg:block">
               <StatHoverTooltip content={t('stat_user_followers_tooltip')}>
                 <span>
