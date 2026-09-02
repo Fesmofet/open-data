@@ -16,7 +16,7 @@ describe('telegram-inline-keyboard', () => {
         [
           {
             text: 'Go to website',
-            url: 'https://waiviodev.com/@flowmaster/transfers?type=transfer',
+            url: 'https://waiviodev.com/@flowmaster/transfers?type=HIVE',
           },
         ],
         [

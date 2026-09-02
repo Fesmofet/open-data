@@ -19,13 +19,16 @@ function swapTx(logs: object): HiveEngineTransaction {
 
 describe('MarketpoolsSwapParser', () => {
   let insertSwapsBatch: jest.Mock;
+  let notifyEmit: jest.Mock;
   let parser: MarketpoolsSwapParser;
 
   beforeEach(() => {
     insertSwapsBatch = jest.fn().mockResolvedValue(undefined);
-    parser = new MarketpoolsSwapParser({
-      insertSwapsBatch,
-    } as unknown as HiveEngineSwapsRepository);
+    notifyEmit = jest.fn();
+    parser = new MarketpoolsSwapParser(
+      { insertSwapsBatch } as unknown as HiveEngineSwapsRepository,
+      { emit: notifyEmit } as never,
+    );
   });
 
   it('persists swap row from marketpools/swapTokens transaction', async () => {
@@ -68,6 +71,20 @@ describe('MarketpoolsSwapParser', () => {
         symbol_in_quantity: '148.48',
       }),
     ]);
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_swap',
+        actor: 'nervi',
+        trxId: '00000055a531397a3f21ce26eeac7edbd6fcb731',
+        payload: {
+          account: 'nervi',
+          symbolOut: 'SWAP.HIVE',
+          symbolIn: 'DEC',
+          symbolOutQuantity: '0.25171831',
+          symbolInQuantity: '148.48',
+        },
+      }),
+    );
   });
 
   it('skips transactions with logs.errors', async () => {
@@ -81,6 +98,7 @@ describe('MarketpoolsSwapParser', () => {
     } as unknown as HiveEngineBlock);
 
     expect(insertSwapsBatch).not.toHaveBeenCalled();
+    expect(notifyEmit).not.toHaveBeenCalled();
   });
 
   it('ignores non-swap contract transactions', async () => {

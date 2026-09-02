@@ -30,6 +30,8 @@ export const NOTIFICATION_EVENT_TYPES = [
   'change_password',
   'hp_delegation',
   'engine_transfer',
+  'engine_transfer_out',
+  'engine_swap',
   'engine_stake',
   'engine_unstake',
   'engine_cancel_unstake',
@@ -210,6 +212,20 @@ export interface NotificationPayloadMap {
     amount: string;
     symbol: string;
     memo: string | null;
+  };
+  engine_transfer_out: {
+    from: string;
+    to: string;
+    amount: string;
+    symbol: string;
+    memo: string | null;
+  };
+  engine_swap: {
+    account: string;
+    symbolOut: string;
+    symbolIn: string;
+    symbolOutQuantity: string;
+    symbolInQuantity: string;
   };
   engine_stake: {
     from: string;

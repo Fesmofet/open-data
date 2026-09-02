@@ -14,6 +14,7 @@ import {
   type HiveEngineSubParser,
 } from './hive-engine-sub-parser.interface';
 import { MarketpoolsSwapParser } from './parsers/marketpools-swap.parser';
+import { EngineTokenTransferParser } from './parsers/engine-token-transfer.parser';
 import { OblTokenTransferParser } from './parsers/obl-token-transfer.parser';
 import { WaivPostRewardParser } from './parsers/waiv-post-reward.parser';
 import { WaivStakeParser } from './parsers/waiv-stake.parser';
@@ -59,6 +60,7 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
         WaivStakeParser,
         WaivPostRewardParser,
         MarketpoolsSwapParser,
+        EngineTokenTransferParser,
         OblTokenTransferParser,
         {
           provide: HIVE_ENGINE_SUB_PARSERS,
@@ -67,6 +69,7 @@ import { WaivStakeParser } from './parsers/waiv-stake.parser';
             WaivStakeParser,
             WaivPostRewardParser,
             MarketpoolsSwapParser,
+            EngineTokenTransferParser,
             OblTokenTransferParser,
           ],
         },

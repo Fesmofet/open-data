@@ -27,6 +27,7 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   notification_engine_delegate: '{from} delegated {amount} to {to}',
   notification_engine_power_down: "{from} initiated 'Power Down' on {amount}",
   notification_engine_stake: '{from} staked {amount} to {to}',
+  notification_engine_swap: '{recipient} swapped {amountOut} for {amountIn}',
   notification_engine_undelegate: '{from} undelegated {amount} from {to}',
   notification_engine_unstake: '{account} unstaked {amount}',
   notification_following_username: '{username} started following {recipient}',

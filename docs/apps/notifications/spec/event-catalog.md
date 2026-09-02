@@ -64,15 +64,17 @@ Notify-only handlers in **chain-indexer** `domain/hive-wallet/` (no Postgres wal
 
 ## Wallet (Hive Engine)
 
-Emitted from **hive-engine-parser** (e.g. WAIV stake parser): `engine_transfer`, `engine_stake`, `engine_unstake`, `engine_cancel_unstake`, `engine_delegate`, `engine_undelegate`.
+Emitted from **hive-engine-parser** (`EngineTokenTransferParser`, `MarketpoolsSwapParser`, `WaivStakeParser` for stake/delegate): `engine_transfer`, `engine_transfer_out`, `engine_swap`, `engine_stake`, `engine_unstake`, `engine_cancel_unstake`, `engine_delegate`, `engine_undelegate`.
 
 | Type | Payload highlights | Typical recipients |
 |------|-------------------|-------------------|
+| `engine_transfer` | All HE token inbound transfer (incl. `hivepegged/buy` deposits) | `payload.to` |
+| `engine_transfer_out` | All HE token outbound transfer | `payload.from` |
+| `engine_swap` | Atomic `marketpools/swapTokens` | `payload.account` |
 | `engine_stake` | WAIV power up (stake) | `payload.to` |
 | `engine_unstake` | WAIV power down initiation (`unstakeStart` or payload fallback) | `payload.account` (initiator) |
 | `engine_delegate` | WAIV delegation to account | `payload.to` (delegatee) |
 | `engine_undelegate` | WAIV undelegation flow | `actor` (transaction sender) |
-| `engine_transfer` | WAIV transfer | `payload.to` |
 
 ## Objects (ODL)
 
@@ -117,8 +119,8 @@ Message text is **never** included in the payload.
 | `downvote` | `vote_downvote` | `false` → block |
 | `follow`, `reply`, `mention`, `reblog` | matching social types | `false` → block |
 | `my_post`, `my_comment`, `my_like` | `my_post`, `my_comment`, `my_vote` | `false` → block |
-| `transfer` | inbound/outbound transfer family | `false` → block; inbound also checks `minimal_transfer` |
-| `fill_order`, `power_up`, `claim_reward`, `witness_vote` | matching wallet types | `false` → block |
+| `transfer` | inbound/outbound transfer family (incl. `engine_transfer`, `engine_transfer_out`) | `false` → block; inbound also checks `minimal_transfer` |
+| `fill_order`, `power_up`, `claim_reward`, `witness_vote` | matching wallet types (incl. `engine_swap` under `fill_order`) | `false` → block |
 | `claimed_object_updates` | `object_update`, `object_update_reject`, `update_vote_cast` | `false` → block |
 | `group_id_control` | `object_update`, `object_update_reject` | when `payload.updateType === productGroupId`, `false` → block |
 | `followed_user_threads` | `bell_thread`, `thread_author_follower` | `false` → block |

@@ -55,6 +55,20 @@ export function walletTabFromSymbol(symbol: string): WalletTabType {
   return 'ENGINE';
 }
 
+/** Wallet tab for engine swap notifications — WAIV when either leg is WAIV. */
+export function walletTabFromSwapLegs(
+  symbolOut: string,
+  symbolIn: string,
+): WalletTabType {
+  if (
+    walletTabFromSymbol(symbolOut) === 'WAIV' ||
+    walletTabFromSymbol(symbolIn) === 'WAIV'
+  ) {
+    return 'WAIV';
+  }
+  return 'ENGINE';
+}
+
 /** Parses "0.001 HIVE" / "1.616380 VESTS" amount strings. */
 export function walletTabFromAmount(amount: string): WalletTabType {
   const parts = amount.trim().split(/\s+/);

@@ -51,4 +51,4 @@ Handlers are spread into `HIVE_OPERATION_HANDLERS` via `HiveWalletOperationHandl
 ## Related
 
 - `account_update` with `owner` → `change_password` in `AccountProfileUpdateService` (not in hive-wallet module).
-- Hive Engine token ops → `engine_*` types in hive-engine parser.
+- Hive Engine token ops → `engine_*` types in [`hive-engine-parser`](../../../../apps/chain-indexer/src/domain/hive-engine-parser/): `EngineTokenTransferParser` (all-token transfers + `hivepegged/buy` deposits), `MarketpoolsSwapParser` (`engine_swap`), `WaivStakeParser` (stake/delegate).

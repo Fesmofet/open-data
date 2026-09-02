@@ -43,6 +43,8 @@ const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = 
   transfer_out: 'transfer',
   transfer_from_savings: 'transfer',
   engine_transfer: 'transfer',
+  engine_transfer_out: 'transfer',
+  engine_swap: 'fill_order',
   power_up: 'power_up',
   power_down: 'transfer',
   claim_reward: 'claim_reward',

@@ -4,6 +4,7 @@ import {
   userProfilePath,
   walletTabFromAmount,
   walletTabFromSymbol,
+  walletTabFromSwapLegs,
   walletTransfersPath,
   type WalletTabType,
 } from '../links';
@@ -252,6 +253,30 @@ export function buildWalletMessage(
           username: profileHref(p.from),
           to: profileHref(p.to),
         },
+      );
+    }
+    case 'engine_transfer_out': {
+      const p = event.payload;
+      return walletMessage(
+        'transfer_from',
+        { amount: `${p.amount} ${p.symbol}`, to: p.to },
+        p.from,
+        p.from,
+        walletTabFromSymbol(p.symbol),
+        { to: profileHref(p.to) },
+      );
+    }
+    case 'engine_swap': {
+      const p = event.payload;
+      const amountOut = `${p.symbolOutQuantity} ${p.symbolOut}`;
+      const amountIn = `${p.symbolInQuantity} ${p.symbolIn}`;
+      return walletMessage(
+        'notification_engine_swap',
+        { amountOut, amountIn },
+        p.account,
+        p.account,
+        walletTabFromSwapLegs(p.symbolOut, p.symbolIn),
+        {},
       );
     }
     case 'engine_stake': {

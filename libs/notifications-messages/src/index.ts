@@ -14,6 +14,7 @@ export {
   userProfilePath,
   walletTabFromAmount,
   walletTabFromSymbol,
+  walletTabFromSwapLegs,
   walletTransfersPath,
   type WalletTabType,
 } from './lib/links';

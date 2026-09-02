@@ -230,6 +230,20 @@ function buildPayload(
       symbol: 'WAIV',
       memo: 'preview engine transfer',
     },
+    engine_transfer_out: {
+      from: user,
+      to: other,
+      amount: '10',
+      symbol: 'BEE',
+      memo: 'preview engine transfer out',
+    },
+    engine_swap: {
+      account: user,
+      symbolOut: 'SWAP.HIVE',
+      symbolIn: 'WAIV',
+      symbolOutQuantity: '0.25',
+      symbolInQuantity: '148.48',
+    },
     engine_stake: {
       from: user,
       to: user,
@@ -311,10 +325,12 @@ function actorForType(type: NotificationEventType, ctx: Ctx): string | null {
     case 'change_recovery_account':
     case 'withdraw_route':
     case 'transfer_from_savings':
+    case 'engine_transfer_out':
     case 'engine_stake':
     case 'engine_unstake':
     case 'engine_cancel_unstake':
     case 'engine_undelegate':
+    case 'engine_swap':
       return user;
     case 'witness_vote':
       return other;

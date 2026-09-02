@@ -109,4 +109,60 @@ describe('NotificationEvent contract', () => {
       });
     }
   });
+
+  it('accepts engine_transfer_out with transfer payload', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'engine_transfer_out',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        from: 'alice',
+        to: 'bob',
+        amount: '1',
+        symbol: 'BEE',
+        memo: null,
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('accepts engine_swap payload', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'engine_swap',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: null,
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'DEC',
+        symbolOutQuantity: '0.25',
+        symbolInQuantity: '148.48',
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('rejects engine_swap missing symbolIn', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'engine_swap',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: null,
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolOutQuantity: '0.25',
+        symbolInQuantity: '148.48',
+      },
+    });
+    expect(parsed.success).toBe(false);
+  });
 });

@@ -39,4 +39,42 @@ describe('DirectRecipientStrategy', () => {
     } as AnyNotificationEvent);
     expect(recipients).toEqual(['wiv01']);
   });
+
+  it('routes engine_transfer_out to sender', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'engine_transfer_out',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'wiv01',
+      payload: {
+        from: 'wiv01',
+        to: 'flowmaster',
+        amount: '0.001',
+        symbol: 'WAIV',
+        memo: null,
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['wiv01']);
+  });
+
+  it('routes engine_swap to account', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'engine_swap',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'WAIV',
+        symbolOutQuantity: '1',
+        symbolInQuantity: '2',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['nervi']);
+  });
 });

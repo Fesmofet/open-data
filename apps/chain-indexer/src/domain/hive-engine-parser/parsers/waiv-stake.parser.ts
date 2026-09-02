@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { normalizeHiveBlockTimestampUtc } from '@opden-data-layer/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type {
   HiveEngineBlock,
@@ -12,6 +11,7 @@ import {
   USER_OBJECT_POWERS_UPDATE_EVENT,
   UserObjectPowersUpdateEvent,
 } from '../../user-object-powers/user-object-powers.events';
+import { emitEngineNotification } from '../emit-engine-notification';
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';
 
 const TOKENS_CONTRACT = 'tokens';
@@ -61,10 +61,6 @@ export class WaivStakeParser implements HiveEngineSubParser {
   }
 
   private processTransaction(tx: HiveEngineTransaction): void {
-    if (tx.contract === TOKENS_CONTRACT && tx.action === 'transfer') {
-      this.processTransfer(tx);
-      return;
-    }
     if (tx.contract !== TOKENS_CONTRACT || !TRACKED_ACTIONS.has(tx.action)) {
       return;
     }
@@ -117,7 +113,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           account,
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         return true;
       }
       case 'undelegateDone': {
@@ -135,7 +131,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           to,
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         return true;
       }
       case 'undelegateStart': {
@@ -147,7 +143,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           to: delegatee,
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         return true;
       }
       case 'stake': {
@@ -158,7 +154,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           to: account,
           amount: String(quantity),
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         return true;
       }
       default:
@@ -193,7 +189,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           to,
           amount,
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         break;
       }
       case 'delegate': {
@@ -206,7 +202,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           to,
           amount,
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         break;
       }
       case 'undelegate': {
@@ -219,7 +215,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           to,
           amount,
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         break;
       }
       case 'unstake':
@@ -227,7 +223,7 @@ export class WaivStakeParser implements HiveEngineSubParser {
           account: sender,
           amount,
           symbol: WAIV_SYMBOL,
-        });
+        }, tx);
         break;
       default:
         break;
@@ -276,52 +272,27 @@ export class WaivStakeParser implements HiveEngineSubParser {
     );
   }
 
-  private processTransfer(tx: HiveEngineTransaction): void {
-    const payload = this.parsePayload(tx);
-    if (!payload) {
-      return;
-    }
-    const symbol = String(payload.symbol ?? '');
-    if (symbol !== WAIV_SYMBOL) {
-      return;
-    }
-    const from = tx.sender.trim();
-    const to = String(payload.to ?? '').trim();
-    const amount = String(payload.quantity ?? '0');
-    const memo = typeof payload.memo === 'string' ? payload.memo : null;
-    this.emitEngineNotification('engine_transfer', from, {
-      from,
-      to,
-      amount,
-      symbol,
-      memo,
-    });
-  }
-
   private emitEngineNotification(
     type:
-      | 'engine_transfer'
       | 'engine_stake'
       | 'engine_unstake'
       | 'engine_delegate'
       | 'engine_undelegate',
     actor: string,
     payload: Record<string, unknown>,
+    tx: HiveEngineTransaction,
   ): void {
     const block = this.currentBlock;
     if (!block) {
       return;
     }
-    this.notificationEmitter.emit({
+    emitEngineNotification(
+      this.notificationEmitter,
+      block,
       type,
-      occurredAt: normalizeHiveBlockTimestampUtc(
-        block.timestamp ?? '1970-01-01T00:00:00',
-      ),
-      blockNum: block.refHiveBlockNumber || block.blockNumber,
-      trxId: null,
-      objectId: null,
       actor,
       payload,
-    } as Parameters<NotificationEmitterService['emit']>[0]);
+      tx.transactionId,
+    );
   }
 }

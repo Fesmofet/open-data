@@ -91,12 +91,21 @@ export function minimalNotificationEventPayload(
     case 'hp_delegation':
       return { delegator: 'a', delegatee: 'b', amount: '1' };
     case 'engine_transfer':
+    case 'engine_transfer_out':
       return {
         from: 'a',
         to: 'b',
         amount: '1',
         symbol: 'WAIV',
         memo: null,
+      };
+    case 'engine_swap':
+      return {
+        account: 'a',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'WAIV',
+        symbolOutQuantity: '1',
+        symbolInQuantity: '2',
       };
     case 'engine_stake':
     case 'engine_delegate':

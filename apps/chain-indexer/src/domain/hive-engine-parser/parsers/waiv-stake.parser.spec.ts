@@ -44,6 +44,30 @@ describe('WaivStakeParser', () => {
     );
   });
 
+  it('does not emit engine_transfer for tokens/transfer', async () => {
+    await parser.parseBlock({
+      ...blockBase,
+      transactions: [
+        tx({
+          action: 'transfer',
+          sender: 'flowmaster',
+          payload: JSON.stringify({ to: 'bob', symbol: 'WAIV', quantity: '1' }),
+          logs: JSON.stringify({
+            events: [
+              {
+                contract: 'tokens',
+                event: 'transfer',
+                data: { symbol: 'WAIV', quantity: '1.00000000' },
+              },
+            ],
+          }),
+        }),
+      ],
+    } as unknown as HiveEngineBlock);
+
+    expect(notifyEmit).not.toHaveBeenCalled();
+  });
+
   it('emits +quantity for stake from stake log event', async () => {
     await parser.parseBlock({
       ...blockBase,

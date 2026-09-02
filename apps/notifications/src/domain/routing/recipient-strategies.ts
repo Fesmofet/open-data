@@ -21,6 +21,8 @@ export class DirectRecipientStrategy implements RecipientStrategy {
     'change_password',
     'hp_delegation',
     'engine_transfer',
+    'engine_transfer_out',
+    'engine_swap',
     'engine_stake',
     'engine_unstake',
     'engine_cancel_unstake',
@@ -66,6 +68,10 @@ export class DirectRecipientStrategy implements RecipientStrategy {
         return [event.payload.delegatee];
       case 'engine_transfer':
         return [event.payload.to];
+      case 'engine_transfer_out':
+        return [event.payload.from];
+      case 'engine_swap':
+        return [event.payload.account];
       case 'engine_stake':
         return [event.payload.to];
       case 'engine_unstake':

@@ -99,6 +99,115 @@ describe('NotificationSettingsService', () => {
     expect(service.isAllowed(settings, event, null)).toBe(true);
   });
 
+  it('blocks engine_transfer_out when transfer setting is false', () => {
+    const settings = baseSettings({ transfer: false });
+    const event = {
+      type: 'engine_transfer_out',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        from: 'alice',
+        to: 'bob',
+        amount: '1',
+        symbol: 'WAIV',
+        memo: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, null)).toBe(false);
+  });
+
+  it('blocks engine_swap when fill_order setting is false', () => {
+    const settings = baseSettings({ fill_order: false });
+    const event = {
+      type: 'engine_swap',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'DEC',
+        symbolOutQuantity: '0.25',
+        symbolInQuantity: '148.48',
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, null)).toBe(false);
+  });
+
+  it('allows engine_swap when transfer setting is false', () => {
+    const settings = baseSettings({ transfer: false, fill_order: true });
+    const event = {
+      type: 'engine_swap',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'DEC',
+        symbolOutQuantity: '0.25',
+        symbolInQuantity: '148.48',
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, null)).toBe(true);
+  });
+
+  it('does not apply minimal_transfer to engine_transfer_out', () => {
+    const settings = baseSettings({ minimal_transfer: 10 });
+    const event = {
+      type: 'engine_transfer_out',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        from: 'alice',
+        to: 'bob',
+        amount: '1',
+        symbol: 'HIVE',
+        memo: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, { hive: 0.5, hbd: 1 })).toBe(
+      true,
+    );
+  });
+
+  it('passes minimal_transfer for non-HIVE/HBD engine_transfer symbols', () => {
+    const settings = baseSettings({ minimal_transfer: 10 });
+    const event = {
+      type: 'engine_transfer',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'from',
+      payload: {
+        from: 'from',
+        to: 'bob',
+        amount: '1',
+        symbol: 'BEE',
+        memo: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, { hive: 0.5, hbd: 1 })).toBe(
+      true,
+    );
+  });
+
   it('blocks bell_thread when followed_user_threads is false', () => {
     const settings = baseSettings({ followed_user_threads: false });
     const event = {

@@ -78,6 +78,81 @@ describe('buildWalletMessage', () => {
     expect(msg?.href).toBe('/@flowmaster/transfers?type=ENGINE');
   });
 
+  it('maps engine_transfer_out to transfer_from on sender wallet tab', () => {
+    const msg = buildWalletMessage({
+      ...baseEnvelope,
+      type: 'engine_transfer_out',
+      actor: 'alice',
+      payload: {
+        from: 'alice',
+        to: 'bob',
+        amount: '1',
+        symbol: 'BEE',
+        memo: null,
+      },
+    });
+    expect(msg?.key).toBe('transfer_from');
+    expect(msg?.params).toEqual({ amount: '1 BEE', to: 'bob' });
+    expect(msg?.href).toBe('/@alice/transfers?type=ENGINE');
+  });
+
+  it('maps engine_transfer_out WAIV to WAIV tab', () => {
+    const msg = buildWalletMessage({
+      ...baseEnvelope,
+      type: 'engine_transfer_out',
+      actor: 'alice',
+      payload: {
+        from: 'alice',
+        to: 'bob',
+        amount: '2',
+        symbol: 'WAIV',
+        memo: null,
+      },
+    });
+    expect(msg?.href).toBe('/@alice/transfers?type=WAIV');
+  });
+
+  it('maps engine_swap with WAIV leg to WAIV tab', () => {
+    const msg = buildWalletMessage({
+      ...baseEnvelope,
+      type: 'engine_swap',
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'WAIV',
+        symbolOutQuantity: '1',
+        symbolInQuantity: '2',
+      },
+    });
+    expect(msg?.key).toBe('notification_engine_swap');
+    expect(msg?.params).toEqual({
+      amountOut: '1 SWAP.HIVE',
+      amountIn: '2 WAIV',
+    });
+    expect(msg?.href).toBe('/@nervi/transfers?type=WAIV');
+  });
+
+  it('maps engine_swap without WAIV leg to ENGINE tab', () => {
+    const msg = buildWalletMessage({
+      ...baseEnvelope,
+      type: 'engine_swap',
+      actor: 'nervi',
+      payload: {
+        account: 'nervi',
+        symbolOut: 'SWAP.HIVE',
+        symbolIn: 'DEC',
+        symbolOutQuantity: '0.25',
+        symbolInQuantity: '148.48',
+      },
+    });
+    expect(msg?.href).toBe('/@nervi/transfers?type=ENGINE');
+    expect(msg?.params).toEqual({
+      amountOut: '0.25 SWAP.HIVE',
+      amountIn: '148.48 DEC',
+    });
+  });
+
   it('maps hive power_up to actor-initiated copy', () => {
     const msg = buildWalletMessage({
       ...baseEnvelope,

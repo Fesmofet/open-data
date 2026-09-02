@@ -152,6 +152,14 @@ const hpDelegationPayload = z.object({
 
 const engineTransferPayload = transferPayload;
 
+const engineSwapPayload = z.object({
+  account: z.string(),
+  symbolOut: z.string(),
+  symbolIn: z.string(),
+  symbolOutQuantity: z.string(),
+  symbolInQuantity: z.string(),
+});
+
 const engineAmountPayload = z.object({
   from: z.string(),
   to: z.string(),
@@ -322,6 +330,16 @@ const notificationEventVariants = [
     type: z.literal('engine_transfer'),
     ...envelopeSchema,
     payload: engineTransferPayload,
+  }),
+  z.object({
+    type: z.literal('engine_transfer_out'),
+    ...envelopeSchema,
+    payload: engineTransferPayload,
+  }),
+  z.object({
+    type: z.literal('engine_swap'),
+    ...envelopeSchema,
+    payload: engineSwapPayload,
   }),
   z.object({
     type: z.literal('engine_stake'),

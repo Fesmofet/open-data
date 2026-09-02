@@ -4,6 +4,8 @@ import { NewHiveEngineSwap } from '@opden-data-layer/odl-db-types';
 
 import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import { HiveEngineSwapsRepository } from '../../../repositories/hive-engine-swaps.repository';
+import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
+import { emitEngineNotification } from '../emit-engine-notification';
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';
 import {
   hiveEngineLogsHaveErrors,
@@ -24,7 +26,10 @@ import {
 export class MarketpoolsSwapParser implements HiveEngineSubParser {
   private readonly logger = new Logger(MarketpoolsSwapParser.name);
 
-  constructor(private readonly hiveEngineSwapsRepository: HiveEngineSwapsRepository) {}
+  constructor(
+    private readonly hiveEngineSwapsRepository: HiveEngineSwapsRepository,
+    private readonly notificationEmitter: NotificationEmitterService,
+  ) {}
 
   async parseBlock(block: HiveEngineBlock): Promise<void> {
     const txs: HiveEngineTransaction[] = [
@@ -71,6 +76,21 @@ export class MarketpoolsSwapParser implements HiveEngineSubParser {
         symbol_out_quantity: parsed.symbolOutQuantity,
         symbol_in_quantity: parsed.symbolInQuantity,
       });
+
+      emitEngineNotification(
+        this.notificationEmitter,
+        block,
+        'engine_swap',
+        parsed.account,
+        {
+          account: parsed.account,
+          symbolOut: parsed.symbolOut,
+          symbolIn: parsed.symbolIn,
+          symbolOutQuantity: parsed.symbolOutQuantity,
+          symbolInQuantity: parsed.symbolInQuantity,
+        },
+        tx.transactionId,
+      );
     }
 
     if (rows.length === 0) {
