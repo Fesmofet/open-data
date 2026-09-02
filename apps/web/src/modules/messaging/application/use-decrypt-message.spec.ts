@@ -33,6 +33,7 @@ function memoMessage(overrides: Partial<MessageItem> = {}): MessageItem {
     attachments: null,
     mentions: [],
     created_at_unix: 1_694_000_000,
+    original_created_at_unix: null,
     ...overrides,
   };
 }

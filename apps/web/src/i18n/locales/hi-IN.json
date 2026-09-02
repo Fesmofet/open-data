@@ -3556,5 +3556,9 @@
   "your_vote": "आपका वोट",
   "your_vote_placeholder": "आपका वोट (वैकल्पिक)",
   "zoom": "जूम",
-  "СЃommunity_actions": "समुदाय क्रियाएँ"
+  "СЃommunity_actions": "समुदाय क्रियाएँ",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

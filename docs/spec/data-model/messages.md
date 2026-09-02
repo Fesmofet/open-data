@@ -35,6 +35,15 @@ CHECK constraints:
 
 Partial index: `idx_messages_encrypted_to` on `(encrypted_to, created_at_unix DESC)` where `encrypted_to IS NOT NULL`.
 
+## Original publish stamp (object activity)
+
+Migration: `00060_messages_original_created_at.ts`
+
+| Column | Purpose |
+|--------|---------|
+| `original_created_at_unix` | Optional original publish time for object activity messages (display only; does not affect `idx_messages_channel_time`) |
+| `updated_at_unix` | Reserved for future message editing — unused until edit support lands |
+
 Key indexes:
 
 - `uq_channels_direct_pair_hash` on `pair_hash` where `kind=direct`

@@ -1504,6 +1504,10 @@ export interface MessagesTable {
   quote_json: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   attachments: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   mentions: string[];
+  /** Original publish time for archival object activity (display only). */
+  original_created_at_unix: number | null;
+  /** Reserved for future message editing — unused until edit support lands. */
+  updated_at_unix: number | null;
   created_at_unix: number;
   event_seq: bigint;
   transaction_id: string;

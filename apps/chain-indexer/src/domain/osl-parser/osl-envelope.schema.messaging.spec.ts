@@ -53,6 +53,35 @@ describe('messageCreatePayloadSchema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('accepts optional original_created_at_unix integer', () => {
+    const result = messageCreatePayloadSchema.safeParse({
+      channel_id: 'obj-ch-1',
+      body: 'archived post',
+      original_created_at_unix: 1_262_304_000,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.original_created_at_unix).toBe(1_262_304_000);
+    }
+  });
+
+  it('rejects non-integer original_created_at_unix', () => {
+    expect(
+      messageCreatePayloadSchema.safeParse({
+        channel_id: 'obj-ch-1',
+        body: 'archived post',
+        original_created_at_unix: 1.5,
+      }).success,
+    ).toBe(false);
+    expect(
+      messageCreatePayloadSchema.safeParse({
+        channel_id: 'obj-ch-1',
+        body: 'archived post',
+        original_created_at_unix: '1262304000',
+      }).success,
+    ).toBe(false);
+  });
 });
 
 describe('channelLeavePayloadSchema', () => {

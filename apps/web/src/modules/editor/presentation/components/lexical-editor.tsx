@@ -306,6 +306,12 @@ export type LexicalEditorProps = {
   insertFollowsCaret?: boolean;
   /** Send control overlaid inside the field on the right when {@link composeField} is set. */
   composeTrailingAction?: ReactNode;
+  /** Object activity: show Date in insert menu. */
+  enableOriginalCreatedAt?: boolean;
+  /** Object activity: open insert panel below (+). */
+  insertPanelPreferBelow?: boolean;
+  renderOriginalDatePicker?: (props: { onSelect: (unix: number) => void }) => ReactNode;
+  onOriginalCreatedAtSelected?: (unix: number) => void;
 };
 
 export function LexicalPostEditor({
@@ -322,6 +328,10 @@ export function LexicalPostEditor({
   composeField = false,
   insertFollowsCaret: _insertFollowsCaret = false,
   composeTrailingAction,
+  enableOriginalCreatedAt,
+  insertPanelPreferBelow,
+  renderOriginalDatePicker,
+  onOriginalCreatedAtSelected,
 }: LexicalEditorProps) {
   const resolvedCompact = composeField ? true : compact;
   const resolvedCompactBottomInset = composeField ? true : compactBottomInset;
@@ -389,6 +399,10 @@ export function LexicalPostEditor({
         <EditorInsertCaretOverlay
           pinInsertCenterVertical={pinInsertCenterVertical}
           onObjectLinkedFromEditor={onObjectLinkedFromEditor}
+          enableOriginalCreatedAt={enableOriginalCreatedAt}
+          insertPanelPreferBelow={insertPanelPreferBelow}
+          renderOriginalDatePicker={renderOriginalDatePicker}
+          onOriginalCreatedAtSelected={onOriginalCreatedAtSelected}
         />
         {composeTrailingAction ? (
           <div className="pointer-events-none absolute inset-y-0 end-2 z-[70] flex items-center">

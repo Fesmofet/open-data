@@ -64,6 +64,7 @@ export type MessageItem = {
   attachments: unknown;
   mentions: string[];
   created_at_unix: number;
+  original_created_at_unix: number | null;
 };
 
 export type MessageHistoryPage = {

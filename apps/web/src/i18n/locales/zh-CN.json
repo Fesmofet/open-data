@@ -3537,5 +3537,9 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

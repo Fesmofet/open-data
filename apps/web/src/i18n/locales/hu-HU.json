@@ -2834,5 +2834,9 @@
   "your_reward": "Jutalmad",
   "your_vote": "A szavazatod",
   "your_vote_placeholder": "Az Ön szavazata (nem kötelező)",
-  "СЃommunity_actions": "Közösségi fellépések"
+  "СЃommunity_actions": "Közösségi fellépések",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

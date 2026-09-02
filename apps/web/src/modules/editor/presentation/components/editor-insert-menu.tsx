@@ -15,11 +15,13 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
   CloseIcon,
+  CalendarIcon,
   CodeIcon,
   EmojiIcon,
   ImageIcon,
@@ -45,6 +47,7 @@ type InsertLabelKey =
   | 'editor_insert_photo'
   | 'editor_insert_video'
   | 'editor_insert_object'
+  | 'editor_insert_date'
   | 'editor_insert_line'
   | 'editor_insert_code'
   | 'editor_insert_table'
@@ -58,6 +61,7 @@ const INSERT_ITEMS: {
   { labelKey: 'editor_insert_photo', Icon: ImageIcon },
   { labelKey: 'editor_insert_video', Icon: VideoIcon },
   { labelKey: 'editor_insert_object', Icon: LayoutGridIcon },
+  { labelKey: 'editor_insert_date', Icon: CalendarIcon },
   { labelKey: 'editor_insert_line', Icon: MinusIcon },
   { labelKey: 'editor_insert_code', Icon: CodeIcon },
   { labelKey: 'editor_insert_table', Icon: TableIcon },
@@ -237,6 +241,14 @@ export type EditorInsertCaretOverlayProps = {
   composeGutter?: boolean;
   /** When user picks an object from inline search (Insert → Object). */
   onObjectLinkedFromEditor?: (result: SearchObjectResult) => void;
+  /** Object activity: show Date insert item and original publish picker. */
+  enableOriginalCreatedAt?: boolean;
+  /** Object activity: open insert panel below (+) instead of above. */
+  insertPanelPreferBelow?: boolean;
+  /** Renders inline date+time picker when Insert → Date is opened (object activity). */
+  renderOriginalDatePicker?: (props: { onSelect: (unix: number) => void }) => ReactNode;
+  /** Fired when user picks an original publish date+time (unix seconds). */
+  onOriginalCreatedAtSelected?: (unix: number) => void;
 };
 
 /**
@@ -248,12 +260,16 @@ export function EditorInsertCaretOverlay({
   insetInsertButton = false,
   composeGutter = false,
   onObjectLinkedFromEditor,
+  enableOriginalCreatedAt = false,
+  insertPanelPreferBelow = false,
+  renderOriginalDatePicker,
+  onOriginalCreatedAtSelected,
 }: EditorInsertCaretOverlayProps = {}) {
   const [editor] = useLexicalComposerContext();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [objectSearchOpen, setObjectSearchOpen] = useState(false);
-  const [insertView, setInsertView] = useState<'grid' | 'photo'>('grid');
+  const [insertView, setInsertView] = useState<'grid' | 'photo' | 'date'>('grid');
   const [buttonTop, setButtonTop] = useState(12);
   const [insertPanelCoords, setInsertPanelCoords] = useState<{
     top: number;
@@ -363,18 +379,33 @@ export function EditorInsertCaretOverlay({
     const r = btn.getBoundingClientRect();
     const panelHeight = insertPanelRef.current?.offsetHeight ?? 240;
     const gap = 8;
+
+    if (insertPanelPreferBelow) {
+      const top = Math.min(
+        r.bottom + gap,
+        Math.max(gap, window.innerHeight - panelHeight - gap),
+      );
+      setInsertPanelCoords({
+        top,
+        left: r.left + r.width / 2,
+        placement: 'below',
+      });
+      return;
+    }
+
     const spaceBelow = window.innerHeight - r.bottom - gap;
     const spaceAbove = r.top - gap;
     const openAbove =
-      pinInsertCenterVertical ||
-      (spaceBelow < panelHeight && spaceAbove > spaceBelow);
+      !insertPanelPreferBelow &&
+      (pinInsertCenterVertical ||
+        (spaceBelow < panelHeight && spaceAbove > spaceBelow));
 
     setInsertPanelCoords({
       top: openAbove ? r.top - gap : r.bottom + gap,
       left: r.left + r.width / 2,
       placement: openAbove ? 'above' : 'below',
     });
-  }, [pinInsertCenterVertical]);
+  }, [insertPanelPreferBelow, pinInsertCenterVertical]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -551,6 +582,9 @@ export function EditorInsertCaretOverlay({
               'fixed z-[80] w-[min(100vw-2rem,20rem)] -translate-x-1/2 rounded-card border border-border',
               'bg-surface p-3 shadow-card',
               insertPanelCoords.placement === 'above' ? '-translate-y-full' : '',
+              insertPanelPreferBelow
+                ? 'max-h-[min(70dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain'
+                : '',
             ].join(' ')}
             style={{ top: insertPanelCoords.top, left: insertPanelCoords.left }}
             role="dialog"
@@ -558,7 +592,7 @@ export function EditorInsertCaretOverlay({
             aria-labelledby={insertTitleId}
           >
             <div className="mb-3 flex items-center gap-2">
-              {insertView === 'photo' ? (
+              {insertView === 'photo' || insertView === 'date' ? (
                 <button
                   type="button"
                   className="text-body-sm text-accent hover:underline"
@@ -570,7 +604,9 @@ export function EditorInsertCaretOverlay({
               <h2 id={insertTitleId} className="font-label text-body-sm text-heading">
                 {insertView === 'photo'
                   ? t('editor_insert_photo')
-                  : t('editor_insert_title')}
+                  : insertView === 'date'
+                    ? t('editor_insert_date')
+                    : t('editor_insert_title')}
               </h2>
             </div>
 
@@ -581,12 +617,22 @@ export function EditorInsertCaretOverlay({
                   setInsertView('grid');
                 }}
               />
+            ) : insertView === 'date' && renderOriginalDatePicker ? (
+              renderOriginalDatePicker({
+                onSelect: (unix) => {
+                  onOriginalCreatedAtSelected?.(unix);
+                },
+              })
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {INSERT_ITEMS.map(({ labelKey, Icon }) => {
                   const isPhoto = labelKey === 'editor_insert_photo';
                   const isObject = labelKey === 'editor_insert_object';
-                  const enabled = isPhoto || isObject;
+                  const isDate = labelKey === 'editor_insert_date';
+                  if (isDate && !enableOriginalCreatedAt) {
+                    return null;
+                  }
+                  const enabled = isPhoto || isObject || isDate;
                   return (
                     <button
                       key={labelKey}
@@ -604,7 +650,9 @@ export function EditorInsertCaretOverlay({
                           ? () => setInsertView('photo')
                           : isObject
                             ? () => openObjectSearch()
-                            : undefined
+                            : isDate
+                              ? () => setInsertView('date')
+                              : undefined
                       }
                     >
                       <Icon className="text-fg-secondary" size={22} />

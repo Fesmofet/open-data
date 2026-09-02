@@ -3556,5 +3556,9 @@
   "your_vote": "Ваш голос",
   "your_vote_placeholder": "Ваш голос (необов'язково)",
   "zoom": "Збільшити",
-  "СЃommunity_actions": "Дії спільноти"
+  "СЃommunity_actions": "Дії спільноти",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

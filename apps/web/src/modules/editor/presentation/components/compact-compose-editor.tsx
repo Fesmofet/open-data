@@ -18,6 +18,10 @@ export type CompactComposeEditorProps = {
   outputMode?: 'plain' | 'lexical';
   className?: string;
   footer?: ReactNode;
+  enableOriginalCreatedAt?: boolean;
+  insertPanelPreferBelow?: boolean;
+  renderOriginalDatePicker?: (props: { onSelect: (unix: number) => void }) => ReactNode;
+  onOriginalCreatedAtSelected?: (unix: number) => void;
 };
 
 /**
@@ -36,6 +40,10 @@ export function CompactComposeEditor({
   outputMode = 'plain',
   className = '',
   footer,
+  enableOriginalCreatedAt,
+  insertPanelPreferBelow,
+  renderOriginalDatePicker,
+  onOriginalCreatedAtSelected,
 }: CompactComposeEditorProps) {
   const accentSend = sendVariant === 'accent';
 
@@ -49,6 +57,10 @@ export function CompactComposeEditor({
           messagingCompact={outputMode === 'lexical'}
           bodyPlaceholder={bodyPlaceholder}
           onBodyChange={onBodyChange}
+          enableOriginalCreatedAt={enableOriginalCreatedAt}
+          insertPanelPreferBelow={insertPanelPreferBelow}
+          renderOriginalDatePicker={renderOriginalDatePicker}
+          onOriginalCreatedAtSelected={onOriginalCreatedAtSelected}
         />
         <div className="pointer-events-none absolute end-2 top-1/2 z-[65] -translate-y-1/2">
           <button

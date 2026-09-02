@@ -3556,5 +3556,9 @@
   "your_vote": "Votre vote",
   "your_vote_placeholder": "Votre vote (facultatif)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Actions communautaires"
+  "СЃommunity_actions": "Actions communautaires",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

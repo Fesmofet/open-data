@@ -203,4 +203,104 @@ describe('MessageCreateHandler notifications', () => {
 
     expect(notificationEmitter.emitWithContext).not.toHaveBeenCalled();
   });
+
+  it('stores original_created_at_unix on object channel when in range', async () => {
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'obj-ch-1',
+          kind: CHANNEL_KINDS[2],
+          object_id: 'obj-1',
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'obj-ch-1',
+        body: 'archived',
+        original_created_at_unix: 1_262_304_000,
+      },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        original_created_at_unix: 1_262_304_000,
+        updated_at_unix: null,
+        created_at_unix: 1_705_320_000,
+      }),
+      expect.anything(),
+    );
+    nowSpy.mockRestore();
+  });
+
+  it('ignores original_created_at_unix on DM channels', async () => {
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'dm-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'dm-1',
+        body: 'hello',
+        original_created_at_unix: 1_262_304_000,
+      },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        original_created_at_unix: null,
+        updated_at_unix: null,
+      }),
+      expect.anything(),
+    );
+    nowSpy.mockRestore();
+  });
+
+  it('drops out-of-range original_created_at_unix but still inserts message', async () => {
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'obj-ch-1',
+          kind: CHANNEL_KINDS[2],
+          object_id: 'obj-1',
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'obj-ch-1',
+        body: 'archived',
+        original_created_at_unix: 0,
+      },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        original_created_at_unix: null,
+        body: 'archived',
+      }),
+      expect.anything(),
+    );
+    nowSpy.mockRestore();
+  });
 });

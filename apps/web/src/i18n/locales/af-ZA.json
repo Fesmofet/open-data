@@ -3556,5 +3556,9 @@
   "your_vote": "Jou stem",
   "your_vote_placeholder": "Jou stem (opsioneel)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Gemeenskapsaksies"
+  "СЃommunity_actions": "Gemeenskapsaksies",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

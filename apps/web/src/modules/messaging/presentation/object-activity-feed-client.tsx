@@ -66,8 +66,8 @@ export function ObjectActivityFeedClient({
         objectName={objectName}
         viewerUsername={viewerUsername}
         pending={pending}
-        onSend={async (body) => {
-          await sendMessage(body);
+        onSend={async (body, originalCreatedAtUnix) => {
+          await sendMessage(body, originalCreatedAtUnix);
         }}
         onRequireLogin={openLogin}
       />

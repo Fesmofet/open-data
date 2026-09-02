@@ -2833,5 +2833,9 @@
   "your_reward": "Ang Iyong Gantimpala",
   "your_vote": "Ang iyong boto",
   "your_vote_placeholder": "Ang iyong boto (opsyonal)",
-  "СЃommunity_actions": "Mga aksyon sa pamayanan"
+  "СЃommunity_actions": "Mga aksyon sa pamayanan",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

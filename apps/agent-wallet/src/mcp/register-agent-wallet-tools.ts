@@ -401,6 +401,7 @@ export function registerAgentWalletTools(
         channelId: z.string().optional(),
         peer: z.string().optional(),
         body: z.string().min(1),
+        originalCreatedAtUnix: z.number().int().optional(),
       }),
     },
     async (args) => {

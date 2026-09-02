@@ -58,13 +58,26 @@ export function buildMessageCreatePayload(input: {
   channelId?: string;
   peer?: string;
   body: string;
-}): Record<string, string> {
+  originalCreatedAtUnix?: number | null;
+}): Record<string, string | number> {
   const body = input.body.trim();
+  const stamp =
+    input.originalCreatedAtUnix != null && input.originalCreatedAtUnix > 0
+      ? Math.trunc(input.originalCreatedAtUnix)
+      : null;
   if (input.channelId) {
-    return { channel_id: input.channelId, body };
+    const payload: Record<string, string | number> = { channel_id: input.channelId, body };
+    if (stamp != null) {
+      payload['original_created_at_unix'] = stamp;
+    }
+    return payload;
   }
   if (input.peer) {
-    return { peer: input.peer, body };
+    const payload: Record<string, string | number> = { peer: input.peer, body };
+    if (stamp != null) {
+      payload['original_created_at_unix'] = stamp;
+    }
+    return payload;
   }
   throw new Error('channelId or peer is required');
 }

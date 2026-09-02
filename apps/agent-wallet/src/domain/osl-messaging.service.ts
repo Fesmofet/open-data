@@ -81,12 +81,14 @@ export class OslMessagingService {
     channelId?: string;
     peer?: string;
     body: string;
+    originalCreatedAtUnix?: number | null;
   }): BuildResult {
     const creator = normalizeAccount(input.creator);
     const payload = buildMessageCreatePayload({
       channelId: input.channelId,
       peer: input.peer,
       body: input.body,
+      originalCreatedAtUnix: input.originalCreatedAtUnix,
     });
     const op = buildOslMessageCreateOp({
       id: this.config.get('oslCustomJsonId', { infer: true }),

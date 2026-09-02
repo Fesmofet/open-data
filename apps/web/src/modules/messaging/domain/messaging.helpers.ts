@@ -358,6 +358,41 @@ export function isOutgoingMessage(
   return message.author.trim().toLowerCase() === viewer;
 }
 
+export function formatOriginalCreatedAtLabel(unix: number, locale: string): string {
+  return new Date(unix * 1000).toLocaleString(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function formatActivityMessageTime(
+  message: Pick<MessageItem, 'created_at_unix' | 'original_created_at_unix'>,
+  locale: string,
+): string {
+  if (message.original_created_at_unix != null) {
+    return formatOriginalCreatedAtLabel(message.original_created_at_unix, locale);
+  }
+  return new Date(message.created_at_unix * 1000).toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function formatActivityMessageCaption(
+  message: Pick<MessageItem, 'created_at_unix' | 'original_created_at_unix'>,
+  locale: string,
+  originallyLabel: string,
+): string {
+  if (message.original_created_at_unix != null) {
+    const datetime = formatOriginalCreatedAtLabel(message.original_created_at_unix, locale);
+    return originallyLabel.replace('{datetime}', datetime);
+  }
+  return formatActivityMessageTime(message, locale);
+}
+
 export type MessageDayGroup = {
   dayKey: string;
   label: string;

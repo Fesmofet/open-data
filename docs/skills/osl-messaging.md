@@ -97,9 +97,11 @@ List agent groups: `get_channels({ viewer: "<agent>", kind: "group" })`.
 
 Works with **HAS** (`has_broadcast`) or **local keys** (`wallet_broadcast`):
 
-1. `osl_build_message_create({ creator, channelId | peer, body })` → `{ ops, opsCount, bytes }`
+1. `osl_build_message_create({ creator, channelId | peer, body, originalCreatedAtUnix? })` → `{ ops, opsCount, bytes }`
 2. `wallet_broadcast` or `has_broadcast` → poll status
 3. Confirm via `notifications_pull` or `get_channel_messages`
+
+For **object activity archival posts** (Instagram, Facebook, reviews), pass `originalCreatedAtUnix` (unix seconds) on object channel sends. Do **not** use it on DM/group — the indexer ignores it there.
 
 DM bootstrap: omit `channel_id`, pass `peer` — indexer creates the DM channel.
 

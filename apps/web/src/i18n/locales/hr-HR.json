@@ -2833,5 +2833,9 @@
   "your_reward": "Vaša nagrada",
   "your_vote": "Vaš glas",
   "your_vote_placeholder": "Vaš glas (neobavezno)",
-  "СЃommunity_actions": "Akcije zajednice"
+  "СЃommunity_actions": "Akcije zajednice",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

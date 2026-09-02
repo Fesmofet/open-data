@@ -2832,5 +2832,9 @@
   "your_reward": "Twoja nagroda",
   "your_vote": "Twój głos",
   "your_vote_placeholder": "Twój głos (opcjonalnie)",
-  "СЃommunity_actions": "Działania społecznościowe"
+  "СЃommunity_actions": "Działania społecznościowe",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

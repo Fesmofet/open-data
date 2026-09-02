@@ -2832,5 +2832,9 @@
   "your_reward": "Your Reward",
   "your_vote": "Seu voto",
   "your_vote_placeholder": "Seu voto (opcional)",
-  "СЃommunity_actions": "Ações comunitárias"
+  "СЃommunity_actions": "Ações comunitárias",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

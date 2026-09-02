@@ -10,6 +10,7 @@ import {
   groupMessagesByDay,
   isOutgoingMessage,
   resolveMessagePresentation,
+  formatActivityMessageCaption,
 } from '../domain/messaging.helpers';
 import type { MessageItem } from '../domain/messaging.types';
 
@@ -20,8 +21,8 @@ export type ObjectActivityFeedListProps = {
   sentinelRef?: React.RefObject<HTMLDivElement | null>;
 };
 
-function formatTime(unix: number): string {
-  return new Date(unix * 1000).toLocaleTimeString(undefined, {
+function formatTime(unix: number, locale: string): string {
+  return new Date(unix * 1000).toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -120,7 +121,13 @@ export function ObjectActivityFeedList({
                     ) : null}
                     {bodyNode}
                     <p className="mt-1 text-caption text-muted">
-                      {formatTime(message.created_at_unix)}
+                      {message.original_created_at_unix != null
+                        ? formatActivityMessageCaption(
+                            message,
+                            locale,
+                            t('object_activity_original_date_caption'),
+                          )
+                        : formatTime(message.created_at_unix, locale)}
                     </p>
                   </div>
                 </div>

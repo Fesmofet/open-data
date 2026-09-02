@@ -2833,5 +2833,9 @@
   "your_reward": "귀하의 보상",
   "your_vote": "귀하의 투표는",
   "your_vote_placeholder": "투표 (선택 사항)",
-  "СЃommunity_actions": "커뮤니티 활동"
+  "СЃommunity_actions": "커뮤니티 활동",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

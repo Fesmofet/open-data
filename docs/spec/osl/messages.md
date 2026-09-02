@@ -26,6 +26,16 @@ related:
 { "channel_id": "dm-…", "body": "hello" }
 ```
 
+Object channels may optionally include **`original_created_at_unix`** (integer unix seconds) — the original publish time for archival content (Instagram, Facebook, reviews). Display metadata only; does not affect feed sort. Ignored on DM/group channels. Invalid or out-of-range values are dropped at index time (message still inserted).
+
+```json
+{
+  "channel_id": "obj-ch-product-1",
+  "body": "https://instagram.com/p/…",
+  "original_created_at_unix": 1262304000
+}
+```
+
 ### Encrypted
 
 ```json

@@ -131,6 +131,9 @@ importers:
       '@yudiel/react-qr-scanner':
         specifier: ^2.6.0
         version: 2.6.0(@types/emscripten@1.41.5)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      air-datepicker:
+        specifier: ^3.6.0
+        version: 3.6.0
       axios:
         specifier: ^1.18.0
         version: 1.18.1
@@ -4326,6 +4329,9 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  air-datepicker@3.6.0:
+    resolution: {integrity: sha512-+txUkqa949rXBJDmkQAIb/GehZECJYF4rm9XJxVYtEX22C9WvBpE/XwCUQZBopKIkpg4ycAySJ9lH3JOg9qQTw==}
 
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
@@ -14580,6 +14586,8 @@ snapshots:
       - supports-color
 
   agent-base@7.1.4: {}
+
+  air-datepicker@3.6.0: {}
 
   ajv-formats@2.1.1(ajv@8.18.0):
     optionalDependencies:

@@ -2831,5 +2831,9 @@
   "your_reward": "Ganjaran Anda",
   "your_vote": "Undian anda",
   "your_vote_placeholder": "Undian anda (pilihan)",
-  "СЃommunity_actions": "Tindakan masyarakat"
+  "СЃommunity_actions": "Tindakan masyarakat",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

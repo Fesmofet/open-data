@@ -16,6 +16,7 @@ import { MessagesRepository } from '../../../repositories/messages.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 import { messageCreatePayloadSchema } from '../osl-envelope.schema';
+import { resolveOriginalCreatedAtUnix } from '../resolve-original-created-at-unix';
 
 @Injectable()
 export class MessageCreateHandler implements OdlActionHandler {
@@ -114,6 +115,12 @@ export class MessageCreateHandler implements OdlActionHandler {
     }
 
     const mentions = data.mentions ?? [];
+    const nowUnix = Math.trunc(Date.now() / 1000);
+    const originalCreatedAtUnix = resolveOriginalCreatedAtUnix({
+      channelKind: channel.kind,
+      stamp: data.original_created_at_unix,
+      nowUnix,
+    });
 
     await this.channelsRepository.runInTransaction(async (trx) => {
       await this.messagesRepository.insertMessage(
@@ -132,6 +139,8 @@ export class MessageCreateHandler implements OdlActionHandler {
           quote_json: (data.quote_json as JsonValue | undefined) ?? null,
           attachments: (data.attachments as JsonValue | undefined) ?? null,
           mentions,
+          original_created_at_unix: originalCreatedAtUnix,
+          updated_at_unix: null,
           created_at_unix: createdAtUnix,
           event_seq: ctx.eventSeq,
           transaction_id: ctx.transactionId,

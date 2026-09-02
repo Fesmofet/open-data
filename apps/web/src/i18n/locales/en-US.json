@@ -3990,5 +3990,9 @@
   "your_vote": "Your vote",
   "your_vote_placeholder": "Your vote(optional)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Community actions"
+  "СЃommunity_actions": "Community actions",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

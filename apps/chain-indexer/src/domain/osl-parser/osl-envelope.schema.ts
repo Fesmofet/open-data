@@ -194,6 +194,7 @@ export const messageCreatePayloadSchema = z
     quote_json: z.record(z.string(), z.unknown()).optional(),
     attachments: z.array(z.record(z.string(), z.unknown())).optional(),
     mentions: z.array(hiveAccountSchema).optional(),
+    original_created_at_unix: z.number().int().optional(),
   })
   .strict()
   .superRefine((data, ctx) => {

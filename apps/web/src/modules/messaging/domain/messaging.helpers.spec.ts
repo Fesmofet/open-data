@@ -1,5 +1,7 @@
 import {
   canViewerAttemptDecryptMessage,
+  formatActivityMessageCaption,
+  formatActivityMessageTime,
   resolveMessagePresentation,
 } from './messaging.helpers';
 import type { MessageItem } from './messaging.types';
@@ -106,5 +108,36 @@ describe('canViewerAttemptDecryptMessage', () => {
 
   it('blocks group bystander', () => {
     expect(canViewerAttemptDecryptMessage(memoToNewWay, 'charlie')).toBe(false);
+  });
+});
+
+describe('formatActivityMessageTime', () => {
+  it('uses original stamp as full date+time when present', () => {
+    const caption = formatActivityMessageTime(
+      { created_at_unix: 1_700_000_000, original_created_at_unix: 1_262_304_000 },
+      'en-US',
+    );
+    expect(caption).toContain('2010');
+  });
+
+  it('uses created time only when stamp is absent', () => {
+    const caption = formatActivityMessageTime(
+      { created_at_unix: 1_700_000_000, original_created_at_unix: null },
+      'en-US',
+    );
+    expect(caption).not.toContain('2023');
+    expect(caption).toMatch(/\d/);
+  });
+});
+
+describe('formatActivityMessageCaption', () => {
+  it('prefixes originally label when stamp is present', () => {
+    const caption = formatActivityMessageCaption(
+      { created_at_unix: 1_700_000_000, original_created_at_unix: 1_262_304_000 },
+      'en-US',
+      'Originally {datetime}',
+    );
+    expect(caption).toContain('Originally');
+    expect(caption).toContain('2010');
   });
 });

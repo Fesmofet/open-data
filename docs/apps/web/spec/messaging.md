@@ -91,6 +91,8 @@ Optional group title is shown when two or more users are selected. `channel_id` 
 
 Object **Activity** always renders compose + feed, even when query-api has no channel yet. Object channels do **not** show a member roster. **Encryption is not supported** on object channels (UI plain-only; indexer warn-skips encrypted `message_create`).
 
+**Original publish date:** Activity compose (+) menu includes **Date** (object Activity only — not inbox DMs). User picks date+time via air-datepicker; a chip shows the selection until send or clear. Optional `original_created_at_unix` is included on `message_create`. Feed bubbles show “Originally {datetime}” when stamped; otherwise time-only from `created_at_unix`. Day grouping still uses chain `created_at_unix`.
+
 Per [channels.md](../../../spec/osl/channels.md), object channels require explicit `channel_create` before `message_create`. The UI uses deterministic `buildObjectChannelId(objectId)` → `obj-ch-{objectId}` for the pending channel.
 
 | State | First send |

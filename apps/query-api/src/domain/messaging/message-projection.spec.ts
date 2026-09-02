@@ -17,6 +17,8 @@ describe('message-projection', () => {
       quote_json: null,
       attachments: null,
       mentions: [],
+      original_created_at_unix: 1_262_304_000,
+      updated_at_unix: null,
       created_at_unix: 100,
       event_seq: BigInt(1),
       transaction_id: 'tx1',
@@ -25,6 +27,8 @@ describe('message-projection', () => {
     expect(dto.encryption).toEqual({ v: 1, mode: 'memo', to: 'bob' });
     expect(dto.encrypted_body).toBe('#Ab3xYz');
     expect(dto.body).toBeNull();
+    expect(dto.original_created_at_unix).toBe(1_262_304_000);
+    expect(dto).not.toHaveProperty('updated_at_unix');
   });
 
   it('resolveLastMessagePreview returns encrypted flag without ciphertext', () => {

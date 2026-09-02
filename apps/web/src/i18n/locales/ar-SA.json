@@ -2832,5 +2832,9 @@
   "your_reward": "مكافأتك",
   "your_vote": "تصويتك",
   "your_vote_placeholder": "تصويتك (اختياري)",
-  "СЃommunity_actions": "إجراءات المجتمع"
+  "СЃommunity_actions": "إجراءات المجتمع",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

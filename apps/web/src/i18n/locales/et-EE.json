@@ -2833,5 +2833,9 @@
   "your_reward": "Sinu preemia",
   "your_vote": "Teie hääl",
   "your_vote_placeholder": "Teie hääl (valikuline)",
-  "СЃommunity_actions": "Fællesskabsaktioner"
+  "СЃommunity_actions": "Fællesskabsaktioner",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

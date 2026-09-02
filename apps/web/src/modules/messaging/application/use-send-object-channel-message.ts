@@ -37,7 +37,7 @@ export function useSendObjectChannelMessage(options: {
   const [channelExists, setChannelExists] = useState(options.channelExists);
 
   const sendMessage = useCallback(
-    async (body: string) => {
+    async (body: string, originalCreatedAtUnix: number | null = null) => {
       const account = options.viewerUsername?.trim();
       if (!account) {
         options.onRequireLogin?.();
@@ -52,6 +52,7 @@ export function useSendObjectChannelMessage(options: {
         const messagePayload = buildMessageCreatePayload({
           channelId: options.channelId,
           body: trimmed,
+          originalCreatedAtUnix,
         });
         const messageOp = buildOslMessageCreateOp({
           id: oslCustomJsonId,

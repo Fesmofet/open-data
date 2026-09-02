@@ -3556,5 +3556,9 @@
   "your_vote": "Váš hlas",
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
-  "СЃommunity_actions": "Akce komunity"
+  "СЃommunity_actions": "Akce komunity",
+  "editor_insert_date": "Date",
+  "object_activity_original_date_chip": "Originally {datetime}",
+  "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_original_date_caption": "Originally {datetime}"
 }

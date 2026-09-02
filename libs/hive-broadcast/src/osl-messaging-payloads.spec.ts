@@ -50,6 +50,38 @@ describe('osl-messaging-payloads', () => {
     });
   });
 
+  it('omits original_created_at_unix when unset', () => {
+    expect(
+      buildMessageCreatePayload({ channelId: 'obj-ch-1', body: 'hello' }),
+    ).toEqual({
+      channel_id: 'obj-ch-1',
+      body: 'hello',
+    });
+  });
+
+  it('includes original_created_at_unix as integer seconds', () => {
+    expect(
+      buildMessageCreatePayload({
+        channelId: 'obj-ch-1',
+        body: 'hello',
+        originalCreatedAtUnix: 1_262_304_000,
+      }),
+    ).toEqual({
+      channel_id: 'obj-ch-1',
+      body: 'hello',
+      original_created_at_unix: 1_262_304_000,
+    });
+  });
+
+  it('never emits updated_at_unix', () => {
+    const payload = buildMessageCreatePayload({
+      channelId: 'obj-ch-1',
+      body: 'hello',
+      originalCreatedAtUnix: 1_262_304_000,
+    });
+    expect(payload).not.toHaveProperty('updated_at_unix');
+  });
+
   it('buildEncryptedMessageCreatePayload adds encryption metadata', () => {
     expect(
       buildEncryptedMessageCreatePayload({
