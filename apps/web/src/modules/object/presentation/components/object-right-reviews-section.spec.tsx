@@ -63,6 +63,19 @@ function makePage(itemCount: number, hasMore: boolean): UserBlogFeedPage {
 }
 
 describe('ObjectRightReviewsSection', () => {
+  it('renders section title as h2 with text-section and font-weight-strong', () => {
+    render(
+      <ObjectRightReviewsSection
+        objectId="ehk-catch"
+        page={makePage(2, false)}
+        currentUsername={null}
+      />,
+    );
+
+    const heading = screen.getByRole('heading', { level: 2, name: 'Reviews' });
+    expect(heading).toHaveClass('text-section', 'font-weight-strong', 'text-fg');
+  });
+
   it('shows 5 of 6 posts and links Show more to Reviews tab', () => {
     render(
       <ObjectRightReviewsSection

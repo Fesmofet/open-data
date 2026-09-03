@@ -1,14 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import type { ProjectedMenuItem } from '../../domain/projected-menu-item.types';
 import { isMenuInHostTargetType } from '../../domain/object-menu.constants';
 import { OBJECT_PAGE_VIEW_PATH_PARAM } from '../../domain/object-page-url.constants';
 
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { OptimisticNavLink, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 export type ObjectMenuItemsStaticProps = {
   items: ProjectedMenuItem[];
@@ -32,7 +31,6 @@ function objectHref(objectId: string): string {
 function menuObjectHref(
   item: ProjectedMenuItem,
   hostObjectId: string,
-  defaultNestedTargetId?: string | null,
 ): string {
   const targetId = item.link_to_object?.trim();
   if (!targetId) {
@@ -40,9 +38,6 @@ function menuObjectHref(
   }
   const type = item.object_type ?? item.object?.object_type;
   if (isMenuInHostTargetType(type) && targetId !== hostObjectId) {
-    if (defaultNestedTargetId && targetId === defaultNestedTargetId) {
-      return objectHref(hostObjectId);
-    }
     const u = new URLSearchParams();
     u.set(OBJECT_PAGE_VIEW_PATH_PARAM, targetId);
     return `${objectHref(hostObjectId)}?${u.toString()}`;
@@ -57,7 +52,6 @@ function menuObjectHref(
 export function ObjectMenuItemsStatic({
   items,
   hostObjectId,
-  defaultNestedTargetId = null,
 }: ObjectMenuItemsStaticProps) {
   return (
     <div className="flex flex-col gap-2">
@@ -66,7 +60,6 @@ export function ObjectMenuItemsStatic({
           <MenuItemNavWrapper
             item={item}
             hostObjectId={hostObjectId}
-            defaultNestedTargetId={defaultNestedTargetId}
           >
             <MenuItemVisual item={item} />
           </MenuItemNavWrapper>
@@ -79,7 +72,6 @@ export function ObjectMenuItemsStatic({
 function MenuItemNavWrapper({
   item,
   hostObjectId,
-  defaultNestedTargetId,
   children,
 }: {
   item: ProjectedMenuItem;
@@ -89,14 +81,13 @@ function MenuItemNavWrapper({
 }) {
   if (item.link_to_object) {
     return (
-      <Link
-        href={menuObjectHref(item, hostObjectId, defaultNestedTargetId)}
+      <OptimisticNavLink
+        href={menuObjectHref(item, hostObjectId)}
+        method="push"
         className="block min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        // Wallet extensions may inject classes on anchors before hydration completes.
-        suppressHydrationWarning
       >
         {children}
-      </Link>
+      </OptimisticNavLink>
     );
   }
 

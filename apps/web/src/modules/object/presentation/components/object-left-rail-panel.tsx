@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -215,6 +215,68 @@ function LeftRailEditToolbar({
           </div>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function LeftRailDescriptionBlock({
+  block,
+  index,
+  objectId,
+  canOpenDescriptionPage,
+  galleryPhotosAlbum,
+  toolbarProps,
+}: {
+  block: Extract<ObjectLeftRailBlock, { kind: 'description' }>;
+  index: number;
+  objectId: string;
+  canOpenDescriptionPage: boolean;
+  galleryPhotosAlbum: ProjectedGalleryAlbumView | null;
+  toolbarProps: ComponentProps<typeof LeftRailEditToolbar>;
+}) {
+  const { t } = useI18n();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const intro = truncateIntroForPreview(block.text);
+
+  const showDescriptionBtn =
+    (canOpenDescriptionPage && !intro.display) ||
+    (intro.display &&
+      canOpenDescriptionPage &&
+      galleryPhotosAlbum != null &&
+      galleryPhotosAlbum.items.length > 1);
+
+  return (
+    <div key={`desc-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+      <LeftRailEditToolbar {...toolbarProps} />
+      {isExpanded ? (
+        <p className="whitespace-pre-line leading-editorial text-fg">
+          {block.text}
+        </p>
+      ) : intro.display ? (
+        <p
+          className="leading-editorial text-fg"
+          title={intro.isTruncated ? block.text.trim() : undefined}
+        >
+          {intro.display}
+        </p>
+      ) : null}
+      {intro.isTruncated ? (
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="block w-full rounded-btn border border-border px-3 py-2 text-center text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          {isExpanded ? t('show_less') : t('show_more')}
+        </button>
+      ) : showDescriptionBtn ? (
+        <Link
+          href={`/object/${encodeURIComponent(objectId)}/description`}
+          className="block w-full rounded-btn border border-border px-3 py-2 text-center text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          suppressHydrationWarning
+        >
+          {t('object_detail_description_button')}
+        </Link>
+      ) : null}
     </div>
   );
 }
@@ -497,36 +559,18 @@ export function ObjectLeftRailPanel({
                 ) : null}
               </div>
             );
-          case 'description': {
-            const intro = truncateIntroForPreview(block.text);
-            // Show button when: text is truncated (>250 chars), OR short text but has gallery photos,
-            // OR no text but description page exists (gallery only).
-            // Matches legacy: show when description > 300 chars OR (description ≤ 300 AND galleryItem.length > 1).
-            const showDescriptionBtn =
-              intro.isTruncated || (canOpenDescriptionPage && !intro.display) || (intro.display && canOpenDescriptionPage && galleryPhotosAlbum != null && (galleryPhotosAlbum.items.length > 1));
+          case 'description':
             return (
-              <div key={`desc-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
-                <LeftRailEditToolbar {...editToolbarProps('description', block.headingLabel)} />
-                {intro.display ? (
-                  <p
-                    className="leading-editorial text-fg"
-                    title={intro.isTruncated ? block.text.trim() : undefined}
-                  >
-                    {intro.display}
-                  </p>
-                ) : null}
-                {showDescriptionBtn ? (
-                  <Link
-                    href={`/object/${encodeURIComponent(objectId)}/description`}
-                    className="block w-full rounded-btn border border-border px-3 py-2 text-center text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    suppressHydrationWarning
-                  >
-                    {t('object_detail_description_button')}
-                  </Link>
-                ) : null}
-              </div>
+              <LeftRailDescriptionBlock
+                key={`desc-${index}`}
+                block={block}
+                index={index}
+                objectId={objectId}
+                canOpenDescriptionPage={canOpenDescriptionPage}
+                galleryPhotosAlbum={galleryPhotosAlbum}
+                toolbarProps={editToolbarProps('description', block.headingLabel)}
+              />
             );
-          }
           case 'button': {
             return (
               <div key={`btn-${index}`} className={LEFT_RAIL_SECTION_CLASS}>

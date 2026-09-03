@@ -31,7 +31,7 @@ export function ObjectRightReviewsSection({
 
   return (
     <aside className="w-full rounded-card border border-border bg-surface/60 px-3 py-card-padding text-body-sm text-muted">
-      <p className="font-weight-label text-fg">{t('reviews')}</p>
+      <h2 className="text-section font-weight-strong text-fg">{t('reviews')}</h2>
       <div className="mt-3">
         <FeedList
           items={visible}

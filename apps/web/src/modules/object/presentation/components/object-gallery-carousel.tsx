@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type SyntheticEvent,
+  type TouchEvent,
+} from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -86,8 +94,8 @@ export function ObjectGalleryCarousel({
   );
 
   const goPrev = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation();
+    (event?: MouseEvent<HTMLButtonElement>) => {
+      event?.stopPropagation();
       if (count <= 1 || isPreviewActive) {
         return;
       }
@@ -97,14 +105,89 @@ export function ObjectGalleryCarousel({
   );
 
   const goNext = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation();
+    (event?: MouseEvent<HTMLButtonElement>) => {
+      event?.stopPropagation();
       if (count <= 1 || isPreviewActive) {
         return;
       }
       setActiveIndex((i) => (i + 1) % count);
     },
     [count, isPreviewActive],
+  );
+
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchDeltaRef = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
+  const isSwipedRef = useRef(false);
+
+  const handleTouchStart = useCallback((event: TouchEvent<HTMLElement>) => {
+    const touch = event.touches[0];
+    if (!touch) {
+      return;
+    }
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    touchDeltaRef.current = { dx: 0, dy: 0 };
+    isSwipedRef.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((event: TouchEvent<HTMLElement>) => {
+    if (!touchStartRef.current) {
+      return;
+    }
+    const touch = event.touches[0];
+    if (!touch) {
+      return;
+    }
+    touchDeltaRef.current = {
+      dx: touch.clientX - touchStartRef.current.x,
+      dy: touch.clientY - touchStartRef.current.y,
+    };
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStartRef.current) {
+      return;
+    }
+    const { dx, dy } = touchDeltaRef.current;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    const SWIPE_THRESHOLD_PX = 40;
+
+    if (absDx >= SWIPE_THRESHOLD_PX && absDx > absDy * 1.2) {
+      if (count > 1 && !isPreviewActive) {
+        if (dx < 0) {
+          goNext();
+        } else {
+          goPrev();
+        }
+      }
+      isSwipedRef.current = true;
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+          isSwipedRef.current = false;
+        }, 400);
+      }
+    }
+    touchStartRef.current = null;
+    touchDeltaRef.current = { dx: 0, dy: 0 };
+  }, [count, goNext, goPrev, isPreviewActive]);
+
+  const handleTouchCancel = useCallback(() => {
+    touchStartRef.current = null;
+    touchDeltaRef.current = { dx: 0, dy: 0 };
+    isSwipedRef.current = false;
+  }, []);
+
+  const handleFrameClick = useCallback(
+    (event: MouseEvent<HTMLElement>) => {
+      if (isSwipedRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        isSwipedRef.current = false;
+        return;
+      }
+      onPhotoClick?.(activeIndex);
+    },
+    [activeIndex, onPhotoClick],
   );
 
   if (!active || !displayUrl) {
@@ -116,7 +199,7 @@ export function ObjectGalleryCarousel({
     ? `${CAROUSEL_CONTROL_CLASS} ${CAROUSEL_CONTROL_DISABLED_CLASS}`
     : CAROUSEL_CONTROL_CLASS;
   const frameClassName = [
-    'relative min-w-0 flex-1 overflow-hidden rounded-btn border border-border',
+    'relative min-w-0 flex-1 overflow-hidden rounded-btn border border-border touch-pan-y select-none',
     onPhotoClick ? 'cursor-pointer transition-colors hover:border-accent/40' : '',
   ]
     .filter(Boolean)
@@ -165,12 +248,24 @@ export function ObjectGalleryCarousel({
           type="button"
           className={frameClassName}
           aria-label={t('gallery')}
-          onClick={() => onPhotoClick(activeIndex)}
+          onClick={handleFrameClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
         >
           {photoFrame}
         </button>
       ) : (
-        <div className={frameClassName}>{photoFrame}</div>
+        <div
+          className={frameClassName}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
+        >
+          {photoFrame}
+        </div>
       )}
       {showControls ? (
         <button

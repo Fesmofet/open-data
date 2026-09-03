@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 jest.mock('@/i18n/providers/i18n-provider', () => ({
   useI18n: () => ({
@@ -15,6 +15,9 @@ jest.mock('@/i18n/providers/i18n-provider', () => ({
         object_edit_group_details: 'DETAILS',
         object_edit_group_community: 'COMMUNITY',
         object_edit_group_contact: 'CONTACT',
+        show_more: 'Show more',
+        show_less: 'View less',
+        object_detail_description_button: 'Description',
       })[key] ?? key,
     locale: 'en-US',
   }),
@@ -206,5 +209,46 @@ describe('ObjectLeftRailPanel edit mode group headings', () => {
 
     expect(screen.queryByText('HEADER')).toBeNull();
     expect(screen.queryByText('DETAILS')).toBeNull();
+  });
+});
+
+describe('ObjectLeftRailPanel description inline expand/collapse', () => {
+  const longDescription =
+    'Catch sits on the second floor of Bayview Pier, high enough that Steveston Harbour becomes part of dinner. Fishing boats and docks fill the view below; outdoors, the rooftop patio opens it to 270 degrees across the river inlet. The menu makes sense here with fresh seafood.';
+
+  it('truncates long description and allows expanding and collapsing inline', () => {
+    render(
+      <ObjectLeftRailPanel
+        blocks={[
+          {
+            kind: 'description',
+            headingLabel: 'Description',
+            text: longDescription,
+          },
+        ]}
+        objectTypeKey="restaurant"
+        objectId="ehk-catch-kitchen-bar"
+      />,
+    );
+
+    // Initial state: truncated preview and "Show more" button
+    const showMoreButton = screen.getByRole('button', { name: 'Show more' });
+    expect(showMoreButton).toBeTruthy();
+    expect(screen.queryByText(longDescription)).toBeNull();
+
+    // Click "Show more"
+    fireEvent.click(showMoreButton);
+
+    // Expanded state: full text is shown, button becomes "View less"
+    expect(screen.getByText(longDescription)).toBeTruthy();
+    const viewLessButton = screen.getByRole('button', { name: 'View less' });
+    expect(viewLessButton).toBeTruthy();
+
+    // Click "View less"
+    fireEvent.click(viewLessButton);
+
+    // Collapsed state again
+    expect(screen.queryByText(longDescription)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Show more' })).toBeTruthy();
   });
 });

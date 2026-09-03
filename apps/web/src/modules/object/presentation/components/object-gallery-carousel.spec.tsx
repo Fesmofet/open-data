@@ -97,3 +97,78 @@ describe('ObjectGalleryCarousel preview mode', () => {
     expect(frameAspectRatio()).toBe(aspectBeforeLoad);
   });
 });
+
+describe('ObjectGalleryCarousel touch swipe', () => {
+  it('swipes left to advance to next photo and suppresses click on photo frame', () => {
+    const onPhotoClick = jest.fn();
+    render(
+      <I18nProvider locale="en-US" messages={messages}>
+        <ObjectGalleryCarousel photos={photos} onPhotoClick={onPhotoClick} />
+      </I18nProvider>,
+    );
+
+    const frameButton = screen.getByRole('button', { name: 'Gallery' });
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute(
+      'src',
+      'https://example.com/photo-1.jpg',
+    );
+
+    // Swipe left (dx = -80)
+    fireEvent.touchStart(frameButton, { touches: [{ clientX: 200, clientY: 100 }] });
+    fireEvent.touchMove(frameButton, { touches: [{ clientX: 120, clientY: 100 }] });
+    fireEvent.touchEnd(frameButton);
+
+    // Next photo should now be displayed
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute(
+      'src',
+      'https://example.com/photo-2.jpg',
+    );
+
+    // Click immediately after swipe should be suppressed
+    fireEvent.click(frameButton);
+    expect(onPhotoClick).not.toHaveBeenCalled();
+  });
+
+  it('swipes right to go to previous photo', () => {
+    render(
+      <I18nProvider locale="en-US" messages={messages}>
+        <ObjectGalleryCarousel photos={photos} />
+      </I18nProvider>,
+    );
+
+    const frame = screen.getByTestId('gallery-carousel-frame').parentElement!;
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute(
+      'src',
+      'https://example.com/photo-1.jpg',
+    );
+
+    // Swipe right (dx = +80) -> wraps to photo-2
+    fireEvent.touchStart(frame, { touches: [{ clientX: 100, clientY: 100 }] });
+    fireEvent.touchMove(frame, { touches: [{ clientX: 180, clientY: 100 }] });
+    fireEvent.touchEnd(frame);
+
+    expect(screen.getByTestId('gallery-image')).toHaveAttribute(
+      'src',
+      'https://example.com/photo-2.jpg',
+    );
+  });
+
+  it('allows normal clicks when touch does not exceed swipe threshold', () => {
+    const onPhotoClick = jest.fn();
+    render(
+      <I18nProvider locale="en-US" messages={messages}>
+        <ObjectGalleryCarousel photos={photos} onPhotoClick={onPhotoClick} />
+      </I18nProvider>,
+    );
+
+    const frameButton = screen.getByRole('button', { name: 'Gallery' });
+
+    // Micro-movement (tap)
+    fireEvent.touchStart(frameButton, { touches: [{ clientX: 100, clientY: 100 }] });
+    fireEvent.touchMove(frameButton, { touches: [{ clientX: 105, clientY: 100 }] });
+    fireEvent.touchEnd(frameButton);
+
+    fireEvent.click(frameButton);
+    expect(onPhotoClick).toHaveBeenCalledWith(0);
+  });
+});
