@@ -1,10 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
 import { Channel, ChannelMember, Message } from '@opden-data-layer/odl-db-types';
 
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { ChannelCursorPayload, MessageCursorPayload } from '../domain/messaging/message-feed-cursor';
+
+export type ObjectActivityMessageRow = Message & {
+  channel_object_id: string | null;
+};
 
 @Injectable()
 export class MessagingRepository {
@@ -264,6 +269,88 @@ export class MessagingRepository {
     }
 
     return query.execute();
+  }
+
+  async listObjectActivityMessages(
+    objectId: string,
+    excludedAuthors: readonly string[],
+    cursor: MessageCursorPayload | null,
+    limitPlusOne: number,
+    forContextViewer?: string,
+  ): Promise<ObjectActivityMessageRow[]> {
+    let query = this.db
+      .selectFrom('messages as m')
+      .innerJoin('channels as c', 'c.channel_id', 'm.channel_id')
+      .selectAll('m')
+      .select('c.object_id as channel_object_id')
+      .where('c.kind', '=', 'object')
+      .where(sql<boolean>`(c.object_id = ${objectId} OR ${objectId} = ANY(m.linked_object_ids))`)
+      .orderBy('m.created_at_unix', 'desc')
+      .orderBy('m.event_seq', 'desc')
+      .limit(limitPlusOne);
+
+    if (excludedAuthors.length > 0) {
+      query = query.where('m.author', 'not in', excludedAuthors as string[]);
+    }
+
+    if (forContextViewer) {
+      query = query.where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('message_context_exclusions')
+              .select('message_id')
+              .whereRef('message_context_exclusions.message_id', '=', 'm.message_id')
+              .where('excluded_by', '=', forContextViewer),
+          ),
+        ),
+      );
+    }
+
+    if (cursor) {
+      query = query.where((eb) =>
+        eb.or([
+          eb('m.created_at_unix', '<', cursor.createdAtUnix),
+          eb.and([
+            eb('m.created_at_unix', '=', cursor.createdAtUnix),
+            eb('m.event_seq', '<', cursor.eventSeq),
+          ]),
+        ]),
+      );
+    }
+
+    return query.execute();
+  }
+
+  async findObjectChannelTitles(objectIds: readonly string[]): Promise<Map<string, string>> {
+    const unique = [...new Set(objectIds.map((id) => id.trim()).filter(Boolean))];
+    const out = new Map<string, string>();
+    if (unique.length === 0) {
+      return out;
+    }
+
+    const rows = await this.db
+      .selectFrom('channels')
+      .select(['object_id', 'title'])
+      .where('kind', '=', 'object')
+      .where('object_id', 'in', unique)
+      .execute();
+
+    for (const row of rows) {
+      if (!row.object_id) {
+        continue;
+      }
+      const title = row.title?.trim();
+      out.set(row.object_id, title && title.length > 0 ? title : row.object_id);
+    }
+
+    for (const id of unique) {
+      if (!out.has(id)) {
+        out.set(id, id);
+      }
+    }
+
+    return out;
   }
 
   async listContextExcludedMessageIds(

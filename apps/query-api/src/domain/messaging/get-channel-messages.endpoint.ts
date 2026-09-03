@@ -75,7 +75,7 @@ export class GetChannelMessagesEndpoint {
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
 
-    const items = page.map(mapMessageToDto);
+    const items = page.map((row) => mapMessageToDto(row));
     const last = page[page.length - 1];
     const nextCursor =
       hasMore && last

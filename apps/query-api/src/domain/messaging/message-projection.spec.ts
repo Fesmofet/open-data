@@ -17,6 +17,7 @@ describe('message-projection', () => {
       quote_json: null,
       attachments: null,
       mentions: [],
+      linked_object_ids: [],
       original_created_at_unix: 1_262_304_000,
       updated_at_unix: null,
       created_at_unix: 100,
@@ -29,6 +30,7 @@ describe('message-projection', () => {
     expect(dto.body).toBeNull();
     expect(dto.original_created_at_unix).toBe(1_262_304_000);
     expect(dto.updated_at_unix).toBeNull();
+    expect(dto.source_object).toBeNull();
   });
 
   it('resolveLastMessagePreview returns encrypted flag without ciphertext', () => {
@@ -67,6 +69,7 @@ describe('message-projection', () => {
       quote_json: null,
       attachments: null,
       mentions: [],
+      linked_object_ids: [],
       original_created_at_unix: null,
       updated_at_unix: 1_700_000_100,
       created_at_unix: 100,
@@ -75,5 +78,42 @@ describe('message-projection', () => {
       search_vector: null,
     });
     expect(dto.updated_at_unix).toBe(1_700_000_100);
+  });
+
+  it('sets source_object on mention-only activity rows', () => {
+    const dto = mapMessageToDto(
+      {
+        message_id: 'm1',
+        channel_id: 'obj-ch-rest',
+        author: 'alice',
+        body: 'see dish',
+        encrypted_body: null,
+        encryption_mode: null,
+        encrypted_to: null,
+        encryption_v: null,
+        encryption_meta: null,
+        overflow_ref: null,
+        reply_to: null,
+        quote_json: null,
+        attachments: null,
+        mentions: [],
+        linked_object_ids: ['dish-1'],
+        original_created_at_unix: null,
+        updated_at_unix: null,
+        created_at_unix: 100,
+        event_seq: BigInt(1),
+        transaction_id: 'tx1',
+        search_vector: null,
+      },
+      {
+        requestedObjectId: 'dish-1',
+        channelObjectId: 'rest-1',
+        sourceNameByObjectId: new Map([['rest-1', 'The Broken Whisk']]),
+      },
+    );
+    expect(dto.source_object).toEqual({
+      object_id: 'rest-1',
+      name: 'The Broken Whisk',
+    });
   });
 });

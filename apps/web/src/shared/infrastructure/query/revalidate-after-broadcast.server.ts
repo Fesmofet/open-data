@@ -15,7 +15,7 @@ function userProfilePath(accountName: string): string {
 /** After on-chain mutations on an object page (authority, follow, updates, rating, …). */
 export async function revalidateObjectAfterBroadcast(
   objectId: string,
-  options?: { updateId?: string },
+  options?: { updateId?: string; mentionedObjectIds?: readonly string[] },
 ): Promise<void> {
   const id = objectId.trim();
   if (id.length === 0) {
@@ -34,6 +34,12 @@ export async function revalidateObjectAfterBroadcast(
   updateTag(queryApiCacheTags.objectThreadsFeed(id));
   updateTag(queryApiCacheTags.objectChannel(id));
   updateTag(queryApiCacheTags.objectChannelMessages(id));
+  for (const mentionedId of options?.mentionedObjectIds ?? []) {
+    const trimmed = mentionedId.trim();
+    if (trimmed.length > 0 && trimmed !== id) {
+      updateTag(queryApiCacheTags.objectChannelMessages(trimmed));
+    }
+  }
   revalidatePath(objectPath(id), 'layout');
 }
 

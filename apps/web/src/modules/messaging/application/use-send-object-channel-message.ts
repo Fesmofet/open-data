@@ -7,6 +7,7 @@ import {
   buildOslChannelCreateOp,
   buildOslMessageCreateOp,
 } from '@opden-data-layer/hive-broadcast';
+import { extractObjectPathSlugsFromBody } from '@opden-data-layer/core';
 
 import { useOslCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
@@ -87,7 +88,9 @@ export function useSendObjectChannelMessage(options: {
           options.onBootstrapComplete?.();
         }
         await refreshAfterBroadcast(router, () =>
-          revalidateObjectAfterBroadcast(options.objectId),
+          revalidateObjectAfterBroadcast(options.objectId, {
+            mentionedObjectIds: extractObjectPathSlugsFromBody(trimmed),
+          }),
         );
         return true;
       } catch {

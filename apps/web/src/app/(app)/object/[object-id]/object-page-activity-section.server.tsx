@@ -18,9 +18,11 @@ export async function ObjectPageActivityFeedSection({
   viewerUsername,
 }: ObjectPageActivityFeedSectionProps) {
   const channel = await getObjectChannelQuery(objectId, viewerUsername);
-  const initialMessages = channel
-    ? await getObjectChannelMessagesQuery(objectId, { limit: 50 }, viewerUsername)
-    : null;
+  const initialMessages = await getObjectChannelMessagesQuery(
+    objectId,
+    { limit: 50 },
+    viewerUsername,
+  );
 
   const props = resolveObjectMessagesSectionProps({
     objectId,

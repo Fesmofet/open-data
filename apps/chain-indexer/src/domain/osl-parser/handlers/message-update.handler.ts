@@ -1,7 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
+import {
+  blockTimestampToUnixSeconds,
+  CHANNEL_KINDS,
+  extractObjectIdsFromCommentBody,
+  resolveMessageLinkedObjectIds,
+} from '@opden-data-layer/core';
 
+import { ChannelsRepository } from '../../../repositories/channels.repository';
 import { MessagesRepository } from '../../../repositories/messages.repository';
+import { ObjectsCoreRepository } from '../../../repositories/objects-core.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { messageUpdatePayloadSchema } from '../osl-envelope.schema';
 
@@ -10,7 +17,11 @@ export class MessageUpdateHandler implements OdlActionHandler {
   readonly action = 'message_update';
   private readonly logger = new Logger(MessageUpdateHandler.name);
 
-  constructor(private readonly messagesRepository: MessagesRepository) {}
+  constructor(
+    private readonly messagesRepository: MessagesRepository,
+    private readonly channelsRepository: ChannelsRepository,
+    private readonly objectsCoreRepository: ObjectsCoreRepository,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const result = messageUpdatePayloadSchema.safeParse(payload);
@@ -50,11 +61,41 @@ export class MessageUpdateHandler implements OdlActionHandler {
       return;
     }
 
+    const channel = await this.channelsRepository.findById(channel_id);
+    const linkedObjectIds = await this.resolveLinkedObjectIdsForChannel(
+      channel?.kind,
+      channel?.object_id ?? null,
+      body,
+    );
+
     const updatedAtUnix = blockTimestampToUnixSeconds(ctx.timestamp);
     await this.messagesRepository.updateBody({
       message_id,
       body,
       updated_at_unix: updatedAtUnix,
+      linked_object_ids: linkedObjectIds,
+    });
+  }
+
+  private async resolveLinkedObjectIdsForChannel(
+    channelKind: string | undefined,
+    nativeObjectId: string | null,
+    body: string,
+  ): Promise<string[]> {
+    if (channelKind !== CHANNEL_KINDS[2]) {
+      return [];
+    }
+
+    const candidates = extractObjectIdsFromCommentBody(body);
+    if (candidates.length === 0) {
+      return [];
+    }
+
+    const types = await this.objectsCoreRepository.findObjectTypesByIds(candidates);
+    return resolveMessageLinkedObjectIds({
+      body,
+      nativeObjectId,
+      existingObjectIds: [...types.keys()],
     });
   }
 }

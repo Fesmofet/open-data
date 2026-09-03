@@ -2,6 +2,7 @@ import { CHANNEL_KINDS } from '@opden-data-layer/core';
 import { MessageCreateHandler } from './message-create.handler';
 import type { ChannelsRepository } from '../../../repositories/channels.repository';
 import type { MessagesRepository } from '../../../repositories/messages.repository';
+import type { ObjectsCoreRepository } from '../../../repositories/objects-core.repository';
 import type { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 
 describe('MessageCreateHandler notifications', () => {
@@ -21,6 +22,7 @@ describe('MessageCreateHandler notifications', () => {
   function makeHandler(overrides: {
     channels?: Partial<ChannelsRepository>;
     messages?: Partial<MessagesRepository>;
+    objectsCore?: Partial<ObjectsCoreRepository>;
     notificationEmitter?: Partial<NotificationEmitterService>;
   } = {}) {
     const channels = {
@@ -38,6 +40,11 @@ describe('MessageCreateHandler notifications', () => {
       ...overrides.messages,
     } as unknown as MessagesRepository;
 
+    const objectsCore = {
+      findObjectTypesByIds: jest.fn().mockResolvedValue(new Map()),
+      ...overrides.objectsCore,
+    } as unknown as ObjectsCoreRepository;
+
     const notificationEmitter = {
       odlContext: jest.fn().mockReturnValue({
         blockNum: 1,
@@ -49,9 +56,15 @@ describe('MessageCreateHandler notifications', () => {
     } as unknown as NotificationEmitterService;
 
     return {
-      handler: new MessageCreateHandler(channels, messages, notificationEmitter),
+      handler: new MessageCreateHandler(
+        channels,
+        messages,
+        objectsCore,
+        notificationEmitter,
+      ),
       channels,
       messages,
+      objectsCore,
       notificationEmitter,
     };
   }
@@ -174,6 +187,7 @@ describe('MessageCreateHandler notifications', () => {
 
     await handler.handle({ channel_id: 'obj-ch-1', body: 'hello' }, baseCtx);
 
+    expect(notificationEmitter.emitWithContext).toHaveBeenCalledTimes(1);
     expect(notificationEmitter.emitWithContext).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
@@ -183,6 +197,74 @@ describe('MessageCreateHandler notifications', () => {
           encrypted: false,
         }),
       }),
+    );
+  });
+
+  it('stores linked_object_ids on object channel when body mentions objects', async () => {
+    const { handler, messages, objectsCore, notificationEmitter } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'obj-ch-rest',
+          kind: CHANNEL_KINDS[2],
+          object_id: 'rest-1',
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+      objectsCore: {
+        findObjectTypesByIds: jest.fn().mockResolvedValue(
+          new Map([
+            ['rest-1', 'restaurant'],
+            ['dish-1', 'dish'],
+          ]),
+        ),
+      },
+    });
+
+    await handler.handle(
+      { channel_id: 'obj-ch-rest', body: 'try /object/dish-1 tonight' },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channel_id: 'obj-ch-rest',
+        linked_object_ids: ['dish-1'],
+      }),
+      expect.anything(),
+    );
+
+    const emittedObjectIds = (
+      notificationEmitter.emitWithContext as jest.Mock
+    ).mock.calls.map((call) => call[1].objectId);
+    expect(emittedObjectIds).toEqual(expect.arrayContaining(['rest-1', 'dish-1']));
+  });
+
+  it('stores empty linked_object_ids on DM even when body mentions objects', async () => {
+    const { handler, messages, objectsCore } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'dm-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+      objectsCore: {
+        findObjectTypesByIds: jest.fn().mockResolvedValue(new Map([['dish-1', 'dish']])),
+      },
+    });
+
+    await handler.handle(
+      { channel_id: 'dm-1', body: 'see /object/dish-1' },
+      baseCtx,
+    );
+
+    expect(objectsCore.findObjectTypesByIds).not.toHaveBeenCalled();
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ linked_object_ids: [] }),
+      expect.anything(),
     );
   });
 

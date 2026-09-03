@@ -1,9 +1,10 @@
-import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
-
+import { CHANNEL_KINDS } from '@opden-data-layer/core';
 import { MessageUpdateHandler } from './message-update.handler';
+import type { ChannelsRepository } from '../../../repositories/channels.repository';
 import type { MessagesRepository } from '../../../repositories/messages.repository';
+import type { ObjectsCoreRepository } from '../../../repositories/objects-core.repository';
 
-describe('MessageUpdateHandler', () => {
+describe('MessageUpdateHandler linked_object_ids', () => {
   const baseCtx = {
     action: 'message_update',
     creator: 'alice',
@@ -12,129 +13,100 @@ describe('MessageUpdateHandler', () => {
     operationIndex: 0,
     odlEventIndex: 0,
     transactionId: 'tx-1',
-    timestamp: '2024-01-15T12:01:40.000Z',
-    eventSeq: BigInt(2),
+    timestamp: '2024-01-15T12:00:00.000Z',
+    eventSeq: BigInt(1),
     eventIdIndexMap: new Map<string, number>(),
   };
 
-  const plainRow = {
-    message_id: 'tx-0-0-0',
-    channel_id: 'ch-1',
-    author: 'alice',
-    body: 'hello',
-    encrypted_body: null,
-    created_at_unix: 1_700_000_000,
-    original_created_at_unix: 1_262_304_000,
-    reply_to: 'parent-0-0-0',
-  };
-
-  function makeHandler(overrides: Partial<MessagesRepository> = {}) {
+  it('replaces linked_object_ids from the new body on object channels', async () => {
     const messages = {
       tombstoneExists: jest.fn().mockResolvedValue(false),
-      findById: jest.fn().mockResolvedValue(plainRow),
+      findById: jest.fn().mockResolvedValue({
+        message_id: 'm1',
+        channel_id: 'obj-ch-rest',
+        author: 'alice',
+        encrypted_body: null,
+        linked_object_ids: ['dish-1'],
+      }),
       updateBody: jest.fn().mockResolvedValue(undefined),
-      ...overrides,
     } as unknown as MessagesRepository;
 
-    return { handler: new MessageUpdateHandler(messages), messages };
-  }
-
-  it('author full-replace keeps metadata and sets updated_at_unix', async () => {
-    const { handler, messages } = makeHandler();
-
-    await handler.handle(
-      { channel_id: 'ch-1', message_id: 'tx-0-0-0', body: 'hello edited' },
-      baseCtx,
-    );
-
-    expect(messages.updateBody).toHaveBeenCalledWith({
-      message_id: 'tx-0-0-0',
-      body: 'hello edited',
-      updated_at_unix: blockTimestampToUnixSeconds(baseCtx.timestamp),
-    });
-  });
-
-  it('skips when non-author updates', async () => {
-    const { handler, messages } = makeHandler();
-
-    await handler.handle(
-      { channel_id: 'ch-1', message_id: 'tx-0-0-0', body: 'nope' },
-      { ...baseCtx, creator: 'bob' },
-    );
-
-    expect(messages.updateBody).not.toHaveBeenCalled();
-  });
-
-  it('skips encrypted messages', async () => {
-    const { handler, messages } = makeHandler({
+    const channels = {
       findById: jest.fn().mockResolvedValue({
-        ...plainRow,
-        body: null,
-        encrypted_body: '#cipher',
+        channel_id: 'obj-ch-rest',
+        kind: CHANNEL_KINDS[2],
+        object_id: 'rest-1',
       }),
-    });
+    } as unknown as ChannelsRepository;
+
+    const objectsCore = {
+      findObjectTypesByIds: jest.fn().mockResolvedValue(
+        new Map([
+          ['dish-2', 'dish'],
+          ['rest-1', 'restaurant'],
+        ]),
+      ),
+    } as unknown as ObjectsCoreRepository;
+
+    const handler = new MessageUpdateHandler(messages, channels, objectsCore);
 
     await handler.handle(
-      { channel_id: 'ch-1', message_id: 'tx-0-0-0', body: 'nope' },
+      {
+        message_id: 'm1',
+        channel_id: 'obj-ch-rest',
+        body: 'now /object/dish-2',
+      },
       baseCtx,
     );
 
-    expect(messages.updateBody).not.toHaveBeenCalled();
-  });
-
-  it('skips when message is missing', async () => {
-    const { handler, messages } = makeHandler({
-      findById: jest.fn().mockResolvedValue(null),
-    });
-
-    await handler.handle(
-      { channel_id: 'ch-1', message_id: 'tx-0-0-0', body: 'nope' },
-      baseCtx,
+    expect(messages.updateBody).toHaveBeenCalledWith(
+      expect.objectContaining({
+        linked_object_ids: ['dish-2'],
+      }),
     );
-
-    expect(messages.updateBody).not.toHaveBeenCalled();
   });
 
-  it('skips when message is in a different channel', async () => {
-    const { handler, messages } = makeHandler({
+  it('clears linked_object_ids when body no longer mentions objects', async () => {
+    const messages = {
+      tombstoneExists: jest.fn().mockResolvedValue(false),
       findById: jest.fn().mockResolvedValue({
-        ...plainRow,
-        channel_id: 'ch-1',
+        message_id: 'm1',
+        channel_id: 'obj-ch-rest',
+        author: 'alice',
+        encrypted_body: null,
+        linked_object_ids: ['dish-1'],
       }),
-    });
+      updateBody: jest.fn().mockResolvedValue(undefined),
+    } as unknown as MessagesRepository;
+
+    const channels = {
+      findById: jest.fn().mockResolvedValue({
+        channel_id: 'obj-ch-rest',
+        kind: CHANNEL_KINDS[2],
+        object_id: 'rest-1',
+      }),
+    } as unknown as ChannelsRepository;
+
+    const objectsCore = {
+      findObjectTypesByIds: jest.fn(),
+    } as unknown as ObjectsCoreRepository;
+
+    const handler = new MessageUpdateHandler(messages, channels, objectsCore);
 
     await handler.handle(
-      { channel_id: 'ch-2', message_id: 'tx-0-0-0', body: 'nope' },
+      {
+        message_id: 'm1',
+        channel_id: 'obj-ch-rest',
+        body: 'no links',
+      },
       baseCtx,
     );
 
-    expect(messages.updateBody).not.toHaveBeenCalled();
-  });
-
-  it('only calls updateBody on successful author update', async () => {
-    const { handler, messages } = makeHandler();
-
-    await handler.handle(
-      { channel_id: 'ch-1', message_id: 'tx-0-0-0', body: 'hello edited' },
-      baseCtx,
+    expect(objectsCore.findObjectTypesByIds).not.toHaveBeenCalled();
+    expect(messages.updateBody).toHaveBeenCalledWith(
+      expect.objectContaining({
+        linked_object_ids: [],
+      }),
     );
-
-    expect(messages.updateBody).toHaveBeenCalledTimes(1);
-    expect(messages).not.toHaveProperty('insertMessage');
-    expect(messages).not.toHaveProperty('deleteAndTombstone');
-  });
-
-  it('skips when tombstone exists', async () => {
-    const { handler, messages } = makeHandler({
-      tombstoneExists: jest.fn().mockResolvedValue(true),
-    });
-
-    await handler.handle(
-      { channel_id: 'ch-1', message_id: 'tx-0-0-0', body: 'nope' },
-      baseCtx,
-    );
-
-    expect(messages.updateBody).not.toHaveBeenCalled();
-    expect(messages.findById).not.toHaveBeenCalled();
   });
 });

@@ -48,7 +48,7 @@ Shell: [`ObjectPrimaryContent`](../../../../../apps/web/src/modules/object/prese
 
 ## Activity
 
-See [messaging.md](../../../messaging.md) — [`ObjectActivityComposeBar`](../../../../../apps/web/src/modules/messaging/presentation/object-activity-compose-bar.tsx) on the Activity sub-tab only.
+See [messaging.md](../../../messaging.md) — [`ObjectActivityComposeBar`](../../../../../apps/web/src/modules/messaging/presentation/object-activity-compose-bar.tsx) on the Activity sub-tab only. Mention cross-posts (object links in body) appear on linked objects' Activity feeds with a **From {name}** source link; reply/edit/delete on foreign rows use the source message's `channel_id`.
 
 ## Verification
 

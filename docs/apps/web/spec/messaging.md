@@ -89,7 +89,11 @@ Optional group title is shown when two or more users are selected. `channel_id` 
 
 ## Object channel bootstrap
 
-Object **Activity** always renders compose + feed, even when query-api has no channel yet. Object channels do **not** show a member roster. **Encryption is not supported** on object channels (UI plain-only; indexer warn-skips encrypted `message_create`).
+Object **Activity** always renders compose + feed, even when query-api has no channel yet. Messages are fetched even without a native channel (mention cross-posts). Object channels do **not** show a member roster. **Encryption is not supported** on object channels (UI plain-only; indexer warn-skips encrypted `message_create`).
+
+**Mention cross-post:** when Activity body links other objects (`/object/{id}` from Insert Object or pasted paths), chain-indexer stores `linked_object_ids` on the single source row. Other objects' Activity feeds include that message; foreign rows show a **From {name}** link to `/object/{id}/reviews/activity`. Reply/edit/delete on foreign rows use the message's `channel_id` (source channel); new compose still targets the page object channel.
+
+After send, the web client invalidates Activity cache tags for `/object/` slugs in the markdown body (not only the page object).
 
 **Original publish date:** Activity compose (+) menu includes **Date** (object Activity only — not inbox DMs). User picks date+time via air-datepicker; a chip shows the selection until send or clear. Optional `original_created_at_unix` is included on `message_create`. Feed bubbles show “Originally {datetime}” when stamped; otherwise time-only from `created_at_unix`. Day grouping still uses chain `created_at_unix`.
 

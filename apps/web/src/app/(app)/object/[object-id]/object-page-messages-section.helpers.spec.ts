@@ -18,6 +18,39 @@ describe('resolveObjectMessagesSectionProps', () => {
     expect(props.initialMessages.items).toEqual([]);
   });
 
+  it('keeps fetched messages when channel is missing', () => {
+    const initialMessages = {
+      items: [
+        {
+          message_id: 'm1',
+          channel_id: 'obj-ch-rest',
+          author: 'alice',
+          body: 'mention',
+          overflow_ref: null,
+          reply_to: null,
+          quote_json: null,
+          attachments: null,
+          mentions: [],
+          created_at_unix: 1,
+          source_object: {
+            object_id: 'rest-1',
+            name: 'The Broken Whisk',
+          },
+        },
+      ],
+      cursor: null,
+      hasMore: false,
+    };
+
+    const props = resolveObjectMessagesSectionProps({
+      ...base,
+      channel: null,
+      initialMessages,
+    });
+
+    expect(props.initialMessages.items).toHaveLength(1);
+  });
+
   it('passes existing channel and messages', () => {
     const channel = {
       channel_id: 'obj-ch-obj-1',

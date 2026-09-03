@@ -1504,6 +1504,8 @@ export interface MessagesTable {
   quote_json: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   attachments: ColumnType<JsonValue | null, JsonValue | null | undefined, JsonValue | null>;
   mentions: string[];
+  /** Object ids mentioned in body (`/object/` + hashtags); object channels only. */
+  linked_object_ids: string[];
   /** Original publish time for archival object activity (display only). */
   original_created_at_unix: number | null;
   /** Reserved for future message editing — unused until edit support lands. */

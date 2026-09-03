@@ -101,7 +101,7 @@ export function ObjectActivityFeedClient({
     async (body: string, originalCreatedAtUnix: number | null): Promise<boolean> => {
       if (composeIntent?.mode === 'edit') {
         const ok = await updateMessage({
-          channelId: channel.channel_id,
+          channelId: composeIntent.message.channel_id,
           messageId: composeIntent.message.message_id,
           body,
         });
@@ -127,7 +127,7 @@ export function ObjectActivityFeedClient({
       }
       return ok;
     },
-    [channel.channel_id, composeIntent, sendMessage, updateMessage],
+    [composeIntent, sendMessage, updateMessage],
   );
 
   const handleReply = useCallback((message: MessageItem) => {
@@ -143,11 +143,11 @@ export function ObjectActivityFeedClient({
   const handleDelete = useCallback(
     async (message: MessageItem) => {
       await deleteMessage({
-        channelId: channel.channel_id,
+        channelId: message.channel_id,
         messageId: message.message_id,
       });
     },
-    [channel.channel_id, deleteMessage],
+    [deleteMessage],
   );
 
   return (

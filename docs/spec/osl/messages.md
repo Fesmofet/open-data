@@ -82,6 +82,7 @@ Optional `quote_json` snapshot (`{ author, body }`) is stored as-is for display 
 ## Object channel plaintext
 
 - **`message_create` on object channels:** plaintext (`body`) only; `encrypted_body` is warn-skipped by the indexer (see [channels.md](./channels.md)).
+- **Linked objects:** at index time the chain-indexer parses plaintext `body` for `/object/{id}` and `#objectId`, keeps ids that exist in `objects_core`, drops the channel's native `object_id`, caps at 20, and stores the result in `messages.linked_object_ids`. No on-chain `objects[]` field. `message_update` **replaces** the array from the new body. DM/group bodies are not scanned.
 
 ## `message_context_exclude`
 

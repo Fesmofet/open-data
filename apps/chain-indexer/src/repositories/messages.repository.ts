@@ -36,15 +36,28 @@ export class MessagesRepository {
   }
 
   async updateBody(
-    input: { message_id: string; body: string; updated_at_unix: number },
+    input: {
+      message_id: string;
+      body: string;
+      updated_at_unix: number;
+      linked_object_ids?: string[];
+    },
     trx?: DbExecutor,
   ): Promise<void> {
+    const patch: {
+      body: string;
+      updated_at_unix: number;
+      linked_object_ids?: string[];
+    } = {
+      body: input.body,
+      updated_at_unix: input.updated_at_unix,
+    };
+    if (input.linked_object_ids !== undefined) {
+      patch.linked_object_ids = input.linked_object_ids;
+    }
     await this.executor(trx)
       .updateTable('messages')
-      .set({
-        body: input.body,
-        updated_at_unix: input.updated_at_unix,
-      })
+      .set(patch)
       .where('message_id', '=', input.message_id)
       .execute();
   }

@@ -31,9 +31,6 @@ export function resolveObjectMessagesSectionProps(input: {
     objectName: input.objectName,
     viewerUsername: input.viewerUsername,
     channel,
-    initialMessages:
-      input.channel != null
-        ? (input.initialMessages ?? EMPTY_MESSAGES)
-        : EMPTY_MESSAGES,
+    initialMessages: input.initialMessages ?? EMPTY_MESSAGES,
   };
 }

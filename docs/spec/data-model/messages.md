@@ -49,5 +49,16 @@ Key indexes:
 - `uq_channels_direct_pair_hash` on `pair_hash` where `kind=direct`
 - `uq_channels_object_kind` on `object_id` where `kind=object`
 - `idx_messages_channel_time` on `(channel_id, created_at_unix DESC, event_seq DESC)`
+- `idx_messages_linked_object_ids` GIN on `linked_object_ids` (migration `00061_messages_linked_object_ids.ts`)
+
+## Linked object mentions (object channels)
+
+Migration: `00061_messages_linked_object_ids.ts`
+
+| Column | Purpose |
+|--------|---------|
+| `linked_object_ids` | `TEXT[] NOT NULL DEFAULT '{}'` — object ids mentioned in plaintext `body` via `/object/{id}` or `#objectId`, filtered to `objects_core`, excluding the channel's native `object_id`, capped at 20 |
+
+Index-time only — **not** broadcast on chain. DM/group channels always store `{}` even if the body contains object links.
 
 Messages are **not** stored in `object_updates`.

@@ -10,6 +10,7 @@ import {
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { MoreHorizontalIcon, ReplyIcon } from '@/icons';
+import { OptimisticNavLink } from '@/shared/presentation/navigation/optimistic-nav-link';
 import { useMediaQuery } from '@/shared/presentation/layout/hooks/use-breakpoint';
 
 import {
@@ -242,6 +243,19 @@ export function MessageRow({
 
         <div className={bubbleClass}>
           {authorNode}
+          {message.source_object ? (
+            <p className="mb-1 text-caption">
+              <OptimisticNavLink
+                href={`/object/${encodeURIComponent(message.source_object.object_id)}/reviews/activity`}
+                className="text-link hover:underline"
+              >
+                {t('object_activity_source_from').replace(
+                  '{name}',
+                  message.source_object.name,
+                )}
+              </OptimisticNavLink>
+            </p>
+          ) : null}
           {quote ? (
             <div
               className={[

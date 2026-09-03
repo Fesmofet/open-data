@@ -51,6 +51,11 @@ export type ChannelDetail = {
   leave_policy: ChannelLeavePolicy;
 };
 
+export type MessageSourceObject = {
+  object_id: string;
+  name: string;
+};
+
 export type MessageItem = {
   message_id: string;
   channel_id: string;
@@ -66,6 +71,7 @@ export type MessageItem = {
   created_at_unix: number;
   original_created_at_unix: number | null;
   updated_at_unix: number | null;
+  source_object: MessageSourceObject | null;
 };
 
 export type MessageHistoryPage = {

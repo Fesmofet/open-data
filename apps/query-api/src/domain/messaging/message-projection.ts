@@ -6,6 +6,11 @@ export type MessageEncryptionDto = {
   to: string;
 };
 
+export type MessageSourceObjectDto = {
+  object_id: string;
+  name: string;
+};
+
 export type MessageDto = {
   message_id: string;
   channel_id: string;
@@ -21,9 +26,17 @@ export type MessageDto = {
   created_at_unix: number;
   original_created_at_unix: number | null;
   updated_at_unix: number | null;
+  source_object: MessageSourceObjectDto | null;
 };
 
-export function mapMessageToDto(row: Message): MessageDto {
+export function mapMessageToDto(
+  row: Message,
+  options?: {
+    requestedObjectId?: string;
+    channelObjectId?: string | null;
+    sourceNameByObjectId?: ReadonlyMap<string, string>;
+  },
+): MessageDto {
   const encryption: MessageEncryptionDto | null =
     row.encryption_mode != null &&
     row.encrypted_to != null &&
@@ -35,6 +48,20 @@ export function mapMessageToDto(row: Message): MessageDto {
           to: row.encrypted_to,
         }
       : null;
+
+  const requestedObjectId = options?.requestedObjectId?.trim();
+  const channelObjectId = options?.channelObjectId?.trim() ?? null;
+  let source_object: MessageSourceObjectDto | null = null;
+
+  if (
+    requestedObjectId &&
+    channelObjectId &&
+    channelObjectId !== requestedObjectId
+  ) {
+    const name =
+      options?.sourceNameByObjectId?.get(channelObjectId) ?? channelObjectId;
+    source_object = { object_id: channelObjectId, name };
+  }
 
   return {
     message_id: row.message_id,
@@ -51,6 +78,7 @@ export function mapMessageToDto(row: Message): MessageDto {
     created_at_unix: row.created_at_unix,
     original_created_at_unix: row.original_created_at_unix,
     updated_at_unix: row.updated_at_unix,
+    source_object,
   };
 }
 

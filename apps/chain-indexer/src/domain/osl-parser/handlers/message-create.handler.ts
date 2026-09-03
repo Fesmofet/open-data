@@ -9,10 +9,13 @@ import {
   CHANNEL_ACCESS,
   CHANNEL_KINDS,
   CHANNEL_MEMBER_ROLES,
+  extractObjectIdsFromCommentBody,
+  resolveMessageLinkedObjectIds,
 } from '@opden-data-layer/core';
 import { computeDmPairHash } from '@opden-data-layer/core/utils/osl-messaging-crypto';
 import { ChannelsRepository } from '../../../repositories/channels.repository';
 import { MessagesRepository } from '../../../repositories/messages.repository';
+import { ObjectsCoreRepository } from '../../../repositories/objects-core.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
 import { messageCreatePayloadSchema } from '../osl-envelope.schema';
@@ -26,6 +29,7 @@ export class MessageCreateHandler implements OdlActionHandler {
   constructor(
     private readonly channelsRepository: ChannelsRepository,
     private readonly messagesRepository: MessagesRepository,
+    private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly notificationEmitter: NotificationEmitterService,
   ) {}
 
@@ -132,6 +136,13 @@ export class MessageCreateHandler implements OdlActionHandler {
       nowUnix,
     });
 
+    const linkedObjectIds = await this.resolveLinkedObjectIdsForChannel(
+      channel.kind,
+      channel.object_id,
+      data.body,
+      data.encrypted_body,
+    );
+
     await this.channelsRepository.runInTransaction(async (trx) => {
       await this.messagesRepository.insertMessage(
         {
@@ -149,6 +160,7 @@ export class MessageCreateHandler implements OdlActionHandler {
           quote_json: (data.quote_json as JsonValue | undefined) ?? null,
           attachments: (data.attachments as JsonValue | undefined) ?? null,
           mentions,
+          linked_object_ids: linkedObjectIds,
           original_created_at_unix: originalCreatedAtUnix,
           updated_at_unix: null,
           created_at_unix: createdAtUnix,
@@ -160,7 +172,30 @@ export class MessageCreateHandler implements OdlActionHandler {
       await this.channelsRepository.updateLastMessageAt(channelId!, createdAtUnix, trx);
     });
 
-    this.emitMessageNotification(channel, channelId!, messageId, data, ctx);
+    this.emitMessageNotification(channel, channelId!, messageId, data, ctx, linkedObjectIds);
+  }
+
+  private async resolveLinkedObjectIdsForChannel(
+    channelKind: string,
+    nativeObjectId: string | null,
+    body: string | null | undefined,
+    encryptedBody: string | null | undefined,
+  ): Promise<string[]> {
+    if (channelKind !== CHANNEL_KINDS[2] || encryptedBody != null || body == null) {
+      return [];
+    }
+
+    const candidates = extractObjectIdsFromCommentBody(body);
+    if (candidates.length === 0) {
+      return [];
+    }
+
+    const types = await this.objectsCoreRepository.findObjectTypesByIds(candidates);
+    return resolveMessageLinkedObjectIds({
+      body,
+      nativeObjectId,
+      existingObjectIds: [...types.keys()],
+    });
   }
 
   private emitMessageNotification(
@@ -169,6 +204,7 @@ export class MessageCreateHandler implements OdlActionHandler {
     messageId: string,
     data: { encrypted_body?: string | null },
     ctx: OdlEventContext,
+    linkedObjectIds: readonly string[],
   ): void {
     const encrypted = data.encrypted_body != null;
     const emitCtx = this.notificationEmitter.odlContext(ctx);
@@ -177,17 +213,20 @@ export class MessageCreateHandler implements OdlActionHandler {
       if (!channel.object_id) {
         return;
       }
-      this.notificationEmitter.emitWithContext(emitCtx, {
-        type: 'bell_object_message',
-        objectId: channel.object_id,
-        actor: ctx.creator,
-        payload: {
-          channelId,
-          messageId,
-          author: ctx.creator,
-          encrypted,
-        },
-      });
+      const objectIds = dedupeStrings([channel.object_id, ...linkedObjectIds]);
+      for (const objectId of objectIds) {
+        this.notificationEmitter.emitWithContext(emitCtx, {
+          type: 'bell_object_message',
+          objectId,
+          actor: ctx.creator,
+          payload: {
+            channelId,
+            messageId,
+            author: ctx.creator,
+            encrypted,
+          },
+        });
+      }
       return;
     }
 
@@ -330,4 +369,8 @@ export class MessageCreateHandler implements OdlActionHandler {
 
     return channelId;
   }
+}
+
+function dedupeStrings(values: readonly string[]): string[] {
+  return [...new Set(values.map((v) => v.trim()).filter((v) => v.length > 0))];
 }

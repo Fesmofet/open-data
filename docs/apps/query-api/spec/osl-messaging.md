@@ -20,7 +20,7 @@ tags: [query-api, messaging]
 | GET | `/query/v1/channels/by-alias/{alias}` | Resolve `dm:` / `obj:` aliases |
 | POST | `/query/v1/channels/{id}/messages` | Keyset cursor `(created_at_unix, event_seq)` |
 | GET | `/query/v1/objects/{object_id}/channel` | Default object channel meta |
-| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; governance + viewer mute filters |
+| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters |
 | GET | `/query/v1/users/{account}/memo-public-key` | Public memo key for encryption; 404 if account missing |
 
 ## Message DTO encryption fields
@@ -32,6 +32,7 @@ tags: [query-api, messaging]
 | `encrypted_body` | Ciphertext or `null` for plaintext |
 | `encryption` | `{ v, mode, to }` or `null` |
 | `updated_at_unix` | Unix seconds when author last edited plaintext body, or `null` |
+| `source_object` | `{ object_id, name }` when the message appears on an object Activity feed via `linked_object_ids` (mention cross-post); `null` on native-channel rows |
 
 Server **never** decrypts. Channel list preview: encrypted last message → `last_message_preview: null`, `last_message_encrypted: true` (ciphertext never in preview).
 
@@ -42,7 +43,11 @@ Server **never** decrypts. Channel list preview: encrypted last message → `las
 
 ## Object channel feed
 
+Object must exist in `objects_core`. Returns messages where `channels.kind = 'object'` and (`channels.object_id = :object_id` OR `:object_id = ANY(messages.linked_object_ids)`). Native channel row is **not** required — objects with only mention cross-posts still get a feed.
+
 Excludes authors in governance `muted` and (when `X-Viewer` set) viewer `user_account_mutes`.
+
+Mention-only rows include `source_object: { object_id, name }` (source = native channel object; name from object channel `title`).
 
 ## Channel detail extensions
 

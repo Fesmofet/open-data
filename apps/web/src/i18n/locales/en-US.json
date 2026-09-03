@@ -2223,6 +2223,7 @@
   "object_activity_original_date_caption": "Originally {datetime}",
   "object_activity_original_date_chip": "Originally {datetime}",
   "object_activity_original_date_clear_aria": "Clear original date",
+  "object_activity_source_from": "From {name}",
   "object_auto_complete_placeholder": "Find object",
   "object_create_add_field": "Add semantic field…",
   "object_create_add_field_placeholder": "Choose a field…",
