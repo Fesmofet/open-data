@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { useIpfsImageUpload } from '@/shared/application';
 import {
   imageFileFromClipboard,
-  parseHttpUrlFromPaste,
+  parseImageUrlFromPaste,
 } from '@/modules/object-updates/application/image-cid-or-url-paste';
 
 import { insertImageAtSelection } from '../../application/insert-editor-image';
@@ -49,7 +49,7 @@ export function EditorPasteImagePlugin() {
           return true;
         }
 
-        const pastedUrl = parseHttpUrlFromPaste(
+        const pastedUrl = parseImageUrlFromPaste(
           event.clipboardData?.getData('text/plain') ?? '',
         );
         if (pastedUrl) {
