@@ -73,17 +73,15 @@ test.describe('Discover map area search', () => {
   test.describe('mobile', () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
-    test('applies map area from fullscreen map', async ({ page }) => {
+    test('applies map area from inline map tab', async ({ page }) => {
       await mockDiscoverRoutes(page);
       await page.goto('/discover?type=restaurant');
 
       await expect(page.getByText('Unboxed Restaurant')).toBeVisible();
 
       await page.getByRole('button', { name: 'Map' }).click();
-      const mapDialog = page.getByRole('dialog');
-      await expect(mapDialog).toBeVisible();
 
-      const searchArea = mapDialog.getByRole('button', { name: 'Search area' });
+      const searchArea = page.getByRole('button', { name: 'Search area' });
       await expect(searchArea).toBeEnabled({ timeout: 15_000 });
 
       await Promise.all([
@@ -91,6 +89,7 @@ test.describe('Discover map area search', () => {
         searchArea.click(),
       ]);
 
+      await page.getByRole('button', { name: 'List' }).click();
       await expect(page.getByText('Boxed Restaurant')).toBeVisible();
     });
   });

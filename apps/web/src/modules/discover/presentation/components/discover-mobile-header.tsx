@@ -4,12 +4,15 @@ import { useCallback } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
-import { ChevronDownIcon, CloseIcon, MapPinIcon, PlusIcon } from '@/icons';
+import { ChevronDownIcon, CloseIcon, PlusIcon } from '@/icons';
+import { profileSectionTabClass } from '@/shared/presentation';
 import { useInstantNavigation } from '@/shared/presentation';
 
 import { buildDiscoverHref, decodeTagFilter, type DiscoverBox, type DiscoverMapView } from '../../domain/discover-url';
 import { DISCOVER_ACTIVE_CHIP_CLASS } from './discover-active-chips';
 import { DiscoverSortSelect } from './discover-sort-select';
+
+export type DiscoverMobileTab = 'list' | 'map';
 
 export type DiscoverMobileHeaderProps = {
   usersMode: boolean;
@@ -21,9 +24,10 @@ export type DiscoverMobileHeaderProps = {
   map: DiscoverMapView | null;
   showFilters: boolean;
   showMap: boolean;
+  mobileTab: DiscoverMobileTab;
+  onMobileTabChange: (tab: DiscoverMobileTab) => void;
   onOpenTypeSheet: () => void;
   onOpenFilterSheet: () => void;
-  onOpenMapSheet: () => void;
 };
 
 export function DiscoverMobileHeader({
@@ -36,9 +40,10 @@ export function DiscoverMobileHeader({
   map,
   showFilters,
   showMap,
+  mobileTab,
+  onMobileTabChange,
   onOpenTypeSheet,
   onOpenFilterSheet,
-  onOpenMapSheet,
 }: DiscoverMobileHeaderProps) {
   const { t } = useI18n();
   const { navigateInstant } = useInstantNavigation();
@@ -80,95 +85,102 @@ export function DiscoverMobileHeader({
     pushHref(tags, q, null);
   };
 
-  const showFilterRow = showFilters || showMap || box != null;
+  const showFilterRow =
+    showFilters || trimmedQ.length > 0 || tags.length > 0 || box != null;
+
+  const showSort = !usersMode && objectType && (!showMap || mobileTab === 'list');
 
   return (
     <div className="mb-4 space-y-3 lg:hidden">
-      <div className="flex items-baseline gap-2">
-        <span className="text-body text-fg">{t('discover_page_title')}</span>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1 text-display font-weight-label text-accent"
-          onClick={onOpenTypeSheet}
-        >
-          {typeLabel}
-          <ChevronDownIcon size={16} className="shrink-0" />
-        </button>
-      </div>
+      <button
+        type="button"
+        className="inline-flex items-center gap-1 text-section font-weight-label text-accent"
+        onClick={onOpenTypeSheet}
+      >
+        {typeLabel}
+        <ChevronDownIcon size={16} className="shrink-0" />
+      </button>
 
       {showFilterRow ? (
-        <div>
-          <p className="mb-1.5 text-caption font-weight-label text-fg-tertiary">
-            {t('discover_filters_title')}
-          </p>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {trimmedQ.length > 0 ? (
-              <span className={DISCOVER_ACTIVE_CHIP_CLASS}>
-                <span className="truncate font-weight-label">{trimmedQ}</span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {trimmedQ.length > 0 ? (
+            <span className={DISCOVER_ACTIVE_CHIP_CLASS}>
+              <span className="truncate font-weight-label">{trimmedQ}</span>
+              <button
+                type="button"
+                aria-label={t('discover_remove_search').replace('{query}', trimmedQ)}
+                className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+                onClick={removeQuery}
+              >
+                <CloseIcon size={16} />
+              </button>
+            </span>
+          ) : null}
+          {tags.map((tag) => {
+            const label = decodeTagFilter(tag)?.value ?? tag;
+            return (
+              <span key={tag} className={DISCOVER_ACTIVE_CHIP_CLASS}>
+                <span className="truncate font-weight-label">{label}</span>
                 <button
                   type="button"
-                  aria-label={t('discover_remove_search').replace('{query}', trimmedQ)}
+                  aria-label={t('discover_remove_filter').replace('{tag}', label)}
                   className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-                  onClick={removeQuery}
+                  onClick={() => removeTag(tag)}
                 >
                   <CloseIcon size={16} />
                 </button>
               </span>
-            ) : null}
-            {tags.map((tag) => {
-              const label = decodeTagFilter(tag)?.value ?? tag;
-              return (
-                <span key={tag} className={DISCOVER_ACTIVE_CHIP_CLASS}>
-                  <span className="truncate font-weight-label">{label}</span>
-                  <button
-                    type="button"
-                    aria-label={t('discover_remove_filter').replace('{tag}', label)}
-                    className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-                    onClick={() => removeTag(tag)}
-                  >
-                    <CloseIcon size={16} />
-                  </button>
-                </span>
-              );
-            })}
-            {box ? (
-              <span className={DISCOVER_ACTIVE_CHIP_CLASS}>
-                <span className="truncate font-weight-label">{t('discover_map_area_filter')}</span>
-                <button
-                  type="button"
-                  aria-label={t('discover_remove_map_area')}
-                  className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-                  onClick={removeMapArea}
-                >
-                  <CloseIcon size={16} />
-                </button>
-              </span>
-            ) : null}
-            {showFilters ? (
+            );
+          })}
+          {box ? (
+            <span className={DISCOVER_ACTIVE_CHIP_CLASS}>
+              <span className="truncate font-weight-label">{t('discover_map_area_filter')}</span>
               <button
                 type="button"
-                className="inline-flex items-center gap-1 rounded-pill border border-accent px-2 py-0.5 text-caption font-weight-label text-accent"
-                onClick={onOpenFilterSheet}
+                aria-label={t('discover_remove_map_area')}
+                className="shrink-0 rounded-circle p-0.5 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+                onClick={removeMapArea}
               >
-                <PlusIcon size={14} />
-                {t('discover_add_filter')}
+                <CloseIcon size={16} />
               </button>
-            ) : null}
-            {showMap ? (
-              <button
-                type="button"
-                className="ms-auto inline-flex items-center gap-1 text-caption font-weight-label text-accent"
-                onClick={onOpenMapSheet}
-              >
-                <MapPinIcon size={14} />
-                {t('discover_map')}
-              </button>
-            ) : null}
-          </div>
+            </span>
+          ) : null}
+          {showFilters ? (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 rounded-pill border border-accent px-2 py-0.5 text-caption font-weight-label text-accent"
+              onClick={onOpenFilterSheet}
+            >
+              <PlusIcon size={14} />
+              {t('discover_add_filter')}
+            </button>
+          ) : null}
         </div>
       ) : null}
 
-      {!usersMode && objectType ? (
+      {showMap ? (
+        <nav
+          aria-label={t('discover_map_view_nav_aria')}
+          className="flex flex-nowrap items-end gap-x-2 border-b border-border"
+        >
+          <button
+            type="button"
+            className={profileSectionTabClass(mobileTab === 'list', 'sub')}
+            onClick={() => onMobileTabChange('list')}
+          >
+            {t('object_list_tab')}
+          </button>
+          <button
+            type="button"
+            className={profileSectionTabClass(mobileTab === 'map', 'sub')}
+            onClick={() => onMobileTabChange('map')}
+          >
+            {t('discover_map')}
+          </button>
+        </nav>
+      ) : null}
+
+      {showSort ? (
         <div className="flex justify-end">
           <DiscoverSortSelect
             usersMode={usersMode}

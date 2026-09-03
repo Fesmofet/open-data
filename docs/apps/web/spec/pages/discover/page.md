@@ -55,9 +55,9 @@ Cookie `discover_object_type` stores the last picked registry object type (clien
 
 ## Mobile layout (< `lg`)
 
-- **Type button** — large accent label in feed header; opens bottom sheet (`ModalShell variant="sheet"`) with searchable object-type list + All users.
-- **Filters** — `+ Add` opens filter bottom sheet (tag categories only; same data as desktop right column). Active chips shown inline; toggles apply immediately via URL replace.
-- **Map** — `Map` button (geo types only) opens fullscreen map modal; **Search area** writes `box` to the URL. Expanding the map writes `map=lat,lng,zoom` so reload/share keep the camera.
+- **Type button** — accent label (`text-section`) in feed header; opens bottom sheet (`ModalShell variant="sheet"`) with searchable object-type list + All users. No duplicate "Discover" label on mobile.
+- **Filters** — `+ Filter` opens filter bottom sheet (tag categories only; same data as desktop right column). Active chips shown inline; toggles apply immediately via URL replace. No "Filters" section heading.
+- **List / Map** — geo types show underline sub-nav (`List` | `Map`) below filters. **List** shows the object feed + `Sort: …` dropdown. **Map** shows inline map (`DiscoverMapPanel variant="feed"`) with Search area, zoom, locate, and expand-to-fullscreen. Expanding opens the fullscreen map modal; **Search area** writes `box` to the URL.
 - Desktop three-column layout (sidebar / feed / filters) unchanged at `lg+`; sidebar and desktop filter column hidden on mobile. Map rail stacks above the filters column when the type supports geo.
 
 ## API (via BFF)

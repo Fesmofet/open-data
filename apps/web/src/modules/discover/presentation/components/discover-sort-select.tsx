@@ -45,6 +45,8 @@ export function DiscoverSortSelect({
     <SortDropdown
       value={sort}
       options={options}
+      label={t('discover_sort_label')}
+      showLabelOnMobile
       onChange={(next) => {
         const href = buildDiscoverHref({
           users: usersMode,

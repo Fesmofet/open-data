@@ -22,6 +22,7 @@ export type DiscoverObjectFeedProps = {
   box: DiscoverBox | null;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  hideType?: boolean;
 };
 
 export function DiscoverObjectFeed({
@@ -32,6 +33,7 @@ export function DiscoverObjectFeed({
   box,
   viewerUsername,
   onRequireLogin,
+  hideType = false,
 }: DiscoverObjectFeedProps) {
   const { t } = useI18n();
   const [items, setItems] = useState<SocialProjectedObjectView[]>([]);
@@ -129,6 +131,7 @@ export function DiscoverObjectFeed({
             object={o as unknown as ProjectedObjectView}
             viewerUsername={viewerUsername}
             onRequireLogin={onRequireLogin}
+            hideType={hideType}
           />
         ))}
       </ul>

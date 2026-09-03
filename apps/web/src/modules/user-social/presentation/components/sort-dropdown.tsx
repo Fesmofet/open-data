@@ -14,14 +14,26 @@ export type SortDropdownProps<T extends string> = {
   value: T;
   options: SortOption<T>[];
   onChange: (next: T) => void;
+  /** Override default `social_sort_by` prefix label. */
+  label?: string;
+  /** When true, show the prefix label on all viewports (not only `sm+`). */
+  showLabelOnMobile?: boolean;
 };
 
-export function SortDropdown<T extends string>({ value, options, onChange }: SortDropdownProps<T>) {
+export function SortDropdown<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+  showLabelOnMobile = false,
+}: SortDropdownProps<T>) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentLabel = options.find((o) => o.value === value)?.label ?? value;
+  const prefixLabel = label ?? t('social_sort_by');
+  const prefixClassName = showLabelOnMobile ? 'inline' : 'hidden sm:inline';
 
   useEffect(() => {
     if (!open) return;
@@ -43,7 +55,7 @@ export function SortDropdown<T extends string>({ value, options, onChange }: Sor
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-1 text-body-sm text-fg-secondary hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
-        <span className="hidden sm:inline">{t('social_sort_by')}&nbsp;</span>
+        <span className={prefixClassName}>{prefixLabel}&nbsp;</span>
         <span className="font-weight-label text-fg">{currentLabel}</span>
         <ChevronDownIcon
           size={12}
@@ -54,7 +66,7 @@ export function SortDropdown<T extends string>({ value, options, onChange }: Sor
       {open && (
         <ul
           role="listbox"
-          aria-label={t('social_sort_by')}
+          aria-label={prefixLabel}
           className="absolute right-0 top-full z-20 mt-1 min-w-[9rem] overflow-hidden rounded-card border border-border bg-surface-raised shadow-card-float"
         >
           {options.map((o) => (

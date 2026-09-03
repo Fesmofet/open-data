@@ -85,7 +85,7 @@ test.describe('Discover mobile', () => {
   test('applies mobile filter and browser back removes it', async ({ page }) => {
     await page.goto('/discover?type=restaurant');
 
-    await page.getByRole('button', { name: 'Add' }).click();
+    await page.getByRole('button', { name: 'Filter' }).click();
     const filterSheet = page.getByRole('dialog');
     await expect(filterSheet).toBeVisible();
 

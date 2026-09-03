@@ -19,6 +19,7 @@ import {
 } from '../../domain/discover-registry';
 import { resolveInitialDiscoverType } from '../../domain/resolve-initial-discover-type';
 import { DiscoverFeed } from './discover-feed';
+import type { DiscoverMobileTab } from './discover-mobile-header';
 import { DiscoverFilters } from './discover-filters';
 import { DiscoverFilterSheet } from './discover-filter-sheet';
 import { DiscoverMapModal } from './discover-map-modal';
@@ -48,6 +49,7 @@ function DiscoverPageContent({
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [lastMapView, setLastMapView] = useState<DiscoverMapView | null>(null);
+  const [mobileTab, setMobileTab] = useState<DiscoverMobileTab>('list');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -66,6 +68,12 @@ function DiscoverPageContent({
     !usersMode && objectType != null && objectTypeHasTagCategoryFilters(objectType);
 
   const showMap = !usersMode && objectTypeSupportsGeo(objectType);
+
+  useEffect(() => {
+    if (!showMap && mobileTab === 'map') {
+      setMobileTab('list');
+    }
+  }, [showMap, mobileTab]);
 
   const showChooseTypePrompt =
     !usersMode && objectType == null && isDesktop;
@@ -170,14 +178,19 @@ function DiscoverPageContent({
             sort={sort}
             box={box}
             map={mapFromUrl}
+            mapView={effectiveMapView}
             viewerUsername={viewerUsername}
             onRequireLogin={openLogin}
             showFilters={showFilters}
             showMap={showMap}
             showChooseTypePrompt={showChooseTypePrompt}
+            mobileTab={mobileTab}
+            onMobileTabChange={setMobileTab}
             onOpenTypeSheet={() => setTypeSheetOpen(true)}
             onOpenFilterSheet={() => setFilterSheetOpen(true)}
-            onOpenMapSheet={openMapModal}
+            onApplyMapArea={applyMapArea}
+            onMapViewChange={handleMapViewChange}
+            onExpandMap={openMapModal}
           />
         </div>
         {showMap || showFilters ? (

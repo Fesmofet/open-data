@@ -43,7 +43,7 @@ const OSM_COPYRIGHT_URL = 'https://www.openstreetmap.org/copyright';
 const MAP_OVERLAY_BUTTON_CLASS =
   'pointer-events-auto flex size-9 cursor-pointer items-center justify-center rounded-btn border border-border bg-surface text-fg shadow-card hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60';
 
-export type DiscoverMapPanelVariant = 'rail' | 'fullscreen';
+export type DiscoverMapPanelVariant = 'rail' | 'fullscreen' | 'feed';
 
 export type DiscoverMapPanelProps = {
   objectType: string;
@@ -86,6 +86,8 @@ export function DiscoverMapPanel({
 }: DiscoverMapPanelProps) {
   const { t } = useI18n();
   const isFullscreen = variant === 'fullscreen';
+  const isFeed = variant === 'feed';
+  const isInteractiveMap = isFullscreen || isFeed;
   const [pendingBox, setPendingBox] = useState<MapBoundingBox | null>(
     box ? discoverBoxToMapBoundingBox(box) : null,
   );
@@ -126,7 +128,7 @@ export function DiscoverMapPanel({
     };
     latestViewportBoxRef.current = normalized;
 
-    if (isFullscreen) {
+    if (isInteractiveMap) {
       setPendingBox(normalized);
       return;
     }
@@ -137,7 +139,7 @@ export function DiscoverMapPanel({
     debounceRef.current = setTimeout(() => {
       setPendingBox(normalized);
     }, DISCOVER_MAP_VIEWPORT_DEBOUNCE_MS);
-  }, [isFullscreen]);
+  }, [isInteractiveMap]);
 
   const canSearchArea = useMemo(() => {
     const viewportBox = latestViewportBoxRef.current ?? pendingBox;
@@ -259,7 +261,9 @@ export function DiscoverMapPanel({
 
   const mapSurfaceClassName = isFullscreen
     ? 'size-full rounded-btn border border-border'
-    : 'h-full w-full rounded-btn border border-border';
+    : isFeed
+      ? 'size-full rounded-btn border-0'
+      : 'h-full w-full rounded-btn border border-border';
 
   const locateControl = (
     <>
@@ -287,7 +291,7 @@ export function DiscoverMapPanel({
   const searchAreaButton = (
     <button
       type="button"
-      className={`rounded-pill border border-border px-2.5 py-0.5 text-caption font-weight-label text-fg-secondary enabled:text-fg enabled:hover:border-accent enabled:hover:text-accent disabled:opacity-50${isFullscreen ? ' pointer-events-auto' : ''}`}
+      className={`rounded-pill border border-border bg-surface px-2.5 py-0.5 text-caption font-weight-label text-fg-secondary shadow-card enabled:text-fg enabled:hover:border-accent enabled:hover:text-accent disabled:opacity-50${isInteractiveMap ? ' pointer-events-auto' : ''}`}
       disabled={!canSearchArea}
       onClick={onSearchArea}
     >
@@ -297,7 +301,9 @@ export function DiscoverMapPanel({
 
   const mapStackClassName = isFullscreen
     ? `${MAP_EMBED_STACK_CLASS} min-h-0 flex-1`
-    : `${MAP_EMBED_STACK_CLASS} ${DISCOVER_MAP_RAIL_HEIGHT_CLASS}`;
+    : isFeed
+      ? `${MAP_EMBED_STACK_CLASS} h-[calc(100dvh-15rem)] min-h-[420px]`
+      : `${MAP_EMBED_STACK_CLASS} ${DISCOVER_MAP_RAIL_HEIGHT_CLASS}`;
 
   const mapContent = (
     <div className={`relative ${mapStackClassName}`}>
@@ -309,14 +315,16 @@ export function DiscoverMapPanel({
           style={
             isFullscreen
               ? { minHeight: OBJECT_MAP_MODAL_MIN_HEIGHT_PX, width: '100%' }
-              : undefined
+              : isFeed
+                ? { width: '100%', height: '100%' }
+                : undefined
           }
           showBuiltInAttribution={false}
           zoomUi={MAP_ZOOM_UI}
           onViewportChange={onViewportChange}
           onViewChange={onViewChange ? handleViewChange : undefined}
         >
-          {isFullscreen ? <MapInvalidateSizeOnMount /> : null}
+          {isInteractiveMap ? <MapInvalidateSizeOnMount /> : null}
           {fitBoundsPositions ? <MapFitBounds positions={fitBoundsPositions} /> : null}
           {userLocation ? (
             <AppMarker position={userLocation} variant="user-location">
@@ -340,10 +348,10 @@ export function DiscoverMapPanel({
 
       {locateControl}
 
-      {isFullscreen ? (
+      {isInteractiveMap ? (
         <>
           <div className="pointer-events-none absolute left-3 top-3 z-[1100]">{searchAreaButton}</div>
-          {onMinimize ? (
+          {isFullscreen && onMinimize ? (
             <div className="pointer-events-none absolute bottom-3 right-3 z-[1100]">
               <button
                 type="button"
@@ -355,10 +363,22 @@ export function DiscoverMapPanel({
               </button>
             </div>
           ) : null}
+          {isFeed && onExpand ? (
+            <div className="pointer-events-none absolute bottom-3 right-3 z-[1100]">
+              <button
+                type="button"
+                aria-label={t('discover_map_expand')}
+                onClick={onExpand}
+                className={MAP_OVERLAY_BUTTON_CLASS}
+              >
+                <MaximizeIcon size={18} className="text-fg-secondary" />
+              </button>
+            </div>
+          ) : null}
         </>
       ) : null}
 
-      {markersPending && !isFullscreen ? (
+      {markersPending && !isInteractiveMap ? (
         <span className="pointer-events-none absolute left-3 top-3 rounded-btn bg-surface/90 px-2 py-1 text-body-xs text-muted shadow-card">
           …
         </span>
@@ -384,6 +404,12 @@ export function DiscoverMapPanel({
 
   if (isFullscreen) {
     return <div className="flex h-full min-h-0 flex-1 flex-col">{mapContent}</div>;
+  }
+
+  if (isFeed) {
+    return (
+      <div className="overflow-hidden rounded-card border border-border">{mapContent}</div>
+    );
   }
 
   return (

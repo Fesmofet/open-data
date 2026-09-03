@@ -144,6 +144,8 @@ export type ObjectCardProps = {
   as?: 'li' | 'div';
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
+  /** Hide object type label in subtitle (e.g. discover when type is page-scoped). */
+  hideType?: boolean;
   /** Post editor: hide admin heart and use compact row with trailing controls. */
   layout?: 'default' | 'editorRow' | 'mapSidebar' | 'catalog';
   hideAdministrativeHeart?: boolean;
@@ -177,6 +179,7 @@ export function ObjectCard({
   onMouseLeave,
   onAdministrativeAuthorityChange,
   userWeight,
+  hideType = false,
 }: ObjectCardProps) {
   const editorRow = layout === 'editorRow';
   const mapSidebar = layout === 'mapSidebar';
@@ -188,7 +191,11 @@ export function ObjectCard({
   const categoryLabels = objectFields.tagCategoryLabels(o);
   const priceLabel = objectFields.price(o);
   const brandOrParentLabel = objectFields.brandOrParentLabel(o);
-  const subtitleParts = [priceLabel, typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
+  const subtitleParts = [
+    priceLabel,
+    ...(hideType ? [] : [typeLabel]),
+    ...categoryLabels.filter(Boolean),
+  ].filter(Boolean);
   const subtitle = subtitleParts.join(' · ');
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
