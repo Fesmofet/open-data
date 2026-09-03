@@ -5,9 +5,10 @@ import {
 } from './horizontal-tab-nav-classes';
 
 describe('horizontalTabNavScrollShellClass', () => {
-  it('includes scroll and gutter bleed by default', () => {
+  it('includes scroll, overflow-y-hidden, and gutter bleed by default', () => {
     const result = horizontalTabNavScrollShellClass('gutter');
     expect(result).toContain(HORIZONTAL_TAB_NAV_SCROLL_CLASS);
+    expect(result).toContain('overflow-y-hidden');
     expect(result).toContain('-mx-gutter');
   });
 

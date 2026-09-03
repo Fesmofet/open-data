@@ -56,6 +56,9 @@ export type {
   HorizontalTabNavWithOverflowProps,
 } from './horizontal-tab-nav-with-overflow';
 
+export { ScrollableHorizontalTabNav } from './scrollable-horizontal-tab-nav';
+export type { ScrollableHorizontalTabNavProps } from './scrollable-horizontal-tab-nav';
+
 export { LayoutProvider, useLayoutContext } from './context/layout-context';
 export type { LayoutContextValue, ContentArrangement } from './context/layout-context';
 

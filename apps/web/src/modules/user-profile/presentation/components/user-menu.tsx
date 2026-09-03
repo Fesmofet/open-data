@@ -10,8 +10,8 @@ import {
 import {
   HORIZONTAL_TAB_NAV_PRIMARY_ROW_CLASS,
   HORIZONTAL_TAB_NAV_SUB_ROW_CLASS,
-  horizontalTabNavScrollShellClass,
-} from '@/shared/presentation/layout';
+} from '@/shared/presentation/layout/horizontal-tab-nav-classes';
+import { ScrollableHorizontalTabNav } from '@/shared/presentation/layout/scrollable-horizontal-tab-nav';
 import { getDesktopMenuKeys, HIDDEN_ON_DESKTOP_CLASS, useShellMode } from '@/shell-mode';
 
 import { getSegmentsAfterAccount } from './profile-path';
@@ -54,15 +54,18 @@ function HorizontalTabNavShell({
   bleed?: HorizontalNavBleed;
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
-    <div className={horizontalTabNavScrollShellClass(bleed)}>
-      <nav
-        className={[rowClass, className].filter(Boolean).join(' ')}
-        aria-label={ariaLabel}
-      >
-        {children}
-      </nav>
-    </div>
+    <ScrollableHorizontalTabNav
+      ariaLabel={ariaLabel}
+      rowClass={[rowClass, className].filter(Boolean).join(' ')}
+      bleed={bleed}
+      activeItemSelector="nav a.text-accent"
+      scrollPrevAriaLabel={t('previous')}
+      scrollNextAriaLabel={t('next')}
+    >
+      {children}
+    </ScrollableHorizontalTabNav>
   );
 }
 

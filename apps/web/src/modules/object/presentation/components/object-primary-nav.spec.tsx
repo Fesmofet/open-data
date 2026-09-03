@@ -6,17 +6,19 @@ import { render, screen } from '@testing-library/react';
 import { I18nProvider } from '@/i18n/providers/i18n-provider';
 
 jest.mock('@/shared/presentation', () => ({
+  profileSectionTabClass: jest.requireActual('@/shared/presentation/components/profile-section-tab-classes')
+    .profileSectionTabClass,
   StatHoverTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-jest.mock('@/shared/presentation/layout/use-horizontal-tab-overflow', () => ({
-  useHorizontalTabOverflow: ({ tabCount }: { tabCount: number }) => ({
-    rowRef: () => undefined,
-    setTabRef: () => undefined,
-    overflowIndices: [],
-    hasOverflow: false,
-    hasMeasured: true,
-  }),
+jest.mock('@/shared/presentation/layout/scrollable-horizontal-tab-nav', () => ({
+  ScrollableHorizontalTabNav: ({
+    children,
+    ariaLabel,
+  }: {
+    children: React.ReactNode;
+    ariaLabel: string;
+  }) => <nav aria-label={ariaLabel}>{children}</nav>,
 }));
 
 class MockResizeObserver {
@@ -33,9 +35,10 @@ import { ObjectPrimaryNav } from './object-primary-nav';
 
 const messages = {
   object_detail_primary_nav_aria: 'Object sections',
-  object_detail_nav_more: 'More',
   stat_object_followers_tooltip: 'Followers tooltip',
   stat_object_expertise_tooltip: 'Experts tooltip',
+  previous: 'Previous',
+  next: 'Next',
 };
 
 function renderNav(
@@ -66,5 +69,18 @@ describe('ObjectPrimaryNav', () => {
     ]);
 
     expect(screen.getByRole('button', { name: 'Experts 3' })).toBeInTheDocument();
+  });
+
+  it('does not render a More overflow menu', () => {
+    renderNav([
+      { segment: 'reviews', label: 'Reviews' },
+      { segment: 'gallery', label: 'Gallery' },
+      { segment: 'updates', label: 'Updates' },
+      { segment: 'experts', label: 'Experts' },
+    ]);
+
+    expect(screen.queryByRole('button', { name: /more/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reviews' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Experts' })).toBeInTheDocument();
   });
 });

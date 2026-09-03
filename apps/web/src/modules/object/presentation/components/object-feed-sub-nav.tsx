@@ -2,10 +2,8 @@
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { profileSectionTabClass } from '@/shared/presentation';
-import {
-  HORIZONTAL_TAB_NAV_SUB_ROW_CLASS,
-  horizontalTabNavScrollShellClass,
-} from '@/shared/presentation/layout';
+import { HORIZONTAL_TAB_NAV_SUB_ROW_CLASS } from '@/shared/presentation/layout/horizontal-tab-nav-classes';
+import { ScrollableHorizontalTabNav } from '@/shared/presentation/layout/scrollable-horizontal-tab-nav';
 
 import type { ObjectFeedSubTabView } from '../../domain/object-page.types';
 
@@ -39,25 +37,27 @@ export function ObjectFeedSubNav({
   const { t } = useI18n();
 
   return (
-    <div className={horizontalTabNavScrollShellClass('card')}>
-      <nav
-        aria-label={t('object_detail_feed_sub_nav_aria')}
-        className={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
-      >
-        {tabs.map((tab) => {
-          const active = activeSegment === tab.segment;
-          return (
-            <button
-              key={tab.segment}
-              type="button"
-              className={profileSectionTabClass(active, 'sub')}
-              onClick={() => onSelect(tab.segment)}
-            >
-              {resolveFeedSubTabLabel(tab, t)}
-            </button>
-          );
-        })}
-      </nav>
-    </div>
+    <ScrollableHorizontalTabNav
+      ariaLabel={t('object_detail_feed_sub_nav_aria')}
+      rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
+      bleed="card"
+      activeItemSelector="nav button.text-accent"
+      scrollPrevAriaLabel={t('previous')}
+      scrollNextAriaLabel={t('next')}
+    >
+      {tabs.map((tab) => {
+        const active = activeSegment === tab.segment;
+        return (
+          <button
+            key={tab.segment}
+            type="button"
+            className={profileSectionTabClass(active, 'sub')}
+            onClick={() => onSelect(tab.segment)}
+          >
+            {resolveFeedSubTabLabel(tab, t)}
+          </button>
+        );
+      })}
+    </ScrollableHorizontalTabNav>
   );
 }
