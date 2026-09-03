@@ -68,7 +68,7 @@ describe('MessagingChannelList', () => {
       display_title: 'Quiet',
       list_title: 'Quiet',
       peer: null,
-      members: ['alice'],
+      members: ['charlie'],
       last_message_at_unix: 90,
       unread_count: 0,
       image: null,

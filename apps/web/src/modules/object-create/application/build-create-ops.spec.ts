@@ -22,6 +22,18 @@ type TestField = {
   value: unknown;
 };
 
+/** Satisfies governance required updates (name, image). */
+function governanceRequiredFields(): TestField[] {
+  return [
+    { entryKey: 'name', updateType: UPDATE_TYPES.NAME, value: 'Gov' },
+    {
+      entryKey: 'image',
+      updateType: UPDATE_TYPES.IMAGE,
+      value: { url: 'https://example.com/gov.jpg' },
+    },
+  ];
+}
+
 /** Satisfies recipe required updates (name, description, image, ingredients). */
 function recipeRequiredFields(): TestField[] {
   return [
@@ -140,7 +152,7 @@ describe('buildCreateOps', () => {
       odlCustomJsonId: 'odl-testnet',
       language: 'en-US',
       fields: [
-        { entryKey: 'name', updateType: UPDATE_TYPES.NAME, value: 'Gov' },
+        ...governanceRequiredFields(),
         { entryKey: 'admins:1', updateType: UPDATE_TYPES.ADMINS, value: 'alice' },
         { entryKey: 'admins:2', updateType: UPDATE_TYPES.ADMINS, value: 'alice' },
       ],
@@ -199,7 +211,7 @@ describe('buildCreateOps', () => {
       odlCustomJsonId: 'odl-testnet',
       language: 'en-US',
       fields: [
-        { entryKey: 'name', updateType: UPDATE_TYPES.NAME, value: 'Gov' },
+        ...governanceRequiredFields(),
         {
           entryKey: 'admins:alice',
           updateType: UPDATE_TYPES.ADMINS,

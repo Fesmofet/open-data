@@ -27,6 +27,9 @@
       "@opden-data-layer/core/post-related-images": [
         "./libs/core/src/post-related-images/index.ts"
       ],
+      "@opden-data-layer/core/post-objects/comment-post-object-candidates": [
+        "./libs/core/src/post-objects/comment-post-object-candidates.ts"
+      ],
       "@opden-data-layer/core/hive-account-history": [
         "./libs/core/src/hive-account-history/index.ts"
       ],

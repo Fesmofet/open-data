@@ -7,7 +7,7 @@ import {
   buildOslChannelCreateOp,
   buildOslMessageCreateOp,
 } from '@opden-data-layer/hive-broadcast';
-import { extractObjectPathSlugsFromBody } from '@opden-data-layer/core';
+import { extractObjectPathSlugsFromBody } from '@opden-data-layer/core/post-objects/comment-post-object-candidates';
 
 import { useOslCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';

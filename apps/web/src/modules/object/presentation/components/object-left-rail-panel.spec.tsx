@@ -85,6 +85,13 @@ jest.mock('@/shared/presentation', () => ({
     href: string;
     children: React.ReactNode;
   }) => <a href={href}>{children}</a>,
+  HydrationSafeAnchor: ({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => <a href={href}>{children}</a>,
 }));
 
 import { ObjectLeftRailPanel } from './object-left-rail-panel';

@@ -16,9 +16,8 @@ describe('getRequiredObjectCreateUpdates', () => {
 
   it('filters unsupported baseline fields for governance', () => {
     const required = getRequiredObjectCreateUpdates('governance');
-    expect(required).toEqual(['name']);
+    expect(required).toEqual(['name', 'image']);
     expect(required).not.toContain('description');
-    expect(required).not.toContain('image');
   });
 
   it('returns empty array for unknown object type', () => {
