@@ -43,6 +43,24 @@ function measureScrollOverflow(element: HTMLElement): ScrollOverflowState {
   };
 }
 
+function overflowStateEqual(a: ScrollOverflowState, b: ScrollOverflowState): boolean {
+  return (
+    a.hasOverflow === b.hasOverflow &&
+    a.canScrollLeft === b.canScrollLeft &&
+    a.canScrollRight === b.canScrollRight
+  );
+}
+
+function gutterBleedClass(bleed: 'gutter' | 'card' | 'none'): string {
+  if (bleed === 'gutter') {
+    return '-mx-gutter sm:-mx-gutter-sm';
+  }
+  if (bleed === 'card') {
+    return '-mx-card-padding';
+  }
+  return '';
+}
+
 export function ScrollableHorizontalTabNav({
   children,
   ariaLabel,
@@ -69,13 +87,19 @@ export function ScrollableHorizontalTabNav({
     hasOverflow: false,
   });
   const [isGrabbing, setIsGrabbing] = useState(false);
+  const overflowRef = useRef(overflow);
+  overflowRef.current = overflow;
 
   const updateOverflow = useCallback(() => {
     const el = scrollRef.current;
     if (!el) {
       return;
     }
-    setOverflow(measureScrollOverflow(el));
+    const next = measureScrollOverflow(el);
+    if (overflowStateEqual(overflowRef.current, next)) {
+      return;
+    }
+    setOverflow(next);
   }, []);
 
   useLayoutEffect(() => {
@@ -199,18 +223,14 @@ export function ScrollableHorizontalTabNav({
     hasSubBorder ? 'border-b border-border' : 'border-b border-transparent',
   ].join(' ');
 
-  const bleedClass =
-    overflow.hasOverflow
-      ? bleed === 'gutter'
-        ? '-mx-gutter sm:-mx-gutter-sm'
-        : bleed === 'card'
-          ? '-mx-card-padding'
-          : ''
-      : '';
+  // Bleed/centering must not depend on hasOverflow: toggling them changes
+  // clientWidth/scrollWidth and loops at the overflow threshold.
+  const bleedClass = gutterBleedClass(bleed);
 
   const effectiveRowClass = [
     rowClass,
-    centerWhenNoOverflow && !overflow.hasOverflow ? 'justify-center' : '',
+    'w-max',
+    centerWhenNoOverflow ? 'mx-auto' : '',
   ]
     .filter(Boolean)
     .join(' ');

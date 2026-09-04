@@ -145,7 +145,22 @@ describe('ScrollableHorizontalTabNav', () => {
     );
   });
 
-  it('centers tabs when centerWhenNoOverflow is true and there is no overflow', () => {
+  it('applies gutter bleed even when tabs fit', () => {
+    const { container } = render(
+      <ScrollableHorizontalTabNav
+        ariaLabel="Sections"
+        rowClass="flex flex-nowrap"
+        bleed="gutter"
+      >
+        <button type="button">Tab A</button>
+      </ScrollableHorizontalTabNav>,
+    );
+
+    const root = container.firstElementChild;
+    expect(root?.className).toContain('-mx-gutter');
+  });
+
+  it('centers tabs with mx-auto when centerWhenNoOverflow is true', () => {
     const { container } = render(
       <ScrollableHorizontalTabNav
         ariaLabel="Sections"
@@ -159,10 +174,12 @@ describe('ScrollableHorizontalTabNav', () => {
     );
 
     const nav = container.querySelector('nav');
-    expect(nav?.className).toContain('justify-center');
+    expect(nav?.className).toContain('mx-auto');
+    expect(nav?.className).toContain('w-max');
+    expect(nav?.className).not.toContain('justify-center');
   });
 
-  it('does not center tabs when centerWhenNoOverflow is true and content overflows', () => {
+  it('keeps mx-auto centering when content overflows', () => {
     const { container } = render(
       <ScrollableHorizontalTabNav
         ariaLabel="Sections"
@@ -184,6 +201,7 @@ describe('ScrollableHorizontalTabNav', () => {
     fireEvent.scroll(scrollport);
 
     const nav = container.querySelector('nav');
+    expect(nav?.className).toContain('mx-auto');
     expect(nav?.className).not.toContain('justify-center');
   });
 });
