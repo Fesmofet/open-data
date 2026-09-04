@@ -4,13 +4,16 @@
 import { renderHook, act } from '@testing-library/react';
 
 import { HIVESIGNER_REDIRECT_INITIATED } from '@/modules/auth/infrastructure/signers/hivesigner-signer';
+import { ENGINE_WALLET_SETTLEMENT_REFRESH_MS } from '@/modules/user-wallet/constants/wallet-broadcast';
 
 import { useEngineTokenBroadcast } from './use-engine-token-broadcast';
 
 const mockBroadcast = jest.fn();
-const mockRefresh = jest.fn();
-const mockRevalidate = jest.fn();
+const mockRefreshAfterBroadcast = jest.fn();
+const mockRefreshWalletAfterBroadcast = jest.fn();
 const mockAwaitTrx = jest.fn();
+const mockBumpWalletEpoch = jest.fn();
+const mockRouterRefresh = jest.fn();
 
 jest.mock('@/modules/auth', () => ({
   getWalletFacade: () => ({
@@ -23,35 +26,36 @@ jest.mock('@/modules/notifications', () => ({
   awaitTrxConfirmation: (...args: unknown[]) => mockAwaitTrx(...args),
 }));
 
-jest.mock('@/shared/infrastructure/query/refresh-after-broadcast', () => ({
-  refreshAfterBroadcast: async (...args: unknown[]) => {
-    const fn = args[1] as (() => Promise<void>) | undefined;
-    if (fn) {
-      await fn();
-    }
-    return mockRefresh(...args);
-  },
+jest.mock('./wallet-broadcast-refresh', () => ({
+  refreshWalletAfterBroadcast: (...args: unknown[]) =>
+    mockRefreshWalletAfterBroadcast(...args),
 }));
 
-jest.mock(
-  '@/shared/infrastructure/query/revalidate-after-broadcast.server',
-  () => ({
-    revalidateUserWaivWalletAfterBroadcast: (...args: unknown[]) =>
-      mockRevalidate(...args),
+jest.mock('@/shared/infrastructure/query/refresh-after-broadcast', () => ({
+  refreshAfterBroadcast: (...args: unknown[]) => mockRefreshAfterBroadcast(...args),
+}));
+
+jest.mock('../components/wallet/wallet-balances-context', () => ({
+  useWalletBalances: () => ({
+    bumpWalletEpoch: mockBumpWalletEpoch,
   }),
-);
+}));
 
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ refresh: jest.fn() }),
+  useRouter: () => ({ refresh: mockRouterRefresh }),
 }));
 
 describe('useEngineTokenBroadcast', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
     mockBroadcast.mockResolvedValue({ transactionId: 'tx-1' });
     mockAwaitTrx.mockResolvedValue(undefined);
-    mockRefresh.mockResolvedValue(undefined);
-    mockRevalidate.mockResolvedValue(undefined);
+    mockRefreshWalletAfterBroadcast.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('does not set error when HiveSigner redirect is initiated', async () => {
@@ -82,7 +86,7 @@ describe('useEngineTokenBroadcast', () => {
     expect(result.current.error).toBe('not_logged_in');
   });
 
-  it('refreshes wallet after successful broadcast', async () => {
+  it('refreshes wallet after successful broadcast with engine settlement refresh', async () => {
     const { result } = renderHook(() => useEngineTokenBroadcast('alice'));
 
     let ok = false;
@@ -92,7 +96,38 @@ describe('useEngineTokenBroadcast', () => {
 
     expect(ok).toBe(true);
     expect(mockAwaitTrx).toHaveBeenCalledWith('tx-1');
-    expect(mockRefresh).toHaveBeenCalled();
-    expect(mockRevalidate).toHaveBeenCalledWith('alice');
+    expect(mockRefreshWalletAfterBroadcast).toHaveBeenCalledWith(
+      expect.objectContaining({ refresh: mockRouterRefresh }),
+      'alice',
+      {
+        bumpWalletEpoch: mockBumpWalletEpoch,
+        scheduleEngineSettlementRefresh: true,
+      },
+    );
+  });
+
+  it('schedules deferred router refresh via refreshWalletAfterBroadcast helper', async () => {
+    mockRefreshWalletAfterBroadcast.mockImplementation(
+      async (router, account, options) => {
+        options?.bumpWalletEpoch?.();
+        if (options?.scheduleEngineSettlementRefresh) {
+          window.setTimeout(() => router.refresh(), ENGINE_WALLET_SETTLEMENT_REFRESH_MS);
+        }
+      },
+    );
+
+    const { result } = renderHook(() => useEngineTokenBroadcast('alice'));
+
+    await act(async () => {
+      await result.current.broadcast('stake', { symbol: 'WAIV', quantity: '1' });
+    });
+
+    expect(mockBumpWalletEpoch).toHaveBeenCalled();
+
+    await act(async () => {
+      jest.advanceTimersByTime(ENGINE_WALLET_SETTLEMENT_REFRESH_MS);
+    });
+
+    expect(mockRouterRefresh).toHaveBeenCalled();
   });
 });

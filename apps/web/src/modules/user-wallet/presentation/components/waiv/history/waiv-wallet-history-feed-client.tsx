@@ -12,6 +12,8 @@ import type {
 } from '@/modules/user-wallet/domain/types/waiv-wallet-history-view';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { useWalletBalances } from '../../wallet/wallet-balances-context';
+
 import {
   WaivWalletHistoryFeed,
   loadWaivWalletHistoryPage,
@@ -31,6 +33,7 @@ export function WaivWalletHistoryFeedClient({
   accountName,
 }: WaivWalletHistoryFeedClientProps) {
   const { t } = useI18n();
+  const { walletEpoch } = useWalletBalances();
   const abortRef = useRef<AbortController | null>(null);
   const [showRewards, setShowRewards] = useState(false);
   const [page, setPage] = useState<WaivWalletHistoryPageView>(EMPTY_PAGE);
@@ -70,7 +73,7 @@ export function WaivWalletHistoryFeedClient({
     return () => {
       ac.abort();
     };
-  }, [accountName, showRewards]);
+  }, [accountName, showRewards, walletEpoch]);
 
   const loadMoreAction = useCallback(
     (name: string, cursor: string, rewards: boolean): Promise<WaivWalletHistoryPageQueryResult> =>

@@ -9,6 +9,8 @@ import {
 } from '@/modules/user-wallet';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
+export const dynamic = 'force-dynamic';
+
 type UserProfileTransfersPageProps = {
   params: Promise<{ name: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;

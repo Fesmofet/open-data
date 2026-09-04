@@ -13,25 +13,27 @@ import type { HiveEngineTokensContractAction } from '@opden-data-layer/hive-broa
 import { getWalletFacade, hydrateWalletProviderFromStorage } from '@/modules/auth';
 
 import { awaitTrxConfirmation } from '@/modules/notifications';
-import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserWaivWalletAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import {
   type EngineTokenBroadcastErrorCode,
   isHiveSignerRedirectError,
   mapEngineTokenBroadcastError,
 } from '../../domain/engine-token-broadcast-errors';
+import { useWalletBalances } from '../components/wallet/wallet-balances-context';
+import { refreshWalletAfterBroadcast } from './wallet-broadcast-refresh';
 
 export function useEngineTokenBroadcast(account: string) {
   const router = useRouter();
+  const { bumpWalletEpoch } = useWalletBalances();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<EngineTokenBroadcastErrorCode | null>(null);
 
   const afterBroadcast = useCallback(async () => {
-    await refreshAfterBroadcast(router, () =>
-      revalidateUserWaivWalletAfterBroadcast(account),
-    );
-  }, [account, router]);
+    await refreshWalletAfterBroadcast(router, account, {
+      bumpWalletEpoch,
+      scheduleEngineSettlementRefresh: true,
+    });
+  }, [account, bumpWalletEpoch, router]);
 
   const broadcast = useCallback(
     async (

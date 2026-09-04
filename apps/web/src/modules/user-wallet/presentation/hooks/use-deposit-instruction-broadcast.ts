@@ -9,8 +9,6 @@ import { getWalletFacade } from '@/modules/auth';
 import { useOslCustomJsonId } from '@/config/odl-network-provider';
 
 import { awaitTrxConfirmation } from '@/modules/notifications';
-import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserWaivWalletAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import {
   isHiveSignerRedirectError,
@@ -19,10 +17,13 @@ import {
 } from '../../domain/engine-token-broadcast-errors';
 import { buildDepositInstructionOslPayload } from '../../domain/build-deposit-instruction-osl-payload';
 import type { BuildDepositInstructionBroadcastInput } from '../../domain/build-deposit-instruction-osl-payload';
+import { useWalletBalances } from '../components/wallet/wallet-balances-context';
+import { refreshWalletAfterBroadcast } from './wallet-broadcast-refresh';
 
 export function useDepositInstructionBroadcast(account: string) {
   const router = useRouter();
   const oslCustomJsonId = useOslCustomJsonId();
+  const { bumpWalletEpoch } = useWalletBalances();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<EngineTokenBroadcastErrorCode | null>(null);
 
@@ -45,9 +46,7 @@ export function useDepositInstructionBroadcast(account: string) {
           operations: [op],
         });
         await awaitTrxConfirmation(transactionId);
-        await refreshAfterBroadcast(router, () =>
-          revalidateUserWaivWalletAfterBroadcast(account),
-        );
+        await refreshWalletAfterBroadcast(router, account, { bumpWalletEpoch });
         return true;
       } catch (e) {
         if (isHiveSignerRedirectError(e)) {
@@ -59,7 +58,7 @@ export function useDepositInstructionBroadcast(account: string) {
         setPending(false);
       }
     },
-    [account, oslCustomJsonId, router],
+    [account, bumpWalletEpoch, oslCustomJsonId, router],
   );
 
   return { broadcast, pending, error, clearError: () => setError(null) };

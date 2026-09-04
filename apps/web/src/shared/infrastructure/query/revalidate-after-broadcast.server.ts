@@ -12,6 +12,44 @@ function userProfilePath(accountName: string): string {
   return `/user-profile/${encodeURIComponent(accountName.trim())}`;
 }
 
+function userPublicTransfersPath(accountName: string): string {
+  return `/@${encodeURIComponent(accountName.trim())}/transfers`;
+}
+
+/** All wallet summary caches after any L1 or Engine wallet broadcast. */
+export async function revalidateUserWalletAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  const name = accountName.trim().toLowerCase();
+  if (name.length === 0) {
+    return;
+  }
+  updateTag(queryApiCacheTags.userWaivWallet(name));
+  updateTag(queryApiCacheTags.userHiveWallet(name));
+  updateTag(queryApiCacheTags.userEngineWallet(name));
+  updateTag(queryApiCacheTags.userAccountSidebar(name));
+  updateTag(queryApiCacheTags.userHiveHpDelegations(name));
+  updateTag(queryApiCacheTags.userHiveRcDelegations(name));
+  updateTag(queryApiCacheTags.userEngineTokenDelegations(name, 'WAIV'));
+  updateTag(queryApiCacheTags.userActivityFeed(name, 'wallet'));
+  revalidatePath(userPublicTransfersPath(name), 'page');
+  revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
+}
+
+/** @deprecated Use {@link revalidateUserWalletAfterBroadcast}. */
+export async function revalidateUserWaivWalletAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  await revalidateUserWalletAfterBroadcast(accountName);
+}
+
+/** @deprecated Use {@link revalidateUserWalletAfterBroadcast}. */
+export async function revalidateUserHiveWalletAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  await revalidateUserWalletAfterBroadcast(accountName);
+}
+
 /** After on-chain mutations on an object page (authority, follow, updates, rating, …). */
 export async function revalidateObjectAfterBroadcast(
   objectId: string,
@@ -98,37 +136,6 @@ export async function revalidateMessagingAfterBroadcast(
   updateTag(queryApiCacheTags.userMentionsFeed(name));
   updateTag(queryApiCacheTags.userActivityFeed(name));
   revalidatePath(userProfilePath(name), 'layout');
-}
-
-/** WAIV wallet summary after Engine token broadcast. */
-export async function revalidateUserWaivWalletAfterBroadcast(
-  accountName: string,
-): Promise<void> {
-  const name = accountName.trim().toLowerCase();
-  if (name.length === 0) {
-    return;
-  }
-  updateTag(queryApiCacheTags.userWaivWallet(name));
-  updateTag(queryApiCacheTags.userAccountSidebar(name));
-  updateTag(queryApiCacheTags.userEngineWallet(name));
-  updateTag(queryApiCacheTags.userEngineTokenDelegations(name, 'WAIV'));
-  revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
-}
-
-/** HIVE wallet summary after L1 wallet broadcast. */
-export async function revalidateUserHiveWalletAfterBroadcast(
-  accountName: string,
-): Promise<void> {
-  const name = accountName.trim().toLowerCase();
-  if (name.length === 0) {
-    return;
-  }
-  updateTag(queryApiCacheTags.userHiveWallet(name));
-  updateTag(queryApiCacheTags.userAccountSidebar(name));
-  updateTag(queryApiCacheTags.userHiveHpDelegations(name));
-  updateTag(queryApiCacheTags.userHiveRcDelegations(name));
-  updateTag(queryApiCacheTags.userActivityFeed(name, 'wallet'));
-  revalidatePath(`${userProfilePath(name)}/transfers`, 'page');
 }
 
 /** Notification settings after OSL update_user_notification_settings broadcast. */

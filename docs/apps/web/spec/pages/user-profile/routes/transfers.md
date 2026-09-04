@@ -54,9 +54,11 @@ Wallet transaction history is rendered only on this transfers page (not on `Hive
 
 **Unavailable state:** when query-api returns `503`, network fails, or the response fails Zod validation, the **summary** shows `t('unavailable')` (or `t('activity_error')` on invalid response) — never a summary card with fake zero balances. **Wallet history** still loads independently when the history API succeeds (degraded mode). Owner wallet modals are disabled while the summary is unavailable.
 
-**Broadcast (WAIV):** Keychain signs inline; Hive Engine ops use the **active** key. HiveSigner redirects to hivesigner.com for active-key `custom_json` (no error flash before redirect). After broadcast: trx confirmation → `revalidateUserWaivWalletAfterBroadcast` → `router.refresh()`.
+**Broadcast (WAIV / HIVE / ENGINE):** Keychain signs inline; Hive Engine ops use the **active** key. HiveSigner redirects to hivesigner.com for active-key `custom_json` (no error flash before redirect). After broadcast: trx confirmation → **`revalidateUserWalletAfterBroadcast`** (all wallet summary tags) → **`router.refresh()`** → **`bumpWalletEpoch()`** (refetches client history feeds). Engine token ops also schedule a deferred **`router.refresh()`** (~1.5s) for Hive Engine settlement lag.
 
-**Broadcast (HIVE):** L1 ops via Keychain/HiveSigner; after broadcast → `revalidateUserHiveWalletAfterBroadcast` → `router.refresh()`. HP delegations: `GET /api/users/{name}/wallet/hive/delegations`; RC: `.../rc-delegations`.
+**Cache policy:** WAIV/HIVE/ENGINE **summaries** are **`no-store`** on every page load (including F5 and HiveSigner return). **History** is already client `no-store`; it does not refetch on `router.refresh()` alone — only on mount or `walletEpoch` bump. Currency market widget stays on 60s TTL (prices, not account balances).
+
+**Broadcast (HIVE delegations):** HP delegations: `GET /api/users/{name}/wallet/hive/delegations`; RC: `.../rc-delegations`.
 
 **Manage delegations:** status / manage / edit dialogs for WP and HP — see [wallet-delegations-modals.md](wallet-delegations-modals.md). Lists load from `GET /api/users/{name}/wallet/engine/{symbol}/delegations` (WAIV) and `GET /api/users/{name}/wallet/hive/delegations` (HP); cache tags invalidated on wallet broadcast.
 

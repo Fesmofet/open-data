@@ -1,6 +1,9 @@
 import 'server-only';
 
-import { queryApiFetchOutcome } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import {
+  QUERY_API_LIVE_INIT,
+  queryApiFetchOutcome,
+} from '@/modules/user-profile/infrastructure/clients/query-api.client';
 import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 import type { HiveWalletApiResponse } from '../../application/dto/hive-wallet-api.schema';
@@ -16,6 +19,7 @@ export async function fetchHiveWalletSummary(
 ): Promise<HiveWalletFetchResult> {
   const path = `/query/v1/users/${encodeURIComponent(accountName)}/wallet/hive`;
   const outcome = await queryApiFetchOutcome<HiveWalletApiResponse>(path, {
+    ...QUERY_API_LIVE_INIT,
     cacheTags: [queryApiCacheTags.userHiveWallet(accountName)],
   });
   if (!outcome.ok) {

@@ -15,6 +15,7 @@ import {
   HiveWalletHistoryFeed,
   loadHiveWalletHistoryPage,
 } from './hive-wallet-history-feed';
+import { useWalletBalances } from '../../wallet/wallet-balances-context';
 
 const EMPTY_PAGE: ActivityPageView = {
   items: [],
@@ -33,6 +34,7 @@ type HiveWalletHistoryFeedClientProps = {
 export function HiveWalletHistoryFeedClient({
   accountName,
 }: HiveWalletHistoryFeedClientProps) {
+  const { walletEpoch } = useWalletBalances();
   const abortRef = useRef<AbortController | null>(null);
   const [page, setPage] = useState<ActivityPageView>(EMPTY_PAGE);
   const [loadError, setLoadError] = useState<ActivityLoadError | null>(null);
@@ -71,7 +73,7 @@ export function HiveWalletHistoryFeedClient({
     return () => {
       ac.abort();
     };
-  }, [accountName]);
+  }, [accountName, walletEpoch]);
 
   const loadMoreAction = useCallback(
     (name: string, cursor: string): Promise<ActivityPageQueryResult> =>

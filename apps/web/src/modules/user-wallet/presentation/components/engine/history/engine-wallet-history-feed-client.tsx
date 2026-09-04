@@ -11,6 +11,8 @@ import type {
   EngineWalletHistoryPageView,
 } from '@/modules/user-wallet/domain/types/engine-wallet-view';
 
+import { useWalletBalances } from '../../wallet/wallet-balances-context';
+
 import {
   EngineWalletHistoryFeed,
   loadEngineWalletHistoryPage,
@@ -29,6 +31,7 @@ type EngineWalletHistoryFeedClientProps = {
 export function EngineWalletHistoryFeedClient({
   accountName,
 }: EngineWalletHistoryFeedClientProps) {
+  const { walletEpoch } = useWalletBalances();
   const abortRef = useRef<AbortController | null>(null);
   const [page, setPage] = useState<EngineWalletHistoryPageView>(EMPTY_PAGE);
   const [loadError, setLoadError] = useState<EngineWalletHistoryLoadError | null>(null);
@@ -66,7 +69,7 @@ export function EngineWalletHistoryFeedClient({
     return () => {
       ac.abort();
     };
-  }, [accountName]);
+  }, [accountName, walletEpoch]);
 
   const loadMoreAction = useCallback(
     (name: string, cursor: string): Promise<EngineWalletHistoryPageQueryResult> =>

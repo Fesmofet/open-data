@@ -345,6 +345,20 @@ After every successful **Hive wallet broadcast** that should update on-chain-bac
 
 **ODL `custom_json`:** **`useOdlCustomJsonId()`** — do not hardcode network ids. Reference: `story-vote-button.tsx`, `story-comment-editor.tsx`.
 
+## Wallet balances — cache and post-broadcast refresh
+
+Personal wallet **summary** numbers (WAIV / HIVE / ENGINE liquid, power, est. USD) must stay live after every wallet action.
+
+| Layer | Rule |
+|-------|------|
+| **RSC summary fetch** | `fetchWaivWalletSummary` / `fetchHiveWalletSummary` / `fetchEngineWalletSummary` use **`QUERY_API_LIVE_INIT`** (`cache: 'no-store'`) plus `cacheTags` for post-mutation invalidation. **Never** default `revalidate: 60` on user financial balances. |
+| **Transfers route** | `(main)/transfers/page.tsx` exports **`dynamic = 'force-dynamic'`**. |
+| **History feeds** | Client `POST` with `cache: 'no-store'`; refetch when **`walletEpoch`** bumps in `WalletBalancesContext` (not on `router.refresh()` alone). |
+| **After any wallet broadcast** | `awaitTrxConfirmation` → **`refreshWalletAfterBroadcast`** → **`revalidateUserWalletAfterBroadcast(account)`** (all wallet summary + delegation + sidebar tags) → **`router.refresh()`** → **`bumpWalletEpoch()`** for history feeds. |
+| **Hive Engine lag** | Engine token hooks also schedule one deferred **`router.refresh()`** after **`ENGINE_WALLET_SETTLEMENT_REFRESH_MS`** (~1.5s) — L1 confirmation can arrive before sidechain balances update. |
+
+Reference: `wallet-broadcast-refresh.ts`, `revalidate-after-broadcast.server.ts`, `wallet-balances-context.tsx`.
+
 ## `router.refresh()` and client state
 
 Use **`router.refresh()`** from `next/navigation` when server-rendered data should catch up after a mutation (broadcast confirmed, login/logout, locale change, draft save, etc.). It **re-runs Server Components** for the current route and passes **new props** into existing client boundaries — it is **not** a full page reload and **does not** remount client components by default.

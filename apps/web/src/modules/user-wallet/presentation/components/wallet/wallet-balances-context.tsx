@@ -21,7 +21,9 @@ export type WalletBalancesState = {
 };
 
 type WalletBalancesContextValue = WalletBalancesState & {
+  walletEpoch: number;
   setSummaries: (summaries: WalletBalancesState) => void;
+  bumpWalletEpoch: () => void;
 };
 
 const EMPTY_BALANCES: WalletBalancesState = {
@@ -40,16 +42,24 @@ export type WalletBalancesProviderProps = {
 
 export function WalletBalancesProvider({ children }: WalletBalancesProviderProps) {
   const [summaries, setSummariesState] = useState<WalletBalancesState>(EMPTY_BALANCES);
+  const [walletEpoch, setWalletEpoch] = useState(0);
+
   const setSummaries = useCallback((next: WalletBalancesState) => {
     setSummariesState(next);
+  }, []);
+
+  const bumpWalletEpoch = useCallback(() => {
+    setWalletEpoch((epoch) => epoch + 1);
   }, []);
 
   const value = useMemo(
     () => ({
       ...summaries,
+      walletEpoch,
       setSummaries,
+      bumpWalletEpoch,
     }),
-    [summaries, setSummaries],
+    [summaries, walletEpoch, setSummaries, bumpWalletEpoch],
   );
 
   return (

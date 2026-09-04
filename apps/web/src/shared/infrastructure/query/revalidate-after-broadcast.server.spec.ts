@@ -3,10 +3,13 @@ jest.mock('next/cache', () => ({
   updateTag: jest.fn(),
 }));
 
-import { updateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { queryApiCacheTags } from './query-api-cache-tags';
-import { revalidateObjectAfterBroadcast } from './revalidate-after-broadcast.server';
+import {
+  revalidateObjectAfterBroadcast,
+  revalidateUserWalletAfterBroadcast,
+} from './revalidate-after-broadcast.server';
 
 describe('revalidateObjectAfterBroadcast', () => {
   beforeEach(() => {
@@ -29,5 +32,46 @@ describe('revalidateObjectAfterBroadcast', () => {
     expect(updateTag).not.toHaveBeenCalledWith(
       expect.stringMatching(/:updates:upd/),
     );
+  });
+});
+
+describe('revalidateUserWalletAfterBroadcast', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('invalidates all wallet summary and delegation tags', async () => {
+    await revalidateUserWalletAfterBroadcast('Alice');
+
+    expect(updateTag).toHaveBeenCalledWith(queryApiCacheTags.userWaivWallet('alice'));
+    expect(updateTag).toHaveBeenCalledWith(queryApiCacheTags.userHiveWallet('alice'));
+    expect(updateTag).toHaveBeenCalledWith(queryApiCacheTags.userEngineWallet('alice'));
+    expect(updateTag).toHaveBeenCalledWith(queryApiCacheTags.userAccountSidebar('alice'));
+    expect(updateTag).toHaveBeenCalledWith(
+      queryApiCacheTags.userHiveHpDelegations('alice'),
+    );
+    expect(updateTag).toHaveBeenCalledWith(
+      queryApiCacheTags.userHiveRcDelegations('alice'),
+    );
+    expect(updateTag).toHaveBeenCalledWith(
+      queryApiCacheTags.userEngineTokenDelegations('alice', 'WAIV'),
+    );
+    expect(updateTag).toHaveBeenCalledWith(
+      queryApiCacheTags.userActivityFeed('alice', 'wallet'),
+    );
+  });
+
+  it('revalidates public and internal transfers paths', async () => {
+    await revalidateUserWalletAfterBroadcast('alice');
+
+    expect(revalidatePath).toHaveBeenCalledWith('/@alice/transfers', 'page');
+    expect(revalidatePath).toHaveBeenCalledWith('/user-profile/alice/transfers', 'page');
+  });
+
+  it('no-ops for empty account name', async () => {
+    await revalidateUserWalletAfterBroadcast('   ');
+
+    expect(updateTag).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

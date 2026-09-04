@@ -8,17 +8,18 @@ import type { HiveOperation } from '@opden-data-layer/hive-broadcast';
 import { getWalletFacade } from '@/modules/auth';
 
 import { awaitTrxConfirmation } from '@/modules/notifications';
-import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
-import { revalidateUserHiveWalletAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import {
   type EngineTokenBroadcastErrorCode,
   isHiveSignerRedirectError,
   mapEngineTokenBroadcastError,
 } from '../../domain/engine-token-broadcast-errors';
+import { useWalletBalances } from '../components/wallet/wallet-balances-context';
+import { refreshWalletAfterBroadcast } from './wallet-broadcast-refresh';
 
 export function useHiveBroadcast(account: string) {
   const router = useRouter();
+  const { bumpWalletEpoch } = useWalletBalances();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<EngineTokenBroadcastErrorCode | null>(null);
 
@@ -31,9 +32,7 @@ export function useHiveBroadcast(account: string) {
           operations,
         });
         await awaitTrxConfirmation(transactionId);
-        await refreshAfterBroadcast(router, () =>
-          revalidateUserHiveWalletAfterBroadcast(account),
-        );
+        await refreshWalletAfterBroadcast(router, account, { bumpWalletEpoch });
         return true;
       } catch (e) {
         if (isHiveSignerRedirectError(e)) {
@@ -45,7 +44,7 @@ export function useHiveBroadcast(account: string) {
         setPending(false);
       }
     },
-    [account, router],
+    [account, bumpWalletEpoch, router],
   );
 
   return { broadcast, pending, error, setError };
