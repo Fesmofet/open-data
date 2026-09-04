@@ -31,6 +31,15 @@ Predictive search in the app header: debounced queries, dropdown results, discov
 
 Discover chips link to `/discover` with `q`, `type`, or `users=1` (see [discover.md](pages/discover/page.md)).
 
+### Clear vs Close
+
+| Control | Behavior |
+|---------|----------|
+| **Clear** | Empties the query and results; search stays open (input focused, mobile bar expanded). |
+| **Close (X)** | Exits search: clears query, closes dropdown, blurs input; on mobile also collapses the expanded search bar. Escape matches Close. |
+
+Layout: on `lg+`, Clear (text) and Close (icon) are inside the search field, separated by a vertical divider when Clear is visible. Below `lg`, Clear is inside the field; Close is the icon toggle to the right of the bar (no in-bar X). Native WebKit search cancel is hidden in favor of these controls.
+
 ### User rows (`SearchDropdown`)
 
 Each user hit: avatar, **username**, then on one line:

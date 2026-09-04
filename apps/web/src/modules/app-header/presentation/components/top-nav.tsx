@@ -211,7 +211,35 @@ export function TopNav({ user: _user }: TopNavProps) {
     debouncePending || (searchLoading && searchResults === null);
   const panelCountsLoading = searchCountsLoading;
 
+  function clearSearchQueryState() {
+    clearDebounce();
+    fetchAbortRef.current?.abort();
+    countsAbortRef.current?.abort();
+    setSearchBarValue('');
+    setDebouncedQuery('');
+    setDebouncePending(false);
+    setSearchResults(null);
+    setSearchLoading(false);
+    setSearchCounts(null);
+    setSearchCountsLoading(false);
+    setActiveIndex(0);
+    setHighlightTouched(false);
+  }
+
+  function clearSearch() {
+    clearSearchQueryState();
+    inputRef.current?.focus();
+  }
+
+  function closeSearch() {
+    clearSearchQueryState();
+    setDropdownOpen(false);
+    setSearchBarActive(false);
+    inputRef.current?.blur();
+  }
+
   function onInputChange(v: string) {
+    setSearchBarActive(true);
     setSearchBarValue(v);
     setDropdownOpen(true);
     if (!v.trim()) {
@@ -252,10 +280,8 @@ export function TopNav({ user: _user }: TopNavProps) {
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Escape') {
-      setDropdownOpen(false);
-      if (searchBarActive) {
-        setSearchBarActive(false);
-      }
+      e.preventDefault();
+      closeSearch();
       return;
     }
 
@@ -291,13 +317,11 @@ export function TopNav({ user: _user }: TopNavProps) {
   }
 
   function toggleMobileSearch() {
-    setSearchBarActive((a) => {
-      const next = !a;
-      if (!next) {
-        setDropdownOpen(false);
-      }
-      return next;
-    });
+    if (searchBarActive) {
+      closeSearch();
+      return;
+    }
+    setSearchBarActive(true);
   }
 
   const hideActionsWhileMobileSearch = searchBarActive;
@@ -349,29 +373,42 @@ export function TopNav({ user: _user }: TopNavProps) {
             suppressHydrationWarning
             value={searchBarValue}
             onChange={(e) => onInputChange(e.target.value)}
-            onFocus={() => setDropdownOpen(true)}
+            onFocus={() => {
+              setSearchBarActive(true);
+              setDropdownOpen(true);
+            }}
             onKeyDown={onKeyDown}
             aria-expanded={showDropdown}
             aria-controls={showDropdown ? `${listId}-panel` : undefined}
             aria-autocomplete="list"
             placeholder={t('search_placeholder')}
-            className="min-w-0 flex-1 border-0 bg-transparent text-body text-fg outline-none placeholder:text-fg-tertiary"
+            className="min-w-0 flex-1 border-0 bg-transparent text-body text-fg outline-none placeholder:text-fg-tertiary [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
           />
           {searchBarValue ? (
             <button
               type="button"
-              className="shrink-0 rounded-btn px-1.5 py-0.5 text-caption text-fg-secondary hover:bg-ghost-surface hover:text-fg"
+              className="shrink-0 rounded-btn px-1.5 py-0.5 text-caption text-link hover:text-fg"
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setSearchBarValue('');
-                setDebouncedQuery('');
-                setSearchResults(null);
-                setSearchCounts(null);
-                setSearchCountsLoading(false);
-                setDropdownOpen(false);
-              }}
+              onClick={clearSearch}
             >
-              {t('close')}
+              {t('app_header_clear_search')}
+            </button>
+          ) : null}
+          {searchBarValue ? (
+            <span
+              className="hidden h-4 w-px shrink-0 bg-border lg:block"
+              aria-hidden
+            />
+          ) : null}
+          {searchBarActive ? (
+            <button
+              type="button"
+              className="hidden shrink-0 rounded-btn p-0.5 text-fg hover:bg-ghost-surface lg:inline-flex"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={closeSearch}
+              aria-label={t('app_header_close_search_aria')}
+            >
+              <CloseIcon size={20} />
             </button>
           ) : null}
         </div>
