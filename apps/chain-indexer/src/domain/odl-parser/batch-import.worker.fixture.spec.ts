@@ -2,10 +2,12 @@ import { Readable } from 'node:stream';
 import { chain } from 'stream-chain';
 import streamJson from 'stream-json';
 
-const pickFilter = require('stream-json/filters/pick.js') as (opts: {
+const pickModule = require('stream-json/filters/pick.js');
+const pickFilter = (pickModule.default ?? pickModule) as (opts: {
   filter: string;
 }) => import('node:stream').Duplex;
-const streamArrayMod = require('stream-json/streamers/stream-array.js') as {
+const streamArrayModule = require('stream-json/streamers/stream-array.js');
+const streamArrayMod = (streamArrayModule.default ?? streamArrayModule) as {
   asStream: (opts?: unknown) => import('node:stream').Duplex;
 };
 
@@ -19,7 +21,7 @@ describe('PGX recipe IPFS batch fixture', () => {
   it('parses all nine events from the published envelope', async () => {
     const pipeline = chain([
       Readable.from([PGX_RECIPE_BATCH_JSON]),
-      streamJson.parser(),
+      streamJson(),
       pickFilter({ filter: 'events' }),
       streamArrayMod.asStream(),
     ]);
@@ -84,7 +86,7 @@ describe('GPS restaurant IPFS batch fixture', () => {
   it('parses geo at child index 11 with lat/lon payload', async () => {
     const pipeline = chain([
       Readable.from([GPS_RESTAURANT_BATCH_JSON]),
-      streamJson.parser(),
+      streamJson(),
       pickFilter({ filter: 'events' }),
       streamArrayMod.asStream(),
     ]);

@@ -9,10 +9,12 @@ import { chain } from 'stream-chain';
 import streamJson from 'stream-json';
 
 // stream-json subpaths are not resolved cleanly with moduleResolution "node"; use typed require.
-const pickFilter = require('stream-json/filters/pick.js') as (opts: {
+const pickModule = require('stream-json/filters/pick.js');
+const pickFilter = (pickModule.default ?? pickModule) as (opts: {
   filter: string;
 }) => Duplex;
-const streamArrayMod = require('stream-json/streamers/stream-array.js') as {
+const streamArrayModule = require('stream-json/streamers/stream-array.js');
+const streamArrayMod = (streamArrayModule.default ?? streamArrayModule) as {
   asStream: (opts?: unknown) => Duplex;
 };
 import type { OdlActionHandler, OdlEventContext } from './odl-action-handler';
@@ -152,7 +154,7 @@ export class BatchImportWorker {
   ): Promise<boolean> {
     const pipeline = chain([
       stream,
-      streamJson.parser(),
+      streamJson(),
       pickFilter({ filter: 'events' }),
       streamArrayMod.asStream(),
     ]);
