@@ -106,9 +106,29 @@ function buildDiscoverObjectTextMatchFilter(params: {
   if (shouldSearchPrefix(qTrimmed)) {
     const prefixLower = qTrimmed.toLowerCase();
     const prefixUpper = prefixUpperBound(prefixLower);
+    const namePrefixPattern = `${escapeIlikePattern(prefixLower)}%`;
+    const jsonPrefixPattern = namePrefixPattern;
     parts.push(
       sql`(oc.object_id COLLATE "C" >= ${prefixLower} AND oc.object_id COLLATE "C" < ${prefixUpper})`,
     );
+    parts.push(sql`EXISTS (
+      SELECT 1 FROM object_updates ou_name
+      WHERE ou_name.object_id = oc.object_id
+        AND ou_name.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]})
+        AND ou_name.value_text_normalized LIKE ${namePrefixPattern} ESCAPE '\\'
+    )`);
+    parts.push(sql`EXISTS (
+      SELECT 1 FROM object_updates ou_identifier
+      WHERE ou_identifier.object_id = oc.object_id
+        AND ou_identifier.update_type = ${UPDATE_TYPES.IDENTIFIER}
+        AND lower(ou_identifier.value_json->>'value') LIKE ${jsonPrefixPattern} ESCAPE '\\'
+    )`);
+    parts.push(sql`EXISTS (
+      SELECT 1 FROM object_updates ou_locality
+      WHERE ou_locality.object_id = oc.object_id
+        AND ou_locality.update_type = ${UPDATE_TYPES.ADDRESS}
+        AND lower(ou_locality.value_json->>'locality') LIKE ${jsonPrefixPattern} ESCAPE '\\'
+    )`);
   }
 
   if (includeIdSubstring && idSubstringPattern) {

@@ -171,6 +171,25 @@ describe('DiscoverRepository', () => {
     expect(compiled.sql).toContain('ST_MakeEnvelope');
   });
 
+  it('listObjects text query includes name, identifier, and locality prefix paths', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.listObjects({
+      objectType: 'restaurant',
+      q: 'agassiz',
+      tags: [],
+      sort: 'rank',
+      limit: 20,
+    });
+
+    const compiled = executeQuery.mock.calls[0][0] as { sql: string };
+    expect(compiled.sql).toContain('value_text_normalized');
+    expect(compiled.sql).toContain("value_json->>'value'");
+    expect(compiled.sql).toContain("value_json->>'locality'");
+  });
+
   it('listObjects returns empty result when boxed query fails', async () => {
     const executeQuery = jest.fn().mockRejectedValue(new Error('db down'));
     const db = createQueryCapturingDb(executeQuery);
