@@ -20,6 +20,12 @@ export type ProjectedListItem = {
   isFavorited?: boolean;
   /** Localized price string from projected `price` update. */
   price?: string | null;
+  /** Display title tagline from projected `title` update. */
+  title?: string | null;
+  /** Structured address update payload or string. */
+  address?: unknown | null;
+  /** Geo coordinates from projected `geo` update. */
+  geo?: unknown | null;
   /** Compact brand ref from projected `brand` update (first when multi). */
   brandRef?: ProjectedListItemRef | null;
   /** Compact parent ref from projected `parent` update. */

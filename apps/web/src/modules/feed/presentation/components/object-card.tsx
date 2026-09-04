@@ -17,6 +17,7 @@ import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/discover-registry';
 import { AVATAR_PLACEHOLDER_SRC, ObjectThumbnail } from '@/shared/presentation';
+import { MapPinIcon } from '@/icons';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { AdministrativeHeartButton } from '@/modules/object/presentation/components/administrative-heart-button';
 import { objectPagePath } from '@/shared/routes/object-page-path';
@@ -97,7 +98,7 @@ function RatingsGrid({
       className={
         compact
           ? 'mt-1.5 flex min-w-0 items-center gap-1.5'
-          : 'mt-2 grid grid-cols-1 gap-y-1.5 sm:grid-cols-2 sm:gap-x-4 sm:gap-y-1'
+          : 'mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-1'
       }
     >
       {dims.map(
@@ -105,9 +106,7 @@ function RatingsGrid({
           <div
             key={dimension}
             className={[
-              compact
-                ? 'flex min-w-0 flex-col items-start gap-0.5'
-                : 'flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-1.5',
+              'flex min-w-0 flex-row items-center gap-1.5',
               mobileMaxVisible != null && index >= mobileMaxVisible ? 'hidden sm:flex' : '',
             ]
               .filter(Boolean)
@@ -126,7 +125,7 @@ function RatingsGrid({
               size="sm"
               showNumeric={false}
             />
-            <span className="max-w-full text-caption text-fg-secondary sm:truncate">{dimension}</span>
+            <span className="max-w-full text-caption text-fg-secondary truncate">{dimension}</span>
           </div>
         ),
       )}
@@ -188,24 +187,30 @@ export function ObjectCard({
   const horizontalRow = !stackedMobile;
   const thumbSize = editorRow ? 72 : mapSidebar ? MAP_SIDEBAR_THUMB_SIZE : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
-  const categoryLabels = objectFields.tagCategoryLabels(o);
+  const normalizedType = o.object_type?.trim().toLowerCase() ?? '';
+  const seenCategories = new Set<string>();
+  const categoryLabels = objectFields.tagCategoryLabels(o).filter((cat) => {
+    const trimmed = cat.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower === normalizedType || seenCategories.has(lower)) {
+      return false;
+    }
+    seenCategories.add(lower);
+    return true;
+  });
   const priceLabel = objectFields.price(o);
   const brandOrParentLabel = objectFields.brandOrParentLabel(o);
-  const subtitleParts = [
-    priceLabel,
-    ...(hideType ? [] : [typeLabel]),
-    ...categoryLabels.filter(Boolean),
-  ].filter(Boolean);
-  const subtitle = subtitleParts.join(' · ');
+  const addressLine = objectFields.addressLine(o);
+  const titleTagline = objectFields.titleUpdate(o);
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
   const descriptionRaw = objectFields.description(o);
-  const description = descriptionRaw
+  const displayText = titleTagline || (descriptionRaw
     ? truncateObjectCardDescription(
         descriptionRaw,
         mapSidebar ? OBJECT_CARD_MAP_SIDEBAR_DESCRIPTION_MAX_LENGTH : OBJECT_CARD_DESCRIPTION_MAX_LENGTH,
       )
-    : undefined;
+    : undefined);
   const href = objectPagePath(o.object_id);
   const titleLabel = name ?? o.object_id;
   const objectTypeKey = o.object_type?.trim() ?? '';
@@ -229,9 +234,7 @@ export function ObjectCard({
     'relative list-none border-[0.5px] border-border bg-surface-control/40 shadow-whisper',
     mapSidebar
       ? 'rounded-card py-card-padding pe-card-padding ps-gutter sm:ps-gutter-sm'
-      : stackedMobile
-        ? 'rounded-card p-3 sm:p-card-padding'
-        : 'rounded-card p-card-padding',
+      : 'rounded-card p-3 sm:p-card-padding',
     navPending ? 'opacity-90' : '',
   ]
     .filter(Boolean)
@@ -269,10 +272,9 @@ export function ObjectCard({
       ) : null}
       <div
         className={[
-          'flex gap-3',
-          horizontalRow ? 'flex-row items-start' : 'flex-col sm:flex-row sm:items-start',
-          showHeart || userWeight != null ? (stackedMobile ? 'sm:pe-8' : 'pe-8') : '',
-          trailing && horizontalRow ? 'items-start' : '',
+          'flex gap-3 flex-row items-start',
+          showHeart || userWeight != null ? 'pe-8' : '',
+          trailing ? 'items-start' : '',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -283,19 +285,11 @@ export function ObjectCard({
           onNavigate={onNavigate}
           onPendingChange={onNavPendingChange}
           ariaLabel={`View object: ${titleLabel}`}
-          className={[
-            'rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-            stackedMobile ? 'w-full shrink-0 sm:w-auto' : 'shrink-0',
-          ].join(' ')}
+          className="shrink-0 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <span
-            className={[
-              'flex items-center justify-center overflow-hidden rounded-card border-[0.5px] border-border bg-surface-alt',
-              stackedMobile ? 'aspect-[4/3] w-full sm:aspect-auto sm:size-[120px]' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            style={stackedMobile ? undefined : { width: thumbSize, height: thumbSize }}
+            className="flex items-center justify-center overflow-hidden rounded-card border-[0.5px] border-border bg-surface-alt size-[104px] sm:size-[120px]"
+            style={editorRow ? { width: thumbSize, height: thumbSize } : mapSidebar ? { width: MAP_SIDEBAR_THUMB_SIZE, height: MAP_SIDEBAR_THUMB_SIZE } : undefined}
           >
             {thumbUrl ? (
               <ObjectThumbnail
@@ -328,35 +322,38 @@ export function ObjectCard({
               linkReplace={linkReplace}
               onNavigate={onNavigate}
               onPendingChange={onNavPendingChange}
-              className={[
-                'max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-                stackedMobile
-                  ? 'line-clamp-2 sm:line-clamp-none'
-                  : catalog
-                    ? 'line-clamp-2'
-                    : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
+              className="max-w-full text-left font-weight-strong text-body-lg text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus line-clamp-2"
             >
               {titleLabel}
             </CardNavTarget>
             {titleSuffix}
           </div>
-          {subtitle ? (
-            <p
-              className={[
-                'mt-0.5 text-caption text-fg-secondary',
-                stackedMobile
-                  ? 'line-clamp-2 sm:line-clamp-none'
-                  : catalog
-                    ? 'line-clamp-2'
-                    : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              {subtitle}
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-caption text-fg-secondary">
+            {priceLabel ? (
+              <>
+                <span className="font-weight-strong text-fg">{priceLabel}</span>
+                {(!hideType && typeLabel) || categoryLabels.length > 0 ? (
+                  <span aria-hidden>·</span>
+                ) : null}
+              </>
+            ) : null}
+            {!hideType && typeLabel ? (
+              <>
+                <span>{typeLabel}</span>
+                {categoryLabels.length > 0 ? <span aria-hidden>·</span> : null}
+              </>
+            ) : null}
+            {categoryLabels.map((cat, i) => (
+              <span key={`${cat}-${i}`} className="flex items-center gap-x-1.5">
+                {i > 0 ? <span aria-hidden>·</span> : null}
+                <span>{cat}</span>
+              </span>
+            ))}
+          </div>
+          {addressLine ? (
+            <p className="mt-0.5 flex min-w-0 items-center gap-1 text-body-xs text-muted">
+              <MapPinIcon size={13} className="shrink-0 text-muted" aria-hidden />
+              <span className="truncate">{addressLine}</span>
             </p>
           ) : null}
           {!editorRow ? (
@@ -369,20 +366,14 @@ export function ObjectCard({
               mobileMaxVisible={mapSidebar ? undefined : 2}
             />
           ) : null}
-          {description ? (
+          {displayText ? (
             <p
               className={[
                 'text-body-sm leading-body text-fg',
-                mapSidebar
-                  ? 'mt-1.5 line-clamp-2'
-                  : stackedMobile
-                    ? 'mt-2 line-clamp-3 sm:line-clamp-none'
-                    : catalog
-                      ? 'mt-2 line-clamp-3'
-                      : 'mt-2',
+                mapSidebar ? 'mt-1.5 line-clamp-2' : 'mt-2 line-clamp-3',
               ].join(' ')}
             >
-              {description}
+              {displayText}
             </p>
           ) : null}
         </div>

@@ -343,6 +343,12 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
       : undefined;
   const descriptionFromFields =
     isRecord(fields) ? readString(fields['description']) : undefined;
+  const titleFromFields =
+    isRecord(fields) ? readString(fields['title']) : undefined;
+  const addressFromFields =
+    isRecord(fields) && fields['address'] != null ? fields['address'] : undefined;
+  const geoFromFields =
+    isRecord(fields) && fields['geo'] != null ? fields['geo'] : undefined;
   const priceFromFields = isRecord(fields) ? readString(fields['price']) : undefined;
   const brandRef = isRecord(fields) ? refSummaryFirstRefPayload(fields['brand']) : null;
   const parentRef = isRecord(fields) ? refSummaryRefPayload(fields['parent']) : null;
@@ -367,6 +373,9 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
     ...(addedAtUnix !== null ? { addedAtUnix } : {}),
     ...(listItemUpdateId ? { listItemUpdateId } : {}),
     ...(listItemsCount !== undefined ? { listItemsCount } : {}),
+    ...(titleFromFields ? { title: titleFromFields } : {}),
+    ...(addressFromFields !== undefined ? { address: addressFromFields } : {}),
+    ...(geoFromFields !== undefined ? { geo: geoFromFields } : {}),
     ...(descriptionFromFields ? { description: descriptionFromFields } : {}),
     ...(priceFromFields ? { price: priceFromFields } : {}),
     ...(brandRef ? { brandRef } : {}),

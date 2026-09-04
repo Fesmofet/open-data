@@ -35,6 +35,15 @@ export function projectedListItemToObjectView(item: ProjectedListItem): Projecte
   if (item.description) {
     fields.description = item.description;
   }
+  if (item.title) {
+    fields.title = item.title;
+  }
+  if (item.address != null) {
+    fields.address = item.address;
+  }
+  if (item.geo != null) {
+    fields.geo = item.geo;
+  }
   if (item.price) {
     fields.price = item.price;
   }

@@ -103,6 +103,7 @@ export function DiscoverMapPanel({
   const [mapCenter, setMapCenter] = useState<MapPosition>(initialCamera.center);
   const [mapZoom, setMapZoom] = useState(initialCamera.zoom);
   const [userLocation, setUserLocation] = useState<MapPosition | null>(null);
+  const previousCenterBeforeLocateRef = useRef<MapPosition | null>(null);
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState(false);
 
@@ -110,6 +111,7 @@ export function DiscoverMapPanel({
     setMapCenter(initialCamera.center);
     setMapZoom(initialCamera.zoom);
     setUserLocation(null);
+    previousCenterBeforeLocateRef.current = null;
     setLocateError(false);
   }, [initialCamera.center, initialCamera.zoom]);
 
@@ -206,14 +208,13 @@ export function DiscoverMapPanel({
       return;
     }
 
+    previousCenterBeforeLocateRef.current = mapCenter;
     setLocating(true);
     setLocateError(false);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const location: MapPosition = [pos.coords.latitude, pos.coords.longitude];
         setUserLocation(location);
-        setMapCenter(location);
-        setMapZoom(DISCOVER_MAP_LOCATE_ZOOM);
         setLocating(false);
       },
       () => {
@@ -221,7 +222,7 @@ export function DiscoverMapPanel({
         setLocateError(true);
       },
     );
-  }, []);
+  }, [mapCenter]);
 
   const markersWithGeo = useMemo(() => {
     const entries: {
@@ -247,6 +248,9 @@ export function DiscoverMapPanel({
 
   const fitBoundsPositions = useMemo(() => {
     if (userLocation) {
+      if (previousCenterBeforeLocateRef.current) {
+        return [previousCenterBeforeLocateRef.current, userLocation] as const;
+      }
       return null;
     }
     if (initialCamera.fitBox) {
@@ -255,9 +259,24 @@ export function DiscoverMapPanel({
     if (mapView != null || box != null) {
       return null;
     }
-    const positions = markersWithGeo.map((marker) => marker.position);
+    const topMarkers = markersWithGeo.slice(0, 10);
+    const positions = topMarkers.map((marker) => marker.position);
     return positions.length >= 2 ? positions : null;
   }, [initialCamera.fitBox, mapView, box, markersWithGeo, userLocation]);
+
+  useEffect(() => {
+    if (userLocation && !previousCenterBeforeLocateRef.current) {
+      setMapCenter(userLocation);
+      setMapZoom(DISCOVER_MAP_LOCATE_ZOOM);
+    }
+  }, [userLocation]);
+
+  useEffect(() => {
+    if (!mapView && !box && !userLocation && markersWithGeo.length === 1) {
+      setMapCenter(markersWithGeo[0]!.position);
+      setMapZoom(DISCOVER_MAP_LOCATE_ZOOM);
+    }
+  }, [mapView, box, userLocation, markersWithGeo]);
 
   const mapSurfaceClassName = isFullscreen
     ? 'size-full rounded-btn border border-border'

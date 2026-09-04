@@ -8,6 +8,8 @@ export const SHOP_CARD_UPDATE_TYPES = [
   'description',
   'tagCategoryItem',
   'aggregateRating',
+  'title',
+  'address',
 ] as const;
 
 /** Sample objects per category row in sections mode (fixed; not the section page size). */

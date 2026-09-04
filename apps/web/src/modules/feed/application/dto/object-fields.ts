@@ -151,4 +151,49 @@ export const objectFields = {
     }
     return labels.slice(-2);
   },
+  /** Single line card address formatted from structured or raw address fields. */
+  addressLine: (o: ProjectedObjectView): string | undefined => {
+    const raw = o.fields['address'];
+    if (raw == null) {
+      return undefined;
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    }
+    if (typeof raw === 'object' && !Array.isArray(raw)) {
+      const rec = raw as Record<string, unknown>;
+      const street = typeof rec.street === 'string' ? rec.street.trim() : '';
+      const suite = typeof rec.suite === 'string' ? rec.suite.trim() : '';
+      const locality = typeof rec.locality === 'string' ? rec.locality.trim() : '';
+      const state = typeof rec.state === 'string' ? rec.state.trim() : '';
+      const postalCode = typeof rec.postal_code === 'string' ? rec.postal_code.trim() : '';
+      const country = typeof rec.country === 'string' ? rec.country.trim() : '';
+
+      const streetPart = suite && street ? `${suite}, ${street}` : suite || street;
+      // Prefer concise card address: Street, Locality (City), State.
+      // Omit postal code and country for cards when primary location is available.
+      const primaryParts = [
+        streetPart,
+        locality,
+        state,
+      ].filter((p) => Boolean(p) && p !== 'Postal' && p !== 'Country' && p !== 'City');
+
+      if (primaryParts.length > 0) {
+        return primaryParts.join(', ');
+      }
+
+      const fallbackParts = [
+        postalCode,
+        country,
+      ].filter((p) => Boolean(p) && p !== 'Postal' && p !== 'Country');
+
+      if (fallbackParts.length > 0) {
+        return fallbackParts.join(', ');
+      }
+
+      return undefined;
+    }
+    return undefined;
+  },
 } as const;

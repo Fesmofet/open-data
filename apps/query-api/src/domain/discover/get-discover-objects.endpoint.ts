@@ -7,7 +7,12 @@ import { ObjectProjectionService } from '../object-projection/object-projection.
 import { SHOP_CARD_UPDATE_TYPES } from '../shop/shop.constants';
 
 /** Shop card fields plus geo for discover map markers. */
-const DISCOVER_OBJECT_UPDATE_TYPES = [...SHOP_CARD_UPDATE_TYPES, 'geo'] as const;
+const DISCOVER_OBJECT_UPDATE_TYPES = [
+  ...SHOP_CARD_UPDATE_TYPES,
+  'geo',
+  'title',
+  'address',
+] as const;
 import type { DiscoverObjectsQuery } from './discover-query.schema';
 import type { DiscoverObjectsResponseDto } from './discover.types';
 

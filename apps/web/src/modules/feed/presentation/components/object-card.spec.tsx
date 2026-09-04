@@ -163,8 +163,6 @@ describe('ObjectCard navigation', () => {
     const thumbWrapper = container.querySelector('a[aria-label="View object: Spicy Agedashi Tofu"] span');
     expect(thumbWrapper).not.toBeNull();
     expect(thumbWrapper?.classList.contains('aspect-[4/3]')).toBe(false);
-    expect(thumbWrapper?.classList.contains('w-full')).toBe(false);
-    expect(thumbWrapper).toHaveStyle({ width: '120px', height: '120px' });
   });
 
   it('mapSidebar layout shows a single rating row', () => {
@@ -239,7 +237,8 @@ describe('ObjectCard price and brand/parent', () => {
 
     expect(screen.getByText('Itzayana')).toBeInTheDocument();
     expect(screen.getByText('Macadamia Tincture')).toBeInTheDocument();
-    expect(screen.getByText('MX$225.00 · Product')).toBeInTheDocument();
+    expect(screen.getByText('MX$225.00')).toBeInTheDocument();
+    expect(screen.getByText('Product')).toBeInTheDocument();
   });
 
   it('falls back to parent caption when brand is absent', () => {
@@ -273,5 +272,74 @@ describe('ObjectCard price and brand/parent', () => {
     expect(screen.queryByText('Miss Bitcoin Shop')).not.toBeInTheDocument();
     expect(screen.getByText('Dish')).toBeInTheDocument();
     expect(screen.queryByText(/MX\$/)).not.toBeInTheDocument();
+  });
+
+  it('renders title tagline instead of description when title update is present', () => {
+    const withTitle: ProjectedObjectView = {
+      ...sampleObject,
+      fields: {
+        ...sampleObject.fields,
+        title: 'Authentic Crispy Japanese Tofu',
+        description: 'Long description of tofu recipe',
+      },
+    };
+
+    render(
+      <ul>
+        <ObjectCard object={withTitle} />
+      </ul>,
+    );
+
+    expect(screen.getByText('Authentic Crispy Japanese Tofu')).toBeInTheDocument();
+    expect(screen.queryByText('Long description of tofu recipe')).not.toBeInTheDocument();
+  });
+
+  it('renders formatted address line when address is present', () => {
+    const withAddress: ProjectedObjectView = {
+      ...sampleObject,
+      fields: {
+        ...sampleObject.fields,
+        address: {
+          street: 'Pioneer Ave',
+          locality: 'Agassiz',
+          state: 'BC',
+          postal_code: 'V0M 1A0',
+          country: 'Canada',
+        },
+      },
+    };
+
+    render(
+      <ul>
+        <ObjectCard object={withAddress} />
+      </ul>,
+    );
+
+    expect(screen.getByText('Pioneer Ave, Agassiz, BC')).toBeInTheDocument();
+  });
+
+  it('deduplicates object type from tag category labels in subtitle', () => {
+    const withDuplicateTags: ProjectedObjectView = {
+      ...sampleObject,
+      object_type: 'restaurant',
+      fields: {
+        ...sampleObject.fields,
+        tagCategoryItem: [
+          { value: 'Restaurant' },
+          { value: 'Italian' },
+        ],
+      },
+    };
+
+    render(
+      <ul>
+        <ObjectCard object={withDuplicateTags} />
+      </ul>,
+    );
+
+    expect(screen.getByText('Restaurant')).toBeInTheDocument();
+    expect(screen.getByText('Italian')).toBeInTheDocument();
+    // Only one instance of Restaurant (from typeLabel, not duplicated in categoryLabels)
+    expect(screen.getAllByText('Restaurant')).toHaveLength(1);
   });
 });

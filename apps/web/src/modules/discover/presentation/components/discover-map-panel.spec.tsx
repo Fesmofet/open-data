@@ -74,7 +74,9 @@ jest.mock('@/modules/map', () => ({
   },
   AppMarker: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   AppPopup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  MapFitBounds: () => null,
+  MapFitBounds: ({ positions }: { positions: readonly unknown[] }) => (
+    <div data-testid="map-fit-bounds" data-positions={JSON.stringify(positions)} />
+  ),
   MapInvalidateSizeOnMount: () => <div data-testid="map-invalidate-size" />,
   MapProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -279,7 +281,7 @@ describe('DiscoverMapPanel', () => {
     );
   });
 
-  it('centers the map on the viewer location when locate is clicked', async () => {
+  it('centers the map on the viewer location and fits previous center when locate is clicked', async () => {
     const geolocation = {
       getCurrentPosition: jest.fn((success: PositionCallback) => {
         success({
@@ -306,8 +308,13 @@ describe('DiscoverMapPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show my location' }));
 
     await waitFor(() => {
-      expect(latestMapProps.center).toEqual([49.28, -123.12]);
-      expect(latestMapProps.zoom).toBe(14);
+      const fitBounds = screen.getByTestId('map-fit-bounds');
+      expect(fitBounds).toBeInTheDocument();
+      const positions = JSON.parse(fitBounds.getAttribute('data-positions') ?? '[]');
+      expect(positions).toEqual([
+        [20, 0],
+        [49.28, -123.12],
+      ]);
     });
   });
 
@@ -331,6 +338,47 @@ describe('DiscoverMapPanel', () => {
       swLat: 48.5,
       neLng: -122.5,
       neLat: 49.5,
+    });
+  });
+
+  it('fits bounds to the top 5-10 markers when no box or mapView is provided', async () => {
+    fetchDiscoverObjects.mockResolvedValue({
+      items: [
+        {
+          object_id: 'r1',
+          object_type: 'restaurant',
+          semantic_type: null,
+          weight: 10,
+          fields: { name: 'R1', geo: { latitude: 49.2, longitude: -123.1 } },
+          isFavorited: false,
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
+        },
+        {
+          object_id: 'r2',
+          object_type: 'restaurant',
+          semantic_type: null,
+          weight: 9,
+          fields: { name: 'R2', geo: { latitude: 49.3, longitude: -123.2 } },
+          isFavorited: false,
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
+        },
+      ],
+      cursor: null,
+      hasMore: false,
+    });
+
+    renderPanel();
+
+    await waitFor(() => {
+      const fitBounds = screen.getByTestId('map-fit-bounds');
+      expect(fitBounds).toBeInTheDocument();
+      const positions = JSON.parse(fitBounds.getAttribute('data-positions') ?? '[]');
+      expect(positions).toEqual([
+        [49.2, -123.1],
+        [49.3, -123.2],
+      ]);
     });
   });
 });
