@@ -84,6 +84,22 @@ describe('WalletHistoryRow', () => {
     expect(screen.getByRole('link', { name: '@bob' })).toBeInTheDocument();
   });
 
+  it('renders power down start as unsigned black amount', () => {
+    const row: ActivityRowView = {
+      kind: 'wallet_power_down',
+      id: '3c',
+      timestamp: '2026-07-28T12:03:33Z',
+      subtype: 'start',
+      hpAmount: '1905.316 HP',
+    };
+    renderRow(row);
+    expect(screen.getByText('Started power down')).toBeInTheDocument();
+    const amount = screen.getByText('1905.316 HP');
+    expect(amount).toHaveClass('text-fg');
+    expect(amount).not.toHaveClass('text-error');
+    expect(amount.textContent).toBe('1905.316 HP');
+  });
+
   it('renders self power down withdraw without from/to suffix', () => {
     const row: ActivityRowView = {
       kind: 'wallet_power_down',

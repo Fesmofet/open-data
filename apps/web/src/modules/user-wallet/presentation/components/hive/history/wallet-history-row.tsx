@@ -212,7 +212,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
             icon={<WalletPowerLightningIcon />}
             amount={
               row.hpAmount ? (
-                <WalletAmount value={row.hpAmount} tone="negative" />
+                <WalletAmount value={row.hpAmount} tone="neutral" />
               ) : undefined
             }
           >
