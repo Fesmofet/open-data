@@ -117,6 +117,45 @@ describe('EngineTokenTransferParser', () => {
     ]);
   });
 
+  it('emits only engine_transfer for self-send tokens/transfer', async () => {
+    await parser.parseBlock({
+      ...blockBase,
+      transactions: [
+        tx({
+          contract: 'tokens',
+          action: 'transfer',
+          sender: 'alice',
+          transactionId: 'he-self-1',
+          payload: JSON.stringify({ to: 'Alice', memo: 'self' }),
+          logs: JSON.stringify({
+            events: [
+              {
+                contract: 'tokens',
+                event: 'transfer',
+                data: { symbol: 'BEE', quantity: '1.50000000' },
+              },
+            ],
+          }),
+        }),
+      ],
+    } as unknown as HiveEngineBlock);
+
+    expect(notifyEmit).toHaveBeenCalledTimes(1);
+    expect(notifyEmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'engine_transfer',
+        actor: 'alice',
+        payload: {
+          from: 'alice',
+          to: 'Alice',
+          amount: '1.50000000',
+          symbol: 'BEE',
+          memo: 'self',
+        },
+      }),
+    );
+  });
+
   it('emits inbound only for hivepegged/buy transfer log', async () => {
     await parser.parseBlock({
       ...blockBase,

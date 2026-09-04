@@ -14,6 +14,10 @@ function assetAmount(value: unknown): { amount: string; symbol: string } {
   return { amount: '0', symbol: '' };
 }
 
+function sameHiveAccount(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 @Injectable()
 export class HiveWalletOperationHandlers {
   constructor(
@@ -98,7 +102,7 @@ export class HiveWalletOperationHandlers {
         payload: { from, to, amount, symbol, memo },
       });
     }
-    if (from) {
+    if (from && !sameHiveAccount(from, to)) {
       this.notificationEmitter.emitWithContext(emitCtx, {
         type: 'transfer_out',
         objectId: null,

@@ -21,7 +21,7 @@ These handlers implement `HiveOperationHandler` and only call `NotificationEmitt
 
 | Hive operation | Notification type(s) |
 |----------------|---------------------|
-| `transfer` | `transfer_in`, `transfer_out` |
+| `transfer` | `transfer_in`, `transfer_out` (two-party only; self-transfer → `transfer_in` only) |
 | `transfer_to_vesting` | `power_up` |
 | `withdraw_vesting` | `power_down` |
 | `claim_reward_balance` | `claim_reward` |

@@ -22,7 +22,7 @@ Registered in `RecipientStrategyRegistry` (`domain/routing/`):
 
 | Strategy | `supports()` | `resolveRecipients()` |
 |----------|--------------|------------------------|
-| **Direct** | Wallet L1/engine, follow, batch import | Explicit accounts from payload (`to`, `from`, `following`, …) |
+| **Direct** | Wallet L1/engine, follow, batch import | Explicit accounts from payload (`to`, `from`, `following`, …); `transfer_out` / `engine_transfer_out` return no recipients when `from === to` |
 | **PostAuthor** | `reply`, `mention`, `vote_like`, `vote_downvote`, `reblog` | Parent/post author from payload |
 | **SelfActor** | `my_post`, `my_comment`, `my_vote` | `event.actor` |
 | **ObjectAudience** | Object updates, votes, status | Creator + administrative authority + object bell (`user_object_follows.bell`) |

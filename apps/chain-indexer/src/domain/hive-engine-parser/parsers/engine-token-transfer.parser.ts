@@ -14,6 +14,10 @@ const TRANSFER_ACTION = 'transfer';
 const HIVEPEGGED_CONTRACT = 'hivepegged';
 const BUY_ACTION = 'buy';
 
+function sameHiveAccount(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 /**
  * Emits engine_transfer / engine_transfer_out for all Hive Engine token transfers
  * and inbound engine_transfer for hivepegged/buy (HIVE → SWAP.HIVE deposits).
@@ -96,14 +100,16 @@ export class EngineTokenTransferParser implements HiveEngineSubParser {
         transferPayload,
         tx.transactionId,
       );
-      emitEngineNotification(
-        this.notificationEmitter,
-        block,
-        'engine_transfer_out',
-        from,
-        transferPayload,
-        tx.transactionId,
-      );
+      if (!sameHiveAccount(from, to)) {
+        emitEngineNotification(
+          this.notificationEmitter,
+          block,
+          'engine_transfer_out',
+          from,
+          transferPayload,
+          tx.transactionId,
+        );
+      }
     }
   }
 

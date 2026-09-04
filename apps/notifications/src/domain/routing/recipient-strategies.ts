@@ -3,6 +3,10 @@ import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contr
 import { NotificationRecipientsRepository } from '../../repositories/notification-recipients.repository';
 import type { RecipientStrategy } from './recipient.strategy';
 
+function sameHiveAccount(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 @Injectable()
 export class DirectRecipientStrategy implements RecipientStrategy {
   private readonly types = new Set<AnyNotificationEvent['type']>([
@@ -43,6 +47,9 @@ export class DirectRecipientStrategy implements RecipientStrategy {
       case 'transfer_in':
         return [event.payload.to];
       case 'transfer_out':
+        if (sameHiveAccount(event.payload.from, event.payload.to)) {
+          return [];
+        }
         return [event.payload.from];
       case 'transfer_from_savings':
         return [event.payload.from];
@@ -69,6 +76,9 @@ export class DirectRecipientStrategy implements RecipientStrategy {
       case 'engine_transfer':
         return [event.payload.to];
       case 'engine_transfer_out':
+        if (sameHiveAccount(event.payload.from, event.payload.to)) {
+          return [];
+        }
         return [event.payload.from];
       case 'engine_swap':
         return [event.payload.account];

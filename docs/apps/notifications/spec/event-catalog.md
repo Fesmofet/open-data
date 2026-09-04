@@ -51,7 +51,7 @@ Notify-only handlers in **chain-indexer** `domain/hive-wallet/` (no Postgres wal
 
 | Type | Notes |
 |------|--------|
-| `transfer_in` / `transfer_out` | Both sides of `transfer` |
+| `transfer_in` / `transfer_out` | Both sides of `transfer`; self-transfer (`from === to`, case-insensitive) emits/routes **inbound only** (`transfer_in`) |
 | `transfer_from_savings` | Savings withdrawal |
 | `power_up` / `power_down` | Vest flows |
 | `claim_reward` | `claim_reward_balance` |
@@ -69,7 +69,7 @@ Emitted from **hive-engine-parser** (`EngineTokenTransferParser`, `MarketpoolsSw
 | Type | Payload highlights | Typical recipients |
 |------|-------------------|-------------------|
 | `engine_transfer` | All HE token inbound transfer (incl. `hivepegged/buy` deposits) | `payload.to` |
-| `engine_transfer_out` | All HE token outbound transfer | `payload.from` |
+| `engine_transfer_out` | All HE token outbound transfer; skipped when `from === to` (self-send) | `payload.from` |
 | `engine_swap` | Atomic `marketpools/swapTokens` | `payload.account` |
 | `engine_stake` | WAIV power up (stake) | `payload.to` |
 | `engine_unstake` | WAIV power down initiation (`unstakeStart` or payload fallback) | `payload.account` (initiator) |
