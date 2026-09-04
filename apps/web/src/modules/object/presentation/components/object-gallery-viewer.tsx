@@ -43,6 +43,7 @@ import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/
 import type {
   ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
+import { useGalleryViewerGestures } from '../hooks/use-gallery-viewer-gestures';
 import { GalleryMediaItem, isGalleryVideoUrl } from './gallery-media-item';
 import { GalleryRankTriggerButton } from './gallery-rank-trigger-button';
 
@@ -94,6 +95,7 @@ export function ObjectGalleryViewer({
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [albumDropdownOpen, setAlbumDropdownOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [approvalStats, setApprovalStats] = useState<GalleryApprovalStatsIndex>({
@@ -161,11 +163,14 @@ export function ObjectGalleryViewer({
   useEffect(() => {
     setActiveIndex(initialIndex);
     setZoom(1);
+    setPan({ x: 0, y: 0 });
     setVideoPlaying(false);
   }, [initialIndex, album.name]);
 
   useEffect(() => {
     setVideoPlaying(false);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
   }, [activeIndex, currentPhoto?.url]);
 
   useEffect(() => {
@@ -225,6 +230,7 @@ export function ObjectGalleryViewer({
       return;
     }
     setZoom(1);
+    setPan({ x: 0, y: 0 });
     setVideoPlaying(false);
     setActiveIndex((i) => (i - 1 + count) % count);
   }, [count]);
@@ -234,17 +240,32 @@ export function ObjectGalleryViewer({
       return;
     }
     setZoom(1);
+    setPan({ x: 0, y: 0 });
     setVideoPlaying(false);
     setActiveIndex((i) => (i + 1) % count);
   }, [count]);
 
   const zoomIn = useCallback(() => {
+    setPan({ x: 0, y: 0 });
     setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
   }, []);
 
   const zoomOut = useCallback(() => {
+    setPan({ x: 0, y: 0 });
     setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP));
   }, []);
+
+  const { stageRef, transformStyle, pointerHandlers } = useGalleryViewerGestures({
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    onGoNext: goNext,
+    onGoPrev: goPrev,
+    onClose,
+    zoomGesturesEnabled: !isCurrentPhotoVideo,
+    canNavigate: count > 1,
+  });
 
   const onSetAsAvatar = useCallback(() => {
     setAlbumDropdownOpen(false);
@@ -605,24 +626,21 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="gallery-nav-arrow absolute left-4 z-10 inline-flex shrink-0 items-center justify-center p-2 md:left-6"
+            className="gallery-nav-arrow absolute left-4 z-10 hidden shrink-0 items-center justify-center p-2 md:left-6 md:inline-flex"
             aria-label={t('object_detail_gallery_prev')}
             onClick={goPrev}
           >
             <ChevronLeftIcon size={30} strokeWidth={1.5} />
           </button>
         ) : null}
-        <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
+        <div
+          ref={stageRef}
+          className="relative min-h-0 min-w-0 flex-1 touch-none select-none overflow-hidden"
+          {...pointerHandlers}
+        >
           <div
             className="relative size-full"
-            style={
-              isCurrentPhotoVideo
-                ? undefined
-                : {
-                    transform: `scale(${zoom})`,
-                    transition: 'transform 0.15s ease',
-                  }
-            }
+            style={isCurrentPhotoVideo ? undefined : transformStyle}
           >
             <GalleryMediaItem
               src={currentPhoto.url}
@@ -638,7 +656,7 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="gallery-nav-arrow absolute right-4 z-10 inline-flex shrink-0 items-center justify-center p-2 md:right-6"
+            className="gallery-nav-arrow absolute right-4 z-10 hidden shrink-0 items-center justify-center p-2 md:right-6 md:inline-flex"
             aria-label={t('object_detail_gallery_next')}
             onClick={goNext}
           >
