@@ -28,12 +28,26 @@ Repeat **add** upserts `ownership_type` on PK `(object_id, account)`.
 
 ## Validity (exclusive only)
 
-Exclusive owners in set **E** (governance admins/trusted intersection, or full-mode union) gate updates:
+Exclusive owners in set **E** gate updates. **E** is computed as:
+
+```
+recognizedExclusive = { exclusive holders } ∩ { governance admins ∪ governance trusted }
+
+if recognizedExclusive is non-empty:
+  E = recognizedExclusive
+else if object_control = 'full':
+  E = { governance admins }
+else:
+  E = ∅
+```
+
+When **E** is non-empty:
 
 - Different updates: VALID if creator ∈ E or any E member voted `for`.
 - Same update: among E votes, highest `event_seq` wins (`for` → VALID, `against` → REJECTED).
+- `approve_percent` and winner-mode `rank_score` use the same **E** (only E votes are 100/0 or decisive rank; other admin/trusted votes are ignored).
 
-**Supervised** rows are stored for UI; they do **not** affect validity in this release.
+**Supervised** rows are stored for UI; they do **not** affect **E** in this release.
 
 ## Query API
 

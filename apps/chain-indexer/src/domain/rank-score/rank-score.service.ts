@@ -4,6 +4,7 @@ import { computeUpdateRankPersistence } from '@opden-data-layer/objects-domain';
 import { GovernanceCacheService } from '../governance/governance-cache.service';
 import { UserObjectPowersEnsureService } from '../user-object-powers/user-object-powers-ensure.service';
 import {
+  ObjectOwnershipRepository,
   ObjectUpdatesRepository,
   RankVotesRepository,
   UserObjectPowersRepository,
@@ -16,10 +17,26 @@ export class RankScoreService {
   constructor(
     private readonly rankVotesRepository: RankVotesRepository,
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
+    private readonly objectOwnershipRepository: ObjectOwnershipRepository,
     private readonly userObjectPowersRepository: UserObjectPowersRepository,
     private readonly userObjectPowersEnsureService: UserObjectPowersEnsureService,
     private readonly governanceCache: GovernanceCacheService,
   ) {}
+
+  async recalculateForObjectId(objectId: string): Promise<void> {
+    const trimmed = objectId.trim();
+    if (trimmed.length === 0) {
+      return;
+    }
+
+    const updates = await this.objectUpdatesRepository.find({ object_id: trimmed });
+    for (const update of updates) {
+      const definition = UPDATE_REGISTRY[update.update_type];
+      if (definition?.cardinality === 'multi') {
+        await this.recalculateForUpdateId(update.update_id);
+      }
+    }
+  }
 
   async recalculateForUpdateId(updateId: string): Promise<void> {
     const trimmed = updateId.trim();
@@ -38,7 +55,10 @@ export class RankScoreService {
     }
 
     try {
-      const rankVotes = await this.rankVotesRepository.listByUpdateId(trimmed);
+      const [rankVotes, ownerships] = await Promise.all([
+        this.rankVotesRepository.listByUpdateId(trimmed),
+        this.objectOwnershipRepository.findByObjectId(update.object_id),
+      ]);
       const governance = await this.governanceCache.resolvePlatform();
 
       const voters = [...new Set(rankVotes.map((v) => v.voter))];
@@ -54,6 +74,7 @@ export class RankScoreService {
           governance,
           powerMap,
           definition.rank_aggregation,
+          ownerships,
         );
 
       await this.objectUpdatesRepository.update(trimmed, {

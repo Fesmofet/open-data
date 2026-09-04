@@ -3,6 +3,11 @@ import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ValidityStatus, ValidityTier, VoterWaivPowerMap } from '../types';
 import { waivVoteWeight } from './resolve-ranking';
 import { ObjectUpdate, ValidityVote, ObjectOwnership } from '@opden-data-layer/odl-db-types';
+import {
+  computeExclusiveOwnerSet,
+} from './compute-exclusive-owner-set';
+
+export { computeCuratorSet, computeExclusiveOwnerSet } from './compute-exclusive-owner-set';
 
 /** Result of {@link resolveUpdateValidity} including tier metadata for single-cardinality ordering. */
 export type ResolveUpdateValidityResult = {
@@ -18,53 +23,12 @@ export type ResolveUpdateValidityResult = {
 };
 
 /**
- * Exclusive owner set E for curator filter.
- *
- * When object_control = 'full':
- *   E = governance.admins ∪ exclusive ownership holders
- * Otherwise:
- *   E = exclusive ownership holders ∩ (governance.admins ∪ governance.trusted)
- *
- * Supervised ownership rows are stored but do not affect validity.
- *
- * @see docs/spec/governance-resolution.md §8
- */
-export function computeExclusiveOwnerSet(
-  ownerships: ObjectOwnership[],
-  governance: GovernanceSnapshot,
-): Set<string> {
-  const exclusiveHolders = ownerships
-    .filter((o) => o.ownership_type === 'exclusive')
-    .map((o) => o.account);
-
-  if (governance.object_control === 'full') {
-    const full = new Set<string>(governance.admins);
-    for (const holder of exclusiveHolders) {
-      full.add(holder);
-    }
-    return full;
-  }
-
-  const adminOrTrusted = new Set([...governance.admins, ...governance.trusted]);
-  const intersection = new Set<string>();
-  for (const holder of exclusiveHolders) {
-    if (adminOrTrusted.has(holder)) {
-      intersection.add(holder);
-    }
-  }
-  return intersection;
-}
-
-/** @deprecated Use {@link computeExclusiveOwnerSet}. */
-export const computeCuratorSet = computeExclusiveOwnerSet;
-
-/**
  * Display / consensus approval percentage for one update (0–100, up to 3 decimals).
  * Reusable for list UI and for validity resolution.
  *
- * Mirrors the empty-curator hierarchy for percent only: admin LWAW → trusted LWTW →
- * community weights. When no decisive privileged vote applies and there are no
- * community votes, returns 100 (open baseline).
+ * When E is nonempty, only E votes are decisive (100/0); other admin/trusted votes are ignored.
+ * When E is nonempty and no E vote exists, falls through to community / baseline 100.
+ * When E is empty: admin LWAW → trusted LWTW → community weights → baseline 100.
  */
 export function computeApprovePercent(
   update: ObjectUpdate,
@@ -74,6 +38,21 @@ export function computeApprovePercent(
   ownerships: ObjectOwnership[],
 ): number {
   const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
+  const exclusiveSet = computeExclusiveOwnerSet(ownerships, governance);
+  const adminSet = new Set(governance.admins);
+  const trustedSet = new Set(governance.trusted);
+  const communityVotes = updateVotes.filter(
+    (v) => !adminSet.has(v.voter) && !trustedSet.has(v.voter),
+  );
+
+  if (exclusiveSet.size > 0) {
+    const exclusiveVotes = updateVotes.filter((v) => exclusiveSet.has(v.voter));
+    if (exclusiveVotes.length > 0) {
+      const latest = latestByEventSeq(exclusiveVotes);
+      return latest.vote === 'for' ? 100 : 0;
+    }
+    return computeCommunityApprovePercent(communityVotes, voterWaivPowers);
+  }
 
   const adminVotes = updateVotes.filter((v) => governance.admins.includes(v.voter));
   if (adminVotes.length > 0) {
@@ -89,11 +68,13 @@ export function computeApprovePercent(
     return latest.vote === 'for' ? 100 : 0;
   }
 
-  const adminSet = new Set(governance.admins);
-  const trustedSet = new Set(governance.trusted);
-  const communityVotes = updateVotes.filter(
-    (v) => !adminSet.has(v.voter) && !trustedSet.has(v.voter),
-  );
+  return computeCommunityApprovePercent(communityVotes, voterWaivPowers);
+}
+
+function computeCommunityApprovePercent(
+  communityVotes: ValidityVote[],
+  voterWaivPowers: VoterWaivPowerMap,
+): number {
   if (communityVotes.length === 0) {
     return 100;
   }

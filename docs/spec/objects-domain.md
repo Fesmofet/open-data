@@ -110,7 +110,21 @@ Pure helper: `filterByLocalePreference` is exported from `@opden-data-layer/obje
 
 `MIN_PERCENT_TO_SHOW_UPDATE` is **70** (`@opden-data-layer/objects-domain`). A community-evaluated update is **VALID** (eligible to win) only when `approve_percent` is **strictly greater than** 70 — not equal.
 
-**`computeApprovePercent(update, validityVotes, governance, voterWaivPowers, objectAuthorities)`** returns the display/consensus percentage (0–100, up to three decimal places) for one update. It mirrors the empty-curator vote hierarchy for the *numeric* outcome:
+**`computeApprovePercent(update, validityVotes, governance, voterWaivPowers, objectAuthorities)`** returns the display/consensus percentage (0–100, up to three decimal places) for one update.
+
+When **E** (exclusive owner set — see [object-ownership.md](object-ownership.md)) is non-empty:
+
+| Condition | `approve_percent` |
+|---|---|
+| Latest **E** vote **for** / **against** | 100 / 0 |
+| No **E** vote, **no community votes** | **100** (open baseline) |
+| No **E** vote, community net weight ≤ 0 | 0 |
+| No **E** vote, community: only **for** | 100 |
+| No **E** vote, mixed community | weighted formula with WAIV |
+
+Non-**E** admin/trusted votes do **not** affect `approve_percent` while **E** is non-empty.
+
+When **E** is empty:
 
 | Condition | `approve_percent` |
 |---|---|
@@ -121,7 +135,7 @@ Pure helper: `filterByLocalePreference` is exported from `@opden-data-layer/obje
 | Community: only **for** votes (no **against**) | 100 |
 | Community: mixed **for** and **against** | `round(for_weight / (for_weight + against_weight) × 100, 3)` with WAIV weights |
 
-`ResolvedUpdate.approve_percent` is the same value returned by `computeApprovePercent` for that row. On the **curator-filter** path, validity still follows curator membership / curator **for** votes; `approve_percent` is still filled for API/UI (e.g. update lists) but does not gate validity for that path.
+`ResolvedUpdate.approve_percent` is the same value returned by `computeApprovePercent` for that row.
 
 Import reusable pieces:
 

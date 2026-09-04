@@ -60,7 +60,7 @@ describe('OwnershipHandler', () => {
     });
     expect(emit).toHaveBeenCalledWith(
       OWNERSHIP_CHANGED_EVENT,
-      expect.objectContaining({ account: 'alice' }),
+      expect.objectContaining({ account: 'alice', objectId }),
     );
   });
 
@@ -89,7 +89,7 @@ describe('OwnershipHandler', () => {
     expect(deleteFn).toHaveBeenCalledWith(objectId, 'alice');
     expect(emit).toHaveBeenCalledWith(
       OWNERSHIP_CHANGED_EVENT,
-      expect.objectContaining({ account: 'alice' }),
+      expect.objectContaining({ account: 'alice', objectId }),
     );
   });
 

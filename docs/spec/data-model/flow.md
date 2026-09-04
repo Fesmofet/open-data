@@ -268,11 +268,11 @@ Queries 1–4 can run in parallel. Collect distinct voter names from **query 3 o
 
 For each object, using the loaded rows, authority records, voter **waiv_power** map, and the governance snapshot:
 
-1. **Compute curator set** `C = { exclusive ownership holders for object_id from object_ownership } ∩ { governance admins ∪ governance trusted }`.
+1. **Compute curator set E** — `recognizedExclusive = { exclusive holders } ∩ { governance admins ∪ governance trusted }`. If `recognizedExclusive` is non-empty, **E = recognizedExclusive** (exclusive dominates, including under `object_control = full`). Else if `object_control = full`, **E = { governance admins }`. Else **E = ∅**.
 2. Group updates by `update_type`.
 3. Resolve validity per update (tiered):
-   - If `C` is non-empty, apply curator filter: an update is valid only if its `creator ∈ C` OR it has a positive validity vote from any member of `C`. Updates satisfying neither are treated as invalid regardless of other votes.
-   - If `C` is empty, apply the full validity resolution hierarchy:
+   - If `E` is non-empty, apply curator filter: an update is valid only if its `creator ∈ E` OR it has a positive validity vote from any member of `E`. Updates satisfying neither are treated as invalid regardless of other votes. `approve_percent` and winner-mode `rank_score` use the same **E**.
+   - If `E` is empty, apply the full validity resolution hierarchy:
      1. **Admin decisive vote** — latest admin `for`/`against` wins (LWAW). Short-circuit.
      2. **Trusted decisive vote** — latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW). Short-circuit.
      3. **Community vote weight** — for each non-admin, non-trusted validity vote, use `weight = waiv_power > 1 ? waiv_power : 1` from `user_object_powers`. Sum: `field_weight = Σ (weight × sign)` where `for → +1`, `against → −1`. If `field_weight < 0` the update is INVALID; if `field_weight >= 0` the update is VALID.

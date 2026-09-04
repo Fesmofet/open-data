@@ -194,11 +194,18 @@ The read-side filter applies independently of the platform-level deletion — it
 | `null`   | Control off (default). The curator filter from [object-ownership.md](object-ownership.md) applies only to objects that have explicit `object_ownership` records. Objects without ownership records use normal vote semantics. |
 | `'full'` | All objects behave as if they have active ownership authority. The curator filter applies to **every** object in the context, regardless of whether explicit `object_ownership` records exist. Governance `admins` act as the implicit ownership authority across all objects. |
 
-In `'full'` mode the effective curator set for any object is:
+In `'full'` mode the effective curator set **E** for any object is:
 
 ```
-C = { governance admins } ∪ { exclusive ownership holders from object_ownership }
+recognizedExclusive = { exclusive holders from object_ownership } ∩ { governance admins ∪ governance trusted }
+
+if recognizedExclusive is non-empty:
+  E = recognizedExclusive   // exclusive dominates, including under object_control=full
+else:
+  E = { governance admins } // implicit owners when no recognized exclusive exists
 ```
+
+When `object_control` is `null`, step 1 applies without the implicit-admin fallback: if `recognizedExclusive` is empty, **E = ∅** and normal admin LWAW / trusted LWTW / community validity applies.
 
 ### Future modes
 

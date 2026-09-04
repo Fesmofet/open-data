@@ -9,6 +9,7 @@ import type {
 import {
   computeApprovePercent,
   computeCuratorSet,
+  computeExclusiveOwnerSet,
   resolveUpdateValidity,
 } from './resolve-validity';
 
@@ -100,12 +101,46 @@ describe('computeCuratorSet', () => {
     expect(C.has('trusted1')).toBe(true);
   });
 
-  it('with object_control=full: includes governance.admins union exclusive ownership holders', () => {
+  it('with object_control=full and no recognized exclusive: E is all admins', () => {
+    const governance = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['admin1', 'admin2'],
+      object_control: 'full' as const,
+    };
+    const C = computeCuratorSet([], governance);
+    expect(C.has('admin1')).toBe(true);
+    expect(C.has('admin2')).toBe(true);
+    expect(C.size).toBe(2);
+  });
+
+  it('with object_control=full and one exclusive admin: E is that admin only', () => {
+    const ownerships = [makeOwnership('admin1')];
+    const governance = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['admin1', 'admin2'],
+      object_control: 'full' as const,
+    };
+    const C = computeCuratorSet(ownerships, governance);
+    expect(C.has('admin1')).toBe(true);
+    expect(C.has('admin2')).toBe(false);
+    expect(C.size).toBe(1);
+  });
+
+  it('with object_control=full: unrecognized exclusive holder is not in E', () => {
     const ownerships = [makeOwnership('bob')];
     const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'], object_control: 'full' as const };
     const C = computeCuratorSet(ownerships, governance);
     expect(C.has('admin1')).toBe(true);
-    expect(C.has('bob')).toBe(true);
+    expect(C.has('bob')).toBe(false);
+  });
+
+  it('exclusive admin when other admin has supervised only', () => {
+    const ownerships = [makeOwnership('admin1'), makeOwnership('admin2', 'supervised')];
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect(C.has('admin1')).toBe(true);
+    expect(C.has('admin2')).toBe(false);
+    expect(C.size).toBe(1);
   });
 
   it('excludes supervised ownership from exclusive owner set', () => {
@@ -165,6 +200,67 @@ describe('resolveUpdateValidity — curator filter', () => {
       governance,
       voterReputations,
       [makeOwnership('owner1'), makeOwnership('owner2')],
+    );
+    expect(result.status).toBe('REJECTED');
+  });
+
+  it('non-exclusive admin vote does not validate when E is nonempty', () => {
+    const ownerships = [makeOwnership('admin1')];
+    const governanceMulti = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const curatorSet = computeExclusiveOwnerSet(ownerships, governanceMulti);
+    const update = { ...BASE_UPDATE, creator: 'stranger' };
+    const votes = [makeVote('admin2', 'for', BigInt(20))];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      curatorSet,
+      governanceMulti,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('REJECTED');
+  });
+
+  it('exclusive-admin for stays VALID when non-exclusive admin votes against later', () => {
+    const ownerships = [makeOwnership('admin1')];
+    const governanceMulti = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const curatorSet = computeExclusiveOwnerSet(ownerships, governanceMulti);
+    const update = { ...BASE_UPDATE, creator: 'stranger' };
+    const votes = [
+      makeVote('admin1', 'for', BigInt(10)),
+      makeVote('admin2', 'against', BigInt(20)),
+    ];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      curatorSet,
+      governanceMulti,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('VALID');
+  });
+
+  it('second exclusive-admin against rejects after first exclusive for', () => {
+    const ownerships = [makeOwnership('admin1'), makeOwnership('dave')];
+    const governanceMulti = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['admin1', 'admin2', 'dave'],
+    };
+    const curatorSet = computeExclusiveOwnerSet(ownerships, governanceMulti);
+    const update = { ...BASE_UPDATE, creator: 'stranger' };
+    const votes = [
+      makeVote('admin1', 'for', BigInt(10)),
+      makeVote('admin2', 'against', BigInt(20)),
+      makeVote('dave', 'against', BigInt(30)),
+    ];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      curatorSet,
+      governanceMulti,
+      voterReputations,
+      ownerships,
     );
     expect(result.status).toBe('REJECTED');
   });
@@ -358,6 +454,56 @@ describe('computeApprovePercent', () => {
     expect(
       computeApprovePercent(BASE_UPDATE, [makeVote('admin1', 'against')], gov, new Map(), ownerships),
     ).toBe(0);
+  });
+
+  it('exclusive-admin for yields 100 when non-exclusive admin votes against later', () => {
+    const gov = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const auth = [makeOwnership('admin1')];
+    const votes = [
+      makeVote('admin1', 'for', BigInt(10)),
+      makeVote('admin2', 'against', BigInt(20)),
+    ];
+    expect(computeApprovePercent(BASE_UPDATE, votes, gov, new Map(), auth)).toBe(100);
+  });
+
+  it('second exclusive-admin against yields 0 after first exclusive for', () => {
+    const gov = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2', 'dave'] };
+    const auth = [makeOwnership('admin1'), makeOwnership('dave')];
+    const votes = [
+      makeVote('admin1', 'for', BigInt(10)),
+      makeVote('admin2', 'against', BigInt(20)),
+      makeVote('dave', 'against', BigInt(30)),
+    ];
+    expect(computeApprovePercent(BASE_UPDATE, votes, gov, new Map(), auth)).toBe(0);
+  });
+
+  it('no E vote: non-exclusive admin for does not force 100 when community is against', () => {
+    const gov = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const auth = [makeOwnership('admin1')];
+    const votes = [makeVote('admin2', 'for', BigInt(5)), makeVote('mallory', 'against', BigInt(6))];
+    expect(
+      computeApprovePercent(BASE_UPDATE, votes, gov, new Map([['mallory', 0]]), auth),
+    ).toBe(0);
+  });
+
+  it('no E vote: only non-exclusive admin for yields baseline 100', () => {
+    const gov = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
+    const auth = [makeOwnership('admin1')];
+    const votes = [makeVote('admin2', 'for', BigInt(5))];
+    expect(computeApprovePercent(BASE_UPDATE, votes, gov, new Map(), auth)).toBe(100);
+  });
+
+  it('full without exclusive: later admin against yields 0', () => {
+    const gov = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['admin1', 'admin2'],
+      object_control: 'full' as const,
+    };
+    const votes = [
+      makeVote('admin1', 'for', BigInt(5)),
+      makeVote('admin2', 'against', BigInt(10)),
+    ];
+    expect(computeApprovePercent(BASE_UPDATE, votes, gov, new Map(), ownerships)).toBe(0);
   });
 
   it('returns 100 / 0 for trusted with authority for / against', () => {

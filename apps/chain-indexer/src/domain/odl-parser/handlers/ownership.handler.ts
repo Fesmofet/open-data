@@ -50,7 +50,7 @@ export class OwnershipHandler implements OdlActionHandler {
 
       this.eventEmitter.emit(
         OWNERSHIP_CHANGED_EVENT,
-        new OwnershipChangedEvent(ctx.creator),
+        new OwnershipChangedEvent(ctx.creator, object_id),
       );
       return;
     }
@@ -59,7 +59,7 @@ export class OwnershipHandler implements OdlActionHandler {
       await this.objectOwnershipRepository.delete(object_id, ctx.creator);
       this.eventEmitter.emit(
         OWNERSHIP_CHANGED_EVENT,
-        new OwnershipChangedEvent(ctx.creator),
+        new OwnershipChangedEvent(ctx.creator, object_id),
       );
     }
   }

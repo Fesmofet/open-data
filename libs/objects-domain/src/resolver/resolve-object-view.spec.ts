@@ -118,7 +118,11 @@ describe('resolveObjectViews', () => {
   });
 
   it('keeps REJECTED aggregateRating rows when rank_score is persisted (curator filter)', () => {
-    const governance = { ...DEFAULT_GOVERNANCE_SNAPSHOT, object_control: 'full' as const };
+    const governance = {
+      ...DEFAULT_GOVERNANCE_SNAPSHOT,
+      admins: ['owner1'],
+      object_control: 'full' as const,
+    };
     const ownerships: ObjectOwnership[] = [
       { object_id: 'obj1', account: 'owner1', ownership_type: 'exclusive', event_seq: BigInt(1), created_at: new Date() },
     ];

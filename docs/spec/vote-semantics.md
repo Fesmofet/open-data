@@ -94,13 +94,18 @@ Computation uses the same governance snapshot as ranking resolution (platform go
 
 ### Default aggregation (`rank_aggregation` omitted or `winner`)
 
-Parallel to validity admin/trusted tiers:
+Uses the same **E** set as validity (see [object-ownership.md](object-ownership.md)). When **E** is non-empty:
 
-1. Latest `admin` rank wins (LWAW) — highest `event_seq` among admin rank votes for that `update_id`.
-2. Else latest `trusted` rank wins (LWTW) — highest `event_seq` among trusted rank votes for that `update_id`.
-3. **Else (community rank votes only):** take the **`rank` value** from the vote whose voter has the **highest** `waiv_power` in `user_object_powers`; ties break by **larger** rank vote `event_seq`.
+1. Latest rank vote from a member of **E** wins (highest `event_seq` among **E** rank votes for that `update_id`).
+2. Else (community rank votes only): take the **`rank` value** from the vote whose voter has the **highest** `waiv_power`; ties break by **larger** rank vote `event_seq`.
 
-This is **not** “compare rank votes to the update itself”; it is the same style of tiered list as validity (admins/trusted list, then stake-weighted community).
+Non-**E** admin/trusted rank votes are ignored while **E** is non-empty.
+
+When **E** is empty:
+
+1. Latest `admin` rank wins (LWAW).
+2. Else latest `trusted` rank wins (LWTW).
+3. Else community rank by highest `waiv_power` (tie-break latest `event_seq`).
 
 **Web UI:** gallery photo rank uses `imageGalleryItem` (winner mode). See [gallery tab spec](../../apps/web/spec/pages/object/routes/gallery.md). Star ratings use `aggregateRating` (average mode).
 
