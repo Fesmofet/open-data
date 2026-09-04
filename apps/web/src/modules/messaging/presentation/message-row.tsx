@@ -3,13 +3,20 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
 
+import Image from 'next/image';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { MoreHorizontalIcon, ReplyIcon } from '@/icons';
+import {
+  getImagePathPost,
+  shouldUnoptimizeRemoteImage,
+} from '@/shared/presentation';
 import { OptimisticNavLink } from '@/shared/presentation/navigation/optimistic-nav-link';
 import { useMediaQuery } from '@/shared/presentation/layout/hooks/use-breakpoint';
 
@@ -70,6 +77,10 @@ export function MessageRow({
   const longPressMovedRef = useRef(false);
 
   const quote = resolveMessageQuotePreview(message, messagesById);
+  const quoteImageDisplayUrl = useMemo(
+    () => (quote?.imageUrl ? getImagePathPost(quote.imageUrl) : null),
+    [quote?.imageUrl],
+  );
   const editedLabel = t('messaging_edited');
 
   const timeCaption = activityCaption
@@ -265,6 +276,25 @@ export function MessageRow({
             >
               {quote.deleted ? (
                 <span>{t('messaging_reply_deleted')}</span>
+              ) : quoteImageDisplayUrl ? (
+                <div className="flex items-start gap-2">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-btn bg-surface-control">
+                    <Image
+                      src={quoteImageDisplayUrl}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      unoptimized={shouldUnoptimizeRemoteImage(quoteImageDisplayUrl)}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="font-weight-label text-fg-secondary">{quote.author}</span>
+                    {quote.body.trim().length > 0 ? (
+                      <p className="line-clamp-2 break-words">{quote.body}</p>
+                    ) : null}
+                  </div>
+                </div>
               ) : (
                 <>
                   <span className="font-weight-label text-fg-secondary">{quote.author}</span>

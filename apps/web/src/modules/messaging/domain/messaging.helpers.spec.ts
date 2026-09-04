@@ -1,12 +1,17 @@
 import {
   canViewerAttemptDecryptMessage,
   buildReplyQuoteJson,
+  compareActivityMessagesDesc,
+  extractFirstImageUrlFromMessageBody,
   formatActivityMessageCaption,
   formatActivityMessageTime,
   formatMessageTimeCaption,
+  groupMessagesByDay,
+  messageActivitySortUnix,
   messageCopyText,
   resolveMessagePresentation,
   resolveMessageQuotePreview,
+  stripImageMarkupFromMessageBody,
 } from './messaging.helpers';
 import type { MessageItem } from './messaging.types';
 
@@ -16,6 +21,129 @@ const baseMessage: Pick<MessageItem, 'body' | 'encryption' | 'author' | 'overflo
   author: 'alice',
   overflow_ref: null,
 };
+
+describe('messageActivitySortUnix', () => {
+  it('prefers original stamp when present', () => {
+    expect(
+      messageActivitySortUnix({
+        created_at_unix: 1_700_000_000,
+        original_created_at_unix: 1_262_304_000,
+      }),
+    ).toBe(1_262_304_000);
+  });
+
+  it('falls back to created_at_unix when stamp is absent', () => {
+    expect(
+      messageActivitySortUnix({
+        created_at_unix: 1_700_000_000,
+        original_created_at_unix: null,
+      }),
+    ).toBe(1_700_000_000);
+  });
+});
+
+describe('compareActivityMessagesDesc', () => {
+  const stampedDec: MessageItem = {
+    ...baseMessage,
+    message_id: 'm-dec',
+    body: 'dec',
+    created_at_unix: 1_700_000_000,
+    original_created_at_unix: 1_703_462_400,
+  } as MessageItem;
+
+  const stampedNov: MessageItem = {
+    ...baseMessage,
+    message_id: 'm-nov',
+    body: 'nov',
+    created_at_unix: 1_700_000_000,
+    original_created_at_unix: 1_701_302_400,
+  } as MessageItem;
+
+  it('ranks newer original stamp above older when published same day', () => {
+    expect(compareActivityMessagesDesc(stampedDec, stampedNov)).toBeLessThan(0);
+  });
+
+  it('tie-breaks by created_at_unix then message_id', () => {
+    const a: MessageItem = {
+      ...baseMessage,
+      message_id: 'm-a',
+      created_at_unix: 1_700_000_100,
+      original_created_at_unix: 1_700_000_000,
+    } as MessageItem;
+    const b: MessageItem = {
+      ...baseMessage,
+      message_id: 'm-b',
+      created_at_unix: 1_700_000_000,
+      original_created_at_unix: 1_700_000_000,
+    } as MessageItem;
+    expect(compareActivityMessagesDesc(a, b)).toBeLessThan(0);
+  });
+});
+
+describe('groupMessagesByDay', () => {
+  const formatDayLabel = (unix: number) =>
+    new Date(unix * 1000).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+  it('groups activity rows by original stamp day when getSortUnix is provided', () => {
+    const msg: MessageItem = {
+      ...baseMessage,
+      message_id: 'm-stamped',
+      created_at_unix: 1_700_000_000,
+      original_created_at_unix: 1_262_304_000,
+    } as MessageItem;
+
+    const groups = groupMessagesByDay([msg], formatDayLabel, messageActivitySortUnix);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.label).toContain('2010');
+  });
+
+  it('uses local calendar dayKey aligned with formatDayLabel', () => {
+    const unix = 1_704_067_200;
+    const msg: MessageItem = {
+      ...baseMessage,
+      message_id: 'm-local',
+      created_at_unix: unix,
+      original_created_at_unix: null,
+    } as MessageItem;
+
+    const groups = groupMessagesByDay([msg], formatDayLabel);
+    const d = new Date(unix * 1000);
+    const expectedKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    expect(groups[0]?.dayKey).toBe(expectedKey);
+  });
+});
+
+describe('extractFirstImageUrlFromMessageBody', () => {
+  it('extracts markdown image URL', () => {
+    expect(
+      extractFirstImageUrlFromMessageBody(
+        '![](https://example.com/ipfs/image/QmTest)',
+      ),
+    ).toBe('https://example.com/ipfs/image/QmTest');
+  });
+
+  it('extracts html img src', () => {
+    expect(
+      extractFirstImageUrlFromMessageBody(
+        '<img src="https://example.com/a.jpg" alt="">',
+      ),
+    ).toBe('https://example.com/a.jpg');
+  });
+});
+
+describe('stripImageMarkupFromMessageBody', () => {
+  it('removes markdown image leaving text', () => {
+    expect(
+      stripImageMarkupFromMessageBody(
+        '![](https://example.com/a.jpg)\nMerry Christmas!',
+      ),
+    ).toBe('Merry Christmas!');
+  });
+});
 
 describe('resolveMessagePresentation', () => {
   it('returns plain text for unencrypted messages', () => {
@@ -206,6 +334,25 @@ describe('resolveMessageQuotePreview', () => {
         messagesById,
       ),
     ).toEqual({ author: 'bob', body: 'hello', deleted: false });
+  });
+
+  it('extracts image URL and strips markdown from parent quote', () => {
+    const imageParent: MessageItem = {
+      ...parent,
+      body: '![](https://example.com/holiday.png)',
+    };
+    const messagesById = new Map([[imageParent.message_id, imageParent]]);
+    expect(
+      resolveMessageQuotePreview(
+        { reply_to: 'parent-0-0-0', quote_json: null },
+        messagesById,
+      ),
+    ).toEqual({
+      author: 'bob',
+      body: '',
+      deleted: false,
+      imageUrl: 'https://example.com/holiday.png',
+    });
   });
 
   it('falls back to quote_json when parent is not loaded', () => {

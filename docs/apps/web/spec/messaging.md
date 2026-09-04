@@ -95,7 +95,7 @@ Object **Activity** always renders compose + feed, even when query-api has no ch
 
 After send, the web client invalidates Activity cache tags for `/object/` slugs in the markdown body (not only the page object).
 
-**Original publish date:** Activity compose (+) menu includes **Date** (object Activity only — not inbox DMs). User picks date+time via air-datepicker; a chip shows the selection until send or clear. Optional `original_created_at_unix` is included on `message_create`. Feed bubbles show “Originally {datetime}” when stamped; otherwise time-only from `created_at_unix`. Day grouping still uses chain `created_at_unix`.
+**Original publish date:** Activity compose (+) menu includes **Date** (object Activity only — not inbox DMs; disabled while replying/editing). User picks date+time via air-datepicker; a chip shows the selection until send or clear. Optional `original_created_at_unix` is included on `message_create`. Feed bubbles show “Originally {datetime}” when stamped; otherwise time-only from `created_at_unix`. Activity **sort order** and **day grouping** use `COALESCE(original_created_at_unix, created_at_unix)` (local calendar day chips). Unstamped replies sort by publication time. Reply quotes to image-only parents show a left thumbnail instead of raw `![](url)` markdown.
 
 Per [channels.md](../../../spec/osl/channels.md), object channels require explicit `channel_create` before `message_create`. The UI uses deterministic `buildObjectChannelId(objectId)` → `obj-ch-{objectId}` for the pending channel.
 

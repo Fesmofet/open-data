@@ -7,8 +7,10 @@ import { sanitizePostBodyHtml } from '@/shared/infrastructure/post-body-html-pip
 import { OptimisticNavLink } from '@/shared/presentation/navigation';
 
 import {
+  compareActivityMessagesDesc,
   groupMessagesByDay,
   isOutgoingMessage,
+  messageActivitySortUnix,
   resolveMessagePresentation,
 } from '../domain/messaging.helpers';
 import type { MessageItem } from '../domain/messaging.types';
@@ -40,16 +42,24 @@ export function ObjectActivityFeedList({
     [messages],
   );
 
+  const sortedMessages = useMemo(
+    () => [...messages].sort(compareActivityMessagesDesc),
+    [messages],
+  );
+
   const groups = useMemo(
     () =>
-      groupMessagesByDay(messages, (unix) =>
-        new Date(unix * 1000).toLocaleDateString(locale, {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }),
+      groupMessagesByDay(
+        sortedMessages,
+        (unix) =>
+          new Date(unix * 1000).toLocaleDateString(locale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        messageActivitySortUnix,
       ),
-    [messages, locale],
+    [sortedMessages, locale],
   );
 
   if (messages.length === 0) {

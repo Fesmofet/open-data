@@ -278,6 +278,8 @@ export class MessagingRepository {
     limitPlusOne: number,
     forContextViewer?: string,
   ): Promise<ObjectActivityMessageRow[]> {
+    const sortTime = sql`COALESCE(m.original_created_at_unix, m.created_at_unix)`;
+
     let query = this.db
       .selectFrom('messages as m')
       .innerJoin('channels as c', 'c.channel_id', 'm.channel_id')
@@ -285,7 +287,7 @@ export class MessagingRepository {
       .select('c.object_id as channel_object_id')
       .where('c.kind', '=', 'object')
       .where(sql<boolean>`(c.object_id = ${objectId} OR ${objectId} = ANY(m.linked_object_ids))`)
-      .orderBy('m.created_at_unix', 'desc')
+      .orderBy(sortTime, 'desc')
       .orderBy('m.event_seq', 'desc')
       .limit(limitPlusOne);
 
@@ -308,15 +310,11 @@ export class MessagingRepository {
     }
 
     if (cursor) {
-      query = query.where((eb) =>
-        eb.or([
-          eb('m.created_at_unix', '<', cursor.createdAtUnix),
-          eb.and([
-            eb('m.created_at_unix', '=', cursor.createdAtUnix),
-            eb('m.event_seq', '<', cursor.eventSeq),
-          ]),
-        ]),
-      );
+      query = query.where(sql<boolean>`
+        (COALESCE(m.original_created_at_unix, m.created_at_unix) < ${cursor.createdAtUnix}
+         OR (COALESCE(m.original_created_at_unix, m.created_at_unix) = ${cursor.createdAtUnix}
+             AND m.event_seq < ${cursor.eventSeq}))
+      `);
     }
 
     return query.execute();

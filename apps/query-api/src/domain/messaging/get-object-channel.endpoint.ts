@@ -135,15 +135,21 @@ export class GetObjectChannelMessagesEndpoint {
     );
 
     const last = page[page.length - 1];
+    const effectiveUnix = last
+      ? Number(last.original_created_at_unix ?? last.created_at_unix)
+      : null;
+
     const nextCursor =
-      hasMore && last
+      hasMore && last && effectiveUnix != null && Number.isFinite(effectiveUnix)
         ? encodeMessageCursor({
-            createdAtUnix: last.created_at_unix,
-            eventSeq: last.event_seq,
+            createdAtUnix: effectiveUnix,
+            eventSeq: BigInt(last.event_seq),
           })
         : null;
 
-    return { items, cursor: nextCursor, hasMore };
+    const safeHasMore = hasMore && nextCursor != null;
+
+    return { items, cursor: nextCursor, hasMore: safeHasMore };
   }
 }
 

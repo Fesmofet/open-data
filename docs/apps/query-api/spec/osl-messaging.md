@@ -20,7 +20,7 @@ tags: [query-api, messaging]
 | GET | `/query/v1/channels/by-alias/{alias}` | Resolve `dm:` / `obj:` aliases |
 | POST | `/query/v1/channels/{id}/messages` | Keyset cursor `(created_at_unix, event_seq)` |
 | GET | `/query/v1/objects/{object_id}/channel` | Default object channel meta |
-| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters |
+| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters; keyset cursor `(COALESCE(original_created_at_unix, created_at_unix), event_seq)` |
 | GET | `/query/v1/users/{account}/memo-public-key` | Public memo key for encryption; 404 if account missing |
 
 ## Message DTO encryption fields
@@ -48,6 +48,8 @@ Object must exist in `objects_core`. Returns messages where `channels.kind = 'ob
 Excludes authors in governance `muted` and (when `X-Viewer` set) viewer `user_account_mutes`.
 
 Mention-only rows include `source_object: { object_id, name }` (source = native channel object; name from object channel `title`).
+
+Object activity message history is ordered by `COALESCE(original_created_at_unix, created_at_unix) DESC, event_seq DESC`. The keyset cursor field `createdAtUnix` carries that sort unix (coerced with `Number(...)` before encode). DM/group channel history still uses chain `created_at_unix`.
 
 ## Channel detail extensions
 

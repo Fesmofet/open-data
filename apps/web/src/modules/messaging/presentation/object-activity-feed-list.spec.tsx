@@ -26,6 +26,8 @@ jest.mock('@/shared/presentation', () => ({
     open ? <div>{children}</div> : null,
   ModalShell: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
     open ? <div>{children}</div> : null,
+  getImagePathPost: (url: string) => url,
+  shouldUnoptimizeRemoteImage: () => true,
 }));
 
 jest.mock('@/shared/presentation/layout/hooks/use-breakpoint', () => ({
@@ -86,7 +88,37 @@ function appearsBefore(before: Node, after: Node): boolean {
   return Boolean(before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING);
 }
 
+function messageWithStamp(
+  body: string,
+  createdAtUnix: number,
+  originalCreatedAtUnix: number,
+  messageId: string,
+): MessageItem {
+  return {
+    ...baseMessage,
+    message_id: messageId,
+    body,
+    created_at_unix: createdAtUnix,
+    original_created_at_unix: originalCreatedAtUnix,
+  };
+}
+
 describe('ObjectActivityFeedList', () => {
+  it('sorts by original stamp so Dec 25 ranks above Nov 30 when published same day', () => {
+    const published = 1_700_000_000;
+    renderList([
+      messageWithStamp('Friendly reminder', published, 1_701_302_400, 'm-nov'),
+      messageWithStamp('Holiday Hours', published, 1_703_462_400, 'm-dec'),
+    ]);
+
+    expect(
+      appearsBefore(
+        screen.getByText('Holiday Hours'),
+        screen.getByText('Friendly reminder'),
+      ),
+    ).toBe(true);
+  });
+
   it('preserves API newest-first order within a day (newest at top)', () => {
     renderList([
       messageWithBody('newest message', 1_700_010_000, 'm-new'),
@@ -145,7 +177,7 @@ describe('ObjectActivityFeedList', () => {
     ]);
 
     expect(screen.getByText(/Originally/i)).toBeInTheDocument();
-    expect(screen.getByText(/2010/i)).toBeInTheDocument();
+    expect(screen.getByText(/Originally Jan 1, 2010/i)).toBeInTheDocument();
   });
 
   it('shows created time only when stamp is absent', () => {

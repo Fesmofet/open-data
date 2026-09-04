@@ -41,7 +41,7 @@ Migration: `00060_messages_original_created_at.ts`
 
 | Column | Purpose |
 |--------|---------|
-| `original_created_at_unix` | Optional original publish time for object activity messages (display only; does not affect `idx_messages_channel_time`) |
+| `original_created_at_unix` | Optional original publish time for object activity messages; used for Activity feed sort/grouping (`COALESCE(original_created_at_unix, created_at_unix)`) and “Originally {datetime}” caption; does not affect `idx_messages_channel_time` |
 | `updated_at_unix` | Set by `message_update` when author edits plaintext body; `null` when never edited |
 
 Key indexes:

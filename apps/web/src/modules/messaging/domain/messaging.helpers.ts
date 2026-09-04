@@ -403,6 +403,30 @@ export function formatActivityMessageCaption(
   return base;
 }
 
+export function messageActivitySortUnix(
+  message: Pick<MessageItem, 'created_at_unix' | 'original_created_at_unix'>,
+): number {
+  return message.original_created_at_unix ?? message.created_at_unix;
+}
+
+/** Newest first. Client has no event_seq; tie-break created_at then message_id. */
+export function compareActivityMessagesDesc(a: MessageItem, b: MessageItem): number {
+  const diff = messageActivitySortUnix(b) - messageActivitySortUnix(a);
+  if (diff !== 0) {
+    return diff;
+  }
+  const createdDiff = b.created_at_unix - a.created_at_unix;
+  if (createdDiff !== 0) {
+    return createdDiff;
+  }
+  return b.message_id.localeCompare(a.message_id);
+}
+
+function localDayKeyFromUnix(unix: number): string {
+  const d = new Date(unix * 1000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export const MESSAGE_QUOTE_BODY_MAX = 200;
 
 export function truncateQuoteBody(body: string): string {
@@ -417,7 +441,43 @@ export type MessageQuotePreview = {
   author: string;
   body: string;
   deleted: boolean;
+  imageUrl?: string;
 };
+
+const MARKDOWN_IMAGE_RE = /!\[[^\]]*]\((https?:\/\/[^)\s"'<>]+)\)/;
+const HTML_IMG_SRC_RE = /<img[^>]+src=["'](https?:\/\/[^"'<>]+)["']/i;
+
+export function extractFirstImageUrlFromMessageBody(body: string): string | null {
+  const trimmed = body.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const markdownMatch = trimmed.match(MARKDOWN_IMAGE_RE);
+  if (markdownMatch?.[1]) {
+    return markdownMatch[1];
+  }
+  const htmlMatch = trimmed.match(HTML_IMG_SRC_RE);
+  if (htmlMatch?.[1]) {
+    return htmlMatch[1];
+  }
+  return null;
+}
+
+export function stripImageMarkupFromMessageBody(body: string): string {
+  return body
+    .replace(MARKDOWN_IMAGE_RE, '')
+    .replace(HTML_IMG_SRC_RE, '')
+    .trim();
+}
+
+function buildQuotePreviewBody(rawBody: string): { body: string; imageUrl?: string } {
+  const imageUrl = extractFirstImageUrlFromMessageBody(rawBody) ?? undefined;
+  const stripped = stripImageMarkupFromMessageBody(rawBody);
+  return {
+    body: truncateQuoteBody(stripped),
+    ...(imageUrl ? { imageUrl } : {}),
+  };
+}
 
 function parseQuoteJson(value: unknown): { author: string; body: string } | null {
   if (value == null || typeof value !== 'object' || Array.isArray(value)) {
@@ -441,18 +501,22 @@ export function resolveMessageQuotePreview(
   }
   const parent = messagesById.get(message.reply_to);
   if (parent) {
+    const preview = buildQuotePreviewBody(messageDisplayBody(parent));
     return {
       author: parent.author,
-      body: truncateQuoteBody(messageDisplayBody(parent)),
+      body: preview.body,
       deleted: false,
+      ...(preview.imageUrl ? { imageUrl: preview.imageUrl } : {}),
     };
   }
   const quote = parseQuoteJson(message.quote_json);
   if (quote) {
+    const preview = buildQuotePreviewBody(quote.body);
     return {
       author: quote.author,
-      body: truncateQuoteBody(quote.body),
+      body: preview.body,
       deleted: false,
+      ...(preview.imageUrl ? { imageUrl: preview.imageUrl } : {}),
     };
   }
   return { author: '', body: '', deleted: true };
@@ -499,10 +563,12 @@ export type MessageDayGroup = {
 export function groupMessagesByDay(
   messages: readonly MessageItem[],
   formatDayLabel: (unix: number) => string,
+  getSortUnix: (m: MessageItem) => number = (m) => m.created_at_unix,
 ): MessageDayGroup[] {
   const groups: MessageDayGroup[] = [];
   for (const message of messages) {
-    const dayKey = new Date(message.created_at_unix * 1000).toISOString().slice(0, 10);
+    const unix = getSortUnix(message);
+    const dayKey = localDayKeyFromUnix(unix);
     const last = groups[groups.length - 1];
     if (last && last.dayKey === dayKey) {
       last.messages.push(message);
@@ -510,7 +576,7 @@ export function groupMessagesByDay(
     }
     groups.push({
       dayKey,
-      label: formatDayLabel(message.created_at_unix),
+      label: formatDayLabel(unix),
       messages: [message],
     });
   }
