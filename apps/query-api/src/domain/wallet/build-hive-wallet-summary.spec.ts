@@ -162,7 +162,7 @@ describe('buildHiveWalletSummary', () => {
     expect(summary.powerDown?.vestingWithdrawRateHp).toBe('50,000');
   });
 
-  it('parses numeric to_withdraw from condenser_api and matches legacy weeks remaining', () => {
+  it('subtracts withdrawn VESTS so weeks remaining tracks completed installments', () => {
     const chain = {
       totalVestingShares: '346148705781.795308 VESTS',
       totalVestingFundSteem: '214342273.141 HIVE',
@@ -172,8 +172,9 @@ describe('buildHiveWalletSummary', () => {
       balance: '1 HIVE',
       vesting_shares: '1000000 VESTS',
       to_withdraw: 3071869229505,
+      withdrawn: 1181488165195,
       vesting_withdraw_rate: '236297.633039 VESTS',
-      next_vesting_withdrawal: '2026-08-11T12:03:33',
+      next_vesting_withdrawal: '2026-09-08T12:03:33',
     };
     const balance = mapHiveAccountToBalanceFields(account, chain, '1000');
 
@@ -187,11 +188,19 @@ describe('buildHiveWalletSummary', () => {
         pendingSavingsWithdrawals: [],
         pendingRewards: EMPTY_PENDING_REWARDS,
         toWithdrawVests: account.to_withdraw,
+        withdrawnVests: account.withdrawn,
         vestingWithdrawRateVests: account.vesting_withdraw_rate,
       },
     );
 
-    expect(summary.powerDown?.weeksRemaining).toBe(12);
+    expect(
+      calculateHivePowerDownWeeksRemainingFromVests(
+        account.to_withdraw,
+        account.vesting_withdraw_rate,
+        account.withdrawn,
+      ),
+    ).toBe(8);
+    expect(summary.powerDown?.weeksRemaining).toBe(8);
     expect(summary.powerDown?.weeksTotal).toBe(13);
     expect(Number.parseFloat(summary.powerDown?.toWithdrawHp.replace(/,/g, '') ?? '0')).toBeCloseTo(
       1902.163,
@@ -201,6 +210,16 @@ describe('buildHiveWalletSummary', () => {
       146.32,
       1,
     );
+  });
+
+  it('treats a just-started power down (withdrawn=0) as 13 weeks remaining', () => {
+    expect(
+      calculateHivePowerDownWeeksRemainingFromVests(
+        3071869229505,
+        '236297.633039 VESTS',
+        0,
+      ),
+    ).toBe(13);
   });
 
   it('formats RC when max_rc is numeric from rc_api', () => {

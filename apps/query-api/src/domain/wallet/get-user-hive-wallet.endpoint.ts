@@ -106,6 +106,7 @@ export class GetUserHiveWalletEndpoint {
           }),
           rc: rcSnapshot,
           toWithdrawVests: hiveAccount.to_withdraw,
+          withdrawnVests: hiveAccount.withdrawn,
           vestingWithdrawRateVests: hiveAccount.vesting_withdraw_rate,
         },
       );

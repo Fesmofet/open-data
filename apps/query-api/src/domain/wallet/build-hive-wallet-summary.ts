@@ -43,6 +43,7 @@ export type HiveWalletAccountInput = {
   savings_hbd_seconds_last_update?: string;
   savings_hbd_last_interest_payment?: string;
   to_withdraw?: string | number;
+  withdrawn?: string | number;
   vesting_withdraw_rate?: string | number;
   next_vesting_withdrawal?: string;
   reward_hive_balance?: string;
@@ -173,14 +174,19 @@ export function calculateHivePowerDownWeeksRemaining(
 export function calculateHivePowerDownWeeksRemainingFromVests(
   toWithdraw: string | number | undefined,
   vestingWithdrawRate: string | number | undefined,
+  withdrawn?: string | number,
 ): number {
   const toWithdrawVests = parseHiveVestsAmount(toWithdraw ?? '0 VESTS');
+  const withdrawnVests = parseHiveVestsAmount(withdrawn ?? 0);
   const rateVests = parseHiveVestsAmount(vestingWithdrawRate ?? '0 VESTS');
-  if (rateVests <= 0 || toWithdrawVests <= 0) {
+  const remainingVests = toWithdrawVests - withdrawnVests;
+  if (rateVests <= 0 || remainingVests <= 0) {
     return 0;
   }
-  const weeks = Math.floor(toWithdrawVests / rateVests);
-  return Math.min(HIVE_POWER_DOWN_WEEKS_TOTAL, Math.max(0, weeks));
+  return Math.min(
+    HIVE_POWER_DOWN_WEEKS_TOTAL,
+    Math.max(0, Math.round(remainingVests / rateVests)),
+  );
 }
 
 export function calculateSavingsWithdrawDaysRemaining(
@@ -366,6 +372,7 @@ export function buildHiveWalletSummary(
     pendingRewards: HivePendingRewards;
     rc?: HiveRcSnapshot;
     toWithdrawVests?: string | number;
+    withdrawnVests?: string | number;
     vestingWithdrawRateVests?: string | number;
   },
 ) {
@@ -402,6 +409,7 @@ export function buildHiveWalletSummary(
     ? calculateHivePowerDownWeeksRemainingFromVests(
         options.toWithdrawVests,
         options.vestingWithdrawRateVests,
+        options.withdrawnVests,
       )
     : 0;
 

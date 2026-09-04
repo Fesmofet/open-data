@@ -32,7 +32,11 @@ Returns a live Hive L1 wallet summary for the profile account: liquid HIVE, Hive
 
 ## Data sources
 
-- `condenser_api.get_accounts` — balances, vesting, savings, power-down fields
+- `condenser_api.get_accounts` — balances, vesting, savings, power-down fields (`to_withdraw`, `withdrawn`, `vesting_withdraw_rate`)
+
+## Power down weeks
+
+`powerDown.weeksRemaining` is `round((to_withdraw - withdrawn) / vesting_withdraw_rate)`, clamped to `0…13`. Hive keeps `to_withdraw` at the original total; progress lives in `withdrawn`.
 - `rc_api.find_rc_accounts` — max RC
 - `condenser_api.get_savings_withdraw_from` — pending savings withdrawals
 - `condenser_api.get_dynamic_global_properties` — `hbd_interest_rate`

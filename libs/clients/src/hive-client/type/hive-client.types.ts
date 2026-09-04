@@ -121,6 +121,8 @@ export type HiveAccountWalletFields = {
   savings_hbd_seconds_last_update: string;
   savings_hbd_last_interest_payment: string;
   to_withdraw: string | number;
+  /** VESTS already paid out this power down (condenser integer satoshis). */
+  withdrawn: string | number;
   vesting_withdraw_rate: string;
   next_vesting_withdrawal: string;
   reward_hive_balance?: string;
