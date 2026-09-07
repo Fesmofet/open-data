@@ -3,7 +3,7 @@ FROM node:24.12.0-alpine3.23 AS builder
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN corepack enable && corepack install
+RUN corepack enable && corepack install -g pnpm@10.30.3
 
 COPY nx.json tsconfig.base.json ./
 COPY apps/nest-webpack.shared.js ./apps/nest-webpack.shared.js
