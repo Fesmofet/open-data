@@ -25,6 +25,7 @@ export const OBJECT_TYPES = {
   SERVICE_OFFERED: 'service_offered',
   SERVICE_REQUESTED: 'service_requested',
   LEGAL_DOCUMENT: 'legal_document',
+  SKILL: 'skill',
 } as const;
 
 export type ObjectType = (typeof OBJECT_TYPES)[keyof typeof OBJECT_TYPES];

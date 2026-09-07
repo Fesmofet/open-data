@@ -21,10 +21,16 @@ export const BOOK_OBJECT_TYPE = 'book' as const;
 
 export const RECIPE_OBJECT_TYPE = 'recipe' as const;
 
+export const SKILL_OBJECT_TYPE = 'skill' as const;
+
 export const LIST_OBJECT_TYPE = 'list' as const;
 
 export function isListObjectType(objectType: string): boolean {
   return objectType.trim() === LIST_OBJECT_TYPE;
+}
+
+export function isSkillObjectType(objectType: string): boolean {
+  return objectType.trim() === SKILL_OBJECT_TYPE;
 }
 
 export function isOptionsObjectType(objectType: string): boolean {
@@ -133,6 +139,27 @@ export const RECIPE_ABOUT_SECTION_BLOCK_ORDER = [
   'identifier',
 ] as const;
 
+/** Skill view/edit about stack: metadata fields after description. */
+export const SKILL_ABOUT_SECTION_BLOCK_ORDER = [
+  'image',
+  'imageBackground',
+  'status',
+  'parent',
+  'description',
+  'license',
+  'compatibility',
+  'metadata',
+  'allowedTools',
+  'references',
+  'tags',
+  'gallery',
+  'websites',
+  'identifier',
+  'delegation',
+] as const;
+
+export type SkillAboutSectionBlockId = (typeof SKILL_ABOUT_SECTION_BLOCK_ORDER)[number];
+
 export type RecipeAboutSectionBlockId = (typeof RECIPE_ABOUT_SECTION_BLOCK_ORDER)[number];
 
 /** Book-only about fields (not in generic about stack). */
@@ -151,7 +178,8 @@ export const BOOK_HOISTED_AUTHOR_BLOCK_ORDER = ['author'] as const;
 export type AboutSectionBlockId =
   | (typeof ABOUT_SECTION_BLOCK_ORDER)[number]
   | BookAboutSectionBlockId
-  | RecipeAboutSectionBlockId;
+  | RecipeAboutSectionBlockId
+  | SkillAboutSectionBlockId;
 
 /**
  * Menu / custom-sort cluster is rendered before the about stack (legacy `menuSection`).
@@ -206,6 +234,7 @@ export type EditModeLeftRailBlockId =
   | ListEditModeLeftRailBlockId
   | BookAboutSectionBlockId
   | NavigateSectionBlockId
+  | SkillAboutSectionBlockId
   | 'parent'
   | 'publisher';
 
@@ -243,6 +272,9 @@ export function bookTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
 export function resolveAboutSectionBlockOrder(
   objectType: string,
 ): readonly AboutSectionBlockId[] {
+  if (isSkillObjectType(objectType)) {
+    return SKILL_ABOUT_SECTION_BLOCK_ORDER;
+  }
   if (isRecipeObjectType(objectType)) {
     return RECIPE_ABOUT_SECTION_BLOCK_ORDER;
   }

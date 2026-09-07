@@ -237,6 +237,30 @@ function projectAggregateRatingField(
   });
 }
 
+function projectMetadataField(field: ResolvedField): Record<string, string> | null {
+  const valid = field.values.filter((u) => u.validity_status === 'VALID');
+  if (valid.length === 0) {
+    return null;
+  }
+  const record: Record<string, string> = {};
+  for (const row of valid) {
+    const json = row.value_json;
+    if (json == null || typeof json !== 'object' || Array.isArray(json)) {
+      continue;
+    }
+    const o = json as Record<string, unknown>;
+    const key = typeof o.key === 'string' ? o.key.trim() : '';
+    const value = typeof o.value === 'string' ? o.value.trim() : '';
+    if (key.length === 0 || value.length === 0) {
+      continue;
+    }
+    if (!(key in record)) {
+      record[key] = value;
+    }
+  }
+  return Object.keys(record).length > 0 ? record : null;
+}
+
 /**
  * Maps a resolved field to a presentation value (excluding `object_ref`, handled separately).
  */
@@ -254,6 +278,10 @@ export function projectFieldValue(
 
   if (updateType === UPDATE_TYPES.AGGREGATE_RATING) {
     return projectAggregateRatingField(field, viewerAccount, rankVoteProjection);
+  }
+
+  if (updateType === UPDATE_TYPES.METADATA) {
+    return projectMetadataField(field);
   }
 
   const valid = field.values.filter((u) => u.validity_status === 'VALID');

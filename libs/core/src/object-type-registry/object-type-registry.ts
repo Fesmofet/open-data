@@ -26,6 +26,7 @@ import { GOVERNANCE_OBJECT_TYPE } from './object-types/governance';
 import { SERVICE_OFFERED_OBJECT_TYPE } from './object-types/service-offered';
 import { SERVICE_REQUESTED_OBJECT_TYPE } from './object-types/service-requested';
 import { LEGAL_DOCUMENT_OBJECT_TYPE } from './object-types/legal-document';
+import { SKILL_OBJECT_TYPE } from './object-types/skill';
 
 export const OBJECT_TYPE_REGISTRY: ObjectTypeRegistry = {
   [OBJECT_TYPES.HASHTAG]: HASHTAG_OBJECT_TYPE,
@@ -54,4 +55,5 @@ export const OBJECT_TYPE_REGISTRY: ObjectTypeRegistry = {
   [OBJECT_TYPES.SERVICE_OFFERED]: SERVICE_OFFERED_OBJECT_TYPE,
   [OBJECT_TYPES.SERVICE_REQUESTED]: SERVICE_REQUESTED_OBJECT_TYPE,
   [OBJECT_TYPES.LEGAL_DOCUMENT]: LEGAL_DOCUMENT_OBJECT_TYPE,
+  [OBJECT_TYPES.SKILL]: SKILL_OBJECT_TYPE,
 };

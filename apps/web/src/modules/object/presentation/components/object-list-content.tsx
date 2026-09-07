@@ -16,7 +16,7 @@ import type {
 } from '../../domain/projected-list-item.types';
 import { useListCatalogEdit } from '../hooks/use-list-catalog-edit';
 
-const IN_COLUMN_TYPES = new Set(['list', 'page']);
+const IN_COLUMN_TYPES = new Set(['list', 'page', 'skill']);
 
 const BASE_SORT_OPTIONS: CatalogListSortType[] = [
   'rank',

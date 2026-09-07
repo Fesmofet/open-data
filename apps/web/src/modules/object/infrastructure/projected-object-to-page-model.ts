@@ -63,6 +63,11 @@ import {
   projectedObjectRefItems,
   projectedPageContent,
   projectedLegalText,
+  projectedSkillContent,
+  projectedLicense,
+  projectedCompatibility,
+  projectedMetadataItems,
+  projectedAllowedTools,
   projectedWidgetConfig,
   projectedParentRow,
   resolveMenuItemsForView,
@@ -106,6 +111,7 @@ function formatObjectWeightForDisplay(weight: number): string {
 const SWITCHER_KINDS = new Set<ObjectSwitcherKind>([
   'list',
   'page',
+  'skill',
   'newsfeed',
   'widget',
   'webpage',
@@ -135,6 +141,8 @@ function kindLabelFallback(switcher: ObjectSwitcherKind): string {
       return 'List';
     case 'page':
       return 'Page';
+    case 'skill':
+      return 'Skill';
     case 'newsfeed':
       return 'News feed';
     case 'widget':
@@ -468,6 +476,61 @@ function appendAboutSectionBlock(
       }
       break;
     }
+    case 'license': {
+      const text = projectedLicense(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'license',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.license,
+          text,
+        });
+      }
+      break;
+    }
+    case 'compatibility': {
+      const text = projectedCompatibility(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'compatibility',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.compatibility,
+          text,
+        });
+      }
+      break;
+    }
+    case 'metadata': {
+      const items = projectedMetadataItems(viewLike);
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'metadata',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.metadata,
+          items,
+        });
+      }
+      break;
+    }
+    case 'allowedTools': {
+      const items = projectedAllowedTools(viewLike);
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'allowedTools',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.allowedTools,
+          items,
+        });
+      }
+      break;
+    }
+    case 'references': {
+      const items = projectedObjectRefItems(viewLike, 'references');
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'references',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.references,
+          items,
+        });
+      }
+      break;
+    }
     case 'author': {
       const items = projectedObjectRefItems(viewLike, 'author');
       if (items.length > 0) {
@@ -760,6 +823,9 @@ function appendAboutSectionBlock(
       }
       break;
     }
+    case 'delegation':
+      // Edit-mode only — shown via mergeLeftRailBlocksForEditMode.
+      break;
     default: {
       const _exhaustive: never = step;
       return _exhaustive;
@@ -931,6 +997,7 @@ export function projectedObjectWithCountsToPageModel(
   );
   const pageContent = projectedPageContent(viewLike);
   const legalText = projectedLegalText(viewLike);
+  const skillContent = projectedSkillContent(viewLike);
   const widgetConfig = projectedWidgetConfig(viewLike);
   const descriptionContent = projectedDescriptionContent(viewLike);
   const previewGallery = projectedPreviewGallery(viewLike);
@@ -973,6 +1040,7 @@ export function projectedObjectWithCountsToPageModel(
     listItemsSortCustom: sortCustom,
     pageContent,
     legalText,
+    skillContent,
     widgetConfig,
     descriptionContent,
     previewGallery,

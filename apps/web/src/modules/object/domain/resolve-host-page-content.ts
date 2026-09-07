@@ -6,6 +6,9 @@ function resolveHostPageContentRaw(model: ObjectPageViewModel): string | null {
   if (model.objectTypeKey === 'legal_document') {
     return model.legalText;
   }
+  if (model.objectTypeKey === 'skill') {
+    return model.skillContent;
+  }
   if (model.objectType === 'page') {
     return model.pageContent;
   }

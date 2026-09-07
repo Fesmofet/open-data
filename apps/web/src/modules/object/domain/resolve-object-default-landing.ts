@@ -15,6 +15,7 @@ export type ObjectDefaultLanding =
 const HOST_SWITCHER_KINDS = new Set<ObjectSwitcherKind>([
   'list',
   'page',
+  'skill',
   'newsfeed',
   'widget',
   'webpage',
@@ -229,7 +230,7 @@ function resolveHostTypeLanding(
   switcherKind: ObjectSwitcherKind,
   objectTypeKey: string,
 ): ObjectDefaultLanding | null {
-  if (objectTypeKey === 'html' || objectTypeKey === 'legal_document') {
+  if (objectTypeKey === 'html' || objectTypeKey === 'legal_document' || objectTypeKey === 'skill') {
     return { kind: 'hostContent' };
   }
   if (objectTypeKey === 'widget') {

@@ -36,6 +36,7 @@ export const FAVORITES_OBJECT_TYPES = [
   'link',
   'group',
   'html',
+  'skill',
 ] as const;
 
 export type FavoritesObjectType = (typeof FAVORITES_OBJECT_TYPES)[number];

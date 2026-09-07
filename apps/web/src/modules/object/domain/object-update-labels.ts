@@ -61,6 +61,11 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
   delegation: 'Delegation',
   pageContent: 'Page content',
   legalText: 'Legal text',
+  license: 'License',
+  compatibility: 'Compatibility',
+  metadata: 'Metadata',
+  allowedTools: 'Allowed tools',
+  references: 'References',
 };
 
 /** Labels for blocks keyed by internal rail kind (not always 1:1 with update_type). */
@@ -113,6 +118,11 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   pin: 'Pin',
   remove: 'Remove',
   delegation: 'Delegation',
+  license: 'License',
+  compatibility: 'Compatibility',
+  metadata: 'Metadata',
+  allowedTools: 'Allowed tools',
+  references: 'References',
   objectControl: 'Object Control',
   admins: 'Administrators',
   moderators: 'Moderators',

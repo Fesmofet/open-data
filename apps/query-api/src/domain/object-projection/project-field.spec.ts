@@ -317,6 +317,87 @@ describe('projectFieldValue user_ref', () => {
   });
 });
 
+describe('projectFieldValue metadata', () => {
+  it('folds key/value rows into a record (first wins on duplicate keys)', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.METADATA,
+      cardinality: 'multi',
+      values: [
+        {
+          update_id: 'u1',
+          update_type: UPDATE_TYPES.METADATA,
+          creator: 'c',
+          locale: null,
+          created_at_unix: 1,
+          event_seq: BigInt(1),
+          value_text: null,
+          value_geo: null,
+          value_json: { key: 'author', value: 'alice' },
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: 100,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+        {
+          update_id: 'u2',
+          update_type: UPDATE_TYPES.METADATA,
+          creator: 'c',
+          locale: null,
+          created_at_unix: 2,
+          event_seq: BigInt(2),
+          value_text: null,
+          value_geo: null,
+          value_json: { key: 'author', value: 'bob' },
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: 50,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+        {
+          update_id: 'u3',
+          update_type: UPDATE_TYPES.METADATA,
+          creator: 'c',
+          locale: null,
+          created_at_unix: 3,
+          event_seq: BigInt(3),
+          value_text: null,
+          value_geo: null,
+          value_json: { key: 'version', value: '1' },
+          validity_status: 'VALID',
+          validity_tier: 'baseline',
+          approve_percent: 100,
+          field_weight: null,
+          decisive_vote_event_seq: null,
+          rank_score: null,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    expect(projectFieldValue(field, UPDATE_TYPES.METADATA, undefined)).toEqual({
+      author: 'alice',
+      version: '1',
+    });
+  });
+
+  it('returns null when no valid rows', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.METADATA,
+      cardinality: 'multi',
+      values: [],
+    };
+    expect(projectFieldValue(field, UPDATE_TYPES.METADATA, undefined)).toBeNull();
+  });
+});
+
 describe('geoJsonPointToLatLon', () => {
   const expected = { latitude: 49.187253, longitude: -123.131515 };
 

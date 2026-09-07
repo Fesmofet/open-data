@@ -593,9 +593,52 @@ export function projectedLegalText(o: ProjectedObjectView): string | null {
   return null;
 }
 
-/** Sanitized HTML body for page-type objects and legal documents. */
+/** Sanitized HTML body for page-type objects, legal documents, and skills. */
 export function projectedHostHtmlBody(o: ProjectedObjectView): string | null {
-  return projectedPageContent(o) ?? projectedLegalText(o);
+  return projectedPageContent(o) ?? projectedLegalText(o) ?? projectedSkillContent(o);
+}
+
+export function projectedSkillContent(o: ProjectedObjectView): string | null {
+  const raw = o.fields.skillContent;
+  if (typeof raw === 'string' && raw.trim().length > 0) {
+    return raw.trim();
+  }
+  return null;
+}
+
+export function projectedLicense(o: ProjectedObjectView): string | null {
+  return readString(o.fields.license) ?? null;
+}
+
+export function projectedCompatibility(o: ProjectedObjectView): string | null {
+  return readString(o.fields.compatibility) ?? null;
+}
+
+/** Metadata rows folded to `{ key, value }[]` for left-rail display. */
+export function projectedMetadataItems(o: ProjectedObjectView): ProjectedFeatureListItem[] {
+  const raw = o.fields.metadata;
+  if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) {
+    return [];
+  }
+  const record = raw as Record<string, unknown>;
+  return Object.entries(record)
+    .map(([key, value]) => ({
+      key: key.trim(),
+      value: typeof value === 'string' ? value.trim() : String(value ?? ''),
+    }))
+    .filter((row) => row.key.length > 0 && row.value.length > 0);
+}
+
+/** Allowed tool names from projected `allowedTools`. */
+export function projectedAllowedTools(o: ProjectedObjectView): string[] {
+  const raw = o.fields.allowedTools;
+  if (!Array.isArray(raw)) {
+    return typeof raw === 'string' && raw.trim().length > 0 ? [raw.trim()] : [];
+  }
+  return raw
+    .filter((v): v is string => typeof v === 'string')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {

@@ -12,6 +12,7 @@ export const SEMANTIC_TYPE_BY_OBJECT_TYPE: Partial<Record<string, string>> = {
   [OBJECT_TYPES.SERVICE]: 'schema:Service',
   [OBJECT_TYPES.SHOP]: 'schema:Store',
   [OBJECT_TYPES.PAGE]: 'schema:WebPage',
+  [OBJECT_TYPES.SKILL]: 'schema:TechArticle',
   [OBJECT_TYPES.WEBPAGE]: 'schema:WebPage',
   [OBJECT_TYPES.DISH]: 'schema:MenuItem',
   [OBJECT_TYPES.DRINK]: 'schema:MenuItem',

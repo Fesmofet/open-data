@@ -2,6 +2,7 @@
 export const MENU_IN_HOST_TYPES = new Set([
   'list',
   'page',
+  'skill',
   'html',
   'newsfeed',
   'widget',

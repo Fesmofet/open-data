@@ -17,6 +17,7 @@ import { sanitizePostHtml } from '@/shared/infrastructure/sanitize-post-html';
 const SWITCHER_KINDS = new Set<ObjectSwitcherKind>([
   'list',
   'page',
+  'skill',
   'newsfeed',
   'widget',
   'webpage',

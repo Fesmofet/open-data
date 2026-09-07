@@ -948,6 +948,59 @@ export function ObjectLeftRailPanel({
                 />
               </div>
             );
+          case 'license':
+          case 'compatibility':
+            return (
+              <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailScalarFieldSection
+                  headingLabel={block.headingLabel}
+                  text={block.text}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
+          case 'metadata':
+            return (
+              <div key={`metadata-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectFeatureListLeftRailSection
+                  headingLabel={block.headingLabel}
+                  items={block.items}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps('metadata', block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
+          case 'allowedTools':
+            return (
+              <div key={`allowedTools-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <ObjectIngredientsLeftRailSection
+                  headingLabel={block.headingLabel}
+                  items={block.items}
+                  objectTypeKey={objectTypeKey}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar {...editToolbarProps('allowedTools', block.headingLabel)} />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
+          case 'references':
+            return (
+              <div key={`references-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps('references', block.headingLabel)} />
+                {block.items.length > 0 ? (
+                  <ObjectRefItemsList items={block.items} />
+                ) : null}
+              </div>
+            );
           case 'status':
             return (
               <div key={`status-${index}`} className={LEFT_RAIL_SECTION_CLASS}>

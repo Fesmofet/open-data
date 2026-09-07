@@ -106,6 +106,13 @@ export const UPDATE_TYPES = {
   CURRENCY: 'currency',
   SLA: 'sla',
   LEGAL_TEXT: 'legalText',
+  // Agent skill (ODL skill object type)
+  LICENSE: 'license',
+  COMPATIBILITY: 'compatibility',
+  METADATA: 'metadata',
+  ALLOWED_TOOLS: 'allowedTools',
+  REFERENCES: 'references',
+  SKILL_CONTENT: 'skillContent',
 } as const;
 
 export type UpdateType = (typeof UPDATE_TYPES)[keyof typeof UPDATE_TYPES];

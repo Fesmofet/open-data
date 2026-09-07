@@ -23,4 +23,10 @@ describe('getRequiredObjectCreateUpdates', () => {
   it('returns empty array for unknown object type', () => {
     expect(getRequiredObjectCreateUpdates('not-a-type')).toEqual([]);
   });
+
+  it('includes skillContent for skill', () => {
+    expect(getRequiredObjectCreateUpdates('skill')).toEqual(
+      expect.arrayContaining(['name', 'description', 'image', 'skillContent']),
+    );
+  });
 });

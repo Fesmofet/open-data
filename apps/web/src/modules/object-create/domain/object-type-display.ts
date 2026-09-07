@@ -16,7 +16,7 @@ export const OBJECT_TYPE_GROUPS = [
   },
   {
     id: 'content',
-    types: ['page', 'list', 'link', 'recipe'],
+    types: ['page', 'skill', 'list', 'link', 'recipe'],
   },
   {
     id: 'social',
@@ -57,6 +57,7 @@ export const OBJECT_TYPE_GROUP_I18N_KEY: Record<
 /** Short subtitles shown on object type cards (single line). */
 export const OBJECT_TYPE_CARD_DESCRIPTION: Record<string, string> = {
   page: 'Markup document',
+  skill: 'Agent skill instructions',
   list: 'Curated collection of objects',
   link: 'Website reference or review',
   recipe: 'Cooking instructions',
@@ -88,6 +89,7 @@ export const OBJECT_TYPE_DISPLAY_LABEL: Record<string, string> = {
   person: 'Person',
   product: 'Product',
   page: 'Page',
+  skill: 'Skill',
   business: 'Business',
   restaurant: 'Restaurant',
   book: 'Book',

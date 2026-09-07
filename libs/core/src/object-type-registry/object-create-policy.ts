@@ -13,6 +13,7 @@ export const OBJECT_CREATE_REQUIRED_BY_TYPE: Readonly<
   Record<string, readonly string[]>
 > = {
   recipe: [UPDATE_TYPES.INGREDIENTS],
+  skill: [UPDATE_TYPES.SKILL_CONTENT],
 };
 
 /**

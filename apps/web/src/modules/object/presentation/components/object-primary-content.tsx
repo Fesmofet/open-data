@@ -86,6 +86,8 @@ function centerHintForKind(kind: ObjectSwitcherKind): string {
       return 'Catalog-style layout (mock).';
     case 'page':
       return 'Rich page body (mock).';
+    case 'skill':
+      return 'Skill instructions (mock).';
     case 'newsfeed':
       return 'News feed preview (mock).';
     case 'widget':
@@ -541,7 +543,7 @@ export function ObjectPrimaryContent({
       );
     }
 
-    if (currentView.objectType === 'page' || objectTypeKey === 'legal_document') {
+    if (currentView.objectType === 'page' || objectTypeKey === 'legal_document' || objectTypeKey === 'skill') {
       return (
         <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
           <p className="text-fg">This page has no content yet.</p>

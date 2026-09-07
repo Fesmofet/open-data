@@ -24,6 +24,7 @@ export const OBJECT_TYPES_WITHOUT_DETAILS_TAB = new Set([
   'page',
   'html',
   'legal_document',
+  'skill',
   'newsfeed',
   'webpage',
   'map',

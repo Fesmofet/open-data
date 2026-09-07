@@ -6,6 +6,7 @@ import type { ObjectDefaultLanding } from './resolve-object-default-landing';
 export type ObjectSwitcherKind =
   | 'list'
   | 'page'
+  | 'skill'
   | 'newsfeed'
   | 'widget'
   | 'webpage'
@@ -291,6 +292,19 @@ export type ObjectLeftRailBlock =
       headingLabel: string;
       items: FeatureListItem[];
     }
+  | { kind: 'license'; headingLabel: string; text: string }
+  | { kind: 'compatibility'; headingLabel: string; text: string }
+  | {
+      kind: 'metadata';
+      headingLabel: string;
+      items: FeatureListItem[];
+    }
+  | { kind: 'allowedTools'; headingLabel: string; items: string[] }
+  | {
+      kind: 'references';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
   | { kind: 'category'; headingLabel: string; names: string[] }
   | { kind: 'calories'; headingLabel: string; text: string }
   | { kind: 'budget'; headingLabel: string; text: string }
@@ -374,6 +388,8 @@ export type ObjectPageViewModel = {
   pageContent: string | null;
   /** Raw legal body (`legalText` update) for `legal_document` objects. */
   legalText: string | null;
+  /** Raw skill body (`skillContent` update) for `skill` objects. */
+  skillContent: string | null;
   /** Parsed `widget` update JSON for widget-type objects. */
   widgetConfig: ProjectedWidgetConfigView | null;
   /** Raw description body (`description` update) for center-column `/description` route. */

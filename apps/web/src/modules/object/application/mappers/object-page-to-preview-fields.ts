@@ -165,6 +165,11 @@ function appendLeftRailBlock(
     case 'compareAtPrice':
     case 'saleEvent':
     case 'featureList':
+    case 'license':
+    case 'compatibility':
+    case 'metadata':
+    case 'allowedTools':
+    case 'references':
     case 'category':
       break;
     case 'calories':

@@ -100,6 +100,12 @@ import { UPDATE_PRICE_MODEL } from './updates/price-model';
 import { UPDATE_CURRENCY } from './updates/currency';
 import { UPDATE_SLA } from './updates/sla';
 import { UPDATE_LEGAL_TEXT } from './updates/legal-text';
+import { UPDATE_LICENSE } from './updates/license';
+import { UPDATE_COMPATIBILITY } from './updates/compatibility';
+import { UPDATE_METADATA } from './updates/metadata';
+import { UPDATE_ALLOWED_TOOLS } from './updates/allowed-tools';
+import { UPDATE_REFERENCES } from './updates/references';
+import { UPDATE_SKILL_CONTENT } from './updates/skill-content';
 
 export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
@@ -202,4 +208,10 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.CURRENCY]: UPDATE_CURRENCY,
   [UPDATE_TYPES.SLA]: UPDATE_SLA,
   [UPDATE_TYPES.LEGAL_TEXT]: UPDATE_LEGAL_TEXT,
+  [UPDATE_TYPES.LICENSE]: UPDATE_LICENSE,
+  [UPDATE_TYPES.COMPATIBILITY]: UPDATE_COMPATIBILITY,
+  [UPDATE_TYPES.METADATA]: UPDATE_METADATA,
+  [UPDATE_TYPES.ALLOWED_TOOLS]: UPDATE_ALLOWED_TOOLS,
+  [UPDATE_TYPES.REFERENCES]: UPDATE_REFERENCES,
+  [UPDATE_TYPES.SKILL_CONTENT]: UPDATE_SKILL_CONTENT,
 } satisfies UpdateRegistry;

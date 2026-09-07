@@ -23,6 +23,7 @@ export const EDIT_FIELD_GROUP_IDS = [
   'affiliate',
   'service',
   'governance',
+  'skill',
   'object',
 ] as const;
 
@@ -115,6 +116,14 @@ export const EDIT_GROUP_FIELD_ORDER: Readonly<Record<EditFieldGroupId, readonly 
     UPDATE_TYPES.NEWS_FEED,
     UPDATE_TYPES.NEWS_FILTER,
     UPDATE_TYPES.LEGAL_TEXT,
+    UPDATE_TYPES.SKILL_CONTENT,
+  ],
+  skill: [
+    UPDATE_TYPES.LICENSE,
+    UPDATE_TYPES.COMPATIBILITY,
+    UPDATE_TYPES.METADATA,
+    UPDATE_TYPES.ALLOWED_TOOLS,
+    UPDATE_TYPES.REFERENCES,
   ],
   catalog: [
     UPDATE_TYPES.SORT_CUSTOM,
@@ -275,6 +284,7 @@ export const EDIT_FIELD_GROUP_I18N_KEY: Readonly<Record<EditFieldGroupId, string
   affiliate: 'object_edit_group_affiliate',
   service: 'object_edit_group_service',
   governance: 'object_edit_group_governance',
+  skill: 'object_edit_group_skill',
   object: 'object_edit_group_object',
 };
 

@@ -33,3 +33,4 @@ export { GOVERNANCE_OBJECT_TYPE } from './object-types/governance';
 export { SERVICE_OFFERED_OBJECT_TYPE } from './object-types/service-offered';
 export { SERVICE_REQUESTED_OBJECT_TYPE } from './object-types/service-requested';
 export { LEGAL_DOCUMENT_OBJECT_TYPE } from './object-types/legal-document';
+export { SKILL_OBJECT_TYPE } from './object-types/skill';

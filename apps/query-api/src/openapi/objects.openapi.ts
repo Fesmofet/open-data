@@ -161,7 +161,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Batch lightweight nested object projections',
   description:
-    'Resolves up to 32 objects with a lightweight `NestedObjectView` shape (`object_id`, `object_type`, `fields` only — no authority flags, SEO, or counts). When `update_types` is omitted or an empty array, resolves the nested navigation defaults: `listItem`, `sortCustom`, `pageContent`, `name`. When `update_types` is a non-empty array, only those registry update types are resolved. `object_ref` targets inside resolved fields are expanded using the internal ref-summary set (not controlled by this parameter).',
+    'Resolves up to 32 objects with a lightweight `NestedObjectView` shape (`object_id`, `object_type`, `fields` only — no authority flags, SEO, or counts). When `update_types` is omitted or an empty array, resolves the nested navigation defaults: `listItem`, `sortCustom`, `pageContent`, `legalText`, `skillContent`, `name`. When `update_types` is a non-empty array, only those registry update types are resolved. `object_ref` targets inside resolved fields are expanded using the internal ref-summary set (not controlled by this parameter).',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({

@@ -130,6 +130,12 @@ export {
 export { UPDATE_CURRENCY } from './updates/currency';
 export { UPDATE_SLA, UPDATE_SLA_SCHEMA } from './updates/sla';
 export { UPDATE_LEGAL_TEXT } from './updates/legal-text';
+export { UPDATE_LICENSE } from './updates/license';
+export { UPDATE_COMPATIBILITY } from './updates/compatibility';
+export { UPDATE_METADATA, UPDATE_METADATA_SCHEMA } from './updates/metadata';
+export { UPDATE_ALLOWED_TOOLS } from './updates/allowed-tools';
+export { UPDATE_REFERENCES } from './updates/references';
+export { UPDATE_SKILL_CONTENT } from './updates/skill-content';
 
 export { cidSchema } from './schemas/cid-schema';
 export {
