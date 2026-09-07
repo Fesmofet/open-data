@@ -8,6 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json 
 RUN corepack enable && corepack install -g pnpm@10.30.3
 
 COPY libs ./libs
+COPY apps ./apps
 COPY scripts ./scripts
 
 RUN touch .env
