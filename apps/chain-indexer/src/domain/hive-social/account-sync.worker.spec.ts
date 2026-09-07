@@ -43,6 +43,8 @@ describe('AccountSyncWorker', () => {
     const getFollowers = jest.fn().mockResolvedValue([]);
     const getFollowing = jest.fn().mockResolvedValue([]);
     const getMutedList = jest.fn().mockResolvedValue([]);
+    const getDynamicGlobalProperties = jest.fn().mockResolvedValue({ head_block_number: 100 });
+    const applyFromHiveAccount = jest.fn().mockResolvedValue(undefined);
 
     const worker = new AccountSyncWorker(
       { get: jest.fn().mockReturnValue(20) } as never,
@@ -54,7 +56,14 @@ describe('AccountSyncWorker', () => {
       } as never,
       { upsertFromHive } as never,
       { bulkInsertSubscriptions, bulkInsertMutes } as never,
-      { getAccounts, getFollowers, getFollowing, getMutedList } as never,
+      {
+        getAccounts,
+        getFollowers,
+        getFollowing,
+        getMutedList,
+        getDynamicGlobalProperties,
+      } as never,
+      { applyFromHiveAccount } as never,
     );
 
     await worker.runAccountSyncBatch();
@@ -62,6 +71,7 @@ describe('AccountSyncWorker', () => {
     expect(claimBatch).toHaveBeenCalled();
     expect(getAccounts).toHaveBeenCalledWith(['alice']);
     expect(upsertFromHive).toHaveBeenCalledWith(hiveAccount);
+    expect(applyFromHiveAccount).toHaveBeenCalledWith(hiveAccount, 100);
     expect(bulkInsertSubscriptions).toHaveBeenCalledTimes(2);
     expect(bulkInsertMutes).toHaveBeenCalledWith([]);
     expect(deleteOne).toHaveBeenCalledWith('alice');
@@ -98,7 +108,9 @@ describe('AccountSyncWorker', () => {
         getFollowers: jest.fn(),
         getFollowing: jest.fn(),
         getMutedList: jest.fn(),
+        getDynamicGlobalProperties: jest.fn(),
       } as never,
+      { applyFromHiveAccount: jest.fn() } as never,
     );
 
     await worker.runAccountSyncBatch();

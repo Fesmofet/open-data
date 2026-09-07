@@ -12,3 +12,16 @@ export type { PaginatedProjectedObjects } from './paginated-objects.types';
 export { GetUserFollowersEndpoint } from './get-user-followers.endpoint';
 export { GetUserFollowingEndpoint } from './get-user-following.endpoint';
 export { GetUserFollowingObjectsEndpoint } from './get-user-following-objects.endpoint';
+export {
+  userAccountAuthListQuerySchema,
+  hiveAccountAuthorityTypeSchema,
+  type UserAccountAuthListQuery,
+} from './user-account-auth-list.schema';
+export type {
+  UserAccountAuthGrantorItem,
+  UserAccountAuthGranteeItem,
+  PaginatedUserAccountAuthGrantors,
+  PaginatedUserAccountAuthGrantees,
+} from './user-account-auth-list.types';
+export { GetUserAuthorityGrantorsEndpoint } from './get-user-authority-grantors.endpoint';
+export { GetUserAuthorityGranteesEndpoint } from './get-user-authority-grantees.endpoint';

@@ -5,6 +5,8 @@ import { ObjectProjectionModule } from '../object-projection/object-projection.m
 import { GetUserFollowersEndpoint } from './get-user-followers.endpoint';
 import { GetUserFollowingEndpoint } from './get-user-following.endpoint';
 import { GetUserFollowingObjectsEndpoint } from './get-user-following-objects.endpoint';
+import { GetUserAuthorityGrantorsEndpoint } from './get-user-authority-grantors.endpoint';
+import { GetUserAuthorityGranteesEndpoint } from './get-user-authority-grantees.endpoint';
 
 @Module({
   imports: [RepositoriesModule, ObjectsDomainModule, ObjectProjectionModule],
@@ -12,11 +14,15 @@ import { GetUserFollowingObjectsEndpoint } from './get-user-following-objects.en
     GetUserFollowersEndpoint,
     GetUserFollowingEndpoint,
     GetUserFollowingObjectsEndpoint,
+    GetUserAuthorityGrantorsEndpoint,
+    GetUserAuthorityGranteesEndpoint,
   ],
   exports: [
     GetUserFollowersEndpoint,
     GetUserFollowingEndpoint,
     GetUserFollowingObjectsEndpoint,
+    GetUserAuthorityGrantorsEndpoint,
+    GetUserAuthorityGranteesEndpoint,
   ],
 })
 export class SocialModule {}

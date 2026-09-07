@@ -4,6 +4,7 @@ import { NotificationAdapterModule } from '../notification-adapter/notification-
 import { FollowSocialService } from './follow-social.service';
 import { ReblogSocialService } from './reblog-social.service';
 import { AccountProfileUpdateService } from './account-profile-update.service';
+import { AccountAuthorityService } from './account-authority.service';
 import { AccountEnsureService } from './account-ensure.service';
 import { AccountSyncWorker } from './account-sync.worker';
 import { AccountLastActivityService } from './account-last-activity.service';
@@ -14,6 +15,7 @@ import { AccountLastActivityService } from './account-last-activity.service';
     FollowSocialService,
     ReblogSocialService,
     AccountProfileUpdateService,
+    AccountAuthorityService,
     AccountEnsureService,
     AccountSyncWorker,
     AccountLastActivityService,
@@ -22,6 +24,7 @@ import { AccountLastActivityService } from './account-last-activity.service';
     FollowSocialService,
     ReblogSocialService,
     AccountProfileUpdateService,
+    AccountAuthorityService,
     AccountEnsureService,
     AccountLastActivityService,
   ],

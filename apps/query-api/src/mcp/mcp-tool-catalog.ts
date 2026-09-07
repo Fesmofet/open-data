@@ -338,6 +338,18 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-social-lists.md',
   },
   {
+    name: 'get_user_authority_grantors',
+    description: 'Accounts that delegated Hive owner/active/posting authority to the user.',
+    httpEquivalent: 'GET /query/v1/users/:name/authority-grantors',
+    specPath: 'docs/apps/query-api/spec/user-account-auths-endpoint.md',
+  },
+  {
+    name: 'get_user_authority_grantees',
+    description: 'Accounts that received Hive authority from the user.',
+    httpEquivalent: 'GET /query/v1/users/:name/authority-grantees',
+    specPath: 'docs/apps/query-api/spec/user-account-auths-endpoint.md',
+  },
+  {
     name: 'get_user_favorites_types',
     description: 'Object types present in user favorites (sidebar).',
     httpEquivalent: 'GET /query/v1/users/:name/favorites/types',

@@ -53,6 +53,8 @@ import type {
   GetUserFollowersEndpoint,
   GetUserFollowingEndpoint,
   GetUserFollowingObjectsEndpoint,
+  GetUserAuthorityGrantorsEndpoint,
+  GetUserAuthorityGranteesEndpoint,
 } from '../domain/social';
 import type {
   GetUserFavoritesEndpoint,
@@ -144,6 +146,8 @@ export interface McpToolDeps {
   getUserFollowers: GetUserFollowersEndpoint;
   getUserFollowing: GetUserFollowingEndpoint;
   getUserFollowingObjects: GetUserFollowingObjectsEndpoint;
+  getUserAuthorityGrantors: GetUserAuthorityGrantorsEndpoint;
+  getUserAuthorityGrantees: GetUserAuthorityGranteesEndpoint;
   getUserFavoritesTypes: GetUserFavoritesTypesEndpoint;
   getUserFavorites: GetUserFavoritesEndpoint;
   postUserFavoritesMap: PostUserFavoritesMapEndpoint;

@@ -1,7 +1,7 @@
 ---
 id: docs-spec-data-model-users
 title: PostgreSQL: Waivio users
-description: "Normative DDL lives in schema.sql. Kysely row types: `@opden-data-layer/core` (`OdlDatabase`, `AccountsCurrentTable`, `UserMetadataTable`, etc.)."
+description: "Normative DDL lives in schema.sql. Kysely row types: `@opden-data-layer/odl-db-types` (`OdlDatabase`, `AccountsCurrentTable`, `UserMetadataTable`, etc.)."
 type: spec
 status: active
 scope: platform
@@ -14,7 +14,7 @@ related:
 
 # PostgreSQL: Waivio users (legacy Mongo normalization)
 
-Normative DDL lives in [schema.sql](schema.sql). Kysely row types: `@opden-data-layer/core` (`OdlDatabase`, `AccountsCurrentTable`, `UserMetadataTable`, etc.).
+Normative DDL lives in [schema.sql](schema.sql). Kysely row types: `@opden-data-layer/odl-db-types` (`OdlDatabase`, `AccountsCurrentTable`, `UserMetadataTable`, etc.).
 
 Constants: `REFERRAL_TYPES`, `REFERRAL_STATUSES`, `SUPPORTED_CURRENCIES` in `@opden-data-layer/core` (`constants/user.constants.ts`).
 
@@ -30,6 +30,8 @@ Constants: `REFERRAL_TYPES`, `REFERRAL_STATUSES`, `SUPPORTED_CURRENCIES` in `@op
 | **user_post_bookmarks** | Bookmark strings that look like `author/permlink` (post refs). Object-only strings (no `/`) are not stored. |
 | **user_subscriptions** | `SubscriptionSchema` follower/following + `bell` + `created_at` (relationship time; default `NOW()`, backfilled from Mongo `_id` where available). |
 | **user_account_mutes** | Hive social ignore pairs (`muter`, `muted`); PK `(muter, muted)`. |
+| **user_account_auths** | Hive `account_auths` snapshot (`grantor`, `authority_type`, `grantee`); reverse lookup for delegated authority. |
+| **user_account_auth_sync** | Backfill checkpoint for authority sync per account. |
 | **user_object_follows** | `objects_follow[]` with `object_id` in `objects_core`; `bell` default false (Mongo had no per-field bell). `created_at` defaults `NOW()`; migrated rows use user document `_id` time as an approximation. |
 | **user_object_expertise** | Per-user per-object post-author expertise (`user_name` + `author_permlink` + `weight` from legacy `user_expertise`). Aggregate `accounts_current.wobjects_weight` remains denormalized. |
 
@@ -78,6 +80,8 @@ erDiagram
 | user_subscriptions | `(following)`, `(following, created_at DESC)`, `(follower, created_at DESC)` | Followers of an account; recency listings |
 | user_object_follows | `(object_id)`, `(account, created_at DESC)` | Who follows an object |
 | user_object_expertise | `(account, weight DESC)`, `(object_id)` | Profile expertise lists |
+| user_account_auths | `(grantee, authority_type, grantor)` | Reverse lookup: who granted authority to a grantee |
+| user_account_auth_sync | `(account)` PK | Backfill / sync checkpoint per account |
 | post_objects | `(author)` | Shop/favorites: filter post-linked objects by profile author |
 
 ## Data import

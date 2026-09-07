@@ -36,6 +36,7 @@ export type { UserExpertiseScope, UserExpertiseRow } from './user-object-experti
 export type { FavoritesScopeParams } from './user-favorites.repository';
 export { UserDelegationsRepository } from './user-delegations.repository';
 export { UserRcDelegationsRepository } from './user-rc-delegations.repository';
+export { UserAccountAuthsRepository } from './user-account-auths.repository';
 export { WalletExemptionsRepository } from './wallet-exemptions.repository';
 export { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 export { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';

@@ -28,6 +28,7 @@ import { UserFavoritesRepository } from './user-favorites.repository';
 import { UserObjectExpertiseRepository } from './user-object-expertise.repository';
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
+import { UserAccountAuthsRepository } from './user-account-auths.repository';
 import { WalletExemptionsRepository } from './wallet-exemptions.repository';
 import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 import { HiveEngineWaivAirdropsRepository } from './hive-engine-waiv-airdrops.repository';
@@ -70,6 +71,7 @@ import { ThreadRepliesRepository } from './thread-replies.repository';
     UserObjectExpertiseRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    UserAccountAuthsRepository,
     WalletExemptionsRepository,
     HiveEngineSwapsRepository,
     HiveEngineWaivAirdropsRepository,
@@ -112,6 +114,7 @@ import { ThreadRepliesRepository } from './thread-replies.repository';
     UserObjectExpertiseRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    UserAccountAuthsRepository,
     WalletExemptionsRepository,
     HiveEngineSwapsRepository,
     HiveEngineWaivAirdropsRepository,

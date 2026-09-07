@@ -30,6 +30,7 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
 import { PostObjectRelatedImagesRepository } from './post-object-related-images.repository';
 import { UserDelegationsRepository } from './user-delegations.repository';
 import { UserRcDelegationsRepository } from './user-rc-delegations.repository';
+import { UserAccountAuthsRepository } from './user-account-auths.repository';
 import { HiveEngineSwapsRepository } from './hive-engine-swaps.repository';
 import { HiveEngineDepositRecordsRepository } from './hive-engine-deposit-records.repository';
 import { OblRepository } from './obl.repository';
@@ -69,6 +70,7 @@ import { MessagesRepository } from './messages.repository';
     PostObjectRelatedImagesRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    UserAccountAuthsRepository,
     HiveEngineSwapsRepository,
     HiveEngineDepositRecordsRepository,
     OblRepository,
@@ -107,6 +109,7 @@ import { MessagesRepository } from './messages.repository';
     PostObjectRelatedImagesRepository,
     UserDelegationsRepository,
     UserRcDelegationsRepository,
+    UserAccountAuthsRepository,
     HiveEngineSwapsRepository,
     HiveEngineDepositRecordsRepository,
     OblRepository,

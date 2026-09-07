@@ -39,7 +39,7 @@ The **chain-indexer** application is the **Hive write path**: it reads blocks in
 ## 3) Non-goals
 
 - **No governance masking for API callers** — indexer stores canonical rows; filtering and masks are defined in domain specs and implemented in the query path.
-- **Not a full Hive mirror** — only operations wired in `HiveMainParser` are processed (`custom_json` for ODL id, follow, and RC delegate, `comment`, `delete_comment`, `vote`, `account_update`, `create_account`, `create_claimed_account`, `delegate_vesting_shares`; see [social-parsers](social-parsers.md), [vote-ingestion](vote-ingestion.md), [hive-delegations](hive-delegations.md)).
+- **Not a full Hive mirror** — only operations wired in `HiveMainParser` are processed (`custom_json` for ODL id, follow, and RC delegate, `comment`, `delete_comment`, `vote`, `account_update`, `account_update2`, `create_account`, `create_claimed_account`, `recover_account`, `delegate_vesting_shares`; see [social-parsers](social-parsers.md), [account-authority-grants](account-authority-grants.md), [vote-ingestion](vote-ingestion.md), [hive-delegations](hive-delegations.md)).
 
 ## 4) High-level data flow
 
@@ -79,6 +79,7 @@ flowchart LR
 | [Post languages](post-languages.md) | ELD detection on comment upsert → `post_languages` rows |
 | [Post related images sync](post-object-related-images-sync.md) | `post_object_related_images` from post `json_metadata.image` + `post_objects` |
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
+| [Account authority grants](account-authority-grants.md) | Hive `account_auths` reverse index → `user_account_auths` |
 | [Wallet notifications](wallet-notifications.md) | Notify-only Hive L1 wallet ops → notification stream (no wallet history in PG) |
 | [Hive delegations](hive-delegations.md) | HP `delegate_vesting_shares` and RC `custom_json` id `rc` → `user_delegations` / `user_rc_delegations` |
 | [ODL pipeline](odl-pipeline.md) | Envelope, actions, repositories, write guards, batch import |

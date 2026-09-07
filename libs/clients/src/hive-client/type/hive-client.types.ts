@@ -108,6 +108,13 @@ export type HiveManabar = {
   last_update_time?: number;
 };
 
+/** Hive authority object (owner / active / posting). */
+export type HiveAuthority = {
+  weight_threshold?: number;
+  account_auths?: [string, number][];
+  key_auths?: [string, number][];
+};
+
 /** Wallet-related fields from `condenser_api.get_accounts`. */
 export type HiveAccountWalletFields = {
   balance: string;
@@ -156,6 +163,9 @@ export type HiveAccountType = {
   post_count: number;
   last_post: string;
   last_root_post: string;
+  owner?: HiveAuthority;
+  active?: HiveAuthority;
+  posting?: HiveAuthority;
 } & Partial<HiveAccountWalletFields>;
 
 /** One row from vesting delegation RPCs (`condenser_api` or `database_api`). */

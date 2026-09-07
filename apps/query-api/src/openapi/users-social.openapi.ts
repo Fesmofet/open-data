@@ -161,3 +161,98 @@ registry.registerPath({
     },
   },
 });
+
+const userAccountAuthGrantorItemSchema = registry.register(
+  'UserAccountAuthGrantorItem',
+  z.object({
+    grantor: z.string().openapi({ description: 'Hive account that delegated authority' }),
+    authorityType: z.enum(['owner', 'active', 'posting']).openapi({
+      description: 'Authority type delegated to the profile',
+    }),
+  }),
+);
+
+const paginatedUserAccountAuthGrantorsSchema = registry.register(
+  'PaginatedUserAccountAuthGrantors',
+  z.object({
+    items: z.array(userAccountAuthGrantorItemSchema),
+    total: z.number().int(),
+    hasMore: z.boolean(),
+  }),
+);
+
+const userAccountAuthGranteeItemSchema = registry.register(
+  'UserAccountAuthGranteeItem',
+  z.object({
+    grantee: z.string().openapi({ description: 'Hive account receiving delegated authority' }),
+    authorityType: z.enum(['owner', 'active', 'posting']),
+  }),
+);
+
+const paginatedUserAccountAuthGranteesSchema = registry.register(
+  'PaginatedUserAccountAuthGrantees',
+  z.object({
+    items: z.array(userAccountAuthGranteeItemSchema),
+    total: z.number().int(),
+    hasMore: z.boolean(),
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/authority-grantors',
+  tags: [queryApiOpenApiTags.users],
+  summary: 'List accounts that delegated Hive authority to the profile',
+  description:
+    'Reverse lookup on `user_account_auths` — who granted `owner`, `active`, or `posting` account auth to `{name}`.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    query: z.object({
+      type: z.enum(['owner', 'active', 'posting']).optional().openapi({
+        description: 'Filter by authority type; omit for all types.',
+      }),
+      skip: z.coerce.number().int().min(0).optional(),
+      limit: z.coerce.number().int().min(0).max(100).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Paginated grantor list.',
+      content: {
+        'application/json': { schema: paginatedUserAccountAuthGrantorsSchema },
+      },
+    },
+    404: {
+      description: 'Profile not in `accounts_current`.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/users/{name}/authority-grantees',
+  tags: [queryApiOpenApiTags.users],
+  summary: 'List accounts that received Hive authority from the profile',
+  description: 'Forward lookup on `user_account_auths` for `{name}` as grantor.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    query: z.object({
+      type: z.enum(['owner', 'active', 'posting']).optional(),
+      skip: z.coerce.number().int().min(0).optional(),
+      limit: z.coerce.number().int().min(0).max(100).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Paginated grantee list.',
+      content: {
+        'application/json': { schema: paginatedUserAccountAuthGranteesSchema },
+      },
+    },
+    404: {
+      description: 'Profile not in `accounts_current`.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});

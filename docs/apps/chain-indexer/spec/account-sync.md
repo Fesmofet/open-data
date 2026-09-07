@@ -38,9 +38,10 @@ Re-enqueue uses `ON CONFLICT (account_name) DO NOTHING` — duplicate queue rows
 
   1. `condenser_api.get_accounts([[name]])` — if empty, retry until `ACCOUNT_SYNC_MAX_ATTEMPTS` (default `5`), then delete queue row.
   2. `AccountsCurrentRepository.upsertFromHive` — Hive-sourced columns only; does not overwrite ODL fields (`object_reputation`, `wobjects_weight`, `stage_version`, etc.).
-  3. Paginated `condenser_api.get_followers` / `get_following` (`type=blog`, page size `1000`); `user_subscriptions` bulk insert with `ON CONFLICT DO NOTHING`.
-  4. `bridge.get_follow_list` with `{ observer, follow_type: "muted" }`; `user_account_mutes` bulk insert with `ON CONFLICT DO NOTHING`.
-  5. Delete queue row on success. On RPC/network error, `resetAttempt` (clear `last_attempt_at` for backoff).
+  3. `AccountAuthorityService.applyFromHiveAccount` — full `owner`/`active`/`posting` `account_auths` snapshot into `user_account_auths`; see [account-authority-grants.md](account-authority-grants.md).
+  4. Paginated `condenser_api.get_followers` / `get_following` (`type=blog`, page size `1000`); `user_subscriptions` bulk insert with `ON CONFLICT DO NOTHING`.
+  5. `bridge.get_follow_list` with `{ observer, follow_type: "muted" }`; `user_account_mutes` bulk insert with `ON CONFLICT DO NOTHING`.
+  6. Delete queue row on success. On RPC/network error, `resetAttempt` (clear `last_attempt_at` for backoff).
 
 ## Hive client APIs
 

@@ -52,6 +52,8 @@ import {
   GetUserFollowersEndpoint,
   GetUserFollowingEndpoint,
   GetUserFollowingObjectsEndpoint,
+  GetUserAuthorityGrantorsEndpoint,
+  GetUserAuthorityGranteesEndpoint,
 } from '../domain/social';
 import {
   GetUserFavoritesEndpoint,
@@ -157,6 +159,8 @@ export class McpService {
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
+    private readonly getUserAuthorityGrantors: GetUserAuthorityGrantorsEndpoint,
+    private readonly getUserAuthorityGrantees: GetUserAuthorityGranteesEndpoint,
     private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
     private readonly getUserFavorites: GetUserFavoritesEndpoint,
     private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
@@ -238,6 +242,8 @@ export class McpService {
       getUserFollowers: this.getUserFollowers,
       getUserFollowing: this.getUserFollowing,
       getUserFollowingObjects: this.getUserFollowingObjects,
+      getUserAuthorityGrantors: this.getUserAuthorityGrantors,
+      getUserAuthorityGrantees: this.getUserAuthorityGrantees,
       getUserFavoritesTypes: this.getUserFavoritesTypes,
       getUserFavorites: this.getUserFavorites,
       postUserFavoritesMap: this.postUserFavoritesMap,

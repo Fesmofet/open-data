@@ -7,6 +7,7 @@ import { HiveClient } from '@opden-data-layer/clients';
 import { AccountSyncQueueRepository } from '../../repositories/account-sync-queue.repository';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { SocialGraphRepository } from '../../repositories/social-graph.repository';
+import { AccountAuthorityService } from './account-authority.service';
 
 const DEFAULT_ACCOUNT_SYNC_INTERVAL_MS = 30_000;
 const DEFAULT_ACCOUNT_SYNC_BATCH_SIZE = 20;
@@ -31,6 +32,7 @@ export class AccountSyncWorker implements OnModuleInit, OnModuleDestroy {
     private readonly accountsCurrentRepository: AccountsCurrentRepository,
     private readonly socialGraphRepository: SocialGraphRepository,
     private readonly hiveClient: HiveClient,
+    private readonly accountAuthorityService: AccountAuthorityService,
   ) {}
 
   onModuleInit(): void {
@@ -160,6 +162,12 @@ export class AccountSyncWorker implements OnModuleInit, OnModuleDestroy {
       }
 
       await this.accountsCurrentRepository.upsertFromHive(hive);
+
+      const headProps = await this.hiveClient.getDynamicGlobalProperties();
+      const headBlock = Number(headProps?.head_block_number ?? 0);
+      if (headBlock > 0) {
+        await this.accountAuthorityService.applyFromHiveAccount(hive, headBlock);
+      }
 
       const followersRows = await this.collectFollowersBlog(accountName);
       const followingRows = await this.collectFollowingBlog(accountName);

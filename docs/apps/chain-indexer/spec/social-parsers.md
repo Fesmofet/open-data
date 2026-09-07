@@ -27,8 +27,10 @@ Deterministic handling of Hive operations that drive the social graph and profil
 | Hive operation | Handler | Persistence |
 |----------------|---------|-------------|
 | `custom_json` with `id: "follow"` | `FollowSocialService` / `ReblogSocialService` | `user_subscriptions`, `user_account_mutes`, `accounts_current` counters, `post_reblogged_users` (reblog branch) |
-| `account_update` | `AccountProfileUpdateService` | `accounts_current` (`alias`, `profile_image`, `json_metadata`, `posting_json_metadata`) when row exists; if **no row**, enqueue [account sync](account-sync.md) |
-| `create_account`, `create_claimed_account` | `AccountEnsureService` | Minimal `accounts_current` row if absent; then enqueue [account sync](account-sync.md) |
+| `account_update` | `AccountProfileUpdateService` + `AccountAuthorityService` | Profile columns on `accounts_current` when row exists; [account authority grants](account-authority-grants.md) snapshot for present `owner`/`active`/`posting` types; if **no row**, enqueue [account sync](account-sync.md) |
+| `account_update2` | Same chain as `account_update` | Same as `account_update` (v2 payload shape) |
+| `create_account`, `create_claimed_account` | `AccountEnsureService` + `AccountAuthorityService` | Minimal `accounts_current` row if absent; authority snapshot for new account; enqueue [account sync](account-sync.md) |
+| `recover_account` | `AccountAuthorityService` | Owner authority replacement for recovered account; see [account-authority-grants.md](account-authority-grants.md) |
 
 ## Signer
 

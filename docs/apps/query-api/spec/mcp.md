@@ -80,6 +80,8 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_followers` | `GET .../followers` | [user-social-lists.md](user-social-lists.md) |
 | `get_user_following` | `GET .../following` | [user-social-lists.md](user-social-lists.md) |
 | `get_user_following_objects` | `GET .../following-objects` | [user-social-lists.md](user-social-lists.md) |
+| `get_user_authority_grantors` | `GET .../authority-grantors` | [user-account-auths-endpoint.md](user-account-auths-endpoint.md) |
+| `get_user_authority_grantees` | `GET .../authority-grantees` | [user-account-auths-endpoint.md](user-account-auths-endpoint.md) |
 | `get_user_favorites_types` | `GET .../favorites/types` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
 | `get_user_favorites` | `GET .../favorites` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |
 | `post_user_favorites_map` | `POST .../favorites/map` | [users-favorites-endpoint.md](users-favorites-endpoint.md) |

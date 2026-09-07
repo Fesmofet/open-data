@@ -60,12 +60,18 @@ import {
   GetUserFollowersEndpoint,
   GetUserFollowingEndpoint,
   GetUserFollowingObjectsEndpoint,
+  GetUserAuthorityGrantorsEndpoint,
+  GetUserAuthorityGranteesEndpoint,
   userSocialListQuerySchema,
   userFollowingObjectsQuerySchema,
+  userAccountAuthListQuerySchema,
   type PaginatedProjectedObjects,
   type PaginatedUserFollowList,
+  type PaginatedUserAccountAuthGrantors,
+  type PaginatedUserAccountAuthGrantees,
   type UserFollowingObjectsQuery,
   type UserSocialListQuery,
+  type UserAccountAuthListQuery,
 } from '../domain/social';
 import {
   GetUserFavoritesEndpoint,
@@ -106,6 +112,8 @@ export class UsersController {
     private readonly getUserFollowers: GetUserFollowersEndpoint,
     private readonly getUserFollowing: GetUserFollowingEndpoint,
     private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
+    private readonly getUserAuthorityGrantors: GetUserAuthorityGrantorsEndpoint,
+    private readonly getUserAuthorityGrantees: GetUserAuthorityGranteesEndpoint,
     private readonly getUserFavoritesTypes: GetUserFavoritesTypesEndpoint,
     private readonly getUserFavorites: GetUserFavoritesEndpoint,
     private readonly postUserFavoritesMap: PostUserFavoritesMapEndpoint,
@@ -207,6 +215,30 @@ export class UsersController {
       governanceObjectIdFromHeader,
       viewer,
     );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/authority-grantors')
+  async getAuthorityGrantors(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userAccountAuthListQuerySchema)) query: UserAccountAuthListQuery,
+  ): Promise<PaginatedUserAccountAuthGrantors> {
+    const result = await this.getUserAuthorityGrantors.execute(name, query);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/authority-grantees')
+  async getAuthorityGrantees(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userAccountAuthListQuerySchema)) query: UserAccountAuthListQuery,
+  ): Promise<PaginatedUserAccountAuthGrantees> {
+    const result = await this.getUserAuthorityGrantees.execute(name, query);
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);
     }

@@ -28,6 +28,15 @@ describe('account-last-activity.util', () => {
     ).toBe('bob');
   });
 
+  it('maps account_update to account', () => {
+    expect(accountNameFromHiveOperation('account_update', { account: 'flowmaster' })).toBe(
+      'flowmaster',
+    );
+    expect(accountNameFromHiveOperation('account_update2', { account: 'flowmaster' })).toBe(
+      'flowmaster',
+    );
+  });
+
   it('collects unique names from block transactions', () => {
     const names = collectActiveAccountNamesFromBlock([
       {

@@ -53,6 +53,7 @@ export function accountNameFromHiveOperation(
     case 'claim_reward_balance':
     case 'claim_reward_balance2':
     case 'account_update':
+    case 'account_update2':
     case 'account_witness_vote':
     case 'account_witness_proxy':
     case 'decline_voting_rights':

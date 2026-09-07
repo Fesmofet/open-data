@@ -362,6 +362,26 @@ CREATE TABLE user_rc_delegations (
 CREATE INDEX idx_user_rc_delegations_delegatee ON user_rc_delegations (delegatee);
 
 -- ---------------------------------------------------------------------------
+-- user_account_auths (Hive account_auths reverse index — chain-indexer)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_account_auths (
+  grantor          TEXT NOT NULL,
+  authority_type   TEXT NOT NULL CHECK (authority_type IN ('owner', 'active', 'posting')),
+  grantee          TEXT NOT NULL,
+  updated_at_block BIGINT NOT NULL,
+  PRIMARY KEY (grantor, authority_type, grantee)
+);
+
+CREATE INDEX idx_user_account_auths_grantee_lookup
+  ON user_account_auths (grantee, authority_type, grantor);
+
+CREATE TABLE user_account_auth_sync (
+  account      TEXT PRIMARY KEY,
+  synced_at    TIMESTAMPTZ NOT NULL,
+  synced_block BIGINT NOT NULL
+);
+
+-- ---------------------------------------------------------------------------
 -- user_object_follows (UserSchema.objects_follow + bell)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_object_follows (

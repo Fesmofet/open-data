@@ -45,6 +45,8 @@ export interface OdlDatabase {
   user_subscriptions: UserSubscriptionsTable;
   user_delegations: UserDelegationsTable;
   user_rc_delegations: UserRcDelegationsTable;
+  user_account_auths: UserAccountAuthsTable;
+  user_account_auth_sync: UserAccountAuthSyncTable;
   user_account_mutes: UserAccountMutesTable;
   user_object_follows: UserObjectFollowsTable;
   user_object_expertise: UserObjectExpertiseTable;
@@ -481,6 +483,33 @@ export interface UserRcDelegationsTable {
 export type UserRcDelegation = Selectable<UserRcDelegationsTable>;
 export type NewUserRcDelegation = Insertable<UserRcDelegationsTable>;
 export type UserRcDelegationUpdate = Updateable<UserRcDelegationsTable>;
+
+// ---------------------------------------------------------------------------
+// user_account_auths (Hive account_auths reverse index)
+// ---------------------------------------------------------------------------
+
+export type HiveAccountAuthorityType = 'owner' | 'active' | 'posting';
+
+export interface UserAccountAuthsTable {
+  grantor: string;
+  authority_type: HiveAccountAuthorityType;
+  grantee: string;
+  updated_at_block: number;
+}
+
+export type UserAccountAuth = Selectable<UserAccountAuthsTable>;
+export type NewUserAccountAuth = Insertable<UserAccountAuthsTable>;
+export type UserAccountAuthUpdate = Updateable<UserAccountAuthsTable>;
+
+export interface UserAccountAuthSyncTable {
+  account: string;
+  synced_at: Date;
+  synced_block: number;
+}
+
+export type UserAccountAuthSync = Selectable<UserAccountAuthSyncTable>;
+export type NewUserAccountAuthSync = Insertable<UserAccountAuthSyncTable>;
+export type UserAccountAuthSyncUpdate = Updateable<UserAccountAuthSyncTable>;
 
 // ---------------------------------------------------------------------------
 // user_account_mutes (Hive follow ignore — pair-level social mute)

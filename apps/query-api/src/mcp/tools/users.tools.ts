@@ -7,6 +7,7 @@ import {
   userFollowingObjectsQuerySchema,
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
+import { userAccountAuthListQuerySchema } from '../../domain/social/user-account-auth-list.schema';
 import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
 import { userExpertiseObjectsQuerySchema } from '../../domain/expertise/expertise.schema';
@@ -631,6 +632,46 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
       );
+      if (!result) {
+        return toolError(`User not found: ${account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_authority_grantors',
+    {
+      description: catalogDescription('get_user_authority_grantors'),
+      inputSchema: userAccountAuthListQuerySchema.extend(accountField),
+    },
+    async (args) => {
+      const { account, type, skip, limit } = args;
+      const result = await deps.getUserAuthorityGrantors.execute(account, {
+        type,
+        skip,
+        limit,
+      });
+      if (!result) {
+        return toolError(`User not found: ${account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_user_authority_grantees',
+    {
+      description: catalogDescription('get_user_authority_grantees'),
+      inputSchema: userAccountAuthListQuerySchema.extend(accountField),
+    },
+    async (args) => {
+      const { account, type, skip, limit } = args;
+      const result = await deps.getUserAuthorityGrantees.execute(account, {
+        type,
+        skip,
+        limit,
+      });
       if (!result) {
         return toolError(`User not found: ${account}`);
       }

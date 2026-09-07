@@ -66,8 +66,9 @@ So the cursor always moves forward by one height per loop iteration.
 |-----------|---------|
 | `custom_json` | [`HiveCustomJsonParser`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-custom-json-parser.ts) — ODL id, follow, RC (`id` = `rc`); see [hive-delegations](hive-delegations.md) |
 | `comment` / `delete_comment` | Comment orchestrator |
-| `account_update` | Profile update |
-| `create_account` / `create_claimed_account` | Account ensure |
+| `account_update` / `account_update2` | Profile update + [account authority grants](account-authority-grants.md) |
+| `create_account` / `create_claimed_account` | Account ensure + authority snapshot |
+| `recover_account` | Owner authority replacement |
 | `vote` | Vote indexing |
 | `delegate_vesting_shares` | HP delegations → `user_delegations`; see [hive-delegations](hive-delegations.md) |
 

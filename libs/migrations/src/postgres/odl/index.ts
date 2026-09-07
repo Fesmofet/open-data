@@ -59,6 +59,7 @@ import * as m00058 from './00058_profile_feed_read_and_replies';
 import * as m00059 from './00059_object_updates_search_json_prefix';
 import * as m00060 from './00060_messages_original_created_at';
 import * as m00061 from './00061_messages_linked_object_ids';
+import * as m00062 from './00062_user_account_auths';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/odl-db-types OdlDatabase and docs/spec/data-model/schema.sql */
@@ -133,4 +134,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00059_object_updates_search_json_prefix': { up: m00059.up, down: m00059.down },
   '00060_messages_original_created_at': { up: m00060.up, down: m00060.down },
   '00061_messages_linked_object_ids': { up: m00061.up, down: m00061.down },
+  '00062_user_account_auths': { up: m00062.up, down: m00062.down },
 };

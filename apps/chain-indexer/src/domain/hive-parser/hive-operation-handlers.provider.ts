@@ -3,6 +3,7 @@ import { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
 import { HIVE_OPERATION } from '../../constants/hive-parser';
 import { CommentOperationOrchestrator } from '../hive-comment/comment-orchestrator.service';
 import { AccountProfileUpdateService } from '../hive-social/account-profile-update.service';
+import { AccountAuthorityService } from '../hive-social/account-authority.service';
 import { AccountEnsureService } from '../hive-social/account-ensure.service';
 import { VoteHiveService } from '../hive-vote/vote-hive.service';
 import { HiveHpDelegationService } from '../hive-delegation/hive-hp-delegation.service';
@@ -19,6 +20,7 @@ export const hiveOperationHandlersProvider: Provider = {
     customJsonParser: HiveCustomJsonParser,
     commentOrchestrator: CommentOperationOrchestrator,
     accountProfileUpdate: AccountProfileUpdateService,
+    accountAuthorityService: AccountAuthorityService,
     accountEnsure: AccountEnsureService,
     voteHiveService: VoteHiveService,
     hpDelegationService: HiveHpDelegationService,
@@ -42,19 +44,36 @@ export const hiveOperationHandlersProvider: Provider = {
     },
     {
       operation: HIVE_OPERATION.ACCOUNT_UPDATE,
-      handle: (payload, ctx) =>
-        accountProfileUpdate.handleAccountUpdate(payload, ctx),
+      handle: async (payload, ctx) => {
+        await accountProfileUpdate.handleAccountUpdate(payload, ctx);
+        await accountAuthorityService.handleAccountUpdate(payload, ctx);
+      },
+    },
+    {
+      operation: HIVE_OPERATION.ACCOUNT_UPDATE2,
+      handle: async (payload, ctx) => {
+        await accountProfileUpdate.handleAccountUpdate(payload, ctx);
+        await accountAuthorityService.handleAccountUpdate(payload, ctx);
+      },
     },
     {
       operation: HIVE_OPERATION.CREATE_ACCOUNT,
-      handle: async (payload) => {
+      handle: async (payload, ctx) => {
         await accountEnsure.ensureFromCreateAccountPayload(payload);
+        await accountAuthorityService.handleCreateAccount(payload, ctx);
       },
     },
     {
       operation: HIVE_OPERATION.CREATE_CLAIMED_ACCOUNT,
-      handle: async (payload) => {
+      handle: async (payload, ctx) => {
         await accountEnsure.ensureFromCreateAccountPayload(payload);
+        await accountAuthorityService.handleCreateAccount(payload, ctx);
+      },
+    },
+    {
+      operation: HIVE_OPERATION.RECOVER_ACCOUNT,
+      handle: async (payload, ctx) => {
+        await accountAuthorityService.handleRecoverAccount(payload, ctx);
       },
     },
     {
@@ -80,6 +99,7 @@ export const hiveOperationHandlersProvider: Provider = {
     HiveCustomJsonParser,
     CommentOperationOrchestrator,
     AccountProfileUpdateService,
+    AccountAuthorityService,
     AccountEnsureService,
     VoteHiveService,
     HiveHpDelegationService,
