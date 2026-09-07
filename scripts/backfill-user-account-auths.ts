@@ -183,6 +183,11 @@ async function replaceAccountSnapshot(
               updated_at_block: headBlock,
             })),
           )
+          .onConflict((oc) =>
+            oc.columns(['grantor', 'authority_type', 'grantee']).doUpdateSet({
+              updated_at_block: sql`GREATEST(user_account_auths.updated_at_block, EXCLUDED.updated_at_block)`,
+            }),
+          )
           .execute();
       }
     }

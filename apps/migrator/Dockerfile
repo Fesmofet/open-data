@@ -13,7 +13,8 @@ COPY scripts ./scripts
 
 RUN touch .env
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile --ignore-scripts \
+    && rm -rf /root/.local/share/pnpm/store /root/.cache
 
 # Avoid tsx --env-file=.env (file may be absent); DATABASE_URL must be set in the environment.
 CMD ["pnpm", "exec", "tsx", "libs/migrations/src/cli.ts", "latest"]

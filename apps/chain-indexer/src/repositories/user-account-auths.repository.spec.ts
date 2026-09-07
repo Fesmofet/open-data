@@ -42,7 +42,9 @@ describe('UserAccountAuthsRepository.replaceAuthorityType', () => {
       }),
       insertInto: jest.fn().mockReturnValue({
         values: jest.fn().mockReturnValue({
-          execute: insertExecute,
+          onConflict: jest.fn().mockReturnValue({
+            execute: insertExecute,
+          }),
         }),
       }),
     };

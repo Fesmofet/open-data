@@ -84,6 +84,11 @@ export class UserAccountAuthsRepository {
         await this.executor(trx)
           .insertInto('user_account_auths')
           .values(rows)
+          .onConflict((oc) =>
+            oc.columns(['grantor', 'authority_type', 'grantee']).doUpdateSet({
+              updated_at_block: sql`GREATEST(user_account_auths.updated_at_block, EXCLUDED.updated_at_block)`,
+            }),
+          )
           .execute();
       }
       return true;
