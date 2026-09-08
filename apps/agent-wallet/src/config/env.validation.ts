@@ -43,10 +43,12 @@ export const agentWalletConfigSchema = z.object({
       return trimmed.replace(/\/$/, '') || 'https://waiviodev.com';
     }),
   AGENT_WALLET_SIGNING_MODE: signingModeEnv,
+  AGENT_WALLET_ACCOUNTS_FILE: z.string().optional(),
   HIVE_ACCOUNT: z.string().optional(),
   HIVE_POSTING_KEY: z.string().optional(),
   HIVE_ACTIVE_KEY: z.string().optional(),
   HIVE_MEMO_KEY: z.string().optional(),
+  HIVE_OWNER_KEY: z.string().optional(),
   HIVE_RPC_NODES: z
     .string()
     .optional()

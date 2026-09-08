@@ -8,6 +8,11 @@ describe('AGENT_WALLET_MCP_INSTRUCTIONS', () => {
     expect(hasIndex).toBeGreaterThan(localIndex);
   });
 
+  it('documents accounts.json and wallet_accounts', () => {
+    expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('accounts.json');
+    expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('wallet_accounts');
+  });
+
   it('documents posting authority act-as and grant builder', () => {
     expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('get_user_authority_grantors');
     expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('hive_build_posting_authority_grant');

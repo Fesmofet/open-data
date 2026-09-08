@@ -50,7 +50,7 @@ Read **Hive L1**, **WAIV**, and **Engine** wallet state via **query-api MCP**; b
 | Engine (WAIV) delegate / undelegate | `engine_build_token_delegation` | active | `active` |
 | Engine swap / withdraw quote ops | quote `customJson[]` from query-api | active | `active` |
 
-Local mode: `active` requires `HIVE_ACTIVE_KEY` (`wallet_status.activeReady`). HAS mode: user confirms active key on phone.
+Local mode: `active` requires the grantor account to have `active` in `accounts.json` (`wallet_accounts` / `wallet_status.activeReady`). HAS mode: user confirms active key on phone.
 
 ## Read (query-api MCP)
 

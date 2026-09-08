@@ -40,7 +40,7 @@ export class IpfsUploadService {
     private readonly waivioAuth: WaivioAuthSessionService,
   ) {}
 
-  async uploadImage(filePath: string): Promise<IpfsUploadResult> {
+  async uploadImage(filePath: string, account?: string): Promise<IpfsUploadResult> {
     const resolvedPath = filePath.trim();
     if (!resolvedPath) {
       throw new Error('filePath is required');
@@ -77,7 +77,7 @@ export class IpfsUploadService {
       fs.readFile(resolvedPath),
     );
 
-    return this.uploadBuffer(fileBuffer, basename(resolvedPath), mime);
+    return this.uploadBuffer(fileBuffer, basename(resolvedPath), mime, account);
   }
 
   private waivioApiOrigin(): string {
@@ -88,9 +88,10 @@ export class IpfsUploadService {
     fileBuffer: Buffer,
     filename: string,
     mime: string,
+    account?: string,
     allowRetry = true,
   ): Promise<IpfsUploadResult> {
-    const accessToken = await this.waivioAuth.getAccessToken();
+    const accessToken = await this.waivioAuth.getAccessToken(account);
     const origin = this.waivioApiOrigin();
     const uploadUrl = `${buildWaivioIpfsGatewayBaseUrl(origin)}/upload/image`;
 
@@ -110,8 +111,8 @@ export class IpfsUploadService {
     });
 
     if (response.status === 401 && allowRetry) {
-      await this.waivioAuth.getAccessToken(true);
-      return this.uploadBuffer(fileBuffer, filename, mime, false);
+      await this.waivioAuth.getAccessToken(account, true);
+      return this.uploadBuffer(fileBuffer, filename, mime, account, false);
     }
 
     if (response.status === 400) {

@@ -12,6 +12,7 @@ import {
   DEFAULT_MESSAGING_NOTIFICATION_TYPES,
   NOTIFICATIONS_BUFFER_MAX,
 } from '../constants/notifications-buffer';
+import { normalizeHiveAccount } from '../utils/hive-account';
 import { WaivioAuthSessionService } from './waivio-auth-session.service';
 
 export type BufferedNotificationItem = {
@@ -24,11 +25,20 @@ export type BufferedNotificationItem = {
   actor: string | null;
   payload: Record<string, unknown>;
   receivedAtMs: number;
+  account: string;
 };
 
 type WsEnvelope = {
   event?: string;
   data?: Record<string, unknown>;
+};
+
+type ConnectionState = {
+  ws: WebSocket | null;
+  connected: boolean;
+  reconnectAttempt: number;
+  reconnectTimer: ReturnType<typeof setTimeout> | null;
+  connectPromise: Promise<void> | null;
 };
 
 const DEFAULT_TYPES = new Set<string>(DEFAULT_MESSAGING_NOTIFICATION_TYPES);
@@ -37,13 +47,9 @@ const DEFAULT_TYPES = new Set<string>(DEFAULT_MESSAGING_NOTIFICATION_TYPES);
 export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NotificationsSocketService.name);
   private readonly buffer: BufferedNotificationItem[] = [];
-  private ws: WebSocket | null = null;
-  private connected = false;
+  private readonly connections = new Map<string, ConnectionState>();
   private intentionalClose = false;
-  private reconnectAttempt = 0;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private lastEventAt: number | null = null;
-  private connectPromise: Promise<void> | null = null;
 
   constructor(
     private readonly config: ConfigService<AgentWalletConfig, true>,
@@ -51,31 +57,58 @@ export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy
   ) {}
 
   onModuleInit(): void {
-    void this.ensureConnected();
+    void this.ensureConnectedAll();
   }
 
   onModuleDestroy(): void {
     this.intentionalClose = true;
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
+    for (const state of this.connections.values()) {
+      if (state.reconnectTimer) {
+        clearTimeout(state.reconnectTimer);
+      }
+      state.ws?.close();
     }
-    this.ws?.close();
-    this.ws = null;
-    this.connected = false;
+    this.connections.clear();
   }
 
-  getStatus(): {
+  getStatus(account?: string): {
     connected: boolean;
     bufferedCount: number;
     lastEventAt: number | null;
     account: string | null;
+    connections: Array<{
+      account: string;
+      connected: boolean;
+      reconnectAttempt: number;
+    }>;
   } {
+    const normalized = account?.trim()
+      ? normalizeHiveAccount(account)
+      : undefined;
+    const defaultAccount =
+      normalized ??
+      this.config.get('defaultAccount', { infer: true }) ??
+      this.waivioAuth.getAllStatuses().find((status) => status.active)?.account ??
+      null;
+
+    const connections = [...this.connections.entries()].map(
+      ([entryAccount, state]) => ({
+        account: entryAccount,
+        connected: state.connected,
+        reconnectAttempt: state.reconnectAttempt,
+      }),
+    );
+
+    const defaultConnection = defaultAccount
+      ? this.connections.get(defaultAccount)
+      : undefined;
+
     return {
-      connected: this.connected,
+      connected: defaultConnection?.connected ?? false,
       bufferedCount: this.buffer.length,
       lastEventAt: this.lastEventAt,
-      account: this.waivioAuth.getStatus().account ?? null,
+      account: defaultAccount,
+      connections,
     };
   }
 
@@ -83,23 +116,28 @@ export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy
     limit?: number;
     waitMs?: number;
     types?: readonly string[];
+    account?: string;
   }): Promise<{ items: BufferedNotificationItem[] }> {
     const limit = Math.max(1, input.limit ?? 20);
     const waitMs = Math.max(0, input.waitMs ?? 0);
     const allowed = input.types?.length
       ? new Set(input.types.map((type) => type.trim()).filter(Boolean))
       : DEFAULT_TYPES;
+    const accountFilter = input.account?.trim()
+      ? normalizeHiveAccount(input.account)
+      : undefined;
 
     const deadline = Date.now() + waitMs;
     while (this.buffer.length === 0 && Date.now() < deadline) {
-      await this.ensureConnected();
+      await this.ensureConnectedAll();
       await sleep(Math.min(250, deadline - Date.now()));
     }
 
     const items: BufferedNotificationItem[] = [];
     const kept: BufferedNotificationItem[] = [];
     for (const item of this.buffer) {
-      if (items.length < limit && allowed.has(item.type)) {
+      const matchesAccount = accountFilter ? item.account === accountFilter : true;
+      if (items.length < limit && allowed.has(item.type) && matchesAccount) {
         items.push(item);
       } else {
         kept.push(item);
@@ -111,45 +149,95 @@ export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy
     return { items };
   }
 
-  private async ensureConnected(): Promise<void> {
-    if (this.connected && this.ws?.readyState === WebSocket.OPEN) {
-      return;
-    }
-    if (!this.waivioAuth.getStatus().active) {
-      return;
-    }
-    if (this.connectPromise) {
-      return this.connectPromise;
-    }
-    this.connectPromise = this.connect().finally(() => {
-      this.connectPromise = null;
-    });
-    return this.connectPromise;
+  isConnected(account: string): boolean {
+    return this.connections.get(normalizeHiveAccount(account))?.connected ?? false;
   }
 
-  private async connect(): Promise<void> {
-    const token = await this.waivioAuth.getAccessToken();
+  async refreshConnections(): Promise<void> {
+    await this.ensureConnectedAll();
+  }
+
+  private async ensureConnectedAll(): Promise<void> {
+    const activeAccounts = this.waivioAuth
+      .getAllStatuses()
+      .filter((status) => status.active && status.account)
+      .map((status) => normalizeHiveAccount(status.account as string));
+
+    const activeSet = new Set(activeAccounts);
+    for (const account of [...this.connections.keys()]) {
+      if (!activeSet.has(account)) {
+        const state = this.connections.get(account);
+        if (state?.reconnectTimer) {
+          clearTimeout(state.reconnectTimer);
+        }
+        state?.ws?.close();
+        this.connections.delete(account);
+      }
+    }
+
+    await Promise.all(
+      activeAccounts.map((account) => this.ensureConnected(account)),
+    );
+  }
+
+  private getConnectionState(account: string): ConnectionState {
+    const existing = this.connections.get(account);
+    if (existing) {
+      return existing;
+    }
+
+    const created: ConnectionState = {
+      ws: null,
+      connected: false,
+      reconnectAttempt: 0,
+      reconnectTimer: null,
+      connectPromise: null,
+    };
+    this.connections.set(account, created);
+    return created;
+  }
+
+  private async ensureConnected(account: string): Promise<void> {
+    const state = this.getConnectionState(account);
+    if (state.connected && state.ws?.readyState === WebSocket.OPEN) {
+      return;
+    }
+    if (!this.waivioAuth.getStatus(account).active) {
+      return;
+    }
+    if (state.connectPromise) {
+      return state.connectPromise;
+    }
+    state.connectPromise = this.connect(account).finally(() => {
+      state.connectPromise = null;
+    });
+    return state.connectPromise;
+  }
+
+  private async connect(account: string): Promise<void> {
+    const state = this.getConnectionState(account);
+    const token = await this.waivioAuth.getAccessToken(account);
     const baseUrl = this.config.get('notificationsWsUrl', { infer: true });
     const url = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
 
     await new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(url);
-      this.ws = ws;
+      state.ws = ws;
 
       ws.on('open', () => {
-        this.connected = true;
-        this.reconnectAttempt = 0;
+        state.connected = true;
+        state.reconnectAttempt = 0;
         resolve();
       });
 
       ws.on('message', (raw) => {
-        this.handleMessage(raw);
+        this.handleMessage(account, raw);
       });
 
       ws.on('close', () => {
-        this.connected = false;
-        this.ws = null;
-        this.scheduleReconnect();
+        state.connected = false;
+        state.ws = null;
+        this.scheduleReconnect(account);
       });
 
       ws.on('error', (error) => {
@@ -159,27 +247,32 @@ export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy
         }
       });
     }).catch((error) => {
-      this.logger.warn(`Notifications WS connect failed: ${(error as Error).message}`);
-      this.scheduleReconnect();
+      this.logger.warn(
+        `Notifications WS connect failed for @${account}: ${(error as Error).message}`,
+      );
+      this.scheduleReconnect(account);
     });
   }
 
-  private scheduleReconnect(): void {
-    if (this.intentionalClose || !this.waivioAuth.getStatus().active) {
+  private scheduleReconnect(account: string): void {
+    if (this.intentionalClose || !this.waivioAuth.getStatus(account).active) {
       return;
     }
-    if (this.reconnectTimer) {
+
+    const state = this.getConnectionState(account);
+    if (state.reconnectTimer) {
       return;
     }
-    const delayMs = Math.min(30_000, 1_000 * 2 ** this.reconnectAttempt);
-    this.reconnectAttempt += 1;
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      void this.ensureConnected();
+
+    const delayMs = Math.min(30_000, 1_000 * 2 ** state.reconnectAttempt);
+    state.reconnectAttempt += 1;
+    state.reconnectTimer = setTimeout(() => {
+      state.reconnectTimer = null;
+      void this.ensureConnected(account);
     }, delayMs);
   }
 
-  private handleMessage(raw: WebSocket.RawData): void {
+  private handleMessage(account: string, raw: WebSocket.RawData): void {
     const text = typeof raw === 'string' ? raw : raw.toString('utf8');
     let envelope: WsEnvelope;
     try {
@@ -191,7 +284,7 @@ export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy
       return;
     }
 
-    const item = parseNotificationItem(envelope.data);
+    const item = parseNotificationItem(account, envelope.data);
     if (!item || !DEFAULT_TYPES.has(item.type)) {
       return;
     }
@@ -205,6 +298,7 @@ export class NotificationsSocketService implements OnModuleInit, OnModuleDestroy
 }
 
 function parseNotificationItem(
+  account: string,
   data: Record<string, unknown>,
 ): BufferedNotificationItem | null {
   const id = typeof data.id === 'string' ? data.id.trim() : '';
@@ -229,6 +323,7 @@ function parseNotificationItem(
         ? (data.payload as Record<string, unknown>)
         : {},
     receivedAtMs: Date.now(),
+    account,
   };
 }
 

@@ -11,6 +11,7 @@ import {
 } from '../support/fake-has-server';
 
 const REQUIRED_TOOLS = [
+  'wallet_accounts',
   'wallet_status',
   'waivio_auth_start',
   'waivio_auth_status',
@@ -103,6 +104,21 @@ async function ensureLoggedIn(account: string): Promise<void> {
 describe('agent-wallet MCP (e2e)', () => {
   it('rejects MCP without bearer token', async () => {
     expect(await mcpUnauthorized()).toBe(401);
+  });
+
+  it('returns health ok with wallet status snapshot', async () => {
+    const host = process.env.HOST ?? '127.0.0.1';
+    const port = process.env.PORT ?? '7500';
+    const res = await fetch(`http://${host}:${port}/agent-wallet/health`);
+    expect(res.status).toBe(200);
+
+    const body = (await res.json()) as {
+      status: string;
+      wallet: { localAccounts: unknown[]; signingMode: string };
+    };
+    expect(body.status).toBe('ok');
+    expect(body.wallet.signingMode).toBeDefined();
+    expect(Array.isArray(body.wallet.localAccounts)).toBe(true);
   });
 
   it('initializes MCP with required tools and no CORS headers', async () => {
@@ -272,5 +288,52 @@ describe('agent-wallet MCP (e2e)', () => {
     expect(second.data.requestId).toBe(first.data.requestId);
     expect(second.data.webLink).toBe(first.data.webLink);
     expect(first.data.webLink).toContain('/has#1');
+  });
+
+  it('reports empty account registry when no accounts.json or env keys', async () => {
+    const accounts = await mcpCallTool<{
+      accounts: unknown[];
+      accountsSource: string;
+    }>('wallet_accounts', {});
+    expect(accounts.isError).toBe(false);
+    expect(accounts.data.accounts).toEqual([]);
+    expect(accounts.data.accountsSource).toBe('none');
+  });
+
+  it('wallet_status keeps legacy field names with empty registry', async () => {
+    const status = await mcpCallTool<{
+      signingMode: string;
+      hasSession: unknown;
+      waivioAuth: unknown;
+      localKeys: unknown;
+      localAccounts: unknown[];
+    }>('wallet_status', {});
+    expect(status.isError).toBe(false);
+    expect(status.data.signingMode).toBeDefined();
+    expect(status.data.hasSession).toBeDefined();
+    expect(status.data.waivioAuth).toBeDefined();
+    expect(status.data.localKeys).toBeDefined();
+    expect(Array.isArray(status.data.localAccounts)).toBe(true);
+  });
+
+  it('rejects wallet_broadcast for unknown account without crashing daemon', async () => {
+    const broadcast = await mcpCallTool('wallet_broadcast', {
+      ops: [
+        {
+          type: 'custom_json',
+          json: '{"events":[]}',
+          required_auths: [],
+          required_posting_auths: ['nobody'],
+          id: 'odl-testnet',
+        },
+      ],
+      account: 'nobody',
+      keyType: 'posting',
+    });
+    expect(broadcast.isError).toBe(true);
+    expect(broadcast.rawText).toContain('nobody');
+
+    const status = await mcpCallTool('wallet_status', {});
+    expect(status.isError).toBe(false);
   });
 });

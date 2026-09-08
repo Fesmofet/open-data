@@ -7,7 +7,7 @@ import {
 } from '@opden-data-layer/hive-broadcast';
 
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
-import { HasSessionService } from './has-session.service';
+import { normalizeHiveAccount } from '../utils/hive-account';
 import { HiveChainContextService } from './hive-chain-context.service';
 import { LocalKeysService } from './local-keys.service';
 
@@ -34,14 +34,13 @@ export class HivePostingAuthorityGrantBuildService {
     private readonly config: ConfigService<AgentWalletConfig, true>,
     private readonly chainContext: HiveChainContextService,
     private readonly localKeys: LocalKeysService,
-    private readonly hasSession: HasSessionService,
   ) {}
 
   async buildPostingAuthorityGrant(
     input: BuildPostingAuthorityGrantInput,
   ): Promise<PostingAuthorityGrantBuildResult> {
-    const grantor = input.account.trim().toLowerCase().replace(/^@/, '');
-    const grantee = input.grantee.trim().toLowerCase().replace(/^@/, '');
+    const grantor = normalizeHiveAccount(input.account);
+    const grantee = normalizeHiveAccount(input.grantee);
     const warnings: string[] = [];
 
     if (!grantor || !grantee) {
@@ -98,25 +97,20 @@ export class HivePostingAuthorityGrantBuildService {
     warnings: string[],
   ): PostingAuthorityGrantBuildResult {
     const signingMode = this.config.get('signingMode', { infer: true });
-    const walletIdentity = this.resolveWalletIdentity();
-    const activeReady =
-      signingMode === 'local' && this.localKeys.getReadiness().activeReady;
-    const identityMatches =
-      walletIdentity != null && walletIdentity === signerAccount;
-    const canSignLocally = identityMatches && activeReady;
+    const grantorReadiness = this.localKeys.getReadiness(signerAccount);
+    const canSignLocally =
+      this.localKeys.hasAccount(signerAccount) && grantorReadiness.activeReady;
 
-    if (walletIdentity == null) {
-      warnings.push('Wallet identity is not configured — returned ops are payload only');
-    } else if (!identityMatches) {
+    if (!this.localKeys.hasAccount(signerAccount)) {
+      warnings.push('Grantor is not in the local key registry — returned ops are payload only');
+    } else if (!grantorReadiness.activeReady) {
       warnings.push(
-        `cannot self-sign: ${signerAccount} must sign this (wallet identity is ${walletIdentity})`,
+        `Active key for @${signerAccount} is not configured — payload only`,
       );
     } else if (signingMode === 'has') {
       warnings.push(
         'HAS mode: broadcast via has_broadcast with keyType active (phone approval required)',
       );
-    } else if (!activeReady) {
-      warnings.push('HIVE_ACTIVE_KEY not configured — payload only');
     }
 
     return {
@@ -127,13 +121,5 @@ export class HivePostingAuthorityGrantBuildService {
       canSignLocally,
       warnings,
     };
-  }
-
-  private resolveWalletIdentity(): string | null {
-    const signingMode = this.config.get('signingMode', { infer: true });
-    if (signingMode === 'local') {
-      return this.localKeys.getReadiness().account ?? null;
-    }
-    return this.hasSession.getSessionInfo()?.account ?? null;
   }
 }

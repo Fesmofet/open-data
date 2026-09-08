@@ -23,6 +23,9 @@ osv-results.json
 # Cursor
 .cursor/plans
 
+accounts.json
+
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

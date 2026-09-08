@@ -19,6 +19,7 @@ import {
 } from '@opden-data-layer/hive-memo-crypto';
 
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
+import { normalizeHiveAccount } from '../utils/hive-account';
 import { LocalKeysService } from './local-keys.service';
 
 type BuildResult = {
@@ -45,7 +46,7 @@ export class OslMessagingService {
     objectId?: string;
     title?: string;
   }): BuildResult {
-    const creator = normalizeAccount(input.creator);
+    const creator = normalizeHiveAccount(input.creator);
     const channelId =
       input.channelId?.trim() ||
       (input.kind === 'group' ? generateGroupChannelId() : undefined);
@@ -89,7 +90,7 @@ export class OslMessagingService {
     replyTo?: string;
     quoteJson?: { author: string; body: string };
   }): BuildResult {
-    const creator = normalizeAccount(input.creator);
+    const creator = normalizeHiveAccount(input.creator);
     const payload = buildMessageCreatePayload({
       channelId: input.channelId,
       peer: input.peer,
@@ -112,7 +113,7 @@ export class OslMessagingService {
     messageId: string;
     body: string;
   }): BuildResult {
-    const creator = normalizeAccount(input.creator);
+    const creator = normalizeHiveAccount(input.creator);
     const payload = buildMessageUpdatePayload({
       channelId: input.channelId,
       messageId: input.messageId,
@@ -131,7 +132,7 @@ export class OslMessagingService {
     channelId: string;
     messageId: string;
   }): BuildResult {
-    const creator = normalizeAccount(input.creator);
+    const creator = normalizeHiveAccount(input.creator);
     const payload = buildMessageDeletePayload({
       channelId: input.channelId,
       messageId: input.messageId,
@@ -152,20 +153,21 @@ export class OslMessagingService {
     plaintext: string;
     mode: EncryptionMode;
   }): Promise<BuildResult> {
-    this.assertEncryptedBuildAllowed(input.mode);
+    this.assertEncryptedBuildAllowed(input.mode, input.creator);
     const recipientMemoPublic = await this.fetchMemoPublicKey(input.recipient);
     const { ciphertext, mode } = await this.memoEncrypt({
       recipientMemoPublic,
       plaintext: input.plaintext,
       mode: input.mode,
+      account: input.creator,
     });
-    const creator = normalizeAccount(input.creator);
+    const creator = normalizeHiveAccount(input.creator);
     const payload = buildEncryptedMessageCreatePayload({
       channelId: input.channelId,
       peer: input.peer,
       ciphertext,
       mode,
-      to: normalizeAccount(input.recipient),
+      to: normalizeHiveAccount(input.recipient),
     });
     const op = buildOslMessageCreateOp({
       id: this.config.get('oslCustomJsonId', { infer: true }),
@@ -179,14 +181,18 @@ export class OslMessagingService {
     recipientMemoPublic: string;
     plaintext: string;
     mode: EncryptionMode;
+    account?: string;
   }): Promise<{ ciphertext: string; mode: EncryptionMode }> {
-    if (input.mode === 'memo' && !this.localKeys.isMemoReady()) {
-      throw new Error('HIVE_MEMO_KEY is required for memo mode encryption');
+    const account = input.account?.trim()
+      ? normalizeHiveAccount(input.account)
+      : undefined;
+    if (input.mode === 'memo' && !this.localKeys.isMemoReady(account)) {
+      throw new Error('Memo key is required for memo mode encryption');
     }
     return this.memoCrypto.encryptForRecipient({
       senderMemoPrivateWif:
         input.mode === 'memo'
-          ? this.localKeys.getMemoPrivateKey().toString()
+          ? this.localKeys.getMemoPrivateKey(account).toString()
           : undefined,
       recipientMemoPublic: input.recipientMemoPublic,
       plaintext: input.plaintext,
@@ -194,18 +200,21 @@ export class OslMessagingService {
     });
   }
 
-  memoDecrypt(input: { ciphertext: string }): string {
-    if (!this.localKeys.isMemoReady()) {
-      throw new Error('HIVE_MEMO_KEY is required for decryption');
+  memoDecrypt(input: { ciphertext: string; account?: string }): string {
+    const account = input.account?.trim()
+      ? normalizeHiveAccount(input.account)
+      : undefined;
+    if (!this.localKeys.isMemoReady(account)) {
+      throw new Error('Memo key is required for decryption');
     }
     return this.memoCrypto.decrypt({
-      recipientMemoPrivateWif: this.localKeys.getMemoPrivateKey().toString(),
+      recipientMemoPrivateWif: this.localKeys.getMemoPrivateKey(account).toString(),
       ciphertext: input.ciphertext,
     });
   }
 
   async fetchMemoPublicKey(account: string): Promise<string> {
-    const normalized = normalizeAccount(account);
+    const normalized = normalizeHiveAccount(account);
     const accounts = await this.localKeys.getRpcClient().database.getAccounts([
       normalized,
     ]);
@@ -216,14 +225,17 @@ export class OslMessagingService {
     return String(row.memo_key);
   }
 
-  assertEncryptedBuildAllowed(mode: EncryptionMode): void {
-    if (this.config.get('signingMode', { infer: true }) !== 'local') {
+  assertEncryptedBuildAllowed(mode: EncryptionMode, creator?: string): void {
+    const account = creator?.trim()
+      ? normalizeHiveAccount(creator)
+      : this.config.get('defaultAccount', { infer: true });
+    if (!account || !this.localKeys.hasAccount(account)) {
       throw new Error(
-        'Encrypted OSL messages require AGENT_WALLET_SIGNING_MODE=local with HIVE_MEMO_KEY',
+        'Encrypted OSL messages require a locally configured account with memo key support',
       );
     }
-    if (mode === 'memo' && !this.localKeys.isMemoReady()) {
-      throw new Error('HIVE_MEMO_KEY is not configured or invalid');
+    if (mode === 'memo' && !this.localKeys.isMemoReady(account)) {
+      throw new Error('Memo key is not configured or invalid for the creator account');
     }
   }
 
@@ -235,8 +247,4 @@ export class OslMessagingService {
       bytes,
     };
   }
-}
-
-function normalizeAccount(account: string): string {
-  return account.trim().replace(/^@/, '').toLowerCase();
 }

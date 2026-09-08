@@ -1,16 +1,15 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-import { HiveBroadcastService } from '../domain/hive-broadcast.service';
+import { HiveBroadcastService, WalletAccountsService, WalletStatusService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
 import { HivePostBuildService } from '../domain/hive-post-build.service';
+import { HivePostingAuthorityGrantBuildService } from '../domain/hive-posting-authority-grant-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { NotificationsSocketService } from '../domain/notifications-socket.service';
 import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { WalletDelegationBuildService } from '../domain/wallet-delegation-build.service';
-import { HivePostingAuthorityGrantBuildService } from '../domain/hive-posting-authority-grant-build.service';
-import { WalletStatusService } from '../domain/hive-broadcast.service';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
 export function registerAgentWalletTools(
@@ -20,6 +19,7 @@ export function registerAgentWalletTools(
     hivePostBuild: HivePostBuildService;
     broadcast: HiveBroadcastService;
     walletStatus: WalletStatusService;
+    walletAccounts: WalletAccountsService;
     waivioAuth: WaivioAuthOrchestratorService;
     ipfsUpload: IpfsUploadService;
     oslMessaging: OslMessagingService;
@@ -28,6 +28,16 @@ export function registerAgentWalletTools(
     postingAuthorityGrantBuild: HivePostingAuthorityGrantBuildService;
   },
 ): void {
+  server.registerTool(
+    'wallet_accounts',
+    {
+      description:
+        'List configured local accounts with key readiness, Waivio auth, and notifications connection status. No secrets.',
+      inputSchema: z.object({}),
+    },
+    async () => jsonToolResult(deps.walletAccounts.getAccounts()),
+  );
+
   server.registerTool(
     'wallet_status',
     {
@@ -42,9 +52,12 @@ export function registerAgentWalletTools(
     'waivio_auth_start',
     {
       description:
-        'Start Waivio JWT auth. Local mode signs the challenge with HIVE_POSTING_KEY; HAS mode requires an active HAS session and phone approval for the challenge.',
+        'Start Waivio JWT auth for a registry account. Local signing uses that account posting key; HAS mode requires an active HAS session for the same account and phone approval for the challenge.',
       inputSchema: z.object({
-        account: z.string().optional().describe('Hive account (defaults to configured/local/HAS session account)'),
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account for Waivio auth (defaults to configured/default account)'),
       }),
     },
     async (args) => {
@@ -72,11 +85,16 @@ export function registerAgentWalletTools(
     'waivio_auth_logout',
     {
       description: 'Revoke Waivio refresh token and clear local Waivio auth session.',
-      inputSchema: z.object({}),
+      inputSchema: z.object({
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account to log out (defaults to configured/default account)'),
+      }),
     },
-    async () => {
+    async (args) => {
       try {
-        const result = await deps.waivioAuth.authLogout();
+        const result = await deps.waivioAuth.authLogout(args.account);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);
@@ -91,11 +109,15 @@ export function registerAgentWalletTools(
         'Upload a local image to IPFS via Waivio gateway. Requires active Waivio auth. For avatars prepare 1:1 up to 1024px before upload. Returns { cid, contentUrl, url? }.',
       inputSchema: z.object({
         filePath: z.string().min(1).describe('Absolute or relative path to a local image file (max 50 MiB)'),
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account whose Waivio auth token is used for upload'),
       }),
     },
     async (args) => {
       try {
-        const result = await deps.ipfsUpload.uploadImage(args.filePath);
+        const result = await deps.ipfsUpload.uploadImage(args.filePath, args.account);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);
@@ -107,10 +129,14 @@ export function registerAgentWalletTools(
     'wallet_broadcast',
     {
       description:
-        'Broadcast ops using the configured signing mode (HAS or local keys). Signs as the configured wallet identity only (local HIVE_ACCOUNT or HAS session); there is no account argument. To act on behalf of another account, put that account name inside the ops. Poll wallet_broadcast_status.',
+        'Broadcast ops using the configured signing mode (HAS or local keys). Pass account to choose the signer; defaults to the first configured account or active HAS session per signingMode tie-break. Poll wallet_broadcast_status.',
       inputSchema: z.object({
         ops: z.array(z.unknown()).min(1),
         keyType: z.enum(['posting', 'active']).default('posting'),
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account that signs the transaction'),
       }),
     },
     async (args) => {
@@ -469,7 +495,7 @@ export function registerAgentWalletTools(
     'osl_build_encrypted_message_create',
     {
       description:
-        'Encrypt with local HIVE_MEMO_KEY and build OSL message_create. Requires AGENT_WALLET_SIGNING_MODE=local and memoReady. Broadcast via wallet_broadcast only.',
+        'Encrypt with the registry account memo key and build OSL message_create. Requires memoReady for that account. Broadcast via wallet_broadcast only.',
       inputSchema: z.object({
         creator: z.string().min(1),
         channelId: z.string().optional(),
@@ -493,11 +519,15 @@ export function registerAgentWalletTools(
     'osl_memo_encrypt',
     {
       description:
-        'Encrypt plaintext with recipient memo public key. memo mode requires HIVE_MEMO_KEY; ephemeral is one-way to recipient.',
+        'Encrypt plaintext with recipient memo public key. memo mode requires the registry account memo key; ephemeral is one-way to recipient.',
       inputSchema: z.object({
         recipientMemoPublic: z.string().min(1),
         plaintext: z.string().min(1),
         mode: z.enum(['memo', 'ephemeral']).default('memo'),
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account whose memo key encrypts the message'),
       }),
     },
     async (args) => {
@@ -514,9 +544,13 @@ export function registerAgentWalletTools(
     'osl_memo_decrypt',
     {
       description:
-        'Decrypt Hive memo ciphertext with configured HIVE_MEMO_KEY. Requires memoReady.',
+        'Decrypt Hive memo ciphertext with the registry account memo key. Requires memoReady for that account.',
       inputSchema: z.object({
         ciphertext: z.string().min(1),
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account whose memo key decrypts the message'),
       }),
     },
     async (args) => {
@@ -538,6 +572,10 @@ export function registerAgentWalletTools(
         limit: z.number().int().min(1).max(100).optional(),
         waitMs: z.number().int().min(0).max(60_000).optional(),
         types: z.array(z.string()).optional(),
+        account: z
+          .string()
+          .optional()
+          .describe('Filter notifications to this Hive account'),
       }),
     },
     async (args) => {
@@ -555,9 +593,14 @@ export function registerAgentWalletTools(
     {
       description:
         'Notifications WS bridge status: connection, buffered count, account. No secrets or tokens.',
-      inputSchema: z.object({}),
+      inputSchema: z.object({
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account to inspect (defaults to configured/default account)'),
+      }),
     },
-    async () => jsonToolResult(deps.notificationsSocket.getStatus()),
+    async (args) => jsonToolResult(deps.notificationsSocket.getStatus(args.account)),
   );
 
   server.registerTool(

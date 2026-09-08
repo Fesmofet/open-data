@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
 import { chmod } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -10,9 +10,11 @@ import {
   AGENT_WALLET_QR_FILE,
   AGENT_WALLET_SESSION_FILE,
   AGENT_WALLET_TOKEN_FILE,
+  WAIVIO_AUTH_DIR,
   WAIVIO_AUTH_SESSION_FILE,
 } from '../constants/local-files';
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
+import { isValidHiveAccountName, normalizeHiveAccount } from '../utils/hive-account';
 
 const chmodAsync = promisify(chmod);
 
@@ -38,12 +40,51 @@ export class LocalFilesService {
     return join(this.getDataDir(), AGENT_WALLET_SESSION_FILE);
   }
 
-  waivioAuthSessionPath(): string {
+  waivioAuthDir(): string {
+    return join(this.getDataDir(), WAIVIO_AUTH_DIR);
+  }
+
+  legacyWaivioAuthSessionPath(): string {
     return join(this.getDataDir(), WAIVIO_AUTH_SESSION_FILE);
+  }
+
+  waivioAuthSessionPath(account: string): string {
+    const normalized = normalizeHiveAccount(account);
+    if (!isValidHiveAccountName(normalized)) {
+      throw new Error(`Invalid Hive account name: ${account}`);
+    }
+    return join(this.waivioAuthDir(), `${normalized}.json`);
+  }
+
+  async listWaivioAuthAccounts(): Promise<string[]> {
+    try {
+      const entries = await readdir(this.waivioAuthDir(), { withFileTypes: true });
+      return entries
+        .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+        .map((entry) => entry.name.replace(/\.json$/, ''))
+        .filter((account) => isValidHiveAccountName(account));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return [];
+      }
+      throw error;
+    }
   }
 
   async ensureDataDir(): Promise<void> {
     await mkdir(this.getDataDir(), { recursive: true });
+  }
+
+  async ensureWaivioAuthDir(): Promise<void> {
+    await this.ensureDataDir();
+    await mkdir(this.waivioAuthDir(), { recursive: true, mode: 0o700 });
+    try {
+      await chmodAsync(this.waivioAuthDir(), 0o700);
+    } catch (error) {
+      this.logger.warn(
+        `Could not chmod ${this.waivioAuthDir()} to 0700: ${(error as Error).message}`,
+      );
+    }
   }
 
   async writeSecretFile(path: string, content: string): Promise<void> {

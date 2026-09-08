@@ -1,6 +1,5 @@
 import { HivePostingAuthorityGrantBuildService } from './hive-posting-authority-grant-build.service';
 import type { HiveChainContextService } from './hive-chain-context.service';
-import type { HasSessionService } from './has-session.service';
 import type { LocalKeysService } from './local-keys.service';
 
 describe('HivePostingAuthorityGrantBuildService', () => {
@@ -13,15 +12,12 @@ describe('HivePostingAuthorityGrantBuildService', () => {
     activeReady: true,
   });
 
+  const hasAccount = jest.fn().mockReturnValue(false);
+
   const localKeys = {
     getReadiness,
+    hasAccount,
   } as unknown as LocalKeysService;
-
-  const getSessionInfo = jest.fn().mockReturnValue(null);
-
-  const hasSession = {
-    getSessionInfo,
-  } as unknown as HasSessionService;
 
   let signingMode: 'has' | 'local' = 'local';
 
@@ -53,21 +49,22 @@ describe('HivePostingAuthorityGrantBuildService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     signingMode = 'local';
-    getReadiness.mockReturnValue({
-      account: 'waivio.import',
-      activeReady: true,
-    });
-    getSessionInfo.mockReturnValue(null);
+    hasAccount.mockImplementation((account: string) => account === 'flowmaster');
+    getReadiness.mockImplementation((account?: string) => ({
+      account: account ?? 'waivio.import',
+      activeReady: account === 'flowmaster',
+    }));
     chainContext.getAccount = jest.fn().mockResolvedValue(flowmasterSnapshot);
     service = new HivePostingAuthorityGrantBuildService(
       config as never,
       chainContext,
       localKeys,
-      hasSession,
     );
   });
 
   it('builds account_update with active keyType and signerAccount', async () => {
+    hasAccount.mockReturnValue(false);
+
     const result = await service.buildPostingAuthorityGrant({
       account: 'flowmaster',
       grantee: 'waivio.import',
@@ -78,16 +75,11 @@ describe('HivePostingAuthorityGrantBuildService', () => {
     expect(result.signerAccount).toBe('flowmaster');
     expect(result.opsCount).toBe(1);
     expect(result.ops[0]?.[0]).toBe('account_update');
-    expect(result.warnings.some((w) => w.includes('cannot self-sign'))).toBe(true);
+    expect(result.warnings.some((w) => w.includes('local key registry'))).toBe(true);
     expect(result.canSignLocally).toBe(false);
   });
 
-  it('allows local broadcast when wallet identity matches grantor and activeReady', async () => {
-    getReadiness.mockReturnValue({
-      account: 'flowmaster',
-      activeReady: true,
-    });
-
+  it('allows local broadcast when grantor is in registry with activeReady', async () => {
     const result = await service.buildPostingAuthorityGrant({
       account: 'flowmaster',
       grantee: 'waivio.import',
@@ -96,6 +88,23 @@ describe('HivePostingAuthorityGrantBuildService', () => {
 
     expect(result.canSignLocally).toBe(true);
     expect(result.warnings).toEqual([]);
+  });
+
+  it('allows local broadcast for non-default registry account', async () => {
+    hasAccount.mockImplementation((account: string) => account === 'bob');
+    getReadiness.mockImplementation((account?: string) => ({
+      account,
+      activeReady: account === 'bob',
+    }));
+
+    const result = await service.buildPostingAuthorityGrant({
+      account: 'bob',
+      grantee: 'waivio.import',
+      action: 'add',
+    });
+
+    expect(result.canSignLocally).toBe(true);
+    expect(result.signerAccount).toBe('bob');
   });
 
   it('returns opsCount 0 when grantee already present', async () => {
@@ -131,7 +140,7 @@ describe('HivePostingAuthorityGrantBuildService', () => {
     expect(result.warnings.some((w) => w.includes('is not in'))).toBe(true);
   });
 
-  it('warns when active key is missing for self-sign grantor', async () => {
+  it('warns when active key is missing for grantor in registry', async () => {
     getReadiness.mockReturnValue({
       account: 'flowmaster',
       activeReady: false,
@@ -144,14 +153,13 @@ describe('HivePostingAuthorityGrantBuildService', () => {
     });
 
     expect(result.canSignLocally).toBe(false);
-    expect(result.warnings.some((w) => w.includes('HIVE_ACTIVE_KEY not configured'))).toBe(
+    expect(result.warnings.some((w) => w.includes('Active key for @flowmaster'))).toBe(
       true,
     );
   });
 
-  it('tells HAS grantor to has_broadcast instead of claiming missing HIVE_ACTIVE_KEY', async () => {
+  it('adds HAS warning when global signing mode is has even if grantor can sign locally', async () => {
     signingMode = 'has';
-    getSessionInfo.mockReturnValue({ account: 'flowmaster', expiresAt: Date.now() });
 
     const result = await service.buildPostingAuthorityGrant({
       account: 'flowmaster',
@@ -159,8 +167,7 @@ describe('HivePostingAuthorityGrantBuildService', () => {
       action: 'add',
     });
 
-    expect(result.canSignLocally).toBe(false);
+    expect(result.canSignLocally).toBe(true);
     expect(result.warnings.some((w) => w.includes('has_broadcast'))).toBe(true);
-    expect(result.warnings.some((w) => w.includes('HIVE_ACTIVE_KEY'))).toBe(false);
   });
 });

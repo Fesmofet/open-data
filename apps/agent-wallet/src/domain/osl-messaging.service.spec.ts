@@ -18,12 +18,16 @@ describe('OslMessagingService', () => {
       if (key === 'signingMode') {
         return 'local';
       }
+      if (key === 'defaultAccount') {
+        return 'alice';
+      }
       return undefined;
     }),
   } as unknown as ConfigService;
 
   const localKeys = {
     isMemoReady: jest.fn().mockReturnValue(true),
+    hasAccount: jest.fn().mockReturnValue(true),
     getMemoPrivateKey: jest.fn().mockReturnValue({ toString: () => demo.privateWif }),
     getRpcClient: jest.fn(),
   };
@@ -121,17 +125,8 @@ describe('OslMessagingService', () => {
     });
   });
 
-  it('rejects encrypted build when signing mode is not local', async () => {
-    const getMock = config.get as jest.Mock;
-    getMock.mockImplementation((key: string) => {
-      if (key === 'signingMode') {
-        return 'has';
-      }
-      if (key === 'oslCustomJsonId') {
-        return 'osl-testnet';
-      }
-      return undefined;
-    });
+  it('rejects encrypted build when creator account is not in local registry', async () => {
+    localKeys.hasAccount.mockReturnValue(false);
 
     await expect(
       service.buildEncryptedMessageCreate({
@@ -141,17 +136,9 @@ describe('OslMessagingService', () => {
         plaintext: 'secret',
         mode: 'memo',
       }),
-    ).rejects.toThrow('AGENT_WALLET_SIGNING_MODE=local');
+    ).rejects.toThrow(/locally configured account/);
 
-    getMock.mockImplementation((key: string) => {
-      if (key === 'oslCustomJsonId') {
-        return 'osl-testnet';
-      }
-      if (key === 'signingMode') {
-        return 'local';
-      }
-      return undefined;
-    });
+    localKeys.hasAccount.mockReturnValue(true);
   });
 
   it('memoEncrypt supports ephemeral without sender memo key', async () => {

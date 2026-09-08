@@ -33,7 +33,20 @@ Hive accounts can delegate **posting**, **active**, or **owner** authority to ot
 - OSL encrypted messaging (memo key) — [osl-messaging.md](osl-messaging.md).
 - Owner authority changes by default — out of scope unless the user explicitly requests it.
 
-## Setup (primary — local env keys)
+## Setup (primary — accounts.json)
+
+Preferred: `~/.odl/accounts.json`:
+
+```json
+[
+  {
+    "account": "waivio.import",
+    "keys": { "posting": "5J...", "active": "5K..." }
+  }
+]
+```
+
+Env fallback when the file is missing:
 
 ```bash
 AGENT_WALLET_SIGNING_MODE=local
@@ -44,8 +57,8 @@ HIVE_ACTIVE_KEY=5...   # optional — required for active ops (grants, transfers
 
 The code default for `AGENT_WALLET_SIGNING_MODE` is still `has`; env-key deployments **must** set `local` explicitly.
 
-1. `wallet_status` — confirm `signingMode`, wallet identity, `postingReady`, `activeReady`.
-2. Build ops → `wallet_broadcast({ ops, keyType })` → poll `wallet_broadcast_status`.
+1. `wallet_accounts` / `wallet_status` — confirm registry, wallet identity, `postingReady`, `activeReady`.
+2. Build ops → `wallet_broadcast({ ops, keyType, account? })` → poll `wallet_broadcast_status`.
 
 **HAS (optional):** phone login + approval — see secondary workflow in [hive-has-agent-wallet.md](hive-has-agent-wallet.md). Use only when env keys are not configured.
 
@@ -120,7 +133,9 @@ Returns `{ ops, opsCount, keyType: "active", signerAccount, canSignLocally, warn
 | Grant/revoke posting | grantor | `active` | When wallet = grantor and `activeReady` | Grantor session + active approval |
 | Post/vote/ODL as grantor | grantee (wallet) | `posting` | Normal agent path | Phone approval |
 
-`wallet_broadcast` / `has_broadcast` take **no account argument** — one wallet identity per daemon today. Put delegated account names **inside** the ops.
+`wallet_broadcast` / `has_broadcast` accept optional **`account`** — the registry signer for local keys or the HAS session account. Omit to use the configured default (first registry entry). Put delegated grantor names **inside** the ops when posting on behalf of another account.
+
+Example: `wallet_broadcast({ account: "waivio.import", ops, keyType: "posting" })` when publishing as a grantor via delegated posting authority.
 
 ## Worked example (local env keys)
 
@@ -149,9 +164,11 @@ Returns `{ ops, opsCount, keyType: "active", signerAccount, canSignLocally, warn
 - Confirm grantor identity before acting as them.
 - Keys never logged or echoed in tool output.
 
-## Forward compatibility (not available yet)
+## Multi-account registry
 
-A future refactor will load multiple accounts with keys from a JSON file. Build tools already return `signerAccount` + `keyType` for a future key resolver. Optional `signerAccount` on `wallet_broadcast` is planned but not implemented.
+agent-wallet loads multiple Hive accounts from `accounts.json` (or env fallback). Each entry has its own keys, Waivio JWT session, and notifications WS connection. See [multi-account spec](../apps/agent-wallet/spec/multi-account.md).
+
+`wallet_broadcast`, `has_broadcast`, Waivio auth, IPFS upload, and notifications tools accept optional `account`; omit to use the default (first registry entry).
 
 ## Related
 

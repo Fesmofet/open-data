@@ -1,6 +1,8 @@
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
+import { loadWalletAccounts } from './accounts.loader';
+import type { AccountsSource, WalletAccount } from './accounts.schema';
 import type { AgentWalletEnv } from './env.validation';
 import type { SigningMode } from '../constants/signing';
 import { DEFAULT_SIGNING_MODE } from '../constants/signing';
@@ -18,10 +20,10 @@ export type AgentWalletConfig = {
   waivioApiOrigin: string;
   notificationsWsUrl: string;
   signingMode: SigningMode;
-  hiveAccount?: string;
-  hivePostingKey?: string;
-  hiveActiveKey?: string;
-  hiveMemoKey?: string;
+  accounts: WalletAccount[];
+  defaultAccount?: string;
+  accountsSource: AccountsSource;
+  accountsFilePath: string;
   hiveRpcNodes: string[];
   dataDir: string;
   persistSession: boolean;
@@ -32,6 +34,10 @@ export default (): AgentWalletConfig => {
   const env = process.env as unknown as AgentWalletEnv;
   const odlNetwork = env.ODL_NETWORK ?? 'testnet';
   const waivioApiOrigin = env.WAIVIO_API_ORIGIN ?? 'https://waiviodev.com';
+  const dataDir = env.AGENT_WALLET_DATA_DIR ?? join(homedir(), '.odl');
+  const accountsFilePath =
+    env.AGENT_WALLET_ACCOUNTS_FILE?.trim() || join(dataDir, 'accounts.json');
+  const loadedAccounts = loadWalletAccounts(accountsFilePath, env);
 
   return {
     port: env.PORT ?? 7500,
@@ -49,12 +55,12 @@ export default (): AgentWalletConfig => {
       env.NOTIFICATIONS_WS_URL?.trim() ||
       defaultNotificationsWsUrl(waivioApiOrigin),
     signingMode: env.AGENT_WALLET_SIGNING_MODE ?? DEFAULT_SIGNING_MODE,
-    hiveAccount: env.HIVE_ACCOUNT?.trim().replace(/^@/, '').toLowerCase(),
-    hivePostingKey: env.HIVE_POSTING_KEY?.trim(),
-    hiveActiveKey: env.HIVE_ACTIVE_KEY?.trim(),
-    hiveMemoKey: env.HIVE_MEMO_KEY?.trim(),
+    accounts: loadedAccounts.accounts,
+    defaultAccount: loadedAccounts.accounts[0]?.account,
+    accountsSource: loadedAccounts.source,
+    accountsFilePath,
     hiveRpcNodes: env.HIVE_RPC_NODES ?? ['https://api.hive.blog'],
-    dataDir: env.AGENT_WALLET_DATA_DIR ?? join(homedir(), '.odl'),
+    dataDir,
     persistSession: !(env.AGENT_WALLET_NO_PERSIST === true),
     bearerToken: env.AGENT_WALLET_BEARER_TOKEN,
   };

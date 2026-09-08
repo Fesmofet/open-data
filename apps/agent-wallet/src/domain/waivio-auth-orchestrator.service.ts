@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
+import { normalizeHiveAccount } from '../utils/hive-account';
 import { HasSessionService } from './has-session.service';
 import { LocalKeysService } from './local-keys.service';
 import {
   PendingRequestsStore,
   type PendingWaivioAuthRequestState,
 } from './pending-requests.store';
+import { NotificationsSocketService } from './notifications-socket.service';
+import { WalletSignerResolverService } from './wallet-signer-resolver.service';
 import { WaivioAuthClientService } from './waivio-auth-client.service';
 import { WaivioAuthSessionService } from './waivio-auth-session.service';
 import { hasExpireToVerifyUnix } from '../utils/has-expire';
@@ -37,6 +40,8 @@ export class WaivioAuthOrchestratorService {
     private readonly waivioSession: WaivioAuthSessionService,
     private readonly hasSession: HasSessionService,
     private readonly localKeys: LocalKeysService,
+    private readonly signerResolver: WalletSignerResolverService,
+    private readonly notificationsSocket: NotificationsSocketService,
   ) {}
 
   authStart(account?: string): {
@@ -45,7 +50,16 @@ export class WaivioAuthOrchestratorService {
     provider: 'keychain' | 'hiveauth';
     account: string;
   } {
-    const status = this.waivioSession.getStatus();
+    const normalized = account?.trim()
+      ? normalizeHiveAccount(account)
+      : this.config.get('defaultAccount', { infer: true }) ??
+        this.hasSession.getSessionInfo()?.account;
+
+    if (!normalized) {
+      throw new Error('Account is required for Waivio auth');
+    }
+
+    const status = this.waivioSession.getStatus(normalized);
     if (status.active && status.account) {
       return {
         requestId: '',
@@ -55,18 +69,9 @@ export class WaivioAuthOrchestratorService {
       };
     }
 
-    const signingMode = this.config.get('signingMode', { infer: true });
-    const normalized =
-      account?.trim().replace(/^@/, '').toLowerCase() ||
-      this.config.get('hiveAccount', { infer: true }) ||
-      this.hasSession.getSessionInfo()?.account;
-
-    if (!normalized) {
-      throw new Error('Account is required for Waivio auth');
-    }
-
+    const resolved = this.signerResolver.resolve(normalized);
     const requestId = crypto.randomUUID();
-    const provider = signingMode === 'local' ? 'keychain' : 'hiveauth';
+    const provider = resolved.mode === 'local' ? 'keychain' : 'hiveauth';
 
     this.pending.setWaivioAuth(requestId, {
       status: 'pending',
@@ -75,9 +80,11 @@ export class WaivioAuthOrchestratorService {
       expiresAt: Date.now() + 60_000,
     });
 
-    void this.runAuthFlow(requestId, normalized, provider).catch(() => {
-      this.pending.updateWaivioAuth(requestId, { status: 'error' });
-    });
+    void this.runAuthFlow(requestId, normalized, provider, resolved.mode).catch(
+      () => {
+        this.pending.updateWaivioAuth(requestId, { status: 'error' });
+      },
+    );
 
     return {
       requestId,
@@ -93,15 +100,6 @@ export class WaivioAuthOrchestratorService {
     | PendingWaivioAuthRequestState
     | { status: 'expired' }
     | { status: 'active'; account: string; provider: 'keychain' | 'hiveauth' } {
-    const persisted = this.waivioSession.getStatus();
-    if (persisted.active && persisted.account) {
-      return {
-        status: 'active',
-        account: persisted.account,
-        provider: persisted.provider ?? 'keychain',
-      };
-    }
-
     const state = this.pending.getWaivioAuth(requestId);
     if (!state) {
       return { status: 'expired' };
@@ -112,27 +110,42 @@ export class WaivioAuthOrchestratorService {
       return { status: 'expired' };
     }
 
+    if (state.status === 'active') {
+      const persisted = this.waivioSession.getStatus(state.account);
+      if (persisted.active && persisted.account) {
+        return {
+          status: 'active',
+          account: persisted.account,
+          provider: persisted.provider ?? 'keychain',
+        };
+      }
+    }
+
     return state;
   }
 
-  async authLogout(): Promise<{ ok: true; account?: string }> {
-    const account = this.waivioSession.getStatus().account;
-    await this.waivioSession.logout();
-    return { ok: true, ...(account ? { account } : {}) };
+  async authLogout(account?: string): Promise<{ ok: true; account?: string }> {
+    const resolvedAccount = account?.trim()
+      ? normalizeHiveAccount(account)
+      : this.config.get('defaultAccount', { infer: true });
+    await this.waivioSession.logout(resolvedAccount);
+    await this.notificationsSocket.refreshConnections();
+    return { ok: true, ...(resolvedAccount ? { account: resolvedAccount } : {}) };
   }
 
   private async runAuthFlow(
     requestId: string,
     account: string,
     provider: 'keychain' | 'hiveauth',
+    signingMode: 'local' | 'has',
   ): Promise<void> {
     const challenge = await this.authClient.createChallenge({
       provider,
       username: account,
     });
 
-    if (provider === 'keychain') {
-      const proof = this.localKeys.signChallenge(challenge.message);
+    if (signingMode === 'local') {
+      const proof = this.localKeys.signChallenge(challenge.message, account);
       const tokens = await this.authClient.verifyKeychain({
         challengeId: challenge.challengeId,
         username: account,
@@ -146,6 +159,7 @@ export class WaivioAuthOrchestratorService {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
       });
+      await this.notificationsSocket.refreshConnections();
       this.pending.updateWaivioAuth(requestId, {
         status: 'active',
         account,
@@ -156,9 +170,9 @@ export class WaivioAuthOrchestratorService {
     }
 
     const hasInfo = this.hasSession.getSessionInfo();
-    if (!hasInfo) {
+    if (!hasInfo || hasInfo.account !== account) {
       throw new Error(
-        'No active HAS session — run has_login_start before Waivio auth in HAS mode',
+        `No active HAS session for @${account} — run has_login_start before Waivio auth in HAS mode`,
       );
     }
 
@@ -197,6 +211,7 @@ export class WaivioAuthOrchestratorService {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     });
+    await this.notificationsSocket.refreshConnections();
 
     this.pending.updateWaivioAuth(requestId, {
       status: 'active',

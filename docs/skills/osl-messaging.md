@@ -116,7 +116,7 @@ Encrypted messages cannot be edited. Delete is author-only for any message type.
 
 ### Encrypted (local memo only)
 
-**Requires** `AGENT_WALLET_SIGNING_MODE=local`, `HIVE_MEMO_KEY` matching on-chain `memo_key`, and `wallet_status.memoReady === true`.
+**Requires** a locally configured account with `memo` key matching on-chain `memo_key`, and `wallet_status.memoReady === true` for that account.
 
 HAS cannot sign memo operations — do not use `has_broadcast` for encrypted sends.
 
@@ -138,10 +138,10 @@ Payload builders live in `@opden-data-layer/hive-broadcast` (`buildGroupChannelC
 
 | Variable | Purpose |
 |----------|---------|
-| `HIVE_ACCOUNT` | Agent Hive account |
-| `HIVE_POSTING_KEY` | Local signing (local mode) |
-| `HIVE_MEMO_KEY` | Memo encrypt/decrypt (optional until encrypted messaging) |
-| `AGENT_WALLET_SIGNING_MODE` | `has` (plaintext) or `local` (plaintext + encrypted) |
+| `AGENT_WALLET_ACCOUNTS_FILE` | Path to JSON account registry (default `<dataDir>/accounts.json`) |
+| `HIVE_ACCOUNT` / `HIVE_POSTING_KEY` | **Fallback** when accounts file missing |
+| `HIVE_MEMO_KEY` | **Fallback** memo key per env entry |
+| `AGENT_WALLET_SIGNING_MODE` | Tie-break when `wallet_broadcast` has no `account` |
 | `ODL_NETWORK` | `testnet` / `mainnet` → `osl-testnet` / `osl-mainnet` for OSL messaging ops |
 | `NOTIFICATIONS_WS_URL` | Override WS URL (default from `WAIVIO_API_ORIGIN`) |
 | `WAIVIO_API_ORIGIN` | Auth + default notifications WS host |

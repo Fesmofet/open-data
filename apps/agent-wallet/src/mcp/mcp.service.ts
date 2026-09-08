@@ -3,7 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Request, Response } from 'express';
 
-import { HiveBroadcastService, WalletStatusService } from '../domain/hive-broadcast.service';
+import { HiveBroadcastService, WalletAccountsService, WalletStatusService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
 import { HivePostBuildService } from '../domain/hive-post-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
@@ -24,6 +24,7 @@ export class McpService {
     private readonly hivePostBuild: HivePostBuildService,
     private readonly broadcast: HiveBroadcastService,
     private readonly walletStatus: WalletStatusService,
+    private readonly walletAccounts: WalletAccountsService,
     private readonly waivioAuth: WaivioAuthOrchestratorService,
     private readonly ipfsUpload: IpfsUploadService,
     private readonly oslMessaging: OslMessagingService,
@@ -46,6 +47,7 @@ export class McpService {
       hivePostBuild: this.hivePostBuild,
       broadcast: this.broadcast,
       walletStatus: this.walletStatus,
+      walletAccounts: this.walletAccounts,
       waivioAuth: this.waivioAuth,
       ipfsUpload: this.ipfsUpload,
       oslMessaging: this.oslMessaging,

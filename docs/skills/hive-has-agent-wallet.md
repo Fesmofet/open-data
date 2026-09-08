@@ -46,6 +46,8 @@ Local NestJS daemon (`apps/agent-wallet`) that holds a **HAS session** (not priv
 | MCP auth | `Authorization: Bearer <token>` on every request |
 | Token file | `~/.odl/agent-wallet.token` mode `0600` (generated on first start) |
 | Session file | `~/.odl/agent-wallet-session.json` mode `0600` — contains `auth_key` + `token` (**secret**) |
+| Accounts file | `~/.odl/accounts.json` — local Hive WIF keys (preferred over env) |
+| Waivio auth | `~/.odl/waivio-auth/<account>.json` per account — refresh token only |
 | Keys on phone | User private keys never leave Keychain; agent holds HAS session material only |
 
 ## Quick start

@@ -4,11 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
 import { HasSessionService } from './has-session.service';
 import { LocalKeysService } from './local-keys.service';
-import { WaivioAuthSessionService } from './waivio-auth-session.service';
+import { NotificationsSocketService } from './notifications-socket.service';
 import {
   PendingRequestsStore,
   type BroadcastRequestState,
 } from './pending-requests.store';
+import { WalletSignerResolverService } from './wallet-signer-resolver.service';
+import { WaivioAuthSessionService } from './waivio-auth-session.service';
 import { toHiveWireOperations } from './wire-operations';
 
 @Injectable()
@@ -18,6 +20,7 @@ export class HiveBroadcastService {
     private readonly hasSession: HasSessionService,
     private readonly localKeys: LocalKeysService,
     private readonly pending: PendingRequestsStore,
+    private readonly signerResolver: WalletSignerResolverService,
   ) {}
 
   getSigningMode(): 'has' | 'local' {
@@ -27,27 +30,41 @@ export class HiveBroadcastService {
   async broadcastStart(input: {
     ops: unknown[];
     keyType: 'posting' | 'active';
-  }): Promise<{ requestId: string }> {
-    if (this.getSigningMode() === 'local') {
-      return this.localBroadcastStart(input);
+    account?: string;
+  }): Promise<{ requestId: string; account: string; mode: 'has' | 'local' }> {
+    const resolved = this.signerResolver.resolve(input.account);
+    if (resolved.mode === 'local') {
+      const result = await this.localBroadcastStart({
+        ...input,
+        account: resolved.account,
+      });
+      return { ...result, account: resolved.account, mode: 'local' };
     }
 
-    return this.hasSession.broadcastStart(input);
+    if (this.hasSession.getSessionInfo()?.account !== resolved.account) {
+      throw new Error(
+        `HAS session is active for a different account. Expected @${resolved.account}.`,
+      );
+    }
+
+    const result = await this.hasSession.broadcastStart(input);
+    return { ...result, account: resolved.account, mode: 'has' };
   }
 
   broadcastStatus(
     requestId: string,
   ): BroadcastRequestState | { status: 'expired' } {
-    if (this.getSigningMode() === 'local') {
-      return this.localBroadcastStatus(requestId);
+    const state = this.pending.getBroadcast(requestId);
+    if (!state) {
+      return { status: 'expired' };
     }
-
-    return this.hasSession.broadcastStatus(requestId);
+    return state;
   }
 
   private async localBroadcastStart(input: {
     ops: unknown[];
     keyType: 'posting' | 'active';
+    account: string;
   }): Promise<{ requestId: string }> {
     const requestId = crypto.randomUUID();
     const wireOps = toHiveWireOperations(input.ops);
@@ -58,7 +75,11 @@ export class HiveBroadcastService {
     });
 
     void this.localKeys
-      .broadcast({ ops: wireOps, keyType: input.keyType })
+      .broadcast({
+        ops: wireOps,
+        keyType: input.keyType,
+        account: input.account,
+      })
       .then((result) => {
         this.pending.updateBroadcast(requestId, {
           status: 'signed',
@@ -73,16 +94,6 @@ export class HiveBroadcastService {
       });
 
     return { requestId };
-  }
-
-  private localBroadcastStatus(
-    requestId: string,
-  ): BroadcastRequestState | { status: 'expired' } {
-    const state = this.pending.getBroadcast(requestId);
-    if (!state) {
-      return { status: 'expired' };
-    }
-    return state;
   }
 }
 
@@ -101,8 +112,11 @@ export class WalletStatusService {
     waivioApiOrigin: string;
     memoReady: boolean;
     hasSession: { active: boolean; account?: string; expiresAt?: number };
-    waivioAuth: ReturnType<WaivioAuthSessionService['getStatus']>;
+    waivioAuth: ReturnType<WaivioAuthSessionService['getDefaultStatus']>;
     localKeys: ReturnType<LocalKeysService['getReadiness']>;
+    localAccounts: ReturnType<LocalKeysService['getAllReadiness']>;
+    defaultAccount?: string;
+    accountsSource: AgentWalletConfig['accountsSource'];
   } {
     return {
       signingMode: this.broadcast.getSigningMode(),
@@ -112,8 +126,84 @@ export class WalletStatusService {
         active: this.hasSession.getSessionInfo() != null,
         ...(this.hasSession.getSessionInfo() ?? {}),
       },
-      waivioAuth: this.waivioAuth.getStatus(),
+      waivioAuth: this.waivioAuth.getDefaultStatus(),
       localKeys: this.localKeys.getReadiness(),
+      localAccounts: this.localKeys.getAllReadiness(),
+      defaultAccount: this.config.get('defaultAccount', { infer: true }),
+      accountsSource: this.config.get('accountsSource', { infer: true }),
+    };
+  }
+}
+
+@Injectable()
+export class WalletAccountsService {
+  constructor(
+    private readonly config: ConfigService<AgentWalletConfig, true>,
+    private readonly localKeys: LocalKeysService,
+    private readonly waivioAuth: WaivioAuthSessionService,
+    private readonly notificationsSocket: NotificationsSocketService,
+  ) {}
+
+  getAccounts(): {
+    defaultAccount?: string;
+    accountsSource: AgentWalletConfig['accountsSource'];
+    accounts: Array<{
+      account: string;
+      postingReady: boolean;
+      activeReady: boolean;
+      memoReady: boolean;
+      ownerReady: boolean;
+      waivioAuth: {
+        active: boolean;
+        provider?: 'keychain' | 'hiveauth';
+      };
+      notifications: {
+        connected: boolean;
+      };
+    }>;
+  } {
+    const readinessByAccount = new Map(
+      this.localKeys.getAllReadiness().map((entry) => [
+        entry.account ?? '',
+        entry,
+      ]),
+    );
+    const configured = this.config.get('accounts', { infer: true });
+    const accountNames = [
+      ...new Set([
+        ...configured.map((entry) => entry.account),
+        ...this.localKeys.listAccounts(),
+      ]),
+    ];
+
+    return {
+      defaultAccount: this.config.get('defaultAccount', { infer: true }),
+      accountsSource: this.config.get('accountsSource', { infer: true }),
+      accounts: accountNames.map((account) => {
+        const readiness = readinessByAccount.get(account) ?? {
+          ready: false,
+          account,
+          postingReady: false,
+          activeReady: false,
+          memoReady: false,
+          ownerReady: false,
+        };
+        const waivioStatus = this.waivioAuth.getStatus(account);
+        return {
+          account,
+          postingReady: readiness.postingReady,
+          activeReady: readiness.activeReady,
+          memoReady: readiness.memoReady,
+          ownerReady: readiness.ownerReady,
+          waivioAuth: {
+            active: waivioStatus.active,
+            ...(waivioStatus.provider ? { provider: waivioStatus.provider } : {}),
+          },
+          notifications: {
+            connected: this.notificationsSocket.isConnected(account),
+          },
+        };
+      }),
     };
   }
 }

@@ -1,7 +1,7 @@
 ---
 id: docs-apps-agent-wallet-spec-overview
 title: agent-wallet
-description: Local HAS session daemon with MCP tools for agent-driven ODL broadcasts.
+description: Local signing daemon with optional HAS and MCP tools for agent-driven ODL broadcasts.
 type: overview
 status: active
 scope: agent-wallet
@@ -18,7 +18,7 @@ related:
 
 # agent-wallet
 
-Local NestJS app: holds a HiveAuth (HAS) session and exposes MCP tools for login, ODL `object_create` build, and broadcast with phone approval.
+Local NestJS app: loads Hive accounts from a registry (`accounts.json` or env), signs with local keys and/or an optional HiveAuth (HAS) session, and exposes MCP tools for Waivio auth, ODL build/broadcast, and notifications.
 
 ## Agent first visit
 
@@ -50,6 +50,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 
 | Feature | Doc |
 |---------|-----|
+| Multi-account local keys, Waivio tokens, signer resolution | [multi-account.md](multi-account.md) |
 | HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
 | OSL messaging (read/send/encrypt/notify) | [osl-messaging skill](../../skills/osl-messaging.md) |
 | Wallet delegations / balances / swaps | [wallet-delegation-swap-for-agents skill](../../skills/wallet-delegation-swap-for-agents.md) |
@@ -76,10 +77,11 @@ Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see
 
 | `has_broadcast` | `requestId` |
 | `has_broadcast_status` | `signed` / `rejected` / `error` / `expired`, `transactionId` |
-| `wallet_status` | signing mode, HAS/Waivio/local readiness (no secrets) |
-| `waivio_auth_start` / `waivio_auth_status` / `waivio_auth_logout` | Waivio JWT session (separate from HAS) |
-| `ipfs_upload_image` | `{ cid, url? }` after authenticated upload |
-| `wallet_broadcast` / `wallet_broadcast_status` | mode-aware broadcast (HAS or local keys) |
+| `wallet_accounts` | configured accounts with key/Waivio/notifications readiness (no secrets) |
+| `wallet_status` | signing mode, HAS/Waivio/local readiness, `localAccounts[]` (no secrets) |
+| `waivio_auth_start` / `waivio_auth_status` / `waivio_auth_logout` | Waivio JWT session per account (optional `account`) |
+| `ipfs_upload_image` | `{ cid, url? }` after authenticated upload (optional `account`) |
+| `wallet_broadcast` / `wallet_broadcast_status` | mode-aware broadcast (HAS or local keys; optional `account` signer) |
 | `osl_build_channel_create` | group / object `channel_create` envelope |
 | `osl_build_message_create` | plaintext `message_create` |
 | `osl_build_encrypted_message_create` | encrypted `message_create` (local memo only) |
@@ -100,11 +102,13 @@ Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see
 | `HAS_APP_NAME` | `ODL Agent` | Shown in Keychain auth prompt |
 | `HAS_WEB_LINK_BASE` | `https://waiviodev.com` | Origin for clickable `webLink` (`/has#<compact fragment>`); empty disables |
 | `WAIVIO_API_ORIGIN` | `https://waiviodev.com` | Base for `/auth/v1` and `/ipfs-gateway` |
-| `AGENT_WALLET_SIGNING_MODE` | `has` | `has` \| `local` — broadcast signing provider |
-| `HIVE_ACCOUNT` | — | Required in `local` mode |
-| `HIVE_POSTING_KEY` | — | Env-only posting WIF for local mode (never persisted) |
-| `HIVE_ACTIVE_KEY` | — | Optional env-only active WIF (active ops only) |
-| `HIVE_MEMO_KEY` | — | Optional memo WIF for encrypted messaging (local mode) |
+| `AGENT_WALLET_SIGNING_MODE` | `has` | `has` \| `local` — tie-break when `wallet_broadcast` has no `account` |
+| `AGENT_WALLET_ACCOUNTS_FILE` | `<dataDir>/accounts.json` | JSON registry of local signing accounts |
+| `HIVE_ACCOUNT` | — | **Fallback** when accounts file missing/unreadable |
+| `HIVE_POSTING_KEY` | — | **Fallback** posting WIF (never persisted) |
+| `HIVE_ACTIVE_KEY` | — | **Fallback** optional active WIF |
+| `HIVE_MEMO_KEY` | — | **Fallback** optional memo WIF |
+| `HIVE_OWNER_KEY` | — | **Fallback** optional owner WIF (readiness only; never used for broadcast) |
 | `NOTIFICATIONS_WS_URL` | derived from `WAIVIO_API_ORIGIN` | Notifications WS for inbound message push |
 | `HIVE_RPC_NODES` | `https://api.hive.blog` | Comma-separated Hive RPC URLs |
 | `AGENT_WALLET_DATA_DIR` | `~/.odl` | MCP token + HAS + Waivio refresh session files |
@@ -121,7 +125,8 @@ Credential files (when persistence enabled):
 |------|----------|
 | `~/.odl/agent-wallet.token` | MCP bearer only |
 | `~/.odl/agent-wallet-session.json` | HAS session only |
-| `~/.odl/waivio-auth-session.json` | Waivio refresh token + account metadata only |
+| `~/.odl/accounts.json` | Local Hive WIF keys (preferred over env) |
+| `~/.odl/waivio-auth/<account>.json` | Waivio refresh token per account |
 
 ## Verification
 

@@ -97,7 +97,7 @@ Album metadata / reference only — not the image bytes. See object-create specs
 
 ## Local signing alternative (no HAS)
 
-Set process env (never commit keys):
+Preferred: `~/.odl/accounts.json` with posting (and optional active) keys. Env fallback:
 
 ```powershell
 $env:AGENT_WALLET_SIGNING_MODE = "local"

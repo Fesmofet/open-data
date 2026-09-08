@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module';
-import { HiveBroadcastService, WalletStatusService } from './hive-broadcast.service';
+import {
+  HiveBroadcastService,
+  WalletAccountsService,
+  WalletStatusService,
+} from './hive-broadcast.service';
 import { HasSessionService } from './has-session.service';
 import { HiveChainContextService } from './hive-chain-context.service';
 import { HivePostingAuthorityGrantBuildService } from './hive-posting-authority-grant-build.service';
@@ -15,6 +19,7 @@ import { WaivioAuthClientService } from './waivio-auth-client.service';
 import { WaivioAuthOrchestratorService } from './waivio-auth-orchestrator.service';
 import { WaivioAuthSessionService } from './waivio-auth-session.service';
 import { WalletDelegationBuildService } from './wallet-delegation-build.service';
+import { WalletSignerResolverService } from './wallet-signer-resolver.service';
 
 @Module({
   imports: [AuthModule],
@@ -25,10 +30,12 @@ import { WalletDelegationBuildService } from './wallet-delegation-build.service'
     WaivioAuthSessionService,
     WaivioAuthOrchestratorService,
     LocalKeysService,
+    WalletSignerResolverService,
     OslMessagingService,
     NotificationsSocketService,
     HiveBroadcastService,
     WalletStatusService,
+    WalletAccountsService,
     HivePostBuildService,
     HiveChainContextService,
     WalletDelegationBuildService,
@@ -44,6 +51,7 @@ import { WalletDelegationBuildService } from './wallet-delegation-build.service'
     WaivioAuthSessionService,
     HiveBroadcastService,
     WalletStatusService,
+    WalletAccountsService,
     IpfsUploadService,
     LocalKeysService,
     OslMessagingService,
