@@ -1,7 +1,7 @@
 ---
 title: Create affiliate object
 description: Agent playbook for ODL affiliate object_create and updates.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, affiliate, agent]

@@ -1,7 +1,7 @@
 ---
 title: Create list object
 description: Agent playbook for ODL list — curated grouped collections via listItem refs (menus, catalogs, sections).
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, list, agent]

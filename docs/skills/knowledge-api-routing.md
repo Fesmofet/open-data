@@ -35,7 +35,7 @@ related:
 ## First visit steps
 
 1. Read MCP **server instructions** (returned on `initialize`) or resource `odl-knowledge://routing`.
-2. `list_files({ type: "skill" })` — all playbooks with `description` one-liners.
+2. `list_files({ type: "skill" })` — procedural skills with `description` one-liners (22 skills; excludes 27 object-create playbooks).
 3. `resolve_doc({ topic: "<user task>" })` — best path(s) before opening files.
 4. `get_file({ path: "<chosen path>" })` — full markdown before implementing.
 5. `get_context({ topic })` — compact chunks when you need excerpts without full files.
@@ -60,7 +60,8 @@ related:
 | Live platform data (objects, feeds, posts, OBL reads) | skill | `docs/skills/query-api-mcp-routing.md` → query-api MCP |
 | Domain rules (votes, governance, OBL norms) | spec | `docs/spec/README.md` · `docs/spec/open-business-layer.md` |
 | Object/update payload shape | registry tools | `get_object_create_playbook` → `get_object_type` / `get_update_schema` |
-| Create recipe / restaurant / menu content | skill | `get_object_create_playbook` · [object-content-routing.md](object-content-routing.md) |
+| Create ODL object (any type) | skill | [object-create.md](object-create.md) → `get_object_create_playbook` |
+| Create recipe / restaurant / menu content | skill / playbook | [object-content-routing.md](object-content-routing.md) · `get_object_create_playbook` |
 | Publish Hive post / WAIV tags / companion post | skill | [hive-post-create.md](hive-post-create.md) |
 | Write object thread (Reviews > Threads) | skill | [hive-thread-create.md](hive-thread-create.md) |
 | OSL messaging (DM / group / object channels) | skill | [osl-messaging.md](osl-messaging.md) |
@@ -100,6 +101,7 @@ related:
 | `docs/skills/obl-offers-contracts.md` | OBL offers: discover, publish, sign contracts |
 | `docs/skills/obl-ledger.md` | OBL invoices, payments, balances, ledger |
 | `docs/skills/obl-disputes.md` | OBL disputes and arbitration |
+| `docs/skills/object-create.md` | ODL object create workflow (playbook lookup → build → broadcast) |
 | `docs/skills/object-content-routing.md` | Object create intent → playbook / workflow |
 | `docs/skills/object-content-standards.md` | Common dedupe, locales, images, broadcast rules |
 | `docs/skills/restaurant-menu-workflow.md` | Restaurant + menu composite workflow |
@@ -109,7 +111,7 @@ related:
 | `docs/skills/osl-messaging.md` | OSL DM/group/object messaging for agents |
 | `docs/skills/build-tenant-site.md` | Build a web project (waivio-pages-starter or fork apps/web) |
 
-Object-type playbooks (`docs/skills/object-create/*.md`): use `list_files({ type: "skill", tags: ["object-create-playbook"] })` or `get_object_create_playbook({ object_type })`.
+Object-type playbooks (`docs/skills/object-create/*.md`, **27 files**, type `playbook`): use `get_object_create_playbook({ object_type })` or `list_files({ type: "playbook", tags: ["object-create-playbook"] })`. They do **not** appear in `list_files({ type: "skill" })`.
 
 ## Verification
 

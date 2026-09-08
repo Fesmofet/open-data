@@ -1,7 +1,7 @@
 ---
 title: Create shop object
 description: Agent playbook for ODL shop — commerce container with products and navigation.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, shop, agent]

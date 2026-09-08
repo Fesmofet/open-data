@@ -1,7 +1,7 @@
 ---
 title: Create legal_document object
 description: Agent playbook for ODL legal_document — single-writer legal text for OBL offers; no generated claims.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, legal_document, agent]

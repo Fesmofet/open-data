@@ -53,8 +53,8 @@ async function main(): Promise<void> {
     const raw = await readFile(path.join(ROOT, relPath), 'utf8');
     const parsed = parseKnowledgeFile(relPath, raw);
 
-    if (parsed.frontmatter.type !== 'skill') {
-      fail(`${relPath}: frontmatter type must be skill`);
+    if (parsed.frontmatter.type !== 'playbook') {
+      fail(`${relPath}: frontmatter type must be playbook`);
     }
     if (parsed.frontmatter.status !== 'active') {
       fail(`${relPath}: frontmatter status must be active`);

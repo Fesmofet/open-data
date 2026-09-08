@@ -1,7 +1,7 @@
 ---
 title: Create book object
 description: Agent playbook for ODL book — metadata, authors, publisher, commerce.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, book, agent]

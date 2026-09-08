@@ -25,7 +25,7 @@ Local NestJS app: loads Hive accounts from a registry (`accounts.json` or env), 
 1. Skill: [hive-has-agent-wallet](../../skills/hive-has-agent-wallet.md)
 2. Download `agent-wallet.js` from [GitHub Releases](https://github.com/Waiviogit/open-data-layer/releases) (or `pnpm nx serve agent-wallet` from monorepo checkout)
 3. Read bearer token from `~/.odl/agent-wallet.token`
-4. MCP `POST http://127.0.0.1:7500/agent-wallet/mcp` with `Authorization: Bearer …` (direct JSON-RPC — no `mcp.json`)
+4. Register agent-wallet as an MCP server — [mcp-client-setup.md](mcp-client-setup.md) (preferred). Raw JSON-RPC is the fallback — [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md#fallback-raw-json-rpc).
 
 ## Distribution
 
@@ -50,6 +50,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 
 | Feature | Doc |
 |---------|-----|
+| MCP client registration (Cursor, Claude, Codex, Hermes) | [mcp-client-setup.md](mcp-client-setup.md) |
 | Multi-account local keys, Waivio tokens, signer resolution | [multi-account.md](multi-account.md) |
 | HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
 | OSL messaging (read/send/encrypt/notify) | [osl-messaging skill](../../skills/osl-messaging.md) |

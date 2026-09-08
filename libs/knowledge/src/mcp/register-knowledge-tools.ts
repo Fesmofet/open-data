@@ -18,7 +18,7 @@ import type { KnowledgeDatabase } from '../repository/types';
 import type { KnowledgeMcpDeps } from './mcp-tool.deps';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
-const KNOWLEDGE_TYPES = 'skill | spec | overview | lesson | agents | registry';
+const KNOWLEDGE_TYPES = 'skill | playbook | spec | overview | lesson | agents | registry';
 
 export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps): void {
   server.registerTool(

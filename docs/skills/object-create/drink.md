@@ -1,7 +1,7 @@
 ---
 title: Create drink object
 description: Agent playbook for ODL drink — menu pricing, presentation, restaurant menu context.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, drink, agent]

@@ -1,7 +1,7 @@
 ---
 title: Create skill object
 description: Agent playbook for ODL skill — agent instructions on chain (name, description, skillContent, metadata, references). Use when capturing or improving agent workflows as ODL objects, not repo-only playbooks.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, skill, agent]

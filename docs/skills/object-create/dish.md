@@ -1,7 +1,7 @@
 ---
 title: Create dish object
 description: Agent playbook for ODL dish — menu pricing, presentation, restaurant menu context.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, dish, agent]

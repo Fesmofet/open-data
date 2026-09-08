@@ -19,6 +19,21 @@ describe('inferMetadataFromPath', () => {
     });
   });
 
+  it('maps object-create playbook paths', () => {
+    expect(inferMetadataFromPath('docs/skills/object-create/recipe.md')).toMatchObject({
+      type: 'playbook',
+      scope: 'platform',
+      tags: expect.arrayContaining(['object-create-playbook', 'recipe']),
+    });
+  });
+
+  it('normalizes Windows separators for object-create playbooks', () => {
+    expect(inferMetadataFromPath('docs\\skills\\object-create\\dish.md')).toMatchObject({
+      type: 'playbook',
+      tags: expect.arrayContaining(['dish']),
+    });
+  });
+
   it('maps registry virtual paths', () => {
     expect(inferMetadataFromPath('registry/object-type/product.md')).toMatchObject({
       type: 'registry',

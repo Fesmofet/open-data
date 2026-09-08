@@ -1,7 +1,7 @@
 ---
 title: Create hashtag object
 description: Agent playbook for ODL hashtag object_create and updates.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, hashtag, agent]

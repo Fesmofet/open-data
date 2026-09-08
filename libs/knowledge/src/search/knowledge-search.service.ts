@@ -14,6 +14,7 @@ import {
 import type { KnowledgeDatabase } from '../repository/types';
 import { matchCuratedRoutes } from '../routing/curated-routes';
 import { buildAutocompleteTsQuery } from './knowledge-query.builder';
+import { typeBoost } from './search-type-boost';
 
 export interface SearchKnowledgeInput {
   query: string;
@@ -118,7 +119,7 @@ export class KnowledgeSearchService {
         sql<number>`CASE WHEN f.description ILIKE ${likePattern} THEN ${sql.lit(SEARCH_BOOST_DESCRIPTION)} ELSE 0 END`.as(
           'description_boost',
         ),
-        sql<number>`CASE WHEN f.type = 'skill' THEN ${sql.lit(SEARCH_BOOST_SKILL_TYPE)} WHEN f.type IN ('spec', 'lesson', 'agents') THEN ${sql.lit(SEARCH_BOOST_SPEC_TYPE)} WHEN f.type = 'overview' THEN ${sql.lit(SEARCH_BOOST_OVERVIEW_TYPE)} ELSE 0 END`.as(
+        sql<number>`CASE WHEN f.type IN ('skill', 'playbook') THEN ${sql.lit(SEARCH_BOOST_SKILL_TYPE)} WHEN f.type IN ('spec', 'lesson', 'agents') THEN ${sql.lit(SEARCH_BOOST_SPEC_TYPE)} WHEN f.type = 'overview' THEN ${sql.lit(SEARCH_BOOST_OVERVIEW_TYPE)} ELSE 0 END`.as(
           'type_boost',
         ),
         sql<number>`CASE WHEN f.status = 'active' THEN ${sql.lit(SEARCH_BOOST_ACTIVE_STATUS)} ELSE ${sql.lit(SEARCH_BOOST_INACTIVE_STATUS)} END`.as(
@@ -149,7 +150,7 @@ export class KnowledgeSearchService {
       + ${sql.lit(SEARCH_WEIGHT_TRGM)} * COALESCE(similarity(f.routing_text, ${query}), 0)
       + CASE WHEN f.title ILIKE ${likePattern} THEN ${sql.lit(SEARCH_BOOST_TITLE)} ELSE 0 END
       + CASE WHEN f.description ILIKE ${likePattern} THEN ${sql.lit(SEARCH_BOOST_DESCRIPTION)} ELSE 0 END
-      + CASE WHEN f.type = 'skill' THEN ${sql.lit(SEARCH_BOOST_SKILL_TYPE)} WHEN f.type IN ('spec', 'lesson', 'agents') THEN ${sql.lit(SEARCH_BOOST_SPEC_TYPE)} WHEN f.type = 'overview' THEN ${sql.lit(SEARCH_BOOST_OVERVIEW_TYPE)} ELSE 0 END
+      + CASE WHEN f.type IN ('skill', 'playbook') THEN ${sql.lit(SEARCH_BOOST_SKILL_TYPE)} WHEN f.type IN ('spec', 'lesson', 'agents') THEN ${sql.lit(SEARCH_BOOST_SPEC_TYPE)} WHEN f.type = 'overview' THEN ${sql.lit(SEARCH_BOOST_OVERVIEW_TYPE)} ELSE 0 END
       + CASE WHEN f.status = 'active' THEN ${sql.lit(SEARCH_BOOST_ACTIVE_STATUS)} ELSE ${sql.lit(SEARCH_BOOST_INACTIVE_STATUS)} END
     `;
 
@@ -214,9 +215,7 @@ export class KnowledgeSearchService {
         title: file.title,
         description: file.description,
         heading: chunk.heading,
-        score:
-          Number(file.sim) * SEARCH_WEIGHT_TRGM +
-          (file.type === 'skill' ? SEARCH_BOOST_SKILL_TYPE : 0),
+        score: Number(file.sim) * SEARCH_WEIGHT_TRGM + typeBoost(file.type),
         content: chunk.content,
         tags: file.tags,
         type: file.type,

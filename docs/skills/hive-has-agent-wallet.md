@@ -72,7 +72,9 @@ Invoke-WebRequest -Uri https://github.com/Waiviogit/open-data-layer/releases/lat
 node agent-wallet.js
 ```
 
-No `mcp.json` required. The agent reads the bearer token from `~/.odl/agent-wallet.token` and sends JSON-RPC directly to `http://127.0.0.1:7500/agent-wallet/mcp` via `fetch` or `curl`.
+**Preferred:** register agent-wallet as an MCP server — see [MCP client setup](../apps/agent-wallet/spec/mcp-client-setup.md) (Cursor `.cursor/mcp.json`, Claude, Codex, Hermes). Read the bearer token from `~/.odl/agent-wallet.token` and paste it into the config headers (or pin with `AGENT_WALLET_BEARER_TOKEN`).
+
+**Fallback:** raw JSON-RPC via `curl` or `Invoke-RestMethod` when the agent cannot add MCP servers — see [Fallback: raw JSON-RPC](#fallback-raw-json-rpc) below.
 
 ### Option B — from monorepo checkout
 
@@ -133,7 +135,39 @@ sequenceDiagram
 
 ### 1. MCP initialize
 
-Send JSON-RPC to `/agent-wallet/mcp` with bearer header. Tool names:
+If registered as an MCP server, call tools directly (`wallet_status`, `odl_build_object_create`, `wallet_broadcast`, …). Do not shell out to curl or Python.
+
+### Fallback: raw JSON-RPC
+
+When MCP registration is not available, send JSON-RPC to `POST http://127.0.0.1:7500/agent-wallet/mcp` with bearer header. **Required:** `Accept: application/json, text/event-stream` — omitting `text/event-stream` returns **406**. Use `curl` or PowerShell `Invoke-RestMethod` only; never a Python or Node scratch script.
+
+POSIX:
+
+```bash
+TOKEN=$(cat ~/.odl/agent-wallet.token)
+curl -s http://127.0.0.1:7500/agent-wallet/mcp \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+```
+
+PowerShell:
+
+```powershell
+$token = Get-Content $env:USERPROFILE\.odl\agent-wallet.token -Raw
+$body = '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+Invoke-RestMethod -Uri http://127.0.0.1:7500/agent-wallet/mcp `
+  -Method Post `
+  -Headers @{
+    Authorization = "Bearer $($token.Trim())"
+    Accept = "application/json, text/event-stream"
+    "Content-Type" = "application/json"
+  } `
+  -Body $body
+```
+
+Tool names:
 
 | Tool | Purpose |
 |------|---------|

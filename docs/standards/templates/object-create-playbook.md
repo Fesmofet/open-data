@@ -12,7 +12,7 @@ related:
 
 # Create {objectType} object (template)
 
-Copy to `docs/skills/object-create/{objectType}.md` and replace placeholders. Set `type: skill`, `status: active`, tag `object-create-playbook`.
+Copy to `docs/skills/object-create/{objectType}.md` and replace placeholders. Set `type: playbook`, `status: active`, tag `object-create-playbook`.
 
 ## When to use / not
 

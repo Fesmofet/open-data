@@ -3,6 +3,7 @@ import {
   mcpCorsProbe,
   mcpInitialize,
   mcpListTools,
+  mcpRawRequest,
   mcpUnauthorized,
 } from '../support/mcp-client';
 import {
@@ -29,6 +30,7 @@ const REQUIRED_TOOLS = [
   'odl_build_gallery_item',
   'has_broadcast',
   'has_broadcast_status',
+  'hive_build_post',
 ];
 
 function fakeHas(): FakeHasServer {
@@ -119,6 +121,82 @@ describe('agent-wallet MCP (e2e)', () => {
     expect(body.status).toBe('ok');
     expect(body.wallet.signingMode).toBeDefined();
     expect(Array.isArray(body.wallet.localAccounts)).toBe(true);
+  });
+
+  it('rejects GET stream probe with 405 instead of 404', async () => {
+    const token = process.env.AGENT_WALLET_BEARER_TOKEN;
+    expect(token).toBeDefined();
+
+    const res = await mcpRawRequest({
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${token}`,
+        accept: 'text/event-stream',
+      },
+    });
+
+    expect(res.status).toBe(405);
+    expect(res.headers.get('content-type')).toContain('application/json');
+    expect(res.body).toEqual({
+      jsonrpc: '2.0',
+      error: {
+        code: -32000,
+        message: 'Method Not Allowed: agent-wallet MCP is stateless (POST only)',
+      },
+      id: null,
+    });
+  });
+
+  it('rejects DELETE with 405', async () => {
+    const token = process.env.AGENT_WALLET_BEARER_TOKEN;
+    expect(token).toBeDefined();
+
+    const res = await mcpRawRequest({
+      method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(res.status).toBe(405);
+    expect(res.body).toMatchObject({
+      jsonrpc: '2.0',
+      error: { code: -32000 },
+      id: null,
+    });
+  });
+
+  it('requires authorization before reporting method restriction on GET', async () => {
+    const res = await mcpRawRequest({
+      method: 'GET',
+      headers: {
+        accept: 'text/event-stream',
+      },
+    });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects POST when Accept omits text/event-stream', async () => {
+    const token = process.env.AGENT_WALLET_BEARER_TOKEN;
+    expect(token).toBeDefined();
+
+    const res = await mcpRawRequest({
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+        accept: 'application/json',
+      },
+      body: {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/list',
+        params: {},
+      },
+    });
+
+    expect(res.status).toBe(406);
   });
 
   it('initializes MCP with required tools and no CORS headers', async () => {

@@ -1,7 +1,7 @@
 ---
 title: Create person object
 description: Agent playbook for ODL person object_create and updates.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, person, agent]

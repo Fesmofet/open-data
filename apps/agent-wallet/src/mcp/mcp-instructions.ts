@@ -1,4 +1,6 @@
-export const AGENT_WALLET_MCP_INSTRUCTIONS = `Local agent wallet daemon for ODL: multi-account local Hive keys (primary), optional HAS session, per-account Waivio JWT auth, and IPFS image upload.
+export const AGENT_WALLET_MCP_INSTRUCTIONS = `You are connected over MCP — call these tools directly. Do not shell out to curl, python, or fetch against http://127.0.0.1:7500/agent-wallet/mcp.
+
+Local agent wallet daemon for ODL: multi-account local Hive keys (primary), optional HAS session, per-account Waivio JWT auth, and IPFS image upload.
 
 Default Waivio API origin: https://waiviodev.com (override with WAIVIO_API_ORIGIN).
 

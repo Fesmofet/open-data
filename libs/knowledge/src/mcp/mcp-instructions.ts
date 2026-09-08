@@ -3,12 +3,13 @@ export const KNOWLEDGE_MCP_INSTRUCTIONS = `Project knowledge base (ODL docs, ski
 
 First visit workflow:
 1. Read resource odl-knowledge://routing (or get_file docs/skills/knowledge-api-routing.md)
-2. list_files({ type: "skill" }) — catalog playbooks with description one-liners
+2. list_files({ type: "skill" }) — procedural skills with description one-liners (excludes object-create playbooks; use type: "playbook" or get_object_create_playbook)
 3. resolve_doc({ topic: "<user task>" }) → get_file(path) for full markdown
 4. get_context({ topic }) — compact chunks when route is unclear
 
 Doc taxonomy:
-- skill — procedural playbooks (docs/skills/)
+- skill — procedural playbooks (docs/skills/*.md, top-level only)
+- playbook — per-object-type create reference (docs/skills/object-create/); reach via get_object_create_playbook or list_files({ type: "playbook" }), not list_files({ type: "skill" })
 - spec / overview — app and domain behavior
 - agents — coding rules (AGENTS.md)
 - registry — object/update type reference (also use get_object_type / get_update_schema)

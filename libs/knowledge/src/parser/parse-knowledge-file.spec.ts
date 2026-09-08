@@ -25,6 +25,18 @@ Content.`;
     expect(parsed.frontmatter.tags).toEqual(['hive', 'tutorial']);
   });
 
+  it('accepts playbook as a frontmatter type', () => {
+    const raw = `---
+type: playbook
+description: Recipe playbook.
+---
+# Create recipe
+
+Body.`;
+    const parsed = parseKnowledgeFile('docs/skills/object-create/recipe.md', raw);
+    expect(parsed.frontmatter.type).toBe('playbook');
+  });
+
   it('detects overview type', () => {
     const parsed = parseKnowledgeFile(
       'docs/apps/query-api/spec/overview.md',

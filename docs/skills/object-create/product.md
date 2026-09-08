@@ -1,7 +1,7 @@
 ---
 title: Create product object
 description: Agent playbook for ODL product — catalog fields, merchant, pricing, variants, categories.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, product, agent]

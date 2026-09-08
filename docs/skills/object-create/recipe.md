@@ -1,7 +1,7 @@
 ---
 title: Create recipe object
 description: Agent playbook for ODL recipe object_create — ingredients, cook time, nutrition, categories, budget, images.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, recipe, agent]

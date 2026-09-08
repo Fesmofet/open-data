@@ -1,7 +1,7 @@
 ---
 title: Create html object
 description: Agent playbook for ODL html — raw HTML content via htmlContent update.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, html, agent]

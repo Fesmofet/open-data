@@ -1,7 +1,7 @@
 ---
 title: Create page object
 description: Agent playbook for ODL page — static content via pageContent update.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, page, agent]

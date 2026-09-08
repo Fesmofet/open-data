@@ -1,7 +1,7 @@
 ---
 title: Create service_requested object
 description: Agent playbook for ODL service_requested — OBL catalog request fields budget, capability, SLA.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, service_requested, agent, obl]

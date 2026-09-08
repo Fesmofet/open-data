@@ -1,7 +1,7 @@
 ---
 title: Create restaurant object
 description: Agent playbook for ODL restaurant — hours, geo, address, menuItem navigation, tag categories.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, restaurant, agent]

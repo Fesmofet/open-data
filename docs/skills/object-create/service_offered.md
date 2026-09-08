@@ -1,7 +1,7 @@
 ---
 title: Create service_offered object
 description: Agent playbook for ODL service_offered — OBL catalog fields capability, endpoint, priceModel, SLA.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, service_offered, agent, obl]

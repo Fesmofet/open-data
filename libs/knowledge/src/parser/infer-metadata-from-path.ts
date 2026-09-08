@@ -30,6 +30,16 @@ export function inferMetadataFromPath(relativePath: string): Partial<KnowledgeFr
     return { type: 'agents', scope, title: `AGENTS — ${scope}` };
   }
 
+  if (p.startsWith('docs/skills/object-create/')) {
+    const objectType = p.slice('docs/skills/object-create/'.length).replace(/\.md$/i, '');
+    return {
+      type: 'playbook',
+      scope: 'platform',
+      title: `Create ${objectType} object`,
+      tags: ['object-create', 'object-create-playbook', objectType],
+    };
+  }
+
   if (p.startsWith('docs/skills/')) {
     const name = p.slice('docs/skills/'.length).replace(/\.md$/i, '');
     return {

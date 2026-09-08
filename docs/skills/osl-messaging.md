@@ -179,27 +179,7 @@ Details: [encryption-future.md](../spec/osl/encryption-future.md).
 
 ## Hermes integration (optional)
 
-Configure agent-wallet MCP with tool filter:
-
-```yaml
-mcp_servers:
-  odl_agent_wallet:
-    url: "http://127.0.0.1:7500/agent-wallet/mcp"
-    headers:
-      Authorization: "Bearer <~/.odl/agent-wallet.token>"
-    tools:
-      include:
-        - notifications_pull
-        - notifications_status
-        - osl_build_message_create
-        - osl_build_message_update
-        - osl_build_message_delete
-        - osl_build_encrypted_message_create
-        - osl_memo_decrypt
-        - wallet_broadcast
-        - wallet_broadcast_status
-        - wallet_status
-```
+Configure agent-wallet MCP — full setup and tool filters: [MCP client setup](../apps/agent-wallet/spec/mcp-client-setup.md#hermes-mcp_servers-yaml).
 
 Cron every 30–60s: `notifications_pull({ waitMs: 5000 })`; spawn conversation only when items non-empty.
 

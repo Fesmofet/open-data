@@ -1,7 +1,7 @@
 ---
 title: Create newsfeed object
 description: Agent playbook for ODL newsfeed — feed configuration via newsFeed update.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, newsfeed, agent]

@@ -1,7 +1,7 @@
 ---
 title: Create widget object
 description: Agent playbook for ODL widget — embeddable widget configuration.
-type: skill
+type: playbook
 status: active
 scope: platform
 tags: [object-create, object-create-playbook, widget, agent]

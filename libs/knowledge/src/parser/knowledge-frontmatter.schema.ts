@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const KNOWLEDGE_TYPES = [
   'spec',
   'skill',
+  'playbook',
   'overview',
   'adr',
   'lesson',

@@ -32,6 +32,28 @@ function bearerToken(): string {
   return token;
 }
 
+export async function mcpRawRequest(input: {
+  method: 'GET' | 'POST' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: unknown;
+}): Promise<{ status: number; headers: Headers; body: unknown }> {
+  const res = await fetch(`${baseUrl()}/agent-wallet/mcp`, {
+    method: input.method,
+    headers: input.headers,
+    ...(input.body !== undefined
+      ? { body: JSON.stringify(input.body) }
+      : {}),
+  });
+
+  const contentType = res.headers.get('content-type') ?? '';
+  let body: unknown = null;
+  if (contentType.includes('application/json')) {
+    body = await res.json();
+  }
+
+  return { status: res.status, headers: res.headers, body };
+}
+
 export async function mcpRequest(
   method: string,
   params: Record<string, unknown> = {},
