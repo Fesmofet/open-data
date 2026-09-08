@@ -10,6 +10,8 @@ describe('QUERY_API_MCP_INSTRUCTIONS', () => {
     expect(QUERY_API_MCP_INSTRUCTIONS).toContain('resolve_object');
     expect(QUERY_API_MCP_INSTRUCTIONS).toContain('discover_objects');
     expect(QUERY_API_MCP_INSTRUCTIONS).toContain('get_post_discussion');
+    expect(QUERY_API_MCP_INSTRUCTIONS).toContain('get_user_authority_grantors');
+    expect(QUERY_API_MCP_INSTRUCTIONS).toContain('get_user_authority_grantees');
   });
 
   it('documents context params', () => {

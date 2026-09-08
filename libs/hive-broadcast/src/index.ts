@@ -47,6 +47,15 @@ export {
 } from './operation-builders';
 export { wireCommentOptionsPayload, toHiveWireOperation, toHiveWireOperations, type HiveWireOperation } from './hive-operation-wire';
 export {
+  buildAccountUpdatePostingOp,
+  mergeHiveAccountAuths,
+  normalizeHiveAuthoritySnapshot,
+  type BuildAccountUpdatePostingOpInput,
+  type HiveAccountAuthEntry,
+  type HiveAuthoritySnapshot,
+  type MergeHiveAccountAuthsInput,
+} from './hive-account-authority-operations';
+export {
   buildOdlUpdateCreateOp,
   buildOdlGalleryItemWithAlbumEnsureOp,
   buildOdlUpdateCreateWithRankVoteOp,

@@ -4,6 +4,7 @@ import { AuthModule } from '../auth/auth.module';
 import { HiveBroadcastService, WalletStatusService } from './hive-broadcast.service';
 import { HasSessionService } from './has-session.service';
 import { HiveChainContextService } from './hive-chain-context.service';
+import { HivePostingAuthorityGrantBuildService } from './hive-posting-authority-grant-build.service';
 import { HivePostBuildService } from './hive-post-build.service';
 import { IpfsUploadService } from './ipfs-upload.service';
 import { LocalKeysService } from './local-keys.service';
@@ -31,12 +32,14 @@ import { WalletDelegationBuildService } from './wallet-delegation-build.service'
     HivePostBuildService,
     HiveChainContextService,
     WalletDelegationBuildService,
+    HivePostingAuthorityGrantBuildService,
     IpfsUploadService,
   ],
   exports: [
     HasSessionService,
     HivePostBuildService,
     WalletDelegationBuildService,
+    HivePostingAuthorityGrantBuildService,
     WaivioAuthOrchestratorService,
     WaivioAuthSessionService,
     HiveBroadcastService,

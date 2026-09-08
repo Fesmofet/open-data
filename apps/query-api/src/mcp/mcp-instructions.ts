@@ -28,6 +28,9 @@ Decision table:
 | User shop | get_user_categories, get_user_shop_filters, get_user_shop_objects, get_user_shop_sections |
 | Single post + comments | get_post, get_post_discussion |
 | Token/fiat rates | get_currency_* / get_engine_* |
+| Who delegated authority to me / who can I post as | get_user_authority_grantors (404 = account absent from accounts_current, not "no grantors") |
+| Who did this account delegate authority to | get_user_authority_grantees |
+| Grant/revoke posting or act as grantor | Not here — docs/skills/hive-account-authority-for-agents.md + agent-wallet hive_build_posting_authority_grant |
 
 Excluded: user post drafts (JWT writes) — not exposed via MCP.
 
@@ -36,4 +39,5 @@ Top tools:
 - search — header predictive search
 - get_user_profile — profile shell
 - get_post — post article with rewards
+- get_user_authority_grantors — posting/active/owner grantors for act-as checks
 - discover_objects — discover page listing`;

@@ -13,6 +13,7 @@ related:
   - docs/skills/osl-messaging.md
   - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/hive-post-create.md
+  - docs/skills/hive-account-authority-for-agents.md
   - docs/skills/hive-account-signup.md
   - docs/skills/setup-workspace.md
   - docs/skills/obl-offers-contracts.md
@@ -394,9 +395,11 @@ Payload shapes (`buildGroupChannelCreatePayload`, `buildMessageCreatePayload`, `
 
 See [OSL channels](../../spec/osl/channels.md) and [OSL messages](../../spec/osl/messages.md).
 
+**On behalf of another account:** when a grantor delegated posting authority to the wallet identity, put the **grantor name** in ops (`author`, `required_posting_auths`, ODL `creator`) and sign with the wallet posting key. See [hive-account-authority-for-agents.md](hive-account-authority-for-agents.md).
+
 ## Related
 
-- [Hive account signup](hive-account-signup.md) — account + key custody choice
+- [Hive posting authority for agents](hive-account-authority-for-agents.md) — discover grantors, act-as, grant/revoke posting
 - [Setup workspace](setup-workspace.md) — clone repo for libs
 - [OBL offers and contracts](obl-offers-contracts.md) · [OBL ledger](obl-ledger.md) · [OBL disputes](obl-disputes.md)
 - [Object create broadcast](../apps/web/spec/object-create-broadcast.md) — chunking / IPFS

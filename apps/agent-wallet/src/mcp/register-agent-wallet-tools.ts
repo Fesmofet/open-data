@@ -9,6 +9,7 @@ import { NotificationsSocketService } from '../domain/notifications-socket.servi
 import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
 import { WalletDelegationBuildService } from '../domain/wallet-delegation-build.service';
+import { HivePostingAuthorityGrantBuildService } from '../domain/hive-posting-authority-grant-build.service';
 import { WalletStatusService } from '../domain/hive-broadcast.service';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
@@ -24,6 +25,7 @@ export function registerAgentWalletTools(
     oslMessaging: OslMessagingService;
     notificationsSocket: NotificationsSocketService;
     walletDelegationBuild: WalletDelegationBuildService;
+    postingAuthorityGrantBuild: HivePostingAuthorityGrantBuildService;
   },
 ): void {
   server.registerTool(
@@ -105,7 +107,7 @@ export function registerAgentWalletTools(
     'wallet_broadcast',
     {
       description:
-        'Broadcast ops using the configured signing mode (HAS or local keys). Poll wallet_broadcast_status.',
+        'Broadcast ops using the configured signing mode (HAS or local keys). Signs as the configured wallet identity only (local HIVE_ACCOUNT or HAS session); there is no account argument. To act on behalf of another account, put that account name inside the ops. Poll wallet_broadcast_status.',
       inputSchema: z.object({
         ops: z.array(z.unknown()).min(1),
         keyType: z.enum(['posting', 'active']).default('posting'),
@@ -288,7 +290,7 @@ export function registerAgentWalletTools(
     'hive_build_post',
     {
       description:
-        'Build Hive root post ops (comment + comment_options). Optional linked objects and beneficiaries (omit beneficiaries unless user requests — no default). Warns when tags lack WAIV-eligible tag. Broadcast via wallet_broadcast / has_broadcast after user approval.',
+        'Build Hive root post ops (comment + comment_options). Optional linked objects and beneficiaries (omit beneficiaries unless user requests — no default). Warns when tags lack WAIV-eligible tag. author may be another account that delegated posting authority to the wallet identity; verify first via query-api get_user_authority_grantors. Broadcast via wallet_broadcast / has_broadcast after user approval.',
       inputSchema: z.object({
         author: z.string().min(1),
         title: z.string().min(1),
@@ -333,7 +335,7 @@ export function registerAgentWalletTools(
     'has_broadcast',
     {
       description:
-        'Request HAS signature for ops. Requires active session. Poll has_broadcast_status.',
+        'Request HAS signature for ops. Requires active session. Signs as the configured wallet identity only (HAS session username); there is no account argument. To act on behalf of another account, put that account name inside the ops. Poll has_broadcast_status.',
       inputSchema: z.object({
         ops: z.array(z.unknown()).min(1),
         keyType: z.enum(['posting', 'active']).default('posting'),
@@ -556,6 +558,28 @@ export function registerAgentWalletTools(
       inputSchema: z.object({}),
     },
     async () => jsonToolResult(deps.notificationsSocket.getStatus()),
+  );
+
+  server.registerTool(
+    'hive_build_posting_authority_grant',
+    {
+      description:
+        'Grant or revoke posting authority by rebuilding the grantor posting.account_auths from a live get_accounts snapshot; all existing key_auths and account_auths are preserved. Returns keyType active and signerAccount = the grantor. If signerAccount is the wallet identity and an active key is configured, broadcast with wallet_broadcast({ keyType: "active" }). If HAS session is the grantor, broadcast with has_broadcast({ keyType: "active" }) (phone approval). Otherwise the returned ops are a payload for the grantor to sign elsewhere. Ask user approval before any grant or revoke.',
+      inputSchema: z.object({
+        account: z.string().min(1).describe('Grantor account whose posting authority is changed'),
+        grantee: z.string().min(1).describe('Grantee account to add or remove from posting.account_auths'),
+        action: z.enum(['add', 'remove']),
+      }),
+    },
+    async (args) => {
+      try {
+        const result =
+          await deps.postingAuthorityGrantBuild.buildPostingAuthorityGrant(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
   );
 
   server.registerTool(

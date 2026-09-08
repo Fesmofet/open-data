@@ -8,6 +8,7 @@ tags: [hive, post, broadcast, agent, waiv, json_metadata]
 related:
   - docs/skills/hive-blockchain-broadcast.md
   - docs/skills/hive-has-agent-wallet.md
+  - docs/skills/hive-account-authority-for-agents.md
   - docs/skills/companion-post-workflow.md
   - docs/skills/hive-thread-create.md
   - docs/spec/data-model/post-json-metadata-objects.md
@@ -92,10 +93,11 @@ When beneficiaries are provided explicitly:
 ## Agent workflow
 
 1. (Optional) Create or verify ODL object on chain.
-2. **`hive_build_post`** (agent-wallet MCP) — returns `ops`, `json_metadata`, `warnings`.
-3. Review warnings (especially WAIV-eligible tags).
-4. **`wallet_broadcast`** or **`has_broadcast`** — only after user approval.
-5. Verify: query-api `GET /query/v1/posts/:author/:permlink` or home feed.
+2. If posting **as another account** that delegated posting authority to the wallet identity, verify via `get_user_authority_grantors` and set `author` to the **grantor** — see [hive-account-authority-for-agents.md](hive-account-authority-for-agents.md).
+3. **`hive_build_post`** (agent-wallet MCP) — returns `ops`, `json_metadata`, `warnings`.
+4. Review warnings (especially WAIV-eligible tags).
+5. **`wallet_broadcast`** or **`has_broadcast`** — only after user approval.
+6. Verify: query-api `GET /query/v1/posts/:author/:permlink` or home feed.
 
 ### `hive_build_post` input (summary)
 

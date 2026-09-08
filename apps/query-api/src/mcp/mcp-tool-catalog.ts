@@ -339,13 +339,15 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   },
   {
     name: 'get_user_authority_grantors',
-    description: 'Accounts that delegated Hive owner/active/posting authority to the user.',
+    description:
+      'Accounts that delegated Hive owner/active/posting authority to the user. Use for "who can I post as" checks (grantors of the wallet identity). HTTP 404 means the account is absent from accounts_current, not "no grantors".',
     httpEquivalent: 'GET /query/v1/users/:name/authority-grantors',
     specPath: 'docs/apps/query-api/spec/user-account-auths-endpoint.md',
   },
   {
     name: 'get_user_authority_grantees',
-    description: 'Accounts that received Hive authority from the user.',
+    description:
+      'Accounts that received Hive owner/active/posting authority from the user (outgoing delegations).',
     httpEquivalent: 'GET /query/v1/users/:name/authority-grantees',
     specPath: 'docs/apps/query-api/spec/user-account-auths-endpoint.md',
   },
