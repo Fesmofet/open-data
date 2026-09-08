@@ -23,6 +23,7 @@ import {
 import { resolveConnectionString } from '../libs/migrations/src/connection';
 import {
   clampBackfillBatchSize,
+  isValidHiveAccountName,
   nextLookupAccountsLowerBound,
   nextUserBatchCursor,
   resolveBackfillDelayMs,
@@ -87,19 +88,84 @@ function parseArgs(argv: string[]): CliArgs {
 }
 
 async function hiveRpc<T>(method: string, params: unknown[]): Promise<T | null> {
-  const res = await fetch(HIVE_API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 }),
-  });
-  if (!res.ok) {
-    return null;
+  const MAX_RETRIES = 3;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(HIVE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) {
+        console.warn(`Hive RPC HTTP ${res.status} ${res.statusText} (attempt ${attempt}/${MAX_RETRIES})`);
+        if (attempt < MAX_RETRIES) {
+          await sleep(1000 * attempt);
+          continue;
+        }
+        return null;
+      }
+      const json = (await res.json()) as { result?: T; error?: { message?: string } };
+      if (json.error) {
+        console.warn(
+          `Hive RPC error (attempt ${attempt}/${MAX_RETRIES}): ${
+            json.error.message ?? JSON.stringify(json.error)
+          }`,
+        );
+        if (attempt < MAX_RETRIES && !json.error.message?.includes('Assert Exception')) {
+          await sleep(1000 * attempt);
+          continue;
+        }
+        return null;
+      }
+      if (json.result === undefined) {
+        return null;
+      }
+      return json.result;
+    } catch (err: unknown) {
+      console.warn(
+        `Hive RPC network failure (attempt ${attempt}/${MAX_RETRIES}): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      if (attempt < MAX_RETRIES) {
+        await sleep(1000 * attempt);
+        continue;
+      }
+      return null;
+    }
   }
-  const json = (await res.json()) as { result?: T; error?: unknown };
-  if (json.error || json.result === undefined) {
-    return null;
+  return null;
+}
+
+async function markAccountsSyncedBulk(
+  db: Kysely<OdlDatabase>,
+  accounts: string[],
+  headBlock: number,
+  dryRun: boolean,
+): Promise<void> {
+  if (dryRun || accounts.length === 0) {
+    return;
   }
-  return json.result;
+  for (let i = 0; i < accounts.length; i += 500) {
+    const chunk = accounts.slice(i, i + 500);
+    await db
+      .insertInto('user_account_auth_sync')
+      .values(
+        chunk.map((account) => ({
+          account,
+          synced_at: new Date(),
+          synced_block: headBlock,
+        })),
+      )
+      .onConflict((oc) =>
+        oc.column('account').doUpdateSet({
+          synced_at: new Date(),
+          synced_block: sql`GREATEST(user_account_auth_sync.synced_block, ${headBlock})`,
+        }),
+      )
+      .execute();
+  }
 }
 
 async function fetchHeadBlock(): Promise<number> {
@@ -223,11 +289,12 @@ async function fetchUnsyncedUserNames(
   let qb = db
     .selectFrom('accounts_current as ac')
     .select('ac.name')
-    .where('ac.name', '>', lastAccount)
     .orderBy('ac.name', 'asc')
     .limit(batchSize);
 
-  if (!force) {
+  if (force) {
+    qb = qb.where('ac.name', '>', lastAccount);
+  } else {
     qb = qb.where(({ not, exists, selectFrom }) =>
       not(
         exists(
@@ -263,6 +330,7 @@ async function main(): Promise<void> {
 
     if (args.source === 'all-hive') {
       let lower = args.account ?? lastAccount;
+      let lastReport = Date.now();
       for (;;) {
         const names = await lookupAccounts(lower, args.batchSize);
         await sleep(args.delayMs);
@@ -289,6 +357,12 @@ async function main(): Promise<void> {
           processed += 1;
         }
         lower = nextLookupAccountsLowerBound(names[names.length - 1] ?? lower);
+        if (Date.now() - lastReport >= 5000 || names.length < args.batchSize) {
+          console.log(
+            `[${new Date().toISOString()}] (all-hive) Processed ${processed} accounts so far (cursor: ${lower})`,
+          );
+          lastReport = Date.now();
+        }
         if (args.account) {
           break;
         }
@@ -297,6 +371,7 @@ async function main(): Promise<void> {
         }
       }
     } else {
+      let lastReport = Date.now();
       for (;;) {
         const names = await fetchUnsyncedUserNames(
           db,
@@ -309,24 +384,57 @@ async function main(): Promise<void> {
           break;
         }
 
-        let accounts: HiveAccountType[] = [];
-        try {
-          accounts = await fetchAccounts(names);
-        } finally {
-          await sleep(args.delayMs);
+        const validNames: string[] = [];
+        const invalidNames: string[] = [];
+        for (const name of names) {
+          if (isValidHiveAccountName(name)) {
+            validNames.push(name);
+          } else {
+            invalidNames.push(name);
+          }
         }
 
-        const appliedNames: string[] = [];
+        // Mark accounts with invalid Hive syntax as synced so they are never queried again
+        if (invalidNames.length > 0) {
+          await markAccountsSyncedBulk(db, invalidNames, headBlock, args.dryRun);
+          processed += invalidNames.length;
+        }
+
+        let accounts: HiveAccountType[] = [];
+        if (validNames.length > 0) {
+          try {
+            accounts = await fetchAccounts(validNames);
+          } finally {
+            await sleep(args.delayMs);
+          }
+        }
+
+        const returnedNames = new Set<string>();
         for (const account of accounts) {
           if (!account?.name) {
             continue;
           }
           await replaceAccountSnapshot(db, account, headBlock, args.dryRun);
           processed += 1;
-          appliedNames.push(account.name);
+          returnedNames.add(account.name);
         }
 
-        lastAccount = nextUserBatchCursor(lastAccount, appliedNames);
+        // Valid syntax but non-existent on Hive: mark as synced so we don't query repeatedly
+        const missingFromHive = validNames.filter((n) => !returnedNames.has(n));
+        if (missingFromHive.length > 0) {
+          await markAccountsSyncedBulk(db, missingFromHive, headBlock, args.dryRun);
+          processed += missingFromHive.length;
+        }
+
+        lastAccount = names[names.length - 1] ?? lastAccount;
+
+        if (Date.now() - lastReport >= 5000 || names.length < args.batchSize) {
+          console.log(
+            `[${new Date().toISOString()}] Synced ${processed} accounts so far (current batch: ${names[0]} .. ${lastAccount})`,
+          );
+          lastReport = Date.now();
+        }
+
         if (args.account) {
           break;
         }

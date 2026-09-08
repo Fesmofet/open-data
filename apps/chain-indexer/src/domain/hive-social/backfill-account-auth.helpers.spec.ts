@@ -7,6 +7,7 @@ import {
   nextUserBatchCursor,
   resolveBackfillDelayMs,
   shouldSkipSyncedAccount,
+  isValidHiveAccountName,
 } from './backfill-account-auth.helpers';
 
 describe('backfill-account-auth.helpers', () => {
@@ -47,5 +48,15 @@ describe('backfill-account-auth.helpers', () => {
 
   it('advances user batch cursor to max applied name', () => {
     expect(nextUserBatchCursor('alpha', ['beta', 'zeta'])).toBe('zeta');
+  });
+
+  it('validates hive account names', () => {
+    expect(isValidHiveAccountName('flowmaster')).toBe(true);
+    expect(isValidHiveAccountName('grampo')).toBe(true);
+    expect(isValidHiveAccountName('waivio.app')).toBe(true);
+    expect(isValidHiveAccountName('ab')).toBe(false);
+    expect(isValidHiveAccountName('toolongaccountnamemorethan16')).toBe(false);
+    expect(isValidHiveAccountName('invalid_underscore')).toBe(false);
+    expect(isValidHiveAccountName('InvalidCapital')).toBe(false);
   });
 });

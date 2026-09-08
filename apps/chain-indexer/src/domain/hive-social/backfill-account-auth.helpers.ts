@@ -72,3 +72,15 @@ export function nextUserBatchCursor(
     name.localeCompare(max) > 0 ? name : max,
   );
 }
+
+/**
+ * Validate standard Hive account name syntax.
+ * Length 3-16 chars, lowercase alphanumeric, dashes, dots.
+ * Each segment starts with letter, ends with letter or digit.
+ */
+export function isValidHiveAccountName(name: string): boolean {
+  if (!name || name.length < 3 || name.length > 16) {
+    return false;
+  }
+  return /^[a-z][a-z0-9.-]{1,14}[a-z0-9]$/.test(name);
+}
