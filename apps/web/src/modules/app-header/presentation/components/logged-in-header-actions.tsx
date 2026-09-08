@@ -55,6 +55,8 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const profileAboutPath = `/user-profile/${user.username}/about`;
   const walletHref = `/@${encodeURIComponent(user.username)}/transfers?type=WAIV`;
   const walletPathPrefix = `/@${encodeURIComponent(user.username)}/transfers`;
+  const permissionsHref = `/@${encodeURIComponent(user.username)}/permissions`;
+  const permissionsPathPrefix = `/@${encodeURIComponent(user.username)}/permissions`;
 
   useEffect(() => {
     if (!menuOpen) {
@@ -237,6 +239,24 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
               suppressHydrationWarning
             >
               {t('wallet')}
+            </Link>
+            <Link
+              href={permissionsHref}
+              role="menuitem"
+              aria-current={
+                pathname === permissionsPathPrefix ||
+                pathname.startsWith(`${permissionsPathPrefix}/`)
+                  ? 'page'
+                  : undefined
+              }
+              className={menuNavLinkClassName(
+                pathname === permissionsPathPrefix ||
+                  pathname.startsWith(`${permissionsPathPrefix}/`),
+              )}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('permissions_menu')}
             </Link>
             <button
               type="button"

@@ -1,5 +1,6 @@
 import type { HiveOperation } from '@opden-data-layer/hive-broadcast';
 import {
+  buildAccountUpdateWirePayload,
   wireCommentOptionsPayload,
 } from '@opden-data-layer/hive-broadcast';
 
@@ -128,6 +129,17 @@ export function toHiveWireOperation(op: HiveOperation): KeychainWireOperation {
           requestid: op.requestid,
           amount: op.amount,
         },
+      ];
+    case 'account_update':
+      return [
+        'account_update',
+        buildAccountUpdateWirePayload({
+          account: op.account,
+          memoKey: op.memo_key,
+          jsonMetadata: op.json_metadata,
+          posting: op.posting,
+          active: op.active,
+        }),
       ];
   }
   return assertNeverForHiveOp(op);

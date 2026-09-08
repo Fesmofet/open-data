@@ -1,0 +1,1 @@
+export const USER_PERMISSIONS_PAGE_SIZE = 20;

@@ -646,9 +646,10 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
       inputSchema: userAccountAuthListQuerySchema.extend(accountField),
     },
     async (args) => {
-      const { account, type, skip, limit } = args;
+      const { account, type, sort, skip, limit } = args;
       const result = await deps.getUserAuthorityGrantors.execute(account, {
         type,
+        sort,
         skip,
         limit,
       });
@@ -666,9 +667,10 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
       inputSchema: userAccountAuthListQuerySchema.extend(accountField),
     },
     async (args) => {
-      const { account, type, skip, limit } = args;
+      const { account, type, sort, skip, limit } = args;
       const result = await deps.getUserAuthorityGrantees.execute(account, {
         type,
+        sort,
         skip,
         limit,
       });

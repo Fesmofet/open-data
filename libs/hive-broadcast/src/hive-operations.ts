@@ -3,6 +3,8 @@
  * Signing/broadcast adapters map these to provider-specific wire formats.
  */
 
+import type { HiveAuthoritySnapshot } from './hive-account-authority-operations';
+
 export type VoteOp = {
   readonly type: 'vote';
   readonly voter: string;
@@ -108,6 +110,17 @@ export type CollateralizedConvertOp = {
   readonly amount: string;
 };
 
+export type AccountUpdateAuthorityType = 'posting' | 'active';
+
+export type AccountUpdateOp = {
+  readonly type: 'account_update';
+  readonly account: string;
+  readonly posting?: HiveAuthoritySnapshot;
+  readonly active?: HiveAuthoritySnapshot;
+  readonly memo_key: string;
+  readonly json_metadata: string;
+};
+
 export type HiveOperation =
   | VoteOp
   | CommentOp
@@ -121,7 +134,8 @@ export type HiveOperation =
   | TransferFromSavingsOp
   | CancelTransferFromSavingsOp
   | ClaimRewardBalanceOp
-  | CollateralizedConvertOp;
+  | CollateralizedConvertOp
+  | AccountUpdateOp;
 
 export type HiveOperationPayload = {
   readonly operations: readonly HiveOperation[];

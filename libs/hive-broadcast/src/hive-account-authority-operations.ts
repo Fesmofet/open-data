@@ -15,6 +15,14 @@ export type MergeHiveAccountAuthsInput = {
   weight?: number;
 };
 
+export type BuildAccountUpdateAuthorityOpInput = {
+  account: string;
+  authorityType: 'posting' | 'active';
+  authority: HiveAuthoritySnapshot;
+  memoKey: string;
+  jsonMetadata: string;
+};
+
 export type BuildAccountUpdatePostingOpInput = {
   account: string;
   posting: HiveAuthoritySnapshot;
@@ -51,6 +59,36 @@ function compareHiveAccountNames(a: string, b: string): number {
 
 function sortAccountAuths(entries: HiveAccountAuthEntry[]): HiveAccountAuthEntry[] {
   return [...entries].sort(([a], [b]) => compareHiveAccountNames(a, b));
+}
+
+function wireAuthoritySnapshot(snapshot: HiveAuthoritySnapshot): Record<string, unknown> {
+  return {
+    weight_threshold: snapshot.weight_threshold,
+    account_auths: snapshot.account_auths.map(([name, w]) => [name, w]),
+    key_auths: snapshot.key_auths.map(([key, w]) => [key, w]),
+  };
+}
+
+/** Stable Keychain-friendly field order: identity + metadata first, authority blob last. */
+export function buildAccountUpdateWirePayload(input: {
+  account: string;
+  memoKey: string;
+  jsonMetadata: string;
+  posting?: HiveAuthoritySnapshot;
+  active?: HiveAuthoritySnapshot;
+}): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    account: input.account.trim().toLowerCase(),
+    memo_key: input.memoKey,
+    json_metadata: input.jsonMetadata,
+  };
+  if (input.posting) {
+    payload['posting'] = wireAuthoritySnapshot(input.posting);
+  }
+  if (input.active) {
+    payload['active'] = wireAuthoritySnapshot(input.active);
+  }
+  return payload;
 }
 
 /**
@@ -112,24 +150,79 @@ export function normalizeHiveAuthoritySnapshot(
   };
 }
 
+function buildAccountUpdateWireOp(
+  input: BuildAccountUpdateAuthorityOpInput,
+): HiveWireOperation {
+  const authority = normalizeHiveAuthoritySnapshot(input.authority);
+  const payload = buildAccountUpdateWirePayload({
+    account: input.account,
+    memoKey: input.memoKey,
+    jsonMetadata: input.jsonMetadata,
+    ...(input.authorityType === 'posting'
+      ? { posting: authority }
+      : { active: authority }),
+  });
+
+  return ['account_update', payload];
+}
+
+/** Domain op for posting or active authority changes (active key required). */
+export function buildAccountUpdateAuthorityOp(
+  input: BuildAccountUpdateAuthorityOpInput,
+): {
+  type: 'account_update';
+  account: string;
+  posting?: HiveAuthoritySnapshot;
+  active?: HiveAuthoritySnapshot;
+  memo_key: string;
+  json_metadata: string;
+} {
+  const account = input.account.trim().toLowerCase();
+  const authority = normalizeHiveAuthoritySnapshot(input.authority);
+
+  if (input.authorityType === 'posting') {
+    return {
+      type: 'account_update',
+      account,
+      memo_key: input.memoKey,
+      json_metadata: input.jsonMetadata,
+      posting: authority,
+    };
+  }
+
+  return {
+    type: 'account_update',
+    account,
+    memo_key: input.memoKey,
+    json_metadata: input.jsonMetadata,
+    active: authority,
+  };
+}
+
 /** Build account_update wire tuple for posting authority changes (active key required). */
 export function buildAccountUpdatePostingOp(
   input: BuildAccountUpdatePostingOpInput,
 ): HiveWireOperation {
-  const account = input.account.trim().toLowerCase();
-  const posting = normalizeHiveAuthoritySnapshot(input.posting);
+  return buildAccountUpdateWireOp({
+    account: input.account,
+    authorityType: 'posting',
+    authority: input.posting,
+    memoKey: input.memoKey,
+    jsonMetadata: input.jsonMetadata,
+  });
+}
 
-  return [
-    'account_update',
-    {
-      account,
-      posting: {
-        weight_threshold: posting.weight_threshold,
-        account_auths: posting.account_auths.map(([name, w]) => [name, w]),
-        key_auths: posting.key_auths.map(([key, w]) => [key, w]),
-      },
-      memo_key: input.memoKey,
-      json_metadata: input.jsonMetadata,
-    },
-  ];
+/** Build account_update wire tuple for active authority changes (active key required). */
+export function buildAccountUpdateActiveOp(
+  input: Omit<BuildAccountUpdatePostingOpInput, 'posting'> & {
+    active: HiveAuthoritySnapshot;
+  },
+): HiveWireOperation {
+  return buildAccountUpdateWireOp({
+    account: input.account,
+    authorityType: 'active',
+    authority: input.active,
+    memoKey: input.memoKey,
+    jsonMetadata: input.jsonMetadata,
+  });
 }

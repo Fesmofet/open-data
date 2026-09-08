@@ -38,6 +38,8 @@ Global chrome for the `(app)` route group: brand link, predictive search, notifi
 | Create object | `/object-create` |
 | Drafts | `/drafts` |
 | My profile | `/@:username/about` |
+| Wallet | `/@:username/transfers?type=WAIV` |
+| Permissions | `/@:username/permissions` — [permissions route](pages/user-profile/routes/permissions.md) |
 | Settings | `/settings` |
 | Logout | `POST /api/auth/logout` + `router.refresh()` |
 

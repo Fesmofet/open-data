@@ -1,4 +1,6 @@
 import {
+  buildAccountUpdateActiveOp,
+  buildAccountUpdateAuthorityOp,
   buildAccountUpdatePostingOp,
   mergeHiveAccountAuths,
   normalizeHiveAuthoritySnapshot,
@@ -102,6 +104,8 @@ describe('hive-account-authority-operations', () => {
     expect(op[0]).toBe('account_update');
     expect(op[1]).toEqual({
       account: 'flowmaster',
+      memo_key: 'STM6HhfiYyrZhLwM7AGCJgR2PbnUxmmednYZ2Vt4AgDExVGFwveLB',
+      json_metadata: '{"beneficiaries":[]}',
       posting: {
         weight_threshold: 1,
         account_auths: [
@@ -110,8 +114,46 @@ describe('hive-account-authority-operations', () => {
         ],
         key_auths: [['STM5CSuEihKVibpeJ9ruxhQyzfYiDX1FrMh4fuDR2M2hbwTGqX9oA', 1]],
       },
-      memo_key: 'STM6HhfiYyrZhLwM7AGCJgR2PbnUxmmednYZ2Vt4AgDExVGFwveLB',
-      json_metadata: '{"beneficiaries":[]}',
     });
+  });
+
+  it('builds active account_update wire tuple', () => {
+    const op = buildAccountUpdateActiveOp({
+      account: 'flowmaster',
+      active: {
+        weight_threshold: 1,
+        account_auths: [['waivio.import', 1]],
+        key_auths: [['STM5CSuEihKVibpeJ9ruxhQyzfYiDX1FrMh4fuDR2M2hbwTGqX9oA', 1]],
+      },
+      memoKey: 'STM6HhfiYyrZhLwM7AGCJgR2PbnUxmmednYZ2Vt4AgDExVGFwveLB',
+      jsonMetadata: '{}',
+    });
+
+    expect(op[0]).toBe('account_update');
+    expect(op[1]).toMatchObject({
+      account: 'flowmaster',
+      active: {
+        weight_threshold: 1,
+        account_auths: [['waivio.import', 1]],
+      },
+    });
+  });
+
+  it('builds domain account_update op for posting authority', () => {
+    const op = buildAccountUpdateAuthorityOp({
+      account: 'flowmaster',
+      authorityType: 'posting',
+      authority: {
+        weight_threshold: 1,
+        account_auths: [['waivio.import', 1]],
+        key_auths: [['STM5CSuEihKVibpeJ9ruxhQyzfYiDX1FrMh4fuDR2M2hbwTGqX9oA', 1]],
+      },
+      memoKey: 'STM6HhfiYyrZhLwM7AGCJgR2PbnUxmmednYZ2Vt4AgDExVGFwveLB',
+      jsonMetadata: '{}',
+    });
+
+    expect(op.type).toBe('account_update');
+    expect(op.posting?.account_auths).toEqual([['waivio.import', 1]]);
+    expect(op.active).toBeUndefined();
   });
 });

@@ -21,6 +21,7 @@ export const USER_PROFILE_RESERVED_FIRST_SEGMENTS: readonly string[] = [
   'expertise-hashtags',
   'expertise-objects',
   'about',
+  'permissions',
 ] as const;
 
 const USER_PROFILE_RESERVED_FIRST_SEGMENT_SET = new Set(USER_PROFILE_RESERVED_FIRST_SEGMENTS);

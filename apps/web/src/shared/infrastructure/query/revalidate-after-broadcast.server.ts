@@ -98,6 +98,20 @@ export async function revalidateUserSocialAfterBroadcast(accountName: string): P
   revalidatePath(userProfilePath(name), 'layout');
 }
 
+/** User permissions (authority grantors/grantees) after grant/revoke broadcast. */
+export async function revalidateUserPermissionsAfterBroadcast(
+  accountName: string,
+): Promise<void> {
+  const name = accountName.trim().toLowerCase();
+  if (name.length === 0) {
+    return;
+  }
+  updateTag(queryApiCacheTags.userAuthorityGrantors(name));
+  updateTag(queryApiCacheTags.userAuthorityGrantees(name));
+  revalidatePath(`${userProfilePath(name)}/permissions`, 'page');
+  revalidatePath(`/@${encodeURIComponent(name)}/permissions`, 'page');
+}
+
 /** Hub FEED tab after vote/comment/reblog broadcast. */
 export async function revalidateHomeFeedAfterBroadcast(
   viewerUsername?: string | null,

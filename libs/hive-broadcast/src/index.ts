@@ -48,9 +48,13 @@ export {
 export { wireCommentOptionsPayload, toHiveWireOperation, toHiveWireOperations, type HiveWireOperation } from './hive-operation-wire';
 export {
   buildAccountUpdatePostingOp,
+  buildAccountUpdateActiveOp,
+  buildAccountUpdateAuthorityOp,
+  buildAccountUpdateWirePayload,
   mergeHiveAccountAuths,
   normalizeHiveAuthoritySnapshot,
   type BuildAccountUpdatePostingOpInput,
+  type BuildAccountUpdateAuthorityOpInput,
   type HiveAccountAuthEntry,
   type HiveAuthoritySnapshot,
   type MergeHiveAccountAuthsInput,

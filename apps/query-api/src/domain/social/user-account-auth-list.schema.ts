@@ -5,10 +5,16 @@ const DEFAULT_PAGE = 20;
 
 export const hiveAccountAuthorityTypeSchema = z.enum(['owner', 'active', 'posting']);
 
+export const userAccountAuthListSortSchema = z.enum(['rank', 'followers', 'a-z', 'recency']);
+
 export const userAccountAuthListQuerySchema = z.object({
   type: hiveAccountAuthorityTypeSchema
     .optional()
     .describe('Filter by authority type; omit for all types'),
+  sort: userAccountAuthListSortSchema
+    .optional()
+    .default('a-z')
+    .describe('Sort order: rank, followers, a-z, or recency (updated_at_block desc)'),
   skip: z.coerce
     .number()
     .int()

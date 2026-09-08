@@ -1,4 +1,5 @@
 import type { CommentOptionsOp, HiveOperation } from './hive-operations';
+import { buildAccountUpdateWirePayload } from './hive-account-authority-operations';
 
 export type HiveWireOperation = [string, Record<string, unknown>];
 
@@ -144,6 +145,17 @@ export function toHiveWireOperation(op: HiveOperation): HiveWireOperation {
           requestid: op.requestid,
           amount: op.amount,
         },
+      ];
+    case 'account_update':
+      return [
+        'account_update',
+        buildAccountUpdateWirePayload({
+          account: op.account,
+          memoKey: op.memo_key,
+          jsonMetadata: op.json_metadata,
+          posting: op.posting,
+          active: op.active,
+        }),
       ];
   }
   return assertNeverForHiveOp(op);

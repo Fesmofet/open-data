@@ -27,6 +27,10 @@ export const queryApiCacheTags = {
     `query-api:user:${accountName.trim().toLowerCase()}:following`,
   userFollowingObjects: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:following-objects`,
+  userAuthorityGrantors: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:authority-grantors`,
+  userAuthorityGrantees: (accountName: string) =>
+    `query-api:user:${accountName.trim().toLowerCase()}:authority-grantees`,
   userFavoritesTypes: (accountName: string) =>
     `query-api:user:${accountName.trim().toLowerCase()}:favorites-types`,
   userFavorites: (accountName: string) =>

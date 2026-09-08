@@ -44,6 +44,7 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
       page.tsx, threads/, followers/, …
     about/layout.tsx                    main + right rail only
     map/layout.tsx                      single column
+    permissions/layout.tsx              single column
     transfers/waiv-table/layout.tsx     single column
   (article)/layout.tsx                  full-width post article (no profile hero grid)
     post/[permlink]/page.tsx
@@ -54,6 +55,7 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
 | [`(main)/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/(main)/layout.tsx) | `shell-profile-grid`: left `@leftSidebar` (sticky) + center `main` + `RightSidebar` at `lg+`. Twitter shell mode swaps left rail to vertical `UserMenuVerticalRail`. |
 | [`about/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/about/layout.tsx) | No left rail; main + right sidebar. |
 | [`map/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/map/layout.tsx) | Single full-width column (no sidebars). |
+| [`permissions/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/permissions/layout.tsx) | Single full-width column (no sidebars). |
 | [`transfers/waiv-table/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/transfers/waiv-table/layout.tsx) | Single column for wallet table. |
 
 ## Persistent regions
@@ -92,6 +94,7 @@ Shell profile fetch: [data-loading.md](data-loading.md). `(profile)/layout.tsx` 
 | Account sidebar | [components/account-sidebar.md](components/account-sidebar.md) |
 | Reblogs | [routes/reblogs.md](routes/reblogs.md) |
 | Wallet / transfers | [routes/transfers.md](routes/transfers.md) |
+| Permissions | [routes/permissions.md](routes/permissions.md) |
 | Post article / modal | [routes/post-article.md](routes/post-article.md) |
 
 ## Verification

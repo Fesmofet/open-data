@@ -169,6 +169,9 @@ const userAccountAuthGrantorItemSchema = registry.register(
     authorityType: z.enum(['owner', 'active', 'posting']).openapi({
       description: 'Authority type delegated to the profile',
     }),
+    avatarUrl: z.string().nullable(),
+    wobjectsWeight: z.number(),
+    usersFollowingCount: z.number().int(),
   }),
 );
 
@@ -186,6 +189,9 @@ const userAccountAuthGranteeItemSchema = registry.register(
   z.object({
     grantee: z.string().openapi({ description: 'Hive account receiving delegated authority' }),
     authorityType: z.enum(['owner', 'active', 'posting']),
+    avatarUrl: z.string().nullable(),
+    wobjectsWeight: z.number(),
+    usersFollowingCount: z.number().int(),
   }),
 );
 
@@ -210,6 +216,10 @@ registry.registerPath({
     query: z.object({
       type: z.enum(['owner', 'active', 'posting']).optional().openapi({
         description: 'Filter by authority type; omit for all types.',
+      }),
+      sort: z.enum(['rank', 'followers', 'a-z', 'recency']).optional().openapi({
+        description:
+          'Sort order: rank (wobjects_weight desc), followers (users_following_count desc), a-z (name asc), recency (updated_at_block desc). Default a-z.',
       }),
       skip: z.coerce.number().int().min(0).optional(),
       limit: z.coerce.number().int().min(0).max(100).optional(),
@@ -238,7 +248,13 @@ registry.registerPath({
   request: {
     params: z.object({ name: accountNameParam }),
     query: z.object({
-      type: z.enum(['owner', 'active', 'posting']).optional(),
+      type: z.enum(['owner', 'active', 'posting']).optional().openapi({
+        description: 'Filter by authority type; omit for all types.',
+      }),
+      sort: z.enum(['rank', 'followers', 'a-z', 'recency']).optional().openapi({
+        description:
+          'Sort order: rank (wobjects_weight desc), followers (users_following_count desc), a-z (name asc), recency (updated_at_block desc). Default a-z.',
+      }),
       skip: z.coerce.number().int().min(0).optional(),
       limit: z.coerce.number().int().min(0).max(100).optional(),
     }),

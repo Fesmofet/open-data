@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, hive, authority]
-updated_at: 2026-09-07
+updated_at: 2026-09-08
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/apps/chain-indexer/spec/account-authority-grants.md
@@ -23,7 +23,7 @@ Reverse index for Hive `account_auths` edges stored in `user_account_auths`. Rep
 | `GET` | `/query/v1/users/{name}/authority-grantors` | Accounts that delegated `owner`, `active`, or `posting` authority **to** `{name}`. |
 | `GET` | `/query/v1/users/{name}/authority-grantees` | Accounts that received authority **from** `{name}`. |
 
-Public read — no JWT. Profile fields are not joined; callers can fetch `GET .../profile` separately.
+Public read — no JWT. Profile fields (`avatarUrl`, `wobjectsWeight`, `usersFollowingCount`) are joined from `accounts_current`.
 
 ## Query parameters
 
@@ -32,10 +32,11 @@ Both routes share:
 | Param | Type | Default | Notes |
 | ----- | ---- | ------- | ----- |
 | `type` | `owner` \| `active` \| `posting` | (all) | Optional filter |
+| `sort` | `rank` \| `followers` \| `a-z` \| `recency` | `a-z` | Same semantics as followers list; `recency` = `updated_at_block` DESC |
 | `skip` | int ≥ 0 | `0` | Pagination offset |
 | `limit` | int 0–100 | `20` | Page size |
 
-Default sort: `grantor ASC` (grantors route) / `grantee ASC` (grantees route).
+Default sort: account name ASC, then authority type ASC.
 
 ## Response
 
@@ -44,14 +45,20 @@ Grantors example:
 ```json
 {
   "items": [
-    { "grantor": "flowmaster", "authorityType": "posting" }
+    {
+      "grantor": "flowmaster",
+      "authorityType": "posting",
+      "avatarUrl": null,
+      "wobjectsWeight": 12.5,
+      "usersFollowingCount": 42
+    }
   ],
   "total": 1,
   "hasMore": false
 }
 ```
 
-Grantees use `{ "grantee", "authorityType" }` items with the same pagination envelope.
+Grantees use `{ "grantee", "authorityType", ...profile fields }` items with the same pagination envelope.
 
 ## Errors
 
